@@ -1,0 +1,1113 @@
+import React, { useState } from 'react';
+import {
+  CENTRALIZED_MANAGE_FIELDS,
+  MANAGEMENT_PLATFORM_OPTIONS,
+  CENTRALIZED_MANAGE_BUTTONS,
+  CENTRALIZED_PROTOCOL_OPTIONS,
+  SNMP_VERSION_OPTIONS,
+} from '../constants/CentralizedManageConstants';
+import { Button, Select, MenuItem, TextField, CircularProgress } from '@mui/material';
+import { postLinuxCmd } from '../api/apiService';
+import axiosInstance from '../api/axiosInstance';
+
+const blueButtonSx = {
+  background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
+  color: '#fff',
+  fontWeight: 600,
+  fontSize: 14,
+  borderRadius: 1.5,
+  minWidth: 120,
+  boxShadow: '0 2px 6px #0002',
+  textTransform: 'none',
+  px: 3,
+  py: 1.5,
+  border: '1px solid #0e8fd6',
+  '&:hover': {
+    background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
+    color: '#fff',
+  },
+};
+
+const initialForm = {
+  centralizedManage: false,
+  notificationSetting: false,
+  trapServerPort: '162',
+  cpuUsage: '90',
+  memoryUsage: '90',
+  highCps: '90',
+  lowConnRate: '20',
+  autoChangeGateway: false,
+  managementPlatform: 'DCMS',
+  centralizedProtocol: 'SNMP',
+  snmpVersion: 'V2',
+  snmpServerAddress: '127.0.0.1',
+  monitoringPort: false,
+  monitoringPortValue: '161',
+  communityString: 'public',
+  companyName: '',
+  gatewayDesc: '',
+  snmpServer: '127.0.0.1',
+  authCode: '',
+  workingStatus: 'Requesting authentication',
+};
+
+const CentralizedManage = () => {
+  const [form, setForm] = useState(initialForm);
+  const [isApplying, setIsApplying] = useState(false);
+  const [applyStatus, setApplyStatus] = useState('');
+
+  // Persisted state key
+  const STORAGE_KEY = 'centralizedManageFormV1';
+
+  // Restore saved form on mount
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          setForm({ ...initialForm, ...parsed });
+        }
+      }
+    } catch {}
+  }, []);
+
+  // Note: Script auto-setup removed - clixxo-device-info.sh should be pre-installed during device setup
+  // The script is now managed in the installation package and copied to /usr/local/bin/ during installation
+  
+  React.useEffect(() => {
+    // Removed auto-setup code - script is now pre-installed
+    const placeholder = async () => {
+      try {
+        // Check if script already exists and includes new OIDs (1.7 and 1.8)
+        const checkCmd = `SCRIPT="/usr/local/bin/clixxo-device-info.sh"
+CONF="/etc/snmp/snmpd.conf"
+if [ -f "$SCRIPT" ] && [ -x "$SCRIPT" ] && grep -q "pass_persist.*99999" "$CONF" 2>/dev/null && grep -q "99999.1.7" "$SCRIPT" 2>/dev/null && grep -q "99999.1.8" "$SCRIPT" 2>/dev/null; then
+  echo "exists"
+else
+  echo "missing"
+fi`;
+        const checkRes = await postLinuxCmd({ cmd: checkCmd });
+        
+        if (checkRes?.responseData?.trim() === 'exists') {
+          // Script already exists and includes all OIDs, no need to run
+          console.log('SNMP device info OIDs already configured');
+          return;
+        }
+
+        // Script doesn't exist, create it automatically (minimal setup)
+        console.log('Auto-setting up SNMP device info OIDs...');
+        
+        // Create minimal setup command that only creates the script and adds to snmpd.conf
+        const autoSetupCmd = `set -e
+SCRIPT="/usr/local/bin/clixxo-device-info.sh"
+SCRIPT_DIR="/usr/local/bin"
+CONF="/etc/snmp/snmpd.conf"
+
+mkdir -p "$SCRIPT_DIR" || { echo "ERROR: Cannot create $SCRIPT_DIR"; exit 1; }
+rm -f "$SCRIPT" 2>/dev/null || true
+
+cat > "$SCRIPT" <<'AUTO_SCRIPT_END'
+#!/bin/bash
+JSON_FILE="/home/clixxo/server/config/web_version.json"
+
+read_json_value() {
+    local key="\$1"
+    if [ ! -f "\$JSON_FILE" ]; then echo ""; return; fi
+    if command -v python3 >/dev/null 2>&1; then
+        python3 -c "import json, sys; data = json.load(open('\$JSON_FILE')); print(data.get('\$key', ''))" 2>/dev/null || echo ""
+    elif command -v python >/dev/null 2>&1; then
+        python -c "import json, sys; data = json.load(open('\$JSON_FILE')); print(data.get('\$key', ''))" 2>/dev/null || echo ""
+    else
+        grep -o "\\\"\$key\\\"[[:space:]]*:[[:space:]]*\\\"[^\\\"]*\\\"" "\$JSON_FILE" 2>/dev/null | \
+        sed -n "s/.*\\\"\$key\\\"[[:space:]]*:[[:space:]]*\\\"\\([^\\\"]*\\)\\\".*/\\1/p" | head -1 || echo ""
+    fi
+}
+
+format_cmd_output() {
+    local raw="\$1"
+    if [ -z "\$raw" ]; then
+        echo ""
+        return
+    fi
+    echo "\$raw" | tr '\\n' ';' | sed 's/[[:space:]]\\{1,\\}/ /g' | sed 's/;\\{1,\\}/; /g' | sed 's/[[:space:]]\\{1,\\}\$//'
+}
+
+get_sip_reg_status_simple() {
+    local output=""
+    if command -v asterisk >/dev/null 2>&1; then
+        # Extract server URI, auth, and status from registration lines
+        # Format: phone/sip:server ... auth ... status
+        output=$(sudo asterisk -rx "pjsip show registrations" 2>/dev/null | \
+          grep -v "^<Registration" | \
+          grep -v "^Objects found" | \
+          grep -v "^=" | \
+          grep -v "^ServerURI" | \
+          grep -v "^Auth" | \
+          grep -v "^Status" | \
+          grep "/" | \
+          grep -E "(Registered|Unregistered|Rejected)" | \
+          sed 's/^[[:space:]]*//' | \
+          while IFS= read -r line; do
+            # Extract server URI (everything after / until space)
+            server=$(echo "\$line" | sed -n 's|.*/\\([^[:space:]]*\\)\\.*|\\1|p')
+            # Extract status
+            if echo "\$line" | grep -q " Registered "; then
+              status="Registered"
+            elif echo "\$line" | grep -q " Unregistered "; then
+              status="Unregistered"
+            elif echo "\$line" | grep -q " Rejected "; then
+              status="Rejected"
+            else
+              status=""
+            fi
+            # Extract auth (field before status, usually a phone number)
+            if [ -n "\$status" ]; then
+              auth=$(echo "\$line" | sed "s/.*[[:space:]]\\([^[:space:]]*\\)[[:space:]]*\${status}.*/\\1/" | awk '{print \$NF}')
+              if [ -z "\$auth" ] || [ "\$auth" = "\$line" ]; then
+                # Try getting the last field before status
+                auth=$(echo "\$line" | sed "s/.*\${status}.*//" | awk '{print \$NF}')
+              fi
+            else
+              auth=""
+            fi
+            if [ -n "\$server" ] && [ -n "\$status" ]; then
+              echo "\$server \$auth \$status"
+            fi
+          done | \
+          head -20 | \
+          paste -sd ';' -)
+    fi
+    if [ -z "\$output" ]; then
+        echo "No SIP registrations or command unavailable"
+    else
+        format_cmd_output "\$output"
+    fi
+}
+
+get_pri_status() {
+    local output=""
+    if command -v asterisk >/dev/null 2>&1; then
+        output=$(sudo asterisk -rx "pri show spans" 2>/dev/null | sed 's/[[:space:]]\\+\$//' | head -50)
+    fi
+    if [ -z "\$output" ]; then
+        echo "No PRI/E1 status or command unavailable"
+    else
+        format_cmd_output "\$output"
+    fi
+}
+
+get_oid_value() {
+    local oid="\$1"
+    oid=\$(echo "\$oid" | sed 's/^\\.//')
+    case "\$oid" in
+        1.3.6.1.4.1.99999.1.1) echo \$(read_json_value "serial_no"); ;;
+        1.3.6.1.4.1.99999.1.2) echo \$(read_json_value "web_version"); ;;
+        1.3.6.1.4.1.99999.1.3) echo \$(read_json_value "service"); ;;
+        1.3.6.1.4.1.99999.1.4) echo \$(read_json_value "uboot"); ;;
+        1.3.6.1.4.1.99999.1.5) echo \$(read_json_value "kernel"); ;;
+        1.3.6.1.4.1.99999.1.6) echo \$(read_json_value "firmware"); ;;
+        1.3.6.1.4.1.99999.1.7) echo \$(get_sip_reg_status_simple); ;;
+        1.3.6.1.4.1.99999.1.8) echo \$(get_pri_status); ;;
+        *) echo ""; return 1; ;;
+    esac
+    return 0
+}
+
+get_next_oid() {
+    local oid="\$1"
+    oid=\$(echo "\$oid" | sed 's/^\\.//')
+    case "\$oid" in
+        1.3.6.1.4.1.99999.1|1.3.6.1.4.1.99999.1.0) echo ".1.3.6.1.4.1.99999.1.1"; ;;
+        1.3.6.1.4.1.99999.1.1) echo ".1.3.6.1.4.1.99999.1.2"; ;;
+        1.3.6.1.4.1.99999.1.2) echo ".1.3.6.1.4.1.99999.1.3"; ;;
+        1.3.6.1.4.1.99999.1.3) echo ".1.3.6.1.4.1.99999.1.4"; ;;
+        1.3.6.1.4.1.99999.1.4) echo ".1.3.6.1.4.1.99999.1.5"; ;;
+        1.3.6.1.4.1.99999.1.5) echo ".1.3.6.1.4.1.99999.1.6"; ;;
+        1.3.6.1.4.1.99999.1.6) echo ".1.3.6.1.4.1.99999.1.7"; ;;
+        1.3.6.1.4.1.99999.1.7) echo ".1.3.6.1.4.1.99999.1.8"; ;;
+        *) echo ""; return 1; ;;
+    esac
+    return 0
+}
+
+exec <&0
+exec >&1
+
+while true; do
+    if ! IFS= read -r cmd; then break; fi
+    if [ "\$cmd" = "PING" ]; then
+        echo "PONG"
+        continue
+    fi
+    if [ "\$cmd" = "get" ] || [ "\$cmd" = "getnext" ]; then
+        if ! IFS= read -r oid; then
+            echo "NONE"
+            continue
+        fi
+        if [ "\$cmd" = "get" ]; then
+            if [ -z "\$oid" ]; then
+                echo "NONE"
+                continue
+            fi
+            lookup_oid=\$(echo "\$oid" | sed 's/^\\.//')
+            value=\$(get_oid_value "\$lookup_oid")
+            if [ \$? -eq 0 ] && [ -n "\$value" ]; then
+                OID_WITHOUT_DOT=\$(echo "\$oid" | sed 's/^\\.//')
+                if [ "\$OID_WITHOUT_DOT" = "\$oid" ]; then
+                    echo ".\$oid"
+                else
+                    echo "\$oid"
+                fi
+                echo "string"
+                echo "\$value"
+            else
+                echo "NONE"
+            fi
+        elif [ "\$cmd" = "getnext" ]; then
+            if [ -z "\$oid" ]; then
+                echo "NONE"
+                continue
+            fi
+            next_oid=\$(get_next_oid "\$oid")
+            if [ \$? -eq 0 ] && [ -n "\$next_oid" ]; then
+                value=\$(get_oid_value "\$next_oid")
+                if [ \$? -eq 0 ] && [ -n "\$value" ]; then
+                    echo "\$next_oid"
+                    echo "string"
+                    echo "\$value"
+                else
+                    echo "NONE"
+                fi
+            else
+                echo "NONE"
+            fi
+        fi
+    else
+        echo "NONE"
+    fi
+done
+AUTO_SCRIPT_END
+
+chmod +x "$SCRIPT" || { echo "ERROR: Cannot make script executable"; exit 1; }
+
+# Configure sudoers for SNMP to run asterisk commands
+echo "=== Configuring sudoers for SNMP access to Asterisk ==="
+SNMP_USER=""
+for user in snmp Debian-snmp daemon _snmp; do
+    if id "$user" >/dev/null 2>&1; then
+        SNMP_USER="$user"
+        echo "Found SNMP user: $SNMP_USER"
+        break
+    fi
+done
+
+if [ -z "$SNMP_USER" ]; then
+    echo "WARNING: No SNMP user found, skipping sudoers configuration"
+else
+    # Create sudoers rule to allow SNMP user to run asterisk -rx commands without password
+    SUDOERS_FILE="/etc/sudoers.d/snmp-asterisk"
+    echo "Creating sudoers file: $SUDOERS_FILE"
+    
+    # Create sudoers.d directory if it doesn't exist
+    mkdir -p /etc/sudoers.d 2>/dev/null || true
+    
+    # Write the sudoers file
+    {
+        echo "# Allow $SNMP_USER to run asterisk commands for SNMP (auto-configured)"
+        echo "$SNMP_USER ALL=(root) NOPASSWD: /usr/sbin/asterisk -rx *"
+        echo "Defaults:$SNMP_USER !requiretty"
+    } > "$SUDOERS_FILE" 2>&1 && echo "Sudoers file written successfully" || echo "ERROR: Failed to write sudoers file"
+    
+    # Set correct permissions on sudoers file
+    if chmod 0440 "$SUDOERS_FILE" 2>/dev/null; then
+        echo "Sudoers file permissions set to 0440"
+    else
+        echo "WARNING: Could not set sudoers file permissions"
+    fi
+    
+    # Show the file content for verification
+    if [ -f "$SUDOERS_FILE" ]; then
+        echo "Sudoers file created successfully:"
+        cat "$SUDOERS_FILE"
+    else
+        echo "ERROR: Sudoers file was not created"
+    fi
+fi
+
+# Ensure snmpd.conf directory exists
+mkdir -p /etc/snmp || { echo "ERROR: Cannot create /etc/snmp directory"; exit 1; }
+
+# Add pass_persist to snmpd.conf if not already present
+if [ ! -f "$CONF" ]; then
+    # snmpd.conf doesn't exist, create it with minimal config + pass_persist
+    echo "Creating new snmpd.conf with device info OIDs..."
+    cat > "$CONF" <<'NEW_CONF_EOF'
+# Auto-generated snmpd.conf with device info OIDs
+agentAddress udp:161
+rocommunity public default
+# Device Info OIDs from web_version.json (auto-configured)
+NEW_CONF_EOF
+    echo "pass_persist .1.3.6.1.4.1.99999.1 $SCRIPT" >> "$CONF"
+    echo "New snmpd.conf created with pass_persist directive"
+elif ! grep -q "pass_persist.*99999" "$CONF" 2>/dev/null; then
+    # snmpd.conf exists but doesn't have pass_persist, add it
+    echo "" >> "$CONF"
+    echo "# Device Info OIDs from web_version.json (auto-configured)" >> "$CONF"
+    echo "pass_persist .1.3.6.1.4.1.99999.1 $SCRIPT" >> "$CONF"
+    echo "pass_persist directive added to existing snmpd.conf"
+else
+    echo "pass_persist directive already exists in snmpd.conf"
+fi
+
+# Restart snmpd to apply changes
+echo "Restarting snmpd to apply configuration..."
+systemctl stop snmpd 2>/dev/null || service snmpd stop 2>/dev/null || /etc/init.d/snmpd stop 2>/dev/null || true
+sleep 1
+
+# Start/restart snmpd
+if systemctl start snmpd 2>/dev/null; then
+    echo "snmpd started via systemctl"
+elif service snmpd start 2>/dev/null; then
+    echo "snmpd started via service command"
+elif /etc/init.d/snmpd start 2>/dev/null; then
+    echo "snmpd started via init.d"
+else
+    echo "WARNING: Failed to start snmpd - may need manual start"
+fi
+
+# Wait a moment for snmpd to start
+sleep 2
+
+# Verify snmpd is running
+if systemctl is-active --quiet snmpd 2>/dev/null || pgrep -x snmpd >/dev/null 2>&1; then
+    echo "snmpd is running"
+else
+    echo "WARNING: snmpd may not be running - check with: systemctl status snmpd"
+fi
+
+# Final verification
+echo "=== Setup Summary ==="
+echo "Script location: $SCRIPT"
+echo "Script exists: $([ -f "$SCRIPT" ] && echo 'YES' || echo 'NO')"
+echo "Script executable: $([ -x "$SCRIPT" ] && echo 'YES' || echo 'NO')"
+echo "pass_persist in config: $(grep -q "pass_persist.*99999" "$CONF" 2>/dev/null && echo 'YES' || echo 'NO')"
+echo "sudoers file: $([ -f "/etc/sudoers.d/snmp-asterisk" ] && echo 'EXISTS' || echo 'MISSING')"
+echo "snmpd running: $((systemctl is-active --quiet snmpd 2>/dev/null || pgrep -x snmpd >/dev/null 2>&1) && echo 'YES' || echo 'NO')"
+echo "Device info OIDs auto-setup completed"`;
+
+        // Execute in background (don't wait for full completion, use longer timeout)
+        axiosInstance.post('/linuxcmd', { cmd: autoSetupCmd }, { timeout: 30000 })
+          .then((response) => {
+            const output = response?.data?.responseData || '';
+            console.log('SNMP device info OIDs auto-setup response:', output);
+            
+            // Verify setup was successful after delay
+            setTimeout(async () => {
+              try {
+                // Comprehensive verification
+                const verifyCmd = `echo "=== Verification ===" && \
+test -f /usr/local/bin/clixxo-device-info.sh && echo "Script exists: YES" || echo "Script exists: NO" && \
+test -x /usr/local/bin/clixxo-device-info.sh && echo "Script executable: YES" || echo "Script executable: NO" && \
+grep -q "pass_persist.*99999" /etc/snmp/snmpd.conf 2>/dev/null && echo "pass_persist in config: YES" || echo "pass_persist in config: NO" && \
+test -f /etc/sudoers.d/snmp-asterisk && echo "sudoers file: EXISTS" || echo "sudoers file: MISSING" && \
+(systemctl is-active --quiet snmpd 2>/dev/null || pgrep -x snmpd >/dev/null 2>&1) && echo "snmpd running: YES" || echo "snmpd running: NO" && \
+echo "PING" | timeout 1 /usr/local/bin/clixxo-device-info.sh 2>/dev/null | head -1 | grep -q "PONG" && echo "Script responds: YES" || echo "Script responds: NO" && \
+echo "=== End Verification ==="`;
+                
+                const verifyRes = await postLinuxCmd({ cmd: verifyCmd });
+                const verifyOutput = verifyRes?.responseData || '';
+                console.log('SNMP device info OIDs verification:', verifyOutput);
+                
+                // Check if all critical components are working
+                if (verifyOutput.includes('Script exists: YES') && 
+                    verifyOutput.includes('Script executable: YES') && 
+                    verifyOutput.includes('pass_persist in config: YES') && 
+                    verifyOutput.includes('snmpd running: YES')) {
+                  console.log('SNMP device info OIDs auto-setup verified successfully');
+                } else {
+                  console.warn('SNMP device info OIDs auto-setup verification incomplete:', verifyOutput);
+                  // Will retry on next page load if not complete
+                }
+              } catch (verifyErr) {
+                console.warn('SNMP device info OIDs auto-setup verification error:', verifyErr);
+              }
+            }, 4000);
+          })
+          .catch((err) => {
+            console.warn('SNMP device info OIDs auto-setup failed (non-critical):', err);
+            // Don't show error to user - this is background setup
+          });
+      } catch (error) {
+        console.warn('Auto-setup check failed (non-critical):', error);
+        // Silently fail - don't disturb user
+      }
+    };
+
+    // No auto-setup needed - script is pre-installed
+      } catch (error) {
+        // No-op
+      }
+    };
+    // Don't run the placeholder function
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    setForm((prev) => {
+      const newForm = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+      };
+
+      if (name === 'centralizedManage' && !checked) {
+        newForm.notificationSetting = false;
+      }
+
+      if (name === 'notificationSetting' && !checked) {
+        newForm.trapServerPort = '162';
+        newForm.cpuUsage = '90';
+        newForm.memoryUsage = '90';
+        newForm.highCps = '90';
+        newForm.lowConnRate = '20';
+      }
+
+      // Persist after every change
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(newForm)); } catch {}
+
+      return newForm;
+    });
+  };
+
+  const handleReset = () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    setForm(initialForm);
+  };
+
+const buildSnmpCommand = () => {
+    const version = (form.snmpVersion || 'V2').toUpperCase();
+    if (version === 'V3') {
+      return `echo 'SNMPv3 requires user credentials; configure via UI first'`;
+    }
+
+    const proto = version === 'V1' ? 'v1' : 'v2c';
+    const community = form.communityString || 'public';
+    const allow = (form.snmpServerAddress || '').trim();
+    const listenPort = (form.monitoringPort && form.monitoringPortValue) ? String(form.monitoringPortValue) : '161';
+
+    const allowAllCheck = ['all', '*', '0.0.0.0/0'].includes(allow.toLowerCase());
+
+    const safeCommunity = community.replace(/[^A-Za-z0-9_.-]/g, '');
+    const safeAllow = allowAllCheck
+      ? 'default'
+      : (allow.replace(/[^A-Za-z0-9_.:/-]/g, '') || 'default');
+
+    return `set -e
+CONF="/etc/snmp/snmpd.conf"
+SCRIPT="/usr/local/bin/clixxo-device-info.sh"
+
+# Check if the device info script exists (should be pre-installed)
+if [ ! -f "$SCRIPT" ]; then
+    echo "ERROR: Device info script not found at $SCRIPT"
+    echo "Please ensure clixxo-device-info.sh is installed during device setup"
+    exit 1
+fi
+
+if [ ! -x "$SCRIPT" ]; then
+    echo "WARNING: Device info script is not executable, fixing permissions..."
+    chmod +x "$SCRIPT" 2>/dev/null || true
+fi
+
+echo "Device info script found: $SCRIPT"
+
+# Create /etc/snmp directory if it doesn't exist
+mkdir -p /etc/snmp
+
+# Backup existing config
+[ -f "$CONF" ] && cp "$CONF" "$CONF.bak.$(date +%s)" 2>/dev/null || true
+
+# Derive source selector
+SRC="${safeAllow}"
+if [ "$SRC" = "default" ] || [ -z "$SRC" ]; then
+  SRC="default"
+else
+  if [ "$SRC" = "127.0.0.1" ] || [ "$SRC" = "::1" ]; then
+    SRC="default"
+  else
+    DEVICE_IPS=$(ip -4 addr show 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d/ -f1 || ifconfig 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d: -f2 || echo "")
+    if echo "$DEVICE_IPS" | grep -qFx "$SRC" 2>/dev/null; then
+      SRC="default"
+    fi
+  fi
+fi
+
+# Configure sudoers for SNMP to run asterisk commands
+echo "Configuring sudoers for SNMP access to Asterisk..."
+SNMP_USER=""
+for user in snmp Debian-snmp daemon _snmp; do
+    if id "$user" >/dev/null 2>&1; then
+        SNMP_USER="$user"
+        echo "Found SNMP user: $SNMP_USER"
+        break
+    fi
+done
+
+if [ -n "$SNMP_USER" ]; then
+    SUDOERS_FILE="/etc/sudoers.d/snmp-asterisk"
+    mkdir -p /etc/sudoers.d 2>/dev/null || true
+    
+    {
+        echo "# Allow $SNMP_USER to run asterisk commands for SNMP (auto-configured)"
+        echo "$SNMP_USER ALL=(root) NOPASSWD: /usr/sbin/asterisk -rx *"
+        echo "Defaults:$SNMP_USER !requiretty"
+    } > "$SUDOERS_FILE" 2>&1
+    
+    chmod 0440 "$SUDOERS_FILE" 2>/dev/null
+    
+    if [ -f "$SUDOERS_FILE" ]; then
+        echo "Sudoers file configured successfully"
+    fi
+fi
+
+# Write SNMP configuration
+echo "Configuring SNMP..."
+cat > "$CONF" <<'EOF'
+# Auto-generated by Centralized Manage
+agentAddress udp:${listenPort}
+master agentx
+sysLocation CLIXXO
+sysContact admin@clixxo
+
+# Define view that includes ALL OIDs
+view all included .1
+
+# Security: com2sec maps community to security name
+com2sec readonly $SRC ${safeCommunity}
+
+# Group: maps security name to group
+group MyROGroup ${proto} readonly
+
+# Access: defines what the group can access
+access MyROGroup "" any noauth exact all none none
+
+# Also provide rocommunity for maximum compatibility
+rocommunity ${safeCommunity} $SRC -V all
+
+# Device Info OIDs from web_version.json
+# .1.3.6.1.4.1.99999.1.1 = serial_no
+# .1.3.6.1.4.1.99999.1.2 = web_version
+# .1.3.6.1.4.1.99999.1.3 = service
+# .1.3.6.1.4.1.99999.1.4 = uboot
+# .1.3.6.1.4.1.99999.1.5 = kernel
+# .1.3.6.1.4.1.99999.1.6 = firmware
+# .1.3.6.1.4.1.99999.1.7 = SIP registration status
+# .1.3.6.1.4.1.99999.1.8 = PRI/E1 status
+pass_persist .1.3.6.1.4.1.99999.1 $SCRIPT
+EOF
+
+# Replace variables in config file
+sed -i "s/\${listenPort}/${listenPort}/g" "$CONF"
+sed -i "s/\${safeCommunity}/${safeCommunity}/g" "$CONF"
+sed -i "s/\${proto}/${proto}/g" "$CONF"
+sed -i "s|\$SRC|$SRC|g" "$CONF"
+sed -i "s|\$SCRIPT|$SCRIPT|g" "$CONF"
+
+echo "SNMP configuration written to $CONF"
+
+# Test the script to ensure it works
+echo "Testing device info script..."
+if [ -f "$SCRIPT" ] && [ -x "$SCRIPT" ]; then
+    # Test PING
+    PING_RESULT=\$(echo "PING" | timeout 2 $SCRIPT 2>/dev/null | head -1)
+    if [ "\$PING_RESULT" = "PONG" ]; then
+        echo "Script PING test: OK"
+    else
+        echo "Script PING test: FAILED (got: \$PING_RESULT)"
+    fi
+    
+    # Test GET
+    GET_RESULT=\$(echo "get .1.3.6.1.4.1.99999.1.1" | timeout 2 $SCRIPT 2>/dev/null)
+    if echo "\$GET_RESULT" | grep -q "1.3.6.1.4.1.99999.1.1"; then
+        echo "Script GET test: OK"
+        echo "GET result preview: \$(echo "\$GET_RESULT" | head -3 | tr '\\n' '|')"
+    else
+        echo "Script GET test: WARNING"
+        echo "GET result: \$GET_RESULT"
+        echo "JSON file exists: \$([ -f /home/clixxo/server/config/web_version.json ] && echo 'yes' || echo 'no')"
+        if [ -f /home/clixxo/server/config/web_version.json ]; then
+            echo "JSON file content preview:"
+            head -5 /home/clixxo/server/config/web_version.json 2>/dev/null || echo "Cannot read JSON file"
+        fi
+    fi
+    
+    # Verify pass_persist directive is in config
+    if grep -q "pass_persist.*99999" "$CONF" 2>/dev/null; then
+        echo "pass_persist directive found in snmpd.conf"
+        # Show the exact line
+        echo "pass_persist line: \$(grep 'pass_persist.*99999' "$CONF")"
+    else
+        echo "WARNING: pass_persist directive not found in snmpd.conf"
+        echo "Config file location: $CONF"
+        echo "Config file contents (last 10 lines):"
+        tail -10 "$CONF" 2>/dev/null || echo "Cannot read config file"
+    fi
+    
+    # Check if there are any pass_persist processes running
+    PASS_PERSIST_COUNT=\$(ps aux | grep -c "[p]ass_persist.*99999" || echo "0")
+    echo "pass_persist processes for 99999: \$PASS_PERSIST_COUNT"
+else
+    echo "Script test: ERROR (script not found or not executable)"
+    ls -la "$SCRIPT" 2>/dev/null || echo "Script does not exist at $SCRIPT"
+fi
+
+# Quick SNMP configuration validation (skip if takes too long)
+echo "Validating SNMP configuration..."
+timeout 3 snmpd -f -C -c "$CONF" -Le 2>&1 | head -3 || echo "Validation skipped (timeout or snmpd not available)"
+
+# Restart service with proper error handling
+echo "Restarting SNMP service..."
+systemctl daemon-reload 2>/dev/null || true
+
+# Try to enable the service
+if systemctl enable snmpd 2>/dev/null; then
+    echo "SNMP service enabled"
+elif service snmpd enable 2>/dev/null; then
+    echo "SNMP service enabled (legacy)"
+else
+    echo "WARNING: Could not enable SNMP service (may not be installed)"
+fi
+
+# Stop the service first to ensure clean restart
+echo "Stopping SNMP service..."
+systemctl stop snmpd 2>/dev/null || service snmpd stop 2>/dev/null || /etc/init.d/snmpd stop 2>/dev/null || true
+sleep 1
+
+# Verify script is still accessible and executable
+if [ ! -f "$SCRIPT" ] || [ ! -x "$SCRIPT" ]; then
+    echo "ERROR: Script $SCRIPT is missing or not executable after config creation"
+    exit 1
+fi
+
+# Start the service
+echo "Starting SNMP service..."
+if systemctl start snmpd 2>/dev/null; then
+    echo "SNMP service started via systemctl"
+elif service snmpd start 2>/dev/null; then
+    echo "SNMP service started via service command"
+elif /etc/init.d/snmpd start 2>/dev/null; then
+    echo "SNMP service started via init.d"
+else
+    echo "ERROR: Failed to start SNMP service. Please check:"
+    echo "  1. Is net-snmp installed? (apt-get install snmpd or yum install net-snmp)"
+    echo "  2. Check configuration syntax: snmpd -f -C -c $CONF"
+    echo "  3. Check service logs: journalctl -u snmpd or /var/log/snmpd.log"
+fi
+
+# Give snmpd a moment to start and bind
+sleep 2
+
+# Check if service is running
+if systemctl is-active --quiet snmpd 2>/dev/null || pgrep -x snmpd >/dev/null 2>&1; then
+    echo "SNMP service is running"
+    # Check if it's listening on the port
+    if ss -lupn 2>/dev/null | grep -q ":${listenPort} " || netstat -ulnp 2>/dev/null | grep -q ":${listenPort} "; then
+        echo "snmpd is listening on udp:${listenPort}"
+    else
+        echo "WARNING: snmpd is running but not listening on port ${listenPort}"
+    fi
+else
+    echo "WARNING: SNMP service may not be running. Check status with: systemctl status snmpd"
+fi
+
+echo "SNMP (${version}) configured: udp:${listenPort}, community=${safeCommunity}, source=${safeAllow}"
+echo "Device info OIDs available at .1.3.6.1.4.1.99999.1.1 through .1.3.6.1.4.1.99999.1.8"
+
+# Quick OID test (skip if snmpget not available to save time)
+if command -v snmpget >/dev/null 2>&1; then
+    TEST_OID_RESULT=\$(timeout 2 snmpget -v2c -c ${safeCommunity} -t 1 localhost .1.3.6.1.4.1.99999.1.1 2>&1 | head -1)
+    if echo "\$TEST_OID_RESULT" | grep -q "1.3.6.1.4.1.99999.1.1.*=" && ! echo "\$TEST_OID_RESULT" | grep -q "No Such Instance"; then
+        echo "OID test: SUCCESS"
+    else
+        echo "OID test: May need restart (run: systemctl restart snmpd)"
+    fi
+fi
+
+# Quick configuration summary
+echo "Configuration complete. OIDs: .1.3.6.1.4.1.99999.1.1-1.6"`;
+  };
+
+  const buildDcmsCommand = () => {
+    const company = (form.companyName || '').replace(/[^A-Za-z0-9 _.-]/g, '');
+    const desc = (form.gatewayDesc || '').replace(/[^A-Za-z0-9 _.-]/g, '');
+    const snmpServer = (form.snmpServer || '').replace(/[^A-Za-z0-9_.:/-]/g, '');
+    const auth = (form.authCode || '').replace(/[^A-Za-z0-9_.-]/g, '');
+
+    return `set -e
+CONF="/etc/clixxo/dcms.conf"
+mkdir -p /etc/clixxo
+cat > "$CONF" <<EOF
+COMPANY_NAME="${company}"
+GATEWAY_DESC="${desc}"
+SNMP_SERVER="${snmpServer}"
+AUTH_CODE="${auth}"
+EOF
+echo "DCMS configuration saved"`;
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+
+    try {
+      setIsApplying(true);
+      setApplyStatus('Connecting SNMP...');
+      const commands = [];
+
+      if (form.managementPlatform === 'DCMS') {
+        if (!form.companyName || !form.gatewayDesc || !form.snmpServer || !form.authCode) {
+          alert('Please fill Company Name, Gateway Description, SNMP Server Address and Authorization Code.');
+          return;
+        }
+        commands.push(buildDcmsCommand());
+
+        const snmpBackup = form.snmpServerAddress;
+        const snmpAddr = form.snmpServer;
+        form.snmpServerAddress = snmpAddr;
+        commands.push(buildSnmpCommand());
+        form.snmpServerAddress = snmpBackup;
+      } else if (form.managementPlatform === 'Custom1' || form.managementPlatform === 'Others') {
+        if (!form.snmpServerAddress) {
+          alert('Please provide SNMP Server Address (client IP or "all").');
+          return;
+        }
+        commands.push(buildSnmpCommand());
+      } else {
+        alert('Unsupported Management Platform selection.');
+        return;
+      }
+
+      for (const cmd of commands) {
+        // Use longer timeout for SNMP configuration (service restart can take time)
+        let res;
+        if (cmd.includes('snmpd')) {
+          try {
+            const response = await axiosInstance.post('/linuxcmd', { cmd }, { timeout: 60000 }); // 60 seconds for SNMP
+            res = response.data;
+          } catch (error) {
+            console.error('SNMP command error:', error);
+            throw new Error(error?.message || 'SNMP command failed');
+          }
+        } else {
+          res = await postLinuxCmd({ cmd });
+        }
+        if (!(res && res.response)) {
+          throw new Error(res?.message || 'Command failed');
+        }
+      }
+
+      alert('Settings saved and commands executed successfully.');
+      setApplyStatus('');
+      // Persist current form so it remains after navigation
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(form)); } catch {}
+    } catch (err) {
+      console.error(err);
+      alert(`Failed to apply settings: ${err.message || err}`);
+      setApplyStatus('');
+    }
+    finally {
+      setIsApplying(false);
+    }
+  };
+
+  const handleDownloadMib = async () => {
+    try {
+      const cmd = `set -e
+OUT="/tmp/vendor-mibs.mib"
+rm -f "$OUT" 2>/dev/null || true
+
+FOUND=0
+
+# 1) Direct known vendor paths first (handles files without extensions)
+for p in \
+  /usr/share/snmp/mibs/ASTERISK-MIB \
+  /usr/share/snmp/mibs/DIGIUM-MIB \
+  /usr/share/snmp/mibs/CLIXXO-GW-MIB \
+  /usr/share/snmp/mibs/RFC1213-MIB \
+  /usr/share/snmp/mibs/CLIXXO-GENERATED-MIB\
+  /usr/local/share/snmp/mibs/ASTERISK-MIB \
+  /usr/local/share/snmp/mibs/DIGIUM-MIB \
+  /usr/local/share/snmp/mibs/CLIXXO-GW-MIB \
+  /usr/local/share/snmp/mibs/RFC1213-MIB \
+  /usr/local/share/snmp/mibs/CLIXXO-GENERATED-MIB\
+  /etc/snmp/mibs/ASTERISK-MIB \
+  /etc/snmp/mibs/DIGIUM-MIB \
+  /etc/snmp/mibs/CLIXXO-GW-MIB\
+  /etc/snmp/mibs/RFC1213-MIB \
+  /etc/snmp/mibs/CLIXXO-GENERATED-MIB\
+do
+  if [ -f "$p" ]; then
+    echo "-- BEGIN $(basename \"$p\") --" >> "$OUT"; cat "$p" >> "$OUT"; echo "\n-- END $(basename \"$p\") --\n" >> "$OUT"; FOUND=1
+  elif [ -d "$p" ]; then
+    for f in "$p"/*; do [ -f "$f" ] && { echo "-- BEGIN $(basename \"$f\") --" >> "$OUT"; cat "$f" >> "$OUT"; echo "\n-- END $(basename \"$f\") --\n" >> "$OUT"; FOUND=1; }; done
+  fi
+done
+
+# 2) If still not found, fallback to search (busybox-safe)
+if [ $FOUND -eq 0 ]; then
+  for d in /usr/share/snmp/mibs /usr/local/share/snmp/mibs /etc/snmp/mibs /var/lib/snmp/mibs /etc/clixxo/mibs /opt; do
+    [ -d "$d" ] || continue
+    for name in ASTERISK-MIB DIGIUM-MIB CLIXXO-GW-MIB RFC1213-MIB CLIXXO-GENERATED-MIB; do
+      # try exact, then glob
+      if [ -f "$d/$name" ]; then
+        echo "-- BEGIN $name --" >> "$OUT"; cat "$d/$name" >> "$OUT"; echo "\n-- END $name --\n" >> "$OUT"; FOUND=1
+      else
+        for f in "$d"/${name}*; do
+          [ -f "$f" ] || continue
+          echo "-- BEGIN $(basename \"$f\") --" >> "$OUT"; cat "$f" >> "$OUT"; echo "\n-- END $(basename \"$f\") --\n" >> "$OUT"; FOUND=1
+        done
+      fi
+    done
+  done
+fi
+
+# 3) Generate and append CLIXXO Device Info MIB
+cat >> "$OUT" <<'MIBEOF'
+
+-- BEGIN CLIXXO-DEVICE-INFO-MIB --
+CLIXXO-DEVICE-INFO-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    enterprises
+        FROM RFC1155-SMI;
+
+clixxoDeviceInfo OBJECT IDENTIFIER ::= { enterprises 99999 }
+
+clixxoDeviceInfoTable OBJECT IDENTIFIER ::= { clixxoDeviceInfo 1 }
+
+-- Device Information from web_version.json
+clixxoSerialNumber OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "Device serial number from web_version.json"
+    ::= { clixxoDeviceInfoTable 1 }
+
+clixxoWebVersion OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "Web version from web_version.json"
+    ::= { clixxoDeviceInfoTable 2 }
+
+clixxoService OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "Service version/timestamp from web_version.json"
+    ::= { clixxoDeviceInfoTable 3 }
+
+clixxoUboot OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "Uboot version from web_version.json"
+    ::= { clixxoDeviceInfoTable 4 }
+
+clixxoKernel OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "Kernel version from web_version.json"
+    ::= { clixxoDeviceInfoTable 5 }
+
+clixxoFirmware OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "Firmware version from web_version.json"
+    ::= { clixxoDeviceInfoTable 6 }
+
+clixxoSipRegStatus OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "SIP registration status (Registered/Unregistered/Rejected)"
+    ::= { clixxoDeviceInfoTable 7 }
+
+clixxoPriStatus OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION "PRI/E1 port status (pri show spans)"
+    ::= { clixxoDeviceInfoTable 8 }
+
+END
+-- END CLIXXO-DEVICE-INFO-MIB --
+MIBEOF
+FOUND=1
+
+if [ $FOUND -eq 1 ] && [ -s "$OUT" ]; then
+  cat "$OUT"
+else
+  echo "ERROR=NOT_FOUND"
+fi`;
+
+      // Use longer timeout a bit for file read/concat but keep under 20s to avoid cancel
+      const response = await axiosInstance.post('/linuxcmd', { cmd }, { timeout: 20000 });
+      const out = String(response?.data?.responseData || '').trim();
+      if (out.includes('ERROR=NOT_FOUND') || out.length === 0) {
+        alert('No CLIXXO/ASTERISK/DIGIUM MIBs found. Ensure CLIXXO-GW-MIB, ASTERISK-MIB, DIGIUM-MIB, RFC1213-MIB or CLIXXO-GENERATED-MIB exist under /usr/share/snmp/mibs.');
+        return;
+      }
+
+      const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vendor-mibs.mib';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      const fallback = '# Failed to retrieve MIB file. Please try again.';
+      const blob = new Blob([fallback], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vendor-mibs.mib';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  return (
+    <div className="bg-gray-50 min-h-[calc(100vh-150px)] py-0 flex flex-col items-center" style={{ backgroundColor: '#dde0e4' }}>
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-xl text-gray-700 shadow mb-0">
+          Centralized Manage
+        </div>
+
+        <div className="border-2 border-gray-400 border-t-0 shadow-sm flex flex-col" style={{ backgroundColor: '#dde0e4' }}>
+          <div className="w-full max-w-3xl mx-auto">
+            <form onSubmit={handleSave} className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-4 px-2 md:px-8 py-6">
+              {CENTRALIZED_MANAGE_FIELDS.map((field) => {
+                if (field.name === 'monitoringPortValue') return null;
+                if (field.name === 'workingStatus') return null;
+                if (
+                  !form.notificationSetting &&
+                  ['trapServerPort', 'cpuUsage', 'memoryUsage', 'highCps', 'lowConnRate'].includes(field.name)
+                )
+                  return null;
+                if (field.conditional && form.managementPlatform === 'DCMS') return null;
+                if (field.dcmsOnly && form.managementPlatform !== 'DCMS') return null;
+
+                const isEditable = form.centralizedManage || field.name === 'authCode';
+
+                return (
+                  <React.Fragment key={field.name}>
+                    <div className="flex items-center text-gray-800 text-left pl-4 whitespace-nowrap min-h-[36px]" style={{ fontSize: '14px' }}>
+                      {field.label}
+                    </div>
+                    <div className="flex items-center min-h-[36px]">
+                      {field.name === 'monitoringPort' ? (
+                        <div className="flex items-center w-full">
+                          <input
+                            type="checkbox"
+                            checked={!!form.monitoringPort}
+                            onChange={handleChange}
+                            name="monitoringPort"
+                            disabled={!isEditable}
+                            className="w-4 h-4 accent-blue-600"
+                          />
+                          <TextField
+                            variant="outlined"
+                            size="small"
+                            type="text"
+                            name="monitoringPortValue"
+                            value={form.monitoringPortValue || '161'}
+                            onChange={handleChange}
+                            className="bg-white flex-1 ml-2"
+                            disabled={!isEditable || !form.monitoringPort}
+                          />
+                        </div>
+                      ) : field.type === 'checkbox' ? (
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={!!form[field.name]}
+                            onChange={handleChange}
+                            name={field.name}
+                            disabled={!form.centralizedManage && field.name !== 'centralizedManage'}
+                            className="w-4 h-4 accent-blue-600"
+                          />
+                          <span className="ml-1 text-gray-700" style={{ fontSize: '14px' }}>
+                            Enable
+                          </span>
+                        </div>
+                      ) : field.type === 'select' ? (
+                        <Select
+                          value={form[field.name]}
+                          onChange={handleChange}
+                          name={field.name}
+                          size="small"
+                          variant="outlined"
+                          className="w-full"
+                          disabled={!isEditable}
+                        >
+                          {(field.name === 'centralizedProtocol'
+                            ? CENTRALIZED_PROTOCOL_OPTIONS
+                            : field.name === 'snmpVersion'
+                            ? SNMP_VERSION_OPTIONS
+                            : MANAGEMENT_PLATFORM_OPTIONS
+                          ).map((opt) => (
+                            <MenuItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      ) : (
+                        <TextField
+                          variant="outlined"
+                          size="small"
+                          type="text"
+                          name={field.name}
+                          value={form[field.name] || ''}
+                          onChange={handleChange}
+                          disabled={!isEditable}
+                        />
+                      )}
+                    </div>
+                  </React.Fragment>
+                );
+              })}
+            </form>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-center gap-8 mt-8 w-full max-w-3xl mx-auto">
+          <Button variant="contained" sx={blueButtonSx} onClick={handleSave} disabled={isApplying}>
+            {isApplying ? 'Connecting…' : 'Save'}
+          </Button>
+          <Button variant="contained" sx={blueButtonSx} onClick={handleReset}>
+            Reset
+          </Button>
+          <Button variant="contained" sx={blueButtonSx} onClick={handleDownloadMib}>
+            {CENTRALIZED_MANAGE_BUTTONS[2].label}
+          </Button>
+        </div>
+        {isApplying && (
+          <div className="flex justify-center items-center gap-3 mt-4 text-gray-700">
+            <CircularProgress size={18} />
+            <span style={{ fontSize: 14 }}>{applyStatus || 'Applying…'}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CentralizedManage;

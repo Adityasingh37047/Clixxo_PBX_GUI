@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+/* Custom utility classes for responsive content containers */
+.content-container {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+}
+
+/* Responsive breakpoints for better content utilization */
+@media (min-width: 1024px) {
+  .content-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .content-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .content-container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+/* body, * {
+  font: 12px/1.5 arial, \5b8b\4f53, arial, \5FAE\8F6F\96C5\9ED1, tahoma, sans-serif ;
+} */
+
+/* Global background color for all pages */
+body, html {
+  background-color: #dde0e4 !important;
+}
+
+/* Ensure all main containers use the same background */
+.main-container, .page-container, .content-wrapper {
+  background-color: #dde0e4 !important;
+}
+
+/* Override common white/gray backgrounds with our custom color */
+.bg-gray-50, .bg-gray-100 {
+  background-color: #dde0e4 !important;
+}
+
+/* Keep white backgrounds for table cells and specific elements */
+.bg-white {
+  background-color: white !important;
+}
+
+/* Preserve blue gradient backgrounds */
+.bg-gradient-to-b {
+  background: linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%) !important;
+}
+
+/* Custom utility class for consistent background */
+.clixxo-bg {
+  background-color: #dde0e4 !important;
+}
+
+/* Override Material-UI Paper components */
+.MuiPaper-root {
+  background-color: #dde0e4 !important;
+}
+
+/* Override any div containers that might have white backgrounds, but allow table cells */
+div[style*="background-color: white"]:not(td):not(th):not(.table-cell),
+div[style*="background-color: #fff"]:not(td):not(th):not(.table-cell),
+div[style*="background-color: #ffffff"]:not(td):not(th):not(.table-cell) {
+  background-color: #dde0e4 !important;
+}
+
+/* Fade in up animation for alert messages */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Hide scrollbars but allow scrolling */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+ 
+ 
