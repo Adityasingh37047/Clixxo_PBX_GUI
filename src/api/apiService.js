@@ -14,6 +14,276 @@ export const listTrunkIds = async () => {
   }
 };
 
+// Conference API
+export const listConferences = async () => {
+  try {
+    const response = await axiosInstance.post('/conference', {
+      type: 'list',
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing conferences:', error.message);
+    throw error;
+  }
+};
+
+export const getConference = async (id) => {
+  try {
+    const response = await axiosInstance.post('/conference', {
+      type: 'get',
+      id: Number(id),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching conference:', error.message);
+    throw error;
+  }
+};
+
+export const createConference = async (data) => {
+  try {
+    const response = await axiosInstance.post('/conference', {
+      type: 'create',
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating conference:', error.message);
+    throw error;
+  }
+};
+
+export const updateConference = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/conference', {
+      type: 'update',
+      id: Number(id),
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating conference:', error.message);
+    throw error;
+  }
+};
+
+export const deleteConference = async (id) => {
+  try {
+    const response = await axiosInstance.post('/conference', {
+      type: 'delete',
+      id: Number(id),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting conference:', error.message);
+    throw error;
+  }
+};
+
+export const listConferenceExtensions = async () => {
+  try {
+    const response = await axiosInstance.post('/conference', {
+      type: 'list_extensions',
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing conference extensions:', error.message);
+    throw error;
+  }
+};
+
+export const listConferenceGreetingOptions = async () => {
+  try {
+    const response = await axiosInstance.post('/conference', {
+      type: 'list_greeting_options',
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing conference greeting options:', error.message);
+    throw error;
+  }
+};
+
+// Pickup Group API
+export const listPickupGroups = async () => {
+  try {
+    const response = await axiosInstance.post('/pickup-group', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing pickup groups:', error.message);
+    throw error;
+  }
+};
+
+export const listPickupGroupExtensions = async () => {
+  try {
+    const response = await axiosInstance.post('/pickup-group', { type: 'list_extensions' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing pickup group extensions:', error.message);
+    throw error;
+  }
+};
+
+export const createPickupGroup = async (name, members) => {
+  try {
+    const response = await axiosInstance.post('/pickup-group', {
+      type: 'create',
+      name,
+      members,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating pickup group:', error.message);
+    throw error;
+  }
+};
+
+export const updatePickupGroup = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/pickup-group', {
+      type: 'update',
+      id: Number(id),
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating pickup group:', error.message);
+    throw error;
+  }
+};
+
+export const deletePickupGroup = async (id) => {
+  try {
+    const response = await axiosInstance.post('/pickup-group', {
+      type: 'delete',
+      id: Number(id),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting pickup group:', error.message);
+    throw error;
+  }
+};
+
+// IVR API Functions
+export const listIvrs = async () => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'list',
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing IVRs:', error.message);
+    throw error;
+  }
+};
+
+export const getIvr = async (id) => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'get',
+      data: { id: Number(id) },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching IVR:', error.message);
+    throw error;
+  }
+};
+
+export const createIvr = async (data) => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'create',
+      data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating IVR:', error.message);
+    throw error;
+  }
+};
+
+export const updateIvr = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'update',
+      data: { id: Number(id), ...data },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating IVR:', error.message);
+    throw error;
+  }
+};
+
+export const deleteIvr = async (id) => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'delete',
+      data: { id: Number(id) },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting IVR:', error.message);
+    throw error;
+  }
+};
+
+export const getIvrKeys = async (id) => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'get_keys',
+      data: { id: Number(id) },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching IVR key actions:', error.message);
+    throw error;
+  }
+};
+
+export const setIvrKeys = async (id, keyActions) => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'set_keys',
+      data: {
+        id: Number(id),
+        key_actions: keyActions,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving IVR key actions:', error.message);
+    throw error;
+  }
+};
+
+export const listIvrDestinations = async () => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'list_destinations',
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing IVR destinations:', error.message);
+    throw error;
+  }
+};
+
+export const listIvrDirectOutboundOptions = async () => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'list_direct_outbound_options',
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing IVR direct outbound options:', error.message);
+    throw error;
+  }
+};
+
 export const addGroup = async (data) => {
   try {
     const response = await axiosInstance.post("/group", {

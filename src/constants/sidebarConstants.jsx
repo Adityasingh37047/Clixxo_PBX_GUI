@@ -99,6 +99,9 @@ export const SIDEBAR_SECTIONS = [
       { id: 'callFeaturesCallBack', title: 'CallBack', path: '/call-features/callback' },
       { id: 'callFeaturesOriginateCall', title: 'Originate Call', path: '/call-features/originate-call' },
       { id: 'callFeaturesIVR', title: 'IVR', path: '/call-features/ivr' },
+      { id: 'callFeaturesConference', title: 'Conference', path: ROUTE_PATHS.CONFERENCE },
+      { id: 'callFeaturesPickupGroup', title: 'Pickup Group', path: '/call-features/pickup-group' },
+      { id: 'callFeaturesRingGroup', title: 'Ring Group', path: '/call-features/ring-group' },
     ]
   },
   {

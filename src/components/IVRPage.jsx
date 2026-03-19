@@ -11,9 +11,15 @@ import {
   MenuItem,
   Select,
 } from '@mui/material';
-import { listSipRegistrations } from '../api/apiService';
-
-const IVR_STORAGE_KEY = 'ivrRoutesRows';
+import {
+  listIvrDirectOutboundOptions,
+  listIvrDestinations,
+  listIvrs,
+  createIvr,
+  updateIvr,
+  deleteIvr,
+  fetchSipAccounts,
+} from '../api/apiService';
 
 const ENABLE_OPTIONS = ['Yes', 'No'];
 const CHECK_VOICEMAIL_OPTIONS = ['Disable', 'Enable'];
@@ -59,47 +65,14 @@ const RINGBACK_OPTIONS = [
   'us-ring',
 ];
 
-const DESTINATION_OPTIONS = [
-  'Call Queue',
-  'CallBacks',
-  'Conference Rooms',
-  'DISA',
-  'Extensions',
-  'Fax To Mail',
-  'IVR',
-  'Ring Groups',
-  'Voicemails',
-  'Other',
-  'Custom',
-  'Dial By Name',
-];
-
 const KEYS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'];
 
-function loadStoredRows() {
-  try {
-    const raw = localStorage.getItem(IVR_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveStoredRows(rows) {
-  try {
-    localStorage.setItem(IVR_STORAGE_KEY, JSON.stringify(rows));
-  } catch {
-    // ignore
-  }
-}
-
 const IVRPage = () => {
-  const [rows, setRows] = useState(() => loadStoredRows());
+  const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('basic'); // 'basic' | 'keypress'
-  const [loading, setLoading] = useState({ save: false, delete: false, trunks: false });
+  const [loading, setLoading] = useState({ save: false, delete: false, trunks: false, list: false });
   const hasLoadedTrunksRef = useRef(false);
 
   // Basic tab state
@@ -139,34 +112,110 @@ const IVRPage = () => {
     return obj;
   });
 
+  const [keyDestinationValues, setKeyDestinationValues] = useState(() => {
+    const obj = {};
+    KEYS.forEach((k) => {
+      obj[k] = '';
+    });
+    return obj;
+  });
+
+  // Exit action
+  const [exitActionType, setExitActionType] = useState('');
+  const [exitActionValue, setExitActionValue] = useState('');
+
+  const [destinationOptions, setDestinationOptions] = useState([]);
+  const [destinationMap, setDestinationMap] = useState({});
+  const [extensionOptions, setExtensionOptions] = useState([]);
+
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
   const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   useEffect(() => {
-    saveStoredRows(rows);
     setPage((current) => Math.min(Math.max(1, current), Math.max(1, Math.ceil(rows.length / itemsPerPage))));
   }, [rows]);
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setLoading((prev) => ({ ...prev, list: true }));
+      try {
+        // IVR list
+        const ivrRes = await listIvrs();
+        const ivrList = Array.isArray(ivrRes?.message) ? ivrRes.message : Array.isArray(ivrRes?.data) ? ivrRes.data : [];
+        const normalized = ivrList.map((item) => ({
+          id: item.id,
+          name: item.name,
+          ivrNumber: item.ivr_number,
+          greetLong: item.greet_long,
+          greetShort: item.greet_short,
+          responseTimeout: String(item.response_timeout_ms),
+          password: item.password || '',
+          checkVoicemail: item.check_voicemail ? 'Enable' : 'Disable',
+          directOutbound: !!item.direct_outbound,
+          interDigitTimeout: String(item.inter_digit_timeout_ms),
+          maxFailures: String(item.max_failures),
+          maxTimeouts: String(item.max_timeouts),
+          digitLength: String(item.digit_length),
+          enabled: item.enabled ? 'Yes' : 'No',
+          directExtension: item.direct_extension ? 'Enable' : 'Disable',
+          fxoFlashTransfer: item.fxo_flash_transfer ? 'Enable' : 'Disable',
+          invalidSound: item.invalid_sound || 'Default',
+          exitSound: item.exit_sound || 'Default',
+          exitActionType: item.exit_action_type || '',
+          exitActionValue: item.exit_action_value || '',
+          ringBack: item.ring_back || 'default',
+          callerIdNamePrefix: item.callerid_prefix || '',
+          memberTrunks: Array.isArray(item.direct_outbound_trunks) ? item.direct_outbound_trunks.map(String) : [],
+        }));
+        setRows(normalized);
+
+        // Destination options (queues, IVRs, etc.)
+        const destRes = await listIvrDestinations();
+        const destMessage = destRes?.message || destRes?.data || destRes;
+        if (destMessage && typeof destMessage === 'object') {
+          setDestinationMap(destMessage);
+          setDestinationOptions(Object.keys(destMessage));
+        }
+
+        // Extensions from PJSIP (for Extensions/Voicemails/FaxToMail)
+        try {
+          const sipRes = await fetchSipAccounts();
+          const sipList = Array.isArray(sipRes?.message) ? sipRes.message : Array.isArray(sipRes?.data) ? sipRes.data : [];
+          const extList = sipList
+            .filter((e) => e && e.extension)
+            .map((e) => ({
+              extension: String(e.extension),
+              display_name: e.display_name || e.name || '',
+            }));
+          setExtensionOptions(extList);
+        } catch (innerErr) {
+          // If this fails, just leave extensionOptions empty; core IVR still works
+          console.error('Failed to load SIP extensions for IVR destinations:', innerErr);
+          setExtensionOptions([]);
+        }
+      } catch (err) {
+        showAlert(err?.message || 'Failed to load IVR data.');
+      } finally {
+        setLoading((prev) => ({ ...prev, list: false }));
+      }
+    };
+    fetchInitialData();
+  }, []);
 
   const showAlert = (text) => window.alert(text);
 
   const loadTrunks = async () => {
     setLoading((prev) => ({ ...prev, trunks: true }));
     try {
-      const res = await listSipRegistrations();
+      const res = await listIvrDirectOutboundOptions();
       const raw = res?.message ?? res?.data ?? res;
       const list = Array.isArray(raw) ? raw : [];
       const trunks = list
         .map((t) => {
-          const id = t?.trunkId || t?.trunk_id || t?.id || t;
-          const nameVal = t?.name || t?.trunk_name || '';
-          const host = t?.host || t?.sip_server || '';
-          let label = '';
-          if (nameVal && host) label = `${nameVal}@${host}`;
-          else if (nameVal) label = nameVal;
-          else if (host) label = host;
-          else label = String(id || '');
+          const id = t?.id || t?.trunk_id || t?.trunkId || t;
+          const label = t?.label || t?.name || t?.trunk_name || String(id || '');
           return { id: String(id), label: label || String(id || '') };
         })
         .filter((t) => t.id);
@@ -199,6 +248,8 @@ const IVRPage = () => {
     setFxoFlashTransfer('Disable');
     setInvalidSound('Default');
     setExitSound('Default');
+    setExitActionType('');
+    setExitActionValue('');
     setRingBack('default');
     setCallerIdNamePrefix('');
     setSelectedTrunks([]);
@@ -209,6 +260,11 @@ const IVRPage = () => {
       obj[k] = '';
     });
     setKeyDestinations(obj);
+    const objVals = {};
+    KEYS.forEach((k) => {
+      objVals[k] = '';
+    });
+    setKeyDestinationValues(objVals);
     setActiveTab('basic');
   };
 
@@ -239,6 +295,8 @@ const IVRPage = () => {
     setFxoFlashTransfer(row.fxoFlashTransfer || 'Disable');
     setInvalidSound(row.invalidSound || 'Default');
     setExitSound(row.exitSound || 'Default');
+    setExitActionType(row.exitActionType || '');
+    setExitActionValue(row.exitActionValue || '');
     setRingBack(row.ringBack || 'default');
     setCallerIdNamePrefix(row.callerIdNamePrefix || '');
     setSelectedTrunks(Array.isArray(row.memberTrunks) ? row.memberTrunks : []);
@@ -313,12 +371,47 @@ const IVRPage = () => {
       return;
     }
     setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      setRows((prev) => prev.filter((_, idx) => !selected.includes(idx)));
-      setSelected([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
+    (async () => {
+      try {
+        const rowsToDelete = rows.filter((_, idx) => selected.includes(idx));
+        for (const row of rowsToDelete) {
+          if (row.id != null) {
+            await deleteIvr(row.id);
+          }
+        }
+        const ivrRes = await listIvrs();
+        const ivrList = Array.isArray(ivrRes?.message) ? ivrRes.message : Array.isArray(ivrRes?.data) ? ivrRes.data : [];
+        const normalized = ivrList.map((item) => ({
+          id: item.id,
+          name: item.name,
+          ivrNumber: item.ivr_number,
+          greetLong: item.greet_long,
+          greetShort: item.greet_short,
+          responseTimeout: String(item.response_timeout_ms),
+          password: item.password || '',
+          checkVoicemail: item.check_voicemail ? 'Enable' : 'Disable',
+          directOutbound: !!item.direct_outbound,
+          interDigitTimeout: String(item.inter_digit_timeout_ms),
+          maxFailures: String(item.max_failures),
+          maxTimeouts: String(item.max_timeouts),
+          digitLength: String(item.digit_length),
+          enabled: item.enabled ? 'Yes' : 'No',
+          directExtension: item.direct_extension ? 'Enable' : 'Disable',
+          fxoFlashTransfer: item.fxo_flash_transfer ? 'Enable' : 'Disable',
+          invalidSound: item.invalid_sound || 'Default',
+          exitSound: item.exit_sound || 'Default',
+          ringBack: item.ring_back || 'default',
+          callerIdNamePrefix: item.callerid_prefix || '',
+          memberTrunks: Array.isArray(item.direct_outbound_trunks) ? item.direct_outbound_trunks.map(String) : [],
+        }));
+        setRows(normalized);
+        setSelected([]);
+      } catch (err) {
+        showAlert(err?.message || 'Failed to delete IVR(s).');
+      } finally {
+        setLoading((prev) => ({ ...prev, delete: false }));
+      }
+    })();
   };
 
   const handleSave = () => {
@@ -332,47 +425,253 @@ const IVRPage = () => {
       return;
     }
 
-    const payload = {
-      id: editId ?? Date.now(),
+    // Validation based on backend rules
+    if (!/^[A-Za-z0-9_]+$/.test(trimmedName)) {
+      showAlert('Name may contain only letters, numbers, and underscore.');
+      return;
+    }
+
+    const ivrNumInt = parseInt(ivrNumber.trim(), 10);
+    if (Number.isNaN(ivrNumInt) || ivrNumInt < 6500 || ivrNumInt > 6599) {
+      showAlert('IVR Number must be an integer between 6500 and 6599.');
+      return;
+    }
+
+    const respTimeoutInt = parseInt(responseTimeout, 10);
+    if (Number.isNaN(respTimeoutInt) || respTimeoutInt < 1000 || respTimeoutInt > 60000) {
+      showAlert('Response Timeout must be between 1000 and 60000 ms.');
+      return;
+    }
+
+    const interDigitInt = parseInt(interDigitTimeout, 10);
+    if (Number.isNaN(interDigitInt) || interDigitInt < 500 || interDigitInt > 10000) {
+      showAlert('Inter-Digit Timeout must be between 500 and 10000 ms.');
+      return;
+    }
+
+    const digitLengthInt = parseInt(digitLength, 10);
+    if (Number.isNaN(digitLengthInt) || digitLengthInt < 1 || digitLengthInt > 20) {
+      showAlert('Digit Length must be between 1 and 20.');
+      return;
+    }
+
+    const payloadForApi = {
       name: trimmedName,
-      ivrNumber: ivrNumber.trim(),
-      greetLong,
-      greetShort,
-      responseTimeout,
-      password,
-      checkVoicemail,
-      directOutbound,
-      interDigitTimeout,
-      maxFailures,
-      maxTimeouts,
-      digitLength,
-      enabled,
-      directExtension,
-      fxoFlashTransfer,
-      invalidSound,
-      exitSound,
-      ringBack,
-      callerIdNamePrefix,
-      memberTrunks: [...selectedTrunks],
-      keyDestinations: { ...keyDestinations },
+      ivr_number: ivrNumInt,
+      greet_long: greetLong.toLowerCase(),
+      greet_short: greetShort.toLowerCase(),
+      response_timeout_ms: respTimeoutInt,
+      password: password || undefined,
+      check_voicemail: checkVoicemail === 'Enable',
+      direct_outbound: !!directOutbound,
+      inter_digit_timeout_ms: interDigitInt,
+      max_failures: parseInt(maxFailures, 10) || 3,
+      max_timeouts: parseInt(maxTimeouts, 10) || 3,
+      digit_length: digitLengthInt,
+      enabled: enabled === 'Yes',
+      direct_extension: directExtension === 'Enable',
+      fxo_flash_transfer: fxoFlashTransfer === 'Enable',
+      invalid_sound: invalidSound.toLowerCase(),
+      exit_sound: exitSound.toLowerCase(),
+      ring_back: ringBack,
+      callerid_prefix: callerIdNamePrefix || undefined,
+      exit_action_type: exitActionType || null,
+      exit_action_value: exitActionType ? exitActionValue || null : null,
+      direct_outbound_trunks: directOutbound ? selectedTrunks.map((t) => String(t)) : [],
     };
 
     setLoading((prev) => ({ ...prev, save: true }));
-    try {
-      setRows((prev) => {
+    (async () => {
+      try {
         if (editId != null) {
-          return prev.map((row) => (row.id === editId ? payload : row));
+          await updateIvr(editId, payloadForApi);
+        } else {
+          await createIvr(payloadForApi);
         }
-        return [...prev, payload];
-      });
-      handleCloseModal();
-    } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
-    }
+
+        const ivrRes = await listIvrs();
+        const ivrList = Array.isArray(ivrRes?.message) ? ivrRes.message : Array.isArray(ivrRes?.data) ? ivrRes.data : [];
+        const normalized = ivrList.map((item) => ({
+          id: item.id,
+          name: item.name,
+          ivrNumber: item.ivr_number,
+          greetLong: item.greet_long,
+          greetShort: item.greet_short,
+          responseTimeout: String(item.response_timeout_ms),
+          password: item.password || '',
+          checkVoicemail: item.check_voicemail ? 'Enable' : 'Disable',
+          directOutbound: !!item.direct_outbound,
+          interDigitTimeout: String(item.inter_digit_timeout_ms),
+          maxFailures: String(item.max_failures),
+          maxTimeouts: String(item.max_timeouts),
+          digitLength: String(item.digit_length),
+          enabled: item.enabled ? 'Yes' : 'No',
+          directExtension: item.direct_extension ? 'Enable' : 'Disable',
+          fxoFlashTransfer: item.fxo_flash_transfer ? 'Enable' : 'Disable',
+          invalidSound: item.invalid_sound || 'Default',
+          exitSound: item.exit_sound || 'Default',
+          ringBack: item.ring_back || 'default',
+          callerIdNamePrefix: item.callerid_prefix || '',
+          memberTrunks: Array.isArray(item.direct_outbound_trunks) ? item.direct_outbound_trunks.map(String) : [],
+        }));
+        setRows(normalized);
+        handleCloseModal();
+      } catch (err) {
+        showAlert(err?.message || 'Failed to save IVR.');
+      } finally {
+        setLoading((prev) => ({ ...prev, save: false }));
+      }
+    })();
   };
 
   const handleKeyDestinationChange = (key, value) => {
     setKeyDestinations((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleKeyDestinationValueChange = (key, value) => {
+    setKeyDestinationValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const actionTypeOptions = [
+    'CallQueue',
+    'Callbacks',
+    'ConferenceRooms',
+    'DISA',
+    'Extensions',
+    'FaxToMail',
+    'IVR',
+    'RingGroups',
+    'Voicemails',
+    'Custom',
+    'FlashCustom',
+    'Other',
+  ];
+
+  const formatActionLabel = (type) => {
+    if (!type) return '';
+    switch (type) {
+      case 'CallQueue':
+        return 'Call Queue';
+      case 'Callbacks':
+        return 'CallBacks';
+      case 'ConferenceRooms':
+        return 'Conference Rooms';
+      case 'FaxToMail':
+        return 'Fax To Mail';
+      case 'RingGroups':
+        return 'Ring Groups';
+      case 'FlashCustom':
+        return 'Flash Custom';
+      default:
+        return type;
+    }
+  };
+
+  const getDestinationListForType = (type) => {
+    if (!type) return [];
+
+    // For Extensions/Voicemails/FaxToMail use PJSIP list directly
+    if (type === 'Extensions' || type === 'Voicemails' || type === 'FaxToMail') {
+      return extensionOptions || [];
+    }
+
+    if (!destinationMap) return [];
+    const list = destinationMap[type];
+    return Array.isArray(list) ? list : [];
+  };
+
+  const renderDestinationSelect = (type, value, onChange) => {
+    if (!type) {
+      return (
+        <input
+          className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
+          value=""
+          disabled
+          readOnly
+        />
+      );
+    }
+
+    if (type === 'Custom' || type === 'FlashCustom') {
+      return (
+        <input
+          className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    }
+
+    if (type === 'Other') {
+      const options = ['Hangup', 'Hold Music'];
+      return (
+        <FormControl size="small" fullWidth>
+          <Select
+            value={value || ''}
+            displayEmpty
+            onChange={(e) => onChange(e.target.value)}
+            renderValue={(v) => (v ? v : 'Select option')}
+          >
+            <MenuItem value="">
+              <em>Select option</em>
+            </MenuItem>
+            {options.map((opt) => (
+              <MenuItem key={opt} value={opt}>
+                {opt}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      );
+    }
+
+    const list = getDestinationListForType(type);
+
+    return (
+      <FormControl size="small" fullWidth>
+        <Select
+          value={value || ''}
+          displayEmpty
+          onChange={(e) => onChange(e.target.value)}
+          renderValue={(v) => (v ? v : 'Select destination')}
+        >
+          <MenuItem value="">
+            <em>Select destination</em>
+          </MenuItem>
+          {(!list || list.length === 0) && (
+            <MenuItem value="" disabled>
+              No options available
+            </MenuItem>
+          )}
+          {list &&
+            list.map((item, idx) => {
+              let optionValue = '';
+              let label = '';
+
+              if (type === 'Extensions' || type === 'Voicemails' || type === 'FaxToMail') {
+                optionValue = String(item.extension ?? '');
+                label = `${item.extension ?? ''}${item.display_name ? ` - ${item.display_name}` : ''}`;
+              } else if (type === 'IVR') {
+                optionValue = String(item.id ?? '');
+                label = `${item.ivr_number ?? ''}${item.name ? ` - ${item.name}` : ''}`;
+              } else {
+                optionValue = String(item.id ?? item.extension ?? '');
+                label = item.display_name || item.name || optionValue;
+              }
+
+              if (!optionValue) {
+                optionValue = `idx-${idx}`;
+              }
+
+              return (
+                <MenuItem key={optionValue} value={optionValue}>
+                  {label}
+                </MenuItem>
+              );
+            })}
+        </Select>
+      </FormControl>
+    );
   };
 
   return (
@@ -544,7 +843,7 @@ const IVRPage = () => {
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: 1000, maxWidth: '98vw', mx: 'auto', p: 0 },
+          sx: { width: 880, maxWidth: '96vw', mx: 'auto', p: 0 },
         }}
       >
         <DialogTitle
@@ -585,17 +884,17 @@ const IVRPage = () => {
           </div>
 
           {activeTab === 'basic' ? (
-            <div className="pt-3 pb-2 px-2">
+            <div className="pt-3 pb-2 px-3">
               <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
                 <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
                   Basic
                 </div>
-                <div className="p-4 flex flex-col gap-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3">
+                <div className="px-3 py-3 flex flex-col gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                     {/* Left column */}
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Name <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -605,8 +904,8 @@ const IVRPage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           IVR Number <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -616,8 +915,8 @@ const IVRPage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Greet Long
                         </label>
                         <div className="flex-1 flex items-center gap-2">
@@ -636,8 +935,8 @@ const IVRPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Greet Short
                         </label>
                         <div className="flex-1 flex items-center gap-2">
@@ -656,8 +955,8 @@ const IVRPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Response Timeout (ms) <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -667,8 +966,8 @@ const IVRPage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Password
                         </label>
                         <input
@@ -679,8 +978,8 @@ const IVRPage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Check Voicemail <span className="text-red-500">*</span>
                         </label>
                         <div className="flex-1">
@@ -696,8 +995,8 @@ const IVRPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Direct Outbound
                         </label>
                         <input
@@ -710,7 +1009,7 @@ const IVRPage = () => {
 
                       {/* Member Trunks directly under Direct Outbound when enabled */}
                       {directOutbound && (
-                        <div className="flex flex-col gap-2 mt-2">
+                        <div className="flex flex-col gap-2 mt-1">
                           <label className="text-[14px] text-gray-700 font-medium">Member Trunks</label>
                           <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                             <div>
@@ -823,8 +1122,8 @@ const IVRPage = () => {
 
                     {/* Right column */}
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           Inter-Digit Timeout (ms) <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -834,8 +1133,8 @@ const IVRPage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           Max Failures <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -845,8 +1144,8 @@ const IVRPage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           Max Timeouts <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -856,8 +1155,8 @@ const IVRPage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           Digit Length <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -867,8 +1166,8 @@ const IVRPage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           Enabled <span className="text-red-500">*</span>
                         </label>
                         <div className="flex-1">
@@ -884,8 +1183,8 @@ const IVRPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           Direct Extension <span className="text-red-500">*</span>
                         </label>
                         <div className="flex-1">
@@ -901,8 +1200,8 @@ const IVRPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           FXO Flash Transfer <span className="text-red-500">*</span>
                         </label>
                         <div className="flex-1">
@@ -921,11 +1220,11 @@ const IVRPage = () => {
                   </div>
 
                   {/* Advanced section */}
-                  <div className="mt-2 border-t pt-3">
+                  <div className="mt-2 border-t pt-2">
                     <div className="text-[13px] font-semibold text-gray-700 mb-3">Advanced</div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3">
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Invalid Sound
                         </label>
                         <div className="flex-1">
@@ -941,8 +1240,8 @@ const IVRPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           Ring Back
                         </label>
                         <div className="flex-1">
@@ -958,8 +1257,8 @@ const IVRPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
                           Exit Sound
                         </label>
                         <div className="flex-1">
@@ -975,8 +1274,39 @@ const IVRPage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                      <div className="flex items-center gap-2 md:col-span-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 150, marginRight: 8 }}>
+                          Exit Action
+                        </label>
+                        <div className="flex-1 flex flex-col md:flex-row gap-2">
+                          <FormControl size="small" sx={{ minWidth: 140, width: '100%', maxWidth: 220 }}>
+                            <Select
+                              value={exitActionType || ''}
+                              displayEmpty
+                              onChange={(e) => {
+                                setExitActionType(e.target.value);
+                                setExitActionValue('');
+                              }}
+                              renderValue={(value) => (value ? formatActionLabel(value) : 'Select action')}
+                            >
+                              <MenuItem value="">
+                                <em>Select action</em>
+                              </MenuItem>
+                              {actionTypeOptions.map((opt) => (
+                                <MenuItem key={opt} value={opt}>
+                                  {formatActionLabel(opt)}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          <div className="w-full md:flex-1">
+                            {renderDestinationSelect(exitActionType, exitActionValue, setExitActionValue)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>
                           Caller ID Name Prefix
                         </label>
                         <input
@@ -1002,30 +1332,40 @@ const IVRPage = () => {
                     <div className="text-[13px] font-semibold text-gray-700 mb-1 md:col-span-2 flex">
                       <span className="w-40">Option</span>
                       <span className="flex-1">Destination</span>
+                      <span className="flex-1">Target</span>
                     </div>
                     {KEYS.map((key) => (
                       <React.Fragment key={key}>
                         <div className="flex items-center text-[14px] text-gray-700">
                           <span className="w-40">Option Digit {key}:</span>
                         </div>
-                        <div className="flex items-center">
-                          <FormControl size="small" fullWidth>
+                        <div className="flex items-center gap-2">
+                          <FormControl size="small" className="flex-1">
                             <Select
                               value={keyDestinations[key] || ''}
                               displayEmpty
-                              onChange={(e) => handleKeyDestinationChange(key, e.target.value)}
-                              renderValue={(value) => (value ? value : 'Select destination')}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                handleKeyDestinationChange(key, value);
+                                handleKeyDestinationValueChange(key, '');
+                              }}
+                              renderValue={(value) => (value ? formatActionLabel(value) : 'Select destination')}
                             >
                               <MenuItem value="">
                                 <em>Select destination</em>
                               </MenuItem>
-                              {DESTINATION_OPTIONS.map((opt) => (
+                              {actionTypeOptions.map((opt) => (
                                 <MenuItem key={opt} value={opt}>
-                                  {opt}
+                                  {formatActionLabel(opt)}
                                 </MenuItem>
                               ))}
                             </Select>
                           </FormControl>
+                          <div className="flex-1">
+                            {renderDestinationSelect(keyDestinations[key], keyDestinationValues[key], (val) =>
+                              handleKeyDestinationValueChange(key, val)
+                            )}
+                          </div>
                         </div>
                       </React.Fragment>
                     ))}

@@ -1,0 +1,1 @@
+export const PICKUP_GROUP_ITEMS_PER_PAGE = 20;

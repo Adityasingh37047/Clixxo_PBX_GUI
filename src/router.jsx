@@ -97,6 +97,9 @@ import Restart from './components/Restart';
 import Licence from './components/Licence';
 import SystemToolsSqlUpload from './components/SystemToolsSqlUpload';
 import Hosts from './components/Hosts';
+import ConferencePage from './components/ConferencePage';
+import PickupGroup from './components/PickupGroup';
+import RingGroup from './components/RingGroup';
 
 
 // Error Boundary Component
@@ -253,9 +256,12 @@ export const router = createBrowserRouter([
       { path: '/call-features/callback', element: <CallBackPage /> },
       { path: '/call-features/originate-call', element: <OriginateCallPage /> },
       { path: '/call-features/ivr', element: <IVRPage /> },
+      { path: ROUTE_PATHS.CONFERENCE, element: <ConferencePage /> },
+      { path: '/call-features/pickup-group', element: <PickupGroup /> },
       { path: '/call-control/cc-route', element: <CCRoutePage /> },
       { path: '/call-control/inbound-routes', element: <InboundRoutesPage /> },
       { path: '/pbx-status/active-calls', element: <ActiveCallsPage /> },
+      { path: '/call-features/ring-group', element: <RingGroup /> },
       {
         path: '/pcm/status',
         element: <PcmStatusPage />,
