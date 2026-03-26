@@ -11,9 +11,17 @@ import {
   MenuItem,
   Select,
 } from '@mui/material';
-import { listSipRegistrations } from '../api/apiService';
-
-const INBOUND_ROUTES_STORAGE_KEY = 'inboundRoutesRows';
+import {
+  createInboundRoute,
+  deleteInboundRoute,
+  fetchSipAccounts,
+  listInboundRoutes,
+  listConferences,
+  listIvrs,
+  listRingGroups,
+  listSipRegistrations,
+  updateInboundRoute,
+} from '../api/apiService';
 
 const ENABLE_OPTIONS = ['Yes', 'No'];
 const T38_OPTIONS = ['Yes', 'No'];
@@ -35,29 +43,59 @@ const DESTINATION_OPTIONS = [
   'Other',
 ];
 
-function loadStoredRows() {
-  try {
-    const raw = localStorage.getItem(INBOUND_ROUTES_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
+const DEST_TYPE_TO_UI = {
+  extensions: 'Extensions',
+  voicemail: 'Voicemails',
+  fax_to_email: 'Fax To Mail',
+  ring_group: 'Ring Groups',
+  conference: 'Conference Rooms',
+  ivr_menu: 'IVR Menus',
+  extension_range: 'Extension_Range',
+  other: 'Other',
+  call_queue: 'Call Queue',
+  callbacks: 'CallBacks',
+  disa: 'DISA',
+};
 
-function saveStoredRows(rows) {
-  try {
-    localStorage.setItem(INBOUND_ROUTES_STORAGE_KEY, JSON.stringify(rows));
-  } catch {
-    // ignore
-  }
-}
+const UI_TO_DEST_TYPE = {
+  Extensions: 'extensions',
+  Voicemails: 'voicemail',
+  'Fax To Mail': 'fax_to_email',
+  'Ring Groups': 'ring_group',
+  'Conference Rooms': 'conference',
+  'IVR Menus': 'ivr_menu',
+  Extension_Range: 'extension_range',
+  Other: 'other',
+  'Call Queue': 'call_queue',
+  CallBacks: 'callbacks',
+  DISA: 'disa',
+};
+
+const OTHER_DESTINATION_OPTIONS = ['Hangup', 'Hold Music'];
+const DESTINATION_NEEDS_EXTENSION = new Set(['Extensions', 'Fax To Mail', 'Voicemails']);
+const DESTINATION_NEEDS_TARGET = new Set([
+  'Extensions',
+  'Fax To Mail',
+  'Voicemails',
+  'Conference Rooms',
+  'Ring Groups',
+  'IVR Menus',
+  'Other',
+]);
+const SELECT_MENU_PROPS = {
+  PaperProps: {
+    sx: {
+      maxHeight: 260,
+      maxWidth: '90vw',
+    },
+  },
+};
 
 const InboundRoutesPage = () => {
-  const [rows, setRows] = useState(() => loadStoredRows());
+  const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({ save: false, delete: false, trunks: false });
+  const [loading, setLoading] = useState({ list: false, save: false, delete: false, trunks: false });
   const hasLoadedTrunksRef = useRef(false);
 
   const [editId, setEditId] = useState(null);
@@ -67,11 +105,19 @@ const InboundRoutesPage = () => {
   const [distinctiveRingTone, setDistinctiveRingTone] = useState('');
   const [enableT38, setEnableT38] = useState('No');
   const [enableTimeCondition, setEnableTimeCondition] = useState('No');
-  const [destination, setDestination] = useState('Call Queue');
+  const [destination, setDestination] = useState('');
   const [enabled, setEnabled] = useState('Yes');
   const [priority, setPriority] = useState('102');
   const [enableMobilityExtension, setEnableMobilityExtension] = useState('No');
   const [sendRingTone, setSendRingTone] = useState('Remote');
+  const [destinationTarget, setDestinationTarget] = useState('');
+  const [extensionRange, setExtensionRange] = useState('');
+
+  const [availableExtensions, setAvailableExtensions] = useState([]);
+  const [availableConferences, setAvailableConferences] = useState([]);
+  const [availableRingGroups, setAvailableRingGroups] = useState([]);
+  const [availableIvrs, setAvailableIvrs] = useState([]);
+  const hasLoadedDestinationDataRef = useRef(false);
 
   const [availableTrunks, setAvailableTrunks] = useState([]);
   const [selectedTrunks, setSelectedTrunks] = useState([]);
@@ -84,11 +130,75 @@ const InboundRoutesPage = () => {
   const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   useEffect(() => {
-    saveStoredRows(rows);
     setPage((current) => Math.min(Math.max(1, current), Math.max(1, Math.ceil(rows.length / itemsPerPage))));
   }, [rows]);
 
   const showAlert = (text) => window.alert(text);
+
+  const toUiYesNo = (value, defaultValue = 'No') => {
+    if (typeof value === 'string') {
+      const normalized = value.toLowerCase();
+      if (normalized === 'yes') return 'Yes';
+      if (normalized === 'no') return 'No';
+    }
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    return defaultValue;
+  };
+
+  const toApiYesNo = (value, defaultValue = 'no') => {
+    const normalized = String(value || '').toLowerCase();
+    if (normalized === 'yes') return 'yes';
+    if (normalized === 'no') return 'no';
+    return defaultValue;
+  };
+
+  const mapDestTypeToUi = (destType) => DEST_TYPE_TO_UI[String(destType || '').toLowerCase()] || '';
+  const mapUiToDestType = (uiDest) => UI_TO_DEST_TYPE[uiDest] || 'call_queue';
+
+  const mapRouteFromApi = (item) => {
+    const uiDestination = mapDestTypeToUi(item?.dest_type);
+    const rawDestValue = item?.dest_value != null ? String(item.dest_value) : '';
+    return {
+      id: item?.id,
+      name: String(item?.name || ''),
+      didPattern: String(item?.did_pattern || ''),
+      callerIdPattern: String(item?.callerid_pattern || ''),
+      distinctiveRingTone: String(item?.distinctive_ringtone || ''),
+      enableT38: toUiYesNo(item?.enable_t38, 'No'),
+      enableTimeCondition: toUiYesNo(item?.enable_time_condition, 'No'),
+      destination: uiDestination,
+      destinationTarget: uiDestination === 'Extension_Range' ? '' : rawDestValue,
+      extensionRange: uiDestination === 'Extension_Range' ? rawDestValue : '',
+      memberTrunks: Array.isArray(item?.member_trunks) ? item.member_trunks.map(String) : [],
+      enabled: toUiYesNo(item?.enabled, 'Yes'),
+      priority: String(item?.priority ?? '100'),
+      enableMobilityExtension: toUiYesNo(item?.enable_mobility_ext, 'No'),
+      sendRingTone: String(item?.send_ringtone || 'Remote'),
+    };
+  };
+
+  const fetchInboundRoutes = async () => {
+    setLoading((prev) => ({ ...prev, list: true }));
+    try {
+      const res = await listInboundRoutes();
+      if (!res?.response) {
+        showAlert(res?.message || 'Failed to load inbound routes.');
+        setRows([]);
+        return;
+      }
+      const list = Array.isArray(res?.message) ? res.message : res?.message ? [res.message] : [];
+      setRows(list.map(mapRouteFromApi));
+    } catch (err) {
+      showAlert(err?.message || 'Failed to load inbound routes.');
+      setRows([]);
+    } finally {
+      setLoading((prev) => ({ ...prev, list: false }));
+    }
+  };
+
+  useEffect(() => {
+    fetchInboundRoutes();
+  }, []);
 
   const loadTrunks = async () => {
     setLoading((prev) => ({ ...prev, trunks: true }));
@@ -119,6 +229,95 @@ const InboundRoutesPage = () => {
     }
   };
 
+  const normalizeList = (raw) => {
+    const list = raw?.message ?? raw?.data ?? raw;
+    return Array.isArray(list) ? list : [];
+  };
+
+  const loadDestinationData = async () => {
+    try {
+      const [extensionsRes, conferencesRes, ringGroupsRes, ivrsRes] = await Promise.allSettled([
+        fetchSipAccounts(),
+        listConferences(),
+        listRingGroups(),
+        listIvrs(),
+      ]);
+
+      const toOption = (id, label) => ({ id: String(id ?? ''), label: String(label ?? id ?? '') });
+
+      if (extensionsRes.status === 'fulfilled') {
+        const list = normalizeList(extensionsRes.value)
+          .map((item) => {
+            const ext = item?.extension ?? item?.ext ?? item?.id ?? item;
+            const name = item?.name ?? item?.display_name ?? '';
+            return toOption(ext, name ? `${ext} - ${name}` : ext);
+          })
+          .filter((item) => item.id);
+        setAvailableExtensions(list);
+      } else {
+        setAvailableExtensions([]);
+      }
+
+      if (conferencesRes.status === 'fulfilled') {
+        const list = normalizeList(conferencesRes.value)
+          .map((item) => {
+            const id = item?.conf_number ?? item?.id ?? item?.conference_id ?? item?.conference_number ?? item;
+            const name = item?.name ?? item?.room_name ?? item?.conference_name ?? '';
+            return toOption(id, name ? `${id} - ${name}` : id);
+          })
+          .filter((item) => item.id);
+        setAvailableConferences(list);
+      } else {
+        setAvailableConferences([]);
+      }
+
+      if (ringGroupsRes.status === 'fulfilled') {
+        const list = normalizeList(ringGroupsRes.value)
+          .map((item) => {
+            const id = item?.ring_group_no ?? item?.group_no ?? item?.group ?? item?.id ?? item;
+            const name = item?.name ?? item?.group_name ?? item?.ring_group_name ?? '';
+            return toOption(id, name ? `${id} - ${name}` : id);
+          })
+          .filter((item) => item.id);
+        setAvailableRingGroups(list);
+      } else {
+        setAvailableRingGroups([]);
+      }
+
+      if (ivrsRes.status === 'fulfilled') {
+        const list = normalizeList(ivrsRes.value)
+          .map((item) => {
+            const id = item?.ivr_number ?? item?.id ?? item?.ivr_no ?? item;
+            const name = item?.name ?? item?.ivr_name ?? '';
+            return toOption(id, name ? `${id} - ${name}` : id);
+          })
+          .filter((item) => item.id);
+        setAvailableIvrs(list);
+      } else {
+        setAvailableIvrs([]);
+      }
+
+      hasLoadedDestinationDataRef.current = true;
+    } catch {
+      setAvailableExtensions([]);
+      setAvailableConferences([]);
+      setAvailableRingGroups([]);
+      setAvailableIvrs([]);
+    }
+  };
+
+  const getDestinationChoices = () => {
+    if (DESTINATION_NEEDS_EXTENSION.has(destination)) return availableExtensions;
+    if (destination === 'Conference Rooms') return availableConferences;
+    if (destination === 'Ring Groups') return availableRingGroups;
+    if (destination === 'IVR Menus') return availableIvrs;
+    if (destination === 'Other') return OTHER_DESTINATION_OPTIONS.map((opt) => ({ id: opt, label: opt }));
+    return [];
+  };
+
+  const destinationChoices = getDestinationChoices();
+  const needsDestinationTarget = DESTINATION_NEEDS_TARGET.has(destination);
+
   const resetForm = () => {
     setEditId(null);
     setName('');
@@ -127,11 +326,13 @@ const InboundRoutesPage = () => {
     setDistinctiveRingTone('');
     setEnableT38('No');
     setEnableTimeCondition('No');
-    setDestination('Call Queue');
+    setDestination('');
     setEnabled('Yes');
     setPriority('102');
     setEnableMobilityExtension('No');
     setSendRingTone('Remote');
+    setDestinationTarget('');
+    setExtensionRange('');
     setSelectedTrunks([]);
     setAvailableSelected([]);
     setChosenSelected([]);
@@ -140,9 +341,10 @@ const InboundRoutesPage = () => {
   const handleOpenAddModal = async () => {
     resetForm();
     setShowModal(true);
-    if (!hasLoadedTrunksRef.current) {
-      await loadTrunks();
-    }
+    const loaders = [];
+    if (!hasLoadedTrunksRef.current) loaders.push(loadTrunks());
+    if (!hasLoadedDestinationDataRef.current) loaders.push(loadDestinationData());
+    if (loaders.length > 0) await Promise.allSettled(loaders);
   };
 
   const handleOpenEditModal = async (row) => {
@@ -158,13 +360,16 @@ const InboundRoutesPage = () => {
     setPriority(row.priority || '102');
     setEnableMobilityExtension(row.enableMobilityExtension || 'No');
     setSendRingTone(row.sendRingTone || 'Remote');
+    setDestinationTarget(row.destinationTarget || '');
+    setExtensionRange(row.extensionRange || '');
     setSelectedTrunks(Array.isArray(row.memberTrunks) ? row.memberTrunks : []);
     setAvailableSelected([]);
     setChosenSelected([]);
     setShowModal(true);
-    if (!hasLoadedTrunksRef.current) {
-      await loadTrunks();
-    }
+    const loaders = [];
+    if (!hasLoadedTrunksRef.current) loaders.push(loadTrunks());
+    if (!hasLoadedDestinationDataRef.current) loaders.push(loadDestinationData());
+    if (loaders.length > 0) await Promise.allSettled(loaders);
   };
 
   const handleCloseModal = () => {
@@ -216,21 +421,32 @@ const InboundRoutesPage = () => {
     setSelected((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selected.length === 0) {
       showAlert('Please select at least one row to delete.');
       return;
     }
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      setRows((prev) => prev.filter((_, idx) => !selected.includes(idx)));
+      const idsToDelete = selected.map((idx) => rows[idx]?.id).filter((id) => id != null);
+      const results = await Promise.all(idsToDelete.map((id) => deleteInboundRoute(id)));
+      const failed = results.find((res) => !res?.response);
+      if (failed) {
+        showAlert(failed?.message || 'Failed to delete one or more routes.');
+      } else {
+        showAlert('Inbound route(s) deleted successfully.');
+      }
+      await fetchInboundRoutes();
       setSelected([]);
+      setPage(1);
+    } catch (err) {
+      showAlert(err?.message || 'Failed to delete route(s).');
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
       showAlert('Name is required.');
@@ -238,6 +454,25 @@ const InboundRoutesPage = () => {
     }
     if (!destination) {
       showAlert('Destination is required.');
+      return;
+    }
+    const parsedPriority = Number(priority);
+    if (!Number.isInteger(parsedPriority) || parsedPriority < 1 || parsedPriority > 9999) {
+      showAlert('Priority must be a number between 1 and 9999.');
+      return;
+    }
+    if (destination === 'Extension_Range') {
+      if (!extensionRange.trim()) {
+        showAlert('Extension range is required (example: 100-136).');
+        return;
+      }
+      const rangePattern = /^\d+\s*-\s*\d+$/;
+      if (!rangePattern.test(extensionRange.trim())) {
+        showAlert('Invalid extension range format. Use format like 100-136.');
+        return;
+      }
+    } else if (destinationChoices.length > 0 && !destinationTarget) {
+      showAlert('Please select a destination target.');
       return;
     }
 
@@ -250,6 +485,8 @@ const InboundRoutesPage = () => {
       enableT38,
       enableTimeCondition,
       destination,
+      destinationTarget: destination === 'Extension_Range' ? '' : destinationTarget,
+      extensionRange: destination === 'Extension_Range' ? extensionRange.trim() : '',
       enabled,
       priority,
       enableMobilityExtension,
@@ -257,15 +494,38 @@ const InboundRoutesPage = () => {
       memberTrunks: [...selectedTrunks],
     };
 
+    const destType = mapUiToDestType(destination);
+    const destValue = destination === 'Extension_Range' ? extensionRange.trim() : destinationTarget;
+
+    const apiPayload = {
+      name: payload.name,
+      did_pattern: payload.didPattern || '',
+      callerid_pattern: payload.callerIdPattern || '',
+      distinctive_ringtone: payload.distinctiveRingTone || '',
+      enable_t38: toApiYesNo(payload.enableT38, 'no'),
+      enable_time_condition: toApiYesNo(payload.enableTimeCondition, 'no'),
+      dest_type: destType,
+      dest_value: destValue || '',
+      member_trunks: Array.isArray(payload.memberTrunks) ? payload.memberTrunks : [],
+      enabled: toApiYesNo(payload.enabled, 'yes'),
+      priority: parsedPriority,
+      enable_mobility_ext: toApiYesNo(payload.enableMobilityExtension, 'no'),
+      send_ringtone: payload.sendRingTone || 'Remote',
+    };
+
     setLoading((prev) => ({ ...prev, save: true }));
     try {
-      setRows((prev) => {
-        if (editId != null) {
-          return prev.map((row) => (row.id === editId ? payload : row));
-        }
-        return [...prev, payload];
-      });
+      const response =
+        editId != null ? await updateInboundRoute(editId, apiPayload) : await createInboundRoute(apiPayload);
+      if (!response?.response) {
+        showAlert(response?.message || 'Failed to save inbound route.');
+        return;
+      }
+      showAlert(editId != null ? 'Inbound route updated successfully.' : 'Inbound route created successfully.');
+      await fetchInboundRoutes();
       handleCloseModal();
+    } catch (err) {
+      showAlert(err?.message || 'Failed to save inbound route.');
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
@@ -320,7 +580,13 @@ const InboundRoutesPage = () => {
                       <td className="border border-gray-300 px-2 py-1 text-center font-medium">{row.name}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">{row.didPattern}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">{row.callerIdPattern}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.destination}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {row.destination === 'Extension_Range'
+                          ? `${row.destination}: ${row.extensionRange || ''}`
+                          : row.destinationTarget
+                          ? `${row.destination}: ${row.destinationTarget}`
+                          : row.destination}
+                      </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">{row.enabled}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
                         {row.memberTrunks?.map(getTrunkLabel).join(', ')}
@@ -576,7 +842,19 @@ const InboundRoutesPage = () => {
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={destination} onChange={(e) => setDestination(e.target.value)}>
+                          <Select
+                            value={destination}
+                            onChange={(e) => {
+                              setDestination(e.target.value);
+                              setDestinationTarget('');
+                              setExtensionRange('');
+                            }}
+                            MenuProps={SELECT_MENU_PROPS}
+                            displayEmpty
+                          >
+                            <MenuItem value="">
+                              <em>Select</em>
+                            </MenuItem>
                             {DESTINATION_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -586,6 +864,57 @@ const InboundRoutesPage = () => {
                         </FormControl>
                       </div>
                     </div>
+
+                    {destination === 'Extension_Range' ? (
+                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                        <label
+                          className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                          style={{ width: 170, marginRight: 10 }}
+                        >
+                          Extension Range <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
+                          value={extensionRange}
+                          onChange={(e) => setExtensionRange(e.target.value)}
+                          placeholder="100-136"
+                        />
+                      </div>
+                    ) : needsDestinationTarget ? (
+                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                        <label
+                          className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                          style={{ width: 170, marginRight: 10 }}
+                        >
+                          Destination Value <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex-1">
+                          <FormControl size="small" fullWidth>
+                            <Select
+                              value={destinationTarget}
+                              onChange={(e) => setDestinationTarget(e.target.value)}
+                              displayEmpty
+                              MenuProps={SELECT_MENU_PROPS}
+                            >
+                              <MenuItem value="" disabled={destinationChoices.length === 0}>
+                                <em>Select</em>
+                              </MenuItem>
+                              {destinationChoices.length === 0 ? (
+                                <MenuItem value="" disabled>
+                                  No options available
+                                </MenuItem>
+                              ) : (
+                                destinationChoices.map((opt) => (
+                                  <MenuItem key={opt.id} value={opt.id}>
+                                    {opt.label}
+                                  </MenuItem>
+                                ))
+                              )}
+                            </Select>
+                          </FormControl>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
 
                   {/* Right column fields */}

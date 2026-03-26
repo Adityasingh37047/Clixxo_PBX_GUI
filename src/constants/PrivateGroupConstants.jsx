@@ -1,0 +1,1 @@
+export const PRIVATE_GROUP_ITEMS_PER_PAGE = 20;

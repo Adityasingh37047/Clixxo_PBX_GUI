@@ -102,6 +102,9 @@ export const SIDEBAR_SECTIONS = [
       { id: 'callFeaturesConference', title: 'Conference', path: ROUTE_PATHS.CONFERENCE },
       { id: 'callFeaturesPickupGroup', title: 'Pickup Group', path: '/call-features/pickup-group' },
       { id: 'callFeaturesRingGroup', title: 'Ring Group', path: '/call-features/ring-group' },
+      { id: 'callFeaturesPrivateGroup', title: 'Private Group', path: '/call-features/private-group' },
+      { id: 'callFeaturesPaging', title: 'Paging', path: '/call-features/paging' },
+      { id: 'callFeaturesSpeedDial', title: 'Speed Dial', path: '/call-features/speed-dial' },
     ]
   },
   {
@@ -113,6 +116,7 @@ export const SIDEBAR_SECTIONS = [
     submenuItems: [
       { id: 'callControlCcRoute', title: 'CC Route', path: '/call-control/cc-route' },
       { id: 'callControlInboundRoutes', title: 'Inbound Routes', path: '/call-control/inbound-routes' },
+      { id: 'callControlOutboundRoutes', title: 'Outbound Routes', path: '/call-control/outbound-routes' },
     ]
   },
   {

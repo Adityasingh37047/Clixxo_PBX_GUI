@@ -1,5 +1,5 @@
 // components/Sidebar.jsx (updated with simple modern design)
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Drawer, 
@@ -16,23 +16,18 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
   const navigate = useNavigate();
   const location = useLocation();
   
-  const [openSections, setOpenSections] = useState({
-    operationInfo: false,
-    sip: false,
-    pcm: false,
-    isdn: false,
-    fax: false,
-    route: false,
-    numberFilter: false,
-    manipulate: false,
-    vpn: false,
-    dhcp: false,
-    systemTools: false
-  });
+  const initialOpenSections = useMemo(() => {
+    return SIDEBAR_SECTIONS.reduce((acc, section) => {
+      acc[section.id] = false;
+      return acc;
+    }, {});
+  }, []);
+
+  const [openSections, setOpenSections] = useState(initialOpenSections);
 
   const handleToggle = (section) => {
     setOpenSections(prev => {
-      const newState = Object.keys(prev).reduce((acc, key) => {
+      const newState = Object.keys(initialOpenSections).reduce((acc, key) => {
         acc[key] = false;
         return acc;
       }, {});

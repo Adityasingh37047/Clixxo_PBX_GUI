@@ -1,127 +1,67 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
-import {
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  MenuItem,
-  Select,
-} from '@mui/material';
-import {
-  createRingGroup,
-  deleteRingGroup,
-  fetchSipAccounts,
-  listConferences,
-  listIvrs,
-  listRingGroups,
-  updateRingGroup,
-} from '../api/apiService';
-import { RING_GROUP_ITEMS_PER_PAGE } from '../constants/RingGroupConstants';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import VerticalAlignBottomIcon from '@mui/icons-material/VerticalAlignBottom';
+import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, MenuItem, Select } from '@mui/material';
+import { createPagingGroup, deletePagingGroup, fetchSipAccounts, listPagingGroups, updatePagingGroup } from '../api/apiService';
 
-const ENABLE_OPTIONS = ['Yes', 'No'];
-const RING_STRATEGY_OPTIONS = ['simultaneous', 'sequential', 'random'];
-const EXTENSION_ANSWER_CONFIRM_OPTIONS = ['Yes', 'No'];
-const RING_TIMEOUT_OPTIONS = Array.from({ length: 20 }, (_, i) => String((i + 1) * 5));
-const TIMEOUT_DESTINATION_OPTIONS = [
-  { label: 'Call Queue', value: 'call_queue' },
-  { label: 'CallBacks', value: 'callbacks' },
-  { label: 'Conference Rooms', value: 'conference_rooms' },
-  { label: 'DISA', value: 'disa' },
-  { label: 'Extensions', value: 'extensions' },
-  { label: 'Fax To Mail', value: 'faxtoemail' },
-  { label: 'IVR Menus', value: 'ivr_menus' },
-  { label: 'Ring Group', value: 'ring_groups' },
-  { label: 'Voicemails', value: 'voicemail' },
-  { label: 'Other', value: 'other' },
-];
-const RING_BACK_OPTIONS = ['us-ring', 'au-ring', 'gb-ring', 'de-ring', 'fr-ring', 'cn-ring', 'it-ring', 'jp-ring', 'nl-ring', 'ru-ring', 'se-ring', 'sg-ring', 'nz-ring', 'mx-ring', 'in-ring'];
+const PAGING_ITEMS_PER_PAGE = 20;
+const PAGING_TYPE_OPTIONS = ['one-way', 'two-way'];
 
-const RingGroup = () => {
+const Paging = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({
-    save: false,
-    delete: false,
-    members: false,
-    destinations: false,
-    list: false,
-  });
-  const hasLoadedDataRef = useRef(false);
+  const [loading, setLoading] = useState({ save: false, delete: false, extensions: false, list: false });
+  const hasLoadedExtensionsRef = useRef(false);
 
-  // Form state
   const [editId, setEditId] = useState(null);
   const [name, setName] = useState('');
-  const [ringGroupNumber, setRingGroupNumber] = useState('');
-  const [ringStrategy, setRingStrategy] = useState('simultaneous');
-  const [timeoutDestinationType, setTimeoutDestinationType] = useState('');
-  const [timeoutDestinationValue, setTimeoutDestinationValue] = useState('');
-  const [ringTimeout, setRingTimeout] = useState('30');
-  const [enabled, setEnabled] = useState('Yes');
-  const [alertInfo, setAlertInfo] = useState('');
-  const [ringBack, setRingBack] = useState('us-ring');
-  const [cidNamePrefix, setCidNamePrefix] = useState('');
-  const [extensionAnswerConfirm, setExtensionAnswerConfirm] = useState('No');
+  const [number, setNumber] = useState('');
+  const [pagingType, setPagingType] = useState('one-way');
+  const [callerIdNamePrefix, setCallerIdNamePrefix] = useState('');
 
-  // Member Extensions dual-list
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [memberExtensions, setMemberExtensions] = useState([]);
   const [availableSelected, setAvailableSelected] = useState([]);
   const [chosenSelected, setChosenSelected] = useState([]);
 
-  // Destination value data
-  const [destinationData, setDestinationData] = useState({
-    extensions: [],
-    conferenceRooms: [],
-    ivrMenus: [],
-  });
-
-  const itemsPerPage = RING_GROUP_ITEMS_PER_PAGE;
   const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
-  const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGING_ITEMS_PER_PAGE));
+  const pagedRows = rows.slice((page - 1) * PAGING_ITEMS_PER_PAGE, page * PAGING_ITEMS_PER_PAGE);
 
   useEffect(() => {
-    setPage((current) => Math.min(Math.max(1, current), Math.max(1, Math.ceil(rows.length / itemsPerPage))));
+    setPage((current) => Math.min(Math.max(1, current), Math.max(1, Math.ceil(rows.length / PAGING_ITEMS_PER_PAGE))));
   }, [rows]);
 
   const showAlert = (text) => window.alert(text);
 
-  const timeoutTypeLabel = (value) => TIMEOUT_DESTINATION_OPTIONS.find((o) => o.value === value)?.label || value || '';
+  const normalizePagingList = (res) => {
+    const list = Array.isArray(res?.message) ? res.message : Array.isArray(res?.data) ? res.data : [];
+    return list.map((g) => ({
+      id: g.id,
+      name: g.name || '',
+      number: String(g.page_number ?? g.number ?? ''),
+      type: g.type || g.page_type || g.paging_type || 'one-way',
+      callerIdNamePrefix: g.cid_name_prefix || g.callerIdNamePrefix || '',
+      members: Array.isArray(g.members) ? g.members.map(String) : [],
+    }));
+  };
 
-  const mapApiToRow = (r) => ({
-    id: r.id,
-    name: r.name || '',
-    ringGroupNumber: String(r.rg_number ?? ''),
-    ringStrategy: r.ring_strategy || 'simultaneous',
-    timeoutDestinationType: r.timeout_dest_type || '',
-    timeoutDestinationValue: r.timeout_dest_value || '',
-    ringTimeout: String(r.ring_timeout ?? '30'),
-    enabled: r.enabled ? 'Yes' : 'No',
-    alertInfo: r.alert_info || '',
-    ringBack: r.ring_back || 'us-ring',
-    cidNamePrefix: r.cid_name_prefix || '',
-    extensionAnswerConfirm: r.answer_confirm ? 'Yes' : 'No',
-    members: Array.isArray(r.members) ? r.members.map(String) : [],
-  });
-
-  const refreshRingGroups = async () => {
+  const refreshPagingGroups = async () => {
     setLoading((prev) => ({ ...prev, list: true }));
     try {
-      const res = await listRingGroups();
+      const res = await listPagingGroups();
       if (res?.response === false) {
-        showAlert(res?.message || 'Failed to load ring groups.');
+        showAlert(res?.message || 'Failed to load paging groups.');
         setRows([]);
         return;
       }
-      const list = Array.isArray(res?.message) ? res.message : Array.isArray(res?.data) ? res.data : [];
-      setRows(list.map(mapApiToRow));
+      setRows(normalizePagingList(res));
     } catch (err) {
-      showAlert(err?.message || 'Failed to load ring groups.');
+      showAlert(err?.message || 'Failed to load paging groups.');
       setRows([]);
     } finally {
       setLoading((prev) => ({ ...prev, list: false }));
@@ -129,20 +69,20 @@ const RingGroup = () => {
   };
 
   useEffect(() => {
-    refreshRingGroups();
+    refreshPagingGroups();
   }, []);
 
-  const loadFormData = async () => {
-    setLoading((prev) => ({ ...prev, members: true, destinations: true }));
+  const loadExtensions = async () => {
+    setLoading((prev) => ({ ...prev, extensions: true }));
     try {
-      const [sipRes, confRes, ivrRes] = await Promise.all([
-        fetchSipAccounts(),
-        listConferences(),
-        listIvrs(),
-      ]);
-
-      const sipList = Array.isArray(sipRes?.message) ? sipRes.message : Array.isArray(sipRes?.data) ? sipRes.data : [];
-      const extensions = sipList
+      const res = await fetchSipAccounts();
+      if (res?.response === false) {
+        showAlert(res?.message || 'Failed to load extensions.');
+        setAvailableExtensions([]);
+        return;
+      }
+      const sipList = Array.isArray(res?.message) ? res.message : Array.isArray(res?.data) ? res.data : [];
+      const exts = sipList
         .filter((e) => e && e.extension)
         .map((e) => ({
           value: String(e.extension),
@@ -154,49 +94,22 @@ const RingGroup = () => {
           if (!Number.isNaN(an) && !Number.isNaN(bn) && an !== bn) return an - bn;
           return a.label.localeCompare(b.label);
         });
-      setAvailableExtensions(extensions);
-
-      const confList = Array.isArray(confRes?.message) ? confRes.message : Array.isArray(confRes?.data) ? confRes.data : [];
-      const conferenceRooms = confList.map((c) => ({
-        value: String(c.conf_number ?? c.id ?? ''),
-        label: String(c.conf_number ?? c.id ?? ''),
-      }));
-
-      const ivrList = Array.isArray(ivrRes?.message) ? ivrRes.message : Array.isArray(ivrRes?.data) ? ivrRes.data : [];
-      const ivrMenus = ivrList.map((i) => ({
-        value: String(i.ivr_number ?? i.id ?? ''),
-        label: String(i.ivr_number ?? i.id ?? ''),
-      }));
-
-      setDestinationData({
-        extensions,
-        conferenceRooms,
-        ivrMenus,
-      });
-
-      hasLoadedDataRef.current = true;
+      setAvailableExtensions(exts);
+      hasLoadedExtensionsRef.current = true;
     } catch (err) {
-      showAlert(err?.message || 'Failed to load ring group form data.');
+      showAlert(err?.message || 'Failed to load extensions.');
       setAvailableExtensions([]);
-      setDestinationData({ extensions: [], conferenceRooms: [], ivrMenus: [] });
     } finally {
-      setLoading((prev) => ({ ...prev, members: false, destinations: false }));
+      setLoading((prev) => ({ ...prev, extensions: false }));
     }
   };
 
   const resetForm = () => {
     setEditId(null);
     setName('');
-    setRingGroupNumber('');
-    setRingStrategy('simultaneous');
-    setTimeoutDestinationType('');
-    setTimeoutDestinationValue('');
-    setRingTimeout('30');
-    setEnabled('Yes');
-    setAlertInfo('');
-    setRingBack('us-ring');
-    setCidNamePrefix('');
-    setExtensionAnswerConfirm('No');
+    setNumber('');
+    setPagingType('one-way');
+    setCallerIdNamePrefix('');
     setMemberExtensions([]);
     setAvailableSelected([]);
     setChosenSelected([]);
@@ -205,30 +118,23 @@ const RingGroup = () => {
   const handleOpenAddModal = async () => {
     resetForm();
     setShowModal(true);
-    if (!hasLoadedDataRef.current) {
-      await loadFormData();
+    if (!hasLoadedExtensionsRef.current) {
+      await loadExtensions();
     }
   };
 
   const handleOpenEditModal = async (row) => {
     setEditId(row.id);
     setName(row.name || '');
-    setRingGroupNumber(row.ringGroupNumber || '');
-    setRingStrategy(row.ringStrategy || 'simultaneous');
-    setTimeoutDestinationType(row.timeoutDestinationType || '');
-    setTimeoutDestinationValue(row.timeoutDestinationValue || '');
-    setRingTimeout(row.ringTimeout || '30');
-    setEnabled(row.enabled || 'Yes');
-    setAlertInfo(row.alertInfo || '');
-    setRingBack(row.ringBack || 'us-ring');
-    setCidNamePrefix(row.cidNamePrefix || '');
-    setExtensionAnswerConfirm(row.extensionAnswerConfirm || 'No');
-    setMemberExtensions(Array.isArray(row.members) ? row.members : []);
+    setNumber(row.number || '');
+    setPagingType(row.type || 'one-way');
+    setCallerIdNamePrefix(row.callerIdNamePrefix || '');
+    setMemberExtensions(Array.isArray(row.members) ? [...row.members] : []);
     setAvailableSelected([]);
     setChosenSelected([]);
     setShowModal(true);
-    if (!hasLoadedDataRef.current) {
-      await loadFormData();
+    if (!hasLoadedExtensionsRef.current) {
+      await loadExtensions();
     }
   };
 
@@ -243,9 +149,10 @@ const RingGroup = () => {
     availableExtensions.forEach((e) => map.set(e.value, e.label));
     return map;
   }, [availableExtensions]);
+
   const getExtLabel = (ext) => extensionLabelMap.get(ext) || ext;
 
-  const availableMemberList = useMemo(
+  const availableList = useMemo(
     () => availableExtensions.filter((e) => !memberExtensions.includes(e.value)),
     [availableExtensions, memberExtensions]
   );
@@ -269,32 +176,30 @@ const RingGroup = () => {
     setChosenSelected([]);
   };
 
-  const getTimeoutValueOptions = () => {
-    switch (timeoutDestinationType) {
-      case 'extensions':
-      case 'faxtoemail':
-      case 'voicemail':
-        return destinationData.extensions;
-      case 'conference_rooms':
-        return destinationData.conferenceRooms;
-      case 'ivr_menus':
-        return destinationData.ivrMenus;
-      case 'ring_groups':
-        return rows
-          .filter((r) => String(r.id) !== String(editId))
-          .map((r) => ({ value: String(r.ringGroupNumber), label: `${r.name}-${r.ringGroupNumber}` }));
-      case 'other':
-        return [
-          { value: 'Hangup', label: 'Hangup' },
-          { value: 'MusicOnHold', label: 'MusicOnHold' },
-        ];
-      default:
-        return [];
+  const handleReorderSelected = (action) => {
+    if (chosenSelected.length !== 1) {
+      showAlert('Select exactly one member in Selected to reorder.');
+      return;
     }
+    const id = chosenSelected[0];
+    setMemberExtensions((prev) => {
+      const idx = prev.indexOf(id);
+      if (idx < 0) return prev;
+      const next = [...prev];
+      if (action === 'top') {
+        next.splice(idx, 1);
+        next.unshift(id);
+      } else if (action === 'bottom') {
+        next.splice(idx, 1);
+        next.push(id);
+      } else if (action === 'up' && idx > 0) {
+        [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+      } else if (action === 'down' && idx < next.length - 1) {
+        [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      }
+      return next;
+    });
   };
-
-  const timeoutValueOptions = getTimeoutValueOptions();
-  const shouldShowTimeoutValue = Boolean(timeoutDestinationType);
 
   const handleCheckAll = () => setSelected(rows.map((_, i) => i));
   const handleUncheckAll = () => setSelected([]);
@@ -313,17 +218,17 @@ const RingGroup = () => {
         const toDelete = rows.filter((_, idx) => selected.includes(idx));
         for (const row of toDelete) {
           if (row.id != null) {
-            const res = await deleteRingGroup(row.id);
+            const res = await deletePagingGroup(row.id);
             if (res?.response === false) {
-              showAlert(res?.message || 'Failed to delete ring group.');
+              showAlert(res?.message || 'Failed to delete paging group.');
               break;
             }
           }
         }
         setSelected([]);
-        await refreshRingGroups();
+        await refreshPagingGroups();
       } catch (err) {
-        showAlert(err?.message || 'Failed to delete ring group(s).');
+        showAlert(err?.message || 'Failed to delete paging group(s).');
       } finally {
         setLoading((prev) => ({ ...prev, delete: false }));
       }
@@ -331,66 +236,62 @@ const RingGroup = () => {
   };
 
   const handleSave = () => {
-    const trimmed = name.trim();
-    if (!trimmed) {
+    const trimmedName = name.trim();
+    const trimmedNumber = number.trim();
+    if (!trimmedName) {
       showAlert('Name is required.');
       return;
     }
-    if (!ringGroupNumber.trim()) {
-      showAlert('Ring Group Number is required.');
+    if (!trimmedNumber) {
+      showAlert('Number is required.');
       return;
     }
-    const rgNumber = parseInt(ringGroupNumber, 10);
-    if (Number.isNaN(rgNumber)) {
-      showAlert('Ring Group Number must be numeric.');
-      return;
-    }
-    const ringTimeoutInt = parseInt(ringTimeout, 10);
-    if (Number.isNaN(ringTimeoutInt)) {
-      showAlert('Ring Timeout must be numeric.');
-      return;
-    }
-    if (timeoutDestinationType && !timeoutDestinationValue) {
-      showAlert('Please select Timeout Destination value.');
+    if (!/^\d+$/.test(trimmedNumber)) {
+      showAlert('Number must be numeric.');
       return;
     }
     if (!memberExtensions.length) {
-      showAlert('Please select at least one Member Extension.');
+      showAlert('Please select at least one Member.');
       return;
     }
-
     setLoading((prev) => ({ ...prev, save: true }));
     (async () => {
       try {
-        const apiPayload = {
-          name: trimmed,
-          rg_number: rgNumber,
-          ring_strategy: ringStrategy,
-          ring_timeout: ringTimeoutInt,
-          members: memberExtensions.map(String),
-          enabled: enabled === 'Yes',
-          alert_info: alertInfo || '',
-          ring_back: ringBack,
-          cid_name_prefix: cidNamePrefix || '',
-          answer_confirm: extensionAnswerConfirm === 'Yes',
-          timeout_dest_type: timeoutDestinationType || '',
-          timeout_dest_value: timeoutDestinationValue || '',
-        };
-
-        let res;
         if (editId != null) {
-          res = await updateRingGroup(editId, apiPayload);
+          const res = await updatePagingGroup(editId, {
+            name: trimmedName,
+            page_number: Number(trimmedNumber),
+            pagingMode: pagingType,
+            page_type: pagingType,
+            paging_type: pagingType,
+            cid_name_prefix: callerIdNamePrefix.trim(),
+            members: memberExtensions.map(String),
+          });
+          if (res?.response === false) {
+            showAlert(res?.message || 'Failed to update paging group.');
+            return;
+          }
         } else {
-          res = await createRingGroup(apiPayload);
+          const res = await createPagingGroup({
+            name: trimmedName,
+            page_number: Number(trimmedNumber),
+            pagingMode: pagingType,
+            page_type: pagingType,
+            paging_type: pagingType,
+            cid_name_prefix: callerIdNamePrefix.trim(),
+            members: memberExtensions.map(String),
+          });
+          if (res?.response === false) {
+            showAlert(res?.message || 'Failed to create paging group.');
+            return;
+          }
         }
-        if (res?.response === false) {
-          showAlert(res?.message || 'Failed to save ring group.');
-          return;
-        }
-        await refreshRingGroups();
-        handleCloseModal();
+
+        await refreshPagingGroups();
+        setShowModal(false);
+        resetForm();
       } catch (err) {
-        showAlert(err?.message || 'Failed to save ring group.');
+        showAlert(err?.message || 'Failed to save paging group.');
       } finally {
         setLoading((prev) => ({ ...prev, save: false }));
       }
@@ -404,7 +305,7 @@ const RingGroup = () => {
           className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm mt-0"
           style={{ background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)' }}
         >
-          Ring Group
+          Paging
         </div>
 
         <div className="overflow-x-auto w-full">
@@ -414,9 +315,9 @@ const RingGroup = () => {
                 <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center" />
                 <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">#</th>
                 <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Name</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Ring Group Number</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Strategy</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Enabled</th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Number</th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Type</th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">CallerID Name Prefix</th>
                 <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Members</th>
                 <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">Actions</th>
               </tr>
@@ -425,12 +326,12 @@ const RingGroup = () => {
               {rows.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="border border-gray-300 px-2 py-4 text-center text-gray-500">
-                    No ring groups yet. Click &quot;Add New&quot; to create one.
+                    No paging entries yet. Click &quot;Add New&quot; to create one.
                   </td>
                 </tr>
               ) : (
                 pagedRows.map((row, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
+                  const realIdx = (page - 1) * PAGING_ITEMS_PER_PAGE + idx;
                   return (
                     <tr key={row.id}>
                       <td className="border border-gray-300 px-2 py-1 text-center">
@@ -438,10 +339,13 @@ const RingGroup = () => {
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">{realIdx + 1}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center font-medium">{row.name}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.ringGroupNumber}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.ringStrategy}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.enabled}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{(row.members || []).slice(0, 3).map(getExtLabel).join(', ')}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">{row.number}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">{row.type}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">{row.callerIdNamePrefix || '-'}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {(row.members || []).slice(0, 3).map(getExtLabel).join(', ')}
+                        {(row.members || []).length > 3 ? ` +${(row.members || []).length - 3}` : ''}
+                      </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
                         <EditDocumentIcon
                           className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
@@ -474,7 +378,7 @@ const RingGroup = () => {
         {totalPages > 1 && (
           <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
             <span>{rows.length} items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
+            <span>{PAGING_ITEMS_PER_PAGE} Items/Page</span>
             <span>{page}/{totalPages}</span>
             <button className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400" onClick={() => setPage(1)} disabled={page === 1}>First</button>
             <button className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Previous</button>
@@ -504,7 +408,7 @@ const RingGroup = () => {
             borderBottom: '1px solid #444444',
           }}
         >
-          {editId != null ? 'Edit Ring Group' : 'Add Ring Group'}
+          {editId != null ? 'Edit Paging' : 'Add Paging'}
         </DialogTitle>
         <DialogContent className="pt-0 pb-0 px-0" style={{ backgroundColor: '#dde0e4', border: '1px solid #444444', borderTop: 'none' }}>
           <div className="pt-4 pb-4 px-4 bg-white">
@@ -514,68 +418,26 @@ const RingGroup = () => {
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
                       <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Name <span className="text-red-500">*</span></label>
-                      <input className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none" value={name} onChange={(e) => setName(e.target.value)} />
+                      <input className="border border-gray-300 rounded px-2 py-1 text-[14px] outline-none w-full max-w-[240px]" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
                     <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Ring Group Number <span className="text-red-500">*</span></label>
-                      <input className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none" value={ringGroupNumber} onChange={(e) => setRingGroupNumber(e.target.value)} />
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Number <span className="text-red-500">*</span></label>
+                      <input className="border border-gray-300 rounded px-2 py-1 text-[14px] outline-none w-full max-w-[240px]" value={number} onChange={(e) => setNumber(e.target.value)} />
                     </div>
                     <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Ring Strategy <span className="text-red-500">*</span></label>
-                      <div className="flex-1"><FormControl size="small" fullWidth><Select value={ringStrategy} onChange={(e) => setRingStrategy(e.target.value)}>{RING_STRATEGY_OPTIONS.map((opt) => (<MenuItem key={opt} value={opt}>{opt}</MenuItem>))}</Select></FormControl></div>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Type</label>
+                      <div className="w-full max-w-[240px]"><FormControl size="small" fullWidth><Select value={pagingType} onChange={(e) => setPagingType(e.target.value)}>{PAGING_TYPE_OPTIONS.map((opt) => (<MenuItem key={opt} value={opt}>{opt}</MenuItem>))}</Select></FormControl></div>
                     </div>
                     <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Timeout Destination <span className="text-red-500">*</span></label>
-                      <div className="flex-1"><FormControl size="small" fullWidth><Select value={timeoutDestinationType} onChange={(e) => { setTimeoutDestinationType(e.target.value); setTimeoutDestinationValue(''); }}><MenuItem value=""><em>Select destination type</em></MenuItem>{TIMEOUT_DESTINATION_OPTIONS.map((opt) => (<MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>))}</Select></FormControl></div>
-                    </div>
-                    {shouldShowTimeoutValue && (
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Destination Value</label>
-                        <div className="flex-1">
-                          <FormControl size="small" fullWidth>
-                            <Select value={timeoutDestinationValue} onChange={(e) => setTimeoutDestinationValue(e.target.value)}>
-                              <MenuItem value=""><em>Select value</em></MenuItem>
-                              {timeoutValueOptions.map((opt) => (
-                                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Ring Timeout (s)</label>
-                      <div className="flex-1"><FormControl size="small" fullWidth><Select value={ringTimeout} onChange={(e) => setRingTimeout(e.target.value)}>{RING_TIMEOUT_OPTIONS.map((opt) => (<MenuItem key={opt} value={opt}>{opt}</MenuItem>))}</Select></FormControl></div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Enabled <span className="text-red-500">*</span></label>
-                      <div className="flex-1"><FormControl size="small" fullWidth><Select value={enabled} onChange={(e) => setEnabled(e.target.value)}>{ENABLE_OPTIONS.map((opt) => (<MenuItem key={opt} value={opt}>{opt}</MenuItem>))}</Select></FormControl></div>
-                    </div>
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Alert Info</label>
-                      <input className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none" value={alertInfo} onChange={(e) => setAlertInfo(e.target.value)} />
-                    </div>
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Ring Back</label>
-                      <div className="flex-1"><FormControl size="small" fullWidth><Select value={ringBack} onChange={(e) => setRingBack(e.target.value)}>{RING_BACK_OPTIONS.map((opt) => (<MenuItem key={opt} value={opt}>{opt}</MenuItem>))}</Select></FormControl></div>
-                    </div>
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>CID Name Prefix</label>
-                      <input className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none" value={cidNamePrefix} onChange={(e) => setCidNamePrefix(e.target.value)} />
-                    </div>
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Extension Answer Confirm</label>
-                      <div className="flex-1"><FormControl size="small" fullWidth><Select value={extensionAnswerConfirm} onChange={(e) => setExtensionAnswerConfirm(e.target.value)}>{EXTENSION_ANSWER_CONFIRM_OPTIONS.map((opt) => (<MenuItem key={opt} value={opt}>{opt}</MenuItem>))}</Select></FormControl></div>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>CallerID Name Prefix</label>
+                      <input className="border border-gray-300 rounded px-2 py-1 text-[14px] outline-none w-full max-w-[240px]" value={callerIdNamePrefix} onChange={(e) => setCallerIdNamePrefix(e.target.value)} />
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-3">
                   <div className="text-[14px] text-gray-700 font-medium mb-2">
-                    Member Extensions <span className="text-red-500">*</span>
+                    Member <span className="text-red-500">*</span>
                   </div>
                   <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                     <div>
@@ -586,12 +448,12 @@ const RingGroup = () => {
                         onChange={(e) => setAvailableSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))}
                         className="w-full h-32 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                       >
-                        {loading.members ? (
+                        {loading.extensions ? (
                           <option>Loading extensions...</option>
-                        ) : availableMemberList.length === 0 ? (
+                        ) : availableList.length === 0 ? (
                           <option disabled>No extensions</option>
                         ) : (
-                          availableMemberList.map((t) => (
+                          availableList.map((t) => (
                             <option key={t.value} value={t.value}>{t.label}</option>
                           ))
                         )}
@@ -624,10 +486,10 @@ const RingGroup = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]" onClick={removeSelectedMembers}>&lt;</button>
-                      <button type="button" className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]" onClick={addSelectedMembers}>&gt;</button>
-                      <button type="button" className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]" onClick={removeAllMembers}>v</button>
-                      <button type="button" className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]" onClick={addAllMembers}>^</button>
+                      <button type="button" className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3] flex items-center justify-center" onClick={() => handleReorderSelected('top')}><VerticalAlignTopIcon sx={{ fontSize: 18 }} /></button>
+                      <button type="button" className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3] flex items-center justify-center" onClick={() => handleReorderSelected('up')}><KeyboardArrowUpIcon sx={{ fontSize: 18 }} /></button>
+                      <button type="button" className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3] flex items-center justify-center" onClick={() => handleReorderSelected('down')}><KeyboardArrowDownIcon sx={{ fontSize: 18 }} /></button>
+                      <button type="button" className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3] flex items-center justify-center" onClick={() => handleReorderSelected('bottom')}><VerticalAlignBottomIcon sx={{ fontSize: 18 }} /></button>
                     </div>
                   </div>
                 </div>
@@ -699,4 +561,4 @@ const RingGroup = () => {
   );
 };
 
-export default RingGroup;
+export default Paging;

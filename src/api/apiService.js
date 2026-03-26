@@ -166,6 +166,212 @@ export const deletePickupGroup = async (id) => {
   }
 };
 
+// Ring Group API
+export const listRingGroups = async () => {
+  try {
+    const response = await axiosInstance.post('/ring-group', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing ring groups:', error.message);
+    throw error;
+  }
+};
+
+export const createRingGroup = async (data) => {
+  try {
+    const response = await axiosInstance.post('/ring-group', {
+      type: 'create',
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating ring group:', error.message);
+    throw error;
+  }
+};
+
+export const updateRingGroup = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/ring-group', {
+      type: 'update',
+      id: Number(id),
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating ring group:', error.message);
+    throw error;
+  }
+};
+
+export const deleteRingGroup = async (id) => {
+  try {
+    const response = await axiosInstance.post('/ring-group', {
+      type: 'delete',
+      id: Number(id),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting ring group:', error.message);
+    throw error;
+  }
+};
+
+// Private Group API
+export const listPrivateGroups = async () => {
+  try {
+    const response = await axiosInstance.post('/private-group', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing private groups:', error.message);
+    throw error;
+  }
+};
+
+export const createPrivateGroup = async (data) => {
+  try {
+    const response = await axiosInstance.post('/private-group', {
+      type: 'create',
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating private group:', error.message);
+    throw error;
+  }
+};
+
+export const updatePrivateGroup = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/private-group', {
+      type: 'update',
+      id: Number(id),
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating private group:', error.message);
+    throw error;
+  }
+};
+
+export const deletePrivateGroup = async (id) => {
+  try {
+    const response = await axiosInstance.post('/private-group', {
+      type: 'delete',
+      id: Number(id),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting private group:', error.message);
+    throw error;
+  }
+};
+
+// Paging API
+const isPagingTypeValidationError = (resOrErr) => {
+  const message =
+    resOrErr?.message ||
+    resOrErr?.response?.data?.message ||
+    resOrErr?.response?.message ||
+    '';
+  return /type must be one of:\s*one-way,\s*two-way/i.test(String(message));
+};
+
+export const listPagingGroups = async () => {
+  try {
+    const primary = await axiosInstance.post('/paging', { type: 'list' });
+    if (primary?.data?.response === false && isPagingTypeValidationError(primary?.data)) {
+      const fallback = await axiosInstance.post('/paging', {
+        action: 'list',
+        request_type: 'list',
+      });
+      return fallback.data;
+    }
+    return primary.data;
+  } catch (error) {
+    console.error('Error listing paging groups:', error.message);
+    throw error;
+  }
+};
+
+export const createPagingGroup = async (data) => {
+  try {
+    const primaryPayload = {
+      type: 'create',
+      ...data,
+    };
+    const primary = await axiosInstance.post('/paging', primaryPayload);
+    if (primary?.data?.response === false && isPagingTypeValidationError(primary?.data)) {
+      const fallbackPayload = {
+        action: 'create',
+        request_type: 'create',
+        name: data?.name,
+        page_number: data?.page_number,
+        type: data?.pagingMode || data?.page_type || data?.paging_type || 'one-way',
+        cid_name_prefix: data?.cid_name_prefix || '',
+        members: Array.isArray(data?.members) ? data.members : [],
+      };
+      const fallback = await axiosInstance.post('/paging', fallbackPayload);
+      return fallback.data;
+    }
+    return primary.data;
+  } catch (error) {
+    console.error('Error creating paging group:', error.message);
+    throw error;
+  }
+};
+
+export const updatePagingGroup = async (id, data) => {
+  try {
+    const primaryPayload = {
+      type: 'update',
+      id: Number(id),
+      ...data,
+    };
+    const primary = await axiosInstance.post('/paging', primaryPayload);
+    if (primary?.data?.response === false && isPagingTypeValidationError(primary?.data)) {
+      const fallbackPayload = {
+        action: 'update',
+        request_type: 'update',
+        id: Number(id),
+        name: data?.name,
+        page_number: data?.page_number,
+        type: data?.pagingMode || data?.page_type || data?.paging_type || 'one-way',
+        cid_name_prefix: data?.cid_name_prefix || '',
+        members: Array.isArray(data?.members) ? data.members : [],
+      };
+      const fallback = await axiosInstance.post('/paging', fallbackPayload);
+      return fallback.data;
+    }
+    return primary.data;
+  } catch (error) {
+    console.error('Error updating paging group:', error.message);
+    throw error;
+  }
+};
+
+export const deletePagingGroup = async (id) => {
+  try {
+    const primary = await axiosInstance.post('/paging', {
+      type: 'delete',
+      id: Number(id),
+    });
+    if (primary?.data?.response === false && isPagingTypeValidationError(primary?.data)) {
+      const fallback = await axiosInstance.post('/paging', {
+        action: 'delete',
+        request_type: 'delete',
+        id: Number(id),
+      });
+      return fallback.data;
+    }
+    return primary.data;
+  } catch (error) {
+    console.error('Error deleting paging group:', error.message);
+    throw error;
+  }
+};
+
 // IVR API Functions
 export const listIvrs = async () => {
   try {
@@ -1722,9 +1928,12 @@ export const listSipTrunks = async () => {
 
 export const createSipTrunk = async (data) => {
   try {
+    // Backend expects trunk fields at the root (not under `data`).
+    // Example payload:
+    // { type: "create", trunk_id: "...", ... }
     const response = await axiosInstance.post("/trunk", {
       type: "create",
-      data,
+      ...data,
     });
     return response.data;
   } catch (error) {
@@ -1735,9 +1944,10 @@ export const createSipTrunk = async (data) => {
 
 export const updateSipTrunk = async (data) => {
   try {
+    // { type: "update", trunk_id: "...", ... }
     const response = await axiosInstance.post("/trunk", {
       type: "update",
-      data,
+      ...data,
     });
     return response.data;
   } catch (error) {
@@ -1750,7 +1960,7 @@ export const deleteSipTrunk = async (trunkId) => {
   try {
     const response = await axiosInstance.post("/trunk", {
       type: "delete",
-      data: { trunk_id: trunkId }
+      trunk_id: trunkId,
     });
     return response.data;
   } catch (error) {
@@ -2082,6 +2292,192 @@ export const listNumberManipulations = async (manipulationType = 'ip_in_callerid
     return response.data;
   } catch (error) {
     console.error('Error listing number manipulations:', error.message);
+    throw error;
+  }
+};
+
+// Inbound Route API
+export const listInboundRoutes = async () => {
+  try {
+    const response = await axiosInstance.post('/inbound-route', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing inbound routes:', error.message);
+    throw error;
+  }
+};
+
+export const getInboundRoute = async (id) => {
+  try {
+    const response = await axiosInstance.post('/inbound-route', {
+      type: 'get',
+      id: Number(id),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching inbound route:', error.message);
+    throw error;
+  }
+};
+
+export const createInboundRoute = async (data) => {
+  try {
+    const response = await axiosInstance.post('/inbound-route', {
+      type: 'create',
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating inbound route:', error.message);
+    throw error;
+  }
+};
+
+export const updateInboundRoute = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/inbound-route', {
+      type: 'update',
+      id: Number(id),
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating inbound route:', error.message);
+    throw error;
+  }
+};
+
+export const deleteInboundRoute = async (id) => {
+  try {
+    const response = await axiosInstance.post('/inbound-route', {
+      type: 'delete',
+      id: Number(id),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting inbound route:', error.message);
+    throw error;
+  }
+};
+
+// Outbound Route API
+export const listOutboundRoutes = async () => {
+  try {
+    const response = await axiosInstance.post('/outbound-route', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing outbound routes:', error.message);
+    throw error;
+  }
+};
+
+export const getOutboundRoute = async (id) => {
+  try {
+    const response = await axiosInstance.post('/outbound-route', { type: 'get', id: Number(id) });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching outbound route:', error.message);
+    throw error;
+  }
+};
+
+export const createOutboundRoute = async (data) => {
+  try {
+    const response = await axiosInstance.post('/outbound-route', { type: 'create', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating outbound route:', error.message);
+    throw error;
+  }
+};
+
+export const updateOutboundRoute = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/outbound-route', { type: 'update', id: Number(id), ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating outbound route:', error.message);
+    throw error;
+  }
+};
+
+export const deleteOutboundRoute = async (id) => {
+  try {
+    const response = await axiosInstance.post('/outbound-route', { type: 'delete', id: Number(id) });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting outbound route:', error.message);
+    throw error;
+  }
+};
+
+export const listOutboundRouteExtensions = async () => {
+  try {
+    const response = await axiosInstance.post('/outbound-route', { type: 'list_extensions' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing outbound-route extensions:', error.message);
+    throw error;
+  }
+};
+
+export const listOutboundRouteTrunks = async () => {
+  try {
+    const response = await axiosInstance.post('/outbound-route', { type: 'list_trunks' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing outbound-route trunks:', error.message);
+    throw error;
+  }
+};
+
+// Speed Dial API
+export const listSpeedDials = async () => {
+  try {
+    const response = await axiosInstance.post('/speed-dial', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing speed dials:', error.message);
+    throw error;
+  }
+};
+
+export const getSpeedDial = async (id) => {
+  try {
+    const response = await axiosInstance.post('/speed-dial', { type: 'get', id: Number(id) });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching speed dial:', error.message);
+    throw error;
+  }
+};
+
+export const createSpeedDial = async (data) => {
+  try {
+    const response = await axiosInstance.post('/speed-dial', { type: 'create', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating speed dial:', error.message);
+    throw error;
+  }
+};
+
+export const updateSpeedDial = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/speed-dial', { type: 'update', id: Number(id), ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating speed dial:', error.message);
+    throw error;
+  }
+};
+
+export const deleteSpeedDial = async (id) => {
+  try {
+    const response = await axiosInstance.post('/speed-dial', { type: 'delete', id: Number(id) });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting speed dial:', error.message);
     throw error;
   }
 };

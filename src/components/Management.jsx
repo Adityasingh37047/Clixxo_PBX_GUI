@@ -620,7 +620,7 @@ const Management = () => {
       if (!dateTimeStr.includes(':') || dateTimeStr.split(':').length === 2) {
         dateTimeStr += ':00';
       }
-      commands.push(`date -s "${dateTimeStr}"`);
+      commands.push(`sudo timedatectl set-time "${dateTimeStr}"`);
       commands.push(`hwclock --systohc`);
     }
     

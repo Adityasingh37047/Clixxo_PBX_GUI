@@ -100,8 +100,10 @@ import Hosts from './components/Hosts';
 import ConferencePage from './components/ConferencePage';
 import PickupGroup from './components/PickupGroup';
 import RingGroup from './components/RingGroup';
-
-
+import PrivateGroup from './components/PrivateGroup';
+import Paging from './components/Paging';
+import OutboundRoutesPage from './components/OutboundRoutesPage';
+import SpeedDialPage from './components/SpeedDialPage';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -258,10 +260,14 @@ export const router = createBrowserRouter([
       { path: '/call-features/ivr', element: <IVRPage /> },
       { path: ROUTE_PATHS.CONFERENCE, element: <ConferencePage /> },
       { path: '/call-features/pickup-group', element: <PickupGroup /> },
+      { path: '/call-features/private-group', element: <PrivateGroup /> },
+      { path: '/call-features/paging', element: <Paging /> },
       { path: '/call-control/cc-route', element: <CCRoutePage /> },
       { path: '/call-control/inbound-routes', element: <InboundRoutesPage /> },
+      { path: '/call-control/outbound-routes', element: <OutboundRoutesPage /> },
       { path: '/pbx-status/active-calls', element: <ActiveCallsPage /> },
       { path: '/call-features/ring-group', element: <RingGroup /> },
+      { path: '/call-features/speed-dial', element: <SpeedDialPage /> },
       {
         path: '/pcm/status',
         element: <PcmStatusPage />,
@@ -487,3 +493,6 @@ export const router = createBrowserRouter([
   },
 ] 
 );
+
+
+export default router;
