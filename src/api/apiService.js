@@ -377,6 +377,7 @@ export const listIvrs = async () => {
   try {
     const response = await axiosInstance.post('/ivr', {
       type: 'list',
+      data: {},
     });
     return response.data;
   } catch (error) {
@@ -470,6 +471,7 @@ export const listIvrDestinations = async () => {
   try {
     const response = await axiosInstance.post('/ivr', {
       type: 'list_destinations',
+      data: {},
     });
     return response.data;
   } catch (error) {
@@ -482,6 +484,7 @@ export const listIvrDirectOutboundOptions = async () => {
   try {
     const response = await axiosInstance.post('/ivr', {
       type: 'list_direct_outbound_options',
+      data: {},
     });
     return response.data;
   } catch (error) {
@@ -993,37 +996,79 @@ export const deleteSipIpTrunkAccount = async (extension) => {
   }
 };
 
+const buildSipExtensionPayload = (accountData = {}) => ({
+  extension: accountData.extension,
+  context: accountData.context,
+  allow_codecs: accountData.allow_codecs,
+  password: accountData.password,
+  max_registrations: accountData.max_registrations,
+  name: accountData.name,
+  display_name: accountData.display_name || accountData.name,
+  user_password: accountData.user_password,
+  email: accountData.email,
+  mobile_number: accountData.mobile_number,
+  mobile: accountData.mobile || accountData.mobile_number,
+  voicemail_enabled: accountData.voicemail_enabled,
+  voicemail_password: accountData.voicemail_password,
+  vm_password: accountData.vm_password || accountData.voicemail_password,
+  voicemail_email: accountData.voicemail_email,
+  voicemail_file: accountData.voicemail_file,
+  voicemail_keep_local: accountData.voicemail_keep_local,
+  cf_always_enabled: accountData.cf_always_enabled,
+  cf_always_dest: accountData.cf_always_dest,
+  cf_always_time_condition: accountData.cf_always_time_condition,
+  cf_always_custom_start: accountData.cf_always_custom_start,
+  cf_always_custom_end: accountData.cf_always_custom_end,
+  cf_busy_enabled: accountData.cf_busy_enabled,
+  cf_busy_dest: accountData.cf_busy_dest,
+  cf_busy_time_condition: accountData.cf_busy_time_condition,
+  cf_busy_custom_start: accountData.cf_busy_custom_start,
+  cf_busy_custom_end: accountData.cf_busy_custom_end,
+  cf_noanswer_enabled: accountData.cf_noanswer_enabled,
+  cf_noanswer_dest: accountData.cf_noanswer_dest,
+  cf_noanswer_time_condition: accountData.cf_noanswer_time_condition,
+  cf_noanswer_custom_start: accountData.cf_noanswer_custom_start,
+  cf_noanswer_custom_end: accountData.cf_noanswer_custom_end,
+  cf_unreg_enabled: accountData.cf_unreg_enabled,
+  cf_unreg_dest: accountData.cf_unreg_dest,
+  cf_unreg_time_condition: accountData.cf_unreg_time_condition,
+  cf_unreg_custom_start: accountData.cf_unreg_custom_start,
+  cf_unreg_custom_end: accountData.cf_unreg_custom_end,
+  follow_me_enabled: accountData.follow_me_enabled,
+  follow_me_dest: accountData.follow_me_dest,
+  follow_me_destination: accountData.follow_me_destination || accountData.follow_me_dest,
+  follow_me_time_condition: accountData.follow_me_time_condition,
+  follow_me_custom_start: accountData.follow_me_custom_start,
+  follow_me_custom_end: accountData.follow_me_custom_end,
+  dnd_enabled: accountData.dnd_enabled,
+  dnd_time_condition: accountData.dnd_time_condition,
+  dnd_custom_start: accountData.dnd_custom_start,
+  dnd_custom_end: accountData.dnd_custom_end,
+  dnd_special_numbers: accountData.dnd_special_numbers,
+  dnd_special_number: accountData.dnd_special_number || accountData.dnd_special_numbers,
+  dnd_allow_numbers: accountData.dnd_allow_numbers || accountData.dnd_special_numbers,
+  mobility_enabled: accountData.mobility_enabled,
+  enable_mobility_extension: accountData.enable_mobility_extension,
+  enable_mobility_ext: accountData.enable_mobility_ext || accountData.enable_mobility_extension,
+  mobility_ring_simultaneously: accountData.mobility_ring_simultaneously,
+  ring_simultaneously: accountData.ring_simultaneously,
+  mobility_prefix: accountData.mobility_prefix,
+  mobility_timeout: accountData.mobility_timeout,
+  secretary_enabled: accountData.secretary_enabled,
+  secretary_service_enabled: accountData.secretary_service_enabled,
+  secretary_service: accountData.secretary_service,
+  secretary_extension: accountData.secretary_extension,
+  secretary_number: accountData.secretary_number || accountData.secretary_extension,
+  from_domain: accountData.from_domain,
+  contact_user: accountData.contact_user,
+  outbound_proxy: accountData.outbound_proxy,
+});
+
 export const createSipAccount = async (accountData) => {
   try {
     const response = await axiosInstance.post('/pjsip', {
       type: 'create',
-      data: {
-        extension: accountData.extension,
-        context: accountData.context,
-        allow_codecs: accountData.allow_codecs,
-        password: accountData.password,
-        max_registrations: accountData.max_registrations,
-        name: accountData.name,
-        user_password: accountData.user_password,
-        email: accountData.email,
-        mobile_number: accountData.mobile_number,
-        voicemail_enabled: accountData.voicemail_enabled,
-        voicemail_password: accountData.voicemail_password,
-        voicemail_file: accountData.voicemail_file,
-        voicemail_keep_local: accountData.voicemail_keep_local,
-        cf_always_enabled: accountData.cf_always_enabled,
-        cf_always_dest: accountData.cf_always_dest,
-        cf_busy_enabled: accountData.cf_busy_enabled,
-        cf_busy_dest: accountData.cf_busy_dest,
-        cf_noanswer_enabled: accountData.cf_noanswer_enabled,
-        cf_noanswer_dest: accountData.cf_noanswer_dest,
-        cf_unreg_enabled: accountData.cf_unreg_enabled,
-        cf_unreg_dest: accountData.cf_unreg_dest,
-        dnd_enabled: accountData.dnd_enabled,
-        from_domain: accountData.from_domain,
-        contact_user: accountData.contact_user,
-        outbound_proxy: accountData.outbound_proxy
-      }
+      data: buildSipExtensionPayload(accountData),
     });
     return response.data;
   } catch (error) {
@@ -1055,33 +1100,7 @@ export const updateSipAccount = async (accountData) => {
   try {
     const response = await axiosInstance.post('/pjsip', {
       type: 'update',
-      data: {
-        extension: accountData.extension,
-        context: accountData.context,
-        allow_codecs: accountData.allow_codecs,
-        password: accountData.password,
-        max_registrations: accountData.max_registrations,
-        name: accountData.name,
-        user_password: accountData.user_password,
-        email: accountData.email,
-        mobile_number: accountData.mobile_number,
-        voicemail_enabled: accountData.voicemail_enabled,
-        voicemail_password: accountData.voicemail_password,
-        voicemail_file: accountData.voicemail_file,
-        voicemail_keep_local: accountData.voicemail_keep_local,
-        cf_always_enabled: accountData.cf_always_enabled,
-        cf_always_dest: accountData.cf_always_dest,
-        cf_busy_enabled: accountData.cf_busy_enabled,
-        cf_busy_dest: accountData.cf_busy_dest,
-        cf_noanswer_enabled: accountData.cf_noanswer_enabled,
-        cf_noanswer_dest: accountData.cf_noanswer_dest,
-        cf_unreg_enabled: accountData.cf_unreg_enabled,
-        cf_unreg_dest: accountData.cf_unreg_dest,
-        dnd_enabled: accountData.dnd_enabled,
-        from_domain: accountData.from_domain,
-        contact_user: accountData.contact_user,
-        outbound_proxy: accountData.outbound_proxy
-      }
+      data: buildSipExtensionPayload(accountData),
     });
     return response.data;
   } catch (error) {
@@ -1093,12 +1112,13 @@ export const updateSipAccount = async (accountData) => {
   }
 };
 
-export const deleteSipAccount = async (extension) => {
+export const deleteSipAccount = async (extension, context) => {
   try {
     const response = await axiosInstance.post('/pjsip', {
       type: 'delete',
       data: {
-        extension: extension
+        extension,
+        ...(context ? { context } : {}),
       }
     });
     return response.data;
@@ -2781,6 +2801,224 @@ export const downloadCdr = async () => {
     return response;
   } catch (error) {
     console.error('Error downloading CDR:', error.message);
+    throw error;
+  }
+};
+
+// DISA API
+export const listDisa = async () => {
+  try {
+    const response = await axiosInstance.post('/disa', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing DISA:', error.message);
+    throw error;
+  }
+};
+
+export const createDisa = async (data) => {
+  try {
+    const response = await axiosInstance.post('/disa', { type: 'create', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating DISA:', error.message);
+    throw error;
+  }
+};
+
+export const getDisa = async (id) => {
+  try {
+    const response = await axiosInstance.post('/disa', { type: 'get', id: Number(id) });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching DISA:', error.message);
+    throw error;
+  }
+};
+
+export const updateDisa = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/disa', { type: 'update', id: Number(id), ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating DISA:', error.message);
+    throw error;
+  }
+};
+
+export const deleteDisa = async (id) => {
+  try {
+    const response = await axiosInstance.post('/disa', { type: 'delete', id: Number(id) });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting DISA:', error.message);
+    throw error;
+  }
+};
+
+// Voice Prompts API
+export const getVoicePromptPreferences = async () => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', { type: 'get_preferences' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching voice prompt preferences:', error.message);
+    throw error;
+  }
+};
+
+export const updateVoicePromptPreferences = async ({ music_on_hold, play_call_forwarding_prompt }) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', {
+      type: 'update_preferences',
+      music_on_hold,
+      play_call_forwarding_prompt: !!play_call_forwarding_prompt,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating voice prompt preferences:', error.message);
+    throw error;
+  }
+};
+
+export const listMohClasses = async () => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', { type: 'list_moh_classes' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing MOH classes:', error.message);
+    throw error;
+  }
+};
+
+export const listMohFiles = async (category) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', { type: 'list_moh_files', category: String(category || 'default') });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing MOH files:', error.message);
+    throw error;
+  }
+};
+
+export const uploadMohFile = async ({ category, file }) => {
+  try {
+    const formData = new FormData();
+    formData.append('category', String(category || 'default'));
+    formData.append('file', file);
+    const response = await axiosInstance.post('/voice-prompts/upload-moh', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading MOH file:', error.message);
+    throw error;
+  }
+};
+
+export const playMohFile = async ({ category, filename }) => {
+  try {
+    const response = await axiosInstance.post(
+      '/voice-prompts',
+      { type: 'play_moh_file', category: String(category || 'default'), filename: String(filename || '') },
+      { responseType: 'blob', timeout: 60000 }
+    );
+    return response;
+  } catch (error) {
+    console.error('Error playing MOH file:', error.message);
+    throw error;
+  }
+};
+
+export const downloadMohFile = async ({ category, filename }) => {
+  try {
+    const response = await axiosInstance.post(
+      '/voice-prompts',
+      { type: 'download_moh_file', category: String(category || 'default'), filename: String(filename || '') },
+      { responseType: 'blob', timeout: 60000 }
+    );
+    return response;
+  } catch (error) {
+    console.error('Error downloading MOH file:', error.message);
+    throw error;
+  }
+};
+
+export const deleteMohFile = async ({ category, filename }) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', {
+      type: 'delete_moh_file',
+      category: String(category || 'default'),
+      filename: String(filename || ''),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting MOH file:', error.message);
+    throw error;
+  }
+};
+
+export const listVoicePromptExtensions = async () => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', { type: 'list_extensions' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing voice prompt extensions:', error.message);
+    throw error;
+  }
+};
+
+export const recordNewCustomPrompt = async ({ file_name, extension }) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', {
+      type: 'record_new',
+      file_name: String(file_name || ''),
+      extension: String(extension || ''),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error recording new custom prompt:', error.message);
+    throw error;
+  }
+};
+
+export const listCustomPrompts = async () => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', { type: 'list_custom_prompts' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing custom prompts:', error.message);
+    throw error;
+  }
+};
+
+export const playCustomPrompt = async ({ filename }) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', { type: 'play_custom_prompt', filename: String(filename || '') }, { responseType: 'blob', timeout: 60000 });
+    return response;
+  } catch (error) {
+    console.error('Error playing custom prompt:', error.message);
+    throw error;
+  }
+};
+
+export const downloadCustomPrompt = async ({ filename }) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', { type: 'download_custom_prompt', filename: String(filename || '') }, { responseType: 'blob', timeout: 60000 });
+    return response;
+  } catch (error) {
+    console.error('Error downloading custom prompt:', error.message);
+    throw error;
+  }
+};
+
+export const deleteCustomPrompt = async ({ filename }) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', { type: 'delete_custom_prompt', filename: String(filename || '') });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting custom prompt:', error.message);
     throw error;
   }
 };

@@ -51,7 +51,18 @@ export const SIP_ACCOUNT_FIELDS = [
   { name: 'follow_me_entries', label: 'Follow Me Destinations', type: 'text', defaultValue: [] },
   { name: 'follow_me_timeout_destination', label: 'Follow Me Timeout Destination', type: 'text', defaultValue: '' },
   { name: 'dnd_enabled', label: 'Do Not Disturb', type: 'select', defaultValue: 'disabled' },
+  { name: 'dnd_time', label: 'Do Not Disturb Time Condition', type: 'select', defaultValue: 'all' },
   { name: 'dnd_special_numbers', label: 'Special Number for DND', type: 'text', defaultValue: [] },
+
+  // FEATURES -> Mobility Extension
+  { name: 'enable_mobility_extension', label: 'Enable Mobility Extension', type: 'select', defaultValue: 'no' },
+  { name: 'ring_simultaneously', label: 'Ring Simultaneously', type: 'select', defaultValue: 'no' },
+  { name: 'mobility_prefix', label: 'Mobility Prefix', type: 'text', defaultValue: '' },
+  { name: 'mobility_timeout', label: 'Mobility Timeout', type: 'select', defaultValue: 30 },
+
+  // FEATURES -> Secretary Service
+  { name: 'secretary_service', label: 'Secretary Service', type: 'select', defaultValue: 'disabled' },
+  { name: 'secretary_extension', label: 'Secretary Extension', type: 'text', defaultValue: '' },
 ];
 
 

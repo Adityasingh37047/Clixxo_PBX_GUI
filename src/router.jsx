@@ -104,6 +104,8 @@ import PrivateGroup from './components/PrivateGroup';
 import Paging from './components/Paging';
 import OutboundRoutesPage from './components/OutboundRoutesPage';
 import SpeedDialPage from './components/SpeedDialPage';
+import DisaPage from './components/DisaPage';
+import VoicePromptsPage from './components/VoicePromptsPage';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -268,6 +270,7 @@ export const router = createBrowserRouter([
       { path: '/pbx-status/active-calls', element: <ActiveCallsPage /> },
       { path: '/call-features/ring-group', element: <RingGroup /> },
       { path: '/call-features/speed-dial', element: <SpeedDialPage /> },
+      { path: '/call-features/disa', element: <DisaPage /> },
       {
         path: '/pcm/status',
         element: <PcmStatusPage />,
@@ -483,6 +486,10 @@ export const router = createBrowserRouter([
       {
         path: '/system-tools/hosts',
         element: <Hosts />,
+      },
+      {
+        path: '/voice-prompts',
+        element: <VoicePromptsPage />,
       },
     ],
   },

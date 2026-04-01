@@ -469,7 +469,9 @@ const SipRegisterPage = () => {
         'Outbound Proxy': stripSipPrefix(item?.['Outbound Proxy'] ?? item?.outbound_proxy ?? ''),
         server_domain: stripSipPrefix(item?.server_domain ?? ''),
         client_domain: stripSipPrefix(item?.client_domain ?? ''),
-        from_user: item?.auth_username ?? item?.from_user ?? '',
+        // Keep From User bound to backend `from_user` only.
+        // `auth_username` is a different server field and should not auto-fill this UI input.
+        from_user: item?.from_user ?? '',
         identity_ip: item?.identity_ip ?? '',
         registerStatus: registerStatus || '',
 

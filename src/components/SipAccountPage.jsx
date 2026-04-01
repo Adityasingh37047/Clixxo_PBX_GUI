@@ -101,6 +101,13 @@ const SipAccountPage = () => {
 
     const yesNoToToggle = (value) => (isEnabled(value) ? 'enabled' : 'disabled');
     const boolToYesNo = (value) => (isEnabled(value) ? 'yes' : 'no');
+    const normalizeTimeCondition = (value) => {
+      const normalized = String(value || '').toLowerCase().trim();
+      if (normalized === 'office') return 'work_time';
+      if (normalized === 'non_office') return 'holiday';
+      if (['all', 'work_time', 'holiday', 'custom'].includes(normalized)) return normalized;
+      return 'all';
+    };
 
     // Sort by extension number (convert to number for proper sorting)
     const sortedData = [...apiData].sort((a, b) => {
@@ -119,7 +126,7 @@ const SipAccountPage = () => {
       user_name: item.name || item.display_name || '',
       user_password: item.user_password || '',
       email: item.email || '',
-      mobile_number: item.mobile_number || '',
+      mobile_number: item.mobile_number || item.mobile || '',
 
       voicemail_enabled: boolToYesNo(item.voicemail_enabled),
       voicemail_password: item.voicemail_password || '',
@@ -131,16 +138,36 @@ const SipAccountPage = () => {
           : item.voicemail_file || 'audio_file_attachment',
       voicemail_keep_local: item.voicemail_keep_local || 'no',
 
-      cf_always_enabled: yesNoToToggle(item.cf_always_enabled),
-      cf_always_number: item.cf_always_dest || '',
-      cf_busy_enabled: yesNoToToggle(item.cf_busy_enabled),
-      cf_busy_number: item.cf_busy_dest || '',
-      cf_no_answer_enabled: yesNoToToggle(item.cf_noanswer_enabled),
-      cf_no_answer_number: item.cf_noanswer_dest || '',
-      cf_not_registered_enabled: yesNoToToggle(item.cf_unreg_enabled),
-      cf_not_registered_number: item.cf_unreg_dest || '',
+      cf_always_enabled: yesNoToToggle(item.cf_always_enabled ?? item.call_forward_always_enabled),
+      cf_always_number: item.cf_always_dest || item.call_forward_always_dest || '',
+      cf_always_time: normalizeTimeCondition(item.cf_always_time_condition || item.call_forward_always_time_condition),
+      cf_busy_enabled: yesNoToToggle(item.cf_busy_enabled ?? item.call_forward_busy_enabled),
+      cf_busy_number: item.cf_busy_dest || item.call_forward_busy_dest || '',
+      cf_busy_time: normalizeTimeCondition(item.cf_busy_time_condition || item.call_forward_busy_time_condition),
+      cf_no_answer_enabled: yesNoToToggle(item.cf_noanswer_enabled ?? item.call_forward_noanswer_enabled),
+      cf_no_answer_number: item.cf_noanswer_dest || item.call_forward_noanswer_dest || '',
+      cf_no_answer_time: normalizeTimeCondition(item.cf_noanswer_time_condition || item.call_forward_noanswer_time_condition),
+      cf_not_registered_enabled: yesNoToToggle(item.cf_unreg_enabled ?? item.call_forward_unreg_enabled),
+      cf_not_registered_number: item.cf_unreg_dest || item.call_forward_unreg_dest || '',
+      cf_not_registered_time: normalizeTimeCondition(item.cf_unreg_time_condition || item.call_forward_unreg_time_condition),
 
       dnd_enabled: yesNoToToggle(item.dnd_enabled),
+      dnd_time: normalizeTimeCondition(item.dnd_time_condition),
+      dnd_special_numbers:
+        (Array.isArray(item.dnd_special_numbers) && item.dnd_special_numbers) ||
+        (Array.isArray(item.dnd_special_number) && item.dnd_special_number) ||
+        (Array.isArray(item.dnd_allow_numbers) && item.dnd_allow_numbers) ||
+        [],
+      enable_mobility_extension: boolToYesNo(item.mobility_enabled ?? item.enable_mobility_extension ?? item.enable_mobility_ext),
+      ring_simultaneously: boolToYesNo(item.mobility_ring_simultaneously ?? item.ring_simultaneously),
+      mobility_prefix: item.mobility_prefix || item.prefix || '',
+      mobility_timeout: Number(item.mobility_timeout ?? item.timeout ?? 30) || 30,
+      secretary_service: yesNoToToggle(item.secretary_enabled ?? item.secretary_service_enabled ?? item.secretary_service),
+      secretary_extension: item.secretary_extension || item.secretary_number || item.ss1 || item.ss2 || '',
+      follow_me_enabled: yesNoToToggle(item.follow_me_enabled),
+      follow_me_time: normalizeTimeCondition(item.follow_me_time_condition),
+      follow_me_entries: item.follow_me_dest ? [{ destinationType: String(item.follow_me_dest), timeout: 30, confirm: 'unconfirm' }] : [],
+      follow_me_timeout_destination: item.follow_me_timeout_destination || '',
 
       from_domain: item.from_domain || item['Domain name'] || '',
       contact_user: item.contact_user || item['Contact User'] || '',
@@ -151,8 +178,7 @@ const SipAccountPage = () => {
   
   // Transform UI data to API format
   const transformUiToApi = (uiData) => {
-    const toggleToYesNo = (value) =>
-      value === 'enabled' || value === 'yes' ? 'yes' : 'no';
+    const toggleToBool = (value) => value === 'enabled' || value === 'yes' || value === true;
 
     const voicemailFileForApi =
       uiData.voicemail_file === 'audio_file_attachment'
@@ -170,25 +196,61 @@ const SipAccountPage = () => {
         ? Number(uiData.max_registrations)
         : undefined,
       name: uiData.user_name || uiData.name || '',
+      display_name: uiData.user_name || uiData.name || '',
       user_password: uiData.user_password || '',
       email: uiData.email || '',
       mobile_number: uiData.mobile_number || '',
+      mobile: uiData.mobile_number || '',
 
       voicemail_enabled: uiData.voicemail_enabled || 'no',
       voicemail_password: uiData.voicemail_password || '',
       voicemail_file: voicemailFileForApi,
       voicemail_keep_local: uiData.voicemail_keep_local || 'no',
 
-      cf_always_enabled: toggleToYesNo(uiData.cf_always_enabled),
+      cf_always_enabled: toggleToBool(uiData.cf_always_enabled),
       cf_always_dest: uiData.cf_always_number || '',
-      cf_busy_enabled: toggleToYesNo(uiData.cf_busy_enabled),
+      cf_always_time_condition: uiData.cf_always_time || 'all',
+      cf_busy_enabled: toggleToBool(uiData.cf_busy_enabled),
       cf_busy_dest: uiData.cf_busy_number || '',
-      cf_noanswer_enabled: toggleToYesNo(uiData.cf_no_answer_enabled),
+      cf_busy_time_condition: uiData.cf_busy_time || 'all',
+      cf_noanswer_enabled: toggleToBool(uiData.cf_no_answer_enabled),
       cf_noanswer_dest: uiData.cf_no_answer_number || '',
-      cf_unreg_enabled: toggleToYesNo(uiData.cf_not_registered_enabled),
+      cf_noanswer_time_condition: uiData.cf_no_answer_time || 'all',
+      cf_unreg_enabled: toggleToBool(uiData.cf_not_registered_enabled),
       cf_unreg_dest: uiData.cf_not_registered_number || '',
+      cf_unreg_time_condition: uiData.cf_not_registered_time || 'all',
 
-      dnd_enabled: toggleToYesNo(uiData.dnd_enabled),
+      follow_me_enabled: toggleToBool(uiData.follow_me_enabled),
+      follow_me_dest:
+        (Array.isArray(uiData.follow_me_entries) && uiData.follow_me_entries.find(e => e?.destinationType)?.destinationType) ||
+        '',
+      follow_me_destination:
+        (Array.isArray(uiData.follow_me_entries) && uiData.follow_me_entries.find(e => e?.destinationType)?.destinationType) ||
+        '',
+      follow_me_time_condition: uiData.follow_me_time || 'all',
+      dnd_enabled: toggleToBool(uiData.dnd_enabled),
+      dnd_time_condition: uiData.dnd_time || 'all',
+      dnd_special_numbers: Array.isArray(uiData.dnd_special_numbers)
+        ? uiData.dnd_special_numbers.filter(Boolean)
+        : [],
+      dnd_special_number: Array.isArray(uiData.dnd_special_numbers)
+        ? uiData.dnd_special_numbers.filter(Boolean)
+        : [],
+      dnd_allow_numbers: Array.isArray(uiData.dnd_special_numbers)
+        ? uiData.dnd_special_numbers.filter(Boolean)
+        : [],
+      mobility_enabled: toggleToBool(uiData.enable_mobility_extension),
+      enable_mobility_extension: uiData.enable_mobility_extension || 'no',
+      enable_mobility_ext: uiData.enable_mobility_extension || 'no',
+      mobility_ring_simultaneously: toggleToBool(uiData.ring_simultaneously),
+      ring_simultaneously: uiData.ring_simultaneously || 'no',
+      mobility_prefix: uiData.mobility_prefix || '',
+      mobility_timeout: Number(uiData.mobility_timeout || 30),
+      secretary_enabled: toggleToBool(uiData.secretary_service),
+      secretary_service_enabled: toggleToBool(uiData.secretary_service),
+      secretary_service: toggleToBool(uiData.secretary_service),
+      secretary_extension: uiData.secretary_extension || '',
+      secretary_number: uiData.secretary_extension || '',
 
       from_domain: uiData.from_domain,
       contact_user: uiData.contact_user,
@@ -589,6 +651,12 @@ const SipAccountPage = () => {
 
     const { extension: _ext, password: _pwd, ...commonSettings } = singleApiData;
 
+    // For bulk create, let backend assign each account name from its extension number.
+    // Sending a fixed name would apply the same name to all generated extensions.
+    if ('name' in commonSettings) {
+      delete commonSettings.name;
+    }
+
     // Figure out which extensions we want to create, skipping ones that already exist.
     const existingExts = new Set(accounts.map(a => String(a.extension)));
     const desiredExts = [];
@@ -682,7 +750,7 @@ const SipAccountPage = () => {
     try {
       const deletePromises = selected.map(async (idx) => {
         const account = accounts[idx];
-        return await deleteSipAccount(account.extension);
+        return await deleteSipAccount(account.extension, account.context);
       });
       
       const results = await Promise.allSettled(deletePromises);
@@ -721,7 +789,7 @@ const SipAccountPage = () => {
     setLoading(prev => ({ ...prev, delete: true }));
     try {
       const deletePromises = accounts.map(async (account) => {
-        return await deleteSipAccount(account.extension);
+        return await deleteSipAccount(account.extension, account.context);
       });
       
       const results = await Promise.allSettled(deletePromises);
@@ -769,7 +837,7 @@ const SipAccountPage = () => {
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: 720, maxWidth: '95vw', mx: 'auto', p: 0 }
+          sx: { width: 760, maxWidth: '96vw', mx: 'auto', p: 0 }
         }}
       >
         <DialogTitle 
@@ -802,7 +870,6 @@ const SipAccountPage = () => {
               >
                 <Tab label="BASIC" value="basic" sx={{ fontSize: 13, fontWeight: 600, minHeight: 36 }} />
                 <Tab label="FEATURES" value="features" sx={{ fontSize: 13, fontWeight: 600, minHeight: 36 }} />
-                <Tab label="ADVANCED" value="advanced" sx={{ fontSize: 13, fontWeight: 600, minHeight: 36 }} />
               </Tabs>
             </div>
 
@@ -814,15 +881,15 @@ const SipAccountPage = () => {
                   <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
                     General
                   </div>
-                  <div className="p-2 flex flex-col gap-2">
+                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                     {formMode === 'single' ? (
                       <>
                         {/* Extension (single) */}
                         <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                          <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                          <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                             Extension:
                           </label>
-                          <div className="flex-1">
+                          <div className="flex-1 max-w-[340px] w-full">
                             <TextField
                               type="text"
                               value={form.extension || ''}
@@ -845,10 +912,10 @@ const SipAccountPage = () => {
                       <>
                         {/* Start Extension (bulk) */}
                         <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                          <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                          <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                             Start Extension:
                           </label>
-                          <div className="flex-1">
+                          <div className="flex-1 max-w-[340px] w-full">
                             <TextField
                               type="number"
                               value={bulkForm.startExtension}
@@ -863,10 +930,10 @@ const SipAccountPage = () => {
 
                         {/* Create Number (bulk) */}
                         <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                          <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                          <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                             Create Number:
                           </label>
-                          <div className="flex-1">
+                          <div className="flex-1 max-w-[340px] w-full">
                             <TextField
                               type="number"
                               value={bulkForm.createNumber}
@@ -880,8 +947,8 @@ const SipAccountPage = () => {
                         </div>
 
                         {/* Registration Password (bulk) */}
-                        <div className="flex items-start bg-white rounded px-2 py-1 gap-2">
-                          <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                        <div className="flex items-start bg-white rounded px-2 py-1 gap-2 md:col-span-2">
+                          <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                             Registration Password:
                           </label>
                           <div className="flex-1 flex flex-col gap-2">
@@ -929,10 +996,10 @@ const SipAccountPage = () => {
 
                     {/* Context */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                         Context:
                       </label>
-                      <div className="flex-1">
+                      <div className="flex-1 max-w-[340px] w-full">
                         <FormControl fullWidth size="small" error={!!validationErrors.context}>
                           <MuiSelect
                             value={form.context || ''}
@@ -956,8 +1023,8 @@ const SipAccountPage = () => {
                     </div>
 
                     {/* Allow Codecs */}
-                    <div className="flex items-start bg-white rounded px-2 py-1 gap-2">
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left pt-1" style={{width:180, marginRight:10}}>
+                    <div className="flex items-start bg-white rounded px-2 py-1 gap-2 md:col-span-2">
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left pt-1" style={{width:130, marginRight:6}}>
                         Allow Codecs:
                       </label>
                       <div className="flex-1">
@@ -997,10 +1064,10 @@ const SipAccountPage = () => {
                     {/* Password (single mode only) */}
                     {formMode === 'single' && (
                       <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                           Password:
                         </label>
-                        <div className="flex-1">
+                        <div className="flex-1 max-w-[340px] w-full">
                           <TextField
                             type={showPassword ? 'text' : 'password'}
                             value={form.password || ''}
@@ -1036,10 +1103,10 @@ const SipAccountPage = () => {
 
                     {/* Max Registrations */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                         Max Registrations:
                       </label>
-                      <div className="flex-1">
+                      <div className="flex-1 max-w-[340px] w-full">
                         <TextField
                           type="number"
                           value={form.max_registrations || ''}
@@ -1059,16 +1126,16 @@ const SipAccountPage = () => {
                   <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
                     User Info
                   </div>
-                  <div className="p-2 flex flex-col gap-2">
+                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                     {/* Name */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                         Name:
                       </label>
-                      <div className="flex-1">
+                      <div className="flex-1 max-w-[340px] w-full">
                         <TextField
                           type="text"
-                          value={form.user_name || form.extension || ''}
+                          value={form.user_name || ''}
                           onChange={e => handleChange('user_name', e.target.value)}
                           size="small"
                           fullWidth
@@ -1080,10 +1147,10 @@ const SipAccountPage = () => {
 
                     {/* User Password */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                         User Password:
                       </label>
-                      <div className="flex-1">
+                      <div className="flex-1 max-w-[340px] w-full">
                         <TextField
                           type="password"
                           value={form.user_password || ''}
@@ -1098,10 +1165,10 @@ const SipAccountPage = () => {
 
                     {/* Email */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                         Email:
                       </label>
-                      <div className="flex-1">
+                      <div className="flex-1 max-w-[340px] w-full">
                         <TextField
                           type="email"
                           value={form.email || ''}
@@ -1116,10 +1183,10 @@ const SipAccountPage = () => {
 
                     {/* Mobile Number */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:130, marginRight:6}}>
                         Mobile Number:
                       </label>
-                      <div className="flex-1">
+                      <div className="flex-1 max-w-[340px] w-full">
                         <TextField
                           type="text"
                           value={form.mobile_number || ''}
@@ -1134,6 +1201,7 @@ const SipAccountPage = () => {
                     </div>
                   </div>
                 </div>
+
               </div>
             )}
 
@@ -1261,39 +1329,37 @@ const SipAccountPage = () => {
                       { key: 'no_answer', label: 'No Answer' },
                       { key: 'not_registered', label: 'Not Registered' },
                     ].map(rule => (
-                      <div
-                        key={rule.key}
-                        className="flex flex-col md:flex-row md:items-center md:gap-4 gap-1"
-                      >
+                      <div key={rule.key} className="flex flex-col md:flex-row md:items-center md:gap-2 gap-1">
                         {/* Rule label */}
-                        <div style={{ minWidth: 110, maxWidth: 120 }} className="text-[14px] text-gray-700 font-medium">
+                        <div style={{ minWidth: 100, maxWidth: 110 }} className="text-[14px] text-gray-700 font-medium">
                           {rule.label}
                         </div>
 
                         {/* Disabled / Enabled radio buttons */}
-                        <div style={{ minWidth: 170, maxWidth: 190 }} className="flex items-center">
+                        <div style={{ minWidth: 180, maxWidth: 190 }} className="flex items-center">
                           <RadioGroup
                             row
                             value={form[`cf_${rule.key}_enabled`] || 'disabled'}
                             onChange={(e) => handleChange(`cf_${rule.key}_enabled`, e.target.value)}
+                            sx={{ flexWrap: 'nowrap' }}
                           >
                             <FormControlLabel
                               value="disabled"
                               control={<Radio size="small" />}
                               label="Disabled"
-                              sx={{ '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+                              sx={{ mr: 1.5, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
                             />
                             <FormControlLabel
                               value="enabled"
                               control={<Radio size="small" />}
                               label="Enabled"
-                              sx={{ '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+                              sx={{ mr: 0, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
                             />
                           </RadioGroup>
                         </div>
 
                         {/* Destination number dropdown (extensions) */}
-                        <div style={{ minWidth: 170, maxWidth: 190 }} className="flex items-center">
+                        <div style={{ minWidth: 160, maxWidth: 170 }} className="flex items-center">
                           <FormControl fullWidth size="small">
                             <MuiSelect
                               value={form[`cf_${rule.key}_number`] || ''}
@@ -1312,17 +1378,18 @@ const SipAccountPage = () => {
                         </div>
 
                         {/* Time Condition label + dropdown */}
-                        <div style={{ minWidth: 150, maxWidth: 160 }} className="flex items-center gap-2">
-                          <span className="text-[13px] text-gray-700 whitespace-nowrap">Time Condition</span>
-                          <FormControl size="small" sx={{ minWidth: 70, maxWidth: 80 }}>
+                        <div style={{ minWidth: 135, maxWidth: 140 }} className="flex items-center gap-1.5">
+                          <span className="text-[12px] text-gray-700 whitespace-nowrap">Time Condition</span>
+                          <FormControl size="small" sx={{ minWidth: 62, maxWidth: 70 }}>
                             <MuiSelect
                               value={form[`cf_${rule.key}_time`] || 'all'}
                               onChange={e => handleChange(`cf_${rule.key}_time`, e.target.value)}
                               sx={{ '& .MuiOutlinedInput-input': { padding: '4px 6px', fontSize: 13 } }}
                             >
                               <MenuItem value="all">All</MenuItem>
-                              <MenuItem value="office">Office Hours</MenuItem>
-                              <MenuItem value="non_office">Non-Office</MenuItem>
+                              <MenuItem value="work_time">Work Time</MenuItem>
+                              <MenuItem value="holiday">Holiday</MenuItem>
+                              <MenuItem value="custom">Custom</MenuItem>
                             </MuiSelect>
                           </FormControl>
                         </div>
@@ -1338,46 +1405,48 @@ const SipAccountPage = () => {
                   </div>
                   <div className="p-2 flex flex-col gap-2">
                     {/* Top row: Follow Me + radios + Time Condition */}
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-2">
+                    <div className="flex flex-col md:flex-row md:items-center md:gap-2 gap-2">
                       {/* Follow Me label */}
                       <div style={{ minWidth: 110 }} className="text-[14px] text-gray-700 font-medium">
                         Follow Me
                       </div>
 
                       {/* Disabled / Enabled radios */}
-                      <div className="flex items-center" style={{ minWidth: 170, maxWidth: 190 }}>
+                      <div className="flex items-center" style={{ minWidth: 180, maxWidth: 190 }}>
                         <RadioGroup
                           row
                           value={form.follow_me_enabled || 'disabled'}
                           onChange={(e) => handleChange('follow_me_enabled', e.target.value)}
+                          sx={{ flexWrap: 'nowrap' }}
                         >
                           <FormControlLabel
                             value="disabled"
                             control={<Radio size="small" />}
                             label="Disabled"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+                            sx={{ mr: 1.5, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
                           />
                           <FormControlLabel
                             value="enabled"
                             control={<Radio size="small" />}
                             label="Enabled"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+                            sx={{ mr: 0, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
                           />
                         </RadioGroup>
                       </div>
 
                       {/* Time Condition label + dropdown */}
-                      <div className="flex items-center gap-2" style={{ minWidth: 150, maxWidth: 180 }}>
-                        <span className="text-[13px] text-gray-700 whitespace-nowrap">Time Condition</span>
-                        <FormControl size="small" sx={{ minWidth: 70, maxWidth: 80 }}>
+                      <div className="flex items-center gap-1.5" style={{ minWidth: 135, maxWidth: 145 }}>
+                        <span className="text-[12px] text-gray-700 whitespace-nowrap">Time Condition</span>
+                        <FormControl size="small" sx={{ minWidth: 62, maxWidth: 70 }}>
                           <MuiSelect
                             value={form.follow_me_time || 'all'}
                             onChange={e => handleChange('follow_me_time', e.target.value)}
                             sx={{ '& .MuiOutlinedInput-input': { padding: '4px 6px', fontSize: 13 } }}
                           >
                             <MenuItem value="all">All</MenuItem>
-                            <MenuItem value="office">Office Hours</MenuItem>
-                            <MenuItem value="non_office">Non-Office</MenuItem>
+                            <MenuItem value="work_time">Work Time</MenuItem>
+                            <MenuItem value="holiday">Holiday</MenuItem>
+                            <MenuItem value="custom">Custom</MenuItem>
                           </MuiSelect>
                         </FormControl>
                       </div>
@@ -1385,7 +1454,7 @@ const SipAccountPage = () => {
 
                     {/* Destination and Timeout Destination when Follow Me is enabled */}
                     {form.follow_me_enabled === 'enabled' && (
-                      <div className="flex flex-col gap-3 mt-1">
+                      <div className="flex flex-col gap-3 mt-1 border border-gray-200 rounded-md p-2 bg-[#fafbfc]">
                         {/* Destination section */}
                         <div className="flex flex-col gap-1">
                           {/* Header row: label + + button */}
@@ -1420,15 +1489,9 @@ const SipAccountPage = () => {
                               ? form.follow_me_entries
                               : [{ destinationType: '', timeout: 30, confirm: 'unconfirm' }]
                             ).map((entry, idx) => (
-                              <div
-                                key={idx}
-                                className="flex flex-col md:flex-row md:items-center md:gap-3 gap-2"
-                              >
+                              <div key={idx} className="grid grid-cols-1 md:grid-cols-[220px_90px_120px] gap-2 items-center">
                                 {/* Destination (extension number) */}
-                                <FormControl
-                                  size="small"
-                                  sx={{ minWidth: 160, maxWidth: 220 }}
-                                >
+                                <FormControl size="small" sx={{ minWidth: 160, maxWidth: 220 }}>
                                   <MuiSelect
                                     value={entry?.destinationType || ''}
                                     displayEmpty
@@ -1445,10 +1508,7 @@ const SipAccountPage = () => {
                                 </FormControl>
 
                                 {/* Timeout */}
-                                <FormControl
-                                  size="small"
-                                  sx={{ minWidth: 70, maxWidth: 80 }}
-                                >
+                                <FormControl size="small" sx={{ minWidth: 70, maxWidth: 90 }}>
                                   <MuiSelect
                                     value={entry?.timeout ?? 30}
                                     onChange={e => handleFollowMeEntryChange(idx, 'timeout', Number(e.target.value))}
@@ -1461,10 +1521,7 @@ const SipAccountPage = () => {
                                 </FormControl>
 
                                 {/* Confirm */}
-                                <FormControl
-                                  size="small"
-                                  sx={{ minWidth: 90, maxWidth: 120 }}
-                                >
+                                <FormControl size="small" sx={{ minWidth: 90, maxWidth: 120 }}>
                                   <MuiSelect
                                     value={entry?.confirm || 'unconfirm'}
                                     onChange={e => handleFollowMeEntryChange(idx, 'confirm', e.target.value)}
@@ -1512,29 +1569,45 @@ const SipAccountPage = () => {
                   </div>
                   <div className="p-2 flex flex-col gap-2">
                     {/* Top row: DND label + radios */}
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-4 gap-2">
+                    <div className="flex flex-col md:flex-row md:items-center md:gap-2 gap-2">
                       <div style={{ minWidth: 140 }} className="text-[14px] text-gray-700 font-medium">
                         Do Not Disturb
                       </div>
-                      <div className="flex items-center" style={{ minWidth: 170, maxWidth: 190 }}>
+                      <div className="flex items-center" style={{ minWidth: 180, maxWidth: 190 }}>
                         <RadioGroup
                           row
                           value={form.dnd_enabled || 'disabled'}
                           onChange={(e) => handleChange('dnd_enabled', e.target.value)}
+                          sx={{ flexWrap: 'nowrap' }}
                         >
                           <FormControlLabel
                             value="disabled"
                             control={<Radio size="small" />}
                             label="Disabled"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+                            sx={{ mr: 1.5, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
                           />
                           <FormControlLabel
                             value="enabled"
                             control={<Radio size="small" />}
                             label="Enabled"
-                            sx={{ '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+                            sx={{ mr: 0, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
                           />
                         </RadioGroup>
+                      </div>
+                      <div className="flex items-center gap-1.5" style={{ minWidth: 135, maxWidth: 145 }}>
+                        <span className="text-[12px] text-gray-700 whitespace-nowrap">Time Condition</span>
+                        <FormControl size="small" sx={{ minWidth: 62, maxWidth: 70 }}>
+                          <MuiSelect
+                            value={form.dnd_time || 'all'}
+                            onChange={e => handleChange('dnd_time', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '4px 6px', fontSize: 13 } }}
+                          >
+                            <MenuItem value="all">All</MenuItem>
+                            <MenuItem value="work_time">Work Time</MenuItem>
+                            <MenuItem value="holiday">Holiday</MenuItem>
+                            <MenuItem value="custom">Custom</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
                       </div>
                     </div>
 
@@ -1587,89 +1660,144 @@ const SipAccountPage = () => {
                     )}
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* ADVANCED TAB */}
-            {activeTab === 'advanced' && (
-              <div className="flex flex-col gap-3 w-full pb-2">
+                {/* Mobility Extension */}
                 <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
                   <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
-                    Network / Registration
+                    Mobility Extension
                   </div>
-                  <div className="p-2 flex flex-col gap-2">
-                    {/* Domain name */}
+                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
-                        Domain name:
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:170, marginRight:6}}>
+                        Enable Mobility Extension
                       </label>
-                      <div className="flex-1">
-                        <TextField
-                          type="text"
-                          value={form.from_domain || ''}
-                          onChange={e => handleChange('from_domain', e.target.value)}
-                          size="small"
-                          fullWidth
-                          variant="outlined"
-                          placeholder="e.g., sip.domain.in"
-                          error={!!validationErrors.from_domain}
-                          inputProps={{ style: { fontSize: 14, padding: '3px 6px' } }}
-                        />
-                        {validationErrors.from_domain && (
-                          <div className="text-red-500 text-xs mt-1">{validationErrors.from_domain}</div>
-                        )}
+                      <div className="flex-1 max-w-[340px] w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.enable_mobility_extension || 'no'}
+                            onChange={e => handleChange('enable_mobility_extension', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="yes">Yes</MenuItem>
+                            <MenuItem value="no">No</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
                       </div>
                     </div>
-
-                    {/* Contact User */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
-                        Contact User:
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:170, marginRight:6}}>
+                        Prefix
                       </label>
-                      <div className="flex-1">
+                      <div className="flex-1 max-w-[340px] w-full">
                         <TextField
                           type="text"
-                          value={form.contact_user || ''}
-                          onChange={e => handleChange('contact_user', e.target.value)}
+                          value={form.mobility_prefix || ''}
+                          onChange={e => handleChange('mobility_prefix', e.target.value)}
                           size="small"
                           fullWidth
                           variant="outlined"
-                          placeholder="e.g., +91XXXXXXXXXX"
-                          error={!!validationErrors.contact_user}
                           inputProps={{ style: { fontSize: 14, padding: '3px 6px' } }}
                         />
-                        {validationErrors.contact_user && (
-                          <div className="text-red-500 text-xs mt-1">{validationErrors.contact_user}</div>
-                        )}
                       </div>
                     </div>
-
-                    {/* Outbound Proxy */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>
-                        Outbound Proxy:
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:170, marginRight:6}}>
+                        Ring Simultaneously
                       </label>
-                      <div className="flex-1">
-                        <TextField
-                          type="text"
-                          value={form.outbound_proxy || ''}
-                          onChange={e => handleChange('outbound_proxy', e.target.value)}
-                          size="small"
-                          fullWidth
-                          variant="outlined"
-                          placeholder="e.g., 15.158.34.15"
-                          error={!!validationErrors.outbound_proxy}
-                          inputProps={{ style: { fontSize: 14, padding: '3px 6px' } }}
-                        />
-                        {validationErrors.outbound_proxy && (
-                          <div className="text-red-500 text-xs mt-1">{validationErrors.outbound_proxy}</div>
-                        )}
+                      <div className="flex-1 max-w-[340px] w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ring_simultaneously || 'no'}
+                            onChange={e => handleChange('ring_simultaneously', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="yes">Yes</MenuItem>
+                            <MenuItem value="no">No</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:170, marginRight:6}}>
+                        Timeout
+                      </label>
+                      <div className="flex-1 max-w-[340px] w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={Number(form.mobility_timeout || 30)}
+                            onChange={e => handleChange('mobility_timeout', Number(e.target.value))}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            {FOLLOW_ME_TIMEOUT_OPTIONS.map(v => (
+                              <MenuItem key={v} value={v}>{v}</MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Secretary Service */}
+                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                  <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
+                    Secretary Service
+                  </div>
+                  <div className="p-2 flex flex-col gap-2">
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2">
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:170, marginRight:6}}>
+                        Secretary Service
+                      </label>
+                      <RadioGroup
+                        row
+                        value={form.secretary_service || 'disabled'}
+                        onChange={(e) => handleChange('secretary_service', e.target.value)}
+                        sx={{ flexWrap: 'nowrap' }}
+                      >
+                        <FormControlLabel
+                          value="disabled"
+                          control={<Radio size="small" />}
+                          label="Disabled"
+                          sx={{ mr: 1.5, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+                        />
+                        <FormControlLabel
+                          value="enabled"
+                          control={<Radio size="small" />}
+                          label="Enabled"
+                          sx={{ mr: 0, whiteSpace: 'nowrap', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
+                        />
+                      </RadioGroup>
+                    </div>
+
+                    {form.secretary_service === 'enabled' && (
+                      <div className="flex items-center bg-white rounded px-2 py-1 gap-2">
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:170, marginRight:6}}>
+                          Secretary Number
+                        </label>
+                        <div className="flex-1 max-w-[340px] w-full">
+                          <FormControl fullWidth size="small">
+                            <MuiSelect
+                              value={form.secretary_extension || ''}
+                              displayEmpty
+                              onChange={e => handleChange('secretary_extension', e.target.value)}
+                              sx={{ '& .MuiOutlinedInput-input': { padding: '4px 6px', fontSize: 13 } }}
+                            >
+                              <MenuItem value="">
+                                <em>Select extension</em>
+                              </MenuItem>
+                              {['ss1', 'ss2', ...extensionOptions].map(opt => (
+                                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
+
           </div>
         </DialogContent>
         <DialogActions className="p-4 justify-center gap-6">

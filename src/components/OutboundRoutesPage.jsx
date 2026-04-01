@@ -131,7 +131,7 @@ const OutboundRoutesPage = () => {
               suffix: String(d?.suffix ?? ''),
               delay: String(d?.delay_ms ?? 0),
             }))
-          : [{ ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$', strip: '0', delay: '0' }],
+          : [{ ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$' }],
     };
   };
 
@@ -235,7 +235,7 @@ const OutboundRoutesPage = () => {
     setSinglePin('');
     setRememoryHunt('No');
     setTimeConditions([]);
-    setDialPatterns([{ ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$', strip: '0', delay: '0' }]);
+    setDialPatterns([{ ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$' }]);
     setCallerConversion({ ...DEFAULT_CALLER_CONVERSION });
     setMemberExtensions([]);
     setMemberTrunks([]);
@@ -423,7 +423,7 @@ const OutboundRoutesPage = () => {
   };
 
   const addDialPattern = () =>
-    setDialPatterns((prev) => [...prev, { ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$', strip: '0', delay: '0' }]);
+    setDialPatterns((prev) => [...prev, { ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$' }]);
   const removeDialPatternAt = (index) =>
     setDialPatterns((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
 
@@ -750,35 +750,43 @@ const OutboundRoutesPage = () => {
                 <div className="flex flex-col gap-2">
                   <label className="text-[14px] text-gray-700 font-medium">Dial Patterns</label>
                   <div className="flex flex-col gap-2">
+                    <div className="hidden md:grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center">
+                      <div className="text-[12px] text-gray-600 font-medium">Patterns</div>
+                      <div className="text-[12px] text-gray-600 font-medium">Strip</div>
+                      <div className="text-[12px] text-gray-600 font-medium">Front</div>
+                      <div className="text-[12px] text-gray-600 font-medium">Suffix</div>
+                      <div className="text-[12px] text-gray-600 font-medium">Delay</div>
+                      <div />
+                    </div>
                     {dialPatterns.map((item, index) => (
                       <div key={`pattern-${index}`} className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center">
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder="Patterns"
+                          placeholder={index === 0 ? '' : undefined}
                           value={item.pattern}
                           onChange={(e) => updateDialPattern(index, 'pattern', e.target.value)}
                         />
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder="Strip"
+                          placeholder={index === 0 ? '' : undefined}
                           value={item.strip}
                           onChange={(e) => updateDialPattern(index, 'strip', e.target.value)}
                         />
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder="Front"
+                          placeholder={index === 0 ? '' : undefined}
                           value={item.front}
                           onChange={(e) => updateDialPattern(index, 'front', e.target.value)}
                         />
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder="Suffix"
+                          placeholder={index === 0 ? '' : undefined}
                           value={item.suffix}
                           onChange={(e) => updateDialPattern(index, 'suffix', e.target.value)}
                         />
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder="Delay"
+                          placeholder={index === 0 ? 'Unit is ms' : undefined}
                           value={item.delay}
                           onChange={(e) => updateDialPattern(index, 'delay', e.target.value)}
                         />
@@ -802,22 +810,24 @@ const OutboundRoutesPage = () => {
 
                 <div className="flex flex-col gap-2">
                   <label className="text-[14px] text-gray-700 font-medium">Caller Number Conversion</label>
+                  <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div className="text-[12px] text-gray-600 font-medium">Strip</div>
+                    <div className="text-[12px] text-gray-600 font-medium">Front</div>
+                    <div className="text-[12px] text-gray-600 font-medium">Suffix</div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <input
                       className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                      placeholder="Strip"
                       value={callerConversion.strip}
                       onChange={(e) => setCallerConversion((prev) => ({ ...prev, strip: e.target.value }))}
                     />
                     <input
                       className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                      placeholder="Front"
                       value={callerConversion.front}
                       onChange={(e) => setCallerConversion((prev) => ({ ...prev, front: e.target.value }))}
                     />
                     <input
                       className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                      placeholder="Suffix"
                       value={callerConversion.suffix}
                       onChange={(e) => setCallerConversion((prev) => ({ ...prev, suffix: e.target.value }))}
                     />

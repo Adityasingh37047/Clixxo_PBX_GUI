@@ -15,6 +15,7 @@ import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import PhoneInTalkIcon from '@mui/icons-material/PhoneInTalk';
 import SettingsPhoneIcon from '@mui/icons-material/SettingsPhone';
 import { ROUTE_PATHS } from './routeConstatns';
+import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 
 export const SIDEBAR_SECTIONS = [
   {
@@ -105,6 +106,7 @@ export const SIDEBAR_SECTIONS = [
       { id: 'callFeaturesPrivateGroup', title: 'Private Group', path: '/call-features/private-group' },
       { id: 'callFeaturesPaging', title: 'Paging', path: '/call-features/paging' },
       { id: 'callFeaturesSpeedDial', title: 'Speed Dial', path: '/call-features/speed-dial' },
+      { id: 'callFeaturesDisa', title: 'DISA', path: '/call-features/disa' },
     ]
   },
   {
@@ -119,6 +121,17 @@ export const SIDEBAR_SECTIONS = [
       { id: 'callControlOutboundRoutes', title: 'Outbound Routes', path: '/call-control/outbound-routes' },
     ]
   },
+{
+  id: 'VoicePrompts',
+  title: 'Voice Prompts',
+  icon: RecordVoiceOverIcon,
+  hasSubmenu: true,
+  path: '/voice-prompts',
+  submenuItems: [
+    { id: 'voicePromptsSettings', title: 'Voice Prompts', path: '/voice-prompts' },
+  ]
+},
+
   {
     id: 'pcm',
     title: 'PCM',
