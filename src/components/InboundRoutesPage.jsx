@@ -91,6 +91,33 @@ const SELECT_MENU_PROPS = {
   },
 };
 
+/** Dial / route number for a ring group (matches RingGroup.jsx: rg_number). */
+const getRingGroupDialNumber = (item) => {
+  if (!item || typeof item !== 'object') return '';
+  const n =
+    item.rg_number ??
+    item.ring_group_no ??
+    item.group_no ??
+    item.group ??
+    item.page_number;
+  if (n !== undefined && n !== null && String(n).trim() !== '') return String(n).trim();
+  return '';
+};
+
+/** If dest_value was saved as DB id, map to rg_number for display and API. */
+const resolveRingGroupDestValue = (rawDestValue, ringGroupRows) => {
+  if (rawDestValue == null || rawDestValue === '') return '';
+  const s = String(rawDestValue).trim();
+  if (!Array.isArray(ringGroupRows) || ringGroupRows.length === 0) return s;
+  if (ringGroupRows.some((g) => getRingGroupDialNumber(g) === s)) return s;
+  const byId = ringGroupRows.find((g) => String(g?.id) === s);
+  if (byId) {
+    const num = getRingGroupDialNumber(byId);
+    return num || s;
+  }
+  return s;
+};
+
 const InboundRoutesPage = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -155,9 +182,44 @@ const InboundRoutesPage = () => {
   const mapDestTypeToUi = (destType) => DEST_TYPE_TO_UI[String(destType || '').toLowerCase()] || '';
   const mapUiToDestType = (uiDest) => UI_TO_DEST_TYPE[uiDest] || 'call_queue';
 
-  const mapRouteFromApi = (item) => {
+  /** Ring-group list API uses `rg_number` (same as Ring Group page); do not use DB id as dial target. */
+  const getRingGroupDialNumber = (g) => {
+    if (!g || typeof g !== 'object') return '';
+    const n =
+      g.rg_number ??
+      g.ring_group_no ??
+      g.group_no ??
+      g.group ??
+      g.page_number;
+    if (n != null && String(n).trim() !== '') return String(n).trim();
+    return '';
+  };
+
+  /** If dest_value was saved as ring-group row id, map it to the real group number (e.g. 6200). */
+  const resolveRingGroupDestValue = (storedValue, ringGroupsList) => {
+    if (storedValue == null || storedValue === '') return '';
+    const s = String(storedValue).trim();
+    if (!Array.isArray(ringGroupsList) || ringGroupsList.length === 0) return s;
+
+    if (ringGroupsList.some((g) => getRingGroupDialNumber(g) === s)) return s;
+
+    const byId = ringGroupsList.find((g) => String(g?.id) === s);
+    if (byId) {
+      const dial = getRingGroupDialNumber(byId);
+      return dial || s;
+    }
+    return s;
+  };
+
+  const mapRouteFromApi = (item, ringGroupsList = []) => {
     const uiDestination = mapDestTypeToUi(item?.dest_type);
     const rawDestValue = item?.dest_value != null ? String(item.dest_value) : '';
+    const destinationTargetRaw =
+      uiDestination === 'Extension_Range'
+        ? ''
+        : uiDestination === 'Ring Groups'
+          ? resolveRingGroupDestValue(rawDestValue, ringGroupsList)
+          : rawDestValue;
     return {
       id: item?.id,
       name: String(item?.name || ''),
@@ -167,7 +229,7 @@ const InboundRoutesPage = () => {
       enableT38: toUiYesNo(item?.enable_t38, 'No'),
       enableTimeCondition: toUiYesNo(item?.enable_time_condition, 'No'),
       destination: uiDestination,
-      destinationTarget: uiDestination === 'Extension_Range' ? '' : rawDestValue,
+      destinationTarget: destinationTargetRaw,
       extensionRange: uiDestination === 'Extension_Range' ? rawDestValue : '',
       memberTrunks: Array.isArray(item?.member_trunks) ? item.member_trunks.map(String) : [],
       enabled: toUiYesNo(item?.enabled, 'Yes'),
@@ -177,17 +239,26 @@ const InboundRoutesPage = () => {
     };
   };
 
+  const normalizeList = (raw) => {
+    const list = raw?.message ?? raw?.data ?? raw;
+    return Array.isArray(list) ? list : [];
+  };
+
   const fetchInboundRoutes = async () => {
     setLoading((prev) => ({ ...prev, list: true }));
     try {
-      const res = await listInboundRoutes();
+      const [res, ringRes] = await Promise.all([
+        listInboundRoutes(),
+        listRingGroups().catch(() => ({ message: [] })),
+      ]);
+      const ringList = normalizeList(ringRes);
       if (!res?.response) {
         showAlert(res?.message || 'Failed to load inbound routes.');
         setRows([]);
         return;
       }
       const list = Array.isArray(res?.message) ? res.message : res?.message ? [res.message] : [];
-      setRows(list.map(mapRouteFromApi));
+      setRows(list.map((row) => mapRouteFromApi(row, ringList)));
     } catch (err) {
       showAlert(err?.message || 'Failed to load inbound routes.');
       setRows([]);
@@ -227,11 +298,6 @@ const InboundRoutesPage = () => {
     } finally {
       setLoading((prev) => ({ ...prev, trunks: false }));
     }
-  };
-
-  const normalizeList = (raw) => {
-    const list = raw?.message ?? raw?.data ?? raw;
-    return Array.isArray(list) ? list : [];
   };
 
   const loadDestinationData = async () => {
@@ -274,7 +340,17 @@ const InboundRoutesPage = () => {
       if (ringGroupsRes.status === 'fulfilled') {
         const list = normalizeList(ringGroupsRes.value)
           .map((item) => {
-            const id = item?.ring_group_no ?? item?.group_no ?? item?.group ?? item?.id ?? item;
+            const dial =
+              item?.rg_number ??
+              item?.ring_group_no ??
+              item?.group_no ??
+              item?.group ??
+              item?.page_number ??
+              '';
+            const id =
+              dial !== '' && dial != null
+                ? String(dial)
+                : String(item?.id ?? item ?? '');
             const name = item?.name ?? item?.group_name ?? item?.ring_group_name ?? '';
             return toOption(id, name ? `${id} - ${name}` : id);
           })

@@ -71,7 +71,7 @@ const SipRegisterPage = () => {
   const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
   
   // Fields to hide from the table
-  const HIDDEN_TABLE_FIELDS = ['password', 'Domain name', 'Contact User', 'Outbound Proxy', 'from_user', 'expire_in_sec', 'context', 'allow_codecs'];
+  const HIDDEN_TABLE_FIELDS = ['password', 'provider', 'Domain name', 'Contact User', 'Outbound Proxy', 'sip_header', 'from_user', 'expire_in_sec', 'context', 'allow_codecs'];
   const visibleFieldsCount = sipRegisterFields.filter(f => !HIDDEN_TABLE_FIELDS.includes(f.name)).length;
   const PREFERRED_ASSERTED_IDENTITY_OPTIONS = ['None', 'Extension Number', 'Trunk User Name', 'DOD Number'];
   const REMOTE_PARTY_ID_OPTIONS = ['None', 'Extension Number', 'Trunk User Name'];
@@ -469,6 +469,7 @@ const SipRegisterPage = () => {
         'Outbound Proxy': stripSipPrefix(item?.['Outbound Proxy'] ?? item?.outbound_proxy ?? ''),
         server_domain: stripSipPrefix(item?.server_domain ?? ''),
         client_domain: stripSipPrefix(item?.client_domain ?? ''),
+        auth_username: item?.auth_username ?? item?.auth_user ?? item?.authUser ?? '',
         // Keep From User bound to backend `from_user` only.
         // `auth_username` is a different server field and should not auto-fill this UI input.
         from_user: item?.from_user ?? '',
@@ -590,7 +591,7 @@ const SipRegisterPage = () => {
       enable_srtp: !!uiData.ui_enable_srtp,
       register: uiData.ui_register === 'Yes' ? 'yes' : 'no',
       username: uiData.username ?? '',
-      auth_username: uiData.from_user ?? '',
+      auth_username: uiData.auth_username ?? '',
       password: uiData.password ?? '',
       reg_fail_retry: uiData.ui_reg_fail_retry ?? 30,
       expire_seconds: uiData.ui_register === 'No' ? 0 : uiData.expire_in_sec ?? 1800,
@@ -606,6 +607,7 @@ const SipRegisterPage = () => {
       enabled: uiData.ui_enabled === 'Yes',
       eth_port: uiData.ui_eth_port ?? 'ETH0',
       context: uiData.context ?? '',
+      from_user: uiData.from_user ?? '',
 
       codecs,
       advance,
@@ -1001,6 +1003,24 @@ const SipRegisterPage = () => {
       }
       showMessage('error', validationErrors[firstKey]);
       return;
+    }
+
+    // Prevent duplicate registration: same Trunk ID (name) + Username
+    // (case-insensitive, trimmed). Allow when editing the same row.
+    if (mergedForm.ui_register === 'Yes') {
+      const norm = (v) => String(v ?? '').trim().toLowerCase();
+      const nextTrunkId = norm(mergedForm.trunk_id);
+      const nextUsername = norm(mergedForm.username);
+      const duplicateIndex = trunks.findIndex((t, idx) => {
+        if (editIndex !== null && idx === editIndex) return false;
+        return norm(t?.trunk_id) === nextTrunkId && norm(t?.username) === nextUsername;
+      });
+
+      if (nextTrunkId && nextUsername && duplicateIndex !== -1) {
+        showMessage('error', 'Duplicate trunk not allowed: same Trunk ID and Username already exists.');
+        setModalTab('basic');
+        return;
+      }
     }
 
     setLoading(prev => ({ ...prev, save: true }));
@@ -1608,8 +1628,8 @@ const SipRegisterPage = () => {
                               <TextField
                                 size="small"
                                 fullWidth
-                                value={form.from_user || ''}
-                                onChange={(e) => handleChange('from_user', e.target.value)}
+                                value={form.auth_username || ''}
+                                onChange={(e) => handleChange('auth_username', e.target.value)}
                                 inputProps={{ style: { fontSize: 14 } }}
                                 placeholder="Auth Username"
                               />

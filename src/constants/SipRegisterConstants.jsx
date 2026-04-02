@@ -2,6 +2,7 @@ export const sipRegisterFields = [
   { name: 'index', label: 'Index', type: 'text', defaultValue: '0' },
   { name: 'trunk_id', label: 'Trunk ID', type: 'text', defaultValue: '' },
   { name: 'username', label: 'Username', type: 'text', defaultValue: '' },
+  { name: 'auth_username', label: 'Auth Username', type: 'text', defaultValue: '' },
   { name: 'password', label: 'Password', type: 'password', defaultValue: '' },
   { name: 'context', label: 'Context', type: 'text', defaultValue: '' },
   { name: 'allow_codecs', label: 'Allow Codecs', type: 'checkbox', defaultValue: '' },
@@ -27,7 +28,6 @@ export const SIP_REGISTER_TABLE_COLUMNS = [
   { key: 'allow_codecs', label: 'Allow Codecs' },
   { key: 'expire_in_sec', label: 'Expire In Sec' },
   { key: 'provider', label: 'Provider' },
-  { key: 'sip_header', label: 'SIP Header' },
   { key: 'registerStatus', label: 'Status' },
   { key: 'modify', label: 'Modify' },
 ];

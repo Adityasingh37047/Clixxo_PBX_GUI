@@ -106,6 +106,7 @@ import OutboundRoutesPage from './components/OutboundRoutesPage';
 import SpeedDialPage from './components/SpeedDialPage';
 import DisaPage from './components/DisaPage';
 import VoicePromptsPage from './components/VoicePromptsPage';
+import PbxMonitor from './components/PbxMonitor';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -490,6 +491,10 @@ export const router = createBrowserRouter([
       {
         path: '/voice-prompts',
         element: <VoicePromptsPage />,
+      },
+      {
+        path: '/pbx-monitor',
+        element: <PbxMonitor />,
       },
     ],
   },

@@ -1989,6 +1989,39 @@ export const deleteSipTrunk = async (trunkId) => {
   }
 };
 
+// ------------------------------
+// PBX Monitor API
+// ------------------------------
+export const monitorExtensions = async () => {
+  try {
+    const response = await axiosInstance.post('/monitor', { type: 'extensions' });
+    return response.data;
+  } catch (error) {
+    console.error('Error monitoring extensions:', error.message);
+    throw error.response?.data || { message: 'Server unavailable' };
+  }
+};
+
+export const monitorTrunks = async () => {
+  try {
+    const response = await axiosInstance.post('/monitor', { type: 'trunks' });
+    return response.data;
+  } catch (error) {
+    console.error('Error monitoring trunks:', error.message);
+    throw error.response?.data || { message: 'Server unavailable' };
+  }
+};
+
+export const monitorBoth = async () => {
+  try {
+    const response = await axiosInstance.post('/monitor', { type: 'both' });
+    return response.data;
+  } catch (error) {
+    console.error('Error monitoring extensions+trunks:', error.message);
+    throw error.response?.data || { message: 'Server unavailable' };
+  }
+};
+
 // Global SIP settings (transport/SRTP/DTMF)
 export const listGlobalSipSettings = async () => {
   try {

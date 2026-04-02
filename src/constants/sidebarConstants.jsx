@@ -75,6 +75,7 @@ export const SIDEBAR_SECTIONS = [
     hasSubmenu: true,
     path: '/pbx-status/active-calls',
     submenuItems: [
+      { id: 'pbxMonitor', title: 'PBX Monitor', path: '/pbx-monitor' },
       { id: 'pbxStatusActiveCalls', title: 'Active Calls', path: '/pbx-status/active-calls' },
     ]
   },
