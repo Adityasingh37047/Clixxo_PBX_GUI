@@ -11,6 +11,8 @@ export const ROUTE_PATHS = {
   
   // Main routes
   SIP: '/sip',
+  SIP_COMPATIBILITY: '/sip/compatibility',
+  SIP_NAT_SETTINGS: '/sip/nat-settings',
   PCM: '/pcm',
   ISDN: '/isdn',
   FAX: '/fax',
@@ -30,6 +32,25 @@ export const ROUTE_PATHS = {
   PSTN_CALL_IN_ORICALLEEID: '/num-manipulate/pstn-call-in-oricalleeid',
   CALLERID_POOL: '/num-manipulate/callerid-pool',
   CALLERID_RESERVE_POOL: '/num-manipulate/callerid-reserve-pool',
+  PORT_GROUP: '/port/group',
+
+  // FXS Configuration (sections/port + sections/advanced)
+  PORT_FXS: '/fxs-configuration/fxs-settings',
+  PORT_FXS_ADVANCED: '/fxs-configuration/advanced',
+  FXS_GENERAL: '/fxs-configuration/general',
+  FXS_ACTION_URL: '/fxs-configuration/action-url',
+  FXS_AREA_SELECT: '/fxs-configuration/area-select',
+  FXS_CDR_QUERY: '/fxs-configuration/cdr-query',
+  FXS_COLOR_RING: '/fxs-configuration/color-ring',
+  FXS_CUE_TONE: '/fxs-configuration/cue-tone',
+  FXS_DIALING_RULE: '/fxs-configuration/dialing-rule',
+  FXS_DIALING_TIMEOUT: '/fxs-configuration/dialing-timeout',
+  FXS_DTMF: '/fxs-configuration/dtmf',
+  FXS_FUNCTION_KEY: '/fxs-configuration/function-key',
+  FXS_QOS: '/fxs-configuration/qos',
+  FXS_RINGING_SCHEME: '/fxs-configuration/ringing-scheme',
+  FXS_TONE_DETECTOR: '/fxs-configuration/tone-detector',
+  FXS_TONE_GENERATOR: '/fxs-configuration/tone-generator',
 };
 
 

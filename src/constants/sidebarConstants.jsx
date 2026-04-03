@@ -16,6 +16,8 @@ import PhoneInTalkIcon from '@mui/icons-material/PhoneInTalk';
 import SettingsPhoneIcon from '@mui/icons-material/SettingsPhone';
 import { ROUTE_PATHS } from './routeConstatns';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
+import PhoneCallbackIcon from '@mui/icons-material/PhoneCallback';
+import TuneIcon from '@mui/icons-material/Tune';
 
 export const SIDEBAR_SECTIONS = [
   {
@@ -66,72 +68,147 @@ export const SIDEBAR_SECTIONS = [
       { id: 'sipToSipAccount', title: 'SIP To SIP Account', path: '/sip/sip-to-sip-account' },
       { id: 'sipTrunkGroup', title: 'SIP Trunk Group', path: '/sip/trunk-group' },
       { id: 'sipMedia', title: 'Media', path: '/sip/media' },
+      { id: 'sipCompatibility', title: 'SIP Compatibility', path: ROUTE_PATHS.SIP_COMPATIBILITY },
+      { id: 'sipNatSettings', title: 'NAT Settings', path: ROUTE_PATHS.SIP_NAT_SETTINGS },
     ]
   },
+  
   {
-    id: 'pbxStatus',
-    title: 'PBX Status',
-    icon: PhoneInTalkIcon,
+    id: 'pbxConfiguration',
+    title: 'PBX Configuration',
+    icon: BusinessCenterIcon,
     hasSubmenu: true,
     path: '/pbx-status/active-calls',
     submenuItems: [
-      { id: 'pbxMonitor', title: 'PBX Monitor', path: '/pbx-monitor' },
-      { id: 'pbxStatusActiveCalls', title: 'Active Calls', path: '/pbx-status/active-calls' },
+      {
+        id: 'pbxStatus',
+        title: 'PBX Status',
+        icon: PhoneInTalkIcon,
+        items: [
+          { id: 'pbxMonitor', title: 'PBX Monitor', path: '/pbx-monitor' },
+          { id: 'pbxStatusActiveCalls', title: 'Active Calls', path: '/pbx-status/active-calls' },
+        ]
+      },
+      {
+        id: 'pbxCore',
+        title: 'PBX',
+        icon: BusinessCenterIcon,
+        items: [
+          { id: 'pbxSipAccount', title: 'Extensions', path: '/sip/account' },
+          { id: 'pbxExtensionGroups', title: 'Extension Groups', path: '/sip/extension-groups' },
+        ]
+      },
+      {
+        id: 'callFeatures',
+        title: 'Call Features',
+        icon: FilterListIcon,
+        items: [
+          { id: 'callFeaturesBlockedList', title: 'Blocked List', path: '/call-features/blocked-list' },
+          { id: 'callFeaturesCallBack', title: 'CallBack', path: '/call-features/callback' },
+          { id: 'callFeaturesOriginateCall', title: 'Originate Call', path: '/call-features/originate-call' },
+          { id: 'callFeaturesIVR', title: 'IVR', path: '/call-features/ivr' },
+          { id: 'callFeaturesConference', title: 'Conference', path: ROUTE_PATHS.CONFERENCE },
+          { id: 'callFeaturesPickupGroup', title: 'Pickup Group', path: '/call-features/pickup-group' },
+          { id: 'callFeaturesRingGroup', title: 'Ring Group', path: '/call-features/ring-group' },
+          { id: 'callFeaturesPrivateGroup', title: 'Private Group', path: '/call-features/private-group' },
+          { id: 'callFeaturesPaging', title: 'Paging', path: '/call-features/paging' },
+          { id: 'callFeaturesSpeedDial', title: 'Speed Dial', path: '/call-features/speed-dial' },
+          { id: 'callFeaturesDisa', title: 'DISA', path: '/call-features/disa' },
+        ]
+      },
+      {
+        id: 'callControl',
+        title: 'Call Control',
+        icon: SettingsPhoneIcon,
+        items: [
+          { id: 'callControlCcRoute', title: 'CC Route', path: '/call-control/cc-route' },
+          { id: 'callControlInboundRoutes', title: 'Inbound Routes', path: '/call-control/inbound-routes' },
+          { id: 'callControlOutboundRoutes', title: 'Outbound Routes', path: '/call-control/outbound-routes' },
+        ]
+      },
+      {
+        id: 'voicePrompts',
+        title: 'Voice Prompts',
+        icon: RecordVoiceOverIcon,
+        items: [
+          { id: 'voicePromptsSettings', title: 'Voice Prompts', path: '/voice-prompts' },
+        ]
+      },
     ]
   },
   {
-    id: 'pbx',
-    title: 'PBX',
-    icon: BusinessCenterIcon,
+    id: 'fxsConfiguration',
+    title: 'FXS Configuration',
+    icon: PhoneCallbackIcon,
     hasSubmenu: true,
-    path: '/sip/account',
+    path: ROUTE_PATHS.PORT_FXS,
     submenuItems: [
-      { id: 'pbxSipAccount', title: 'Extensions', path: '/sip/account' },
-      { id: 'pbxExtensionGroups', title: 'Extension Groups', path: '/sip/extension-groups' },
+      {
+        id: 'fxsVoip',
+        title: 'VoIP',
+        icon: PhoneIcon,
+        items: [
+          { id: 'fxsVoipSip', title: 'FXS SIP', path: '/sip' },
+          { id: 'fxsVoipMedia', title: 'FXS SIP Media', path: '/sip/media' },
+          { id: 'fxsVoipCompatibility', title: 'FXS SIP Compatibility', path: ROUTE_PATHS.SIP_COMPATIBILITY },
+          { id: 'fxsVoipNatSettings', title: 'FXS NAT Settings', path: ROUTE_PATHS.SIP_NAT_SETTINGS },
+        ]
+      },
+      {
+        id: 'fxsAdvanced',
+        title: 'Advanced',
+        icon: TuneIcon,
+        items: [
+          { id: 'fxsAdvancedGeneral', title: 'FXS General', path: ROUTE_PATHS.FXS_GENERAL },
+          { id: 'fxsAdvancedActionUrl', title: 'FXS Action Url', path: ROUTE_PATHS.FXS_ACTION_URL },
+          { id: 'fxsAdvancedAreaSelect', title: 'FXS Area Select', path: ROUTE_PATHS.FXS_AREA_SELECT },
+          { id: 'fxsAdvancedCdrQuery', title: 'FXS CDR Query', path: ROUTE_PATHS.FXS_CDR_QUERY },
+          { id: 'fxsAdvancedColorRing', title: 'FXS Color Ring', path: ROUTE_PATHS.FXS_COLOR_RING },
+          { id: 'fxsAdvancedCueTone', title: 'FXS Cue Tone', path: ROUTE_PATHS.FXS_CUE_TONE },
+          { id: 'fxsAdvancedDialingRule', title: 'FXS Dialing Rule', path: ROUTE_PATHS.FXS_DIALING_RULE },
+          { id: 'fxsAdvancedDialingTimeout', title: 'FXS Dialing Timeout', path: ROUTE_PATHS.FXS_DIALING_TIMEOUT },
+          { id: 'fxsAdvancedDtmf', title: 'FXS DTMF', path: ROUTE_PATHS.FXS_DTMF },
+          { id: 'fxsAdvancedFunctionKey', title: 'FXS Function Key', path: ROUTE_PATHS.FXS_FUNCTION_KEY },
+          { id: 'fxsAdvancedQos', title: 'FXS QoS', path: ROUTE_PATHS.FXS_QOS },
+          { id: 'fxsAdvancedRinging', title: 'FXS Ringing Scheme', path: ROUTE_PATHS.FXS_RINGING_SCHEME },
+          { id: 'fxsAdvancedToneDetector', title: 'FXS Tone Detecter', path: ROUTE_PATHS.FXS_TONE_DETECTOR },
+          { id: 'fxsAdvancedToneGenerator', title: 'FXS Tone Generator', path: ROUTE_PATHS.FXS_TONE_GENERATOR },
+        ]
+      },
+      {
+        id: 'fxsPort',
+        title: 'Port',
+        icon: PeopleIcon,
+        items: [
+          { id: 'fxsPortGroup', title: 'FXS Port Group', path: ROUTE_PATHS.PORT_GROUP },
+          { id: 'fxsPortSettings', title: 'FXS Settings', path: ROUTE_PATHS.PORT_FXS },
+          { id: 'fxsPortAdvanced', title: 'FXS Advanced', path: ROUTE_PATHS.PORT_FXS_ADVANCED },
+        ]
+      },
+      {
+        id: 'fxsRouting',
+        title: 'FXS Routing',
+        icon: RouteIcon,
+        items: [
+          { id: 'fxsRoutingParameters', title: 'FXS Routing Parameters', path: '/route' },
+          { id: 'fxsRoutingIpToPstn', title: 'FXS IP->PSTN', path: '/route/ip-to-pstn' },
+          { id: 'fxsRoutingIpToIp', title: 'FXS IP->IP', path: '/route/ip-to-ip' },
+          { id: 'fxsRoutingPstnToIp', title: 'FXS PSTN->IP', path: '/route/pstn-to-ip' },
+        ]
+      },
+      {
+        id: 'fxsNumberManipulate',
+        title: 'FXS Number Manipulate',
+        icon: EditIcon,
+        items: [
+          { id: 'fxsIpCallInCallerID', title: 'FXS IP Call In CallerID', path: ROUTE_PATHS.IP_CALL_IN_CALLERID },
+          { id: 'fxsIpCallInCalleeID', title: 'FXS IP Call In CalleeID', path: ROUTE_PATHS.IP_CALL_IN_CALLEEID },
+          { id: 'fxsPstnCallInCallerID', title: 'FXS PSTN Call In CallerID', path: ROUTE_PATHS.PSTN_CALL_IN_CALLERID },
+          { id: 'fxsPstnCallInCalleeID', title: 'FXS PSTN Call In CalleeID', path: ROUTE_PATHS.PSTN_CALL_IN_CALLEEID },
+        ]
+      },
     ]
   },
-  {
-    id: 'callFeatures',
-    title: 'Call Features',
-    icon: FilterListIcon,
-    hasSubmenu: true,
-    path: '/call-features/blocked-list',
-    submenuItems: [
-      { id: 'callFeaturesBlockedList', title: 'Blocked List', path: '/call-features/blocked-list' },
-      { id: 'callFeaturesCallBack', title: 'CallBack', path: '/call-features/callback' },
-      { id: 'callFeaturesOriginateCall', title: 'Originate Call', path: '/call-features/originate-call' },
-      { id: 'callFeaturesIVR', title: 'IVR', path: '/call-features/ivr' },
-      { id: 'callFeaturesConference', title: 'Conference', path: ROUTE_PATHS.CONFERENCE },
-      { id: 'callFeaturesPickupGroup', title: 'Pickup Group', path: '/call-features/pickup-group' },
-      { id: 'callFeaturesRingGroup', title: 'Ring Group', path: '/call-features/ring-group' },
-      { id: 'callFeaturesPrivateGroup', title: 'Private Group', path: '/call-features/private-group' },
-      { id: 'callFeaturesPaging', title: 'Paging', path: '/call-features/paging' },
-      { id: 'callFeaturesSpeedDial', title: 'Speed Dial', path: '/call-features/speed-dial' },
-      { id: 'callFeaturesDisa', title: 'DISA', path: '/call-features/disa' },
-    ]
-  },
-  {
-    id: 'callControl',
-    title: 'Call Control',
-    icon: SettingsPhoneIcon,
-    hasSubmenu: true,
-    path: '/call-control/cc-route',
-    submenuItems: [
-      { id: 'callControlCcRoute', title: 'CC Route', path: '/call-control/cc-route' },
-      { id: 'callControlInboundRoutes', title: 'Inbound Routes', path: '/call-control/inbound-routes' },
-      { id: 'callControlOutboundRoutes', title: 'Outbound Routes', path: '/call-control/outbound-routes' },
-    ]
-  },
-{
-  id: 'VoicePrompts',
-  title: 'Voice Prompts',
-  icon: RecordVoiceOverIcon,
-  hasSubmenu: true,
-  path: '/voice-prompts',
-  submenuItems: [
-    { id: 'voicePromptsSettings', title: 'Voice Prompts', path: '/voice-prompts' },
-  ]
-},
 
   {
     id: 'pcm',

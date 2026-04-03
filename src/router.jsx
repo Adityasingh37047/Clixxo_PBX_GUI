@@ -14,19 +14,19 @@ import FaxPage from './components/FaxPage';
 import FaxFaxPage from './components/FaxFaxPage';
 import RoutePage from './components/RoutePage';
 import NumberFilterPage from './components/NumberFilterPage';
-import NumManipulatePage from './components/NumManipulatePage';
+import NumManipulatePage from './sections/numManipulate/NumManipulatePage';
 import VpnPage from './components/VpnPage';
 import DhcpPage from './components/DhcpPage';
 import SystemToolsPage from './components/SystemToolsPage';
 import LoginPage from './components/LoginPage';
-import SipSipPage from './components/SipSipPage';
+import SipSipPage from './sections/voip/SipSipPage';
 import HaPage from './components/HaPage';
 import SipTrunkPage from './components/SipTrunkPage';
 import SipRegisterPage from './components/SipRegisterPage';
 import SipAccountPage from './components/SipAccountPage';
 import SipTrunkGroup from './components/SipTrunkGroup';
 import SipToSipAccountPage from './components/SipToSipAccountPage';
-import SipMediaPage from './components/SipMediaPage';
+import SipMediaPage from './sections/voip/SipMediaPage';
 import ExtensionGroupsPage from './components/ExtensionGroupsPage';
 import BlockedListPage from './components/BlockedListPage';
 import CallBackPage from './components/CallBackPage';
@@ -47,19 +47,19 @@ import PcmNumReceivingRulePage from './components/PcmNumReceivingRulePage';
 import PcmReceptionTimeoutPage from './components/PcmReceptionTimeoutPage';
 import IsdnIsdnPage from './components/IsdnIsdnPage';
 import IsdnNumberParameterPage from './components/IsdnNumberParameterPage';
-import RouteRoutingParameterPage from './components/RouteRoutingParameterPage';
-import RouteIpPstnPage from './components/RouteIpPstnPage';
+import RouteRoutingParameterPage from './sections/route/RouteRoutingParameterPage';
+import RouteIpPstnPage from './sections/route/RouteIpToTelPage';
 import RouteIPToIPPage from './components/RouteIPToIPPage';
-import RoutePstnToIPPage from './components/RoutePstnToIPpage';
+import RoutePstnToIPPage from './sections/route/RouteTelToIPpage';
 import Whitelist from './components/Whitelist';
 import Blacklist from './components/Blacklist';
 import NumberPool from './components/NumberPool';
 import FilteringRule from './components/FilteringRule';
-import IPCallInCallerID from './components/IPCallInCallerID';
-import IPCallInCalleeID from './components/IPCallInCalleeID';
+import IPCallInCallerID from './sections/numManipulate/IPCallInCallerID';
+import IPCallInCalleeID from './sections/numManipulate/IPCallInCalleeID';
 import IPCallInOriCalleeID from './components/IPCallInOriCalleeID';
-import PSTNCallInCallerID from './components/PSTNCallInCallerID';
-import PSTNCallInCalleeID from './components/PSTNCallInCalleeID';
+import PSTNCallInCallerID from './sections/numManipulate/PSTNCallInCallerID';
+import PSTNCallInCalleeID from './sections/numManipulate/PSTNCallInCalleeID';
 import PSTNCallInOriCalleeID from './components/PSTNCallInOriCalleeID';
 import CallerIDPool from './components/CallerIDPool';
 import CallerIDReservePool from './components/CallerIDReservePool';
@@ -107,6 +107,25 @@ import SpeedDialPage from './components/SpeedDialPage';
 import DisaPage from './components/DisaPage';
 import VoicePromptsPage from './components/VoicePromptsPage';
 import PbxMonitor from './components/PbxMonitor';
+import PortFxsPage from './sections/port/PortFxsPage';
+import PortFxsAdvancedPage from './sections/port/PortFxsAdvancedPage';
+import PortGroupPage from './sections/port/PortGroupPage';
+import FxsPage from './sections/advanced/FxsPage';
+import SipCompatibilityPage from './sections/voip/SipCompatibilityPage';
+import NatSettingsPage from './sections/voip/NatSettingsPage';
+import FxsActionUrlPage from './sections/advanced/ActionUrlPage';
+import FxsAreaSelectPage from './sections/advanced/AreaSelectPage';
+import FxsCdrQueryPage from './sections/advanced/CdrQueryPage';
+import FxsColorRingPage from './sections/advanced/ColorRingPage';
+import FxsCueTonePage from './sections/advanced/CueTonePage';
+import FxsDialingRulePage from './sections/advanced/DialingRulePage';
+import FxsDialingTimeoutPage from './sections/advanced/DialingTimeoutPage';
+import FxsDtmfPage from './sections/advanced/DtmfPage';
+import FxsFunctionKeyPage from './sections/advanced/FunctionKeyPage';
+import FxsQosPage from './sections/advanced/QosPage';
+import FxsRingingSchemePage from './sections/advanced/RingingSchemePage';
+import FxsToneDetecterPage from './sections/advanced/ToneDetecterPage';
+import FxsToneGeneratorPage from './sections/advanced/ToneGeneratorPage';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -257,6 +276,8 @@ export const router = createBrowserRouter([
       { path: '/sip/trunk-group', element: <SipTrunkGroup /> },
       { path: '/sip/extension-groups', element: <ExtensionGroupsPage /> },
       { path: '/sip/media', element: <SipMediaPage /> },
+      { path: ROUTE_PATHS.SIP_COMPATIBILITY, element: <SipCompatibilityPage /> },
+      { path: ROUTE_PATHS.SIP_NAT_SETTINGS, element: <NatSettingsPage /> },
       { path: '/call-features/blocked-list', element: <BlockedListPage /> },
       { path: '/call-features/callback', element: <CallBackPage /> },
       { path: '/call-features/originate-call', element: <OriginateCallPage /> },
@@ -496,6 +517,23 @@ export const router = createBrowserRouter([
         path: '/pbx-monitor',
         element: <PbxMonitor />,
       },
+      { path: ROUTE_PATHS.PORT_FXS, element: <PortFxsPage /> },
+      { path: ROUTE_PATHS.PORT_FXS_ADVANCED, element: <PortFxsAdvancedPage /> },
+      { path: ROUTE_PATHS.FXS_GENERAL, element: <FxsPage /> },
+      { path: ROUTE_PATHS.FXS_ACTION_URL, element: <FxsActionUrlPage /> },
+      { path: ROUTE_PATHS.FXS_AREA_SELECT, element: <FxsAreaSelectPage /> },
+      { path: ROUTE_PATHS.FXS_CDR_QUERY, element: <FxsCdrQueryPage /> },
+      { path: ROUTE_PATHS.FXS_COLOR_RING, element: <FxsColorRingPage /> },
+      { path: ROUTE_PATHS.FXS_CUE_TONE, element: <FxsCueTonePage /> },
+      { path: ROUTE_PATHS.FXS_DIALING_RULE, element: <FxsDialingRulePage /> },
+      { path: ROUTE_PATHS.FXS_DIALING_TIMEOUT, element: <FxsDialingTimeoutPage /> },
+      { path: ROUTE_PATHS.FXS_DTMF, element: <FxsDtmfPage /> },
+      { path: ROUTE_PATHS.FXS_FUNCTION_KEY, element: <FxsFunctionKeyPage /> },
+      { path: ROUTE_PATHS.FXS_QOS, element: <FxsQosPage /> },
+      { path: ROUTE_PATHS.FXS_RINGING_SCHEME, element: <FxsRingingSchemePage /> },
+      { path: ROUTE_PATHS.FXS_TONE_DETECTOR, element: <FxsToneDetecterPage /> },
+      { path: ROUTE_PATHS.FXS_TONE_GENERATOR, element: <FxsToneGeneratorPage /> },
+      { path: ROUTE_PATHS.PORT_GROUP, element: <PortGroupPage /> },
     ],
   },
   // 404 route - should be last

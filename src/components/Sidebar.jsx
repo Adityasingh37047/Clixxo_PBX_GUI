@@ -24,6 +24,8 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
   }, []);
 
   const [openSections, setOpenSections] = useState(initialOpenSections);
+  // Tracks open state for group items (level 2) and sub-groups (level 3)
+  const [openItems, setOpenItems] = useState({});
 
   const handleToggle = (section) => {
     setOpenSections(prev => {
@@ -34,6 +36,10 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
       newState[section] = !prev[section];
       return newState;
     });
+  };
+
+  const handleItemToggle = (id) => {
+    setOpenItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleNavigation = (path) => {
@@ -58,52 +64,222 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
     return location.pathname === path;
   };
 
-  const renderSubmenuItems = (submenuItems) => {
-    return submenuItems.map((item) => (
-      <ListItem 
-        key={item.id}
-        component="div"
-        sx={{ 
-          cursor: 'pointer', 
-          pl: 2,
-          pr: 1,
-          backgroundColor: isActive(item.path) ? '#000000' : '#e0e3e7',
-          borderBottom: '1px solid #c0c4c8',
-          borderTop: '1px solid rgba(255,255,255,0.8)', 
-          minHeight: '28px',
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-          boxSizing: 'border-box', 
-          padding: '2px 8px',
-        }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleNavigation(item.path);
-        }}
-      >
-        <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
-          <div 
-            style={{
-              width: '1px',
-              height: '12px',
-              backgroundColor: isActive(item.path) ? '#ffffff' : '#d1d5db',
-            }}
-          />
-        </ListItemIcon>
-        <ListItemText 
-          primary={item.title}
-          sx={{
-            '& .MuiTypography-root': {
-              color: isActive(item.path) ? '#ffffff' : '#374151',
-              fontWeight: isActive(item.path) ? 600 : 500,
-              fontSize: 13,
-            }
+  // Nested under PBX/FXS-style groups: slightly lighter than subgroup headers
+  const nestedRowBg = '#e9eaee';
+  const nestedRowBgActive = '#000000';
+
+  const renderDeepItem = (item) => (
+    <ListItem
+      key={item.id}
+      component="div"
+      sx={{
+        cursor: 'pointer',
+        backgroundColor: isActive(item.path) ? nestedRowBgActive : nestedRowBg,
+        borderBottom: '1px solid #c0c4c8',
+        borderTop: '1px solid rgba(255,255,255,0.8)',
+        minHeight: '28px',
+        display: 'flex',
+        alignItems: 'center',
+        width: '100%',
+        boxSizing: 'border-box',
+        padding: '2px 8px 2px 24px',
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleNavigation(item.path);
+      }}
+    >
+      <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
+        <div
+          style={{
+            width: '1px',
+            height: '12px',
+            backgroundColor: isActive(item.path) ? '#ffffff' : '#d1d5db',
           }}
         />
-      </ListItem>
-    ));
+      </ListItemIcon>
+      <ListItemText
+        primary={item.title}
+        sx={{
+          '& .MuiTypography-root': {
+            color: isActive(item.path) ? '#ffffff' : '#374151',
+            fontWeight: isActive(item.path) ? 600 : 500,
+            fontSize: 13,
+          }
+        }}
+      />
+    </ListItem>
+  );
+
+  const renderSubGroup = (group) => {
+    const IconComponent = group.icon;
+    const isOpen = openItems[group.id] || false;
+
+    return (
+      <React.Fragment key={group.id}>
+        <ListItem
+          component="div"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleItemToggle(group.id);
+          }}
+          sx={{
+            cursor: 'pointer',
+            // Subgroup title row: a touch darker than nested links (same for all groups)
+            backgroundColor: '#d6dae1',
+            borderBottom: '1px solid #c0c4c8',
+            borderTop: '1px solid rgba(255,255,255,0.8)',
+            minHeight: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '2px 8px 2px 16px',
+            width: '100%',
+            boxSizing: 'border-box',
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
+            <IconComponent sx={{ color: '#3b82f6', fontSize: 16 }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={group.title}
+            sx={{
+              '& .MuiTypography-root': {
+                color: '#374151',
+                fontWeight: 700,
+                fontSize: 13,
+              }
+            }}
+          />
+          <ExpandLess
+            sx={{
+              color: '#6b7280',
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              fontSize: 16,
+              transition: 'transform 0.2s',
+            }}
+          />
+        </ListItem>
+        <Collapse in={isOpen} timeout={200} unmountOnExit>
+          <List component="div" disablePadding>
+            {group.items && group.items.map(renderDeepItem)}
+          </List>
+        </Collapse>
+      </React.Fragment>
+    );
+  };
+
+  const renderGroupItem = (item) => {
+    const isOpen = openItems[item.id] || false;
+
+    return (
+      <React.Fragment key={item.id}>
+        <ListItem
+          component="div"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleItemToggle(item.id);
+          }}
+          sx={{
+            cursor: 'pointer',
+            backgroundColor: '#e0e3e7',
+            borderBottom: '1px solid #c0c4c8',
+            borderTop: '1px solid rgba(255,255,255,0.8)',
+            minHeight: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            boxSizing: 'border-box',
+            padding: '2px 8px',
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
+            <div style={{ width: '1px', height: '12px', backgroundColor: '#d1d5db' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={item.title}
+            sx={{
+              '& .MuiTypography-root': {
+                color: '#374151',
+                fontWeight: 700,
+                fontSize: 13,
+              }
+            }}
+          />
+          <ExpandLess
+            sx={{
+              color: '#6b7280',
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              fontSize: 16,
+              transition: 'transform 0.2s',
+            }}
+          />
+        </ListItem>
+        <Collapse in={isOpen} timeout={200} unmountOnExit>
+          <List component="div" disablePadding>
+            {item.subGroups && item.subGroups.map(renderSubGroup)}
+          </List>
+        </Collapse>
+      </React.Fragment>
+    );
+  };
+
+  const renderSubmenuItems = (submenuItems) => {
+    return submenuItems.map((item) => {
+      if (item.isGroup && item.subGroups) {
+        return renderGroupItem(item);
+      }
+      if (item.items && item.icon) {
+        return renderSubGroup(item);
+      }
+      return (
+        <ListItem 
+          key={item.id}
+          component="div"
+          sx={{ 
+            cursor: 'pointer', 
+            pl: 2,
+            pr: 1,
+            backgroundColor: isActive(item.path) ? '#000000' : '#e0e3e7',
+            borderBottom: '1px solid #c0c4c8',
+            borderTop: '1px solid rgba(255,255,255,0.8)', 
+            minHeight: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            boxSizing: 'border-box', 
+            padding: '2px 8px',
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleNavigation(item.path);
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
+            <div 
+              style={{
+                width: '1px',
+                height: '12px',
+                backgroundColor: isActive(item.path) ? '#ffffff' : '#d1d5db',
+              }}
+            />
+          </ListItemIcon>
+          <ListItemText 
+            primary={item.title}
+            sx={{
+              '& .MuiTypography-root': {
+                color: isActive(item.path) ? '#ffffff' : '#374151',
+                fontWeight: isActive(item.path) ? 600 : 500,
+                fontSize: 13,
+              }
+            }}
+          />
+        </ListItem>
+      );
+    });
   };
 
   const renderSidebarSection = (section) => {
