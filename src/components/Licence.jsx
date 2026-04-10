@@ -4,13 +4,13 @@ import {
   TextField, 
   Paper, 
   Typography, 
-  Box, 
   Alert, 
   CircularProgress,
   Chip,
   Divider,
-  IconButton,
-  Tooltip
+  FormControl,
+  MenuItem,
+  Select,
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
@@ -25,7 +25,8 @@ import {
   getLicenseInfo, 
   checkLicenseValidity, 
   getSystemFingerprint, 
-  uploadLicenseFile 
+  uploadLicenseFile,
+  fetchSystemSerialNumber,
 } from '../api/apiService';
 import {
   LICENSE_STATUS,
@@ -33,8 +34,12 @@ import {
   LICENSE_FORM_LABELS,
   LICENSE_BUTTON_LABELS,
   LICENSE_ERROR_MESSAGES,
-  LICENSE_SUCCESS_MESSAGES
+  LICENSE_SUCCESS_MESSAGES,
+  LICENSE_DEVICE_TYPE_OPTIONS,
+  LICENSE_DEVICE_TYPE_VALUES,
 } from '../constants/LicenceConstants';
+
+const LICENCE_DEVICE_TYPE_STORAGE_KEY = 'clixxo_licence_device_type';
 
 const blueButtonSx = {
   background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
@@ -64,6 +69,8 @@ const Licence = () => {
   });
   
   const [systemFingerprint, setSystemFingerprint] = useState('');
+  /** Same source as System Info page: web_version.json serial_no, then astlicense. */
+  const [systemSerial, setSystemSerial] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState({
     info: false,
@@ -73,21 +80,45 @@ const Licence = () => {
   });
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  // Fetch license info and check validity on component mount
+  const [deviceTypeMode, setDeviceTypeMode] = useState(() => {
+    try {
+      const stored = localStorage.getItem(LICENCE_DEVICE_TYPE_STORAGE_KEY);
+      if (stored && Object.values(LICENSE_DEVICE_TYPE_VALUES).includes(stored)) {
+        return stored;
+      }
+    } catch (_) {}
+    return LICENSE_DEVICE_TYPE_VALUES.IPPBX;
+  });
+
+  const loadSystemSerial = async () => {
+    try {
+      const sn = await fetchSystemSerialNumber();
+      setSystemSerial(sn || '');
+    } catch (err) {
+      console.warn('Failed to load system serial for licence page:', err);
+      setSystemSerial('');
+    }
+  };
+
+  const serialDisplay = (systemSerial || licenseData.Serial_Number || '').trim();
+
+  // Fetch license info, validity, and system serial (same as System Info) on mount
   useEffect(() => {
     const loadLicenseData = async () => {
-      // Execute both API calls in parallel using Promise.allSettled
-      const [infoResult, validityResult] = await Promise.allSettled([
+      const [infoResult, validityResult, serialResult] = await Promise.allSettled([
         fetchLicenseInfo(),
-        checkValidity()
+        checkValidity(),
+        loadSystemSerial(),
       ]);
 
-      // Handle results (individual error handling is already in each function)
       if (infoResult.status === 'rejected') {
         console.warn('License info API call failed:', infoResult.reason);
       }
       if (validityResult.status === 'rejected') {
         console.warn('License validity check API call failed:', validityResult.reason);
+      }
+      if (serialResult.status === 'rejected') {
+        console.warn('System serial load failed:', serialResult.reason);
       }
     };
 
@@ -102,7 +133,10 @@ const Licence = () => {
   const fetchLicenseInfo = async () => {
     setLoading(prev => ({ ...prev, info: true }));
     try {
-      const response = await getLicenseInfo();
+      const [response] = await Promise.all([
+        getLicenseInfo(),
+        loadSystemSerial(),
+      ]);
       if (response.response && response.responseData) {
         try {
           const parsedData = JSON.parse(response.responseData);
@@ -211,6 +245,22 @@ const Licence = () => {
     }
   };
 
+  const handleDeviceTypeChange = (event) => {
+    const value = event.target.value;
+    setDeviceTypeMode(value);
+    try {
+      localStorage.setItem(LICENCE_DEVICE_TYPE_STORAGE_KEY, value);
+    } catch (_) {}
+  };
+
+  const selectFieldSx = {
+    '& .MuiOutlinedInput-root': {
+      fontSize: '14px',
+      backgroundColor: '#fff',
+      '& fieldset': { borderColor: '#d1d5db' },
+    },
+  };
+
   return (
     <div className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center">
       <div className="w-full max-w-6xl mx-auto">
@@ -268,16 +318,16 @@ const Licence = () => {
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-start">
+                <div className="min-w-0">
+                  <label className="block text-sm font-medium text-gray-700 mb-2 min-h-[20px] leading-5">
                     {LICENSE_FORM_LABELS.Serial_Number}
                   </label>
                   <TextField
                     fullWidth
                     size="small"
                     variant="outlined"
-                    value={licenseData.Serial_Number}
+                    value={serialDisplay}
                     InputProps={{ readOnly: true }}
                     sx={{
                       '& .MuiOutlinedInput-root': {
@@ -289,11 +339,11 @@ const Licence = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="min-w-0">
+                  <label className="block text-sm font-medium text-gray-700 mb-2 min-h-[20px] leading-5">
                     {LICENSE_FORM_LABELS.STATUS}
                   </label>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2 min-h-[40px]">
                     {getStatusDisplay(licenseData.status)}
                     <Button
                       variant="contained"
@@ -306,6 +356,30 @@ const Licence = () => {
                     </Button>
                   </div>
                 </div>
+
+                <div className="min-w-0 md:col-span-1">
+                  <label
+                    htmlFor="licence-device-type-mode"
+                    className="block text-sm font-medium text-gray-700 mb-2 min-h-[20px] leading-5"
+                  >
+                    {LICENSE_FORM_LABELS.DEVICE_TYPE_MODE}
+                  </label>
+                  <FormControl fullWidth size="small" variant="outlined" sx={selectFieldSx}>
+                    <Select
+                      id="licence-device-type-mode"
+                      value={deviceTypeMode}
+                      onChange={handleDeviceTypeChange}
+                      inputProps={{ 'aria-label': LICENSE_FORM_LABELS.DEVICE_TYPE_MODE }}
+                    >
+                      {LICENSE_DEVICE_TYPE_OPTIONS.map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
+                <div className="hidden md:block md:col-span-1" aria-hidden />
 
                 {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

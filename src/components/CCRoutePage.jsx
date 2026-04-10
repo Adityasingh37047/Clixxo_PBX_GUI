@@ -3,7 +3,18 @@ import EditDocumentIcon from '@mui/icons-material/EditDocument';
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, MenuItem, Select } from '@mui/material';
 import { createCCRoute, deleteCCRoute, fetchCCRouteExtensions, fetchCCRoutes, updateCCRoute } from '../api/apiService';
 
-const CC_INTERVAL_OPTIONS = ['1', '2', '3', '4', '5'];
+const CC_INTERVAL_OPTIONS = [
+  { value: '10', label: '10s' },
+  { value: '30', label: '30s' },
+  { value: '60', label: '1 min' },
+  { value: '120', label: '2 min' },
+  { value: '300', label: '5 min' },
+];
+const CC_INTERVAL_VALUE_SET = new Set(CC_INTERVAL_OPTIONS.map((o) => o.value));
+const getCcIntervalLabel = (value) => {
+  const found = CC_INTERVAL_OPTIONS.find((o) => o.value === String(value));
+  return found ? found.label : `${value}s`;
+};
 const THROUGH_OPTIONS = ['Auto', 'From Come In'];
 const RECORD_KEEP_OPTIONS = [
   '8 hours',
@@ -45,9 +56,17 @@ function normalizeRecordKeepTime(route) {
 }
 
 function normalizeRoute(item) {
+  const rawInterval = Number(item.interval_minutes ?? item.cc_interval_time);
+  const normalizedInterval = Number.isFinite(rawInterval) && rawInterval > 0
+    ? (rawInterval <= 5 ? rawInterval * 60 : rawInterval)
+    : 10;
+  const ccIntervalTime = CC_INTERVAL_VALUE_SET.has(String(normalizedInterval))
+    ? String(normalizedInterval)
+    : '10';
+
   return {
     id: item.id,
-    ccIntervalTime: String(item.interval_minutes ?? item.cc_interval_time ?? '1'),
+    ccIntervalTime,
     through: normalizeThroughFromApi(item.through_mode ?? item.through),
     recordKeepTime: normalizeRecordKeepTime(item),
     enabled: normalizeEnabledFromApi(item.enabled ?? item.enable),
@@ -135,7 +154,7 @@ const CCRoutePage = () => {
 
   const resetForm = () => {
     setEditId(null);
-    setCcIntervalTime('1');
+    setCcIntervalTime('10');
     setThrough('Auto');
     setRecordKeepTime('8 hours');
     setEnabled('No');
@@ -311,7 +330,7 @@ const CCRoutePage = () => {
                         />
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">{realIdx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.ccIntervalTime}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">{getCcIntervalLabel(row.ccIntervalTime)}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">{row.through}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">{row.recordKeepTime}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">{row.enabled}</td>
@@ -428,7 +447,7 @@ const CCRoutePage = () => {
                       <FormControl size="small" fullWidth>
                         <Select value={ccIntervalTime} onChange={(e) => setCcIntervalTime(e.target.value)}>
                           {CC_INTERVAL_OPTIONS.map((option) => (
-                            <MenuItem key={option} value={option}>{option}</MenuItem>
+                            <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
                           ))}
                         </Select>
                       </FormControl>

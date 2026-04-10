@@ -7,9 +7,12 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  IconButton,
   MenuItem,
   Select,
+  Tooltip,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import {
   listConferences,
   createConference,
@@ -433,13 +436,16 @@ const ConferencePage = () => {
                         {row.maxMembers}
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
-                        <button
-                          type="button"
-                          className="text-blue-600 text-xs underline"
-                          onClick={() => handleOpenEditModal(row)}
-                        >
-                          Edit
-                        </button>
+                        <Tooltip title="Edit">
+                          <IconButton
+                            size="small"
+                            aria-label="Edit conference"
+                            onClick={() => handleOpenEditModal(row)}
+                            sx={{ color: '#1565c0', padding: '4px' }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </td>
                     </tr>
                   );
@@ -555,12 +561,13 @@ const ConferencePage = () => {
         }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base"
+          className="text-white text-center font-semibold p-2 text-base flex items-center justify-center gap-2"
           style={{
             background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)',
             borderBottom: '1px solid #444444',
           }}
         >
+          {editId != null && <EditIcon sx={{ fontSize: 22, opacity: 0.95 }} />}
           {editId != null ? 'Edit Conference' : 'Add Conference'}
         </DialogTitle>
         <DialogContent

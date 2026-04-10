@@ -3,6 +3,7 @@ export const ROUTE_PATHS = {
   HOME: '/',
   
 
+  OPERATION_INFO: '/operation-info/system-info',
   SYSTEM_INFO: '/operation-info/system-info',
   PSTN_STATUS: '/operation-info/pstn-status',
   PSM_INFO: '/operation-info/psm-info',
@@ -13,6 +14,9 @@ export const ROUTE_PATHS = {
   SIP: '/sip',
   SIP_COMPATIBILITY: '/sip/compatibility',
   SIP_NAT_SETTINGS: '/sip/nat-settings',
+  /** FXS Configuration → VoIP (section UI; main SIP uses /sip) */
+  FXS_VOIP_SIP: '/fxs-configuration/voip/sip',
+  FXS_VOIP_MEDIA: '/fxs-configuration/voip/media',
   PCM: '/pcm',
   ISDN: '/isdn',
   FAX: '/fax',

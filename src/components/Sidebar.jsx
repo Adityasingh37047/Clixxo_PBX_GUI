@@ -1,6 +1,8 @@
 // components/Sidebar.jsx (updated with simple modern design)
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { canAccessLicence } from '../constants/authAccess';
 import { 
   Drawer, 
   List, 
@@ -15,13 +17,29 @@ import { SIDEBAR_SECTIONS } from '../constants/sidebarConstants';
 const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const { user } = useAuth();
+
+  const sidebarSections = useMemo(() => {
+    return SIDEBAR_SECTIONS.map((section) => {
+      if (section.id === 'systemTools' && Array.isArray(section.submenuItems)) {
+        return {
+          ...section,
+          submenuItems: section.submenuItems.filter((item) => {
+            if (item.id === 'licence') return canAccessLicence(user);
+            return true;
+          }),
+        };
+      }
+      return section;
+    });
+  }, [user]);
+
   const initialOpenSections = useMemo(() => {
-    return SIDEBAR_SECTIONS.reduce((acc, section) => {
+    return sidebarSections.reduce((acc, section) => {
       acc[section.id] = false;
       return acc;
     }, {});
-  }, []);
+  }, [sidebarSections]);
 
   const [openSections, setOpenSections] = useState(initialOpenSections);
   // Tracks open state for group items (level 2) and sub-groups (level 3)
@@ -40,6 +58,21 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
 
   const handleItemToggle = (id) => {
     setOpenItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  /** Close all sibling subgroup rows, then open the clicked one (or close if it was open). PBX / FXS only. */
+  const handleAccordionItemToggle = (itemId, siblingIds) => {
+    setOpenItems((prev) => {
+      const wasOpen = !!prev[itemId];
+      const next = { ...prev };
+      siblingIds.forEach((id) => {
+        next[id] = false;
+      });
+      if (!wasOpen) {
+        next[itemId] = true;
+      }
+      return next;
+    });
   };
 
   const handleNavigation = (path) => {
@@ -112,9 +145,10 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
     </ListItem>
   );
 
-  const renderSubGroup = (group) => {
+  const renderSubGroup = (group, accordionSiblingIds = null) => {
     const IconComponent = group.icon;
     const isOpen = openItems[group.id] || false;
+    const useAccordion = Array.isArray(accordionSiblingIds) && accordionSiblingIds.length > 0;
 
     return (
       <React.Fragment key={group.id}>
@@ -123,7 +157,11 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleItemToggle(group.id);
+            if (useAccordion) {
+              handleAccordionItemToggle(group.id, accordionSiblingIds);
+            } else {
+              handleItemToggle(group.id);
+            }
           }}
           sx={{
             cursor: 'pointer',
@@ -226,13 +264,14 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
     );
   };
 
-  const renderSubmenuItems = (submenuItems) => {
+  const renderSubmenuItems = (submenuItems, options = {}) => {
+    const { accordionSiblingIds } = options;
     return submenuItems.map((item) => {
       if (item.isGroup && item.subGroups) {
         return renderGroupItem(item);
       }
       if (item.items && item.icon) {
-        return renderSubGroup(item);
+        return renderSubGroup(item, accordionSiblingIds);
       }
       return (
         <ListItem 
@@ -347,7 +386,14 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
         {section.hasSubmenu && (
           <Collapse in={openSections[section.id]} timeout={200} unmountOnExit>
             <List component="div" disablePadding>
-              {renderSubmenuItems(section.submenuItems)}
+              {renderSubmenuItems(section.submenuItems, {
+                accordionSiblingIds:
+                  section.id === 'pbxConfiguration' || section.id === 'fxsConfiguration'
+                    ? section.submenuItems
+                        ?.filter((item) => item.items && item.icon)
+                        .map((item) => item.id) ?? []
+                    : undefined,
+              })}
             </List>
           </Collapse>
         )}
@@ -380,7 +426,7 @@ const Sidebar = ({ isMobile, sidebarOpen, setSidebarOpen, navbarHeight = 85 }) =
     >
       <div role="presentation" className="h-full">
         <List className="py-0">
-          {SIDEBAR_SECTIONS.map(renderSidebarSection)}
+          {sidebarSections.map(renderSidebarSection)}
         </List>
       </div>
     </Drawer>

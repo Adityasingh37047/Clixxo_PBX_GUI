@@ -40,14 +40,26 @@ export const LICENSE_STATUS_DISPLAY = {
   }
 };
 
+// Device type mode (UI selection; optional persistence via localStorage in Licence.jsx)
+export const LICENSE_DEVICE_TYPE_VALUES = {
+  IPPBX: 'IPPBX',
+  FXS_GATEWAY: 'FXS_GATEWAY',
+};
+
+export const LICENSE_DEVICE_TYPE_OPTIONS = [
+  { value: LICENSE_DEVICE_TYPE_VALUES.IPPBX, label: 'IPPBX' },
+  { value: LICENSE_DEVICE_TYPE_VALUES.FXS_GATEWAY, label: 'FXS Gateway' },
+];
+
 // Form Field Labels
 export const LICENSE_FORM_LABELS = {
   Serial_Number: 'Serial Number',
+  DEVICE_TYPE_MODE: 'Device Type Mode',
   ACTIVATE_DATE: 'Activation Date',
   EXPIRE_DATE: 'Expiration Date',
   STATUS: 'Status',
   SYSTEM_FINGERPRINT: 'System ID',
-  UPLOAD_FILE: 'Upload License File'
+  UPLOAD_FILE: 'Upload License File',
 };
 
 // Button Labels

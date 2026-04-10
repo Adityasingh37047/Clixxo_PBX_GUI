@@ -11,9 +11,8 @@ const columns = [
   { key: 'billsec', label: 'Talk Duration(s)' },
   { key: 'disposition', label: 'Call Status' },
   { key: 'lastapp', label: 'Last App' },
-  { key: 'accountcode', label: 'Account Code' },
+  { key: 'recordingfile', label: 'Recording File' },
   { key: 'did', label: 'DID' },
-  { key: 'uniqueid', label: 'Unique ID' },
 ];
 
 const headerBarStyle = {
@@ -34,14 +33,14 @@ const CallCount = () => {
     try {
       const d = new Date(value);
       if (Number.isNaN(d.getTime())) return value;
-      // Format similar to "2026-03-02 16:43:10"
+      // Keep API time semantics (UTC) so UI matches backend timestamps.
       const pad = (n) => String(n).padStart(2, '0');
-      const yyyy = d.getFullYear();
-      const mm = pad(d.getMonth() + 1);
-      const dd = pad(d.getDate());
-      const hh = pad(d.getHours());
-      const mi = pad(d.getMinutes());
-      const ss = pad(d.getSeconds());
+      const yyyy = d.getUTCFullYear();
+      const mm = pad(d.getUTCMonth() + 1);
+      const dd = pad(d.getUTCDate());
+      const hh = pad(d.getUTCHours());
+      const mi = pad(d.getUTCMinutes());
+      const ss = pad(d.getUTCSeconds());
       return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
     } catch {
       return value;

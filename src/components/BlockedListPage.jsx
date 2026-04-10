@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Select, MenuItem, FormControl } from '@mui/material';
-import { fetchBlockedList, createBlockedEntry, updateBlockedEntry, deleteBlockedEntry } from '../api/apiService';
+import { fetchBlockedList, createBlockedEntry, updateBlockedEntry, deleteBlockedEntry, listConferenceExtensions } from '../api/apiService';
 
 const BlockedListPage = () => {
   const [rows, setRows] = useState([]);
@@ -15,8 +15,10 @@ const BlockedListPage = () => {
   const [name, setName] = useState('');
   const [matchMode, setMatchMode] = useState('Exact Match');
   const [blockedNumber, setBlockedNumber] = useState('');
+  const [selectedExtension, setSelectedExtension] = useState('');
   const [direction, setDirection] = useState('Inbound');
   const [enabled, setEnabled] = useState('Yes');
+  const [availableExtensions, setAvailableExtensions] = useState([]);
 
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
@@ -34,7 +36,7 @@ const BlockedListPage = () => {
       setRows(list.map(item => ({
         id: item.id,
         name: item.name || '',
-        matchMode: item.match_mode === 'regex' ? 'Regex Match' : 'Exact Match',
+        matchMode: item.match_mode === 'regex' ? 'Regex Match' : item.match_mode === 'extension' ? 'Extension' : 'Exact Match',
         blockedNumber: item.pattern || '',
         direction: (() => {
           const d = (item.direction || '').toLowerCase();
@@ -51,10 +53,28 @@ const BlockedListPage = () => {
     }
   };
 
+  const loadAvailableExtensions = async () => {
+    try {
+      const extRes = await listConferenceExtensions();
+      const extRaw = Array.isArray(extRes?.message) ? extRes.message : Array.isArray(extRes?.data) ? extRes.data : [];
+      const extList = extRaw
+        .filter((e) => e && e.extension)
+        .map((e) => ({
+          value: String(e.extension),
+          label: e.display_name ? `${e.display_name} (${e.extension})` : String(e.extension),
+        }));
+      setAvailableExtensions(extList);
+    } catch (err) {
+      console.error('Failed to load extensions for blocked list:', err);
+      setAvailableExtensions([]);
+    }
+  };
+
   useEffect(() => {
     if (!hasInitialLoadRef.current) {
       hasInitialLoadRef.current = true;
       loadRows();
+      loadAvailableExtensions();
     }
   }, []);
 
@@ -88,6 +108,7 @@ const BlockedListPage = () => {
     setName('');
     setMatchMode('Exact Match');
     setBlockedNumber('');
+    setSelectedExtension('');
     setDirection('Inbound');
     setEnabled('Yes');
   };
@@ -102,6 +123,7 @@ const BlockedListPage = () => {
     setName(row.name || '');
     setMatchMode(row.matchMode || 'Exact Match');
     setBlockedNumber(row.blockedNumber || '');
+    setSelectedExtension(row.matchMode === 'Extension' ? (row.blockedNumber || '') : '');
     setDirection(row.direction || 'Inbound');
     setEnabled(row.enabled || 'Yes');
     setShowModal(true);
@@ -115,18 +137,19 @@ const BlockedListPage = () => {
   const handleSave = async () => {
     const trimmedName = name.trim();
     const trimmedNumber = blockedNumber.trim();
+    const valueToBlock = matchMode === 'Extension' ? String(selectedExtension || '').trim() : trimmedNumber;
     if (!trimmedName) {
       showAlert('Please enter a Name.');
       return;
     }
-    if (!trimmedNumber) {
-      showAlert('Please enter a Blocked List Number.');
+    if (!valueToBlock) {
+      showAlert(matchMode === 'Extension' ? 'Please select an Extension.' : 'Please enter a Blocked List Number.');
       return;
     }
     const apiPayload = {
       name: trimmedName,
-      match_mode: matchMode === 'Regex Match' ? 'regex' : 'exact',
-      pattern: trimmedNumber,
+      match_mode: matchMode === 'Regex Match' ? 'regex' : matchMode === 'Extension' ? 'extension' : 'exact',
+      pattern: valueToBlock,
       direction: (() => {
         const d = direction.toLowerCase();
         if (d === 'outbound') return 'outbound';
@@ -345,34 +368,69 @@ const BlockedListPage = () => {
                     <FormControl size="small" fullWidth>
                       <Select
                         value={matchMode}
-                        onChange={e => setMatchMode(e.target.value)}
+                        onChange={e => {
+                          const nextMode = e.target.value;
+                          setMatchMode(nextMode);
+                          if (nextMode === 'Extension') {
+                            setBlockedNumber('');
+                          } else {
+                            setSelectedExtension('');
+                          }
+                        }}
                       >
                         <MenuItem value="Exact Match">Exact Match</MenuItem>
                         <MenuItem value="Regex Match">Regex Match</MenuItem>
+                        <MenuItem value="Extension">Extension</MenuItem>
                       </Select>
                     </FormControl>
                   </div>
                 </div>
-                <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                  <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 180, marginRight: 10 }}>
-                    Blocked List Number:
-                  </label>
-                  <div className="flex-1">
-                    <TextField
-                      fullWidth
-                      value={blockedNumber}
-                      onChange={e => setBlockedNumber(e.target.value)}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        '& .MuiOutlinedInput-input': {
-                          padding: '8px 12px',
-                          fontSize: 14,
-                        },
-                      }}
-                    />
+                {matchMode === 'Extension' ? (
+                  <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 180, marginRight: 10 }}>
+                      Extension:
+                    </label>
+                    <div className="flex-1">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={selectedExtension}
+                          onChange={e => setSelectedExtension(e.target.value)}
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <span className="text-gray-500">Select Extension</span>
+                          </MenuItem>
+                          {availableExtensions.map((ext) => (
+                            <MenuItem key={ext.value} value={ext.value}>
+                              {ext.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 180, marginRight: 10 }}>
+                      Blocked List Number:
+                    </label>
+                    <div className="flex-1">
+                      <TextField
+                        fullWidth
+                        value={blockedNumber}
+                        onChange={e => setBlockedNumber(e.target.value)}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          '& .MuiOutlinedInput-input': {
+                            padding: '8px 12px',
+                            fontSize: 14,
+                          },
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
                   <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 180, marginRight: 10 }}>
                     Blocked List Direction:

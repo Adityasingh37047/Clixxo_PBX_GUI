@@ -617,6 +617,44 @@ export const postLinuxCmd = async (data) => {
   }
 };
 
+/**
+ * Resolves device serial the same way as System Info: web_version.json serial_no, then astlicense (astlic: line).
+ * @returns {Promise<string>} Non-empty serial, or '' if unavailable.
+ */
+export const fetchSystemSerialNumber = async () => {
+  const [versionInfoData, astLicData] = await Promise.allSettled([
+    postLinuxCmd({ cmd: 'cat /home/clixxo/server/config/web_version.json' }),
+    postLinuxCmd({ cmd: 'astlicense' }),
+  ]);
+
+  let parsedSerial = '';
+  if (versionInfoData.status === 'fulfilled' && versionInfoData.value?.response) {
+    try {
+      const parsedJson = JSON.parse(versionInfoData.value.responseData || '{}');
+      const sn = parsedJson?.serial_no;
+      if (sn != null && String(sn).trim() !== '') {
+        parsedSerial = String(sn).trim();
+      }
+    } catch (_) {
+      /* ignore parse errors */
+    }
+  }
+
+  if (!parsedSerial && astLicData.status === 'fulfilled' && astLicData.value?.response) {
+    const out = String(astLicData.value.responseData || '');
+    const lines = out.split(/\r?\n/);
+    const astLicLine = lines.find((l) => l.trim().toLowerCase().startsWith('astlic:')) || '';
+    if (astLicLine) {
+      const afterColon = astLicLine.split(':').slice(1).join(':');
+      const fields = afterColon.split(',').map((s) => s.trim());
+      if (fields.length >= 2 && fields[1]) {
+        parsedSerial = fields[1];
+      }
+    }
+  }
+
+  return parsedSerial || '';
+};
 
 // Software Update Upload
 export const uploadSoftwareUpdate = async (file) => {
@@ -895,6 +933,8 @@ export const uploadLicenseFile = async (file) => {
     throw error.response?.data || { message: 'Server unavailable' };
   }
 };
+
+
 
 
 

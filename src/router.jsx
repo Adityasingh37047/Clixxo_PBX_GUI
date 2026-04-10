@@ -19,14 +19,14 @@ import VpnPage from './components/VpnPage';
 import DhcpPage from './components/DhcpPage';
 import SystemToolsPage from './components/SystemToolsPage';
 import LoginPage from './components/LoginPage';
-import SipSipPage from './sections/voip/SipSipPage';
+import SipSipPage from './components/SipSipPage';
 import HaPage from './components/HaPage';
 import SipTrunkPage from './components/SipTrunkPage';
 import SipRegisterPage from './components/SipRegisterPage';
 import SipAccountPage from './components/SipAccountPage';
 import SipTrunkGroup from './components/SipTrunkGroup';
 import SipToSipAccountPage from './components/SipToSipAccountPage';
-import SipMediaPage from './sections/voip/SipMediaPage';
+import SipMediaPage from './components/SipMediaPage';
 import ExtensionGroupsPage from './components/ExtensionGroupsPage';
 import BlockedListPage from './components/BlockedListPage';
 import CallBackPage from './components/CallBackPage';
@@ -94,7 +94,7 @@ import AccountManage from './components/AccountManage';
 import ChangePassword from './components/ChangePassword';
 import DeviceLock from './components/DeviceLock';
 import Restart from './components/Restart';
-import Licence from './components/Licence';
+import LicenceRouteGate from './components/LicenceRouteGate';
 import SystemToolsSqlUpload from './components/SystemToolsSqlUpload';
 import Hosts from './components/Hosts';
 import ConferencePage from './components/ConferencePage';
@@ -113,6 +113,8 @@ import PortGroupPage from './sections/port/PortGroupPage';
 import FxsPage from './sections/advanced/FxsPage';
 import SipCompatibilityPage from './sections/voip/SipCompatibilityPage';
 import NatSettingsPage from './sections/voip/NatSettingsPage';
+import FxsVoipSipPage from './sections/voip/FxsVoipSipPage';
+import FxsVoipMediaPage from './sections/voip/FxsVoipMediaPage';
 import FxsActionUrlPage from './sections/advanced/ActionUrlPage';
 import FxsAreaSelectPage from './sections/advanced/AreaSelectPage';
 import FxsCdrQueryPage from './sections/advanced/CdrQueryPage';
@@ -278,6 +280,8 @@ export const router = createBrowserRouter([
       { path: '/sip/media', element: <SipMediaPage /> },
       { path: ROUTE_PATHS.SIP_COMPATIBILITY, element: <SipCompatibilityPage /> },
       { path: ROUTE_PATHS.SIP_NAT_SETTINGS, element: <NatSettingsPage /> },
+      { path: ROUTE_PATHS.FXS_VOIP_SIP, element: <FxsVoipSipPage /> },
+      { path: ROUTE_PATHS.FXS_VOIP_MEDIA, element: <FxsVoipMediaPage /> },
       { path: '/call-features/blocked-list', element: <BlockedListPage /> },
       { path: '/call-features/callback', element: <CallBackPage /> },
       { path: '/call-features/originate-call', element: <OriginateCallPage /> },
@@ -401,7 +405,7 @@ export const router = createBrowserRouter([
         path: '/system-tools/ip-routing-table',
         element: <IPRoutingTable />,
       },
-      {
+      {   
         path: '/system-tools/access-control',
         element: <AccessControl />,
       },
@@ -491,7 +495,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '/system-tools/licence',
-        element: <Licence />,
+        element: <LicenceRouteGate />,
       },
       {
         path: '/system-tools/asterisk-cli',

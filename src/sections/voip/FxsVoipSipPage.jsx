@@ -17,7 +17,7 @@ const getInitialState = () => {
   return state;
 };
 
-const SipSipPage = () => {
+const FxsVoipSipPage = () => {
   const [form, setForm] = useState(getInitialState());
 
   const handleChange = (key, value) => {
@@ -225,5 +225,5 @@ const SipSipPage = () => {
   );
 };
 
-export default SipSipPage;
+export default FxsVoipSipPage;
 

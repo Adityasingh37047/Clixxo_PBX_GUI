@@ -68,8 +68,6 @@ export const SIDEBAR_SECTIONS = [
       { id: 'sipToSipAccount', title: 'SIP To SIP Account', path: '/sip/sip-to-sip-account' },
       { id: 'sipTrunkGroup', title: 'SIP Trunk Group', path: '/sip/trunk-group' },
       { id: 'sipMedia', title: 'Media', path: '/sip/media' },
-      { id: 'sipCompatibility', title: 'SIP Compatibility', path: ROUTE_PATHS.SIP_COMPATIBILITY },
-      { id: 'sipNatSettings', title: 'NAT Settings', path: ROUTE_PATHS.SIP_NAT_SETTINGS },
     ]
   },
   
@@ -148,10 +146,10 @@ export const SIDEBAR_SECTIONS = [
         title: 'VoIP',
         icon: PhoneIcon,
         items: [
-          { id: 'fxsVoipSip', title: 'FXS SIP', path: '/sip' },
-          { id: 'fxsVoipMedia', title: 'FXS SIP Media', path: '/sip/media' },
-          { id: 'fxsVoipCompatibility', title: 'FXS SIP Compatibility', path: ROUTE_PATHS.SIP_COMPATIBILITY },
-          { id: 'fxsVoipNatSettings', title: 'FXS NAT Settings', path: ROUTE_PATHS.SIP_NAT_SETTINGS },
+          { id: 'fxsVoipSip', title: 'SIP', path: ROUTE_PATHS.FXS_VOIP_SIP },
+          { id: 'fxsVoipMedia', title: 'Media', path: ROUTE_PATHS.FXS_VOIP_MEDIA },
+          { id: 'fxsVoipCompatibility', title: 'SIP Compatibility', path: ROUTE_PATHS.SIP_COMPATIBILITY },
+          { id: 'fxsVoipNatSettings', title: 'NAT Settings', path: ROUTE_PATHS.SIP_NAT_SETTINGS },
         ]
       },
       {
@@ -159,20 +157,20 @@ export const SIDEBAR_SECTIONS = [
         title: 'Advanced',
         icon: TuneIcon,
         items: [
-          { id: 'fxsAdvancedGeneral', title: 'FXS General', path: ROUTE_PATHS.FXS_GENERAL },
-          { id: 'fxsAdvancedActionUrl', title: 'FXS Action Url', path: ROUTE_PATHS.FXS_ACTION_URL },
-          { id: 'fxsAdvancedAreaSelect', title: 'FXS Area Select', path: ROUTE_PATHS.FXS_AREA_SELECT },
-          { id: 'fxsAdvancedCdrQuery', title: 'FXS CDR Query', path: ROUTE_PATHS.FXS_CDR_QUERY },
-          { id: 'fxsAdvancedColorRing', title: 'FXS Color Ring', path: ROUTE_PATHS.FXS_COLOR_RING },
-          { id: 'fxsAdvancedCueTone', title: 'FXS Cue Tone', path: ROUTE_PATHS.FXS_CUE_TONE },
-          { id: 'fxsAdvancedDialingRule', title: 'FXS Dialing Rule', path: ROUTE_PATHS.FXS_DIALING_RULE },
-          { id: 'fxsAdvancedDialingTimeout', title: 'FXS Dialing Timeout', path: ROUTE_PATHS.FXS_DIALING_TIMEOUT },
-          { id: 'fxsAdvancedDtmf', title: 'FXS DTMF', path: ROUTE_PATHS.FXS_DTMF },
-          { id: 'fxsAdvancedFunctionKey', title: 'FXS Function Key', path: ROUTE_PATHS.FXS_FUNCTION_KEY },
-          { id: 'fxsAdvancedQos', title: 'FXS QoS', path: ROUTE_PATHS.FXS_QOS },
-          { id: 'fxsAdvancedRinging', title: 'FXS Ringing Scheme', path: ROUTE_PATHS.FXS_RINGING_SCHEME },
-          { id: 'fxsAdvancedToneDetector', title: 'FXS Tone Detecter', path: ROUTE_PATHS.FXS_TONE_DETECTOR },
-          { id: 'fxsAdvancedToneGenerator', title: 'FXS Tone Generator', path: ROUTE_PATHS.FXS_TONE_GENERATOR },
+          { id: 'fxsAdvancedGeneral', title: 'General', path: ROUTE_PATHS.FXS_GENERAL },
+          { id: 'fxsAdvancedActionUrl', title: 'Action Url', path: ROUTE_PATHS.FXS_ACTION_URL },
+          { id: 'fxsAdvancedAreaSelect', title: 'Area Select', path: ROUTE_PATHS.FXS_AREA_SELECT },
+          { id: 'fxsAdvancedCdrQuery', title: 'CDR Query', path: ROUTE_PATHS.FXS_CDR_QUERY },
+          { id: 'fxsAdvancedColorRing', title: 'Color Ring', path: ROUTE_PATHS.FXS_COLOR_RING },
+          { id: 'fxsAdvancedCueTone', title: 'Cue Tone', path: ROUTE_PATHS.FXS_CUE_TONE },
+          { id: 'fxsAdvancedDialingRule', title: 'Dialing Rule', path: ROUTE_PATHS.FXS_DIALING_RULE },
+          { id: 'fxsAdvancedDialingTimeout', title: 'Dialing Timeout', path: ROUTE_PATHS.FXS_DIALING_TIMEOUT },
+          { id: 'fxsAdvancedDtmf', title: 'DTMF', path: ROUTE_PATHS.FXS_DTMF },
+          { id: 'fxsAdvancedFunctionKey', title: 'Function Key', path: ROUTE_PATHS.FXS_FUNCTION_KEY },
+          { id: 'fxsAdvancedQos', title: 'QoS', path: ROUTE_PATHS.FXS_QOS },
+          { id: 'fxsAdvancedRinging', title: 'Ringing Scheme', path: ROUTE_PATHS.FXS_RINGING_SCHEME },
+          { id: 'fxsAdvancedToneDetector', title: 'Tone Detecter', path: ROUTE_PATHS.FXS_TONE_DETECTOR },
+          { id: 'fxsAdvancedToneGenerator', title: 'Tone Generator', path: ROUTE_PATHS.FXS_TONE_GENERATOR },
         ]
       },
       {
@@ -180,33 +178,37 @@ export const SIDEBAR_SECTIONS = [
         title: 'Port',
         icon: PeopleIcon,
         items: [
-          { id: 'fxsPortGroup', title: 'FXS Port Group', path: ROUTE_PATHS.PORT_GROUP },
-          { id: 'fxsPortSettings', title: 'FXS Settings', path: ROUTE_PATHS.PORT_FXS },
-          { id: 'fxsPortAdvanced', title: 'FXS Advanced', path: ROUTE_PATHS.PORT_FXS_ADVANCED },
+          { id: 'fxsPortGroup', title: 'Port Group', path: ROUTE_PATHS.PORT_GROUP },
+          { id: 'fxsPortSettings', title: 'Settings', path: ROUTE_PATHS.PORT_FXS },
+          { id: 'fxsPortAdvanced', title: 'Advanced', path: ROUTE_PATHS.PORT_FXS_ADVANCED },
         ]
       },
-      {
-        id: 'fxsRouting',
-        title: 'FXS Routing',
-        icon: RouteIcon,
-        items: [
-          { id: 'fxsRoutingParameters', title: 'FXS Routing Parameters', path: '/route' },
-          { id: 'fxsRoutingIpToPstn', title: 'FXS IP->PSTN', path: '/route/ip-to-pstn' },
-          { id: 'fxsRoutingIpToIp', title: 'FXS IP->IP', path: '/route/ip-to-ip' },
-          { id: 'fxsRoutingPstnToIp', title: 'FXS PSTN->IP', path: '/route/pstn-to-ip' },
-        ]
-      },
-      {
-        id: 'fxsNumberManipulate',
-        title: 'FXS Number Manipulate',
-        icon: EditIcon,
-        items: [
-          { id: 'fxsIpCallInCallerID', title: 'FXS IP Call In CallerID', path: ROUTE_PATHS.IP_CALL_IN_CALLERID },
-          { id: 'fxsIpCallInCalleeID', title: 'FXS IP Call In CalleeID', path: ROUTE_PATHS.IP_CALL_IN_CALLEEID },
-          { id: 'fxsPstnCallInCallerID', title: 'FXS PSTN Call In CallerID', path: ROUTE_PATHS.PSTN_CALL_IN_CALLERID },
-          { id: 'fxsPstnCallInCalleeID', title: 'FXS PSTN Call In CalleeID', path: ROUTE_PATHS.PSTN_CALL_IN_CALLEEID },
-        ]
-      },
+      // {
+      //   id: 'fxsRouting',
+      //   title: 'FXS Routing',
+      //   icon: RouteIcon,
+      //   items: [
+      //     { id: 'fxsRoutingParameters', title: 'Routing Parameters', path: ROUTE_PATHS.ROUTE },
+      //     { id: 'fxsRoutingIpToPstn', title: 'IP->PSTN', path: '/route/ip-to-pstn' },
+      //     { id: 'fxsRoutingIpToIp', title: 'IP->IP', path: '/route/ip-to-ip' },
+      //     { id: 'fxsRoutingPstnToIp', title: 'PSTN->IP', path: '/route/pstn-to-ip' },
+      //   ]
+      // },
+      // {
+      //   id: 'fxsNumberManipulate',
+      //   title: 'FXS Number Manipulate',
+      //   icon: EditIcon,
+      //   items: [
+      //     { id: 'fxsIpCallInCallerID', title: 'IP Call In CallerID', path: ROUTE_PATHS.IP_CALL_IN_CALLERID },
+      //     { id: 'fxsIpCallInCalleeID', title: 'IP Call In CalleeID', path: ROUTE_PATHS.IP_CALL_IN_CALLEEID },
+      //     { id: 'fxsIpCallInOriCalleeID', title: 'IP Call In OriCalleeID', path: ROUTE_PATHS.IP_CALL_IN_ORICALLEEID },
+      //     { id: 'fxsPstnCallInCallerID', title: 'PSTN Call In CallerID', path: ROUTE_PATHS.PSTN_CALL_IN_CALLERID },
+      //     { id: 'fxsPstnCallInCalleeID', title: 'PSTN Call In CalleeID', path: ROUTE_PATHS.PSTN_CALL_IN_CALLEEID },
+      //     { id: 'fxsPstnCallInOriCalleeID', title: 'PSTN Call In OriCalleeID', path: ROUTE_PATHS.PSTN_CALL_IN_ORICALLEEID },
+      //     { id: 'fxsCallerIDPool', title: 'CallerID Pool', path: ROUTE_PATHS.CALLERID_POOL },
+      //     { id: 'fxsCallerIDReservePool', title: 'CallerID Reserve Pool', path: ROUTE_PATHS.CALLERID_RESERVE_POOL },
+      //   ]
+      // },
     ]
   },
 

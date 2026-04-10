@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const SipMediaPage = () => {
+const FxsVoipMediaPage = () => {
   // Media Parameters state
   const [formData, setFormData] = useState({
     dtmfTransmitMode: '0', // 0=RFC2833, 1=SIP INFO, 2=In-band
@@ -618,5 +618,5 @@ const SipMediaPage = () => {
   );
 };
 
-export default SipMediaPage;
+export default FxsVoipMediaPage;
 
