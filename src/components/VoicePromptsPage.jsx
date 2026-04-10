@@ -21,8 +21,6 @@ import StopRoundedIcon from '@mui/icons-material/StopRounded';
 import {
   deleteCustomPrompt,
   deleteMohFile,
-  downloadCustomPrompt,
-  downloadMohFile,
   getVoicePromptPreferences,
   listCustomPrompts,
   listMohClasses,
@@ -31,6 +29,7 @@ import {
   playCustomPrompt,
   playMohFile,
   recordNewCustomPrompt,
+  uploadCustomPrompt,
   updateVoicePromptPreferences,
   uploadMohFile,
 } from '../api/apiService';
@@ -54,6 +53,19 @@ const formatDateTime = (value) => {
 };
 
 const safeFilename = (v) => String(v || '').trim();
+const normalizeMohClassList = (res) => {
+  const msg = res?.message ?? res?.data ?? {};
+  const raw =
+    Array.isArray(msg?.moh_classes) ? msg.moh_classes :
+    Array.isArray(msg?.classes) ? msg.classes :
+    Array.isArray(msg?.categories) ? msg.categories :
+    Array.isArray(msg) ? msg :
+    Array.isArray(res?.data) ? res.data : [];
+  return raw
+    .map((x) => (typeof x === 'string' ? x : x?.name || x?.category || x?.class || ''))
+    .map((x) => String(x).trim())
+    .filter(Boolean);
+};
 
 const triggerBrowserDownload = (blob, filename) => {
   const url = URL.createObjectURL(blob);
@@ -64,6 +76,16 @@ const triggerBrowserDownload = (blob, filename) => {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+const toMessageText = (msg, fallback) => {
+  if (typeof msg === 'string' && msg.trim()) return msg;
+  if (msg && typeof msg === 'object') {
+    if (typeof msg.message === 'string' && msg.message.trim()) return msg.message;
+    if (typeof msg.error === 'string' && msg.error.trim()) return msg.error;
+    if (typeof msg.details === 'string' && msg.details.trim()) return msg.details;
+  }
+  return fallback;
 };
 
 const VoicePromptsPage = () => {
@@ -95,9 +117,9 @@ const VoicePromptsPage = () => {
   const [savingPrefs, setSavingPrefs] = useState(false);
 
   const categories = useMemo(() => {
-    const apiCats = mohClasses.map((c) => String(c).trim()).filter(Boolean);
-    return Array.from(new Set(['default', ...apiCats]));
-  }, [mohClasses]);
+    const listCats = mohFiles.map((f) => String(f?.category || '').trim()).filter(Boolean);
+    return Array.from(new Set(listCats));
+  }, [mohFiles]);
 
   useEffect(() => {
     const loadInitial = async () => {
@@ -107,20 +129,24 @@ const VoicePromptsPage = () => {
           const msg = prefRes?.message ?? prefRes?.data ?? {};
           setPromptMohCategory(String(msg?.music_on_hold || 'default'));
           setPlayCallForwardingPrompt(!!msg?.play_call_forwarding_prompt);
+          const prefClasses = Array.isArray(msg?.moh_classes) ? msg.moh_classes : [];
+          if (prefClasses.length > 0) {
+            setMohClasses(prefClasses.map((x) => String(x).trim()).filter(Boolean));
+          }
         }
       } catch {}
 
       try {
         const clsRes = await listMohClasses();
         if (clsRes?.response) {
-          const list = normalizeList(clsRes);
-          setMohClasses(list.map((x) => (typeof x === 'string' ? x : x?.name || x?.category || '')).filter(Boolean));
+          setMohClasses(normalizeMohClassList(clsRes));
         } else {
           setMohClasses([]);
         }
       } catch {
         setMohClasses([]);
       }
+      await loadMohFiles();
 
       try {
         const extRes = await listVoicePromptExtensions();
@@ -164,26 +190,40 @@ const VoicePromptsPage = () => {
   }, []);
 
   useEffect(() => {
-    if (!categories.includes(promptMohCategory)) {
-      setPromptMohCategory('default');
+    if (categories.length > 0 && !categories.includes(promptMohCategory)) {
+      setPromptMohCategory(categories[0]);
+      return;
     }
-  }, [categories, promptMohCategory]);
+    if (categories.length === 0 && !mohLoading) {
+      setPromptMohCategory('');
+    }
+  }, [categories, promptMohCategory, mohLoading]);
 
-  const loadMohFiles = async (category) => {
+  const loadMohFiles = async () => {
     setMohLoading(true);
     try {
-      const res = await listMohFiles(category);
+      const res = await listMohFiles();
       if (!res?.response) {
         setMohFiles([]);
         return;
       }
-      const list = normalizeList(res);
+      const msg = res?.message ?? res?.data ?? {};
+      const list = Array.isArray(msg)
+        ? msg
+        : Array.isArray(msg?.files)
+        ? msg.files
+        : Array.isArray(msg)
+        ? msg
+        : Array.isArray(res?.data)
+        ? res.data
+        : [];
       setMohFiles(
         list.map((it, idx) => ({
           id: it?.id ?? `${idx}`,
+          category: String(it?.category || ''),
           filename: safeFilename(it?.filename || it?.file_name || it?.name || it),
           sizeBytes: Number(it?.size_bytes ?? it?.size ?? 0) || 0,
-          uploadedAt: it?.uploaded_at || it?.uploaded || it?.date || '',
+          uploadedAt: it?.uploaded_at || it?.created_at || it?.uploaded || it?.date || '',
         }))
       );
     } catch {
@@ -193,12 +233,28 @@ const VoicePromptsPage = () => {
     }
   };
 
+  const refreshMohClasses = async () => {
+    try {
+      const clsRes = await listMohClasses();
+      if (!clsRes?.response) {
+        setMohClasses([]);
+        return [];
+      }
+      const classes = normalizeMohClassList(clsRes);
+      setMohClasses(classes);
+      return classes;
+    } catch {
+      setMohClasses([]);
+      return [];
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'musicOnHold') {
-      loadMohFiles(promptMohCategory);
+      loadMohFiles();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, promptMohCategory]);
+  }, [activeTab]);
 
   const handleSavePreferences = async () => {
     setSavingPrefs(true);
@@ -220,7 +276,11 @@ const VoicePromptsPage = () => {
   };
 
   const handleUploadMoh = async () => {
-    const trimmedCategory = mohCategoryName.trim() || promptMohCategory || 'default';
+    const trimmedCategory = mohCategoryName.trim();
+    if (!trimmedCategory) {
+      window.alert('Category is required.');
+      return;
+    }
     if (!mohFile) {
       window.alert('Please select a hold music file.');
       return;
@@ -231,13 +291,14 @@ const VoicePromptsPage = () => {
         window.alert(res?.message || 'Upload failed.');
         return;
       }
-      if (!mohClasses.includes(trimmedCategory)) {
-        setMohClasses((prev) => Array.from(new Set([...prev, trimmedCategory])));
-      }
+      // Optimistic category update to prevent temporary empty dropdown state.
+      setMohClasses((prev) => Array.from(new Set([...prev, trimmedCategory])));
+      await refreshMohClasses();
+      // Keep uploaded category selected so user can verify file in that category.
       setPromptMohCategory(trimmedCategory);
       setMohCategoryName('');
       setMohFile(null);
-      await loadMohFiles(trimmedCategory);
+      await loadMohFiles();
     } catch (e) {
       window.alert(e?.message || 'Upload failed.');
     }
@@ -270,8 +331,21 @@ const VoicePromptsPage = () => {
   };
 
   const handleUploadCustomPrompt = async () => {
-    window.alert('Custom prompt upload API is not provided. Please share the upload endpoint for custom prompts.');
-    setCustomFile(null);
+    if (!customFile) {
+      window.alert('Please select a custom prompt file.');
+      return;
+    }
+    try {
+      const res = await uploadCustomPrompt({ file: customFile });
+      if (!res?.response) {
+        window.alert(res?.message || 'Failed to upload custom prompt.');
+        return;
+      }
+      setCustomFile(null);
+      await refreshCustomPrompts();
+    } catch (e) {
+      window.alert(e?.message || 'Failed to upload custom prompt.');
+    }
   };
 
   const openRecordModal = () => {
@@ -294,14 +368,14 @@ const VoicePromptsPage = () => {
       try {
         const res = await recordNewCustomPrompt({ file_name: trimmed, extension: recordExtension });
         if (!res?.response) {
-          window.alert(res?.message || 'Failed to start recording.');
+          window.alert(toMessageText(res?.message, 'Failed to start recording.'));
           return;
         }
-        window.alert(res?.message || 'Recording started.');
+        window.alert(toMessageText(res?.message, 'Recording started.'));
         setRecordModalOpen(false);
         await refreshCustomPrompts();
       } catch (e) {
-        window.alert(e?.message || 'Failed to start recording.');
+        window.alert(toMessageText(e?.response?.data?.message || e?.message, 'Failed to start recording.'));
       }
     };
     run();
@@ -390,23 +464,39 @@ const VoicePromptsPage = () => {
                   <Select
                     value={promptMohCategory}
                     onChange={(e) => setPromptMohCategory(e.target.value)}
+                    displayEmpty
                     sx={{ '& .MuiOutlinedInput-input': { fontSize: 13, padding: '6px 8px' } }}
                   >
-                    {categories.map((category) => (
-                      <MenuItem key={category} value={category}>
-                        {category}
-                      </MenuItem>
-                    ))}
+                    {categories.length === 0 ? (
+                      promptMohCategory ? (
+                        <MenuItem value={promptMohCategory}>
+                          {promptMohCategory}
+                        </MenuItem>
+                      ) : (
+                        <MenuItem value="" disabled>
+                          <em>No uploaded music yet</em>
+                        </MenuItem>
+                      )
+                    ) : (
+                      categories.map((category) => (
+                        <MenuItem key={category} value={category}>
+                          {category}
+                        </MenuItem>
+                      ))
+                    )}
                   </Select>
                 </FormControl>
 
                 <label className="text-[13px] text-gray-700 font-medium text-left">Play Call Forwarding Prompt</label>
-                <div className="flex items-center justify-start">
+                <div className="flex flex-col items-start justify-start gap-1">
                   <input
                     type="checkbox"
                     checked={playCallForwardingPrompt}
                     onChange={(e) => setPlayCallForwardingPrompt(e.target.checked)}
                   />
+                  <span className="text-[11px] text-gray-500">
+                    If enabled, the system plays default forwarding prompt before transfer.
+                  </span>
                 </div>
               </div>
               <div className="flex justify-center mt-3">
@@ -420,20 +510,19 @@ const VoicePromptsPage = () => {
           {activeTab === 'musicOnHold' && (
             <div className="flex flex-col gap-3">
               <div className="bg-white border border-gray-300 rounded-md p-3">
-                <div className="grid grid-cols-1 md:grid-cols-[130px_330px_100px] justify-center gap-x-3 gap-y-2 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-[130px_460px] justify-center gap-x-3 gap-y-2 items-center">
                   <label className="text-[13px] text-gray-700 font-medium text-left">Category</label>
                   <TextField
                     size="small"
-                    sx={{ width: 330 }}
+                    sx={{ width: 460, maxWidth: '100%' }}
                     value={mohCategoryName}
                     onChange={(e) => setMohCategoryName(e.target.value)}
                     placeholder="Enter category name (default)"
                     inputProps={{ style: { fontSize: 13, padding: '6px 8px' } }}
                   />
-                  <div />
 
                   <label className="text-[13px] text-gray-700 font-medium text-left">File Path</label>
-                  <div className="flex items-center gap-2 max-w-[330px] w-full">
+                  <div className="flex items-center gap-2 w-full">
                     <input
                       ref={mohFileInputRef}
                       type="file"
@@ -443,25 +532,38 @@ const VoicePromptsPage = () => {
                     <Button
                       variant="outlined"
                       onClick={() => mohFileInputRef.current?.click()}
-                      sx={{ minWidth: 94, height: 28, px: 1.2, fontSize: '11px', textTransform: 'none' }}
+                      sx={{
+                        minWidth: 94,
+                        height: 28,
+                        px: 1.2,
+                        fontSize: '11px',
+                        textTransform: 'none',
+                        color: '#374151',
+                        backgroundColor: '#e5e7eb',
+                        borderColor: '#9ca3af',
+                        '&:hover': {
+                          backgroundColor: '#d1d5db',
+                          borderColor: '#6b7280',
+                        },
+                      }}
                     >
                       Choose File
                     </Button>
                     <span className="text-[12px] text-gray-600 truncate">
                       {mohFile?.name || 'No file chosen'}
                     </span>
+                    <Button onClick={handleUploadMoh} sx={{ ...actionBtnSx, minWidth: 96, ml: 1 }}>
+                      UPLOAD
+                    </Button>
                   </div>
-                  <Button onClick={handleUploadMoh} sx={actionBtnSx}>
-                    UPLOAD
-                  </Button>
                 </div>
-                <div className="text-[11px] text-gray-500 mt-3">
+                <div className="text-[11px] text-gray-700 mt-3">
                   Note: only supports uploading G711A, G711U, PCM16 encoding, 8000Hz sampling rate, mono wav, MP3 files.
                 </div>
               </div>
 
               <div className="bg-white border border-gray-300 rounded-md p-3 overflow-x-auto">
-                <div className="text-[13px] font-semibold text-[#e2584d] mb-2">{promptMohCategory || 'default'}</div>
+                <div className="text-[13px] font-semibold text-[#e2584d] mb-2">All Uploaded MOH Files</div>
                 <table className="w-full min-w-[680px]">
                   <thead>
                     <tr className="border-b border-gray-300">
@@ -479,13 +581,13 @@ const VoicePromptsPage = () => {
                       </tr>
                     ) : mohFiles.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-[12px] text-gray-500 py-2">No hold music uploaded yet.</td>
+                        <td colSpan={5} className="text-[12px] text-gray-700 py-2">No hold music uploaded yet.</td>
                       </tr>
                     ) : (
                       mohFiles.map((item) => (
                         <tr key={item.id} className="border-b border-gray-100">
                           <td className="text-[12px] py-1">{item.filename}</td>
-                          <td className="text-[12px] py-1">{promptMohCategory || 'default'}</td>
+                          <td className="text-[12px] py-1">{item.category || '--'}</td>
                           <td className="text-[12px] py-1">{formatSize(item.sizeBytes)}</td>
                           <td className="text-[12px] py-1">{formatDateTime(item.uploadedAt)}</td>
                           <td className="text-[12px] py-1">
@@ -496,7 +598,7 @@ const VoicePromptsPage = () => {
                                   sx={toolIconBtnSx}
                                   onClick={async () => {
                                     try {
-                                      const resp = await playMohFile({ category: promptMohCategory, filename: item.filename });
+                                      const resp = await playMohFile({ category: item.id, filename: item.id });
                                       const url = URL.createObjectURL(resp.data);
                                       stopCustomPlayer();
                                       if (mohAudioUrl) URL.revokeObjectURL(mohAudioUrl);
@@ -510,22 +612,6 @@ const VoicePromptsPage = () => {
                                   <PlayArrowRoundedIcon sx={{ fontSize: 16, color: '#8b96a5' }} />
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip title="Download">
-                                <IconButton
-                                  size="small"
-                                  sx={toolIconBtnSx}
-                                  onClick={async () => {
-                                    try {
-                                      const resp = await downloadMohFile({ category: promptMohCategory, filename: item.filename });
-                                      triggerBrowserDownload(resp.data, item.filename);
-                                    } catch (e) {
-                                      window.alert(e?.message || 'Failed to download file.');
-                                    }
-                                  }}
-                                >
-                                  <DownloadRoundedIcon sx={{ fontSize: 15, color: '#8b96a5' }} />
-                                </IconButton>
-                              </Tooltip>
                               <Tooltip title="Delete">
                                 <IconButton
                                   size="small"
@@ -533,18 +619,41 @@ const VoicePromptsPage = () => {
                                   onClick={async () => {
                                     if (!window.confirm(`Delete ${item.filename}?`)) return;
                                     try {
-                                      const res = await deleteMohFile({ category: promptMohCategory, filename: item.filename });
+                                      const res = await deleteMohFile({ category: item.id, filename: item.id });
                                       if (!res?.response) {
                                         window.alert(res?.message || 'Failed to delete file.');
                                         return;
                                       }
-                                      await loadMohFiles(promptMohCategory);
+                                      const classes = await refreshMohClasses();
+                                      if (!classes.includes(promptMohCategory)) {
+                                        const nextCategory = classes[0] || '';
+                                        setPromptMohCategory(nextCategory);
+                                        await loadMohFiles();
+                                        return;
+                                      }
+                                      await loadMohFiles();
                                     } catch (e) {
                                       window.alert(e?.message || 'Failed to delete file.');
                                     }
                                   }}
                                 >
                                   <DeleteOutlineRoundedIcon sx={{ fontSize: 15, color: '#8b96a5' }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Download">
+                                <IconButton
+                                  size="small"
+                                  sx={toolIconBtnSx}
+                                  onClick={async () => {
+                                    try {
+                                      const resp = await playMohFile({ category: item.id, filename: item.id });
+                                      triggerBrowserDownload(resp.data, item.filename);
+                                    } catch (e) {
+                                      window.alert(e?.message || 'Failed to download file.');
+                                    }
+                                  }}
+                                >
+                                  <DownloadRoundedIcon sx={{ fontSize: 15, color: '#8b96a5' }} />
                                 </IconButton>
                               </Tooltip>
                             </div>
@@ -573,15 +682,15 @@ const VoicePromptsPage = () => {
           {activeTab === 'customPrompt' && (
             <div className="flex flex-col gap-3">
               <div className="bg-white border border-gray-300 rounded-md p-3">
-                <div className="flex flex-wrap items-center gap-3 mb-3">
+                <div className="flex justify-start mb-3 pl-1">
                   <Button onClick={openRecordModal} sx={actionBtnSx}>
                     RECORD NEW
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-[130px_330px_100px] justify-center gap-x-3 gap-y-2 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-[130px_460px] justify-center gap-x-3 gap-y-2 items-center">
                   <label className="text-[13px] text-gray-700 font-medium text-left">File Path</label>
-                  <div className="flex items-center gap-2 max-w-[330px] w-full">
+                  <div className="flex items-center gap-2 w-full">
                     <input
                       ref={customFileInputRef}
                       type="file"
@@ -591,20 +700,33 @@ const VoicePromptsPage = () => {
                     <Button
                       variant="outlined"
                       onClick={() => customFileInputRef.current?.click()}
-                      sx={{ minWidth: 94, height: 28, px: 1.2, fontSize: '11px', textTransform: 'none' }}
+                      sx={{
+                        minWidth: 94,
+                        height: 28,
+                        px: 1.2,
+                        fontSize: '11px',
+                        textTransform: 'none',
+                        color: '#374151',
+                        backgroundColor: '#e5e7eb',
+                        borderColor: '#9ca3af',
+                        '&:hover': {
+                          backgroundColor: '#d1d5db',
+                          borderColor: '#6b7280',
+                        },
+                      }}
                     >
                       Choose File
                     </Button>
                     <span className="text-[12px] text-gray-600 truncate">
                       {customFile?.name || 'No file chosen'}
                     </span>
+                    <Button onClick={handleUploadCustomPrompt} sx={{ ...actionBtnSx, minWidth: 96, ml: 1 }}>
+                      UPLOAD
+                    </Button>
                   </div>
-                  <Button onClick={handleUploadCustomPrompt} sx={actionBtnSx}>
-                    UPLOAD
-                  </Button>
                 </div>
-                <div className="text-[11px] text-gray-500 mt-3">
-                  Note: only supports uploading G711A, G711U, PCM16 encoding, 8000Hz sampling rate, mono wav, MP3 files.
+                <div className="text-[11px] text-gray-700 mt-3">
+                  Note: supports uploading .wav, .mp3, .gsm files.
                 </div>
               </div>
 
@@ -615,7 +737,6 @@ const VoicePromptsPage = () => {
                     <tr className="border-b border-gray-300">
                       <th className="text-left text-[12px] text-[#2368a0] py-1">Recording Name</th>
                       <th className="text-left text-[12px] text-[#2368a0] py-1">File Name</th>
-                      <th className="text-left text-[12px] text-[#2368a0] py-1">Extension</th>
                       <th className="text-left text-[12px] text-[#2368a0] py-1">File Size</th>
                       <th className="text-left text-[12px] text-[#2368a0] py-1">Uploaded</th>
                       <th className="text-left text-[12px] text-[#2368a0] py-1">Tools</th>
@@ -624,18 +745,17 @@ const VoicePromptsPage = () => {
                   <tbody>
                     {customLoading ? (
                       <tr>
-                        <td colSpan={6} className="text-[12px] text-gray-500 py-2">Loading...</td>
+                        <td colSpan={5} className="text-[12px] text-gray-500 py-2">Loading...</td>
                       </tr>
                     ) : customItems.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="text-[12px] text-gray-500 py-2">No custom prompts uploaded/recorded yet.</td>
+                        <td colSpan={5} className="text-[12px] text-gray-500 py-2">No custom prompts uploaded/recorded yet.</td>
                       </tr>
                     ) : (
                       customItems.map((item) => (
                         <tr key={item.id} className="border-b border-gray-100">
                           <td className="text-[12px] py-1">{item.recordingName}</td>
                           <td className="text-[12px] py-1">{item.fileName}</td>
-                          <td className="text-[12px] py-1">{item.extension}</td>
                           <td className="text-[12px] py-1">{formatSize(item.sizeBytes)}</td>
                           <td className="text-[12px] py-1">{formatDateTime(item.uploadedAt)}</td>
                           <td className="text-[12px] py-1">
@@ -660,22 +780,6 @@ const VoicePromptsPage = () => {
                                   <PlayArrowRoundedIcon sx={{ fontSize: 16, color: '#8b96a5' }} />
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip title="Download">
-                                <IconButton
-                                  size="small"
-                                  sx={toolIconBtnSx}
-                                  onClick={async () => {
-                                    try {
-                                      const resp = await downloadCustomPrompt({ filename: item.fileName });
-                                      triggerBrowserDownload(resp.data, item.fileName);
-                                    } catch (e) {
-                                      window.alert(e?.message || 'Failed to download file.');
-                                    }
-                                  }}
-                                >
-                                  <DownloadRoundedIcon sx={{ fontSize: 15, color: '#8b96a5' }} />
-                                </IconButton>
-                              </Tooltip>
                               <Tooltip title="Delete">
                                 <IconButton
                                   size="small"
@@ -695,6 +799,22 @@ const VoicePromptsPage = () => {
                                   }}
                                 >
                                   <DeleteOutlineRoundedIcon sx={{ fontSize: 15, color: '#8b96a5' }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Download">
+                                <IconButton
+                                  size="small"
+                                  sx={toolIconBtnSx}
+                                  onClick={async () => {
+                                    try {
+                                      const resp = await playCustomPrompt({ filename: item.fileName });
+                                      triggerBrowserDownload(resp.data, item.fileName);
+                                    } catch (e) {
+                                      window.alert(e?.message || 'Failed to download file.');
+                                    }
+                                  }}
+                                >
+                                  <DownloadRoundedIcon sx={{ fontSize: 15, color: '#8b96a5' }} />
                                 </IconButton>
                               </Tooltip>
                             </div>

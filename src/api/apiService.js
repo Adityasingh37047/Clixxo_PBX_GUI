@@ -2956,7 +2956,8 @@ export const updateVoicePromptPreferences = async ({ music_on_hold, play_call_fo
 
 export const listMohClasses = async () => {
   try {
-    const response = await axiosInstance.post('/voice-prompts', { type: 'list_moh_classes' });
+    // New backend returns categories via get_preferences.moh_categories
+    const response = await axiosInstance.post('/voice-prompts', { type: 'get_preferences' });
     return response.data;
   } catch (error) {
     console.error('Error listing MOH classes:', error.message);
@@ -2964,9 +2965,35 @@ export const listMohClasses = async () => {
   }
 };
 
+export const createMohClass = async ({ category }) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', {
+      type: 'create_moh_class',
+      category: String(category || '').trim(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating MOH class:', error.message);
+    throw error;
+  }
+};
+
+export const deleteMohClass = async ({ category }) => {
+  try {
+    const response = await axiosInstance.post('/voice-prompts', {
+      type: 'delete_moh_class',
+      category: String(category || '').trim(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting MOH class:', error.message);
+    throw error;
+  }
+};
+
 export const listMohFiles = async (category) => {
   try {
-    const response = await axiosInstance.post('/voice-prompts', { type: 'list_moh_files', category: String(category || 'default') });
+    const response = await axiosInstance.post('/voice-prompts', { type: 'list_moh' });
     return response.data;
   } catch (error) {
     console.error('Error listing MOH files:', error.message);
@@ -2990,11 +3017,29 @@ export const uploadMohFile = async ({ category, file }) => {
   }
 };
 
+export const uploadCustomPrompt = async ({ file }) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosInstance.post('/voice-prompts/upload-custom', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading custom prompt:', error.message);
+    throw error;
+  }
+};
+
 export const playMohFile = async ({ category, filename }) => {
   try {
+    if (!category && !filename) {
+      throw new Error('Missing MOH file id');
+    }
     const response = await axiosInstance.post(
       '/voice-prompts',
-      { type: 'play_moh_file', category: String(category || 'default'), filename: String(filename || '') },
+      { type: 'play_moh', id: Number(category || filename) },
       { responseType: 'blob', timeout: 60000 }
     );
     return response;
@@ -3021,9 +3066,8 @@ export const downloadMohFile = async ({ category, filename }) => {
 export const deleteMohFile = async ({ category, filename }) => {
   try {
     const response = await axiosInstance.post('/voice-prompts', {
-      type: 'delete_moh_file',
-      category: String(category || 'default'),
-      filename: String(filename || ''),
+      type: 'delete_moh',
+      id: Number(category || filename),
     });
     return response.data;
   } catch (error) {
@@ -3058,7 +3102,7 @@ export const recordNewCustomPrompt = async ({ file_name, extension }) => {
 
 export const listCustomPrompts = async () => {
   try {
-    const response = await axiosInstance.post('/voice-prompts', { type: 'list_custom_prompts' });
+    const response = await axiosInstance.post('/voice-prompts', { type: 'list_custom' });
     return response.data;
   } catch (error) {
     console.error('Error listing custom prompts:', error.message);
@@ -3068,7 +3112,7 @@ export const listCustomPrompts = async () => {
 
 export const playCustomPrompt = async ({ filename }) => {
   try {
-    const response = await axiosInstance.post('/voice-prompts', { type: 'play_custom_prompt', filename: String(filename || '') }, { responseType: 'blob', timeout: 60000 });
+    const response = await axiosInstance.post('/voice-prompts', { type: 'play_custom', filename: String(filename || '') }, { responseType: 'blob', timeout: 60000 });
     return response;
   } catch (error) {
     console.error('Error playing custom prompt:', error.message);
@@ -3088,7 +3132,7 @@ export const downloadCustomPrompt = async ({ filename }) => {
 
 export const deleteCustomPrompt = async ({ filename }) => {
   try {
-    const response = await axiosInstance.post('/voice-prompts', { type: 'delete_custom_prompt', filename: String(filename || '') });
+    const response = await axiosInstance.post('/voice-prompts', { type: 'delete_custom', filename: String(filename || '') });
     return response.data;
   } catch (error) {
     console.error('Error deleting custom prompt:', error.message);
