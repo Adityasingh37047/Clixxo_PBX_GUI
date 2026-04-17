@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  ListSubheader,
   MenuItem,
   Select,
 } from '@mui/material';
@@ -17,6 +18,7 @@ import {
   fetchSipAccounts,
   listConferences,
   listIvrs,
+  listRingBackOptions,
   listRingGroups,
   updateRingGroup,
 } from '../api/apiService';
@@ -38,7 +40,16 @@ const TIMEOUT_DESTINATION_OPTIONS = [
   { label: 'Voicemails', value: 'voicemail' },
   { label: 'Other', value: 'other' },
 ];
-const RING_BACK_OPTIONS = ['us-ring', 'au-ring', 'gb-ring', 'de-ring', 'fr-ring', 'cn-ring', 'it-ring', 'jp-ring', 'nl-ring', 'ru-ring', 'se-ring', 'sg-ring', 'nz-ring', 'mx-ring', 'in-ring'];
+
+const RING_BACK_MENU_PROPS = {
+  PaperProps: { sx: { maxHeight: 360 } },
+};
+
+const EMPTY_RING_BACK_OPTIONS = {
+  moh_categories: [],
+  custom_prompts: [],
+  country_tones: [],
+};
 
 const RingGroup = () => {
   const [rows, setRows] = useState([]);
@@ -50,6 +61,7 @@ const RingGroup = () => {
     members: false,
     destinations: false,
     list: false,
+    ringBackOptions: false,
   });
   const hasLoadedDataRef = useRef(false);
 
@@ -64,6 +76,7 @@ const RingGroup = () => {
   const [enabled, setEnabled] = useState('Yes');
   const [alertInfo, setAlertInfo] = useState('');
   const [ringBack, setRingBack] = useState('us-ring');
+  const [ringBackOptions, setRingBackOptions] = useState(EMPTY_RING_BACK_OPTIONS);
   const [cidNamePrefix, setCidNamePrefix] = useState('');
   const [extensionAnswerConfirm, setExtensionAnswerConfirm] = useState('No');
 
@@ -108,6 +121,33 @@ const RingGroup = () => {
     extensionAnswerConfirm: r.answer_confirm ? 'Yes' : 'No',
     members: Array.isArray(r.members) ? r.members.map(String) : [],
   });
+
+  const loadRingBackOptions = async () => {
+    setLoading((prev) => ({ ...prev, ringBackOptions: true }));
+    try {
+      const res = await listRingBackOptions();
+      if (res?.response === false) {
+        const errText =
+          typeof res?.message === 'string' ? res.message : 'Failed to load ring back options.';
+        showAlert(errText);
+        setRingBackOptions(EMPTY_RING_BACK_OPTIONS);
+        return;
+      }
+      const msg = res?.message;
+      const normalized =
+        msg && typeof msg === 'object' && !Array.isArray(msg) ? msg : EMPTY_RING_BACK_OPTIONS;
+      setRingBackOptions({
+        moh_categories: Array.isArray(normalized.moh_categories) ? normalized.moh_categories : [],
+        custom_prompts: Array.isArray(normalized.custom_prompts) ? normalized.custom_prompts : [],
+        country_tones: Array.isArray(normalized.country_tones) ? normalized.country_tones : [],
+      });
+    } catch (err) {
+      showAlert(err?.message || 'Failed to load ring back options.');
+      setRingBackOptions(EMPTY_RING_BACK_OPTIONS);
+    } finally {
+      setLoading((prev) => ({ ...prev, ringBackOptions: false }));
+    }
+  };
 
   const refreshRingGroups = async () => {
     setLoading((prev) => ({ ...prev, list: true }));
@@ -205,9 +245,10 @@ const RingGroup = () => {
   const handleOpenAddModal = async () => {
     resetForm();
     setShowModal(true);
-    if (!hasLoadedDataRef.current) {
-      await loadFormData();
-    }
+    await Promise.all([
+      loadRingBackOptions(),
+      !hasLoadedDataRef.current ? loadFormData() : Promise.resolve(),
+    ]);
   };
 
   const handleOpenEditModal = async (row) => {
@@ -227,9 +268,10 @@ const RingGroup = () => {
     setAvailableSelected([]);
     setChosenSelected([]);
     setShowModal(true);
-    if (!hasLoadedDataRef.current) {
-      await loadFormData();
-    }
+    await Promise.all([
+      loadRingBackOptions(),
+      !hasLoadedDataRef.current ? loadFormData() : Promise.resolve(),
+    ]);
   };
 
   const handleCloseModal = () => {
@@ -295,6 +337,20 @@ const RingGroup = () => {
 
   const timeoutValueOptions = getTimeoutValueOptions();
   const shouldShowTimeoutValue = Boolean(timeoutDestinationType);
+
+  const ringBackMenuCount =
+    ringBackOptions.moh_categories.length +
+    ringBackOptions.custom_prompts.length +
+    ringBackOptions.country_tones.length;
+
+  const ringBackAllValues = useMemo(
+    () => [
+      ...ringBackOptions.moh_categories,
+      ...ringBackOptions.custom_prompts,
+      ...ringBackOptions.country_tones,
+    ],
+    [ringBackOptions]
+  );
 
   const handleCheckAll = () => setSelected(rows.map((_, i) => i));
   const handleUncheckAll = () => setSelected([]);
@@ -560,7 +616,68 @@ const RingGroup = () => {
                     </div>
                     <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
                       <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>Ring Back</label>
-                      <div className="flex-1"><FormControl size="small" fullWidth><Select value={ringBack} onChange={(e) => setRingBack(e.target.value)}>{RING_BACK_OPTIONS.map((opt) => (<MenuItem key={opt} value={opt}>{opt}</MenuItem>))}</Select></FormControl></div>
+                      <div className="flex-1">
+                        <FormControl size="small" fullWidth>
+                          <Select
+                            value={ringBack}
+                            onChange={(e) => setRingBack(e.target.value)}
+                            disabled={loading.ringBackOptions && ringBackMenuCount === 0}
+                            MenuProps={RING_BACK_MENU_PROPS}
+                            renderValue={(v) => v || ''}
+                          >
+                            {loading.ringBackOptions && ringBackMenuCount === 0 ? (
+                              <MenuItem value={ringBack} disabled>
+                                Loading…
+                              </MenuItem>
+                            ) : null}
+                            {!loading.ringBackOptions &&
+                              ringBackMenuCount === 0 &&
+                              ringBack && (
+                                <MenuItem value={ringBack} sx={{ fontSize: 14 }}>
+                                  {ringBack}
+                                </MenuItem>
+                              )}
+                            {!loading.ringBackOptions &&
+                              ringBackMenuCount > 0 &&
+                              ringBack &&
+                              !ringBackAllValues.includes(ringBack) && (
+                                <MenuItem value={ringBack} sx={{ fontSize: 14 }}>
+                                  {ringBack}
+                                </MenuItem>
+                              )}
+                            {ringBackOptions.moh_categories.length > 0 && (
+                              <ListSubheader disableSticky sx={{ fontWeight: 700, fontSize: 14, lineHeight: '36px' }}>
+                                Music on Hold
+                              </ListSubheader>
+                            )}
+                            {ringBackOptions.moh_categories.map((opt) => (
+                              <MenuItem key={`moh-${opt}`} value={opt} sx={{ fontSize: 14, pl: 3 }}>
+                                {opt}
+                              </MenuItem>
+                            ))}
+                            {ringBackOptions.custom_prompts.length > 0 && (
+                              <ListSubheader disableSticky sx={{ fontWeight: 700, fontSize: 14, lineHeight: '36px' }}>
+                                Custom Prompt
+                              </ListSubheader>
+                            )}
+                            {ringBackOptions.custom_prompts.map((opt) => (
+                              <MenuItem key={`prompt-${opt}`} value={opt} sx={{ fontSize: 14, pl: 3 }}>
+                                {opt}
+                              </MenuItem>
+                            ))}
+                            {ringBackOptions.country_tones.length > 0 && (
+                              <ListSubheader disableSticky sx={{ fontWeight: 700, fontSize: 14, lineHeight: '36px' }}>
+                                Ring Back
+                              </ListSubheader>
+                            )}
+                            {ringBackOptions.country_tones.map((opt) => (
+                              <MenuItem key={`tone-${opt}`} value={opt} sx={{ fontSize: 14, pl: 3 }}>
+                                {opt}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
                       <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 8 }}>CID Name Prefix</label>

@@ -92,6 +92,18 @@ export const listConferenceExtensions = async () => {
   }
 };
 
+export const listConferenceModeratorMembers = async () => {
+  try {
+    const response = await axiosInstance.post('/conference', {
+      type: 'list_moderator_members',
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing conference moderator members:', error.message);
+    throw error;
+  }
+};
+
 export const listConferenceGreetingOptions = async () => {
   try {
     const response = await axiosInstance.post('/conference', {
@@ -213,6 +225,17 @@ export const deleteRingGroup = async (id) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting ring group:', error.message);
+    throw error;
+  }
+};
+
+/** Ring back dropdown: MOH categories, custom prompts, country tones (POST /api/ring-group). */
+export const listRingBackOptions = async () => {
+  try {
+    const response = await axiosInstance.post('/ring-group', { type: 'list_ringback_options' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing ring back options:', error.message);
     throw error;
   }
 };
@@ -438,6 +461,19 @@ export const deleteIvr = async (id) => {
   }
 };
 
+export const listIvrOptions = async () => {
+  try {
+    const response = await axiosInstance.post('/ivr', {
+      type: 'list_ivr_options',
+      data: {},
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing IVR options:', error.message);
+    throw error;
+  }
+};
+
 export const getIvrKeys = async (id) => {
   try {
     const response = await axiosInstance.post('/ivr', {
@@ -469,14 +505,21 @@ export const setIvrKeys = async (id, keyActions) => {
 
 export const listIvrDestinations = async () => {
   try {
-    const response = await axiosInstance.post('/ivr', {
-      type: 'list_destinations',
-      data: {},
-    });
+    // Preferred unified destinations endpoint
+    const response = await axiosInstance.get('/destinations');
     return response.data;
   } catch (error) {
-    console.error('Error listing IVR destinations:', error.message);
-    throw error;
+    // Backward-compatible fallback for older backends
+    try {
+      const fallback = await axiosInstance.post('/ivr', {
+        type: 'list_destinations',
+        data: {},
+      });
+      return fallback.data;
+    } catch (fallbackError) {
+      console.error('Error listing IVR destinations:', fallbackError.message);
+      throw fallbackError;
+    }
   }
 };
 

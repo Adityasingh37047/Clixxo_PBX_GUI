@@ -72,7 +72,10 @@ export const CODEC_OPTIONS = [
   { value: 'gsm', label: 'gsm' },
   { value: 'g726', label: 'g726' },
   { value: 'g722', label: 'g722' },
-  { value: 'g729', label: 'g729' }
+  { value: 'g729', label: 'g729' },
+  { value: 'h264', label: 'h264' },
+  { value: 'vp8', label: 'vp8' },
+  { value: 'vp9', label: 'vp9' },
 ];
 
 export const SIP_ACCOUNT_TABLE_COLUMNS = [

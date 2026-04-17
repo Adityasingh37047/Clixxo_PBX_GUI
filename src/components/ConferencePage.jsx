@@ -15,17 +15,27 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import {
   listConferences,
+  getConference,
   createConference,
   updateConference,
   deleteConference,
   listConferenceExtensions,
-  listConferenceGreetingOptions,
+  listConferenceModeratorMembers,
+  listRingBackOptions,
+  fetchExtensionGroups,
 } from '../api/apiService';
 
 const ENABLE_OPTIONS = ['Yes', 'No'];
 const YES_NO_OPTIONS = ['Yes', 'No'];
 
 const ConferencePage = () => {
+  const normalizeModeratorValue = (value) => String(value ?? '').trim();
+  const normalizeExtensionValue = (value) => {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    return raw.replace(/^extension:/i, '').replace(/^ext:/i, '');
+  };
+
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -51,6 +61,10 @@ const ConferencePage = () => {
   // Available extensions for moderator member
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [greetingOptions, setGreetingOptions] = useState([]);
+
+  // Extension groups for quick-select
+  const [extensionGroups, setExtensionGroups] = useState([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState([]);
 
   const toDateTimeLocal = (value) => {
     if (!value) return '';
@@ -108,43 +122,116 @@ const ConferencePage = () => {
           sayYourName: item.say_your_name ? 'Yes' : 'No',
           muteParticipant: item.mute_participant ? 'Yes' : 'No',
           allowInvite: item.allow_participant_invite ? 'Yes' : 'No',
-          moderatorMembers: Array.isArray(item.moderators) ? item.moderators.map(String) : [],
+          moderatorMembers: Array.isArray(item.moderators)
+            ? item.moderators.map((m) => normalizeModeratorValue(m))
+            : [],
         }));
         setRows(mapped);
 
-        // Extensions for moderator list
+        // Moderator member options: extensions + groups
         try {
           setLoading((prev) => ({ ...prev, ext: true }));
-          const extRes = await listConferenceExtensions();
-          const extRaw = Array.isArray(extRes?.message)
-            ? extRes.message
-            : Array.isArray(extRes?.data)
-            ? extRes.data
-            : [];
+          const mmRes = await listConferenceModeratorMembers();
+          const mmMessage = mmRes?.message || mmRes?.data || {};
+          const extRaw = Array.isArray(mmMessage?.extensions) ? mmMessage.extensions : [];
+          const groupsRaw = Array.isArray(mmMessage?.groups) ? mmMessage.groups : [];
+
           const extList = extRaw
-            .filter((e) => e && e.extension)
-            .map((e) => ({
-              value: String(e.extension),
-              label: e.display_name || String(e.extension),
-            }));
+            .map((e) => {
+              if (!e) return null;
+              if (typeof e === 'string' || typeof e === 'number') {
+                return { value: String(e), label: String(e) };
+              }
+              const value = e.extension ?? e.value;
+              if (value == null) return null;
+              const normalizedExtension = normalizeExtensionValue(value);
+              if (!normalizedExtension) return null;
+              return {
+                value: normalizedExtension,
+                label: e.display_name || e.label || normalizedExtension,
+              };
+            })
+            .filter(Boolean);
           setAvailableExtensions(extList);
+
+          const groupList = groupsRaw
+            .map((g) => {
+              if (!g) return null;
+              const id = g.id != null ? String(g.id) : '';
+              const value = String(g.value || (id ? `group:${id}` : ''));
+              if (!value) return null;
+              return {
+                id: id || value.replace(/^group:/, ''),
+                name: g.name || g.label || value,
+                label: g.label || g.name || value,
+                value,
+              };
+            })
+            .filter(Boolean);
+          setExtensionGroups(groupList);
         } catch (err) {
-          console.error('Failed to load conference extensions:', err);
-          setAvailableExtensions([]);
+          console.error('Failed to load conference moderator member options:', err);
+          // Fallback for older backend APIs
+          try {
+            const extRes = await listConferenceExtensions();
+            const extRaw = Array.isArray(extRes?.message)
+              ? extRes.message
+              : Array.isArray(extRes?.data)
+              ? extRes.data
+              : [];
+            const extList = extRaw
+              .filter((e) => e && e.extension)
+              .map((e) => ({
+                value: normalizeExtensionValue(e.extension),
+                label: e.display_name || normalizeExtensionValue(e.extension),
+              }));
+            setAvailableExtensions(extList);
+          } catch {
+            setAvailableExtensions([]);
+          }
+
+          try {
+            const grpRes = await fetchExtensionGroups();
+            const grpRaw = Array.isArray(grpRes?.message)
+              ? grpRes.message
+              : Array.isArray(grpRes?.data)
+              ? grpRes.data
+              : [];
+            const groupList = grpRaw
+              .map((g) => {
+                if (!g) return null;
+                const id = g.id != null ? String(g.id) : '';
+                const value = id ? `group:${id}` : '';
+                if (!value) return null;
+                return {
+                  id,
+                  name: g.name || value,
+                  label: g.label || g.name || value,
+                  value,
+                };
+              })
+              .filter(Boolean);
+            setExtensionGroups(groupList);
+          } catch {
+            setExtensionGroups([]);
+          }
         } finally {
           setLoading((prev) => ({ ...prev, ext: false }));
         }
 
-        // Greeting options
+        // Greeting options: keep Default + custom prompts from ringback API
         try {
-          const gRes = await listConferenceGreetingOptions();
-          const gList = Array.isArray(gRes?.message) ? gRes.message : Array.isArray(gRes?.data) ? gRes.data : [];
-          const norm = gList.map((g) => String(g));
-          setGreetingOptions(norm.length ? norm : ['Default', 'blank', 'busy', 'welcome']);
+          const gRes = await listRingBackOptions();
+          const customPrompts = Array.isArray(gRes?.message?.custom_prompts)
+            ? gRes.message.custom_prompts.map((g) => String(g))
+            : [];
+          const uniqueCustomPrompts = Array.from(new Set(customPrompts.filter(Boolean)));
+          setGreetingOptions(['Default', ...uniqueCustomPrompts]);
         } catch (err) {
           console.error('Failed to load conference greeting options:', err);
-          setGreetingOptions(['Default', 'blank', 'busy', 'welcome']);
+          setGreetingOptions(['Default']);
         }
+
       } catch (err) {
         showAlert(err?.message || 'Failed to load conference data.');
       } finally {
@@ -173,6 +260,7 @@ const ConferencePage = () => {
     setSayYourName('Yes');
     setMuteParticipant('No');
     setAllowInvite('Yes');
+    setSelectedGroupIds([]);
     setActiveTab('basic');
   };
 
@@ -181,25 +269,94 @@ const ConferencePage = () => {
     setShowModal(true);
   };
 
-  const handleOpenEditModal = (row) => {
-    setEditId(row.id);
-    setRoomName(row.roomName || '');
-    setConferenceNumber(row.conferenceNumber || '');
-    setGreeting(row.greeting || 'Default');
-    setAnnounce(row.announce || 'No');
-    setRecord(row.record || 'No');
-    setModeratorMembers(Array.isArray(row.moderatorMembers) ? row.moderatorMembers : []);
-    setEnabled(row.enabled || 'Yes');
-    setScheduleStart(row.scheduleStart || '');
-    setScheduleEnd(row.scheduleEnd || '');
-    setPinEnabled(row.pinEnabled || 'No');
-    setModeratorPassword(row.moderatorPassword || '');
-    setParticipantPassword(row.participantPassword || '');
-    setMaxMembers(row.maxMembers || '20');
-    setWaitForModerator(row.waitForModerator || 'Yes');
-    setSayYourName(row.sayYourName || 'Yes');
-    setMuteParticipant(row.muteParticipant || 'No');
-    setAllowInvite(row.allowInvite || 'Yes');
+  const handleOpenEditModal = async (row) => {
+    let source = row;
+
+    // Use detail API for edit. List API may flatten group moderators into extensions.
+    try {
+      if (row?.id != null) {
+        const detailRes = await getConference(row.id);
+        const detail = detailRes?.message || detailRes?.data || {};
+
+        source = {
+          ...row,
+          roomName: detail?.name ?? row.roomName,
+          conferenceNumber:
+            detail?.conf_number != null ? String(detail.conf_number) : row.conferenceNumber,
+          greeting: detail?.greeting ?? row.greeting,
+          announce:
+            typeof detail?.announce === 'boolean'
+              ? detail.announce
+                ? 'Yes'
+                : 'No'
+              : row.announce,
+          record:
+            typeof detail?.record === 'boolean' ? (detail.record ? 'Yes' : 'No') : row.record,
+          moderatorMembers: Array.isArray(detail?.moderators)
+            ? detail.moderators.map((m) => normalizeModeratorValue(m))
+            : row.moderatorMembers,
+          enabled:
+            typeof detail?.enabled === 'boolean' ? (detail.enabled ? 'Yes' : 'No') : row.enabled,
+          scheduleStart: toDateTimeLocal(detail?.schedule_start) || row.scheduleStart,
+          scheduleEnd: toDateTimeLocal(detail?.schedule_end) || row.scheduleEnd,
+          pinEnabled:
+            typeof detail?.pin_enabled === 'boolean'
+              ? detail.pin_enabled
+                ? 'Yes'
+                : 'No'
+              : row.pinEnabled,
+          moderatorPassword: detail?.moderator_pin ?? row.moderatorPassword,
+          participantPassword: detail?.participant_pin ?? row.participantPassword,
+          maxMembers:
+            detail?.max_members != null ? String(detail.max_members) : String(row.maxMembers || ''),
+          waitForModerator:
+            typeof detail?.wait_for_moderator === 'boolean'
+              ? detail.wait_for_moderator
+                ? 'Yes'
+                : 'No'
+              : row.waitForModerator,
+          sayYourName:
+            typeof detail?.say_your_name === 'boolean'
+              ? detail.say_your_name
+                ? 'Yes'
+                : 'No'
+              : row.sayYourName,
+          muteParticipant:
+            typeof detail?.mute_participant === 'boolean'
+              ? detail.mute_participant
+                ? 'Yes'
+                : 'No'
+              : row.muteParticipant,
+          allowInvite:
+            typeof detail?.allow_participant_invite === 'boolean'
+              ? detail.allow_participant_invite
+                ? 'Yes'
+                : 'No'
+              : row.allowInvite,
+        };
+      }
+    } catch (err) {
+      console.warn('Failed to fetch conference detail for edit, using list row fallback:', err);
+    }
+
+    setEditId(source.id);
+    setRoomName(source.roomName || '');
+    setConferenceNumber(source.conferenceNumber || '');
+    setGreeting(source.greeting || 'Default');
+    setAnnounce(source.announce || 'No');
+    setRecord(source.record || 'No');
+    setModeratorMembers(Array.isArray(source.moderatorMembers) ? source.moderatorMembers : []);
+    setEnabled(source.enabled || 'Yes');
+    setScheduleStart(source.scheduleStart || '');
+    setScheduleEnd(source.scheduleEnd || '');
+    setPinEnabled(source.pinEnabled || 'No');
+    setModeratorPassword(source.moderatorPassword || '');
+    setParticipantPassword(source.participantPassword || '');
+    setMaxMembers(source.maxMembers || '20');
+    setWaitForModerator(source.waitForModerator || 'Yes');
+    setSayYourName(source.sayYourName || 'Yes');
+    setMuteParticipant(source.muteParticipant || 'No');
+    setAllowInvite(source.allowInvite || 'Yes');
     setActiveTab('basic');
     setShowModal(true);
   };
@@ -250,7 +407,9 @@ const ConferencePage = () => {
           sayYourName: item.say_your_name ? 'Yes' : 'No',
           muteParticipant: item.mute_participant ? 'Yes' : 'No',
           allowInvite: item.allow_participant_invite ? 'Yes' : 'No',
-          moderatorMembers: Array.isArray(item.moderators) ? item.moderators.map(String) : [],
+          moderatorMembers: Array.isArray(item.moderators)
+            ? item.moderators.map((m) => normalizeModeratorValue(m))
+            : [],
         }));
         setRows(mapped);
         setSelected([]);
@@ -281,6 +440,14 @@ const ConferencePage = () => {
 
     if (!Array.isArray(moderatorMembers) || moderatorMembers.length === 0) {
       showAlert('Please select at least one Moderator Member.');
+      return;
+    }
+
+    const selectedModeratorExtensions = moderatorMembers.filter(
+      (member) => !String(member).startsWith('group:')
+    );
+    if (selectedModeratorExtensions.length === 0) {
+      showAlert('Please select at least one Moderator Member extension. Group only selection is not allowed.');
       return;
     }
 
@@ -340,7 +507,9 @@ const ConferencePage = () => {
           sayYourName: item.say_your_name ? 'Yes' : 'No',
           muteParticipant: item.mute_participant ? 'Yes' : 'No',
           allowInvite: item.allow_participant_invite ? 'Yes' : 'No',
-          moderatorMembers: Array.isArray(item.moderators) ? item.moderators.map(String) : [],
+          moderatorMembers: Array.isArray(item.moderators)
+            ? item.moderators.map((m) => normalizeModeratorValue(m))
+            : [],
         }));
         setRows(mapped);
         setShowModal(false);
@@ -358,6 +527,26 @@ const ConferencePage = () => {
       prev.includes(ext) ? prev.filter((v) => v !== ext) : [...prev, ext]
     );
   };
+
+  const toggleExtensionGroup = (group) => {
+    const groupId = String(group?.id ?? '');
+    const groupValue = String(group?.value || (groupId ? `group:${groupId}` : ''));
+    if (!groupId || !groupValue) return;
+
+    setModeratorMembers((prev) => {
+      if (prev.includes(groupValue)) {
+        return prev.filter((v) => v !== groupValue);
+      }
+      return [...prev, groupValue];
+    });
+  };
+
+  useEffect(() => {
+    const mappedSelected = extensionGroups
+      .filter((g) => moderatorMembers.includes(String(g.value || `group:${g.id}`)))
+      .map((g) => String(g.id));
+    setSelectedGroupIds(mappedSelected);
+  }, [moderatorMembers, extensionGroups]);
 
   return (
     <div className="w-full max-w-full mx-auto p-2">
@@ -643,12 +832,23 @@ const ConferencePage = () => {
                         >
                           Greeting
                         </label>
-                        <div className="flex-1">
-                          <FormControl size="small" fullWidth>
-                            <Select value={greeting} onChange={(e) => setGreeting(e.target.value)}>
-                              {(greetingOptions.length ? greetingOptions : ['Default', 'blank', 'busy', 'welcome']).map(
+                        <div className="flex-1 min-w-0">
+                          <FormControl
+                            size="small"
+                            fullWidth
+                            sx={{
+                              minWidth: 0,
+                              '& .MuiSelect-select': {
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              },
+                            }}
+                          >
+                            <Select value={greeting} onChange={(e) => setGreeting(e.target.value)} MenuProps={{ PaperProps: { sx: { maxHeight: 280 } } }}>
+                              {(greetingOptions.length ? greetingOptions : ['Default']).map(
                                 (opt) => (
-                                  <MenuItem key={opt} value={opt}>
+                                  <MenuItem key={opt} value={opt} sx={{ maxWidth: 420 }}>
                                     {opt}
                                   </MenuItem>
                                 )
@@ -698,29 +898,6 @@ const ConferencePage = () => {
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-1" style={{ minHeight: 60 }}>
-                        <label
-                          className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                          style={{ width: 150, marginRight: 8 }}
-                        >
-                          Moderator Member
-                        </label>
-                        <div className="flex-1 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] overflow-y-auto max-h-32">
-                          {availableExtensions.map((ext) => (
-                            <label
-                              key={ext.value}
-                              className="flex items-center gap-2 text-[13px] text-gray-700 py-0.5"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={moderatorMembers.includes(ext.value)}
-                                onChange={() => toggleModeratorMember(ext.value)}
-                              />
-                              <span>{ext.label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
                     </div>
 
                     {/* Right column */}
@@ -848,6 +1025,52 @@ const ConferencePage = () => {
                           value={maxMembers}
                           onChange={(e) => setMaxMembers(e.target.value)}
                         />
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2 flex flex-col gap-1 pt-1">
+                      <div className="grid grid-cols-2 gap-3">
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left">
+                          Moderator Member
+                        </label>
+                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left">
+                          Extension Group
+                        </label>
+                      </div>
+                      <div className="flex items-stretch justify-center gap-3">
+                        <div className="flex-1 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] overflow-y-auto max-h-36 min-h-[140px]">
+                          {availableExtensions.map((ext) => (
+                            <label
+                              key={ext.value}
+                              className="flex items-center gap-2 text-[13px] text-gray-700 py-0.5"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={moderatorMembers.includes(ext.value)}
+                                onChange={() => toggleModeratorMember(ext.value)}
+                              />
+                              <span>{ext.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="flex-1 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] overflow-y-auto max-h-36 min-h-[140px]">
+                          {extensionGroups.map((group) => (
+                            <label
+                              key={group.id}
+                              className="flex items-center gap-2 text-[13px] text-gray-700 py-0.5"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedGroupIds.includes(String(group.id))}
+                                onChange={() => toggleExtensionGroup(group)}
+                              />
+                              <span>{group.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-[12px] text-red-600 mt-1">
+                        Note: Selecting an extension group will include all members in that group when a moderator dials this conference number.
                       </div>
                     </div>
                   </div>
