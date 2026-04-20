@@ -1145,6 +1145,19 @@ const buildSipExtensionPayload = (accountData = {}) => ({
   from_domain: accountData.from_domain,
   contact_user: accountData.contact_user,
   outbound_proxy: accountData.outbound_proxy,
+
+  // Advanced fields
+  adv_enable_srtp: accountData.adv_enable_srtp,
+  adv_bypass_media: accountData.adv_bypass_media,
+  adv_call_timeout_sec: accountData.adv_call_timeout_sec,
+  adv_max_call_duration_sec: accountData.adv_max_call_duration_sec,
+  adv_outbound_restriction: accountData.adv_outbound_restriction,
+  adv_call_permission: accountData.adv_call_permission,
+  adv_extension_trunk: accountData.adv_extension_trunk,
+  adv_send_diversion: accountData.adv_send_diversion,
+  adv_call_prohibition: accountData.adv_call_prohibition,
+  adv_rx_volume: accountData.adv_rx_volume,
+  adv_tx_volume: accountData.adv_tx_volume,
 });
 
 export const createSipAccount = async (accountData) => {

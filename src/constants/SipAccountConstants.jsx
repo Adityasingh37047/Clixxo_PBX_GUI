@@ -17,6 +17,33 @@ export const SIP_ACCOUNT_FIELDS = [
   { name: 'contact_user', label: 'Contact User', type: 'text', defaultValue: '' },
   { name: 'outbound_proxy', label: 'Outbound Proxy', type: 'text', defaultValue: '' },
 
+  // ADVANCED -> RTP Settings
+  { name: 'enable_srtp', label: 'Enable SRTP', type: 'select', defaultValue: 'no' },
+  { name: 'sip_bypass_media', label: 'SIP Bypass Media', type: 'select', defaultValue: 'proxy_media' },
+
+  // ADVANCED -> Register Settings
+  { name: 'auth_acl', label: 'Auth ACL', type: 'text', defaultValue: '' },
+  { name: 'force_ping', label: 'Force ping', type: 'select', defaultValue: 'no' },
+  { name: 'user_agent_filter', label: 'User Agent Filter', type: 'text', defaultValue: '' },
+  { name: 'sip_force_contact', label: 'SIP Force Contact', type: 'select', defaultValue: '' },
+  { name: 'sip_expires_max_deviation', label: 'Sip Expires Max Deviation (s)', type: 'number', defaultValue: 0 },
+  { name: 'online_verification_nat', label: 'Online Verification after NAT', type: 'select', defaultValue: 'no' },
+  { name: 'options_interval', label: 'OPTIONS Interval (s)', type: 'text', defaultValue: '' },
+  { name: 'sip_force_expires', label: 'SIP Force Expires (s)', type: 'number', defaultValue: 0 },
+
+  // ADVANCED -> Call Settings
+  { name: 'call_timeout', label: 'Call Timeout (s)', type: 'number', defaultValue: 30 },
+  { name: 'max_call_duration', label: 'Max Call Duration (s)', type: 'number', defaultValue: 6000 },
+  { name: 'outbound_restriction', label: 'Outbound Restriction', type: 'select', defaultValue: 'disable' },
+  { name: 'call_permission', label: 'Call Permission', type: 'select', defaultValue: 'international_call' },
+  { name: 'extension_trunk', label: 'Extension Trunk', type: 'select', defaultValue: 'disable' },
+  { name: 'diversion', label: 'diversion', type: 'select', defaultValue: 'yes' },
+  { name: 'call_prohibition', label: 'Call Prohibition', type: 'select', defaultValue: 'disable' },
+
+  // ADVANCED -> Other Settings
+  { name: 'rx_volume', label: 'RX Volume', type: 'number', defaultValue: 0 },
+  { name: 'tx_volume', label: 'TX Volume', type: 'number', defaultValue: 0 },
+
   // FEATURES -> Voicemail
   { name: 'voicemail_enabled', label: 'Voicemail Enabled', type: 'select', defaultValue: 'no' },
   { name: 'voicemail_keep_local', label: 'Voicemail Keep Local', type: 'select', defaultValue: 'yes' },

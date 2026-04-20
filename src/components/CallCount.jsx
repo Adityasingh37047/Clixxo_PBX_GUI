@@ -3,17 +3,46 @@ import { Button, CircularProgress, Alert, Checkbox } from '@mui/material';
 import { fetchCdr, deleteCdr, downloadCdr } from '../api/apiService';
 
 const columns = [
-  { key: 'calldate', label: 'Start' },
-  { key: 'src', label: 'Source' },
-  { key: 'dst', label: 'Destination' },
-  { key: 'dcontext', label: 'Direction' },
-  { key: 'channel', label: 'Channel' },
-  { key: 'billsec', label: 'Talk Duration(s)' },
-  { key: 'disposition', label: 'Call Status' },
-  { key: 'lastapp', label: 'Last App' },
-  { key: 'recordingfile', label: 'Recording File' },
-  { key: 'did', label: 'DID' },
+  { key: 'calldate',      label: 'Start' },
+  { key: 'src',           label: 'Call From' },
+  { key: 'src_ip',        label: 'Call From IP' },
+  { key: 'dst',           label: 'Call To' },
+  { key: 'dst_ip',        label: 'Call To IP' },
+  { key: 'call_direction',label: 'Direction' },
+  { key: 'disposition',   label: 'Call Status' },
+  { key: 'billsec',       label: 'Talk Duration' },
+  { key: 'hangup_cause',  label: 'Hangup Cause' },
+  { key: 'lastapp',       label: 'Last App' },
 ];
+
+const getDirection = (row) =>
+  row.call_direction || row.direction || row.dcontext || '';
+
+const directionBadge = (d) => {
+  const v = String(d).toLowerCase();
+  if (v === 'outbound') return { bg: '#dbeafe', color: '#1d4ed8', border: '#93c5fd' };
+  if (v === 'inbound')  return { bg: '#dcfce7', color: '#15803d', border: '#86efac' };
+  if (v === 'local')    return { bg: '#f3f4f6', color: '#374151', border: '#d1d5db' };
+  return { bg: '#f3f4f6', color: '#374151', border: '#d1d5db' };
+};
+
+const statusBadge = (s) => {
+  const v = String(s || '').toLowerCase();
+  if (v === 'answered')  return { bg: '#dcfce7', color: '#15803d', border: '#86efac' };
+  if (v === 'failed')    return { bg: '#fee2e2', color: '#b91c1c', border: '#fca5a5' };
+  if (v === 'busy')      return { bg: '#fef9c3', color: '#92400e', border: '#fde047' };
+  if (v === 'cancelled' || v === 'no answer') return { bg: '#fff7ed', color: '#c2410c', border: '#fdba74' };
+  return { bg: '#f3f4f6', color: '#374151', border: '#d1d5db' };
+};
+
+const formatDuration = (secs) => {
+  const s = Number(secs) || 0;
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${h}:${pad(m)}:${pad(sec)}`;
+};
 
 const headerBarStyle = {
   background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)',
@@ -288,36 +317,31 @@ const CallCount = () => {
                 <CircularProgress size={40} sx={{ color: '#0e8fd6' }} />
               </div>
             ) : (
-              <table className="w-full bg-white border-collapse min-w-[1100px]">
+              <table className="w-full bg-white border-collapse" style={{ minWidth: 1300 }}>
                 <thead>
-                  <tr>
-                    <th className="border border-gray-300 bg-[#f8fafd] text-gray-800 font-semibold text-xs py-0.5 px-2 text-center">
+                  <tr style={{ background: 'linear-gradient(to bottom, #e8f0fe, #d0e4f7)' }}>
+                    <th style={{ width: 36 }} className="border border-blue-200 py-2 px-2 text-center">
                       <Checkbox
                         size="small"
                         checked={
                           rows.length > 0 &&
-                          rows
-                            .map(r => r.uniqueid)
-                            .filter(Boolean)
-                            .every(id => selectedIds.includes(id))
+                          rows.map(r => r.uniqueid).filter(Boolean).every(id => selectedIds.includes(id))
                         }
                         indeterminate={
                           rows.some(r => r.uniqueid && selectedIds.includes(r.uniqueid)) &&
-                          !rows
-                            .map(r => r.uniqueid)
-                            .filter(Boolean)
-                            .every(id => selectedIds.includes(id))
+                          !rows.map(r => r.uniqueid).filter(Boolean).every(id => selectedIds.includes(id))
                         }
                         onChange={handleToggleAllCurrentPage}
+                        sx={{ padding: '2px' }}
                       />
                     </th>
-                    <th className="border border-gray-300 bg-[#f8fafd] text-gray-800 font-semibold text-xs py-0.5 px-2 text-center whitespace-nowrap">
-                      ID
+                    <th className="border border-blue-200 py-2 px-3 text-center whitespace-nowrap text-[12px] font-semibold text-[#1e3a5f]">
+                      #
                     </th>
                     {columns.map(col => (
                       <th
                         key={col.key}
-                        className="border border-gray-300 bg-[#f8fafd] text-gray-800 font-semibold text-xs py-0.5 px-2 text-center whitespace-nowrap"
+                        className="border border-blue-200 py-2 px-3 text-center whitespace-nowrap text-[12px] font-semibold text-[#1e3a5f]"
                       >
                         {col.label}
                       </th>
@@ -329,36 +353,94 @@ const CallCount = () => {
                     <tr>
                       <td
                         colSpan={columns.length + 2}
-                        className="border border-gray-200 text-center text-xs py-3 px-2 text-gray-500"
+                        className="text-center text-sm py-8 text-gray-400"
                       >
                         No records found.
                       </td>
                     </tr>
                   ) : (
                     rows.map((row, idx) => (
-                      <tr key={row.uniqueid || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f9fbff]'}>
-                        <td className="border border-gray-200 text-xs py-0.5 px-2 text-center">
+                      <tr
+                        key={row.uniqueid || idx}
+                        style={{ background: idx % 2 === 0 ? '#ffffff' : '#f5f8ff' }}
+                        className="hover:bg-blue-50 transition-colors duration-100"
+                      >
+                        <td className="border border-gray-100 py-1.5 px-2 text-center">
                           <Checkbox
                             size="small"
                             disabled={!row.uniqueid}
                             checked={row.uniqueid ? selectedIds.includes(row.uniqueid) : false}
                             onChange={() => handleToggleRow(row.uniqueid)}
+                            sx={{ padding: '2px' }}
                           />
                         </td>
-                        <td className="border border-gray-200 text-xs py-0.5 px-2 text-center whitespace-nowrap">
+                        <td className="border border-gray-100 py-1.5 px-3 text-center text-[12px] text-gray-400 font-medium">
                           {(page - 1) * limit + idx + 1}
                         </td>
                         {columns.map(col => {
-                          let value = row[col.key];
                           if (col.key === 'calldate') {
-                            value = formatDate(value);
+                            return (
+                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-[12px] text-gray-700 font-medium">
+                                {formatDate(row.calldate)}
+                              </td>
+                            );
+                          }
+                          if (col.key === 'src' || col.key === 'dst') {
+                            return (
+                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[13px] font-semibold text-[#1565c0]">
+                                {row[col.key] ?? ''}
+                              </td>
+                            );
+                          }
+                          if (col.key === 'src_ip' || col.key === 'dst_ip') {
+                            return (
+                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[12px] text-gray-500 font-mono">
+                                {row[col.key] ?? ''}
+                              </td>
+                            );
+                          }
+                          if (col.key === 'call_direction') {
+                            const dir = getDirection(row);
+                            const s = directionBadge(dir);
+                            return (
+                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center">
+                                {dir ? (
+                                  <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 12, padding: '2px 10px', fontSize: 11, fontWeight: 600, letterSpacing: 0.3 }}>
+                                    {dir}
+                                  </span>
+                                ) : ''}
+                              </td>
+                            );
+                          }
+                          if (col.key === 'disposition') {
+                            const s = statusBadge(row.disposition);
+                            return (
+                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center">
+                                {row.disposition ? (
+                                  <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 12, padding: '2px 10px', fontSize: 11, fontWeight: 600 }}>
+                                    {row.disposition}
+                                  </span>
+                                ) : ''}
+                              </td>
+                            );
+                          }
+                          if (col.key === 'billsec') {
+                            return (
+                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[12px] text-gray-700 font-mono">
+                                {formatDuration(row.billsec)}
+                              </td>
+                            );
+                          }
+                          if (col.key === 'hangup_cause') {
+                            return (
+                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[12px] text-gray-500">
+                                {row.hangup_cause ?? ''}
+                              </td>
+                            );
                           }
                           return (
-                            <td
-                              key={col.key}
-                              className="border border-gray-200 text-xs py-0.5 px-2 whitespace-nowrap text-center"
-                            >
-                              {value ?? ''}
+                            <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[12px] text-gray-600">
+                              {row[col.key] ?? ''}
                             </td>
                           );
                         })}

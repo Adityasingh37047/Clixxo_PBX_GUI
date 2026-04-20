@@ -172,7 +172,30 @@ const SipAccountPage = () => {
       from_domain: item.from_domain || item['Domain name'] || '',
       contact_user: item.contact_user || item['Contact User'] || '',
       outbound_proxy: item.outbound_proxy || item['Outbound Proxy'] || '',
-      status: item.status || '', // Add status field from API response
+      status: item.status || '',
+
+      // Advanced fields
+      enable_srtp: boolToYesNo(item.adv_enable_srtp ?? item.enable_srtp),
+      sip_bypass_media: (() => {
+        const v = item.adv_bypass_media || item.sip_bypass_media || 'proxy';
+        return v === 'bypass' ? 'bypass_media' : 'proxy_media';
+      })(),
+      call_timeout: Number(item.adv_call_timeout_sec ?? item.call_timeout ?? 30),
+      max_call_duration: Number(item.adv_max_call_duration_sec ?? item.max_call_duration ?? 6000),
+      outbound_restriction: (item.adv_outbound_restriction ?? item.outbound_restriction) ? 'enable' : 'disable',
+      call_permission: (() => {
+        const v = String(item.adv_call_permission || item.call_permission || 'international').toLowerCase().replace(/[\s-]/g, '_');
+        if (v === 'no_call' || v === 'none' || v === 'no') return 'no_call';
+        if (v === 'internal' || v === 'internal_call') return 'internal_call';
+        if (v === 'local' || v === 'local_call') return 'local_call';
+        if (v === 'long_distance' || v === 'long_distance_call' || v === 'longdistance') return 'long_distance_call';
+        return 'international_call';
+      })(),
+      extension_trunk: (item.adv_extension_trunk ?? item.extension_trunk) ? 'enable' : 'disable',
+      diversion: boolToYesNo(item.adv_send_diversion ?? item.send_diversion ?? item.diversion ?? true),
+      call_prohibition: (item.adv_call_prohibition ?? item.call_prohibition) ? 'enable' : 'disable',
+      rx_volume: Number(item.adv_rx_volume ?? item.rx_volume ?? 0),
+      tx_volume: Number(item.adv_tx_volume ?? item.tx_volume ?? 0),
     }));
   };
   
@@ -255,6 +278,26 @@ const SipAccountPage = () => {
       from_domain: uiData.from_domain,
       contact_user: uiData.contact_user,
       outbound_proxy: uiData.outbound_proxy,
+
+      // Advanced fields
+      adv_enable_srtp: uiData.enable_srtp === 'yes',
+      adv_bypass_media: uiData.sip_bypass_media === 'bypass_media' ? 'bypass' : 'proxy',
+      adv_call_timeout_sec: Number(uiData.call_timeout ?? 30),
+      adv_max_call_duration_sec: Number(uiData.max_call_duration ?? 6000),
+      adv_outbound_restriction: uiData.outbound_restriction === 'enable',
+      adv_call_permission: (() => {
+        const v = uiData.call_permission || 'international_call';
+        if (v === 'no_call') return 'no_call';
+        if (v === 'internal_call') return 'internal';
+        if (v === 'local_call') return 'local';
+        if (v === 'long_distance_call') return 'long_distance';
+        return 'international';
+      })(),
+      adv_extension_trunk: uiData.extension_trunk === 'enable',
+      adv_send_diversion: uiData.diversion === 'yes',
+      adv_call_prohibition: uiData.call_prohibition === 'enable',
+      adv_rx_volume: Number(uiData.rx_volume ?? 0),
+      adv_tx_volume: Number(uiData.tx_volume ?? 0),
     };
   };
   
@@ -353,6 +396,18 @@ const SipAccountPage = () => {
   const validatePassword = (password) => {
     if (!password || password.trim() === '') {
       return 'Password is required';
+    }
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters';
+    }
+    if (!/[A-Z]/.test(password)) {
+      return 'Password must include at least one uppercase letter';
+    }
+    if (!/[0-9]/.test(password)) {
+      return 'Password must include at least one number';
+    }
+    if (!/[^a-zA-Z0-9]/.test(password)) {
+      return 'Password must include at least one special character';
     }
     return null;
   };
@@ -628,9 +683,16 @@ const SipAccountPage = () => {
       return;
     }
 
-    if (bulkForm.passwordMode === 'fixed' && !bulkForm.fixedPassword.trim()) {
-      showMessage('error', 'Please enter Fixed Registration Password');
-      return;
+    if (bulkForm.passwordMode === 'fixed') {
+      if (!bulkForm.fixedPassword.trim()) {
+        showMessage('error', 'Please enter Fixed Registration Password');
+        return;
+      }
+      const fixedPwdError = validatePassword(bulkForm.fixedPassword);
+      if (fixedPwdError) {
+        showMessage('error', fixedPwdError);
+        return;
+      }
     }
     if (bulkForm.passwordMode === 'prefix' && !bulkForm.passwordPrefix.trim()) {
       showMessage('error', 'Please enter Prefix for Registration Password');
@@ -870,6 +932,7 @@ const SipAccountPage = () => {
               >
                 <Tab label="BASIC" value="basic" sx={{ fontSize: 13, fontWeight: 600, minHeight: 36 }} />
                 <Tab label="FEATURES" value="features" sx={{ fontSize: 13, fontWeight: 600, minHeight: 36 }} />
+                <Tab label="ADVANCED" value="advanced" sx={{ fontSize: 13, fontWeight: 600, minHeight: 36 }} />
               </Tabs>
             </div>
 
@@ -1795,6 +1858,237 @@ const SipAccountPage = () => {
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* ADVANCED TAB */}
+            {activeTab === 'advanced' && (
+              <div className="flex flex-col gap-3 w-full pb-2">
+
+                {/* RTP Settings */}
+                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                  <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
+                    RTP Settings
+                  </div>
+                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                    {/* Enable SRTP */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Enable SRTP
+                      </label>
+                      <div className="flex-1 w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.enable_srtp || 'no'}
+                            onChange={e => handleChange('enable_srtp', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="no">No</MenuItem>
+                            <MenuItem value="yes">Yes</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    {/* SIP Bypass Media */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        SIP Bypass Media
+                      </label>
+                      <div className="flex-1 w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.sip_bypass_media || 'proxy_media'}
+                            onChange={e => handleChange('sip_bypass_media', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="proxy_media">Proxy Media</MenuItem>
+                            <MenuItem value="bypass_media">Bypass Media</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Call Settings */}
+                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                  <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
+                    Call Settings
+                  </div>
+                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                    {/* Call Timeout */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Call Timeout (s)
+                      </label>
+                      <div className="flex-1 w-full">
+                        <TextField
+                          type="number"
+                          value={form.call_timeout ?? 30}
+                          onChange={e => handleChange('call_timeout', e.target.value)}
+                          size="small"
+                          fullWidth
+                          variant="outlined"
+                          inputProps={{ style: { fontSize: 14, padding: '3px 6px' }, min: 0 }}
+                        />
+                      </div>
+                    </div>
+                    {/* Max Call Duration */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Max Call Duration (s)
+                      </label>
+                      <div className="flex-1 w-full">
+                        <TextField
+                          type="number"
+                          value={form.max_call_duration ?? 6000}
+                          onChange={e => handleChange('max_call_duration', e.target.value)}
+                          size="small"
+                          fullWidth
+                          variant="outlined"
+                          inputProps={{ style: { fontSize: 14, padding: '3px 6px' }, min: 0 }}
+                        />
+                      </div>
+                    </div>
+                    {/* Outbound Restriction */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Outbound Restriction
+                      </label>
+                      <div className="flex-1 w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.outbound_restriction || 'disable'}
+                            onChange={e => handleChange('outbound_restriction', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="disable">Disable</MenuItem>
+                            <MenuItem value="enable">Enable</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    {/* Call Permission */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Call Permission
+                      </label>
+                      <div className="flex-1 w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.call_permission || 'international_call'}
+                            onChange={e => handleChange('call_permission', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="no_call">No Call</MenuItem>
+                            <MenuItem value="internal_call">Internal Call</MenuItem>
+                            <MenuItem value="local_call">Local Call</MenuItem>
+                            <MenuItem value="long_distance_call">Long-Distance Call</MenuItem>
+                            <MenuItem value="international_call">International Call</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    {/* Extension Trunk */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Extension Trunk
+                      </label>
+                      <div className="flex-1 w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.extension_trunk || 'disable'}
+                            onChange={e => handleChange('extension_trunk', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="disable">Disable</MenuItem>
+                            <MenuItem value="enable">Enable</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    {/* Diversion */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Diversion
+                      </label>
+                      <div className="flex-1 w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.diversion || 'yes'}
+                            onChange={e => handleChange('diversion', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="yes">Yes</MenuItem>
+                            <MenuItem value="no">No</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    {/* Call Prohibition */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Call Prohibition
+                      </label>
+                      <div className="flex-1 w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.call_prohibition || 'disable'}
+                            onChange={e => handleChange('call_prohibition', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="disable">Disable</MenuItem>
+                            <MenuItem value="enable">Enable</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Other Settings */}
+                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                  <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
+                    Other Settings
+                  </div>
+                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                    {/* RX Volume */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        RX Volume
+                      </label>
+                      <div className="flex-1 w-full">
+                        <TextField
+                          type="number"
+                          value={form.rx_volume ?? 0}
+                          onChange={e => handleChange('rx_volume', e.target.value)}
+                          size="small"
+                          fullWidth
+                          variant="outlined"
+                          inputProps={{ style: { fontSize: 14, padding: '3px 6px' } }}
+                        />
+                      </div>
+                    </div>
+                    {/* TX Volume */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        TX Volume
+                      </label>
+                      <div className="flex-1 w-full">
+                        <TextField
+                          type="number"
+                          value={form.tx_volume ?? 0}
+                          onChange={e => handleChange('tx_volume', e.target.value)}
+                          size="small"
+                          fullWidth
+                          variant="outlined"
+                          inputProps={{ style: { fontSize: 14, padding: '3px 6px' } }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             )}
 
