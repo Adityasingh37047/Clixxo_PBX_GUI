@@ -12,7 +12,7 @@ const columns = [
   { key: 'disposition',   label: 'Call Status' },
   { key: 'billsec',       label: 'Talk Duration' },
   { key: 'hangup_cause',  label: 'Hangup Cause' },
-  { key: 'lastapp',       label: 'Last App' },
+  { key: 'dcontext',      label: 'Context' },
 ];
 
 const getDirection = (row) =>
@@ -218,7 +218,7 @@ const CallCount = () => {
         </Alert>
       )}
 
-      <div className="w-full max-w-7xl mx-auto">
+      <div className="w-full max-w-[1380px] mx-auto">
         {/* Header bar */}
         <div
           className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm"
@@ -311,16 +311,30 @@ const CallCount = () => {
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto w-full">
+          <div className="w-full">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <CircularProgress size={40} sx={{ color: '#0e8fd6' }} />
               </div>
             ) : (
-              <table className="w-full bg-white border-collapse" style={{ minWidth: 1300 }}>
+              <table className="w-full bg-white border-collapse" style={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '38px' }} />
+                  <col style={{ width: '30px' }} />
+                  <col style={{ width: '130px' }} />
+                  <col style={{ width: '118px' }} />
+                  <col style={{ width: '105px' }} />
+                  <col style={{ width: '100px' }} />
+                  <col style={{ width: '135px' }} />
+                  <col style={{ width: '74px' }} />
+                  <col style={{ width: '92px' }} />
+                  <col style={{ width: '76px' }} />
+                  <col style={{ width: '120px' }} />
+                  <col style={{ width: '95px' }} />
+                </colgroup>
                 <thead>
                   <tr style={{ background: 'linear-gradient(to bottom, #e8f0fe, #d0e4f7)' }}>
-                    <th style={{ width: 36 }} className="border border-blue-200 py-2 px-2 text-center">
+                    <th className="border border-blue-200 py-2 px-0 text-center" style={{ width: 38 }}>
                       <Checkbox
                         size="small"
                         checked={
@@ -332,16 +346,16 @@ const CallCount = () => {
                           !rows.map(r => r.uniqueid).filter(Boolean).every(id => selectedIds.includes(id))
                         }
                         onChange={handleToggleAllCurrentPage}
-                        sx={{ padding: '2px' }}
+                        sx={{ padding: '1px' }}
                       />
                     </th>
-                    <th className="border border-blue-200 py-2 px-3 text-center whitespace-nowrap text-[12px] font-semibold text-[#1e3a5f]">
+                    <th className="border border-blue-200 py-2 px-1 text-center text-[11px] font-semibold text-[#1e3a5f]" style={{ width: 36 }}>
                       #
                     </th>
                     {columns.map(col => (
                       <th
                         key={col.key}
-                        className="border border-blue-200 py-2 px-3 text-center whitespace-nowrap text-[12px] font-semibold text-[#1e3a5f]"
+                        className="border border-blue-200 py-2 px-2 text-center text-[12px] font-semibold text-[#1e3a5f] leading-tight"
                       >
                         {col.label}
                       </th>
@@ -365,37 +379,42 @@ const CallCount = () => {
                         style={{ background: idx % 2 === 0 ? '#ffffff' : '#f5f8ff' }}
                         className="hover:bg-blue-50 transition-colors duration-100"
                       >
-                        <td className="border border-gray-100 py-1.5 px-2 text-center">
+                        <td className="border border-gray-100 py-1 px-0 text-center" style={{ width: 38 }}>
                           <Checkbox
                             size="small"
                             disabled={!row.uniqueid}
                             checked={row.uniqueid ? selectedIds.includes(row.uniqueid) : false}
                             onChange={() => handleToggleRow(row.uniqueid)}
-                            sx={{ padding: '2px' }}
+                            sx={{ padding: '1px' }}
                           />
                         </td>
-                        <td className="border border-gray-100 py-1.5 px-3 text-center text-[12px] text-gray-400 font-medium">
+                        <td className="border border-gray-100 py-2 px-1 text-center text-[11px] text-gray-600" style={{ width: 36 }}>
                           {(page - 1) * limit + idx + 1}
                         </td>
                         {columns.map(col => {
+                          const trunc = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' };
+                          const cellBase = "border border-gray-100 py-2 px-2 text-center text-[12px]";
                           if (col.key === 'calldate') {
+                            const v = formatDate(row.calldate);
                             return (
-                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-[12px] text-gray-700 font-medium">
-                                {formatDate(row.calldate)}
+                              <td key={col.key} className={`${cellBase} text-gray-700`} style={trunc} title={v}>
+                                {v}
                               </td>
                             );
                           }
                           if (col.key === 'src' || col.key === 'dst') {
+                            const v = row[col.key] ?? '';
                             return (
-                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[13px] font-semibold text-[#1565c0]">
-                                {row[col.key] ?? ''}
+                              <td key={col.key} className={`${cellBase} font-semibold text-[#1976d2]`} style={trunc} title={v}>
+                                {v}
                               </td>
                             );
                           }
                           if (col.key === 'src_ip' || col.key === 'dst_ip') {
+                            const v = row[col.key] ?? '';
                             return (
-                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[12px] text-gray-500 font-mono">
-                                {row[col.key] ?? ''}
+                              <td key={col.key} className={`${cellBase} text-gray-600 font-mono`} style={trunc} title={v}>
+                                {v}
                               </td>
                             );
                           }
@@ -403,9 +422,9 @@ const CallCount = () => {
                             const dir = getDirection(row);
                             const s = directionBadge(dir);
                             return (
-                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center">
+                              <td key={col.key} className={cellBase}>
                                 {dir ? (
-                                  <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 12, padding: '2px 10px', fontSize: 11, fontWeight: 600, letterSpacing: 0.3 }}>
+                                  <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 10, padding: '2px 9px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', display: 'inline-block' }}>
                                     {dir}
                                   </span>
                                 ) : ''}
@@ -415,9 +434,9 @@ const CallCount = () => {
                           if (col.key === 'disposition') {
                             const s = statusBadge(row.disposition);
                             return (
-                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center">
+                              <td key={col.key} className={cellBase}>
                                 {row.disposition ? (
-                                  <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 12, padding: '2px 10px', fontSize: 11, fontWeight: 600 }}>
+                                  <span style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}`, borderRadius: 10, padding: '2px 9px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap', display: 'inline-block' }}>
                                     {row.disposition}
                                   </span>
                                 ) : ''}
@@ -426,21 +445,23 @@ const CallCount = () => {
                           }
                           if (col.key === 'billsec') {
                             return (
-                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[12px] text-gray-700 font-mono">
+                              <td key={col.key} className={`${cellBase} text-gray-700 font-mono`}>
                                 {formatDuration(row.billsec)}
                               </td>
                             );
                           }
                           if (col.key === 'hangup_cause') {
+                            const v = row.hangup_cause ?? '';
                             return (
-                              <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[12px] text-gray-500">
-                                {row.hangup_cause ?? ''}
+                              <td key={col.key} className={`${cellBase} text-gray-800`} style={trunc} title={v}>
+                                {v}
                               </td>
                             );
                           }
+                          const v = row[col.key] ?? '';
                           return (
-                            <td key={col.key} className="border border-gray-100 py-1.5 px-3 whitespace-nowrap text-center text-[12px] text-gray-600">
-                              {row[col.key] ?? ''}
+                            <td key={col.key} className={`${cellBase} text-gray-800`} style={trunc} title={String(v)}>
+                              {v}
                             </td>
                           );
                         })}

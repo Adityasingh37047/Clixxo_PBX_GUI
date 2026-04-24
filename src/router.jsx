@@ -128,6 +128,9 @@ import FxsQosPage from './sections/advanced/QosPage';
 import FxsRingingSchemePage from './sections/advanced/RingingSchemePage';
 import FxsToneDetecterPage from './sections/advanced/ToneDetecterPage';
 import FxsToneGeneratorPage from './sections/advanced/ToneGeneratorPage';
+import CallQueue from './components/CallQueue';
+import OutboundRestrictions from './components/OutboundRestrictions';
+
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -287,13 +290,14 @@ export const router = createBrowserRouter([
       { path: '/call-features/originate-call', element: <OriginateCallPage /> },
       { path: '/call-features/ivr', element: <IVRPage /> },
       { path: ROUTE_PATHS.CONFERENCE, element: <ConferencePage /> },
+      { path: '/call-features/call-queue', element: <CallQueue/>},
       { path: '/call-features/pickup-group', element: <PickupGroup /> },
       { path: '/call-features/private-group', element: <PrivateGroup /> },
       { path: '/call-features/paging', element: <Paging /> },
       { path: '/call-control/cc-route', element: <CCRoutePage /> },
       { path: '/call-control/inbound-routes', element: <InboundRoutesPage /> },
       { path: '/call-control/outbound-routes', element: <OutboundRoutesPage /> },
-      { path: '/pbx-status/active-calls', element: <ActiveCallsPage /> },
+      { path: '/call-control/outbound-restrictions', element: <OutboundRestrictions/>},
       { path: '/call-features/ring-group', element: <RingGroup /> },
       { path: '/call-features/speed-dial', element: <SpeedDialPage /> },
       { path: '/call-features/disa', element: <DisaPage /> },

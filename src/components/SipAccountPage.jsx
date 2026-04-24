@@ -37,6 +37,10 @@ const SipAccountPage = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [activeTab, setActiveTab] = useState('basic');
   const [formMode, setFormMode] = useState('single'); // 'single' | 'bulk'
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const importFileRef = React.useRef(null);
   const [bulkForm, setBulkForm] = useState({
     startExtension: '',
     createNumber: '',
@@ -192,6 +196,7 @@ const SipAccountPage = () => {
         return 'international_call';
       })(),
       extension_trunk: (item.adv_extension_trunk ?? item.extension_trunk) ? 'enable' : 'disable',
+      dynamic_lock_pin: (Number(item.adv_dynamic_lock_pin ?? item.adv_dynamic_lock_mode ?? 0) === 1) ? 'user_password' : 'default',
       diversion: boolToYesNo(item.adv_send_diversion ?? item.send_diversion ?? item.diversion ?? true),
       call_prohibition: (item.adv_call_prohibition ?? item.call_prohibition) ? 'enable' : 'disable',
       rx_volume: Number(item.adv_rx_volume ?? item.rx_volume ?? 0),
@@ -294,6 +299,7 @@ const SipAccountPage = () => {
         return 'international';
       })(),
       adv_extension_trunk: uiData.extension_trunk === 'enable',
+      adv_dynamic_lock_mode: uiData.dynamic_lock_pin === 'user_password' ? 1 : 0,
       adv_send_diversion: uiData.diversion === 'yes',
       adv_call_prohibition: uiData.call_prohibition === 'enable',
       adv_rx_volume: Number(uiData.rx_volume ?? 0),
@@ -879,8 +885,23 @@ const SipAccountPage = () => {
       setLoading(prev => ({ ...prev, delete: false }));
     }
   };
+
   const handlePageChange = (newPage) => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importFile) {
+      showMessage('error', 'Please select a file to import');
+      return;
+    }
+    // API integration to be added
+    showMessage('info', 'Import API not yet configured');
+  };
+
+  const handleExport = () => {
+    // API integration to be added
+    showMessage('info', 'Export API not yet configured');
   };
   // Custom scrollbar thumb
   const thumbWidth = scrollState.width && scrollState.scrollWidth
@@ -892,8 +913,67 @@ const SipAccountPage = () => {
 
   return (
     <div className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border" style={{backgroundColor: "#dde0e4"}}>
-      {/* Modal */}
-      <Dialog 
+
+      {/* Import Modal */}
+      <Dialog
+        open={showImportModal}
+        onClose={() => { if (!importLoading) { setShowImportModal(false); setImportFile(null); } }}
+        maxWidth={false}
+        PaperProps={{ sx: { width: 420, maxWidth: '96vw', mx: 'auto', p: 0 } }}
+      >
+        <DialogTitle
+          className="text-white text-center font-semibold p-2 text-base"
+          style={{ background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)', borderBottom: '1px solid #444' }}
+        >
+          Import Extensions
+        </DialogTitle>
+        <DialogContent style={{ backgroundColor: '#dde0e4', padding: '20px 24px 12px' }}>
+          <div className="flex flex-col gap-4 pt-1">
+            <p className="text-[13px] text-gray-600">Select a CSV or JSON file containing extension data to import.</p>
+            <div
+              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              onClick={() => importFileRef.current?.click()}
+            >
+              <div className="text-gray-500 text-[13px] mb-1">
+                {importFile ? (
+                  <span className="text-green-700 font-semibold">{importFile.name}</span>
+                ) : (
+                  <span>Click to choose file <span className="text-gray-400">(CSV / JSON)</span></span>
+                )}
+              </div>
+              <input
+                ref={importFileRef}
+                type="file"
+                accept=".csv,.json"
+                className="hidden"
+                onChange={e => setImportFile(e.target.files?.[0] || null)}
+              />
+            </div>
+          </div>
+        </DialogContent>
+        <DialogActions style={{ backgroundColor: '#dde0e4', justifyContent: 'center', gap: 16, padding: '12px 24px 16px' }}>
+          <Button
+            variant="contained"
+            onClick={handleImportSubmit}
+            disabled={importLoading || !importFile}
+            startIcon={importLoading && <CircularProgress size={16} color="inherit" />}
+            sx={{ background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)', color: '#fff', fontWeight: 600, textTransform: 'none', minWidth: 100, '&:hover': { background: 'linear-gradient(to bottom, #0e8fd6, #3bb6f5)' } }}
+          >
+            {importLoading ? 'Importing...' : 'Import'}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => { setShowImportModal(false); setImportFile(null); }}
+            disabled={importLoading}
+            sx={{ background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)', color: '#374151', fontWeight: 600, textTransform: 'none', minWidth: 100 }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Main Extension Modal */}
+      <Dialog
         open={showModal} 
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
@@ -2007,6 +2087,26 @@ const SipAccountPage = () => {
                         </FormControl>
                       </div>
                     </div>
+                    {/* Dynamic Lock Pin */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Dynamic Lock Pin
+                      </label>
+                      <div className="flex-1 w-full">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.dynamic_lock_pin || 'default'}
+                            onChange={e => handleChange('dynamic_lock_pin', e.target.value)}
+                            sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
+                          >
+                            <MenuItem value="default">Default</MenuItem>
+                            {form.dynamic_lock_pin === 'user_password' && (
+                              <MenuItem value="user_password">User Password</MenuItem>
+                            )}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
                     {/* Diversion */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
                       <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
@@ -2124,6 +2224,9 @@ const SipAccountPage = () => {
           >
             {loading.save ? 'Saving...' : 'Save'}
           </Button>
+
+
+
           <Button
             variant="contained"
             sx={{
@@ -2176,9 +2279,30 @@ const SipAccountPage = () => {
       {/* Main Content */}
       <div className="w-full max-w-full mx-auto">
         {/* Blue header bar - always show */}
-          <div className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm mt-0"
+        <div className="rounded-t-lg h-9 flex items-center justify-between px-3 font-semibold text-[18px] text-[#444] shadow-sm mt-0"
           style={{background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)'}}>
-          Extensions
+          <div className="flex-1" />
+          <span>Extensions</span>
+          <div className="flex-1 flex justify-end gap-2">
+            <button
+              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
+              style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)', color: '#1565c0', border: '1px solid #93c5fd', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)'}
+              onClick={() => { setShowImportModal(true); setImportFile(null); }}
+            >
+              Import
+            </button>
+            <button
+              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
+              style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)', color: '#1565c0', border: '1px solid #93c5fd', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)'}
+              onClick={handleExport}
+            >
+              Export
+            </button>
+          </div>
         </div>
         
         <div className="overflow-x-auto w-full">
@@ -2274,6 +2398,11 @@ const SipAccountPage = () => {
               {loading.delete && <CircularProgress size={12} />}
               Clear All
             </button>
+
+            
+
+
+
           </div>
           <div className="flex gap-2">
             <button 

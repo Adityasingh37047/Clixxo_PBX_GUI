@@ -37,6 +37,7 @@ export const SIP_ACCOUNT_FIELDS = [
   { name: 'outbound_restriction', label: 'Outbound Restriction', type: 'select', defaultValue: 'disable' },
   { name: 'call_permission', label: 'Call Permission', type: 'select', defaultValue: 'international_call' },
   { name: 'extension_trunk', label: 'Extension Trunk', type: 'select', defaultValue: 'disable' },
+  { name: 'dynamic_lock_pin', label: 'Dynamic Lock Pin', type: 'select', defaultValue: 'default' },
   { name: 'diversion', label: 'diversion', type: 'select', defaultValue: 'yes' },
   { name: 'call_prohibition', label: 'Call Prohibition', type: 'select', defaultValue: 'disable' },
 

@@ -1154,6 +1154,7 @@ const buildSipExtensionPayload = (accountData = {}) => ({
   adv_outbound_restriction: accountData.adv_outbound_restriction,
   adv_call_permission: accountData.adv_call_permission,
   adv_extension_trunk: accountData.adv_extension_trunk,
+  adv_dynamic_lock_mode: accountData.adv_dynamic_lock_mode,
   adv_send_diversion: accountData.adv_send_diversion,
   adv_call_prohibition: accountData.adv_call_prohibition,
   adv_rx_volume: accountData.adv_rx_volume,

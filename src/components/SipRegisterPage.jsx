@@ -55,6 +55,10 @@ const SipRegisterPage = () => {
   const hasInitialLoadRef = useRef(false);
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const importFileRef = React.useRef(null);
   const [modalTab, setModalTab] = useState('basic');
   const [dodRows, setDodRows] = useState([]);
   const [dodSelected, setDodSelected] = useState([]);
@@ -307,6 +311,15 @@ const SipRegisterPage = () => {
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importFile) { showMessage('error', 'Please select a file to import'); return; }
+    showMessage('info', 'Import API not yet configured');
+  };
+
+  const handleExport = () => {
+    showMessage('info', 'Export API not yet configured');
   };
   
   // Helper to strip "sip:" prefix for display
@@ -1229,10 +1242,69 @@ const SipRegisterPage = () => {
 
   return (
     <div className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border" style={{backgroundColor: "#dde0e4"}}>
+
+      {/* Import Modal */}
+      <Dialog
+        open={showImportModal}
+        onClose={() => { if (!importLoading) { setShowImportModal(false); setImportFile(null); } }}
+        maxWidth={false}
+        PaperProps={{ sx: { width: 420, maxWidth: '96vw', mx: 'auto', p: 0 } }}
+      >
+        <DialogTitle
+          className="text-white text-center font-semibold p-2 text-base"
+          style={{ background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)', borderBottom: '1px solid #444' }}
+        >
+          Import SIP Trunks
+        </DialogTitle>
+        <DialogContent style={{ backgroundColor: '#dde0e4', padding: '20px 24px 12px' }}>
+          <div className="flex flex-col gap-4 pt-1">
+            <p className="text-[13px] text-gray-600">Select a CSV or JSON file containing SIP trunk data to import.</p>
+            <div
+              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              onClick={() => importFileRef.current?.click()}
+            >
+              <div className="text-gray-500 text-[13px] mb-1">
+                {importFile ? (
+                  <span className="text-green-700 font-semibold">{importFile.name}</span>
+                ) : (
+                  <span>Click to choose file <span className="text-gray-400">(CSV / JSON)</span></span>
+                )}
+              </div>
+              <input
+                ref={importFileRef}
+                type="file"
+                accept=".csv,.json"
+                className="hidden"
+                onChange={e => setImportFile(e.target.files?.[0] || null)}
+              />
+            </div>
+          </div>
+        </DialogContent>
+        <DialogActions style={{ backgroundColor: '#dde0e4', justifyContent: 'center', gap: 16, padding: '12px 24px 16px' }}>
+          <Button
+            variant="contained"
+            onClick={handleImportSubmit}
+            disabled={importLoading || !importFile}
+            startIcon={importLoading && <CircularProgress size={16} color="inherit" />}
+            sx={{ background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)', color: '#fff', fontWeight: 600, textTransform: 'none', minWidth: 100, '&:hover': { background: 'linear-gradient(to bottom, #0e8fd6, #3bb6f5)' } }}
+          >
+            {importLoading ? 'Importing...' : 'Import'}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => { setShowImportModal(false); setImportFile(null); }}
+            disabled={importLoading}
+            sx={{ background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)', color: '#374151', fontWeight: 600, textTransform: 'none', minWidth: 100 }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Message Display */}
       {message.text && (
-        <Alert 
-          severity={message.type} 
+        <Alert
+          severity={message.type}
           onClose={() => setMessage({ type: '', text: '' })}
             sx={{
             position: 'fixed', 
@@ -1250,10 +1322,27 @@ const SipRegisterPage = () => {
       {/* Main Content */}
       <div className="w-full max-w-full mx-auto">
         {/* Blue header bar - always show */}
-        <div className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm mt-0"
+        <div className="rounded-t-lg h-9 flex items-center justify-between px-3 font-semibold text-[18px] text-[#444] shadow-sm mt-0"
           style={{background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)'}}>
-              SIP Register
-            </div>
+          <div className="flex-1" />
+          <span>SIP Register</span>
+          <div className="flex-1 flex justify-end gap-2">
+            <button
+              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
+              style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)', color: '#1565c0', border: '1px solid #93c5fd', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)'}
+              onClick={() => { setImportFile(null); setShowImportModal(true); }}
+            >Import</button>
+            <button
+              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
+              style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)', color: '#1565c0', border: '1px solid #93c5fd', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)'}
+              onClick={handleExport}
+            >Export</button>
+          </div>
+        </div>
         
         <div className="w-full max-w-full mx-auto" style={{ border: '2px solid #bbb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
           <div className="bg-white rounded-lg shadow-sm w-full flex flex-col overflow-hidden">

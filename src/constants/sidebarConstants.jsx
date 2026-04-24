@@ -106,6 +106,7 @@ export const SIDEBAR_SECTIONS = [
           { id: 'callFeaturesOriginateCall', title: 'Originate Call', path: '/call-features/originate-call' },
           { id: 'callFeaturesIVR', title: 'IVR', path: '/call-features/ivr' },
           { id: 'callFeaturesConference', title: 'Conference', path: ROUTE_PATHS.CONFERENCE },
+          { id: 'callFeaturesCallQueue', title: 'CallQueue', path: '/call-features/call-queue'},
           { id: 'callFeaturesPickupGroup', title: 'Pickup Group', path: '/call-features/pickup-group' },
           { id: 'callFeaturesRingGroup', title: 'Ring Group', path: '/call-features/ring-group' },
           { id: 'callFeaturesPrivateGroup', title: 'Private Group', path: '/call-features/private-group' },
@@ -122,6 +123,7 @@ export const SIDEBAR_SECTIONS = [
           { id: 'callControlCcRoute', title: 'CC Route', path: '/call-control/cc-route' },
           { id: 'callControlInboundRoutes', title: 'Inbound Routes', path: '/call-control/inbound-routes' },
           { id: 'callControlOutboundRoutes', title: 'Outbound Routes', path: '/call-control/outbound-routes' },
+          { id: 'OutboundRestrictions', title: 'Outbound Restrictions', path: '/call-control/outbound-restrictions'},
         ]
       },
       {
