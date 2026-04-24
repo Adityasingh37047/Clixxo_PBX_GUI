@@ -47,10 +47,10 @@ import PcmNumReceivingRulePage from './components/PcmNumReceivingRulePage';
 import PcmReceptionTimeoutPage from './components/PcmReceptionTimeoutPage';
 import IsdnIsdnPage from './components/IsdnIsdnPage';
 import IsdnNumberParameterPage from './components/IsdnNumberParameterPage';
-import RouteRoutingParameterPage from './sections/route/RouteRoutingParameterPage';
-import RouteIpPstnPage from './sections/route/RouteIpToTelPage';
+import RouteRoutingParameterPage from './components/RouteRoutingParameterPage';
+import RouteIpPstnPage from './components/RouteIpPstnPage';
 import RouteIPToIPPage from './components/RouteIPToIPPage';
-import RoutePstnToIPPage from './sections/route/RouteTelToIPpage';
+import RoutePstnToIPPage from './components/RoutePstnToIPpage';
 import Whitelist from './components/Whitelist';
 import Blacklist from './components/Blacklist';
 import NumberPool from './components/NumberPool';
@@ -138,8 +138,8 @@ const ErrorBoundary = ({ error }) => {
       <div className="text-center">
         <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong!</h1>
         <p className="text-gray-600 mb-4">{error?.message || 'An unexpected error occurred'}</p>
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          onClick={() => window.location.reload()}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
         >
           Reload Page
@@ -156,8 +156,8 @@ const NotFound = () => {
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">404</h1>
         <p className="text-gray-600 mb-4">Page not found</p>
-        <a 
-          href="/" 
+        <a
+          href="/"
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
         >
           Go Home
@@ -224,7 +224,7 @@ export const router = createBrowserRouter([
         element: <FaxFaxPage />,
       },
       {
-        path: '/route',
+        path: '/route/routing-parameters',
         element: <RouteRoutingParameterPage />,
       },
       {
@@ -272,14 +272,14 @@ export const router = createBrowserRouter([
         element: <SystemToolsPage />,
       },
       // SIP submenu routes
-      { path: '/sip', element: <SipSipPage /> },
+      { path: '/sip/sip', element: <SipSipPage /> },
       { path: '/sip/ha', element: <HaPage /> },
-      { path: '/sip/trunk', element: <SipTrunkPage /> },
-      { path: '/sip/register', element: <SipRegisterPage /> },
-      { path: '/sip/account', element: <SipAccountPage /> },
+      { path: '/sip/sip-trunk', element: <SipTrunkPage /> },
+      { path: '/trunks/sip-register', element: <SipRegisterPage /> },
+      { path: '/extensions/extensions', element: <SipAccountPage /> },
       { path: '/sip/sip-to-sip-account', element: <SipToSipAccountPage /> },
-      { path: '/sip/trunk-group', element: <SipTrunkGroup /> },
-      { path: '/sip/extension-groups', element: <ExtensionGroupsPage /> },
+      { path: '/sip/sip-trunk-group', element: <SipTrunkGroup /> },
+      { path: '/extensions/extension-groups', element: <ExtensionGroupsPage /> },
       { path: '/sip/media', element: <SipMediaPage /> },
       { path: ROUTE_PATHS.SIP_COMPATIBILITY, element: <SipCompatibilityPage /> },
       { path: ROUTE_PATHS.SIP_NAT_SETTINGS, element: <NatSettingsPage /> },
@@ -297,6 +297,7 @@ export const router = createBrowserRouter([
       { path: '/call-control/cc-route', element: <CCRoutePage /> },
       { path: '/call-control/inbound-routes', element: <InboundRoutesPage /> },
       { path: '/call-control/outbound-routes', element: <OutboundRoutesPage /> },
+      { path: '/pbx-status/active-calls', element: <ActiveCallsPage /> },
       { path: '/call-control/outbound-restrictions', element: <OutboundRestrictions/>},
       { path: '/call-features/ring-group', element: <RingGroup /> },
       { path: '/call-features/speed-dial', element: <SpeedDialPage /> },
@@ -326,7 +327,7 @@ export const router = createBrowserRouter([
         element: <PcmTrunkPage />,
       },
       {
-        path: '/pcm/trunk-group',
+        path: '/pcm/pcm-trunk-group',
         element: <PcmTrunkGroupPage />,
       },
       {
@@ -409,7 +410,7 @@ export const router = createBrowserRouter([
         path: '/system-tools/ip-routing-table',
         element: <IPRoutingTable />,
       },
-      {   
+      {
         path: '/system-tools/access-control',
         element: <AccessControl />,
       },
@@ -518,11 +519,11 @@ export const router = createBrowserRouter([
         element: <Hosts />,
       },
       {
-        path: '/voice-prompts',
+        path: '/voice-prompts/voice-prompts',
         element: <VoicePromptsPage />,
       },
       {
-        path: '/pbx-monitor',
+        path: '/pbx-status/pbx-monitor',
         element: <PbxMonitor />,
       },
       { path: ROUTE_PATHS.PORT_FXS, element: <PortFxsPage /> },
@@ -549,7 +550,7 @@ export const router = createBrowserRouter([
     path: "*",
     element: <NotFound />,
   },
-] 
+]
 );
 
 

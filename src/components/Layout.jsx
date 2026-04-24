@@ -12,7 +12,6 @@ const Layout = () => {
 
   useEffect(() => {
     const checkScreenSize = () => {
-      // Use 1024px breakpoint for better tablet support
       setIsMobile(window.innerWidth < 1024);
       if (window.innerWidth >= 1024) {
         setSidebarOpen(false); // Close mobile sidebar on desktop
@@ -32,26 +31,26 @@ const Layout = () => {
     }
   }, [location.state]);
 
-  const NAVBAR_HEIGHT = isMobile ? 140 : 85; // Responsive navbar height: mobile (stacked content) vs desktop (inline)
-  const SIDEBAR_WIDTH = isMobile ? 0 : 180; // No sidebar width on mobile when closed
+  const NAVBAR_HEIGHT = isMobile ? 140 : 85;
+  const SIDEBAR_WIDTH = isMobile ? 0 : 250; // 72px (icons) + 178px (submenu) = 250px
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#dde0e4' }}>
       {/* Fixed Navbar at the top */}
-      <Navbar 
-        isMobile={isMobile} 
-        sidebarOpen={sidebarOpen} 
-        setSidebarOpen={setSidebarOpen} 
+      <Navbar
+        isMobile={isMobile}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
       />
-      
+
       {/* Sidebar - responsive */}
-      <Sidebar 
-        isMobile={isMobile} 
-        sidebarOpen={sidebarOpen} 
+      <Sidebar
+        isMobile={isMobile}
+        sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         navbarHeight={NAVBAR_HEIGHT}
       />
-      
+
       {/* Main content area with responsive margins */}
       <main
         className="transition-all duration-200"
@@ -60,12 +59,14 @@ const Layout = () => {
           paddingTop: NAVBAR_HEIGHT,
           minHeight: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
           backgroundColor: '#dde0e4',
-          width: isMobile ? '100%' : `calc(100% - ${SIDEBAR_WIDTH}px)`
+          width: isMobile ? '100%' : `calc(100% - ${SIDEBAR_WIDTH}px)`,
+          boxSizing: 'border-box',
         }}
       >
-        <div className="w-full" style={{ 
+        <div className="w-full" style={{
           backgroundColor: '#dde0e4',
-          padding: isMobile ? '8px' : '16px'
+          padding: isMobile ? '8px' : '16px',
+          boxSizing: 'border-box',
         }}>
           <Outlet key={refreshKey} />
         </div>
