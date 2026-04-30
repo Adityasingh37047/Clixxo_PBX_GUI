@@ -138,6 +138,16 @@ export const SIDEBAR_SECTIONS = [
           { id: 'voicePromptsSettings', title: 'Voice Prompts', path: '/voice-prompts/voice-prompts' },
         ]
       },
+      {
+        id: 'FeatureCode',
+        title: 'Feature Codes',
+        icon: TuneIcon,
+        items: [
+          { id: 'featureCodeSettings', title: 'Feature Codes', path: '/feature-code/feature-code' },
+        ]
+
+
+      },
     ]
   },
 

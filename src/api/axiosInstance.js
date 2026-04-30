@@ -29,8 +29,8 @@ const axiosInstance = axios.create({
 // Request interceptor → add auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken");
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+    const token = sessionStorage.getItem("authToken");
+    const isAuthenticated = sessionStorage.getItem("isAuthenticated") === "true";
     if (isAuthenticated && token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -39,17 +39,12 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor → handle unauthorized
+// Response interceptor → auto-logout on 401/403
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (
-      error.response &&
-      (error.response.status === 401 || error.response.status === 403)
-    ) {
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("user");
-      localStorage.removeItem("authToken");
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      sessionStorage.clear();
       window.location.href = "/login";
     }
     return Promise.reject(error);

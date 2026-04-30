@@ -130,6 +130,7 @@ import FxsToneDetecterPage from './sections/advanced/ToneDetecterPage';
 import FxsToneGeneratorPage from './sections/advanced/ToneGeneratorPage';
 import CallQueue from './components/CallQueue';
 import OutboundRestrictions from './components/OutboundRestrictions';
+import FeatureCodePage from './components/FeatureCodePage';
 
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
@@ -222,6 +223,10 @@ export const router = createBrowserRouter([
       {
         path: '/fax/fax',
         element: <FaxFaxPage />,
+      },
+      {
+        path: '/feature-code/feature-code',
+        element: <FeatureCodePage />,
       },
       {
         path: '/route/routing-parameters',

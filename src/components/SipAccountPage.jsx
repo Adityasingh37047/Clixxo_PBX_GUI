@@ -187,8 +187,16 @@ const SipAccountPage = () => {
       call_timeout: Number(item.adv_call_timeout_sec ?? item.call_timeout ?? 30),
       max_call_duration: Number(item.adv_max_call_duration_sec ?? item.max_call_duration ?? 6000),
       outbound_restriction: (item.adv_outbound_restriction ?? item.outbound_restriction) ? 'enable' : 'disable',
+      admin_call_permission: (() => {
+        const v = String(item.adv_call_permission_admin || 'international').toLowerCase().replace(/[\s-]/g, '_');
+        if (v === 'no_call' || v === 'none' || v === 'no') return 'no_call';
+        if (v === 'internal' || v === 'internal_call') return 'internal_call';
+        if (v === 'local' || v === 'local_call') return 'local_call';
+        if (v === 'long_distance' || v === 'long_distance_call' || v === 'longdistance') return 'long_distance_call';
+        return 'international_call';
+      })(),
       call_permission: (() => {
-        const v = String(item.adv_call_permission || item.call_permission || 'international').toLowerCase().replace(/[\s-]/g, '_');
+        const v = String(item.adv_call_permission_dynamic || item.adv_call_permission || item.call_permission || 'international').toLowerCase().replace(/[\s-]/g, '_');
         if (v === 'no_call' || v === 'none' || v === 'no') return 'no_call';
         if (v === 'internal' || v === 'internal_call') return 'internal_call';
         if (v === 'local' || v === 'local_call') return 'local_call';
@@ -290,8 +298,8 @@ const SipAccountPage = () => {
       adv_call_timeout_sec: Number(uiData.call_timeout ?? 30),
       adv_max_call_duration_sec: Number(uiData.max_call_duration ?? 6000),
       adv_outbound_restriction: uiData.outbound_restriction === 'enable',
-      adv_call_permission: (() => {
-        const v = uiData.call_permission || 'international_call';
+      adv_call_permission_admin: (() => {
+        const v = uiData.admin_call_permission || 'international_call';
         if (v === 'no_call') return 'no_call';
         if (v === 'internal_call') return 'internal';
         if (v === 'local_call') return 'local';
@@ -2048,16 +2056,16 @@ const SipAccountPage = () => {
                         </FormControl>
                       </div>
                     </div>
-                    {/* Call Permission */}
+                    {/* Admin Call Permission */}
                     <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
                       <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
-                        Call Permission
+                        Max Call Permission
                       </label>
                       <div className="flex-1 w-full">
                         <FormControl fullWidth size="small">
                           <MuiSelect
-                            value={form.call_permission || 'international_call'}
-                            onChange={e => handleChange('call_permission', e.target.value)}
+                            value={form.admin_call_permission || 'international_call'}
+                            onChange={e => handleChange('admin_call_permission', e.target.value)}
                             sx={{ '& .MuiOutlinedInput-input': { padding: '6px 8px', fontSize: 14 } }}
                           >
                             <MenuItem value="no_call">No Call</MenuItem>
@@ -2085,6 +2093,24 @@ const SipAccountPage = () => {
                             <MenuItem value="enable">Enable</MenuItem>
                           </MuiSelect>
                         </FormControl>
+                      </div>
+                    </div>
+                    {/* Call Permission (read-only) */}
+                    <div className="flex items-center bg-white rounded px-2 py-1 gap-2" style={{ minHeight: 32 }}>
+                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 160, flexShrink: 0 }}>
+                        Used Call Permission
+                      </label>
+                      <div className="flex-1 w-full">
+                        <div className="text-[14px] text-gray-600 px-2 py-1 bg-gray-100 rounded border border-gray-200" style={{ minHeight: 32, display: 'flex', alignItems: 'center' }}>
+                          {(() => {
+                            const v = form.call_permission || 'international_call';
+                            if (v === 'no_call') return 'No Call';
+                            if (v === 'internal_call') return 'Internal Call';
+                            if (v === 'local_call') return 'Local Call';
+                            if (v === 'long_distance_call') return 'Long-Distance Call';
+                            return 'International Call';
+                          })()}
+                        </div>
                       </div>
                     </div>
                     {/* Dynamic Lock Pin */}

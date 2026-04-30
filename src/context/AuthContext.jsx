@@ -51,9 +51,9 @@ useEffect(() => {
   // Check authentication status on component mount
   useEffect(() => {
     const checkAuth = () => {
-      const authStatus = localStorage.getItem('isAuthenticated') === 'true';
-      const userData = localStorage.getItem('user');
-      
+      const authStatus = sessionStorage.getItem('isAuthenticated') === 'true';
+      const userData = sessionStorage.getItem('user');
+
       setIsAuthenticated(authStatus);
       setUser(userData ? JSON.parse(userData) : null);
       setLoading(false);
@@ -68,26 +68,34 @@ useEffect(() => {
       const response = await fetchLogin({ username, password });
       console.log('Login response:', response);
       
+      if (response.response === false || response.response === 'false') {
+        const err = new Error(response.message || 'Login failed');
+        err.locked = response.locked || false;
+        err.retryAfter = response.retryAfter || 0;
+        err.attemptsLeft = response.attemptsLeft ?? null;
+        throw err;
+      }
+
       if (response.response === true) {
-        const userData = { 
-          username: response.data?.username || username, 
-          password: password, // Store the password
+        const userData = {
+          username: response.data?.username || username,
           role: response.data?.role || 'admin',
           id: response.data?.id,
-          ...response.data 
+          ...response.data,
+          password: undefined, // never store password
         };
-        
+        delete userData.password;
+
         // Update state
         setIsAuthenticated(true);
         setUser(userData);
-        
-        // Save to localStorage
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Save authentication token if provided by the API
+
+        // Save to sessionStorage (clears on tab/browser close)
+        sessionStorage.setItem('isAuthenticated', 'true');
+        sessionStorage.setItem('user', JSON.stringify(userData));
+
         if (response.data?.token) {
-          localStorage.setItem('authToken', response.data.token);
+          sessionStorage.setItem('authToken', response.data.token);
         }
         
         return userData;
@@ -96,7 +104,12 @@ useEffect(() => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      throw new Error(error.message || 'Invalid credentials');
+      // Preserve lockout fields so LoginPage can read them
+      const richError = new Error(error.message || 'Invalid credentials');
+      richError.locked = error.locked || false;
+      richError.retryAfter = error.retryAfter || 0;
+      richError.attemptsLeft = error.attemptsLeft ?? null;
+      throw richError;
     }
   };
 
@@ -106,9 +119,8 @@ useEffect(() => {
     setIsAuthenticated(false);
     setUser(null);
     
-    // Clear localStorage
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
+    // Clear sessionStorage
+    sessionStorage.clear();
   };
 
   // Auto-logout on inactivity (5 minutes)
@@ -120,7 +132,7 @@ useEffect(() => {
       if (timerId) clearTimeout(timerId);
       timerId = setTimeout(() => {
         // Only logout if currently authenticated
-        if (localStorage.getItem('isAuthenticated') === 'true') {
+        if (sessionStorage.getItem('isAuthenticated') === 'true') {
           logout();
         }
       }, TIMEOUT_MS);
@@ -141,7 +153,7 @@ useEffect(() => {
   // Update user function
   const updateUser = (userData) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    sessionStorage.setItem('user', JSON.stringify(userData));
   };
 
   const value = {

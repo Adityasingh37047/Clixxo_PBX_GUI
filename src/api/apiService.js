@@ -1,4 +1,6 @@
 import axiosInstance from "./axiosInstance";
+import { v4 as uuidv4 } from 'uuid';
+import CryptoJS from 'crypto-js';
 import axios from "axios";
 
 // GROUP API Functions
@@ -750,12 +752,32 @@ export const saveNetworkSettings = async (data)=>{
   }
 };
 
-  export const fetchLogin = async (data)=>{
-  try{
-    const response = await axiosInstance.post ("/login", data);
+export const fetchLogin = async ({ username, password }) => {
+  try {
+    // 1. Generate a one-time session ID
+    const sessionId = uuidv4();
+
+    // 2. Fetch the AES key for this session
+    const keyResponse = await axiosInstance.get('/session-key', {
+      headers: { 'x-session-id': sessionId },
+    });
+    const key = keyResponse.data?.key;
+    if (!key) throw new Error('Failed to obtain session key');
+
+    // 3. Encrypt the credentials
+    const encrypted = CryptoJS.AES.encrypt(
+      JSON.stringify({ username, password }),
+      key
+    ).toString();
+
+    // 4. Send encrypted payload
+    const response = await axiosInstance.post('/login',
+      { data: encrypted },
+      { headers: { 'x-session-id': sessionId } }
+    );
     return response.data;
-  }catch (error){
-    console.log("Login Failed.... Please check your username and password", error.message);
+  } catch (error) {
+    console.log('Login Failed....', error.message);
     throw error;
   }
 };
@@ -1152,7 +1174,7 @@ const buildSipExtensionPayload = (accountData = {}) => ({
   adv_call_timeout_sec: accountData.adv_call_timeout_sec,
   adv_max_call_duration_sec: accountData.adv_max_call_duration_sec,
   adv_outbound_restriction: accountData.adv_outbound_restriction,
-  adv_call_permission: accountData.adv_call_permission,
+  adv_call_permission_admin: accountData.adv_call_permission_admin,
   adv_extension_trunk: accountData.adv_extension_trunk,
   adv_dynamic_lock_mode: accountData.adv_dynamic_lock_mode,
   adv_send_diversion: accountData.adv_send_diversion,
@@ -1225,6 +1247,78 @@ export const deleteSipAccount = async (extension, context) => {
       throw new Error('Network Error');
     }
     throw error.response?.data || { message: 'Server unavailable' };
+  }
+};
+
+// Call Queue API
+export const fetchCallQueues = async () => {
+  try {
+    const response = await axiosInstance.post('/call-queue', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing call queues:', error.message);
+    throw error;
+  }
+};
+
+export const createCallQueue = async (payload) => {
+  try {
+    const response = await axiosInstance.post('/call-queue', { type: 'create', ...payload });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating call queue:', error.message);
+    throw error;
+  }
+};
+
+export const updateCallQueue = async (payload) => {
+  try {
+    const response = await axiosInstance.post('/call-queue', { type: 'update', ...payload });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating call queue:', error.message);
+    throw error;
+  }
+};
+
+export const deleteCallQueue = async (id) => {
+  try {
+    const response = await axiosInstance.post('/call-queue', { type: 'delete', id });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting call queue:', error.message);
+    throw error;
+  }
+};
+
+export const fetchCallQueueExtensions = async () => {
+  try {
+    const response = await axiosInstance.post('/call-queue', { type: 'list_extensions' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing call queue extensions:', error.message);
+    throw error;
+  }
+};
+
+// Feature Code API
+export const getFeatureCodes = async () => {
+  try {
+    const response = await axiosInstance.post('/feature-code', { type: 'get' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching feature codes:', error.message);
+    throw error;
+  }
+};
+
+export const updateFeatureCodes = async (data) => {
+  try {
+    const response = await axiosInstance.post('/feature-code', { type: 'update', data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating feature codes:', error.message);
+    throw error;
   }
 };
 

@@ -10,37 +10,52 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [serverStatus, setServerStatus] = useState('online'); // Default to online, will be checked during login
+  const [serverStatus, setServerStatus] = useState('online');
   const [showPassword, setShowPassword] = useState(false);
+  const [attemptsLeft, setAttemptsLeft] = useState(null);
+  const [lockMessage, setLockMessage] = useState('');
   const navigate = useNavigate();
-  const { login, IP, PORT, METHOD } = useAuth();
+  const { login } = useAuth();
+
+  const formatTime = (secs) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    const parts = [];
+    if (h > 0) parts.push(`${h} hr`);
+    if (m > 0) parts.push(`${m} min`);
+    if (s > 0 || parts.length === 0) parts.push(`${s} sec`);
+    return parts.join(' ');
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Basic validation
     if (!username.trim() || !password.trim()) {
-      
       setError('Please enter both username and password');
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
-    setServerStatus('online'); // Reset server status
-    
+    setLockMessage('');
+    setAttemptsLeft(null);
+
     try {
       await login(username, password);
       navigate('/');
     } catch (err) {
       console.error('Login error:', err);
-      
-      // Check if it's a network/server error
+
       if (err.message.includes('Network Error') || err.message.includes('Failed to fetch')) {
         setServerStatus('offline');
-        // Don't set error state for network issues - the server status message will handle it
+      } else if (err.locked) {
+        const secs = err.retryAfter || 300;
+        setLockMessage(`Too many attempts. Try again after ${formatTime(secs)}`);
       } else {
-        setError(err.message || 'Login failed. Please check your credentials.');
+        if (err.attemptsLeft !== null && err.attemptsLeft !== undefined) {
+          setAttemptsLeft(err.attemptsLeft);
+        }
+        setError(err.message || 'Invalid credentials. Please try again.');
       }
     } finally {
       setIsLoading(false);
@@ -51,6 +66,8 @@ const LoginPage = () => {
     setUsername('');
     setPassword('');
     setError('');
+    setLockMessage('');
+    setAttemptsLeft(null);
     setServerStatus('online');
   };
 
@@ -90,29 +107,44 @@ const LoginPage = () => {
       
       {/* Login Card */}
       <div className="px-6 py-10 flex flex-col items-center relative mt-0.5 w-[95vw] max-w-[400px]">
-        {/* Error Message */}
-        {error && (
-          <div className="bg-[#f8d7da] text-[#a94442] px-5 py-3 rounded-md text-base font-medium mb-6 w-full max-w-xs absolute -top-16 left-1/2 -translate-x-1/2 border border-[#f5c6cb] flex items-center justify-between z-10 shadow">
-            <span className="flex items-center">
-              
-              {error}
-            </span>
-            <span
-              className="cursor-pointer text-2xl ml-4 leading-none"
-              onClick={() => setError('')}
-            >
-              &times;
-            </span>
-          </div>
-        )}
-        
-        {/* Loading Message */}
-        {isLoading && (
-          <div className="bg-[#d1ecf1] text-[#0c5460] px-5 py-3 rounded-md text-base font-medium mb-6 w-full max-w-xs absolute -top-16 left-1/2 -translate-x-1/2 border border-[#bee5eb] flex items-center justify-center z-10 shadow">
-            <span className="mr-2">⏳</span>
-            Connecting to server...
-          </div>
-        )}
+        {/* Toast */}
+        {(() => {
+          let bg, border, color, icon, text, onDismiss;
+
+          if (isLoading) {
+            bg = '#eff6ff'; border = '#93c5fd'; color = '#1d4ed8';
+            icon = '⏳'; text = 'Connecting to server...';
+          } else if (lockMessage) {
+            bg = '#fef2f2'; border = '#fca5a5'; color = '#b91c1c';
+            icon = '🔒'; text = lockMessage;
+            onDismiss = () => setLockMessage('');
+          } else if (attemptsLeft !== null && attemptsLeft > 0) {
+            bg = '#fffbeb'; border = '#fcd34d'; color = '#92400e';
+            icon = '⚠️'; text = `Invalid credentials — ${attemptsLeft} attempt${attemptsLeft !== 1 ? 's' : ''} left`;
+            onDismiss = () => { setAttemptsLeft(null); setError(''); };
+          } else if (error && error !== 'locked') {
+            bg = '#fef2f2'; border = '#fca5a5'; color = '#b91c1c';
+            icon = '⊘'; text = error;
+            onDismiss = () => setError('');
+          } else {
+            return null;
+          }
+
+          return (
+            <div style={{
+              position: 'absolute', top: -48, left: '50%', transform: 'translateX(-50%)',
+              width: 310, zIndex: 20, background: bg, border: `1px solid ${border}`,
+              borderRadius: 8, padding: '8px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
+              <span style={{ color, fontSize: 12, fontWeight: 600, flex: 1, lineHeight: 1.4 }}>{text}</span>
+              {onDismiss && (
+                <span style={{ color, cursor: 'pointer', fontSize: 17, lineHeight: 1, flexShrink: 0, opacity: 0.7 }} onClick={onDismiss}>&times;</span>
+              )}
+            </div>
+          );
+        })()}
         {/* Logo */}
         <div className="mb-6 flex justify-center items-center w-full">
           <img src={clixxoLogo} alt="Clixxo Logo" className="w-36 max-w-full -ml-18" />
@@ -168,9 +200,9 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoading || serverStatus === 'offline'}
-              className={` w-30 px-3 py-0.5 text-base font-semibold shadow-md transition-all duration-200 transform
+              className={`w-30 px-3 py-0.5 text-base font-semibold shadow-md transition-all duration-200 transform
                 ${isLoading || serverStatus === 'offline'
-                  ? 'bg-gray-300 text-white cursor-not-allowed'
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gradient-to-b from-[#3bb6f5] to-[#0e8fd6] text-gray-700 hover:from-[#249be8] hover:to-[#0a6fae] hover:shadow-lg hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer'}
               `}
             >
