@@ -131,7 +131,7 @@ import FxsToneGeneratorPage from './sections/advanced/ToneGeneratorPage';
 import CallQueue from './components/CallQueue';
 import OutboundRestrictions from './components/OutboundRestrictions';
 import FeatureCodePage from './components/FeatureCodePage';
-
+import UserManage from './components/UserManage';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -346,6 +346,10 @@ export const router = createBrowserRouter([
       {
         path: '/isdn/isdn',
         element: <IsdnIsdnPage />,
+      },
+      {
+        path: '/user-manage/users',
+        element: <UserManage/>,
       },
       {
         path: '/isdn/number-parameter',

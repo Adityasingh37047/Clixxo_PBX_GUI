@@ -293,6 +293,36 @@ export const SIDEBAR_SECTIONS = [
     ]
   },
 
+  // System
+
+  {
+    id: 'system',
+    title: 'System',
+    icon: ComputerIcon,
+    hasSubmenu: true,
+    path: '/system',
+    submenuItems: [
+      {
+        id: 'systemSettings',
+        title: 'System Settings',
+        icon: NetworkCheckIcon,
+        items: [
+          { id: 'sysNetwork', title: 'Network', path: '/system-tools/network' },
+          { id: 'sysManagement', title: 'Management', path: '/system-tools/management' },
+          { id: 'sysIpRoutingTable', title: 'IP Route Table', path: '/system-tools/ip-routing-table' },
+          { id: 'sysAccessControl', title: 'Access Control', path: '/system-tools/access-control' },
+          { id: 'sysVpn', title: 'VPN', path: '/system-tools/vpn' },
+          { id: 'sysCentralizedManage', title: 'Centralized Manage', path: '/system-tools/centralized-manage' },
+          { id: 'sysDhcp', title: 'DHCP', path: '/dhcp/server-settings' },
+          { id: 'sysPingTest', title: 'Ping Test', path: '/system-tools/ping-test' },
+          { id: 'sysTracertTest', title: 'Tracert Test', path: '/system-tools/tracert-test' },
+          { id: 'sysAsteriskCLI', title: 'Asterisk CLI', path: '/system-tools/asterisk-cli' },
+          { id: 'sysLinuxCLI', title: 'Linux CLI', path: '/system-tools/linux-cli' },
+        ]
+      }
+    ]
+  },
+
   //Maintenance
 
   {
@@ -309,16 +339,10 @@ export const SIDEBAR_SECTIONS = [
         hasSubmenu: true,
         path: ROUTE_PATHS.SYSTEM_TOOLS,
         items: [
-          { id: 'network', title: 'Network', path: '/system-tools/network' },
           { id: 'authorization', title: 'Authorization', path: '/system-tools/authorization' },
-          { id: 'management', title: 'Management', path: '/system-tools/management' },
-          { id: 'ipRoutingTable', title: 'IP Routing Table', path: '/system-tools/ip-routing-table' },
-          { id: 'accessControl', title: 'Access Control', path: '/system-tools/access-control' },
           { id: 'idsSettings', title: 'IDS Settings', path: '/system-tools/ids-settings' },
           { id: 'ddosSettings', title: 'DDOS Settings', path: '/system-tools/ddos-settings' },
-          { id: 'vpn', title: 'VPN', path: '/system-tools/vpn' },
           { id: 'certificateManage', title: 'Certificate Manage', path: '/system-tools/certificate-manage' },
-          { id: 'centralizedManage', title: 'Centralized Manage', path: '/system-tools/centralized-manage' },
           { id: 'radius', title: 'Radius', path: '/system-tools/radius' },
           { id: 'sipAccountGenerator', title: 'SIP Account Generator', path: '/system-tools/sip-account-generator' },
           { id: 'configFile', title: 'Config File', path: '/system-tools/config-file' },
@@ -326,19 +350,13 @@ export const SIDEBAR_SECTIONS = [
           { id: 'signalingCapture', title: 'Signaling Capture', path: '/system-tools/signaling-capture' },
           { id: 'signalingCallTest', title: 'Signaling Call Test', path: '/system-tools/signaling-call-test' },
           { id: 'signalingCallTrack', title: 'Signaling Call Track', path: '/system-tools/signaling-call-track' },
-          { id: 'pingTest', title: 'PING Test', path: '/system-tools/ping-test' },
-          { id: 'tracertTest', title: 'TRACERT Test', path: '/system-tools/tracert-test' },
           { id: 'modificationRecord', title: 'Modification Record', path: '/system-tools/modification-record' },
           { id: 'backupUpload', title: 'Backup & Upload', path: '/system-tools/backup-upload' },
           { id: 'factoryReset', title: 'Factory Reset', path: '/system-tools/factory-reset' },
           { id: 'upgrade', title: 'Upgrade', path: '/system-tools/upgrade' },
-          { id: 'accountManage', title: 'Account Manage', path: '/system-tools/account-manage' },
-          { id: 'changePassword', title: 'Change Password', path: '/system-tools/change-password' },
           { id: 'deviceLock', title: 'Device Lock', path: '/system-tools/device-lock' },
           { id: 'restart', title: 'Restart', path: '/system-tools/restart' },
           { id: 'licence', title: 'Licence', path: '/system-tools/licence' },
-          { id: 'asteriskCLI', title: 'Asterisk CLI', path: '/system-tools/asterisk-cli' },
-          { id: 'linuxCLI', title: 'Linux CLI', path: '/system-tools/linux-cli' },
           { id: 'sqlUpload', title: 'SQL Upload', path: '/system-tools/sql-upload' },
         ]
       }
@@ -420,13 +438,22 @@ export const SIDEBAR_SECTIONS = [
   // DHCP
 
   {
-    id: 'dhcp',
-    title: 'DHCP',
-    icon: DnsIcon,
+    id: 'userManage',
+    title: 'User Manage',
+    icon: PeopleIcon,
     hasSubmenu: true,
-    path: ROUTE_PATHS.DHCP,
+    path: ROUTE_PATHS.USER_MANAGE,
     submenuItems: [
-      { id: 'dhcpServerSettings', title: 'DHCP Server Settings', path: '/dhcp/server-settings' },
+      {
+        id: 'userPermission',
+        title: 'User Permission',
+        icon: VpnKeyIcon,
+        items: [
+          { id: 'userList', title: 'User Manage', path: '/user-manage/users' },
+          { id: 'accountManage', title: 'Account Manage', path: '/system-tools/account-manage' },
+          { id: 'changePassword', title: 'Change Password', path: '/system-tools/change-password' },
+        ]
+      },
     ]
   }
 ]

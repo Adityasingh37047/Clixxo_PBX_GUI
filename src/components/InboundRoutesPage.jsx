@@ -14,11 +14,8 @@ import {
 import {
   createInboundRoute,
   deleteInboundRoute,
-  fetchSipAccounts,
   listInboundRoutes,
-  listConferences,
-  listIvrs,
-  listRingGroups,
+  listIvrDestinations,
   listSipRegistrations,
   updateInboundRoute,
 } from '../api/apiService';
@@ -80,6 +77,9 @@ const DESTINATION_NEEDS_TARGET = new Set([
   'Conference Rooms',
   'Ring Groups',
   'IVR Menus',
+  'Call Queue',
+  'CallBacks',
+  'DISA',
   'Other',
 ]);
 const SELECT_MENU_PROPS = {
@@ -140,10 +140,7 @@ const InboundRoutesPage = () => {
   const [destinationTarget, setDestinationTarget] = useState('');
   const [extensionRange, setExtensionRange] = useState('');
 
-  const [availableExtensions, setAvailableExtensions] = useState([]);
-  const [availableConferences, setAvailableConferences] = useState([]);
-  const [availableRingGroups, setAvailableRingGroups] = useState([]);
-  const [availableIvrs, setAvailableIvrs] = useState([]);
+  const [destinations, setDestinations] = useState({});
   const hasLoadedDestinationDataRef = useRef(false);
 
   const [availableTrunks, setAvailableTrunks] = useState([]);
@@ -261,18 +258,14 @@ const InboundRoutesPage = () => {
   const fetchInboundRoutes = async () => {
     setLoading((prev) => ({ ...prev, list: true }));
     try {
-      const [res, ringRes] = await Promise.all([
-        listInboundRoutes(),
-        listRingGroups().catch(() => ({ message: [] })),
-      ]);
-      const ringList = normalizeList(ringRes);
+      const res = await listInboundRoutes();
       if (!res?.response) {
         showAlert(res?.message || 'Failed to load inbound routes.');
         setRows([]);
         return;
       }
       const list = Array.isArray(res?.message) ? res.message : res?.message ? [res.message] : [];
-      setRows(list.map((row) => mapRouteFromApi(row, ringList)));
+      setRows(list.map((row) => mapRouteFromApi(row, [])));
     } catch (err) {
       showAlert(err?.message || 'Failed to load inbound routes.');
       setRows([]);
@@ -316,93 +309,34 @@ const InboundRoutesPage = () => {
 
   const loadDestinationData = async () => {
     try {
-      const [extensionsRes, conferencesRes, ringGroupsRes, ivrsRes] = await Promise.allSettled([
-        fetchSipAccounts(),
-        listConferences(),
-        listRingGroups(),
-        listIvrs(),
-      ]);
-
-      const toOption = (id, label) => ({ id: String(id ?? ''), label: String(label ?? id ?? '') });
-
-      if (extensionsRes.status === 'fulfilled') {
-        const list = normalizeList(extensionsRes.value)
-          .map((item) => {
-            const ext = item?.extension ?? item?.ext ?? item?.id ?? item;
-            const name = item?.name ?? item?.display_name ?? '';
-            return toOption(ext, name ? `${ext} - ${name}` : ext);
-          })
-          .filter((item) => item.id);
-        setAvailableExtensions(list);
-      } else {
-        setAvailableExtensions([]);
+      const res = await listIvrDestinations();
+      if (res?.response && res?.message && typeof res.message === 'object') {
+        setDestinations(res.message);
       }
-
-      if (conferencesRes.status === 'fulfilled') {
-        const list = normalizeList(conferencesRes.value)
-          .map((item) => {
-            const id = item?.conf_number ?? item?.id ?? item?.conference_id ?? item?.conference_number ?? item;
-            const name = item?.name ?? item?.room_name ?? item?.conference_name ?? '';
-            return toOption(id, name ? `${id} - ${name}` : id);
-          })
-          .filter((item) => item.id);
-        setAvailableConferences(list);
-      } else {
-        setAvailableConferences([]);
-      }
-
-      if (ringGroupsRes.status === 'fulfilled') {
-        const list = normalizeList(ringGroupsRes.value)
-          .map((item) => {
-            const dial =
-              item?.rg_number ??
-              item?.ring_group_no ??
-              item?.group_no ??
-              item?.group ??
-              item?.page_number ??
-              '';
-            const id =
-              dial !== '' && dial != null
-                ? String(dial)
-                : String(item?.id ?? item ?? '');
-            const name = item?.name ?? item?.group_name ?? item?.ring_group_name ?? '';
-            return toOption(id, name ? `${id} - ${name}` : id);
-          })
-          .filter((item) => item.id);
-        setAvailableRingGroups(list);
-      } else {
-        setAvailableRingGroups([]);
-      }
-
-      if (ivrsRes.status === 'fulfilled') {
-        const list = normalizeList(ivrsRes.value)
-          .map((item) => {
-            const id = item?.ivr_number ?? item?.id ?? item?.ivr_no ?? item;
-            const name = item?.name ?? item?.ivr_name ?? '';
-            return toOption(id, name ? `${id} - ${name}` : id);
-          })
-          .filter((item) => item.id);
-        setAvailableIvrs(list);
-      } else {
-        setAvailableIvrs([]);
-      }
-
       hasLoadedDestinationDataRef.current = true;
     } catch {
-      setAvailableExtensions([]);
-      setAvailableConferences([]);
-      setAvailableRingGroups([]);
-      setAvailableIvrs([]);
+      setDestinations({});
     }
   };
 
+  const DEST_UI_TO_API_KEY = {
+    Extensions: 'Extensions',
+    Voicemails: 'Voicemails',
+    'Fax To Mail': 'FaxToMail',
+    'Ring Groups': 'RingGroups',
+    'Conference Rooms': 'ConferenceRooms',
+    'IVR Menus': 'IVR',
+    'Call Queue': 'CallQueue',
+    CallBacks: 'Callbacks',
+    DISA: 'DISA',
+    Other: 'Other',
+  };
+
   const getDestinationChoices = () => {
-    if (DESTINATION_NEEDS_EXTENSION.has(destination)) return availableExtensions;
-    if (destination === 'Conference Rooms') return availableConferences;
-    if (destination === 'Ring Groups') return availableRingGroups;
-    if (destination === 'IVR Menus') return availableIvrs;
-    if (destination === 'Other') return OTHER_DESTINATION_OPTIONS.map((opt) => ({ id: opt, label: opt }));
-    return [];
+    const apiKey = DEST_UI_TO_API_KEY[destination];
+    if (!apiKey) return [];
+    const list = Array.isArray(destinations[apiKey]) ? destinations[apiKey] : [];
+    return list.map((opt) => ({ id: String(opt.value), label: String(opt.label) }));
   };
 
   const destinationChoices = getDestinationChoices();
