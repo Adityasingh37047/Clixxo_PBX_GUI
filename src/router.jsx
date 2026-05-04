@@ -132,6 +132,15 @@ import CallQueue from './components/CallQueue';
 import OutboundRestrictions from './components/OutboundRestrictions';
 import FeatureCodePage from './components/FeatureCodePage';
 import UserManage from './components/UserManage';
+// FXS → sections/route pages (different from E1-PRI components/ versions)
+import FxsRouteRoutingParameterPage from './sections/route/RouteRoutingParameterPage';
+import FxsRouteIpToTelPage from './sections/route/RouteIpToTelPage';
+import FxsRouteTelToIpPage from './sections/route/RouteTelToIPpage';
+// FXS → sections/numManipulate pages (already imported above for E1-PRI but aliased here)
+import FxsIPCallInCallerID from './sections/numManipulate/IPCallInCallerID';
+import FxsIPCallInCalleeID from './sections/numManipulate/IPCallInCalleeID';
+import FxsPSTNCallInCallerID from './sections/numManipulate/PSTNCallInCallerID';
+import FxsPSTNCallInCalleeID from './sections/numManipulate/PSTNCallInCalleeID';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -552,6 +561,17 @@ export const router = createBrowserRouter([
       { path: ROUTE_PATHS.FXS_TONE_DETECTOR, element: <FxsToneDetecterPage /> },
       { path: ROUTE_PATHS.FXS_TONE_GENERATOR, element: <FxsToneGeneratorPage /> },
       { path: ROUTE_PATHS.PORT_GROUP, element: <PortGroupPage /> },
+
+      // FXS → Route (sections/route pages — FXS-specific)
+      { path: ROUTE_PATHS.FXS_ROUTE,            element: <FxsRouteRoutingParameterPage /> },
+      { path: ROUTE_PATHS.FXS_ROUTE_IP_TO_PSTN, element: <FxsRouteIpToTelPage /> },
+      { path: ROUTE_PATHS.FXS_ROUTE_PSTN_TO_IP, element: <FxsRouteTelToIpPage /> },
+
+      // FXS → Num Manipulate (sections/numManipulate pages — FXS-specific)
+      { path: ROUTE_PATHS.FXS_IP_CALL_IN_CALLERID,    element: <FxsIPCallInCallerID /> },
+      { path: ROUTE_PATHS.FXS_IP_CALL_IN_CALLEEID,    element: <FxsIPCallInCalleeID /> },
+      { path: ROUTE_PATHS.FXS_PSTN_CALL_IN_CALLERID,  element: <FxsPSTNCallInCallerID /> },
+      { path: ROUTE_PATHS.FXS_PSTN_CALL_IN_CALLEEID,  element: <FxsPSTNCallInCalleeID /> },
     ],
   },
   // 404 route - should be last

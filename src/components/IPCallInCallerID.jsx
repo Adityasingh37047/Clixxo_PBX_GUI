@@ -45,7 +45,7 @@ const modalButtonGrayStyle = {
   ...modalButtonStyle, background: 'linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)', color: '#222',
 };
 const blueBarStyle = {
-  width: '100%', height: 36, background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', borderTopLeftRadius: 8, borderTopRightRadius: 8, marginBottom: 0, display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: 18, color: '#2266aa', justifyContent: 'center', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
+  width: '100%', height: 36, background: 'linear-gradient(#3E5475 100%)', borderTopLeftRadius: 8, borderTopRightRadius: 8, marginBottom: 0, display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: 18, color: '#2266aa', justifyContent: 'center', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
 };
 const tableContainerStyle = {
   width: '100%', maxWidth: '100%', margin: '0 auto', background: '#f8fafd', border: '2px solid #888', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
@@ -586,7 +586,7 @@ const IPCallInCallerID = () => {
           <div className="w-full max-w-full mx-auto">
             {/* Blue header bar - always show */}
             <div className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[16px] text-[#444] shadow-sm mt-0"
-              style={{background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)'}}>
+              style={{background: 'linear-gradient(#3E5475 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)'}}>
                   IP Call In CallerID
                 </div>
             

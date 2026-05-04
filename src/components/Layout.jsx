@@ -5,69 +5,72 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 
 const Layout = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [isMobile, setIsMobile]         = useState(false);
+  const [sidebarOpen, setSidebarOpen]   = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(95); // tracks actual sidebar width (hover + click both)
+  const location                        = useLocation();
+  const [refreshKey, setRefreshKey]     = useState(0);
 
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth >= 1024) {
-        setSidebarOpen(false); // Close mobile sidebar on desktop
-      }
+      const w = window.innerWidth;
+      setIsMobile(w < 768);
+      if (w >= 1024) setSidebarOpen(false);
     };
-
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Handle refresh trigger from sidebar navigation
   useEffect(() => {
     if (location.state?.refresh) {
-      // Force remount of the current route component by changing the key
       setRefreshKey(location.state.refresh);
     }
   }, [location.state]);
 
   const NAVBAR_HEIGHT = isMobile ? 140 : 85;
-  const SIDEBAR_WIDTH = isMobile ? 0 : 250; // 72px (icons) + 178px (submenu) = 250px
+
+  // Content margin follows sidebar width on every change (hover + click)
+  const contentMarginLeft = isMobile ? 0 : sidebarWidth;
+  const contentWidth      = isMobile ? '100%' : `calc(100% - ${sidebarWidth}px)`;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#dde0e4' }}>
-      {/* Fixed Navbar at the top */}
+
       <Navbar
         isMobile={isMobile}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
 
-      {/* Sidebar - responsive */}
       <Sidebar
         isMobile={isMobile}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         navbarHeight={NAVBAR_HEIGHT}
+        onWidthChange={setSidebarWidth} // fires on hover AND click
       />
 
-      {/* Main content area with responsive margins */}
+      {/* Main content shrinks on hover AND click, expands when both gone */}
       <main
-        className="transition-all duration-200"
         style={{
-          marginLeft: isMobile ? 0 : SIDEBAR_WIDTH,
+          marginLeft: contentMarginLeft,
           paddingTop: NAVBAR_HEIGHT,
           minHeight: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
           backgroundColor: '#dde0e4',
-          width: isMobile ? '100%' : `calc(100% - ${SIDEBAR_WIDTH}px)`,
+          width: contentWidth,
           boxSizing: 'border-box',
+          transition: 'margin-left 0.2s ease, width 0.2s ease',
         }}
       >
-        <div className="w-full" style={{
-          backgroundColor: '#dde0e4',
-          padding: isMobile ? '8px' : '16px',
-          boxSizing: 'border-box',
-        }}>
+        <div
+          className="w-full"
+          style={{
+            backgroundColor: '#dde0e4',
+            padding: isMobile ? '8px' : '16px',
+            boxSizing: 'border-box',
+          }}
+        >
           <Outlet key={refreshKey} />
         </div>
       </main>

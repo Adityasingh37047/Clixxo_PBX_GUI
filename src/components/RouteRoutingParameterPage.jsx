@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { ROUTE_SETTINGS_OPTIONS, ROUTE_SETTINGS_DEFAULTS } from '../constants/RouteRoutingParameterPageConstants';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
+import React, { useState } from "react";
+import {
+  ROUTE_SETTINGS_OPTIONS,
+  ROUTE_SETTINGS_DEFAULTS,
+} from "../constants/RouteRoutingParameterPageConstants";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Button from "@mui/material/Button";
 
 const RouteRoutingParameterPage = () => {
   const [settings, setSettings] = useState({ ...ROUTE_SETTINGS_DEFAULTS });
@@ -16,24 +19,33 @@ const RouteRoutingParameterPage = () => {
 
   const handleSave = () => {
     // Here you would typically save to backend or localStorage
-    alert('Settings saved!');
+    alert("Settings saved!");
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-80px)] py-6 flex justify-center" style={{ backgroundColor: "#dde0e4" }}>
-      <div style={{ width: '1000px', margin: '0 auto' }}>
+    <div
+      className="bg-gray-50 min-h-[calc(100vh-80px)] py-6 pt-2 flex justify-center"
+      style={{ backgroundColor: "#dde0e4" }}
+    >
+      <div style={{ width: "1000px", margin: "0 auto" }}>
         {/* Header */}
-        <div className="w-full h-9 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-xl text-gray-700 shadow mb-0">
+        <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-\[#b3e0ff] via-\[#6ec1f7] to-\[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
           Route Settings
         </div>
 
         {/* Content */}
-        <div className="border-2 border-gray-400 border-t-0 shadow-sm flex flex-col" style={{ backgroundColor: "#dde0e4" }}>
+        <div
+          className="rounded-b-lg border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
+          style={{ backgroundColor: "#dde0e4" }}
+        >
           <div className="flex-1 py-6 px-55">
             <div className="space-y-4">
               {/* IP Incoming */}
-              <div className="flex items-center" style={{ gap: '60px' }}>
-                <label className="text-base text-gray-700 font-medium text-left" style={{ width: '280px' }}>
+              <div className="flex items-center" style={{ gap: "60px" }}>
+                <label
+                  className="text-base text-gray-700 font-medium text-left"
+                  style={{ width: "280px" }}
+                >
                   IP Incoming:
                 </label>
                 <Select
@@ -42,30 +54,35 @@ const RouteRoutingParameterPage = () => {
                   onChange={handleChange}
                   variant="outlined"
                   size="small"
-                  style={{ width: '280px' }}
+                  style={{ width: "280px" }}
                   sx={{
                     fontSize: 16,
                     height: 32,
-                    backgroundColor: '#ffffff',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#999999',
+                    backgroundColor: "#ffffff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#999999",
                     },
-                    '& .MuiSelect-select': {
-                      padding: '4px 10px',
-                      lineHeight: '24px',
-                      backgroundColor: 'transparent',
+                    "& .MuiSelect-select": {
+                      padding: "4px 10px",
+                      lineHeight: "24px",
+                      backgroundColor: "transparent",
                     },
                   }}
                 >
-                  {ROUTE_SETTINGS_OPTIONS.map(opt => (
-                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                  {ROUTE_SETTINGS_OPTIONS.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
                   ))}
                 </Select>
               </div>
 
               {/* PSTN Incoming */}
-              <div className="flex items-center" style={{ gap: '60px' }}>
-                <label className="text-base text-gray-700 font-medium text-left" style={{ width: '280px' }}>
+              <div className="flex items-center" style={{ gap: "60px" }}>
+                <label
+                  className="text-base text-gray-700 font-medium text-left"
+                  style={{ width: "280px" }}
+                >
                   PSTN Incoming:
                 </label>
                 <Select
@@ -74,23 +91,25 @@ const RouteRoutingParameterPage = () => {
                   onChange={handleChange}
                   variant="outlined"
                   size="small"
-                  style={{ width: '280px' }}
+                  style={{ width: "280px" }}
                   sx={{
                     fontSize: 16,
                     height: 32,
-                    backgroundColor: '#ffffff',
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#999999',
+                    backgroundColor: "#ffffff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#999999",
                     },
-                    '& .MuiSelect-select': {
-                      padding: '4px 10px',
-                      lineHeight: '24px',
-                      backgroundColor: 'transparent',
+                    "& .MuiSelect-select": {
+                      padding: "4px 10px",
+                      lineHeight: "24px",
+                      backgroundColor: "transparent",
                     },
                   }}
                 >
-                  {ROUTE_SETTINGS_OPTIONS.map(opt => (
-                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                  {ROUTE_SETTINGS_OPTIONS.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
                   ))}
                 </Select>
               </div>
@@ -103,23 +122,27 @@ const RouteRoutingParameterPage = () => {
             variant="contained"
             onClick={handleSave}
             sx={{
-              background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-              color: '#fff',
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+              color: "#fff",
               fontWeight: 600,
-              fontSize: '18px',
+              fontSize: "16px",
               borderRadius: 2,
-              minWidth: 140,
-              minHeight: 48,
+              minWidth: 120,
+              minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 8px #b3e0ff',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-                color: '#fff',
+              boxShadow: "0 2px 8px #3E5475",
+              textTransform: "none",
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+                color: "#fff",
               },
             }}
-          >Save</Button>
+          >
+            Save
+          </Button>
           {/* <Button
             variant="contained"
             onClick={() => { setSettings({ ...ROUTE_SETTINGS_DEFAULTS }); setSaved(false); }}
@@ -148,5 +171,3 @@ const RouteRoutingParameterPage = () => {
 };
 
 export default RouteRoutingParameterPage;
-
-

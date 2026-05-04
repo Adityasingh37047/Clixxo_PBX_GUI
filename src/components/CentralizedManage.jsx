@@ -1,63 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   CENTRALIZED_MANAGE_FIELDS,
   MANAGEMENT_PLATFORM_OPTIONS,
   CENTRALIZED_MANAGE_BUTTONS,
   CENTRALIZED_PROTOCOL_OPTIONS,
   SNMP_VERSION_OPTIONS,
-} from '../constants/CentralizedManageConstants';
-import { Button, Select, MenuItem, TextField, CircularProgress } from '@mui/material';
-import { postLinuxCmd } from '../api/apiService';
-import axiosInstance from '../api/axiosInstance';
+} from "../constants/CentralizedManageConstants";
+import {
+  Button,
+  Select,
+  MenuItem,
+  TextField,
+  CircularProgress,
+} from "@mui/material";
+import { postLinuxCmd } from "../api/apiService";
+import axiosInstance from "../api/axiosInstance";
 
 const blueButtonSx = {
-  background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-  color: '#fff',
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
   fontWeight: 600,
-  fontSize: 14,
+  fontSize: 15,
   borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: '0 2px 6px #0002',
-  textTransform: 'none',
+  minWidth: 110,
+  boxShadow: "0 2px 8px #3E5475",
+  textTransform: "none",
   px: 3,
   py: 1.5,
-  border: '1px solid #0e8fd6',
-  '&:hover': {
-    background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-    color: '#fff',
+  padding: "6px 28px",
+  border: "1px solid #5A6F8F",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    color: "#fff",
   },
 };
 
 const initialForm = {
   centralizedManage: false,
   notificationSetting: false,
-  trapServerPort: '162',
-  cpuUsage: '90',
-  memoryUsage: '90',
-  highCps: '90',
-  lowConnRate: '20',
+  trapServerPort: "162",
+  cpuUsage: "90",
+  memoryUsage: "90",
+  highCps: "90",
+  lowConnRate: "20",
   autoChangeGateway: false,
-  managementPlatform: 'DCMS',
-  centralizedProtocol: 'SNMP',
-  snmpVersion: 'V2',
-  snmpServerAddress: '127.0.0.1',
+  managementPlatform: "DCMS",
+  centralizedProtocol: "SNMP",
+  snmpVersion: "V2",
+  snmpServerAddress: "127.0.0.1",
   monitoringPort: false,
-  monitoringPortValue: '161',
-  communityString: 'public',
-  companyName: '',
-  gatewayDesc: '',
-  snmpServer: '127.0.0.1',
-  authCode: '',
-  workingStatus: 'Requesting authentication',
+  monitoringPortValue: "161",
+  communityString: "public",
+  companyName: "",
+  gatewayDesc: "",
+  snmpServer: "127.0.0.1",
+  authCode: "",
+  workingStatus: "Requesting authentication",
 };
 
 const CentralizedManage = () => {
   const [form, setForm] = useState(initialForm);
   const [isApplying, setIsApplying] = useState(false);
-  const [applyStatus, setApplyStatus] = useState('');
+  const [applyStatus, setApplyStatus] = useState("");
 
   // Persisted state key
-  const STORAGE_KEY = 'centralizedManageFormV1';
+  const STORAGE_KEY = "centralizedManageFormV1";
 
   // Restore saved form on mount
   React.useEffect(() => {
@@ -65,13 +73,12 @@ const CentralizedManage = () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') {
+        if (parsed && typeof parsed === "object") {
           setForm({ ...initialForm, ...parsed });
         }
       }
     } catch {}
   }, []);
-
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -79,53 +86,62 @@ const CentralizedManage = () => {
     setForm((prev) => {
       const newForm = {
         ...prev,
-        [name]: type === 'checkbox' ? checked : value,
+        [name]: type === "checkbox" ? checked : value,
       };
 
-      if (name === 'centralizedManage' && !checked) {
+      if (name === "centralizedManage" && !checked) {
         newForm.notificationSetting = false;
       }
 
-      if (name === 'notificationSetting' && !checked) {
-        newForm.trapServerPort = '162';
-        newForm.cpuUsage = '90';
-        newForm.memoryUsage = '90';
-        newForm.highCps = '90';
-        newForm.lowConnRate = '20';
+      if (name === "notificationSetting" && !checked) {
+        newForm.trapServerPort = "162";
+        newForm.cpuUsage = "90";
+        newForm.memoryUsage = "90";
+        newForm.highCps = "90";
+        newForm.lowConnRate = "20";
       }
 
       // Persist after every change
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(newForm)); } catch {}
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newForm));
+      } catch {}
 
       return newForm;
     });
   };
 
   const handleReset = () => {
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {}
     setForm(initialForm);
   };
 
-const buildSnmpCommand = () => {
-    const version = (form.snmpVersion || 'V2').toUpperCase();
-    if (version === 'V3') {
+  const buildSnmpCommand = () => {
+    const version = (form.snmpVersion || "V2").toUpperCase();
+    if (version === "V3") {
       return `echo 'SNMPv3 requires user credentials; configure via UI first'`;
     }
 
-    const proto = version === 'V1' ? 'v1' : 'v2c';
-    const community = form.communityString || 'public';
-    const allow = (form.snmpServerAddress || '').trim();
-    const listenPort = (form.monitoringPort && form.monitoringPortValue) ? String(form.monitoringPortValue) : '161';
+    const proto = version === "V1" ? "v1" : "v2c";
+    const community = form.communityString || "public";
+    const allow = (form.snmpServerAddress || "").trim();
+    const listenPort =
+      form.monitoringPort && form.monitoringPortValue
+        ? String(form.monitoringPortValue)
+        : "161";
     // Use snmpServerAddress (the field user enters) for trap destination
-    const trapServer = (form.snmpServerAddress || '127.0.0.1').trim();
+    const trapServer = (form.snmpServerAddress || "127.0.0.1").trim();
 
-    const allowAllCheck = ['all', '*', '0.0.0.0/0'].includes(allow.toLowerCase());
+    const allowAllCheck = ["all", "*", "0.0.0.0/0"].includes(
+      allow.toLowerCase(),
+    );
 
-    const safeCommunity = community.replace(/[^A-Za-z0-9_.-]/g, '');
-    const safeTrapServer = trapServer.replace(/[^A-Za-z0-9_.:/-]/g, '');
+    const safeCommunity = community.replace(/[^A-Za-z0-9_.-]/g, "");
+    const safeTrapServer = trapServer.replace(/[^A-Za-z0-9_.:/-]/g, "");
     const safeAllow = allowAllCheck
-      ? 'default'
-      : (allow.replace(/[^A-Za-z0-9_.:/-]/g, '') || 'default');
+      ? "default"
+      : allow.replace(/[^A-Za-z0-9_.:/-]/g, "") || "default";
 
     return `#!/bin/bash
 CONF="/etc/snmp/snmpd.conf"
@@ -252,10 +268,13 @@ exit 0`;
   };
 
   const buildDcmsCommand = () => {
-    const company = (form.companyName || '').replace(/[^A-Za-z0-9 _.-]/g, '');
-    const desc = (form.gatewayDesc || '').replace(/[^A-Za-z0-9 _.-]/g, '');
-    const snmpServer = (form.snmpServer || '').replace(/[^A-Za-z0-9_.:/-]/g, '');
-    const auth = (form.authCode || '').replace(/[^A-Za-z0-9_.-]/g, '');
+    const company = (form.companyName || "").replace(/[^A-Za-z0-9 _.-]/g, "");
+    const desc = (form.gatewayDesc || "").replace(/[^A-Za-z0-9 _.-]/g, "");
+    const snmpServer = (form.snmpServer || "").replace(
+      /[^A-Za-z0-9_.:/-]/g,
+      "",
+    );
+    const auth = (form.authCode || "").replace(/[^A-Za-z0-9_.-]/g, "");
 
     return `set -e
 CONF="/etc/clixxo/dcms.conf"
@@ -271,18 +290,18 @@ echo "DCMS configuration saved"`;
 
   const validateIPAddress = (ip) => {
     // Allow 'all', '*', or '0.0.0.0/0' for wildcard access
-    if (['all', '*', '0.0.0.0/0'].includes(ip.toLowerCase())) {
+    if (["all", "*", "0.0.0.0/0"].includes(ip.toLowerCase())) {
       return true;
     }
-    
+
     // Validate IPv4 address format
     const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
     const match = ip.match(ipv4Regex);
-    
+
     if (!match) {
       return false;
     }
-    
+
     // Check each octet is between 0-255
     for (let i = 1; i <= 4; i++) {
       const octet = parseInt(match[i], 10);
@@ -290,7 +309,7 @@ echo "DCMS configuration saved"`;
         return false;
       }
     }
-    
+
     return true;
   };
 
@@ -299,23 +318,32 @@ echo "DCMS configuration saved"`;
 
     try {
       setIsApplying(true);
-      setApplyStatus('Connecting SNMP...');
+      setApplyStatus("Connecting SNMP...");
       const commands = [];
 
-      if (form.managementPlatform === 'DCMS') {
-        if (!form.companyName || !form.gatewayDesc || !form.snmpServer || !form.authCode) {
-          alert('Please fill Company Name, Gateway Description, SNMP Server Address and Authorization Code.');
+      if (form.managementPlatform === "DCMS") {
+        if (
+          !form.companyName ||
+          !form.gatewayDesc ||
+          !form.snmpServer ||
+          !form.authCode
+        ) {
+          alert(
+            "Please fill Company Name, Gateway Description, SNMP Server Address and Authorization Code.",
+          );
           setIsApplying(false);
           return;
         }
-        
+
         // Validate SNMP Server IP
         if (!validateIPAddress(form.snmpServer)) {
-          alert('Please enter a valid IP address (e.g., 192.168.0.50) for SNMP Server. Partial IPs like "192" are not allowed.');
+          alert(
+            'Please enter a valid IP address (e.g., 192.168.0.50) for SNMP Server. Partial IPs like "192" are not allowed.',
+          );
           setIsApplying(false);
           return;
         }
-        
+
         commands.push(buildDcmsCommand());
 
         const snmpBackup = form.snmpServerAddress;
@@ -323,23 +351,28 @@ echo "DCMS configuration saved"`;
         form.snmpServerAddress = snmpAddr;
         commands.push(buildSnmpCommand());
         form.snmpServerAddress = snmpBackup;
-      } else if (form.managementPlatform === 'Custom1' || form.managementPlatform === 'Others') {
+      } else if (
+        form.managementPlatform === "Custom1" ||
+        form.managementPlatform === "Others"
+      ) {
         if (!form.snmpServerAddress) {
           alert('Please provide SNMP Server Address (client IP or "all").');
           setIsApplying(false);
           return;
         }
-        
+
         // Validate SNMP Server IP
         if (!validateIPAddress(form.snmpServerAddress)) {
-          alert('Please enter a valid IP address (e.g., 192.168.0.50). Partial IPs like "192" are not allowed.');
+          alert(
+            'Please enter a valid IP address (e.g., 192.168.0.50). Partial IPs like "192" are not allowed.',
+          );
           setIsApplying(false);
           return;
         }
-        
+
         commands.push(buildSnmpCommand());
       } else {
-        alert('Unsupported Management Platform selection.');
+        alert("Unsupported Management Platform selection.");
         setIsApplying(false);
         return;
       }
@@ -347,32 +380,37 @@ echo "DCMS configuration saved"`;
       for (const cmd of commands) {
         // Use longer timeout for SNMP configuration (service restart can take time)
         let res;
-        if (cmd.includes('snmpd')) {
+        if (cmd.includes("snmpd")) {
           try {
-            const response = await axiosInstance.post('/linuxcmd', { cmd }, { timeout: 60000 }); // 60 seconds for SNMP
+            const response = await axiosInstance.post(
+              "/linuxcmd",
+              { cmd },
+              { timeout: 60000 },
+            ); // 60 seconds for SNMP
             res = response.data;
           } catch (error) {
-            console.error('SNMP command error:', error);
-            throw new Error(error?.message || 'SNMP command failed');
+            console.error("SNMP command error:", error);
+            throw new Error(error?.message || "SNMP command failed");
           }
         } else {
           res = await postLinuxCmd({ cmd });
         }
         if (!(res && res.response)) {
-          throw new Error(res?.message || 'Command failed');
+          throw new Error(res?.message || "Command failed");
         }
       }
 
-      alert('Settings saved and commands executed successfully.');
-      setApplyStatus('');
+      alert("Settings saved and commands executed successfully.");
+      setApplyStatus("");
       // Persist current form so it remains after navigation
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(form)); } catch {}
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+      } catch {}
     } catch (err) {
       console.error(err);
       alert(`Failed to apply settings: ${err.message || err}`);
-      setApplyStatus('');
-    }
-    finally {
+      setApplyStatus("");
+    } finally {
       setIsApplying(false);
     }
   };
@@ -511,30 +549,36 @@ else
 fi`;
 
       // Use longer timeout a bit for file read/concat but keep under 20s to avoid cancel
-      const response = await axiosInstance.post('/linuxcmd', { cmd }, { timeout: 20000 });
-      const out = String(response?.data?.responseData || '').trim();
-      if (out.includes('ERROR=NOT_FOUND') || out.length === 0) {
-        alert('No CLIXXO/ASTERISK/DIGIUM MIBs found. Ensure CLIXXO-GW-MIB, ASTERISK-MIB, DIGIUM-MIB, RFC1213-MIB or CLIXXO-GENERATED-MIB exist under /usr/share/snmp/mibs.');
+      const response = await axiosInstance.post(
+        "/linuxcmd",
+        { cmd },
+        { timeout: 20000 },
+      );
+      const out = String(response?.data?.responseData || "").trim();
+      if (out.includes("ERROR=NOT_FOUND") || out.length === 0) {
+        alert(
+          "No CLIXXO/ASTERISK/DIGIUM MIBs found. Ensure CLIXXO-GW-MIB, ASTERISK-MIB, DIGIUM-MIB, RFC1213-MIB or CLIXXO-GENERATED-MIB exist under /usr/share/snmp/mibs.",
+        );
         return;
       }
 
-      const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
+      const blob = new Blob([out], { type: "text/plain;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'vendor-mibs.mib';
+      a.download = "vendor-mibs.mib";
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      const fallback = '# Failed to retrieve MIB file. Please try again.';
-      const blob = new Blob([fallback], { type: 'text/plain;charset=utf-8' });
+      const fallback = "# Failed to retrieve MIB file. Please try again.";
+      const blob = new Blob([fallback], { type: "text/plain;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'vendor-mibs.mib';
+      a.download = "vendor-mibs.mib";
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -543,35 +587,56 @@ fi`;
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-150px)] py-0 flex flex-col items-center" style={{ backgroundColor: '#dde0e4' }}>
+    <div
+      className="bg-gray-50 min-h-[calc(100vh-150px)] py-0 flex flex-col items-center md:p-2"
+      style={{ backgroundColor: "#dde0e4" }}
+    >
       <div className="w-full max-w-4xl mx-auto">
-        <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-xl text-gray-700 shadow mb-0">
+        <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
           Centralized Manage
         </div>
 
-        <div className="border-2 border-gray-400 border-t-0 shadow-sm flex flex-col" style={{ backgroundColor: '#dde0e4' }}>
+        <div
+          className="rounded-b-lg border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
+          style={{ backgroundColor: "#dde0e4" }}
+        >
           <div className="w-full max-w-3xl mx-auto">
-            <form onSubmit={handleSave} className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-4 px-2 md:px-8 py-6">
+            <form
+              onSubmit={handleSave}
+              className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-4 px-2 md:px-8 py-6"
+            >
               {CENTRALIZED_MANAGE_FIELDS.map((field) => {
-                if (field.name === 'monitoringPortValue') return null;
-                if (field.name === 'workingStatus') return null;
+                if (field.name === "monitoringPortValue") return null;
+                if (field.name === "workingStatus") return null;
                 if (
                   !form.notificationSetting &&
-                  ['trapServerPort', 'cpuUsage', 'memoryUsage', 'highCps', 'lowConnRate'].includes(field.name)
+                  [
+                    "trapServerPort",
+                    "cpuUsage",
+                    "memoryUsage",
+                    "highCps",
+                    "lowConnRate",
+                  ].includes(field.name)
                 )
                   return null;
-                if (field.conditional && form.managementPlatform === 'DCMS') return null;
-                if (field.dcmsOnly && form.managementPlatform !== 'DCMS') return null;
+                if (field.conditional && form.managementPlatform === "DCMS")
+                  return null;
+                if (field.dcmsOnly && form.managementPlatform !== "DCMS")
+                  return null;
 
-                const isEditable = form.centralizedManage || field.name === 'authCode';
+                const isEditable =
+                  form.centralizedManage || field.name === "authCode";
 
                 return (
                   <React.Fragment key={field.name}>
-                    <div className="flex items-center text-gray-800 text-left pl-4 whitespace-nowrap min-h-[36px]" style={{ fontSize: '14px' }}>
+                    <div
+                      className="flex items-center text-gray-800 text-left pl-4 whitespace-nowrap min-h-[36px]"
+                      style={{ fontSize: "14px" }}
+                    >
                       {field.label}
                     </div>
                     <div className="flex items-center min-h-[36px]">
-                      {field.name === 'monitoringPort' ? (
+                      {field.name === "monitoringPort" ? (
                         <div className="flex items-center w-full">
                           <input
                             type="checkbox"
@@ -586,27 +651,33 @@ fi`;
                             size="small"
                             type="text"
                             name="monitoringPortValue"
-                            value={form.monitoringPortValue || '161'}
+                            value={form.monitoringPortValue || "161"}
                             onChange={handleChange}
                             className="bg-white flex-1 ml-2"
                             disabled={!isEditable || !form.monitoringPort}
                           />
                         </div>
-                      ) : field.type === 'checkbox' ? (
+                      ) : field.type === "checkbox" ? (
                         <div className="flex items-center">
                           <input
                             type="checkbox"
                             checked={!!form[field.name]}
                             onChange={handleChange}
                             name={field.name}
-                            disabled={!form.centralizedManage && field.name !== 'centralizedManage'}
+                            disabled={
+                              !form.centralizedManage &&
+                              field.name !== "centralizedManage"
+                            }
                             className="w-4 h-4 accent-blue-600"
                           />
-                          <span className="ml-1 text-gray-700" style={{ fontSize: '14px' }}>
+                          <span
+                            className="ml-1 text-gray-700"
+                            style={{ fontSize: "14px" }}
+                          >
                             Enable
                           </span>
                         </div>
-                      ) : field.type === 'select' ? (
+                      ) : field.type === "select" ? (
                         <Select
                           value={form[field.name]}
                           onChange={handleChange}
@@ -616,11 +687,11 @@ fi`;
                           className="w-full"
                           disabled={!isEditable}
                         >
-                          {(field.name === 'centralizedProtocol'
+                          {(field.name === "centralizedProtocol"
                             ? CENTRALIZED_PROTOCOL_OPTIONS
-                            : field.name === 'snmpVersion'
-                            ? SNMP_VERSION_OPTIONS
-                            : MANAGEMENT_PLATFORM_OPTIONS
+                            : field.name === "snmpVersion"
+                              ? SNMP_VERSION_OPTIONS
+                              : MANAGEMENT_PLATFORM_OPTIONS
                           ).map((opt) => (
                             <MenuItem key={opt.value} value={opt.value}>
                               {opt.label}
@@ -633,7 +704,7 @@ fi`;
                           size="small"
                           type="text"
                           name={field.name}
-                          value={form[field.name] || ''}
+                          value={form[field.name] || ""}
                           onChange={handleChange}
                           disabled={!isEditable}
                         />
@@ -647,20 +718,29 @@ fi`;
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-8 mt-8 w-full max-w-3xl mx-auto">
-          <Button variant="contained" sx={blueButtonSx} onClick={handleSave} disabled={isApplying}>
-            {isApplying ? 'Connecting…' : 'Save'}
+          <Button
+            variant="contained"
+            sx={blueButtonSx}
+            onClick={handleSave}
+            disabled={isApplying}
+          >
+            {isApplying ? "Connecting…" : "Save"}
           </Button>
           <Button variant="contained" sx={blueButtonSx} onClick={handleReset}>
             Reset
           </Button>
-          <Button variant="contained" sx={blueButtonSx} onClick={handleDownloadMib}>
+          <Button
+            variant="contained"
+            sx={blueButtonSx}
+            onClick={handleDownloadMib}
+          >
             {CENTRALIZED_MANAGE_BUTTONS[2].label}
           </Button>
         </div>
         {isApplying && (
           <div className="flex justify-center items-center gap-3 mt-4 text-gray-700">
             <CircularProgress size={18} />
-            <span style={{ fontSize: 14 }}>{applyStatus || 'Applying…'}</span>
+            <span style={{ fontSize: 14 }}>{applyStatus || "Applying…"}</span>
           </div>
         )}
       </div>

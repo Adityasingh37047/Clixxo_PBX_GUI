@@ -1,44 +1,48 @@
-import React, { useState } from 'react';
-import { DEVICE_LOCK_OPTIONS, DEVICE_LOCK_LABELS } from '../constants/DeviceLockConstants';
-import { Button, Paper, Typography } from '@mui/material';
+import React, { useState } from "react";
+import {
+  DEVICE_LOCK_OPTIONS,
+  DEVICE_LOCK_LABELS,
+} from "../constants/DeviceLockConstants";
+import { Button, Paper, Typography } from "@mui/material";
 
 const blueBarStyle = {
-  width: '100%',
-  height: 36,
-  background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)',
+  width: "100%",
+  height: 32,
+  background: "linear-gradient(#3E5475 100%)",
   borderTopLeftRadius: 8,
   borderTopRightRadius: 8,
   marginBottom: 0,
-  display: 'flex',
-  alignItems: 'center',
+  display: "flex",
+  alignItems: "center",
   fontWeight: 600,
-  fontSize: 22,
-  color: '#444',
-  justifyContent: 'center',
-  boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
+  fontSize: 18,
+  color: "#ffffff",
+  justifyContent: "center",
+  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
 };
 
 const buttonSx = {
-  background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-  color: '#fff',
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
   fontWeight: 600,
-  fontSize: '16px',
+  fontSize: "16px",
   borderRadius: 1.5,
   minWidth: 120,
   px: 2,
   py: 0.5,
-  boxShadow: '0 2px 8px #b3e0ff',
-  textTransform: 'none',
-  '&:hover': {
-    background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-    color: '#fff',
+  boxShadow: "0 2px 8px #3E5475",
+  textTransform: "none",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    color: "#fff",
   },
 };
 
 const DeviceLock = () => {
   const [selectedOptions, setSelectedOptions] = useState({});
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleOptionChange = (option) => {
     setSelectedOptions((prev) => ({ ...prev, [option]: !prev[option] }));
@@ -46,8 +50,8 @@ const DeviceLock = () => {
 
   const handleReset = () => {
     setSelectedOptions({});
-    setPassword('');
-    setConfirmPassword('');
+    setPassword("");
+    setConfirmPassword("");
   };
 
   const handleLock = (e) => {
@@ -56,20 +60,22 @@ const DeviceLock = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center">
+    <div className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center md:p-2">
       <div className="w-full max-w-6xl mx-auto">
         {/* Header */}
-        <div style={blueBarStyle}>
-          {DEVICE_LOCK_LABELS.title}
-        </div>
+        <div style={blueBarStyle}>{DEVICE_LOCK_LABELS.title}</div>
 
         {/* Content */}
-        <Paper elevation={3} className="p-6 bg-white rounded-b-lg shadow-lg" style={{ borderTop: 'none' }}>
+        <Paper
+          elevation={3}
+          className="p-6 bg-white rounded-b-lg shadow-lg"
+          style={{ borderTop: "none" }}
+        >
           <div className="space-y-6">
-            <Typography 
-              variant="body1" 
+            <Typography
+              variant="body1"
               className="text-gray-700 mb-8 leading-relaxed"
-              sx={{ fontSize: '16px', lineHeight: 1.6 }}
+              sx={{ fontSize: "16px", lineHeight: 1.6 }}
             >
               {DEVICE_LOCK_LABELS.instruction}
             </Typography>
@@ -78,21 +84,21 @@ const DeviceLock = () => {
               {/* Checkbox Options */}
               <div className="flex justify-center gap-16 mb-10">
                 {DEVICE_LOCK_OPTIONS.map((opt) => (
-                  <label 
-                    key={opt.value} 
+                  <label
+                    key={opt.value}
                     className="flex items-center text-gray-700 font-medium cursor-pointer hover:text-gray-800 transition-colors"
-                    style={{ fontSize: '16px' }}
+                    style={{ fontSize: "16px" }}
                   >
                     <input
                       type="checkbox"
                       checked={!!selectedOptions[opt.value]}
                       onChange={() => handleOptionChange(opt.value)}
                       style={{
-                        marginRight: '12px',
-                        width: '18px',
-                        height: '18px',
-                        accentColor: '#444',
-                        cursor: 'pointer'
+                        marginRight: "12px",
+                        width: "18px",
+                        height: "18px",
+                        accentColor: "#444",
+                        cursor: "pointer",
                       }}
                     />
                     {opt.label}
@@ -112,15 +118,15 @@ const DeviceLock = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     style={{
                       flex: 1,
-                      padding: '8px 12px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px',
-                      fontSize: '15px',
-                      outline: 'none',
-                      transition: 'border-color 0.2s'
+                      padding: "8px 12px",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      fontSize: "15px",
+                      outline: "none",
+                      transition: "border-color 0.2s",
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#888'}
-                    onBlur={(e) => e.target.style.borderColor = '#ccc'}
+                    onFocus={(e) => (e.target.style.borderColor = "#888")}
+                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
                     autoComplete="off"
                   />
                 </div>
@@ -134,15 +140,15 @@ const DeviceLock = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     style={{
                       flex: 1,
-                      padding: '8px 12px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px',
-                      fontSize: '15px',
-                      outline: 'none',
-                      transition: 'border-color 0.2s'
+                      padding: "8px 12px",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      fontSize: "15px",
+                      outline: "none",
+                      transition: "border-color 0.2s",
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#888'}
-                    onBlur={(e) => e.target.style.borderColor = '#ccc'}
+                    onFocus={(e) => (e.target.style.borderColor = "#888")}
+                    onBlur={(e) => (e.target.style.borderColor = "#ccc")}
                     autoComplete="off"
                   />
                 </div>
@@ -150,7 +156,7 @@ const DeviceLock = () => {
 
               {/* Buttons */}
               <div className="flex gap-6 justify-center mt-10">
-                <Button 
+                <Button
                   variant="contained"
                   onClick={handleLock}
                   sx={buttonSx}
@@ -158,7 +164,7 @@ const DeviceLock = () => {
                 >
                   {DEVICE_LOCK_LABELS.lock}
                 </Button>
-                <Button 
+                <Button
                   variant="contained"
                   onClick={handleReset}
                   sx={buttonSx}
@@ -175,4 +181,4 @@ const DeviceLock = () => {
   );
 };
 
-export default DeviceLock; 
+export default DeviceLock;

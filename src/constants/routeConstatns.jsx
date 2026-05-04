@@ -55,6 +55,17 @@ export const ROUTE_PATHS = {
   FXS_RINGING_SCHEME: '/advanced/ringing-scheme',
   FXS_TONE_DETECTOR: '/advanced/tone-detector',
   FXS_TONE_GENERATOR: '/advanced/tone-generator',
+
+  // FXS → Route (sections/route pages)
+  FXS_ROUTE:            '/fxs/route/routing-parameters',
+  FXS_ROUTE_IP_TO_PSTN: '/fxs/route/ip-to-pstn',
+  FXS_ROUTE_PSTN_TO_IP: '/fxs/route/pstn-to-ip',
+
+  // FXS → Num Manipulate (sections/numManipulate pages)
+  FXS_IP_CALL_IN_CALLERID:   '/fxs/num-manipulate/ip-call-in-callerid',
+  FXS_IP_CALL_IN_CALLEEID:   '/fxs/num-manipulate/ip-call-in-calleeid',
+  FXS_PSTN_CALL_IN_CALLERID: '/fxs/num-manipulate/pstn-call-in-callerid',
+  FXS_PSTN_CALL_IN_CALLEEID: '/fxs/num-manipulate/pstn-call-in-calleeid',
 };
 
 

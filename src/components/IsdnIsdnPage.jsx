@@ -128,7 +128,7 @@ const IsdnIsdnPage = () => {
         <div className="w-full flex items-center justify-center font-semibold text-[22px] text-[#444] shadow-sm"
           style={{
             height: 36,
-            background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)',
+            background: 'linear-gradient(#3E5475 100%)',
             borderTop: '1px solid #3b8fd6',
             borderLeft: '1px solid #3b8fd6',
             borderRight: '1px solid #3b8fd6',

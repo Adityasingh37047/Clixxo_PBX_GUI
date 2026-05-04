@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FXS_INITIAL_FORM } from './constants/FxsConstants';
+import React, { useState } from "react";
+import { FXS_INITIAL_FORM } from "./constants/FxsConstants";
 
 const FxsPage = () => {
   // Form state
@@ -7,7 +7,7 @@ const FxsPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -17,16 +17,16 @@ const FxsPage = () => {
   const handleKeyPress = (e, type) => {
     const key = e.keyCode || e.which;
     // Allow digits (48-57), comma (44), minus (45), backspace (8)
-    if (type === 'number') {
+    if (type === "number") {
       if (!((key > 47 && key < 58) || key === 8)) {
         e.preventDefault();
       }
-    } else if (type === 'number-comma-minus') {
+    } else if (type === "number-comma-minus") {
       // For ringMode field
       if (!((key > 47 && key < 58) || key === 44 || key === 45 || key === 8)) {
         e.preventDefault();
       }
-    } else if (type === 'number-minus') {
+    } else if (type === "number-minus") {
       // For fields that allow negative numbers
       if (!((key > 47 && key < 58) || key === 45 || key === 8)) {
         e.preventDefault();
@@ -42,43 +42,72 @@ const FxsPage = () => {
     }
 
     if (formData.ringingSchemeEnabled && formData.ringMode) {
-      const strArr = formData.ringMode.split(',');
-      if (strArr[0] === '1') {
+      const strArr = formData.ringMode.split(",");
+      if (strArr[0] === "1") {
         if (strArr.length !== 3) {
           alert("Please input a ringing mode in the right format for Scheme!");
           return false;
         }
         const sum = parseInt(strArr[1]) + parseInt(strArr[2]);
         if (sum > 16000) {
-          alert("The sum duration at ON/OFF state for ringing scheme cannot be more than 16000ms！");
+          alert(
+            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000ms！",
+          );
           return false;
         }
         if (parseInt(strArr[1]) > 12000 || parseInt(strArr[2]) > 12000) {
-          alert("The duration at ON/OFF state for ringing scheme cannot be more than 12000ms！");
+          alert(
+            "The duration at ON/OFF state for ringing scheme cannot be more than 12000ms！",
+          );
           return false;
         }
         const minKeepTime = 50;
-        if (parseInt(strArr[1]) < minKeepTime || parseInt(strArr[2]) < minKeepTime) {
-          alert("The duration at ON/OFF state for ringing scheme cannot be less than 50ms!");
+        if (
+          parseInt(strArr[1]) < minKeepTime ||
+          parseInt(strArr[2]) < minKeepTime
+        ) {
+          alert(
+            "The duration at ON/OFF state for ringing scheme cannot be less than 50ms!",
+          );
           return false;
         }
-      } else if (strArr[0] === '2') {
+      } else if (strArr[0] === "2") {
         if (strArr.length !== 5) {
           alert("Please input a ringing mode in the right format for Scheme!");
           return false;
         }
-        const sum = parseInt(strArr[1]) + parseInt(strArr[2]) + parseInt(strArr[3]) + parseInt(strArr[4]);
+        const sum =
+          parseInt(strArr[1]) +
+          parseInt(strArr[2]) +
+          parseInt(strArr[3]) +
+          parseInt(strArr[4]);
         if (sum > 16000) {
-          alert("The sum duration at ON/OFF state for ringing scheme cannot be more than 16000ms！");
+          alert(
+            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000ms！",
+          );
           return false;
         }
-        if (parseInt(strArr[1]) > 12000 || parseInt(strArr[2]) > 12000 || parseInt(strArr[3]) > 12000 || parseInt(strArr[4]) > 12000) {
-          alert("The duration at ON/OFF state for ringing scheme cannot be more than 12000ms！");
+        if (
+          parseInt(strArr[1]) > 12000 ||
+          parseInt(strArr[2]) > 12000 ||
+          parseInt(strArr[3]) > 12000 ||
+          parseInt(strArr[4]) > 12000
+        ) {
+          alert(
+            "The duration at ON/OFF state for ringing scheme cannot be more than 12000ms！",
+          );
           return false;
         }
         const minKeepTime = 50;
-        if (parseInt(strArr[1]) < minKeepTime || parseInt(strArr[2]) < minKeepTime || parseInt(strArr[3]) < minKeepTime || parseInt(strArr[4]) < minKeepTime) {
-          alert("The duration at ON/OFF state for ringing scheme cannot be less than 50ms!");
+        if (
+          parseInt(strArr[1]) < minKeepTime ||
+          parseInt(strArr[2]) < minKeepTime ||
+          parseInt(strArr[3]) < minKeepTime ||
+          parseInt(strArr[4]) < minKeepTime
+        ) {
+          alert(
+            "The duration at ON/OFF state for ringing scheme cannot be less than 50ms!",
+          );
           return false;
         }
       } else {
@@ -100,11 +129,15 @@ const FxsPage = () => {
       const hookFlashMaxTime = parseInt(formData.hookFlashMaxTime);
 
       if (hookFlashMinTime < 80) {
-        alert("The minimum time for Hook-flash detection must be longer than 80ms!");
+        alert(
+          "The minimum time for Hook-flash detection must be longer than 80ms!",
+        );
         return false;
       }
       if (hookFlashMinTime > hookFlashMaxTime) {
-        alert("The minimum time for Hook-flash detection can not exceed the maximum time!");
+        alert(
+          "The minimum time for Hook-flash detection can not exceed the maximum time!",
+        );
         return false;
       }
       if (hookFlashMaxTime < 80 || hookFlashMaxTime > 2000) {
@@ -115,7 +148,9 @@ const FxsPage = () => {
       // Validate Minimum Time Length of On-hook Detection
       const minHangupTime = parseInt(formData.minHangupTime);
       if (minHangupTime < 64 || minHangupTime > 2000) {
-        alert("The minimum time length of on-hook detection must be in the range of 64ms~2000ms!");
+        alert(
+          "The minimum time length of on-hook detection must be in the range of 64ms~2000ms!",
+        );
         return false;
       }
     }
@@ -123,7 +158,9 @@ const FxsPage = () => {
     // Validate Off-hook Dither Signal Duration
     const offHookDither = parseInt(formData.offHookDitherSignalDuration);
     if (offHookDither <= 0 || offHookDither % 16 !== 0) {
-      alert("Off-hook Dither Signal Duration must be longer than 0 and the integral times of 16!");
+      alert(
+        "Off-hook Dither Signal Duration must be longer than 0 and the integral times of 16!",
+      );
       return false;
     }
 
@@ -132,7 +169,7 @@ const FxsPage = () => {
 
   const handleSave = () => {
     if (validateForm()) {
-      alert('Settings saved successfully!');
+      alert("Settings saved successfully!");
     }
   };
 
@@ -143,22 +180,25 @@ const FxsPage = () => {
   return (
     <div
       className="bg-gray-50 min-h-[calc(100vh-128px)] py-2"
-      style={{ backgroundColor: '#dde0e4' }}
+      style={{ backgroundColor: "#dde0e4" }}
     >
       <div className="flex justify-center">
-        <div className="w-full" style={{ maxWidth: '1024px' }}>
+        <div className="w-full" style={{ maxWidth: "1024px" }}>
           {/* Page Title Bar */}
-          <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-gray-700 shadow mb-0">
+          <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-\[#b3e0ff] via-\[#6ec1f7] to-\[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
             <span>FXS</span>
           </div>
 
           {/* Main Card */}
-          <div className="bg-[#dde0e4] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
+          <div className="rounded-b-lg bg-[#dde0e4] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
             <div className="flex justify-center pl-8">
-              <table className="text-sm" style={{ tableLayout: 'fixed', width: '750px' }}>
+              <table
+                className="text-sm"
+                style={{ tableLayout: "fixed", width: "750px" }}
+              >
                 <colgroup>
-                  <col style={{ width: '48%' }} />
-                  <col style={{ width: '52%' }} />
+                  <col style={{ width: "48%" }} />
+                  <col style={{ width: "52%" }} />
                 </colgroup>
                 <tbody>
                   {/* Tone Energy (dB) */}
@@ -172,9 +212,9 @@ const FxsPage = () => {
                         name="toneEnergy"
                         value={formData.toneEnergy}
                         onChange={handleInputChange}
-                        onKeyPress={(e) => handleKeyPress(e, 'number-minus')}
+                        onKeyPress={(e) => handleKeyPress(e, "number-minus")}
                         className="border border-gray-400 rounded-sm px-2 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                         maxLength="20"
                       />
                     </td>
@@ -214,9 +254,11 @@ const FxsPage = () => {
                             name="ringMode"
                             value={formData.ringMode}
                             onChange={handleInputChange}
-                            onKeyPress={(e) => handleKeyPress(e, 'number-comma-minus')}
+                            onKeyPress={(e) =>
+                              handleKeyPress(e, "number-comma-minus")
+                            }
                             className="border border-gray-400 rounded-sm px-2 bg-white"
-                            style={{ height: '28px', width: '250px' }}
+                            style={{ height: "28px", width: "250px" }}
                             maxLength="128"
                           />
                         </td>
@@ -258,9 +300,9 @@ const FxsPage = () => {
                             name="minHangupTime"
                             value={formData.minHangupTime}
                             onChange={handleInputChange}
-                            onKeyPress={(e) => handleKeyPress(e, 'number')}
+                            onKeyPress={(e) => handleKeyPress(e, "number")}
                             className="border border-gray-400 rounded-sm px-2 bg-white"
-                            style={{ height: '28px', width: '200px' }}
+                            style={{ height: "28px", width: "200px" }}
                             maxLength="5"
                           />
                         </td>
@@ -282,9 +324,9 @@ const FxsPage = () => {
                             name="hookFlashMinTime"
                             value={formData.hookFlashMinTime}
                             onChange={handleInputChange}
-                            onKeyPress={(e) => handleKeyPress(e, 'number')}
+                            onKeyPress={(e) => handleKeyPress(e, "number")}
                             className="border border-gray-400 rounded-sm px-2 bg-white"
-                            style={{ height: '28px', width: '200px' }}
+                            style={{ height: "28px", width: "200px" }}
                             maxLength="5"
                           />
                         </td>
@@ -300,9 +342,9 @@ const FxsPage = () => {
                             name="hookFlashMaxTime"
                             value={formData.hookFlashMaxTime}
                             onChange={handleInputChange}
-                            onKeyPress={(e) => handleKeyPress(e, 'number')}
+                            onKeyPress={(e) => handleKeyPress(e, "number")}
                             className="border border-gray-400 rounded-sm px-2 bg-white"
-                            style={{ height: '28px', width: '200px' }}
+                            style={{ height: "28px", width: "200px" }}
                             maxLength="5"
                           />
                         </td>
@@ -322,7 +364,7 @@ const FxsPage = () => {
                         value={formData.preferred18xResponse}
                         onChange={handleInputChange}
                         className="border border-gray-400 rounded-sm px-1 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                       >
                         <option value="0">IMS Ringback</option>
                         <option value="1">Local Ringback</option>
@@ -364,7 +406,7 @@ const FxsPage = () => {
                             value={formData.callForwardKey}
                             onChange={handleInputChange}
                             className="border border-gray-400 rounded-sm px-1 bg-white"
-                            style={{ height: '28px', width: '200px' }}
+                            style={{ height: "28px", width: "200px" }}
                           >
                             <option value="35">#</option>
                             <option value="42">*</option>
@@ -382,9 +424,11 @@ const FxsPage = () => {
                             value={formData.callForwardMethod}
                             onChange={handleInputChange}
                             className="border border-gray-400 rounded-sm px-1 bg-white"
-                            style={{ height: '28px', width: '200px' }}
+                            style={{ height: "28px", width: "200px" }}
                           >
-                            <option value="0">Call Forward with Negotiation</option>
+                            <option value="0">
+                              Call Forward with Negotiation
+                            </option>
                             <option value="1">Blind Transfer</option>
                           </select>
                         </td>
@@ -404,7 +448,7 @@ const FxsPage = () => {
                         value={formData.cidTransmitMode}
                         onChange={handleInputChange}
                         className="border border-gray-400 rounded-sm px-1 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                       >
                         <option value="0">DTMF</option>
                         <option value="1">FSK</option>
@@ -413,7 +457,7 @@ const FxsPage = () => {
                   </tr>
 
                   {/* Occasion to Send FSK CallerID - shown when CID Transmit Mode is FSK */}
-                  {formData.cidTransmitMode === '1' && (
+                  {formData.cidTransmitMode === "1" && (
                     <>
                       <tr className="h-3" />
                       <tr>
@@ -426,7 +470,7 @@ const FxsPage = () => {
                             value={formData.occasionToSendFSKCallerID}
                             onChange={handleInputChange}
                             className="border border-gray-400 rounded-sm px-1 bg-white"
-                            style={{ height: '28px', width: '200px' }}
+                            style={{ height: "28px", width: "200px" }}
                           >
                             <option value="0">Before ring</option>
                             <option value="1">After the first ring</option>
@@ -468,9 +512,9 @@ const FxsPage = () => {
                         name="offHookDitherSignalDuration"
                         value={formData.offHookDitherSignalDuration}
                         onChange={handleInputChange}
-                        onKeyPress={(e) => handleKeyPress(e, 'number')}
+                        onKeyPress={(e) => handleKeyPress(e, "number")}
                         className="border border-gray-400 rounded-sm px-2 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                         maxLength="5"
                       />
                     </td>
@@ -488,7 +532,7 @@ const FxsPage = () => {
                         value={formData.handlingOfCallFromInternalStation}
                         onChange={handleInputChange}
                         className="border border-gray-400 rounded-sm px-1 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                       >
                         <option value="0">Internal Handling</option>
                         <option value="1">Platform Handling</option>
@@ -508,7 +552,7 @@ const FxsPage = () => {
                         value={formData.lightUpModeForVoiceMessage}
                         onChange={handleInputChange}
                         className="border border-gray-400 rounded-sm px-1 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                       >
                         <option value="0">Not Light Up</option>
                         <option value="1">FSK Light Up</option>
@@ -587,50 +631,57 @@ const FxsPage = () => {
               type="button"
               onClick={handleSave}
               style={{
-                background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-                color: '#fff',
+                background:
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+                color: "#fff",
                 fontWeight: 600,
-                fontSize: '16px',
-                borderRadius: '6px',
-                minWidth: '100px',
-                height: '42px',
-                textTransform: 'none',
-                padding: '6px 24px',
-                boxShadow: '0 2px 8px #b3e0ff',
-                border: '1px solid #0e8fd6',
-                cursor: 'pointer',
+                fontSize: "16px",
+                borderRadius: "6px",
+                minWidth: "100px",
+                height: "42px",
+                textTransform: "none",
+                padding: "6px 24px",
+                boxShadow: "0 2px 8px #3E5475",
+                border: "1px solid #2C3E57",
+                cursor: "pointer",
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)';
+                e.target.style.background =
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)';
+                e.target.style.background =
+                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
               }}
             >
               Save
             </button>
+
             <button
               type="button"
               onClick={handleReset}
               style={{
-                background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-                color: '#fff',
+                background:
+                  "linear-gradient(to bottom, #9CA3AF 0%, #6B7280 60%, #4B5563 100%)",
+                color: "#fff",
                 fontWeight: 600,
-                fontSize: '16px',
-                borderRadius: '6px',
-                minWidth: '100px',
-                height: '42px',
-                textTransform: 'none',
-                padding: '6px 24px',
-                boxShadow: '0 2px 8px #b3e0ff',
-                border: '1px solid #0e8fd6',
-                cursor: 'pointer',
+                fontSize: "16px",
+                borderRadius: "6px",
+                minWidth: "100px",
+                height: "42px",
+                textTransform: "none",
+                padding: "6px 24px",
+                boxShadow: "0 2px 8px #6B7280",
+                border: "1px solid #4B5563",
+                cursor: "pointer",
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)';
+                e.target.style.background =
+                  "linear-gradient(to bottom, #9CA3AF 0%, #6B7280 60%, #4B5563 100%)";
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)';
+                e.target.style.background =
+                  "linear-gradient(to bottom, #6B7280 0%, #9CA3AF 100%)";
               }}
             >
               Reset
@@ -643,4 +694,3 @@ const FxsPage = () => {
 };
 
 export default FxsPage;
-

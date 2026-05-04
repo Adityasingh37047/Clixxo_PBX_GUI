@@ -1,33 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Button, 
-  TextField, 
-  Paper, 
-  Typography, 
-  Alert, 
+import React, { useState, useEffect } from "react";
+import {
+  Button,
+  TextField,
+  Paper,
+  Typography,
+  Alert,
   CircularProgress,
   Chip,
   Divider,
   FormControl,
   MenuItem,
   Select,
-} from '@mui/material';
+} from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import UploadIcon from "@mui/icons-material/Upload";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningIcon from "@mui/icons-material/Warning";
+import InfoIcon from "@mui/icons-material/Info";
+import FingerprintIcon from "@mui/icons-material/Fingerprint";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 import {
-  Refresh as RefreshIcon,
-  Upload as UploadIcon,
-  CheckCircle as CheckCircleIcon,
-  Warning as WarningIcon,
-  Info as InfoIcon,
-  Fingerprint as FingerprintIcon,
-  FileUpload as FileUploadIcon
-} from '@mui/icons-material';
-import { 
-  getLicenseInfo, 
-  checkLicenseValidity, 
-  getSystemFingerprint, 
+  getLicenseInfo,
+  checkLicenseValidity,
+  getSystemFingerprint,
   uploadLicenseFile,
   fetchSystemSerialNumber,
-} from '../api/apiService';
+} from "../api/apiService";
 import {
   LICENSE_STATUS,
   LICENSE_STATUS_DISPLAY,
@@ -37,53 +35,57 @@ import {
   LICENSE_SUCCESS_MESSAGES,
   LICENSE_DEVICE_TYPE_OPTIONS,
   LICENSE_DEVICE_TYPE_VALUES,
-} from '../constants/LicenceConstants';
+} from "../constants/LicenceConstants";
 
-const LICENCE_DEVICE_TYPE_STORAGE_KEY = 'clixxo_licence_device_type';
+const LICENCE_DEVICE_TYPE_STORAGE_KEY = "clixxo_licence_device_type";
 
 const blueButtonSx = {
-  background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-  color: '#fff',
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
   fontWeight: 600,
   fontSize: 16,
   borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: '0 2px 6px #0002',
-  textTransform: 'none',
+  minWidth: 110,
+  boxShadow: "0 2px 6px #3E5475",
+  textTransform: "none",
   px: 3,
   py: 1.5,
-  padding: '6px 28px',
-  border: '1px solid #0e8fd6',
-  '&:hover': {
-    background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-    color: '#fff',
+  padding: "5px 8px",
+  border: "1px solid #5A6F8F",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    color: "#fff",
   },
 };
 
 const Licence = () => {
   const [licenseData, setLicenseData] = useState({
-    Serial_Number: '',
-    activateDate: '',
-    expireDate: '',
-    status: LICENSE_STATUS.UNKNOWN
+    Serial_Number: "",
+    activateDate: "",
+    expireDate: "",
+    status: LICENSE_STATUS.UNKNOWN,
   });
-  
-  const [systemFingerprint, setSystemFingerprint] = useState('');
+
+  const [systemFingerprint, setSystemFingerprint] = useState("");
   /** Same source as System Info page: web_version.json serial_no, then astlicense. */
-  const [systemSerial, setSystemSerial] = useState('');
+  const [systemSerial, setSystemSerial] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState({
     info: false,
     validity: false,
     fingerprint: false,
-    upload: false
+    upload: false,
   });
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [message, setMessage] = useState({ type: "", text: "" });
 
   const [deviceTypeMode, setDeviceTypeMode] = useState(() => {
     try {
       const stored = localStorage.getItem(LICENCE_DEVICE_TYPE_STORAGE_KEY);
-      if (stored && Object.values(LICENSE_DEVICE_TYPE_VALUES).includes(stored)) {
+      if (
+        stored &&
+        Object.values(LICENSE_DEVICE_TYPE_VALUES).includes(stored)
+      ) {
         return stored;
       }
     } catch (_) {}
@@ -93,32 +95,40 @@ const Licence = () => {
   const loadSystemSerial = async () => {
     try {
       const sn = await fetchSystemSerialNumber();
-      setSystemSerial(sn || '');
+      setSystemSerial(sn || "");
     } catch (err) {
-      console.warn('Failed to load system serial for licence page:', err);
-      setSystemSerial('');
+      console.warn("Failed to load system serial for licence page:", err);
+      setSystemSerial("");
     }
   };
 
-  const serialDisplay = (systemSerial || licenseData.Serial_Number || '').trim();
+  const serialDisplay = (
+    systemSerial ||
+    licenseData.Serial_Number ||
+    ""
+  ).trim();
 
   // Fetch license info, validity, and system serial (same as System Info) on mount
   useEffect(() => {
     const loadLicenseData = async () => {
-      const [infoResult, validityResult, serialResult] = await Promise.allSettled([
-        fetchLicenseInfo(),
-        checkValidity(),
-        loadSystemSerial(),
-      ]);
+      const [infoResult, validityResult, serialResult] =
+        await Promise.allSettled([
+          fetchLicenseInfo(),
+          checkValidity(),
+          loadSystemSerial(),
+        ]);
 
-      if (infoResult.status === 'rejected') {
-        console.warn('License info API call failed:', infoResult.reason);
+      if (infoResult.status === "rejected") {
+        console.warn("License info API call failed:", infoResult.reason);
       }
-      if (validityResult.status === 'rejected') {
-        console.warn('License validity check API call failed:', validityResult.reason);
+      if (validityResult.status === "rejected") {
+        console.warn(
+          "License validity check API call failed:",
+          validityResult.reason,
+        );
       }
-      if (serialResult.status === 'rejected') {
-        console.warn('System serial load failed:', serialResult.reason);
+      if (serialResult.status === "rejected") {
+        console.warn("System serial load failed:", serialResult.reason);
       }
     };
 
@@ -127,11 +137,11 @@ const Licence = () => {
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
   const fetchLicenseInfo = async () => {
-    setLoading(prev => ({ ...prev, info: true }));
+    setLoading((prev) => ({ ...prev, info: true }));
     try {
       const [response] = await Promise.all([
         getLicenseInfo(),
@@ -141,55 +151,56 @@ const Licence = () => {
         try {
           const parsedData = JSON.parse(response.responseData);
           setLicenseData({
-            Serial_Number: parsedData.license_key || parsedData.Serial_Number || '',
-            activateDate: parsedData.activate_date || '',
-            expireDate: parsedData.expire_date || '',
-            status: LICENSE_STATUS.UNKNOWN
+            Serial_Number:
+              parsedData.license_key || parsedData.Serial_Number || "",
+            activateDate: parsedData.activate_date || "",
+            expireDate: parsedData.expire_date || "",
+            status: LICENSE_STATUS.UNKNOWN,
           });
-          showMessage('success', LICENSE_SUCCESS_MESSAGES.INFO_FETCHED);
+          showMessage("success", LICENSE_SUCCESS_MESSAGES.INFO_FETCHED);
         } catch (parseError) {
-          console.error('Error parsing license data:', parseError);
-          showMessage('error', 'Invalid license data format');
+          console.error("Error parsing license data:", parseError);
+          showMessage("error", "Invalid license data format");
         }
       }
     } catch (error) {
-      console.error('Error fetching license info:', error);
-      showMessage('error', LICENSE_ERROR_MESSAGES.FETCH_INFO_FAILED);
+      console.error("Error fetching license info:", error);
+      showMessage("error", LICENSE_ERROR_MESSAGES.FETCH_INFO_FAILED);
     } finally {
-      setLoading(prev => ({ ...prev, info: false }));
+      setLoading((prev) => ({ ...prev, info: false }));
     }
   };
 
   const checkValidity = async () => {
-    setLoading(prev => ({ ...prev, validity: true }));
+    setLoading((prev) => ({ ...prev, validity: true }));
     try {
       const response = await checkLicenseValidity();
       if (response.response && response.responseData) {
         const status = response.responseData;
-        setLicenseData(prev => ({ ...prev, status }));
-        showMessage('success', LICENSE_SUCCESS_MESSAGES.VALIDITY_CHECKED);
+        setLicenseData((prev) => ({ ...prev, status }));
+        showMessage("success", LICENSE_SUCCESS_MESSAGES.VALIDITY_CHECKED);
       }
     } catch (error) {
-      console.error('Error checking license validity:', error);
-      showMessage('error', LICENSE_ERROR_MESSAGES.CHECK_VALIDITY_FAILED);
+      console.error("Error checking license validity:", error);
+      showMessage("error", LICENSE_ERROR_MESSAGES.CHECK_VALIDITY_FAILED);
     } finally {
-      setLoading(prev => ({ ...prev, validity: false }));
+      setLoading((prev) => ({ ...prev, validity: false }));
     }
   };
 
   const fetchSystemFingerprint = async () => {
-    setLoading(prev => ({ ...prev, fingerprint: true }));
+    setLoading((prev) => ({ ...prev, fingerprint: true }));
     try {
       const response = await getSystemFingerprint();
       if (response.response && response.responseData) {
         setSystemFingerprint(response.responseData);
-        showMessage('success', LICENSE_SUCCESS_MESSAGES.FINGERPRINT_FETCHED);
+        showMessage("success", LICENSE_SUCCESS_MESSAGES.FINGERPRINT_FETCHED);
       }
     } catch (error) {
-      console.error('Error fetching system fingerprint:', error);
-      showMessage('error', LICENSE_ERROR_MESSAGES.GET_FINGERPRINT_FAILED);
+      console.error("Error fetching system fingerprint:", error);
+      showMessage("error", LICENSE_ERROR_MESSAGES.GET_FINGERPRINT_FAILED);
     } finally {
-      setLoading(prev => ({ ...prev, fingerprint: false }));
+      setLoading((prev) => ({ ...prev, fingerprint: false }));
     }
   };
 
@@ -197,35 +208,37 @@ const Licence = () => {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-      setMessage({ type: '', text: '' });
+      setMessage({ type: "", text: "" });
     }
   };
 
   const handleFileUpload = async () => {
     if (!selectedFile) {
-      showMessage('error', LICENSE_ERROR_MESSAGES.INVALID_FILE);
+      showMessage("error", LICENSE_ERROR_MESSAGES.INVALID_FILE);
       return;
     }
 
-    setLoading(prev => ({ ...prev, upload: true }));
+    setLoading((prev) => ({ ...prev, upload: true }));
     try {
       const response = await uploadLicenseFile(selectedFile);
       if (response.response) {
-        showMessage('success', LICENSE_SUCCESS_MESSAGES.FILE_UPLOADED);
+        showMessage("success", LICENSE_SUCCESS_MESSAGES.FILE_UPLOADED);
         setSelectedFile(null);
         // Refresh license info after upload
         setTimeout(() => fetchLicenseInfo(), 1000);
       }
     } catch (error) {
-      console.error('Error uploading license file:', error);
-      showMessage('error', LICENSE_ERROR_MESSAGES.UPLOAD_FAILED);
+      console.error("Error uploading license file:", error);
+      showMessage("error", LICENSE_ERROR_MESSAGES.UPLOAD_FAILED);
     } finally {
-      setLoading(prev => ({ ...prev, upload: false }));
+      setLoading((prev) => ({ ...prev, upload: false }));
     }
   };
 
   const getStatusDisplay = (status) => {
-    const statusInfo = LICENSE_STATUS_DISPLAY[status] || LICENSE_STATUS_DISPLAY[LICENSE_STATUS.UNKNOWN];
+    const statusInfo =
+      LICENSE_STATUS_DISPLAY[status] ||
+      LICENSE_STATUS_DISPLAY[LICENSE_STATUS.UNKNOWN];
     return (
       <Chip
         label={statusInfo.label}
@@ -237,7 +250,7 @@ const Licence = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
       return new Date(dateString).toLocaleDateString();
     } catch {
@@ -254,62 +267,74 @@ const Licence = () => {
   };
 
   const selectFieldSx = {
-    '& .MuiOutlinedInput-root': {
-      fontSize: '14px',
-      backgroundColor: '#fff',
-      '& fieldset': { borderColor: '#d1d5db' },
+    "& .MuiOutlinedInput-root": {
+      fontSize: "14px",
+      backgroundColor: "#fff",
+      "& fieldset": { borderColor: "#d1d5db" },
     },
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center">
+    <div className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center md:p-2">
       <div className="w-full max-w-6xl mx-auto">
-        
         {/* Header */}
-        <div style={{
-          width: '100%',
-          height: 36,
-          background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)',
-          borderTopLeftRadius: 8,
-          borderTopRightRadius: 8,
-          marginBottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          fontWeight: 600,
-          fontSize: 22,
-          color: '#444',
-          justifyContent: 'center',
-          boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
-        }}>
+        <div
+          style={{
+            width: "100%",
+            height: 32,
+            background: "linear-gradient(#3E5475 100%)",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
+            marginBottom: 0,
+            display: "flex",
+            alignItems: "center",
+            fontWeight: 600,
+            fontSize: 18,
+            color: "#ffffff",
+            justifyContent: "center",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          }}
+        >
           License Management
         </div>
 
         {/* Content */}
-        <Paper elevation={3} className="p-6 bg-white rounded-b-lg shadow-lg" style={{ borderTop: 'none' }}>
-          
+        <Paper
+          elevation={3}
+          className="p-6 bg-white rounded-b-lg shadow-lg"
+          style={{ borderTop: "none" }}
+        >
           {/* Alert Messages */}
           {message.text && (
-            <Alert 
-              severity={message.type} 
+            <Alert
+              severity={message.type}
               className="mb-4"
-              onClose={() => setMessage({ type: '', text: '' })}
+              onClose={() => setMessage({ type: "", text: "" })}
             >
               {message.text}
             </Alert>
           )}
 
           <div className="space-y-6">
-            
             {/* License Information Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <Typography variant="h6" className="text-gray-800 font-semibold flex items-center">
+                <Typography
+                  variant="h6"
+                  className="text-gray-800 font-semibold flex items-center"
+                >
                   <InfoIcon className="mr-2" />
                   License Information
                 </Typography>
                 <Button
                   variant="contained"
-                  startIcon={loading.info ? <CircularProgress size={16} /> : <RefreshIcon />}
+                  startIcon={
+                    loading.info ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <RefreshIcon />
+                    )
+                  }
                   onClick={fetchLicenseInfo}
                   disabled={loading.info}
                   sx={blueButtonSx}
@@ -317,7 +342,7 @@ const Licence = () => {
                   {LICENSE_BUTTON_LABELS.REFRESH_INFO}
                 </Button>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-start">
                 <div className="min-w-0">
                   <label className="block text-sm font-medium text-gray-700 mb-2 min-h-[20px] leading-5">
@@ -330,11 +355,11 @@ const Licence = () => {
                     value={serialDisplay}
                     InputProps={{ readOnly: true }}
                     sx={{
-                      '& .MuiOutlinedInput-root': {
-                        fontSize: '14px',
-                        backgroundColor: '#f9fafb',
-                        '& fieldset': { borderColor: '#d1d5db' }
-                      }
+                      "& .MuiOutlinedInput-root": {
+                        fontSize: "14px",
+                        backgroundColor: "#f9fafb",
+                        "& fieldset": { borderColor: "#d1d5db" },
+                      },
                     }}
                   />
                 </div>
@@ -347,7 +372,13 @@ const Licence = () => {
                     {getStatusDisplay(licenseData.status)}
                     <Button
                       variant="contained"
-                      startIcon={loading.validity ? <CircularProgress size={16} /> : <CheckCircleIcon />}
+                      startIcon={
+                        loading.validity ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          <CheckCircleIcon />
+                        )
+                      }
                       onClick={checkValidity}
                       disabled={loading.validity}
                       sx={blueButtonSx}
@@ -364,12 +395,19 @@ const Licence = () => {
                   >
                     {LICENSE_FORM_LABELS.DEVICE_TYPE_MODE}
                   </label>
-                  <FormControl fullWidth size="small" variant="outlined" sx={selectFieldSx}>
+                  <FormControl
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    sx={selectFieldSx}
+                  >
                     <Select
                       id="licence-device-type-mode"
                       value={deviceTypeMode}
                       onChange={handleDeviceTypeChange}
-                      inputProps={{ 'aria-label': LICENSE_FORM_LABELS.DEVICE_TYPE_MODE }}
+                      inputProps={{
+                        "aria-label": LICENSE_FORM_LABELS.DEVICE_TYPE_MODE,
+                      }}
                     >
                       {LICENSE_DEVICE_TYPE_OPTIONS.map((opt) => (
                         <MenuItem key={opt.value} value={opt.value}>
@@ -428,12 +466,21 @@ const Licence = () => {
             {/* System ID Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <Typography variant="h6" className="text-gray-800 font-semibold">
+                <Typography
+                  variant="h6"
+                  className="text-gray-800 font-semibold"
+                >
                   {LICENSE_FORM_LABELS.SYSTEM_FINGERPRINT}
                 </Typography>
                 <Button
                   variant="contained"
-                  startIcon={loading.fingerprint ? <CircularProgress size={16} /> : <InfoIcon />}
+                  startIcon={
+                    loading.fingerprint ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <InfoIcon />
+                    )
+                  }
                   onClick={fetchSystemFingerprint}
                   disabled={loading.fingerprint}
                   sx={blueButtonSx}
@@ -441,7 +488,7 @@ const Licence = () => {
                   {LICENSE_BUTTON_LABELS.GET_FINGERPRINT}
                 </Button>
               </div>
-              
+
               <TextField
                 fullWidth
                 size="small"
@@ -452,12 +499,12 @@ const Licence = () => {
                 rows={2}
                 placeholder="Click 'Get System ID' to retrieve system ID"
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    fontSize: '14px',
-                    backgroundColor: '#f9fafb',
-                    fontFamily: 'monospace',
-                    '& fieldset': { borderColor: '#d1d5db' }
-                  }
+                  "& .MuiOutlinedInput-root": {
+                    fontSize: "14px",
+                    backgroundColor: "#f9fafb",
+                    fontFamily: "monospace",
+                    "& fieldset": { borderColor: "#d1d5db" },
+                  },
                 }}
               />
             </div>
@@ -466,16 +513,19 @@ const Licence = () => {
 
             {/* License File Upload Section */}
             <div>
-              <Typography variant="h6" className="mb-4 text-gray-800 font-semibold flex items-center">
+              <Typography
+                variant="h6"
+                className="mb-4 text-gray-800 font-semibold flex items-center"
+              >
                 <FileUploadIcon className="mr-2" />
                 Upload License File
               </Typography>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <input
                     accept=".lic,.txt,.key"
-                    style={{ display: 'none' }}
+                    style={{ display: "none" }}
                     id="license-file-input"
                     type="file"
                     onChange={handleFileSelect}
@@ -490,16 +540,16 @@ const Licence = () => {
                       Select File
                     </Button>
                   </label>
-                  
+
                   {selectedFile && (
                     <div className="flex items-center space-x-2">
                       <Typography variant="body2" className="text-gray-600">
                         Selected: {selectedFile.name}
                       </Typography>
-                      <Chip 
-                        label={`${(selectedFile.size / 1024).toFixed(1)} KB`} 
-                        size="small" 
-                        variant="outlined" 
+                      <Chip
+                        label={`${(selectedFile.size / 1024).toFixed(1)} KB`}
+                        size="small"
+                        variant="outlined"
                       />
                     </div>
                   )}
@@ -508,12 +558,20 @@ const Licence = () => {
                 {selectedFile && (
                   <Button
                     variant="contained"
-                    startIcon={loading.upload ? <CircularProgress size={16} /> : <UploadIcon />}
+                    startIcon={
+                      loading.upload ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <UploadIcon />
+                      )
+                    }
                     onClick={handleFileUpload}
                     disabled={loading.upload}
                     sx={blueButtonSx}
                   >
-                    {loading.upload ? 'Uploading...' : LICENSE_BUTTON_LABELS.UPLOAD_LICENSE}
+                    {loading.upload
+                      ? "Uploading..."
+                      : LICENSE_BUTTON_LABELS.UPLOAD_LICENSE}
                   </Button>
                 )}
               </div>
@@ -521,7 +579,10 @@ const Licence = () => {
 
             {/* Current License Status Summary */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <Typography variant="h6" className="mb-3 text-gray-800 font-semibold">
+              <Typography
+                variant="h6"
+                className="mb-3 text-gray-800 font-semibold"
+              >
                 Current License Summary
               </Typography>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">

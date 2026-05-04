@@ -1,29 +1,34 @@
-import React, { useState } from 'react';
-import { FR_TITLE, FR_INSTRUCTION, FR_BUTTON } from '../constants/FactoryResetConstants';
-import Button from '@mui/material/Button';
-import { postLinuxCmd } from '../api/apiService';
+import React, { useState } from "react";
+import {
+  FR_TITLE,
+  FR_INSTRUCTION,
+  FR_BUTTON,
+} from "../constants/FactoryResetConstants";
+import Button from "@mui/material/Button";
+import { postLinuxCmd } from "../api/apiService";
 
 const blueBar = (title) => (
-  <div className="w-full bg-gradient-to-b from-[#b3e0ff] via-[#7ecbfa] to-[#3b8fd6] h-10 rounded-t-lg flex items-center justify-center text-[20px] font-semibold text-gray-800 shadow mb-0 border-b border-[#b3e0ff]">
+  <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
     {title}
   </div>
 );
 
 const buttonSx = {
-  background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-  color: '#fff',
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
   fontWeight: 600,
   fontSize: 16,
   borderRadius: 1.5,
   minWidth: 120,
-  boxShadow: '0 2px 8px #b3e0ff',
-  textTransform: 'none',
+  boxShadow: "0 2px 8px #3E5475",
+  textTransform: "none",
   px: 3,
   py: 1.5,
-  padding: '6px 28px',
-  '&:hover': {
-    background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-    color: '#fff',
+  padding: "6px 28px",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    color: "#fff",
   },
 };
 
@@ -32,35 +37,42 @@ const FactoryReset = () => {
 
   const handleReset = async () => {
     const confirmed = window.confirm(
-      "This will reset the 'astdb' MySQL database back to the factory state from /root/clixxo/DB/astdb.sql. Do you want to continue?"
+      "This will reset the 'astdb' MySQL database back to the factory state from /root/clixxo/DB/astdb.sql. Do you want to continue?",
     );
     if (!confirmed) return;
 
     setLoading(true);
     try {
       // Restore astdb from the factory SQL file
-      const cmd = 'mysql astdb < /root/clixxo/DB/astdb.sql 2>&1';
+      const cmd = "mysql astdb < /root/clixxo/DB/astdb.sql 2>&1";
       const apiResponse = await postLinuxCmd({ cmd });
 
       if (apiResponse?.response) {
-        window.alert('Factory reset completed. Database astdb has been restored from astdb.sql.');
+        window.alert(
+          "Factory reset completed. Database astdb has been restored from astdb.sql.",
+        );
       } else {
-        const output = String(apiResponse?.responseData || '').trim();
-        window.alert(output || 'Factory reset command did not complete successfully.');
+        const output = String(apiResponse?.responseData || "").trim();
+        window.alert(
+          output || "Factory reset command did not complete successfully.",
+        );
       }
     } catch (error) {
-      console.error('Factory reset error:', error);
-      window.alert(error.message || 'Failed to run factory reset. Please check logs on the device.');
+      console.error("Factory reset error:", error);
+      window.alert(
+        error.message ||
+          "Failed to run factory reset. Please check logs on the device.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-80px)] bg-gray-50 flex flex-col items-center py-6 px-2">
+    <div className="w-full min-h-[calc(100vh-80px)] bg-gray-50 flex flex-col items-center py-6 px-2 md:p-2">
       <div className="w-full max-w-4xl">
         {blueBar(FR_TITLE)}
-        <div className="border border-gray-400 bg-white p-4 flex flex-col items-center justify-center text-center">
+        <div className="rounded-b-lg border border-gray-400 bg-white p-4 flex flex-col items-center justify-center text-center">
           <span className="text-[17px] text-gray-700">{FR_INSTRUCTION}</span>
         </div>
         <div className="w-full flex flex-row justify-center mt-8">
@@ -70,7 +82,7 @@ const FactoryReset = () => {
             onClick={handleReset}
             disabled={loading}
           >
-            {loading ? 'Resetting...' : FR_BUTTON}
+            {loading ? "Resetting..." : FR_BUTTON}
           </Button>
         </div>
       </div>
@@ -78,26 +90,26 @@ const FactoryReset = () => {
       {loading && (
         <div
           style={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(255,255,255,0.85)',
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(255,255,255,0.85)",
             zIndex: 9999,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <div
             style={{
               fontSize: 20,
               fontWeight: 600,
-              color: '#0e8fd6',
+              color: "#0e8fd6",
               marginBottom: 16,
-              textAlign: 'center',
+              textAlign: "center",
               maxWidth: 360,
             }}
           >
@@ -107,10 +119,10 @@ const FactoryReset = () => {
             style={{
               width: 48,
               height: 48,
-              border: '6px solid #b3e0ff',
-              borderTop: '6px solid #0e8fd6',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
+              border: "6px solid #b3e0ff",
+              borderTop: "6px solid #0e8fd6",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
             }}
           />
           <style>{`@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }`}</style>
@@ -120,4 +132,4 @@ const FactoryReset = () => {
   );
 };
 
-export default FactoryReset; 
+export default FactoryReset;

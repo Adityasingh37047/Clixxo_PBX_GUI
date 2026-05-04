@@ -497,7 +497,7 @@ const PSTNCallInCalleeID = () => {
           <div className="w-full max-w-full mx-auto">
             {/* Blue header bar - always show */}
             <div className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[16px] text-[#444] shadow-sm mt-0"
-              style={{background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)'}}>
+              style={{background: 'linear-gradient(#3E5475 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)'}}>
                   PSTN Call In CalleeID
                 </div>
             

@@ -12,8 +12,8 @@ import { Button, Alert, CircularProgress } from '@mui/material';
 // Standard blue bar styling used across the application
 const blueBarStyle = {
   width: '100%',
-  height: 36,
-  background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)',
+  height: 34  ,
+  background: 'linear-gradient(#3E5475 100%)',
   borderTopLeftRadius: 8,
   borderTopRightRadius: 8,
   marginBottom: 0,
@@ -21,7 +21,7 @@ const blueBarStyle = {
   alignItems: 'center',
   fontWeight: 600,
   fontSize: 18,
-  color: '#444',
+  color: '#ffffff',
   justifyContent: 'center',
   boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
 };
@@ -243,18 +243,18 @@ const ConfigFile = () => {
             variant="contained"
             onClick={handleSave}
             sx={{
-              background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
+              background: 'linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)',
               color: '#fff',
               fontWeight: 600,
               fontSize: '16px',
-              minWidth: 120,
+              minWidth: 110,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 8px #b3e0ff',
+              boxShadow: "0 2px 8px #3E5475",
               textTransform: 'none',
               '&:hover': {
-                background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
+                background: 'linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)',
                 color: '#fff',
               },
               '&:disabled': {
@@ -278,19 +278,19 @@ const ConfigFile = () => {
               }
             }}
             sx={{
-              background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-              color: '#374151',
+              background: 'linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)',
+              color: '#ffffff',
               fontWeight: 600,
               fontSize: '16px',
-              minWidth: 120,
+              minWidth: 110,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              boxShadow: "0 2px 8px #3E5475",
               textTransform: 'none',
               '&:hover': {
-                background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-                color: '#374151',
+                background: 'linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)',
+                color: '#ffffff',
               },
               '&:disabled': {
                 background: '#f5f5f5',

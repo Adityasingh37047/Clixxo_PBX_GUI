@@ -1,108 +1,108 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   PORT_FXS_TABLE_COLUMNS,
   PORT_FXS_ITEMS_PER_PAGE,
   PORT_FXS_TOTAL_PORTS,
   PORT_FXS_INITIAL_DATA,
   PORT_FXS_PAGE_TITLE,
-} from './constants/PortFxsPageConstants';
+} from "./constants/PortFxsPageConstants";
 // import { fetchFxsPorts, initializeFxsPorts } from './controller';
-import EditDocumentIcon from '@mui/icons-material/EditDocument';
-import PortFxsBatchModifyPage from './PortFxsBatchModifyPage';
-import PortFxsModifyPage from './PortFxsModifyPage';
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import PortFxsBatchModifyPage from "./PortFxsBatchModifyPage";
+import PortFxsModifyPage from "./PortFxsModifyPage";
 
 // Styles
 const blueBarStyle = {
-  width: '100%',
+  width: "100%",
   height: 32,
-  background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)',
+  background: "linear-gradient(#3E5475 100%)",
   borderTopLeftRadius: 8,
   borderTopRightRadius: 8,
   marginBottom: 0,
-  display: 'flex',
-  alignItems: 'center',
+  display: "flex",
+  alignItems: "center",
   fontWeight: 600,
-  fontSize: 16,
-  color: '#000',
-  justifyContent: 'center',
-  boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
-  position: 'relative',
+  fontSize: 18,
+  color: "#ffffff",
+  justifyContent: "center",
+  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+  position: "relative",
 };
 
 const batchModifyButtonStyle = {
-  position: 'absolute',
+  position: "absolute",
   left: 8,
-  background: 'linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)',
-  color: '#000',
+  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
+  color: "#000",
   fontSize: 12,
-  padding: '3px 12px',
-  border: '1px solid #999',
+  padding: "3px 12px",
+  border: "1px solid #999",
   borderRadius: 3,
-  boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
-  cursor: 'pointer',
+  boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
+  cursor: "pointer",
   fontWeight: 500,
   height: 24,
 };
 
 const thStyle = {
-  background: '#fff',
-  color: '#222',
+  background: "#fff",
+  color: "#222",
   fontWeight: 600,
   fontSize: 12,
-  border: '1px solid #bbb',
-  padding: '3px 4px',
-  whiteSpace: 'nowrap',
-  textAlign: 'center',
-  height: '24px',
-  lineHeight: '18px',
+  border: "1px solid #bbb",
+  padding: "3px 4px",
+  whiteSpace: "nowrap",
+  textAlign: "center",
+  height: "24px",
+  lineHeight: "18px",
 };
 
 const tdStyle = {
-  border: '1px solid #bbb',
-  padding: '3px 4px',
+  border: "1px solid #bbb",
+  padding: "3px 4px",
   fontSize: 12,
-  background: '#f8fafd',
-  textAlign: 'center',
-  whiteSpace: 'nowrap',
-  height: '24px',
-  lineHeight: '18px',
+  background: "#f8fafd",
+  textAlign: "center",
+  whiteSpace: "nowrap",
+  height: "24px",
+  lineHeight: "18px",
 };
 
 const paginationStyle = {
-  width: '100%',
-  maxWidth: '100%',
-  margin: '4px auto 0',
-  background: '#e3e7ef',
+  width: "100%",
+  maxWidth: "100%",
+  margin: "4px auto 0",
+  background: "#e3e7ef",
   borderRadius: 8,
-  border: '1px solid #ccc',
-  borderTop: 'none',
-  padding: '4px 8px',
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'center',
+  border: "1px solid #ccc",
+  borderTop: "none",
+  padding: "4px 8px",
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
   gap: 6,
   minHeight: 28,
   fontSize: 12,
-  justifyContent: 'flex-start',
+  justifyContent: "flex-start",
 };
 
 const paginationButtonStyle = {
-  background: 'transparent',
-  color: '#222',
+  background: "transparent",
+  color: "#222",
   fontSize: 12,
-  padding: '2px 4px',
-  border: 'none',
+  padding: "2px 4px",
+  border: "none",
   borderRadius: 0,
-  cursor: 'pointer',
+  cursor: "pointer",
   fontWeight: 400,
-  minWidth: 'auto',
-  textDecoration: 'none',
+  minWidth: "auto",
+  textDecoration: "none",
 };
 
 const paginationLinkStyle = {
   ...paginationButtonStyle,
-  color: '#0066cc',
-  textDecoration: 'underline',
+  color: "#0066cc",
+  textDecoration: "underline",
 };
 
 // Initialize port data
@@ -116,13 +116,13 @@ const initializePortData = () => {
 // Initialize batch modify form
 const getInitialBatchForm = () => {
   const form = {};
-  PORT_FXS_BATCH_MODIFY_FIELDS.forEach(field => {
-    if (field.type === 'select') {
-      form[field.key] = field.options[0] || field.default || '';
-    } else if (field.type === 'checkbox') {
+  PORT_FXS_BATCH_MODIFY_FIELDS.forEach((field) => {
+    if (field.type === "select") {
+      form[field.key] = field.options[0] || field.default || "";
+    } else if (field.type === "checkbox") {
       form[field.key] = field.default || false;
     } else {
-      form[field.key] = field.default || '';
+      form[field.key] = field.default || "";
     }
   });
   return form;
@@ -136,30 +136,35 @@ const PortFxsPage = () => {
   const [page, setPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const totalPages = Math.max(1, Math.ceil(ports.length / PORT_FXS_ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(ports.length / PORT_FXS_ITEMS_PER_PAGE),
+  );
   const pagedPorts = ports.slice(
     (page - 1) * PORT_FXS_ITEMS_PER_PAGE,
-    page * PORT_FXS_ITEMS_PER_PAGE
+    page * PORT_FXS_ITEMS_PER_PAGE,
   );
 
   // Map API port object to UI row object
   const mapApiPortToRow = (item) => {
     return {
       port: item.port_number ?? item.port ?? item.id,
-      type: item.type ?? 'FXS',
-      sipAccount: item.sip_account || item.starting_authentication_username || '---',
-      displayName: item.display_name || item.starting_display_name || '---',
-      autoDialNum: item.auto_dial_number_value || item.auto_dial || '---',
-      dnd: item.dnd_do_not_disturb ? 'Enable' : 'Disable',
-      forward: item.call_forward ? 'Enable' : 'Disable',
-      fwdType: item.forward_type || '---',
-      fwdNumber: item.forward_number || '---',
-      cid: item.cid_enable ? 'Enable' : 'Disable',
-      callWaiting: item.call_waiting ? 'Enable' : 'Disable',
-      regStatus: item.ing_mode || item.status || '---',
-      echoCanceller: item.echo_canceller ? 'Enable' : 'Disable',
-      colorRing: item.color_ring ? 'Enable' : 'Disable',
-      colorRingIndex: item.color_ring_index ?? item.color_ring_index_status ?? '---',
+      type: item.type ?? "FXS",
+      sipAccount:
+        item.sip_account || item.starting_authentication_username || "---",
+      displayName: item.display_name || item.starting_display_name || "---",
+      autoDialNum: item.auto_dial_number_value || item.auto_dial || "---",
+      dnd: item.dnd_do_not_disturb ? "Enable" : "Disable",
+      forward: item.call_forward ? "Enable" : "Disable",
+      fwdType: item.forward_type || "---",
+      fwdNumber: item.forward_number || "---",
+      cid: item.cid_enable ? "Enable" : "Disable",
+      callWaiting: item.call_waiting ? "Enable" : "Disable",
+      regStatus: item.ing_mode || item.status || "---",
+      echoCanceller: item.echo_canceller ? "Enable" : "Disable",
+      colorRing: item.color_ring ? "Enable" : "Disable",
+      colorRingIndex:
+        item.color_ring_index ?? item.color_ring_index_status ?? "---",
       inputGain: item.input_gain ?? item.input_gain_db ?? 0,
       outputGain: item.output_gain ?? item.output_gain_db ?? 0,
       raw: item,
@@ -172,12 +177,12 @@ const PortFxsPage = () => {
     setError(null);
     try {
       const res = await fetchFxsPorts();
-      const data = res && res.data ? res.data : (res || []);
-        if (!Array.isArray(data) || data.length === 0) {
+      const data = res && res.data ? res.data : res || [];
+      if (!Array.isArray(data) || data.length === 0) {
         // initialize then refetch
         await initializeFxsPorts();
         const retry = await fetchFxsPorts();
-        const retryData = retry && retry.data ? retry.data : (retry || []);
+        const retryData = retry && retry.data ? retry.data : retry || [];
         setPorts(retryData.map(mapApiPortToRow));
         setRefreshKey(Date.now());
       } else {
@@ -185,8 +190,8 @@ const PortFxsPage = () => {
         setRefreshKey(Date.now());
       }
     } catch (err) {
-      console.error('Error loading FXS ports:', err);
-      setError(err.message || 'Failed to load ports');
+      console.error("Error loading FXS ports:", err);
+      setError(err.message || "Failed to load ports");
       // fallback to default initialization data
       setPorts(initializePortData());
     } finally {
@@ -218,21 +223,24 @@ const PortFxsPage = () => {
         endingPort: String(ports[ports.length - 1].port),
       });
     } else {
-      setBatchInitialPorts({ startingPort: '1', endingPort: String(PORT_FXS_TOTAL_PORTS) });
+      setBatchInitialPorts({
+        startingPort: "1",
+        endingPort: String(PORT_FXS_TOTAL_PORTS),
+      });
     }
     setShowBatchModify(true);
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center box-border" style={{ backgroundColor: '#dde0e4', padding: '8px' }}>
+    <div
+      className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center box-border"
+      style={{ backgroundColor: "#dde0e4", padding: "8px" }}
+    >
       <div className="w-full max-w-full mx-auto">
         {/* Blue Bar with Title and Batch Modify Button (hide when a modify panel is open) */}
         {!showBatchModify && !showSingleModify && (
           <div style={blueBarStyle}>
-            <button
-              style={batchModifyButtonStyle}
-              onClick={handleBatchModify}
-            >
+            <button style={batchModifyButtonStyle} onClick={handleBatchModify}>
               Batch Modify
             </button>
             <span>{PORT_FXS_PAGE_TITLE}</span>
@@ -241,13 +249,30 @@ const PortFxsPage = () => {
 
         {/* Table Container or Inline Modify Panels */}
         {!showBatchModify && !showSingleModify && (
-          <div key={refreshKey} className="w-full bg-white border-2 border-gray-400 border-t-0 rounded-b-lg" style={{ overflowX: 'auto', overflowY: 'visible' }}>
+          <div
+            key={refreshKey}
+            className="w-full bg-white border-2 border-gray-400 border-t-0 rounded-b-lg"
+            style={{ overflowX: "auto", overflowY: "visible" }}
+          >
             {loading ? (
-              <div style={{ padding: 40, textAlign: 'center' }}>Loading ports...</div>
+              <div style={{ padding: 40, textAlign: "center" }}>
+                Loading ports...
+              </div>
             ) : error ? (
-              <div style={{ padding: 40, textAlign: 'center', color: 'red' }}>Error: {error}</div>
+              <div style={{ padding: 40, textAlign: "center", color: "red" }}>
+                Error: {error}
+              </div>
             ) : (
-              <table className="w-full" style={{ backgroundColor: '#f8fafd', tableLayout: 'auto', borderCollapse: 'collapse', width: '100%', minWidth: '1400px' }}>
+              <table
+                className="w-full"
+                style={{
+                  backgroundColor: "#f8fafd",
+                  tableLayout: "auto",
+                  borderCollapse: "collapse",
+                  width: "100%",
+                  minWidth: "1400px",
+                }}
+              >
                 <thead>
                   <tr>
                     {PORT_FXS_TABLE_COLUMNS.map((col) => (
@@ -266,9 +291,16 @@ const PortFxsPage = () => {
                             setSelectedPort(String(port.port));
                             setShowSingleModify(true);
                           }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: 0,
+                          }}
                         >
-                          <EditDocumentIcon style={{ fontSize: 16, color: '#0e8fd6' }} />
+                          <EditDocumentIcon
+                            style={{ fontSize: 16, color: "#0e8fd6" }}
+                          />
                         </button>
                       </td>
                       <td style={tdStyle}>{port.port}</td>
@@ -324,8 +356,13 @@ const PortFxsPage = () => {
 
         {/* Pagination */}
         <div style={paginationStyle}>
-          <span>{ports.length} Items Total&nbsp;&nbsp; {PORT_FXS_ITEMS_PER_PAGE} Items/Page</span>
-          <span>&nbsp;&nbsp; {page}/{totalPages}&nbsp;&nbsp;</span>
+          <span>
+            {ports.length} Items Total&nbsp;&nbsp; {PORT_FXS_ITEMS_PER_PAGE}{" "}
+            Items/Page
+          </span>
+          <span>
+            &nbsp;&nbsp; {page}/{totalPages}&nbsp;&nbsp;
+          </span>
           {page > 1 ? (
             <button
               style={paginationLinkStyle}
@@ -373,10 +410,10 @@ const PortFxsPage = () => {
           <select
             style={{
               fontSize: 12,
-              padding: '1px 4px',
+              padding: "1px 4px",
               borderRadius: 2,
-              border: '1px solid #bbb',
-              background: '#fff',
+              border: "1px solid #bbb",
+              background: "#fff",
             }}
             value={page}
             onChange={(e) => handlePageChange(Number(e.target.value))}
@@ -395,4 +432,3 @@ const PortFxsPage = () => {
 };
 
 export default PortFxsPage;
-

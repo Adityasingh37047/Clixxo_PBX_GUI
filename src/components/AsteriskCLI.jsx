@@ -1,94 +1,100 @@
-import React, { useState, useEffect } from 'react';
-import { postAsteriskCLI } from '../api/apiService';
+import React, { useState, useEffect } from "react";
+import { postAsteriskCLI } from "../api/apiService";
 import {
   ASTERISK_CLI_TITLE,
   ASTERISK_CLI_LABELS,
   ASTERISK_CLI_BUTTONS,
   ASTERISK_CLI_PLACEHOLDERS,
-} from '../constants/AsteriskCLIConstants';
-import { Button, Alert } from '@mui/material';
+} from "../constants/AsteriskCLIConstants";
+import { Button, Alert } from "@mui/material";
 
 const blueBar = (title) => (
-  <div className="w-full bg-gradient-to-b from-[#b3e0ff] via-[#7ecbfa] to-[#3b8fd6] h-12 rounded-t-lg flex items-center justify-center text-[22px] font-semibold text-gray-800 shadow mb-0 border-b border-[#b3e0ff]">
+  <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
     {title}
   </div>
 );
 
 const buttonSx = {
-  background: 'linear-gradient(to bottom, #5dc6f8 0%, #299fd6 100%)',
-  color: '#fff',
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
   fontWeight: 600,
-  fontSize: '16px',
-  borderRadius: 0,
+  fontSize: "16px",
+  borderRadius: 1.5,
   minWidth: 90,
   px: 2,
   py: 0.5,
-  boxShadow: '0 2px 8px #b3e0ff',
-  textTransform: 'none',
-  '&:hover': {
-    background: 'linear-gradient(to bottom, #299fd6 0%, #5dc6f8 100%)',
+  boxShadow: "0 2px 8px #3E5475",
+  textTransform: "none",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
   },
 };
 
 const AsteriskCLI = () => {
-  const [command, setCommand] = useState('');
-  const [logs, setLogs] = useState('');
+  const [command, setCommand] = useState("");
+  const [logs, setLogs] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
-  const [commandError, setCommandError] = useState('');
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [commandError, setCommandError] = useState("");
 
   // Message handling - same pattern as SIP Register
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
   const validateCommand = (cmd) => {
-    if (!cmd || cmd.trim() === '') {
-      return 'Please enter a command.';
+    if (!cmd || cmd.trim() === "") {
+      return "Please enter a command.";
     }
     if (cmd.trim().length < 2) {
-      return 'Command must be at least 2 characters long.';
+      return "Command must be at least 2 characters long.";
     }
-    return '';
+    return "";
   };
 
   const executeCommand = async () => {
-    setCommandError('');
+    setCommandError("");
 
     const validationError = validateCommand(command);
     if (validationError) {
       setCommandError(validationError);
       return;
     }
-    
 
     setLoading(true);
     try {
-      console.log('Executing Asterisk CLI command:', command.trim());
+      console.log("Executing Asterisk CLI command:", command.trim());
       const apiResponse = await postAsteriskCLI({
-        command: command.trim()
+        command: command.trim(),
       });
 
-      console.log('Asterisk CLI Response:', apiResponse);
+      console.log("Asterisk CLI Response:", apiResponse);
 
       if (apiResponse.response && apiResponse.responseData) {
         const timestamp = new Date().toLocaleString();
-        const logEntry = `[${timestamp}] $ ${command.trim()}\n${apiResponse.responseData}\n${'='.repeat(80)}\n`;
-        setLogs(prev => prev + logEntry);
-        showMessage('success', 'Command executed successfully!');
+        const logEntry = `[${timestamp}] $ ${command.trim()}\n${apiResponse.responseData}\n${"=".repeat(80)}\n`;
+        setLogs((prev) => prev + logEntry);
+        showMessage("success", "Command executed successfully!");
       } else {
-        console.log('Invalid response format:', apiResponse);
-        showMessage('error', apiResponse.message || 'Failed to execute command');
+        console.log("Invalid response format:", apiResponse);
+        showMessage(
+          "error",
+          apiResponse.message || "Failed to execute command",
+        );
       }
     } catch (error) {
-      console.error('Error executing Asterisk CLI command:', error);
-      if (error.message === 'Network Error') {
-        showMessage('error', 'Network error. Please check your connection.');
+      console.error("Error executing Asterisk CLI command:", error);
+      if (error.message === "Network Error") {
+        showMessage("error", "Network error. Please check your connection.");
       } else if (error.response?.status === 500) {
-        showMessage('error', 'Server error. The Asterisk CLI endpoint may have issues.');
+        showMessage(
+          "error",
+          "Server error. The Asterisk CLI endpoint may have issues.",
+        );
       } else {
-        showMessage('error', error.message || 'Failed to execute command');
+        showMessage("error", error.message || "Failed to execute command");
       }
     } finally {
       setLoading(false);
@@ -96,32 +102,32 @@ const AsteriskCLI = () => {
   };
 
   const clearLogs = () => {
-    setLogs('');
-    setCommand('');
-    setCommandError('');
-    showMessage('info', 'Logs cleared!');
+    setLogs("");
+    setCommand("");
+    setCommandError("");
+    showMessage("info", "Logs cleared!");
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !loading) {
+    if (e.key === "Enter" && !loading) {
       executeCommand();
     }
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-80px)] bg-gray-50 flex flex-col items-center py-6 px-2">
+    <div className="w-full min-h-[calc(100vh-80px)] bg-gray-50 flex flex-col items-center py-6 px-2 md:p-2">
       {/* Message Display - same pattern as SIP Register */}
       {message.text && (
-        <Alert 
-          severity={message.type} 
-          onClose={() => setMessage({ type: '', text: '' })}
+        <Alert
+          severity={message.type}
+          onClose={() => setMessage({ type: "", text: "" })}
           sx={{
-            position: 'fixed', 
-            top: 20, 
-            right: 20, 
+            position: "fixed",
+            top: 20,
+            right: 20,
             zIndex: 9999,
             minWidth: 300,
-            boxShadow: 3
+            boxShadow: 3,
           }}
         >
           {message.text}
@@ -144,7 +150,7 @@ const AsteriskCLI = () => {
                   value={command}
                   onChange={(e) => {
                     setCommand(e.target.value);
-                    setCommandError('');
+                    setCommandError("");
                   }}
                   onKeyPress={handleKeyPress}
                   placeholder={ASTERISK_CLI_PLACEHOLDERS.command}
@@ -161,17 +167,19 @@ const AsteriskCLI = () => {
 
           {/* Buttons Row */}
           <div className="w-full flex flex-row justify-center gap-12 mb-8">
-            <Button 
-              variant="contained" 
-              sx={buttonSx} 
-              onClick={executeCommand} 
+            <Button
+              variant="contained"
+              sx={buttonSx}
+              onClick={executeCommand}
               disabled={loading || !command.trim()}
             >
-              {loading ? ASTERISK_CLI_BUTTONS.loading : ASTERISK_CLI_BUTTONS.submit}
+              {loading
+                ? ASTERISK_CLI_BUTTONS.loading
+                : ASTERISK_CLI_BUTTONS.submit}
             </Button>
-            <Button 
-              variant="contained" 
-              sx={buttonSx} 
+            <Button
+              variant="contained"
+              sx={buttonSx}
               onClick={clearLogs}
               disabled={loading}
             >

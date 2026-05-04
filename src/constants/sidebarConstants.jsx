@@ -202,6 +202,27 @@ export const SIDEBAR_SECTIONS = [
           { id: 'fxsPortAdvanced', title: 'FXS Advanced', path: ROUTE_PATHS.PORT_FXS_ADVANCED },
         ]
       },
+      {
+        id: 'fxsRoute',
+        title: 'Route',
+        icon: RouteIcon,
+        items: [
+          { id: 'fxsRoutingParameters', title: 'Routing Parameters', path: ROUTE_PATHS.FXS_ROUTE },
+          { id: 'fxsIpToPstn',          title: 'IP->PSTN',           path: ROUTE_PATHS.FXS_ROUTE_IP_TO_PSTN },
+          { id: 'fxsPstnToIp',          title: 'PSTN->IP',           path: ROUTE_PATHS.FXS_ROUTE_PSTN_TO_IP },
+        ]
+      },
+      {
+        id: 'fxsNumManipulate',
+        title: 'Num Manipulate',
+        icon: EditIcon,
+        items: [
+          { id: 'fxsIpCallInCallerID',   title: 'IP Call In CallerID',   path: ROUTE_PATHS.FXS_IP_CALL_IN_CALLERID },
+          { id: 'fxsIpCallInCalleeID',   title: 'IP Call In CalleeID',   path: ROUTE_PATHS.FXS_IP_CALL_IN_CALLEEID },
+          { id: 'fxsPstnCallInCallerID', title: 'PSTN Call In CallerID', path: ROUTE_PATHS.FXS_PSTN_CALL_IN_CALLERID },
+          { id: 'fxsPstnCallInCalleeID', title: 'PSTN Call In CalleeID', path: ROUTE_PATHS.FXS_PSTN_CALL_IN_CALLEEID },
+        ]
+      },
 
     ]
   },

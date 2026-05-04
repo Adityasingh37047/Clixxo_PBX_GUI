@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const FxsVoipMediaPage = () => {
   // Media Parameters state
   const [formData, setFormData] = useState({
-    dtmfTransmitMode: '0', // 0=RFC2833, 1=SIP INFO, 2=In-band
-    rfc2833Payload: '101',
-    rtpPortRange: '10000,20000',
-    silenceSuppression: '0', // 0=Disable, 1=Enable
-    jitterMode: '0', // 0=Static Mode, 1=Adaptive Mode
-    jitterBuffer: '100',
-    voiceGainOutput: '0',
+    dtmfTransmitMode: "0", // 0=RFC2833, 1=SIP INFO, 2=In-band
+    rfc2833Payload: "101",
+    rtpPortRange: "10000,20000",
+    silenceSuppression: "0", // 0=Disable, 1=Enable
+    jitterMode: "0", // 0=Static Mode, 1=Adaptive Mode
+    jitterBuffer: "100",
+    voiceGainOutput: "0",
   });
 
   // CODEC Priority state - 6 priorities
   const [codecData, setCodecData] = useState([
-    { enabled: true, codec: '6', packingTime: '20', bitRate: '0' }, // Priority 1: G711A
-    { enabled: true, codec: '7', packingTime: '20', bitRate: '0' }, // Priority 2: G711U
-    { enabled: true, codec: '131', packingTime: '20', bitRate: '0' }, // Priority 3: G729
-    { enabled: true, codec: '98', packingTime: '30', bitRate: '0' }, // Priority 4: iLBC
-    { enabled: true, codec: '96', packingTime: '20', bitRate: '0' }, // Priority 5: AMR
-    { enabled: true, codec: '4', packingTime: '30', bitRate: '1' }, // Priority 6: G723
+    { enabled: true, codec: "6", packingTime: "20", bitRate: "0" }, // Priority 1: G711A
+    { enabled: true, codec: "7", packingTime: "20", bitRate: "0" }, // Priority 2: G711U
+    { enabled: true, codec: "131", packingTime: "20", bitRate: "0" }, // Priority 3: G729
+    { enabled: true, codec: "98", packingTime: "30", bitRate: "0" }, // Priority 4: iLBC
+    { enabled: true, codec: "96", packingTime: "20", bitRate: "0" }, // Priority 5: AMR
+    { enabled: true, codec: "4", packingTime: "30", bitRate: "1" }, // Priority 6: G723
   ]);
 
   const handleInputChange = (e) => {
@@ -36,44 +36,44 @@ const FxsVoipMediaPage = () => {
   const handleCodecChange = (index, value) => {
     const newCodecData = [...codecData];
     newCodecData[index].codec = value;
-    
+
     // Reset packing time and bit rate based on new CODEC
     const codec = parseInt(value);
     if (codec === 7 || codec === 6) {
       // G711A/U
-      newCodecData[index].packingTime = '20';
-      newCodecData[index].bitRate = '0';
+      newCodecData[index].packingTime = "20";
+      newCodecData[index].bitRate = "0";
     } else if (codec === 131) {
       // G729
-      newCodecData[index].packingTime = '20';
-      newCodecData[index].bitRate = '0';
+      newCodecData[index].packingTime = "20";
+      newCodecData[index].bitRate = "0";
     } else if (codec === 98) {
       // iLBC
-      newCodecData[index].packingTime = '30';
-      newCodecData[index].bitRate = '0';
+      newCodecData[index].packingTime = "30";
+      newCodecData[index].bitRate = "0";
     } else if (codec === 96) {
       // AMR
-      newCodecData[index].packingTime = '20';
-      newCodecData[index].bitRate = '0';
+      newCodecData[index].packingTime = "20";
+      newCodecData[index].bitRate = "0";
     } else if (codec === 4) {
       // G723
-      newCodecData[index].packingTime = '30';
-      newCodecData[index].bitRate = '1';
+      newCodecData[index].packingTime = "30";
+      newCodecData[index].bitRate = "1";
     }
-    
+
     setCodecData(newCodecData);
   };
 
   const handlePackingTimeChange = (index, value) => {
     const newCodecData = [...codecData];
     const codec = parseInt(newCodecData[index].codec);
-    
+
     // Validation for GSM and G723
-    if (codec === 49 && value === '30') {
+    if (codec === 49 && value === "30") {
       alert("Please don't set coder=GSM and PktTime=30 at the same time!");
       return;
     }
-    if (codec === 4 && value === '20') {
+    if (codec === 4 && value === "20") {
       alert("Please don't set coder=G723 and PktTime=20 at the same time!");
       return;
     }
@@ -82,10 +82,10 @@ const FxsVoipMediaPage = () => {
 
     // Update bit rate for iLBC based on packing time
     if (codec === 98) {
-      if (value === '20' || value === '40') {
-        newCodecData[index].bitRate = '1'; // 15.2
-      } else if (value === '30') {
-        newCodecData[index].bitRate = '0'; // 13.3
+      if (value === "20" || value === "40") {
+        newCodecData[index].bitRate = "1"; // 15.2
+      } else if (value === "30") {
+        newCodecData[index].bitRate = "0"; // 13.3
       }
     }
 
@@ -102,19 +102,19 @@ const FxsVoipMediaPage = () => {
     const codec = parseInt(codecValue);
     if (codec === 7 || codec === 6) {
       // G711A/U: 10, 20, 30, 40, 50, 60
-      return ['10', '20', '30', '40', '50', '60'];
+      return ["10", "20", "30", "40", "50", "60"];
     } else if (codec === 131) {
       // G729: 10, 20, 30, 40, 50, 60
-      return ['10', '20', '30', '40', '50', '60'];
+      return ["10", "20", "30", "40", "50", "60"];
     } else if (codec === 98) {
       // iLBC: 20, 30
-      return ['20', '30'];
+      return ["20", "30"];
     } else if (codec === 96) {
       // AMR: 20
-      return ['20'];
+      return ["20"];
     } else if (codec === 4) {
       // G723: 30
-      return ['30'];
+      return ["30"];
     }
     return [];
   };
@@ -123,23 +123,23 @@ const FxsVoipMediaPage = () => {
     const codec = parseInt(codecValue);
     if (codec === 7 || codec === 6) {
       // G711A/U: 64
-      return [{ value: '0', label: '64' }];
+      return [{ value: "0", label: "64" }];
     } else if (codec === 131) {
       // G729: 8
-      return [{ value: '0', label: '8' }];
+      return [{ value: "0", label: "8" }];
     } else if (codec === 98) {
       // iLBC: 13.3 or 15.2 based on packing time
-      if (packingTime === '30') {
-        return [{ value: '0', label: '13.3' }];
+      if (packingTime === "30") {
+        return [{ value: "0", label: "13.3" }];
       } else {
-        return [{ value: '1', label: '15.2' }];
+        return [{ value: "1", label: "15.2" }];
       }
     } else if (codec === 96) {
       // AMR: 12.20
-      return [{ value: '0', label: '12.20' }];
+      return [{ value: "0", label: "12.20" }];
     } else if (codec === 4) {
       // G723: 6.3
-      return [{ value: '1', label: '6.3' }];
+      return [{ value: "1", label: "6.3" }];
     }
     return [];
   };
@@ -161,7 +161,7 @@ const FxsVoipMediaPage = () => {
       alert("Please enter a RTP port range!");
       return false;
     }
-    const portParts = formData.rtpPortRange.split(',');
+    const portParts = formData.rtpPortRange.split(",");
     if (portParts.length !== 2) {
       alert("Invalid RTP port range!");
       return false;
@@ -185,12 +185,14 @@ const FxsVoipMediaPage = () => {
       return false;
     }
     if (endPort - startPort < 480) {
-      alert("The difference between the latter 'RTP Port' and the former should be no less than 480!");
+      alert(
+        "The difference between the latter 'RTP Port' and the former should be no less than 480!",
+      );
       return false;
     }
 
     // Validate JitterBuffer
-    if (formData.jitterMode === '0') {
+    if (formData.jitterMode === "0") {
       if (!formData.jitterBuffer) {
         alert("Please enter a JitterBuffer value!");
         return false;
@@ -209,19 +211,21 @@ const FxsVoipMediaPage = () => {
       return false;
     }
     if (voiceGain % 3 !== 0) {
-      alert("The value of 'Voice Gain Output from IP' must be a multiple of 3!");
+      alert(
+        "The value of 'Voice Gain Output from IP' must be a multiple of 3!",
+      );
       return false;
     }
 
     // Validate at least one CODEC is selected
-    const enabledCodecs = codecData.filter(item => item.enabled);
+    const enabledCodecs = codecData.filter((item) => item.enabled);
     if (enabledCodecs.length === 0) {
       alert("Please select a CODEC!");
       return false;
     }
 
     // Validate no duplicate CODECs
-    const codecValues = enabledCodecs.map(item => item.codec);
+    const codecValues = enabledCodecs.map((item) => item.codec);
     const uniqueCodecs = new Set(codecValues);
     if (uniqueCodecs.size !== codecValues.length) {
       alert("Please choose a different CODEC!");
@@ -233,42 +237,42 @@ const FxsVoipMediaPage = () => {
 
   const handleSave = () => {
     if (validateForm()) {
-      alert('Settings saved successfully!');
+      alert("Settings saved successfully!");
     }
   };
 
   const handleReset = () => {
     setFormData({
-      dtmfTransmitMode: '0',
-      rfc2833Payload: '101',
-      rtpPortRange: '10000,20000',
-      silenceSuppression: '0',
-      jitterMode: '0',
-      jitterBuffer: '100',
-      voiceGainOutput: '0',
+      dtmfTransmitMode: "0",
+      rfc2833Payload: "101",
+      rtpPortRange: "10000,20000",
+      silenceSuppression: "0",
+      jitterMode: "0",
+      jitterBuffer: "100",
+      voiceGainOutput: "0",
     });
     setCodecData([
-      { enabled: true, codec: '6', packingTime: '20', bitRate: '0' },
-      { enabled: true, codec: '7', packingTime: '20', bitRate: '0' },
-      { enabled: true, codec: '131', packingTime: '20', bitRate: '0' },
-      { enabled: true, codec: '98', packingTime: '30', bitRate: '0' },
-      { enabled: true, codec: '96', packingTime: '20', bitRate: '0' },
-      { enabled: true, codec: '4', packingTime: '30', bitRate: '1' },
+      { enabled: true, codec: "6", packingTime: "20", bitRate: "0" },
+      { enabled: true, codec: "7", packingTime: "20", bitRate: "0" },
+      { enabled: true, codec: "131", packingTime: "20", bitRate: "0" },
+      { enabled: true, codec: "98", packingTime: "30", bitRate: "0" },
+      { enabled: true, codec: "96", packingTime: "20", bitRate: "0" },
+      { enabled: true, codec: "4", packingTime: "30", bitRate: "1" },
     ]);
   };
 
   const handleKeyPress = (e, type) => {
     const key = e.keyCode || e.which;
     // Allow digits (48-57), comma (44), minus (45), backspace (8)
-    if (type === 'number') {
+    if (type === "number") {
       if (!((key > 47 && key < 58) || key === 8)) {
         e.preventDefault();
       }
-    } else if (type === 'number-comma') {
+    } else if (type === "number-comma") {
       if (!((key > 47 && key < 58) || key === 44 || key === 8)) {
         e.preventDefault();
       }
-    } else if (type === 'number-minus') {
+    } else if (type === "number-minus") {
       if (!((key > 47 && key < 58) || key === 45 || key === 8)) {
         e.preventDefault();
       }
@@ -278,22 +282,25 @@ const FxsVoipMediaPage = () => {
   return (
     <div
       className="bg-gray-50 min-h-[calc(100vh-128px)] py-2"
-      style={{ backgroundColor: '#dde0e4' }}
+      style={{ backgroundColor: "#dde0e4" }}
     >
       <div className="flex justify-center">
-        <div className="w-full" style={{ maxWidth: '1024px' }}>
+        <div className="w-full" style={{ maxWidth: "1024px" }}>
           {/* Page Title Bar */}
-          <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-gray-700 shadow mb-0">
+          <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-\[#b3e0ff] via-\[#6ec1f7] to-\[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
             <span>Media Parameters</span>
-        </div>
+          </div>
 
           {/* Main Card */}
-          <div className="bg-[#dde0e4] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
+          <div className="rounded-b-lg bg-[#dde0e4] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
             <div className="flex justify-center pl-8">
-              <table className="text-sm" style={{ tableLayout: 'fixed', width: '750px' }}>
+              <table
+                className="text-sm"
+                style={{ tableLayout: "fixed", width: "750px" }}
+              >
                 <colgroup>
-                  <col style={{ width: '48%' }} />
-                  <col style={{ width: '52%' }} />
+                  <col style={{ width: "48%" }} />
+                  <col style={{ width: "52%" }} />
                 </colgroup>
                 <tbody>
                   {/* DTMF Transmit Mode */}
@@ -307,7 +314,7 @@ const FxsVoipMediaPage = () => {
                         value={formData.dtmfTransmitMode}
                         onChange={handleInputChange}
                         className="border border-gray-400 rounded-sm px-1 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                       >
                         <option value="0">RFC2833</option>
                         <option value="1">SIP INFO</option>
@@ -328,9 +335,9 @@ const FxsVoipMediaPage = () => {
                         name="rfc2833Payload"
                         value={formData.rfc2833Payload}
                         onChange={handleInputChange}
-                        onKeyPress={(e) => handleKeyPress(e, 'number')}
+                        onKeyPress={(e) => handleKeyPress(e, "number")}
                         className="border border-gray-400 rounded-sm px-2 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                         maxLength="31"
                       />
                     </td>
@@ -348,9 +355,9 @@ const FxsVoipMediaPage = () => {
                         name="rtpPortRange"
                         value={formData.rtpPortRange}
                         onChange={handleInputChange}
-                        onKeyPress={(e) => handleKeyPress(e, 'number-comma')}
+                        onKeyPress={(e) => handleKeyPress(e, "number-comma")}
                         className="border border-gray-400 rounded-sm px-2 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                         maxLength="31"
                       />
                     </td>
@@ -368,7 +375,7 @@ const FxsVoipMediaPage = () => {
                         value={formData.silenceSuppression}
                         onChange={handleInputChange}
                         className="border border-gray-400 rounded-sm px-1 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                       >
                         <option value="0">Disable</option>
                         <option value="1">Enable</option>
@@ -386,9 +393,9 @@ const FxsVoipMediaPage = () => {
                       <select
                         name="jitterMode"
                         value={formData.jitterMode}
-                      onChange={handleInputChange}
+                        onChange={handleInputChange}
                         className="border border-gray-400 rounded-sm px-1 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                       >
                         <option value="0">Static Mode</option>
                       </select>
@@ -407,9 +414,9 @@ const FxsVoipMediaPage = () => {
                         name="jitterBuffer"
                         value={formData.jitterBuffer}
                         onChange={handleInputChange}
-                        onKeyPress={(e) => handleKeyPress(e, 'number')}
+                        onKeyPress={(e) => handleKeyPress(e, "number")}
                         className="border border-gray-400 rounded-sm px-2 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                         maxLength="31"
                       />
                     </td>
@@ -422,14 +429,14 @@ const FxsVoipMediaPage = () => {
                       Voice Gain Output from IP (dB)
                     </td>
                     <td className="align-middle text-left">
-                    <input
-                      type="text"
+                      <input
+                        type="text"
                         name="voiceGainOutput"
                         value={formData.voiceGainOutput}
-                      onChange={handleInputChange}
-                        onKeyPress={(e) => handleKeyPress(e, 'number-minus')}
+                        onChange={handleInputChange}
+                        onKeyPress={(e) => handleKeyPress(e, "number-minus")}
                         className="border border-gray-400 rounded-sm px-2 bg-white"
-                        style={{ height: '28px', width: '200px' }}
+                        style={{ height: "28px", width: "200px" }}
                         maxLength="31"
                       />
                     </td>
@@ -437,21 +444,27 @@ const FxsVoipMediaPage = () => {
                   <tr className="h-4" />
                 </tbody>
               </table>
-                </div>
+            </div>
 
             {/* CODEC Priority Table */}
             <div className="flex justify-center pl-8 mt-4">
-              <table className="text-sm" style={{ tableLayout: 'fixed', width: '750px' }}>
+              <table
+                className="text-sm"
+                style={{ tableLayout: "fixed", width: "750px" }}
+              >
                 <colgroup>
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '17%' }} />
-                  <col style={{ width: '17%' }} />
-                  <col style={{ width: '24%' }} />
-                  <col style={{ width: '24%' }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "17%" }} />
+                  <col style={{ width: "17%" }} />
+                  <col style={{ width: "24%" }} />
+                  <col style={{ width: "24%" }} />
                 </colgroup>
                 <tbody>
                   <tr>
-                    <td colSpan="5" className="text-gray-700 font-semibold pb-2">
+                    <td
+                      colSpan="5"
+                      className="text-gray-700 font-semibold pb-2"
+                    >
                       CODEC Priority
                     </td>
                   </tr>
@@ -477,15 +490,19 @@ const FxsVoipMediaPage = () => {
                       <td>
                         <select
                           value={item.codec}
-                          onChange={(e) => handleCodecChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handleCodecChange(index, e.target.value)
+                          }
                           disabled={!item.enabled}
                           className="border border-gray-400 rounded-sm px-1"
                           style={{
-                            height: '28px',
-                            width: '120px',
-                            backgroundColor: item.enabled ? '#ffffff' : '#e5e7eb',
-                            cursor: item.enabled ? 'pointer' : 'not-allowed',
-                            color: item.enabled ? '#000000' : '#6b7280',
+                            height: "28px",
+                            width: "120px",
+                            backgroundColor: item.enabled
+                              ? "#ffffff"
+                              : "#e5e7eb",
+                            cursor: item.enabled ? "pointer" : "not-allowed",
+                            color: item.enabled ? "#000000" : "#6b7280",
                           }}
                         >
                           <option value="6">G711A</option>
@@ -499,15 +516,19 @@ const FxsVoipMediaPage = () => {
                       <td>
                         <select
                           value={item.packingTime}
-                          onChange={(e) => handlePackingTimeChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handlePackingTimeChange(index, e.target.value)
+                          }
                           disabled={!item.enabled}
                           className="border border-gray-400 rounded-sm px-1"
                           style={{
-                            height: '28px',
-                            width: '80px',
-                            backgroundColor: item.enabled ? '#ffffff' : '#e5e7eb',
-                            cursor: item.enabled ? 'pointer' : 'not-allowed',
-                            color: item.enabled ? '#000000' : '#6b7280',
+                            height: "28px",
+                            width: "80px",
+                            backgroundColor: item.enabled
+                              ? "#ffffff"
+                              : "#e5e7eb",
+                            cursor: item.enabled ? "pointer" : "not-allowed",
+                            color: item.enabled ? "#000000" : "#6b7280",
                           }}
                         >
                           {getPackingTimeOptions(item.codec).map((opt) => (
@@ -520,22 +541,28 @@ const FxsVoipMediaPage = () => {
                       <td>
                         <select
                           value={item.bitRate}
-                          onChange={(e) => handleBitRateChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handleBitRateChange(index, e.target.value)
+                          }
                           disabled={!item.enabled}
                           className="border border-gray-400 rounded-sm px-1"
                           style={{
-                            height: '28px',
-                            width: '80px',
-                            backgroundColor: item.enabled ? '#ffffff' : '#e5e7eb',
-                            cursor: item.enabled ? 'pointer' : 'not-allowed',
-                            color: item.enabled ? '#000000' : '#6b7280',
+                            height: "28px",
+                            width: "80px",
+                            backgroundColor: item.enabled
+                              ? "#ffffff"
+                              : "#e5e7eb",
+                            cursor: item.enabled ? "pointer" : "not-allowed",
+                            color: item.enabled ? "#000000" : "#6b7280",
                           }}
                         >
-                          {getBitRateOptions(item.codec, item.packingTime).map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
+                          {getBitRateOptions(item.codec, item.packingTime).map(
+                            (opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ),
+                          )}
                         </select>
                       </td>
                     </tr>
@@ -543,70 +570,86 @@ const FxsVoipMediaPage = () => {
                   <tr className="h-3" />
                   <tr>
                     <td colSpan="5" className="text-gray-700 text-xs">
-                      Note: At present, the maximum number of concurrent sessions supported by G723 encoding is 9. When the concurrent sessions are more than 9, the encoding of the next priority will be automatically used (it is recommended to configure G711A/U as the encoding of the next priority).
+                      Note: At present, the maximum number of concurrent
+                      sessions supported by G723 encoding is 9. When the
+                      concurrent sessions are more than 9, the encoding of the
+                      next priority will be automatically used (it is
+                      recommended to configure G711A/U as the encoding of the
+                      next priority).
                     </td>
                   </tr>
                   <tr>
                     <td colSpan="5" className="text-gray-700 text-xs pt-1">
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The maximum number of concurrent sessions supported by AMR/iLBC encoding is 15. When the concurrent sessions are more than 15, the encoding of the next priority will be automatically used (it is recommended to configure G711A/U as the encoding of the next priority).
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The
+                      maximum number of concurrent sessions supported by
+                      AMR/iLBC encoding is 15. When the concurrent sessions are
+                      more than 15, the encoding of the next priority will be
+                      automatically used (it is recommended to configure G711A/U
+                      as the encoding of the next priority).
                     </td>
                   </tr>
                   <tr className="h-4" />
                 </tbody>
               </table>
             </div>
-        </div>
+          </div>
 
-        {/* Buttons */}
+          {/* Buttons */}
           <div className="flex justify-center gap-6 py-6">
             <button
               type="button"
-            onClick={handleSave}
+              onClick={handleSave}
               style={{
-              background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-              color: '#fff',
-              fontWeight: 600,
-                fontSize: '16px',
-                borderRadius: '6px',
-                minWidth: '100px',
-                height: '42px',
-                textTransform: 'none',
-                padding: '6px 24px',
-              boxShadow: '0 2px 8px #b3e0ff',
-                border: '1px solid #0e8fd6',
-                cursor: 'pointer',
+                background:
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: "16px",
+                borderRadius: "6px",
+                minWidth: "100px",
+                height: "42px",
+                textTransform: "none",
+                padding: "6px 24px",
+                boxShadow: "0 2px 8px #3E5475",
+                border: "1px solid #2C3E57",
+                cursor: "pointer",
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)';
+                e.target.style.background =
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)';
+                e.target.style.background =
+                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
               }}
             >
               Save
             </button>
             <button
               type="button"
-            onClick={handleReset}
+              onClick={handleReset}
               style={{
-              background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-              color: '#fff',
-              fontWeight: 600,
-                fontSize: '16px',
-                borderRadius: '6px',
-                minWidth: '100px',
-                height: '42px',
-                textTransform: 'none',
-                padding: '6px 24px',
-              boxShadow: '0 2px 8px #b3e0ff',
-                border: '1px solid #0e8fd6',
-                cursor: 'pointer',
+                background:
+                  "linear-gradient(to bottom, #9CA3AF 0%, #6B7280 60%, #4B5563 100%)",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: "16px",
+                borderRadius: "6px",
+                minWidth: "100px",
+                height: "42px",
+                textTransform: "none",
+                padding: "6px 24px",
+                boxShadow: "0 2px 8px #6B7280",
+                border: "1px solid #4B5563",
+                cursor: "pointer",
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)';
+                e.target.style.background =
+                  "linear-gradient(to bottom, #9CA3AF 0%, #6B7280 60%, #4B5563 100%)";
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)';
+                e.target.style.background =
+                  "linear-gradient(to bottom, #6B7280 0%, #9CA3AF 100%)";
               }}
             >
               Reset
@@ -619,4 +662,3 @@ const FxsVoipMediaPage = () => {
 };
 
 export default FxsVoipMediaPage;
-

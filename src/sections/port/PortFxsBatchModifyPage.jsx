@@ -290,7 +290,7 @@ const PortFxsBatchModifyPage = ({ initialPorts: propInitialPorts, onClose, onSav
       <div className="flex justify-center" style={{ padding: '0 20px' }}>
         <div style={{ width: '62%', maxWidth: '1000px', minWidth: '700px' }}>
           {/* Page Title Bar */}
-          <div className="w-full h-8 bg-linear-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-gray-700 shadow mb-0">
+          <div className="rounded-t-lg w-full h-8 bg-[#3E5475] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
             <span>{PORT_FXS_BATCH_MODIFY_TITLE}</span>
           </div>
 
@@ -439,36 +439,41 @@ const PortFxsBatchModifyPage = ({ initialPorts: propInitialPorts, onClose, onSav
 
             {/* Buttons - Outside the bordered box */}
             <div className="flex justify-center gap-6 py-6">
-              <button
-                type="submit"
-                style={{
-                  background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-                  color: '#fff',
-                  fontWeight: 600,
-                  fontSize: '16px',
-                  borderRadius: '6px',
-                  minWidth: '100px',
-                  height: '42px',
-                  textTransform: 'none',
-                  padding: '6px 24px',
-                  boxShadow: '0 2px 8px #b3e0ff',
-                  border: '1px solid #0e8fd6',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)';
-                }}
-              >
-                Save
-              </button>
+ <button
+              type="button"
+              onClick={handleSave}
+              style={{
+                background:
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: "16px",
+                borderRadius: "6px",
+                minWidth: "100px",
+                height: "42px",
+                textTransform: "none",
+                padding: "6px 24px",
+                boxShadow: "0 2px 8px #3E5475",
+                border: "1px solid #2C3E57",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background =
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background =
+                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+              }}
+            >
+              Save
+            </button>
+
               <button
                 type="button"
                 onClick={handleCancel}
                 style={{
-                  background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
+                  background: 'linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)',
                   color: '#fff',
                   fontWeight: 600,
                   fontSize: '16px',
@@ -477,16 +482,18 @@ const PortFxsBatchModifyPage = ({ initialPorts: propInitialPorts, onClose, onSav
                   height: '42px',
                   textTransform: 'none',
                   padding: '6px 24px',
-                  boxShadow: '0 2px 8px #b3e0ff',
-                  border: '1px solid #0e8fd6',
+                  boxShadow: '0 2px 8px #3E5475',
+                  border: '1px solid #2C3E57',
                   cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)';
-                }}
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background =
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background =
+                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+              }}
               >
                 Cancel
               </button>

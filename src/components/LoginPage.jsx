@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import clixxoLogo from '../assets/LoginPageLogo2.png';
+import clixxoLogo from '../assets/Clixxo_Logo.png';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { fetchLogin } from '../api/apiService';
@@ -78,14 +78,14 @@ const LoginPage = () => {
 
   
   return (
-    <div className="min-h-screen bg-[#e3e7ef] flex flex-col items-center justify-start">
+    <div className="min-h-screen flex flex-col items-center justify-start bg-[#2C3E5a] bg-no-repeat bg-cover bg-center">
+
       {/* Top Bar */}
-      <div className="w-screen h-[170px] bg-[#23272b] relative overflow-hidden">
-        {/* Server Status in Top Bar */}
+      <div className="w-screen h-[170px] relative overflow-hidden bg-cover bg-center">
         {serverStatus === 'offline' && (
           <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="bg-[#f8d7da] text-[#721c24] px-6 py-4 rounded-lg text-lg font-medium border border-[#f5c6cb] shadow-lg flex flex-col items-center">
-              <div className="flex items-center mb-6">
+            <div className="bg-[#f8d7da] text-[#721c24] px-2 py-3 rounded-lg text-lg font-medium border border-[#f5c6cb] shadow-lg flex flex-col items-center">
+              <div className="flex items-center mb-3">
                 <span className="mr-3 text-xl">⚠️</span>
                 Server is offline. Please check your connection.
               </div>
@@ -104,124 +104,122 @@ const LoginPage = () => {
           </div>
         )}
       </div>
-      
+
       {/* Login Card */}
-      <div className="px-6 py-10 flex flex-col items-center relative mt-0.5 w-[95vw] max-w-[400px]">
-        {/* Toast */}
-        {(() => {
-          let bg, border, color, icon, text, onDismiss;
+      <div className="flex items-start justify-center bg-white px-2 py-0 mt-0 border border-gray-400 rounded-lg w-[95%] max-w-[350px]">
 
-          if (isLoading) {
-            bg = '#eff6ff'; border = '#93c5fd'; color = '#1d4ed8';
-            icon = '⏳'; text = 'Connecting to server...';
-          } else if (lockMessage) {
-            bg = '#fef2f2'; border = '#fca5a5'; color = '#b91c1c';
-            icon = '🔒'; text = lockMessage;
-            onDismiss = () => setLockMessage('');
-          } else if (attemptsLeft !== null && attemptsLeft > 0) {
-            bg = '#fffbeb'; border = '#fcd34d'; color = '#92400e';
-            icon = '⚠️'; text = `Invalid credentials — ${attemptsLeft} attempt${attemptsLeft !== 1 ? 's' : ''} left`;
-            onDismiss = () => { setAttemptsLeft(null); setError(''); };
-          } else if (error && error !== 'locked') {
-            bg = '#fef2f2'; border = '#fca5a5'; color = '#b91c1c';
-            icon = '⊘'; text = error;
-            onDismiss = () => setError('');
-          } else {
-            return null;
-          }
+        <div className="px-5 py-10 flex flex-col items-center relative mt-0.5 w-[95vw] max-w-[350px]">
 
-          return (
-            <div style={{
-              position: 'absolute', top: -48, left: '50%', transform: 'translateX(-50%)',
-              width: 310, zIndex: 20, background: bg, border: `1px solid ${border}`,
-              borderRadius: 8, padding: '8px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
-              <span style={{ color, fontSize: 12, fontWeight: 600, flex: 1, lineHeight: 1.4 }}>{text}</span>
-              {onDismiss && (
-                <span style={{ color, cursor: 'pointer', fontSize: 17, lineHeight: 1, flexShrink: 0, opacity: 0.7 }} onClick={onDismiss}>&times;</span>
-              )}
-            </div>
-          );
-        })()}
-        {/* Logo */}
-        <div className="mb-6 flex justify-center items-center w-full">
-          <img src={clixxoLogo} alt="Clixxo Logo" className="w-36 max-w-full -ml-18" />
-        </div>
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="w-full max-w-xs mx-auto">
-          <div className="flex items-center gap-2 mb-6">
-            <label className="text-base text-gray-700 font-medium whitespace-nowrap w-20" htmlFor="username">Username:</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              className="text-base px-2 py-0.5 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white disabled:bg-gray-100 w-40"
-              // placeholder="Enter username"
-              autoFocus
-              disabled={isLoading}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && password) {
-                  handleLogin(e);
-                }
-              }}
-            />
+          {/* Toast (kept from original) */}
+          {(() => {
+            let bg, border, color, icon, text, onDismiss;
+            if (isLoading) {
+              bg = '#eff6ff'; border = '#93c5fd'; color = '#1d4ed8';
+              icon = '⏳'; text = 'Connecting to server...';
+            } else if (lockMessage) {
+              bg = '#fef2f2'; border = '#fca5a5'; color = '#b91c1c';
+              icon = '🔒'; text = lockMessage;
+              onDismiss = () => setLockMessage('');
+            } else if (attemptsLeft !== null && attemptsLeft > 0) {
+              bg = '#fffbeb'; border = '#fcd34d'; color = '#92400e';
+              icon = '⚠️'; text = `Invalid credentials — ${attemptsLeft} attempt${attemptsLeft !== 1 ? 's' : ''} left`;
+              onDismiss = () => { setAttemptsLeft(null); setError(''); };
+            } else if (error && error !== 'locked') {
+              bg = '#fef2f2'; border = '#fca5a5'; color = '#b91c1c';
+              icon = '⊘'; text = error;
+              onDismiss = () => setError('');
+            } else {
+              return null;
+            }
+            return (
+              <div style={{
+                position: 'absolute', top: -48, left: '50%', transform: 'translateX(-50%)',
+                width: 310, zIndex: 20, background: bg, border: `1px solid ${border}`,
+                borderRadius: 8, padding: '8px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
+                <span style={{ color, fontSize: 12, fontWeight: 600, flex: 1, lineHeight: 1.4 }}>{text}</span>
+                {onDismiss && (
+                  <span style={{ color, cursor: 'pointer', fontSize: 17, lineHeight: 1, flexShrink: 0, opacity: 0.7 }} onClick={onDismiss}>&times;</span>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Logo */}
+          <div className="mb-6 flex justify-center items-center w-full">
+            <img src={clixxoLogo} alt="Clixxo Logo" className="w-38 max-w-full ml-0" />
           </div>
-          <div className="flex items-center gap-2 mb-6">
-            <label className="text-base text-gray-700 font-medium whitespace-nowrap w-20" htmlFor="password">Password :</label>
-            <div className="relative">
+
+          {/* Login Form */}
+          <form onSubmit={handleLogin} className="w-full items-center">
+            <div className="flex items-center gap-2 mb-6">
               <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="text-base px-2 py-0.5 pr-8 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white disabled:bg-gray-100 w-40"
-                // placeholder="Enter password"
-                disabled={isLoading}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && username && password) {
-                    handleLogin(e);
-                  }
+                id="username"
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Username"
+                disabled={isLoading || serverStatus === 'offline'}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && username && password) handleLogin(e);
                 }}
+                className="w-full px-4 py-1.5 pr-12 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               />
+            </div>
+            <div className="flex items-center gap-2 mb-6">
+              <div className="relative w-full">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Password"
+                  disabled={isLoading || serverStatus === 'offline'}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && username && password) handleLogin(e);
+                  }}
+                  className="w-full px-4 py-1.5 pr-12 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  disabled={isLoading || serverStatus === 'offline'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors"
+                >
+                  {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-2 w-full">
+              <button
+                type="submit"
+                disabled={isLoading || serverStatus === 'offline'}
+                className={`w-full py-2 px-2 text-sm font-bold text-white rounded-lg transition-all duration-200 transform shadow-md ${
+                  isLoading || serverStatus === 'offline'
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-[#2d3436] hover:bg-[#1a1a1a] hover:shadow-lg active:scale-95'
+                }`}
+              >
+                {isLoading ? 'LOGGING IN...' : serverStatus === 'offline' ? 'SERVER OFFLINE' : 'LOGIN'}
+              </button>
               <button
                 type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none disabled:opacity-50"
+                onClick={handleCancel}
                 disabled={isLoading}
+                className={`w-full py-2 px-2 text-sm font-bold rounded-lg transition-all duration-200 transform shadow-md ${
+                  isLoading
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#636e72] text-white hover:bg-[#4a5568] hover:shadow-lg active:scale-95'
+                }`}
               >
-                {showPassword ? <VisibilityOff style={{ fontSize: 16 }} /> : <Visibility style={{ fontSize: 16 }} />}
+                CANCEL
               </button>
             </div>
-          </div>
-          <div className="flex gap-2 w-full max-w-xs">
-            <button
-              type="submit"
-              disabled={isLoading || serverStatus === 'offline'}
-              className={`w-30 px-3 py-0.5 text-base font-semibold shadow-md transition-all duration-200 transform
-                ${isLoading || serverStatus === 'offline'
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-b from-[#3bb6f5] to-[#0e8fd6] text-gray-700 hover:from-[#249be8] hover:to-[#0a6fae] hover:shadow-lg hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer'}
-              `}
-            >
-              {isLoading ? 'Logging in...' : serverStatus === 'offline' ? 'Server Offline' : 'Login'}
-            </button>
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isLoading}
-              className={`w-30 px-3 py-0.5 text-base font-semibold shadow-md transition-all duration-200 transform
-                ${isLoading
-                  ? 'bg-gray-300 text-white cursor-not-allowed'
-                  : 'bg-gradient-to-b from-[#e5e7eb] to-[#9ca3af] text-gray-700 hover:from-[#f3f4f6] hover:to-[#6b7280] hover:shadow-lg hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer'}
-              `}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
