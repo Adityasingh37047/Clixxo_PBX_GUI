@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Button,
   CircularProgress,
@@ -11,8 +11,8 @@ import {
   MenuItem,
   Select,
   Tooltip,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   listConferences,
   getConference,
@@ -23,40 +23,45 @@ import {
   listConferenceModeratorMembers,
   listRingBackOptions,
   fetchExtensionGroups,
-} from '../api/apiService';
+} from "../api/apiService";
 
-const ENABLE_OPTIONS = ['Yes', 'No'];
-const YES_NO_OPTIONS = ['Yes', 'No'];
+const ENABLE_OPTIONS = ["Yes", "No"];
+const YES_NO_OPTIONS = ["Yes", "No"];
 
 const ConferencePage = () => {
-  const normalizeModeratorValue = (value) => String(value ?? '').trim();
+  const normalizeModeratorValue = (value) => String(value ?? "").trim();
   const normalizeExtensionValue = (value) => {
-    const raw = String(value ?? '').trim();
-    if (!raw) return '';
-    return raw.replace(/^extension:/i, '').replace(/^ext:/i, '');
+    const raw = String(value ?? "").trim();
+    if (!raw) return "";
+    return raw.replace(/^extension:/i, "").replace(/^ext:/i, "");
   };
 
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('basic'); // 'basic' | 'advanced'
-  const [loading, setLoading] = useState({ save: false, delete: false, list: false, ext: false });
+  const [activeTab, setActiveTab] = useState("basic"); // 'basic' | 'advanced'
+  const [loading, setLoading] = useState({
+    save: false,
+    delete: false,
+    list: false,
+    ext: false,
+  });
 
   // Basic form state
   const [editId, setEditId] = useState(null);
-  const [roomName, setRoomName] = useState('');
-  const [conferenceNumber, setConferenceNumber] = useState('');
-  const [greeting, setGreeting] = useState('Default');
-  const [announce, setAnnounce] = useState('No');
-  const [record, setRecord] = useState('No');
+  const [roomName, setRoomName] = useState("");
+  const [conferenceNumber, setConferenceNumber] = useState("");
+  const [greeting, setGreeting] = useState("Default");
+  const [announce, setAnnounce] = useState("No");
+  const [record, setRecord] = useState("No");
   const [moderatorMembers, setModeratorMembers] = useState([]);
-  const [enabled, setEnabled] = useState('Yes');
-  const [scheduleStart, setScheduleStart] = useState('');
-  const [scheduleEnd, setScheduleEnd] = useState('');
-  const [pinEnabled, setPinEnabled] = useState('No');
-  const [moderatorPassword, setModeratorPassword] = useState('');
-  const [participantPassword, setParticipantPassword] = useState('');
-  const [maxMembers, setMaxMembers] = useState('20');
+  const [enabled, setEnabled] = useState("Yes");
+  const [scheduleStart, setScheduleStart] = useState("");
+  const [scheduleEnd, setScheduleEnd] = useState("");
+  const [pinEnabled, setPinEnabled] = useState("No");
+  const [moderatorPassword, setModeratorPassword] = useState("");
+  const [participantPassword, setParticipantPassword] = useState("");
+  const [maxMembers, setMaxMembers] = useState("20");
 
   // Available extensions for moderator member
   const [availableExtensions, setAvailableExtensions] = useState([]);
@@ -67,11 +72,11 @@ const ConferencePage = () => {
   const [selectedGroupIds, setSelectedGroupIds] = useState([]);
 
   const toDateTimeLocal = (value) => {
-    if (!value) return '';
+    if (!value) return "";
     try {
       const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return '';
-      const pad = (n) => String(n).padStart(2, '0');
+      if (Number.isNaN(d.getTime())) return "";
+      const pad = (n) => String(n).padStart(2, "0");
       const year = d.getFullYear();
       const month = pad(d.getMonth() + 1);
       const day = pad(d.getDate());
@@ -79,15 +84,15 @@ const ConferencePage = () => {
       const minutes = pad(d.getMinutes());
       return `${year}-${month}-${day}T${hours}:${minutes}`;
     } catch {
-      return '';
+      return "";
     }
   };
 
   // Advanced settings
-  const [waitForModerator, setWaitForModerator] = useState('Yes');
-  const [sayYourName, setSayYourName] = useState('Yes');
-  const [muteParticipant, setMuteParticipant] = useState('No');
-  const [allowInvite, setAllowInvite] = useState('Yes');
+  const [waitForModerator, setWaitForModerator] = useState("Yes");
+  const [sayYourName, setSayYourName] = useState("Yes");
+  const [muteParticipant, setMuteParticipant] = useState("No");
+  const [allowInvite, setAllowInvite] = useState("Yes");
 
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
@@ -103,25 +108,29 @@ const ConferencePage = () => {
       try {
         // List conferences for table
         const res = await listConferences();
-        const raw = Array.isArray(res?.message) ? res.message : Array.isArray(res?.data) ? res.data : [];
+        const raw = Array.isArray(res?.message)
+          ? res.message
+          : Array.isArray(res?.data)
+            ? res.data
+            : [];
         const mapped = raw.map((item) => ({
           id: item.id,
           roomName: item.name,
           conferenceNumber: String(item.conf_number),
           greeting: item.greeting,
-          announce: item.announce ? 'Yes' : 'No',
-          record: item.record ? 'Yes' : 'No',
-          enabled: item.enabled ? 'Yes' : 'No',
+          announce: item.announce ? "Yes" : "No",
+          record: item.record ? "Yes" : "No",
+          enabled: item.enabled ? "Yes" : "No",
           scheduleStart: toDateTimeLocal(item.schedule_start),
           scheduleEnd: toDateTimeLocal(item.schedule_end),
-          pinEnabled: item.pin_enabled ? 'Yes' : 'No',
-          moderatorPassword: item.moderator_pin || '',
-          participantPassword: item.participant_pin || '',
-          maxMembers: String(item.max_members ?? ''),
-          waitForModerator: item.wait_for_moderator ? 'Yes' : 'No',
-          sayYourName: item.say_your_name ? 'Yes' : 'No',
-          muteParticipant: item.mute_participant ? 'Yes' : 'No',
-          allowInvite: item.allow_participant_invite ? 'Yes' : 'No',
+          pinEnabled: item.pin_enabled ? "Yes" : "No",
+          moderatorPassword: item.moderator_pin || "",
+          participantPassword: item.participant_pin || "",
+          maxMembers: String(item.max_members ?? ""),
+          waitForModerator: item.wait_for_moderator ? "Yes" : "No",
+          sayYourName: item.say_your_name ? "Yes" : "No",
+          muteParticipant: item.mute_participant ? "Yes" : "No",
+          allowInvite: item.allow_participant_invite ? "Yes" : "No",
           moderatorMembers: Array.isArray(item.moderators)
             ? item.moderators.map((m) => normalizeModeratorValue(m))
             : [],
@@ -133,13 +142,17 @@ const ConferencePage = () => {
           setLoading((prev) => ({ ...prev, ext: true }));
           const mmRes = await listConferenceModeratorMembers();
           const mmMessage = mmRes?.message || mmRes?.data || {};
-          const extRaw = Array.isArray(mmMessage?.extensions) ? mmMessage.extensions : [];
-          const groupsRaw = Array.isArray(mmMessage?.groups) ? mmMessage.groups : [];
+          const extRaw = Array.isArray(mmMessage?.extensions)
+            ? mmMessage.extensions
+            : [];
+          const groupsRaw = Array.isArray(mmMessage?.groups)
+            ? mmMessage.groups
+            : [];
 
           const extList = extRaw
             .map((e) => {
               if (!e) return null;
-              if (typeof e === 'string' || typeof e === 'number') {
+              if (typeof e === "string" || typeof e === "number") {
                 return { value: String(e), label: String(e) };
               }
               const value = e.extension ?? e.value;
@@ -157,11 +170,11 @@ const ConferencePage = () => {
           const groupList = groupsRaw
             .map((g) => {
               if (!g) return null;
-              const id = g.id != null ? String(g.id) : '';
-              const value = String(g.value || (id ? `group:${id}` : ''));
+              const id = g.id != null ? String(g.id) : "";
+              const value = String(g.value || (id ? `group:${id}` : ""));
               if (!value) return null;
               return {
-                id: id || value.replace(/^group:/, ''),
+                id: id || value.replace(/^group:/, ""),
                 name: g.name || g.label || value,
                 label: g.label || g.name || value,
                 value,
@@ -170,15 +183,18 @@ const ConferencePage = () => {
             .filter(Boolean);
           setExtensionGroups(groupList);
         } catch (err) {
-          console.error('Failed to load conference moderator member options:', err);
+          console.error(
+            "Failed to load conference moderator member options:",
+            err,
+          );
           // Fallback for older backend APIs
           try {
             const extRes = await listConferenceExtensions();
             const extRaw = Array.isArray(extRes?.message)
               ? extRes.message
               : Array.isArray(extRes?.data)
-              ? extRes.data
-              : [];
+                ? extRes.data
+                : [];
             const extList = extRaw
               .filter((e) => e && e.extension)
               .map((e) => ({
@@ -195,13 +211,13 @@ const ConferencePage = () => {
             const grpRaw = Array.isArray(grpRes?.message)
               ? grpRes.message
               : Array.isArray(grpRes?.data)
-              ? grpRes.data
-              : [];
+                ? grpRes.data
+                : [];
             const groupList = grpRaw
               .map((g) => {
                 if (!g) return null;
-                const id = g.id != null ? String(g.id) : '';
-                const value = id ? `group:${id}` : '';
+                const id = g.id != null ? String(g.id) : "";
+                const value = id ? `group:${id}` : "";
                 if (!value) return null;
                 return {
                   id,
@@ -225,15 +241,16 @@ const ConferencePage = () => {
           const customPrompts = Array.isArray(gRes?.message?.custom_prompts)
             ? gRes.message.custom_prompts.map((g) => String(g))
             : [];
-          const uniqueCustomPrompts = Array.from(new Set(customPrompts.filter(Boolean)));
-          setGreetingOptions(['Default', ...uniqueCustomPrompts]);
+          const uniqueCustomPrompts = Array.from(
+            new Set(customPrompts.filter(Boolean)),
+          );
+          setGreetingOptions(["Default", ...uniqueCustomPrompts]);
         } catch (err) {
-          console.error('Failed to load conference greeting options:', err);
-          setGreetingOptions(['Default']);
+          console.error("Failed to load conference greeting options:", err);
+          setGreetingOptions(["Default"]);
         }
-
       } catch (err) {
-        showAlert(err?.message || 'Failed to load conference data.');
+        showAlert(err?.message || "Failed to load conference data.");
       } finally {
         setLoading((prev) => ({ ...prev, list: false }));
       }
@@ -243,25 +260,25 @@ const ConferencePage = () => {
 
   const resetForm = () => {
     setEditId(null);
-    setRoomName('');
-    setConferenceNumber('');
-    setGreeting('Default');
-    setAnnounce('No');
-    setRecord('No');
+    setRoomName("");
+    setConferenceNumber("");
+    setGreeting("Default");
+    setAnnounce("No");
+    setRecord("No");
     setModeratorMembers([]);
-    setEnabled('Yes');
-    setScheduleStart('');
-    setScheduleEnd('');
-    setPinEnabled('No');
-    setModeratorPassword('');
-    setParticipantPassword('');
-    setMaxMembers('20');
-    setWaitForModerator('Yes');
-    setSayYourName('Yes');
-    setMuteParticipant('No');
-    setAllowInvite('Yes');
+    setEnabled("Yes");
+    setScheduleStart("");
+    setScheduleEnd("");
+    setPinEnabled("No");
+    setModeratorPassword("");
+    setParticipantPassword("");
+    setMaxMembers("20");
+    setWaitForModerator("Yes");
+    setSayYourName("Yes");
+    setMuteParticipant("No");
+    setAllowInvite("Yes");
     setSelectedGroupIds([]);
-    setActiveTab('basic');
+    setActiveTab("basic");
   };
 
   const handleOpenAddModal = () => {
@@ -282,82 +299,101 @@ const ConferencePage = () => {
           ...row,
           roomName: detail?.name ?? row.roomName,
           conferenceNumber:
-            detail?.conf_number != null ? String(detail.conf_number) : row.conferenceNumber,
+            detail?.conf_number != null
+              ? String(detail.conf_number)
+              : row.conferenceNumber,
           greeting: detail?.greeting ?? row.greeting,
           announce:
-            typeof detail?.announce === 'boolean'
+            typeof detail?.announce === "boolean"
               ? detail.announce
-                ? 'Yes'
-                : 'No'
+                ? "Yes"
+                : "No"
               : row.announce,
           record:
-            typeof detail?.record === 'boolean' ? (detail.record ? 'Yes' : 'No') : row.record,
+            typeof detail?.record === "boolean"
+              ? detail.record
+                ? "Yes"
+                : "No"
+              : row.record,
           moderatorMembers: Array.isArray(detail?.moderators)
             ? detail.moderators.map((m) => normalizeModeratorValue(m))
             : row.moderatorMembers,
           enabled:
-            typeof detail?.enabled === 'boolean' ? (detail.enabled ? 'Yes' : 'No') : row.enabled,
-          scheduleStart: toDateTimeLocal(detail?.schedule_start) || row.scheduleStart,
+            typeof detail?.enabled === "boolean"
+              ? detail.enabled
+                ? "Yes"
+                : "No"
+              : row.enabled,
+          scheduleStart:
+            toDateTimeLocal(detail?.schedule_start) || row.scheduleStart,
           scheduleEnd: toDateTimeLocal(detail?.schedule_end) || row.scheduleEnd,
           pinEnabled:
-            typeof detail?.pin_enabled === 'boolean'
+            typeof detail?.pin_enabled === "boolean"
               ? detail.pin_enabled
-                ? 'Yes'
-                : 'No'
+                ? "Yes"
+                : "No"
               : row.pinEnabled,
           moderatorPassword: detail?.moderator_pin ?? row.moderatorPassword,
-          participantPassword: detail?.participant_pin ?? row.participantPassword,
+          participantPassword:
+            detail?.participant_pin ?? row.participantPassword,
           maxMembers:
-            detail?.max_members != null ? String(detail.max_members) : String(row.maxMembers || ''),
+            detail?.max_members != null
+              ? String(detail.max_members)
+              : String(row.maxMembers || ""),
           waitForModerator:
-            typeof detail?.wait_for_moderator === 'boolean'
+            typeof detail?.wait_for_moderator === "boolean"
               ? detail.wait_for_moderator
-                ? 'Yes'
-                : 'No'
+                ? "Yes"
+                : "No"
               : row.waitForModerator,
           sayYourName:
-            typeof detail?.say_your_name === 'boolean'
+            typeof detail?.say_your_name === "boolean"
               ? detail.say_your_name
-                ? 'Yes'
-                : 'No'
+                ? "Yes"
+                : "No"
               : row.sayYourName,
           muteParticipant:
-            typeof detail?.mute_participant === 'boolean'
+            typeof detail?.mute_participant === "boolean"
               ? detail.mute_participant
-                ? 'Yes'
-                : 'No'
+                ? "Yes"
+                : "No"
               : row.muteParticipant,
           allowInvite:
-            typeof detail?.allow_participant_invite === 'boolean'
+            typeof detail?.allow_participant_invite === "boolean"
               ? detail.allow_participant_invite
-                ? 'Yes'
-                : 'No'
+                ? "Yes"
+                : "No"
               : row.allowInvite,
         };
       }
     } catch (err) {
-      console.warn('Failed to fetch conference detail for edit, using list row fallback:', err);
+      console.warn(
+        "Failed to fetch conference detail for edit, using list row fallback:",
+        err,
+      );
     }
 
     setEditId(source.id);
-    setRoomName(source.roomName || '');
-    setConferenceNumber(source.conferenceNumber || '');
-    setGreeting(source.greeting || 'Default');
-    setAnnounce(source.announce || 'No');
-    setRecord(source.record || 'No');
-    setModeratorMembers(Array.isArray(source.moderatorMembers) ? source.moderatorMembers : []);
-    setEnabled(source.enabled || 'Yes');
-    setScheduleStart(source.scheduleStart || '');
-    setScheduleEnd(source.scheduleEnd || '');
-    setPinEnabled(source.pinEnabled || 'No');
-    setModeratorPassword(source.moderatorPassword || '');
-    setParticipantPassword(source.participantPassword || '');
-    setMaxMembers(source.maxMembers || '20');
-    setWaitForModerator(source.waitForModerator || 'Yes');
-    setSayYourName(source.sayYourName || 'Yes');
-    setMuteParticipant(source.muteParticipant || 'No');
-    setAllowInvite(source.allowInvite || 'Yes');
-    setActiveTab('basic');
+    setRoomName(source.roomName || "");
+    setConferenceNumber(source.conferenceNumber || "");
+    setGreeting(source.greeting || "Default");
+    setAnnounce(source.announce || "No");
+    setRecord(source.record || "No");
+    setModeratorMembers(
+      Array.isArray(source.moderatorMembers) ? source.moderatorMembers : [],
+    );
+    setEnabled(source.enabled || "Yes");
+    setScheduleStart(source.scheduleStart || "");
+    setScheduleEnd(source.scheduleEnd || "");
+    setPinEnabled(source.pinEnabled || "No");
+    setModeratorPassword(source.moderatorPassword || "");
+    setParticipantPassword(source.participantPassword || "");
+    setMaxMembers(source.maxMembers || "20");
+    setWaitForModerator(source.waitForModerator || "Yes");
+    setSayYourName(source.sayYourName || "Yes");
+    setMuteParticipant(source.muteParticipant || "No");
+    setAllowInvite(source.allowInvite || "Yes");
+    setActiveTab("basic");
     setShowModal(true);
   };
 
@@ -370,12 +406,14 @@ const ConferencePage = () => {
   const handleCheckAll = () => setSelected(rows.map((_, i) => i));
   const handleUncheckAll = () => setSelected([]);
   const handleSelectRow = (idx) => {
-    setSelected((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
+    setSelected((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+    );
   };
 
   const handleDelete = () => {
     if (selected.length === 0) {
-      showAlert('Please select at least one row to delete.');
+      showAlert("Please select at least one row to delete.");
       return;
     }
     setLoading((prev) => ({ ...prev, delete: true }));
@@ -388,25 +426,29 @@ const ConferencePage = () => {
           }
         }
         const res = await listConferences();
-        const raw = Array.isArray(res?.message) ? res.message : Array.isArray(res?.data) ? res.data : [];
+        const raw = Array.isArray(res?.message)
+          ? res.message
+          : Array.isArray(res?.data)
+            ? res.data
+            : [];
         const mapped = raw.map((item) => ({
           id: item.id,
           roomName: item.name,
           conferenceNumber: String(item.conf_number),
           greeting: item.greeting,
-          announce: item.announce ? 'Yes' : 'No',
-          record: item.record ? 'Yes' : 'No',
-          enabled: item.enabled ? 'Yes' : 'No',
+          announce: item.announce ? "Yes" : "No",
+          record: item.record ? "Yes" : "No",
+          enabled: item.enabled ? "Yes" : "No",
           scheduleStart: toDateTimeLocal(item.schedule_start),
           scheduleEnd: toDateTimeLocal(item.schedule_end),
-          pinEnabled: item.pin_enabled ? 'Yes' : 'No',
-          moderatorPassword: item.moderator_pin || '',
-          participantPassword: item.participant_pin || '',
-          maxMembers: String(item.max_members ?? ''),
-          waitForModerator: item.wait_for_moderator ? 'Yes' : 'No',
-          sayYourName: item.say_your_name ? 'Yes' : 'No',
-          muteParticipant: item.mute_participant ? 'Yes' : 'No',
-          allowInvite: item.allow_participant_invite ? 'Yes' : 'No',
+          pinEnabled: item.pin_enabled ? "Yes" : "No",
+          moderatorPassword: item.moderator_pin || "",
+          participantPassword: item.participant_pin || "",
+          maxMembers: String(item.max_members ?? ""),
+          waitForModerator: item.wait_for_moderator ? "Yes" : "No",
+          sayYourName: item.say_your_name ? "Yes" : "No",
+          muteParticipant: item.mute_participant ? "Yes" : "No",
+          allowInvite: item.allow_participant_invite ? "Yes" : "No",
           moderatorMembers: Array.isArray(item.moderators)
             ? item.moderators.map((m) => normalizeModeratorValue(m))
             : [],
@@ -414,7 +456,7 @@ const ConferencePage = () => {
         setRows(mapped);
         setSelected([]);
       } catch (err) {
-        showAlert(err?.message || 'Failed to delete conference room(s).');
+        showAlert(err?.message || "Failed to delete conference room(s).");
       } finally {
         setLoading((prev) => ({ ...prev, delete: false }));
       }
@@ -424,56 +466,63 @@ const ConferencePage = () => {
   const handleSave = () => {
     const trimmedRoomName = roomName.trim();
     if (!trimmedRoomName) {
-      showAlert('Room Name is required.');
+      showAlert("Room Name is required.");
       return;
     }
     if (!conferenceNumber.trim()) {
-      showAlert('Conference Center Number is required.');
+      showAlert("Conference Center Number is required.");
       return;
     }
 
     const num = parseInt(conferenceNumber.trim(), 10);
     if (Number.isNaN(num) || num < 6400 || num > 6499) {
-      showAlert('Conference Center Number must be between 6400 and 6499.');
+      showAlert("Conference Center Number must be between 6400 and 6499.");
       return;
     }
 
     if (!Array.isArray(moderatorMembers) || moderatorMembers.length === 0) {
-      showAlert('Please select at least one Moderator Member.');
+      showAlert("Please select at least one Moderator Member.");
       return;
     }
 
     const selectedModeratorExtensions = moderatorMembers.filter(
-      (member) => !String(member).startsWith('group:')
+      (member) => !String(member).startsWith("group:"),
     );
     if (selectedModeratorExtensions.length === 0) {
-      showAlert('Please select at least one Moderator Member extension. Group only selection is not allowed.');
+      showAlert(
+        "Please select at least one Moderator Member extension. Group only selection is not allowed.",
+      );
       return;
     }
 
     const maxMembersInt = parseInt(maxMembers, 10);
-    if (Number.isNaN(maxMembersInt) || maxMembersInt < 1 || maxMembersInt > 200) {
-      showAlert('Max Members must be between 1 and 200.');
+    if (
+      Number.isNaN(maxMembersInt) ||
+      maxMembersInt < 1 ||
+      maxMembersInt > 200
+    ) {
+      showAlert("Max Members must be between 1 and 200.");
       return;
     }
 
     const payloadForApi = {
       name: trimmedRoomName,
       conf_number: num,
-      greeting: (greeting || 'Default').toLowerCase(),
-      announce: announce === 'Yes',
-      record: record === 'Yes',
-      enabled: enabled === 'Yes',
+      greeting: (greeting || "Default").toLowerCase(),
+      announce: announce === "Yes",
+      record: record === "Yes",
+      enabled: enabled === "Yes",
       schedule_start: scheduleStart || null,
       schedule_end: scheduleEnd || null,
-      pin_enabled: pinEnabled === 'Yes',
-      moderator_pin: pinEnabled === 'Yes' ? moderatorPassword || null : null,
-      participant_pin: pinEnabled === 'Yes' ? participantPassword || null : null,
+      pin_enabled: pinEnabled === "Yes",
+      moderator_pin: pinEnabled === "Yes" ? moderatorPassword || null : null,
+      participant_pin:
+        pinEnabled === "Yes" ? participantPassword || null : null,
       max_members: maxMembersInt,
-      wait_for_moderator: waitForModerator === 'Yes',
-      say_your_name: sayYourName === 'Yes',
-      mute_participant: muteParticipant === 'Yes',
-      allow_participant_invite: allowInvite === 'Yes',
+      wait_for_moderator: waitForModerator === "Yes",
+      say_your_name: sayYourName === "Yes",
+      mute_participant: muteParticipant === "Yes",
+      allow_participant_invite: allowInvite === "Yes",
       moderators: moderatorMembers.map(String),
     };
 
@@ -488,25 +537,29 @@ const ConferencePage = () => {
         }
 
         const res = await listConferences();
-        const raw = Array.isArray(res?.message) ? res.message : Array.isArray(res?.data) ? res.data : [];
+        const raw = Array.isArray(res?.message)
+          ? res.message
+          : Array.isArray(res?.data)
+            ? res.data
+            : [];
         const mapped = raw.map((item) => ({
           id: item.id,
           roomName: item.name,
           conferenceNumber: String(item.conf_number),
           greeting: item.greeting,
-          announce: item.announce ? 'Yes' : 'No',
-          record: item.record ? 'Yes' : 'No',
-          enabled: item.enabled ? 'Yes' : 'No',
-          scheduleStart: item.schedule_start || '',
-          scheduleEnd: item.schedule_end || '',
-          pinEnabled: item.pin_enabled ? 'Yes' : 'No',
-          moderatorPassword: item.moderator_pin || '',
-          participantPassword: item.participant_pin || '',
-          maxMembers: String(item.max_members ?? ''),
-          waitForModerator: item.wait_for_moderator ? 'Yes' : 'No',
-          sayYourName: item.say_your_name ? 'Yes' : 'No',
-          muteParticipant: item.mute_participant ? 'Yes' : 'No',
-          allowInvite: item.allow_participant_invite ? 'Yes' : 'No',
+          announce: item.announce ? "Yes" : "No",
+          record: item.record ? "Yes" : "No",
+          enabled: item.enabled ? "Yes" : "No",
+          scheduleStart: item.schedule_start || "",
+          scheduleEnd: item.schedule_end || "",
+          pinEnabled: item.pin_enabled ? "Yes" : "No",
+          moderatorPassword: item.moderator_pin || "",
+          participantPassword: item.participant_pin || "",
+          maxMembers: String(item.max_members ?? ""),
+          waitForModerator: item.wait_for_moderator ? "Yes" : "No",
+          sayYourName: item.say_your_name ? "Yes" : "No",
+          muteParticipant: item.mute_participant ? "Yes" : "No",
+          allowInvite: item.allow_participant_invite ? "Yes" : "No",
           moderatorMembers: Array.isArray(item.moderators)
             ? item.moderators.map((m) => normalizeModeratorValue(m))
             : [],
@@ -515,7 +568,7 @@ const ConferencePage = () => {
         setShowModal(false);
         resetForm();
       } catch (err) {
-        showAlert(err?.message || 'Failed to save conference room.');
+        showAlert(err?.message || "Failed to save conference room.");
       } finally {
         setLoading((prev) => ({ ...prev, save: false }));
       }
@@ -524,13 +577,15 @@ const ConferencePage = () => {
 
   const toggleModeratorMember = (ext) => {
     setModeratorMembers((prev) =>
-      prev.includes(ext) ? prev.filter((v) => v !== ext) : [...prev, ext]
+      prev.includes(ext) ? prev.filter((v) => v !== ext) : [...prev, ext],
     );
   };
 
   const toggleExtensionGroup = (group) => {
-    const groupId = String(group?.id ?? '');
-    const groupValue = String(group?.value || (groupId ? `group:${groupId}` : ''));
+    const groupId = String(group?.id ?? "");
+    const groupValue = String(
+      group?.value || (groupId ? `group:${groupId}` : ""),
+    );
     if (!groupId || !groupValue) return;
 
     setModeratorMembers((prev) => {
@@ -543,7 +598,9 @@ const ConferencePage = () => {
 
   useEffect(() => {
     const mappedSelected = extensionGroups
-      .filter((g) => moderatorMembers.includes(String(g.value || `group:${g.id}`)))
+      .filter((g) =>
+        moderatorMembers.includes(String(g.value || `group:${g.id}`)),
+      )
       .map((g) => String(g.id));
     setSelectedGroupIds(mappedSelected);
   }, [moderatorMembers, extensionGroups]);
@@ -552,10 +609,10 @@ const ConferencePage = () => {
     <div className="w-full max-w-full mx-auto p-2">
       <div className="w-full max-w-full mx-auto">
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm mt-0"
+          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)',
-            boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
           Conference
@@ -593,7 +650,8 @@ const ConferencePage = () => {
                     colSpan={7}
                     className="border border-gray-300 px-2 py-4 text-center text-gray-500"
                   >
-                    No conference rooms yet. Click &quot;Add New&quot; to create one.
+                    No conference rooms yet. Click &quot;Add New&quot; to create
+                    one.
                   </td>
                 </tr>
               ) : (
@@ -630,7 +688,7 @@ const ConferencePage = () => {
                             size="small"
                             aria-label="Edit conference"
                             onClick={() => handleOpenEditModal(row)}
-                            sx={{ color: '#1565c0', padding: '4px' }}
+                            sx={{ color: "#1565c0", padding: "4px" }}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
@@ -648,7 +706,7 @@ const ConferencePage = () => {
           <div className="flex flex-wrap gap-2">
             <button
               className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleCheckAll}
               disabled={loading.delete}
@@ -657,7 +715,7 @@ const ConferencePage = () => {
             </button>
             <button
               className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleUncheckAll}
               disabled={loading.delete}
@@ -666,7 +724,7 @@ const ConferencePage = () => {
             </button>
             <button
               className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleDelete}
               disabled={loading.delete}
@@ -678,7 +736,7 @@ const ConferencePage = () => {
           <div className="flex gap-2">
             <button
               className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.save ? 'opacity-50 cursor-not-allowed' : ''
+                loading.save ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleOpenAddModal}
               disabled={loading.save}
@@ -746,48 +804,52 @@ const ConferencePage = () => {
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: 880, maxWidth: '96vw', mx: 'auto', p: 0 },
+          sx: { width: 880, maxWidth: "96vw", mx: "auto", p: 0 },
         }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base flex items-center justify-center gap-2"
+          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)',
-            borderBottom: '1px solid #444444',
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
           {editId != null && <EditIcon sx={{ fontSize: 22, opacity: 0.95 }} />}
-          {editId != null ? 'Edit Conference' : 'Add Conference'}
+          {editId != null ? "Edit Conference" : "Add Conference"}
         </DialogTitle>
         <DialogContent
           className="pt-0 pb-0 px-0"
           style={{
-            backgroundColor: '#dde0e4',
-            border: '1px solid #444444',
-            borderTop: 'none',
+            backgroundColor: "#dde0e4",
+            border: "1px solid #444444",
+            borderTop: "none",
           }}
         >
           {/* Tabs */}
           <div className="flex border-b border-gray-300 bg-white px-4 pt-3">
             <button
               className={`px-4 pb-2 text-sm font-semibold border-b-2 ${
-                activeTab === 'basic' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-600'
+                activeTab === "basic"
+                  ? "border-teal-500 text-teal-600"
+                  : "border-transparent text-gray-600"
               }`}
-              onClick={() => setActiveTab('basic')}
+              onClick={() => setActiveTab("basic")}
             >
               BASIC
             </button>
             <button
               className={`px-4 pb-2 text-sm font-semibold border-b-2 ${
-                activeTab === 'advanced' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-600'
+                activeTab === "advanced"
+                  ? "border-teal-500 text-teal-600"
+                  : "border-transparent text-gray-600"
               }`}
-              onClick={() => setActiveTab('advanced')}
+              onClick={() => setActiveTab("advanced")}
             >
               ADVANCED SETTINGS
             </button>
           </div>
 
-          {activeTab === 'basic' ? (
+          {activeTab === "basic" ? (
             <div className="pt-3 pb-2 px-3">
               <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
                 <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
@@ -797,7 +859,10 @@ const ConferencePage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                     {/* Left column */}
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 180, marginRight: 8 }}
@@ -811,12 +876,16 @@ const ConferencePage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 180, marginRight: 8 }}
                         >
-                          Conference Center Number <span className="text-red-500">*</span>
+                          Conference Center Number{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
@@ -825,7 +894,10 @@ const ConferencePage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 180, marginRight: 8 }}
@@ -838,27 +910,41 @@ const ConferencePage = () => {
                             fullWidth
                             sx={{
                               minWidth: 0,
-                              '& .MuiSelect-select': {
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
+                              "& .MuiSelect-select": {
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
                               },
                             }}
                           >
-                            <Select value={greeting} onChange={(e) => setGreeting(e.target.value)} MenuProps={{ PaperProps: { sx: { maxHeight: 280 } } }}>
-                              {(greetingOptions.length ? greetingOptions : ['Default']).map(
-                                (opt) => (
-                                  <MenuItem key={opt} value={opt} sx={{ maxWidth: 420 }}>
-                                    {opt}
-                                  </MenuItem>
-                                )
-                              )}
+                            <Select
+                              value={greeting}
+                              onChange={(e) => setGreeting(e.target.value)}
+                              MenuProps={{
+                                PaperProps: { sx: { maxHeight: 280 } },
+                              }}
+                            >
+                              {(greetingOptions.length
+                                ? greetingOptions
+                                : ["Default"]
+                              ).map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ maxWidth: 420 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
                             </Select>
                           </FormControl>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 180, marginRight: 8 }}
@@ -867,7 +953,10 @@ const ConferencePage = () => {
                         </label>
                         <div className="flex-1">
                           <FormControl size="small" fullWidth>
-                            <Select value={announce} onChange={(e) => setAnnounce(e.target.value)}>
+                            <Select
+                              value={announce}
+                              onChange={(e) => setAnnounce(e.target.value)}
+                            >
                               {YES_NO_OPTIONS.map((opt) => (
                                 <MenuItem key={opt} value={opt}>
                                   {opt}
@@ -878,7 +967,10 @@ const ConferencePage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 180, marginRight: 8 }}
@@ -887,7 +979,10 @@ const ConferencePage = () => {
                         </label>
                         <div className="flex-1">
                           <FormControl size="small" fullWidth>
-                            <Select value={record} onChange={(e) => setRecord(e.target.value)}>
+                            <Select
+                              value={record}
+                              onChange={(e) => setRecord(e.target.value)}
+                            >
                               {YES_NO_OPTIONS.map((opt) => (
                                 <MenuItem key={opt} value={opt}>
                                   {opt}
@@ -897,12 +992,14 @@ const ConferencePage = () => {
                           </FormControl>
                         </div>
                       </div>
-
                     </div>
 
                     {/* Right column */}
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 170, marginRight: 8 }}
@@ -911,7 +1008,10 @@ const ConferencePage = () => {
                         </label>
                         <div className="flex-1">
                           <FormControl size="small" fullWidth>
-                            <Select value={enabled} onChange={(e) => setEnabled(e.target.value)}>
+                            <Select
+                              value={enabled}
+                              onChange={(e) => setEnabled(e.target.value)}
+                            >
                               {ENABLE_OPTIONS.map((opt) => (
                                 <MenuItem key={opt} value={opt}>
                                   {opt}
@@ -922,7 +1022,10 @@ const ConferencePage = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 170, marginRight: 8 }}
@@ -937,7 +1040,10 @@ const ConferencePage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 170, marginRight: 8 }}
@@ -952,7 +1058,10 @@ const ConferencePage = () => {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 170, marginRight: 8 }}
@@ -965,9 +1074,9 @@ const ConferencePage = () => {
                               value={pinEnabled}
                               onChange={(e) => {
                                 setPinEnabled(e.target.value);
-                                if (e.target.value === 'No') {
-                                  setModeratorPassword('');
-                                  setParticipantPassword('');
+                                if (e.target.value === "No") {
+                                  setModeratorPassword("");
+                                  setParticipantPassword("");
                                 }
                               }}
                             >
@@ -981,9 +1090,12 @@ const ConferencePage = () => {
                         </div>
                       </div>
 
-                      {pinEnabled === 'Yes' && (
+                      {pinEnabled === "Yes" && (
                         <>
-                          <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                          <div
+                            className="flex items-center gap-2"
+                            style={{ minHeight: 30 }}
+                          >
                             <label
                               className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                               style={{ width: 170, marginRight: 8 }}
@@ -993,11 +1105,16 @@ const ConferencePage = () => {
                             <input
                               className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
                               value={moderatorPassword}
-                              onChange={(e) => setModeratorPassword(e.target.value)}
+                              onChange={(e) =>
+                                setModeratorPassword(e.target.value)
+                              }
                             />
                           </div>
 
-                          <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                          <div
+                            className="flex items-center gap-2"
+                            style={{ minHeight: 30 }}
+                          >
                             <label
                               className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                               style={{ width: 170, marginRight: 8 }}
@@ -1007,13 +1124,18 @@ const ConferencePage = () => {
                             <input
                               className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
                               value={participantPassword}
-                              onChange={(e) => setParticipantPassword(e.target.value)}
+                              onChange={(e) =>
+                                setParticipantPassword(e.target.value)
+                              }
                             />
                           </div>
                         </>
                       )}
 
-                      <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 30 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 170, marginRight: 8 }}
@@ -1047,7 +1169,9 @@ const ConferencePage = () => {
                               <input
                                 type="checkbox"
                                 checked={moderatorMembers.includes(ext.value)}
-                                onChange={() => toggleModeratorMember(ext.value)}
+                                onChange={() =>
+                                  toggleModeratorMember(ext.value)
+                                }
                               />
                               <span>{ext.label}</span>
                             </label>
@@ -1061,7 +1185,9 @@ const ConferencePage = () => {
                             >
                               <input
                                 type="checkbox"
-                                checked={selectedGroupIds.includes(String(group.id))}
+                                checked={selectedGroupIds.includes(
+                                  String(group.id),
+                                )}
                                 onChange={() => toggleExtensionGroup(group)}
                               />
                               <span>{group.name}</span>
@@ -1070,7 +1196,9 @@ const ConferencePage = () => {
                         </div>
                       </div>
                       <div className="text-[12px] text-red-600 mt-1">
-                        Note: Selecting an extension group will include all members in that group when a moderator dials this conference number.
+                        Note: Selecting an extension group will include all
+                        members in that group when a moderator dials this
+                        conference number.
                       </div>
                     </div>
                   </div>
@@ -1085,7 +1213,10 @@ const ConferencePage = () => {
                 </div>
                 <div className="p-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-2">
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 30 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 8 }}
@@ -1096,7 +1227,9 @@ const ConferencePage = () => {
                         <FormControl size="small" fullWidth>
                           <Select
                             value={waitForModerator}
-                            onChange={(e) => setWaitForModerator(e.target.value)}
+                            onChange={(e) =>
+                              setWaitForModerator(e.target.value)
+                            }
                           >
                             {YES_NO_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
@@ -1108,7 +1241,10 @@ const ConferencePage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 30 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 8 }}
@@ -1117,7 +1253,10 @@ const ConferencePage = () => {
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={sayYourName} onChange={(e) => setSayYourName(e.target.value)}>
+                          <Select
+                            value={sayYourName}
+                            onChange={(e) => setSayYourName(e.target.value)}
+                          >
                             {YES_NO_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -1128,7 +1267,10 @@ const ConferencePage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 30 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 8 }}
@@ -1151,7 +1293,10 @@ const ConferencePage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 30 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 30 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 8 }}
@@ -1160,7 +1305,10 @@ const ConferencePage = () => {
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={allowInvite} onChange={(e) => setAllowInvite(e.target.value)}>
+                          <Select
+                            value={allowInvite}
+                            onChange={(e) => setAllowInvite(e.target.value)}
+                          >
                             {YES_NO_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -1180,53 +1328,63 @@ const ConferencePage = () => {
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-              color: '#fff',
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              color: "#fff",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 8px #b3e0ff',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-                color: '#fff',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+                color: "#fff",
               },
-              '&:disabled': {
-                background: '#ccc',
-                color: '#666',
+
+              "&:disabled": {
+                background: "#cbd5e1",
+                color: "#64748b",
               },
             }}
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={loading.save && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading.save && <CircularProgress size={20} color="inherit" />
+            }
           >
-            {loading.save ? 'Saving...' : 'Save'}
+            {loading.save ? "Saving..." : "Save"}
           </Button>
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-              color: '#374151',
+              background:
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+              color: "#3E5475 ",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)',
-                color: '#374151',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+                color: "#2f405c",
               },
-              '&:disabled': {
-                background: '#f3f4f6',
-                color: '#9ca3af',
+
+              "&:disabled": {
+                background: "#f1f5f9",
+                color: "#94a3b8",
               },
             }}
             onClick={handleCloseModal}
@@ -1241,4 +1399,3 @@ const ConferencePage = () => {
 };
 
 export default ConferencePage;
-

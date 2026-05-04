@@ -1,6 +1,16 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import EditDocumentIcon from '@mui/icons-material/EditDocument';
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, MenuItem, Select } from '@mui/material';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import {
   createOutboundRoute,
   deleteOutboundRoute,
@@ -8,40 +18,58 @@ import {
   listOutboundRoutes,
   listSipRegistrations,
   updateOutboundRoute,
-} from '../api/apiService';
+} from "../api/apiService";
 
-const ENABLE_OPTIONS = ['Yes', 'No'];
-const PASSWORD_OPTIONS = ['None', 'Single Pin'];
-const REMEMORY_HUNT_OPTIONS = ['No', 'Yes'];
-const TIME_CONDITION_OPTIONS = ['WorkTime', 'Holiday', 'All'];
+const ENABLE_OPTIONS = ["Yes", "No"];
+const PASSWORD_OPTIONS = ["None", "Single Pin"];
+const REMEMORY_HUNT_OPTIONS = ["No", "Yes"];
+const TIME_CONDITION_OPTIONS = ["WorkTime", "Holiday", "All"];
 
-const DEFAULT_DIAL_PATTERN = { pattern: '', strip: '', front: '', suffix: '', delay: '' };
-const DEFAULT_CALLER_CONVERSION = { strip: '', front: '', suffix: '' };
+const DEFAULT_DIAL_PATTERN = {
+  pattern: "",
+  strip: "",
+  front: "",
+  suffix: "",
+  delay: "",
+};
+const DEFAULT_CALLER_CONVERSION = { strip: "", front: "", suffix: "" };
 
 const OutboundRoutesPage = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({ list: false, save: false, delete: false, members: false, trunks: false });
+  const [loading, setLoading] = useState({
+    list: false,
+    save: false,
+    delete: false,
+    members: false,
+    trunks: false,
+  });
   const hasLoadedMembersRef = useRef(false);
   const hasLoadedTrunksRef = useRef(false);
 
   const [editId, setEditId] = useState(null);
-  const [name, setName] = useState('');
-  const [priority, setPriority] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [priority, setPriority] = useState("");
+  const [description, setDescription] = useState("");
   const [nextRoute, setNextRoute] = useState(false);
-  const [enabled, setEnabled] = useState('Yes');
-  const [passwordType, setPasswordType] = useState('None');
-  const [singlePin, setSinglePin] = useState('');
-  const [rememoryHunt, setRememoryHunt] = useState('No');
+  const [enabled, setEnabled] = useState("Yes");
+  const [passwordType, setPasswordType] = useState("None");
+  const [singlePin, setSinglePin] = useState("");
+  const [rememoryHunt, setRememoryHunt] = useState("No");
   const [timeConditions, setTimeConditions] = useState([]);
-  const [dialPatterns, setDialPatterns] = useState([{ ...DEFAULT_DIAL_PATTERN }]);
-  const [callerConversion, setCallerConversion] = useState({ ...DEFAULT_CALLER_CONVERSION });
+  const [dialPatterns, setDialPatterns] = useState([
+    { ...DEFAULT_DIAL_PATTERN },
+  ]);
+  const [callerConversion, setCallerConversion] = useState({
+    ...DEFAULT_CALLER_CONVERSION,
+  });
 
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [memberExtensions, setMemberExtensions] = useState([]);
-  const [availableExtensionSelected, setAvailableExtensionSelected] = useState([]);
+  const [availableExtensionSelected, setAvailableExtensionSelected] = useState(
+    [],
+  );
   const [chosenExtensionSelected, setChosenExtensionSelected] = useState([]);
 
   const [availableTrunks, setAvailableTrunks] = useState([]);
@@ -55,7 +83,12 @@ const OutboundRoutesPage = () => {
   const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   useEffect(() => {
-    setPage((current) => Math.min(Math.max(1, current), Math.max(1, Math.ceil(rows.length / itemsPerPage))));
+    setPage((current) =>
+      Math.min(
+        Math.max(1, current),
+        Math.max(1, Math.ceil(rows.length / itemsPerPage)),
+      ),
+    );
   }, [rows]);
 
   const showAlert = (text) => window.alert(text);
@@ -66,12 +99,15 @@ const OutboundRoutesPage = () => {
   const importFileRef = React.useRef(null);
 
   const handleImportSubmit = async () => {
-    if (!importFile) { showAlert('Please select a file to import'); return; }
-    showAlert('Import API not yet configured');
+    if (!importFile) {
+      showAlert("Please select a file to import");
+      return;
+    }
+    showAlert("Import API not yet configured");
   };
 
   const handleExport = () => {
-    showAlert('Export API not yet configured');
+    showAlert("Export API not yet configured");
   };
 
   const normalizeList = (raw) => {
@@ -79,25 +115,29 @@ const OutboundRoutesPage = () => {
     return Array.isArray(list) ? list : [];
   };
 
-  const toUiYesNo = (value, defaultValue = 'No') => {
-    if (typeof value === 'string') {
+  const toUiYesNo = (value, defaultValue = "No") => {
+    if (typeof value === "string") {
       const normalized = value.toLowerCase();
-      if (normalized === 'yes') return 'Yes';
-      if (normalized === 'no') return 'No';
+      if (normalized === "yes") return "Yes";
+      if (normalized === "no") return "No";
     }
-    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === "boolean") return value ? "Yes" : "No";
     return defaultValue;
   };
 
-  const toApiYesNo = (value, defaultValue = 'no') => {
-    const normalized = String(value || '').toLowerCase();
-    if (normalized === 'yes') return 'yes';
-    if (normalized === 'no') return 'no';
+  const toApiYesNo = (value, defaultValue = "no") => {
+    const normalized = String(value || "").toLowerCase();
+    if (normalized === "yes") return "yes";
+    if (normalized === "no") return "no";
     return defaultValue;
   };
 
-  const mapPasswordTypeToUi = (apiValue) => (String(apiValue || '').toLowerCase() === 'single_pin' ? 'Single Pin' : 'None');
-  const mapPasswordTypeToApi = (uiValue) => (uiValue === 'Single Pin' ? 'single_pin' : 'none');
+  const mapPasswordTypeToUi = (apiValue) =>
+    String(apiValue || "").toLowerCase() === "single_pin"
+      ? "Single Pin"
+      : "None";
+  const mapPasswordTypeToApi = (uiValue) =>
+    uiValue === "Single Pin" ? "single_pin" : "none";
 
   const mapRouteFromApi = (item) => {
     const timeCond = item?.time_condition || {};
@@ -106,46 +146,52 @@ const OutboundRoutesPage = () => {
 
     const uiTime = [];
     const all = !!timeCond?.all;
-    if (timeCond?.work_time) uiTime.push('WorkTime');
-    if (all) uiTime.push('All');
-    if (all && timeCond?.holiday) uiTime.push('Holiday');
+    if (timeCond?.work_time) uiTime.push("WorkTime");
+    if (all) uiTime.push("All");
+    if (all && timeCond?.holiday) uiTime.push("Holiday");
 
     const parsedNextRoute =
-      typeof item?.next_route === 'string' ? item.next_route.toLowerCase() === 'yes' : !!item?.next_route;
+      typeof item?.next_route === "string"
+        ? item.next_route.toLowerCase() === "yes"
+        : !!item?.next_route;
 
     const parsedRmemory =
-      typeof item?.rrmemory_hunt === 'string'
-        ? item.rrmemory_hunt.toLowerCase() === 'yes'
+      typeof item?.rrmemory_hunt === "string"
+        ? item.rrmemory_hunt.toLowerCase() === "yes"
         : !!(item?.rrmemory_hunt ?? item?.rrmemory_hunt);
 
     return {
       id: item?.id,
-      name: String(item?.name || ''),
-      priority: String(item?.priority ?? ''),
-      description: String(item?.description || ''),
+      name: String(item?.name || ""),
+      priority: String(item?.priority ?? ""),
+      description: String(item?.description || ""),
       nextRoute: parsedNextRoute,
-      enabled: toUiYesNo(item?.enabled, 'Yes'),
+      enabled: toUiYesNo(item?.enabled, "Yes"),
       passwordType: mapPasswordTypeToUi(item?.password_type),
-      singlePin: item?.password_pin != null ? String(item.password_pin) : '',
-      rememoryHunt: parsedRmemory ? 'Yes' : 'No',
+      singlePin: item?.password_pin != null ? String(item.password_pin) : "",
+      rememoryHunt: parsedRmemory ? "Yes" : "No",
       timeConditions: uiTime,
       callerConversion: {
         strip: String(callerConv?.strip ?? 0),
-        front: String(callerConv?.front ?? ''),
-        suffix: String(callerConv?.suffix ?? ''),
+        front: String(callerConv?.front ?? ""),
+        suffix: String(callerConv?.suffix ?? ""),
       },
-      memberExtensions: Array.isArray(item?.member_extensions) ? item.member_extensions.map(String) : [],
-      memberTrunks: Array.isArray(item?.member_trunks) ? item.member_trunks.map(String) : [],
+      memberExtensions: Array.isArray(item?.member_extensions)
+        ? item.member_extensions.map(String)
+        : [],
+      memberTrunks: Array.isArray(item?.member_trunks)
+        ? item.member_trunks.map(String)
+        : [],
       dialPatterns:
         dial.length > 0
           ? dial.map((d) => ({
-              pattern: String(d?.pattern ?? ''),
+              pattern: String(d?.pattern ?? ""),
               strip: String(d?.strip ?? 0),
-              front: String(d?.front ?? ''),
-              suffix: String(d?.suffix ?? ''),
+              front: String(d?.front ?? ""),
+              suffix: String(d?.suffix ?? ""),
               delay: String(d?.delay_ms ?? 0),
             }))
-          : [{ ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$' }],
+          : [{ ...DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" }],
     };
   };
 
@@ -154,13 +200,13 @@ const OutboundRoutesPage = () => {
     try {
       const res = await listOutboundRoutes();
       if (!res?.response) {
-        showAlert(res?.message || 'Failed to load outbound routes.');
+        showAlert(res?.message || "Failed to load outbound routes.");
         setRows([]);
         return;
       }
       setRows(normalizeList(res).map(mapRouteFromApi));
     } catch (err) {
-      showAlert(err?.message || 'Failed to load outbound routes.');
+      showAlert(err?.message || "Failed to load outbound routes.");
       setRows([]);
     } finally {
       setLoading((prev) => ({ ...prev, list: false }));
@@ -174,14 +220,19 @@ const OutboundRoutesPage = () => {
       const list = normalizeList(res)
         .map((item) => {
           const ext = item?.extension ?? item?.ext ?? item?.id ?? item;
-          const display = item?.display_name ?? item?.name ?? '';
-          return { id: String(ext ?? ''), label: display ? `${display}-${String(ext ?? '')}` : String(ext ?? '') };
+          const display = item?.display_name ?? item?.name ?? "";
+          return {
+            id: String(ext ?? ""),
+            label: display
+              ? `${display}-${String(ext ?? "")}`
+              : String(ext ?? ""),
+          };
         })
         .filter((item) => item.id);
       setAvailableExtensions(list);
       hasLoadedMembersRef.current = true;
     } catch (err) {
-      showAlert(err?.message || 'Failed to load extension list.');
+      showAlert(err?.message || "Failed to load extension list.");
       setAvailableExtensions([]);
     } finally {
       setLoading((prev) => ({ ...prev, members: false }));
@@ -197,16 +248,24 @@ const OutboundRoutesPage = () => {
       const trunks = list
         .map((t) => {
           const id = t?.trunkId || t?.trunk_id || t?.id || t;
-          const name = t?.name || t?.trunk_name || '';
-          const domain = t?.domain_id || t?.domain || t?.sip_server || t?.host || '';
-          const label = name && domain ? `${name} : ${domain}` : name ? name : domain ? domain : String(id || '');
+          const name = t?.name || t?.trunk_name || "";
+          const domain =
+            t?.domain_id || t?.domain || t?.sip_server || t?.host || "";
+          const label =
+            name && domain
+              ? `${name} : ${domain}`
+              : name
+                ? name
+                : domain
+                  ? domain
+                  : String(id || "");
           return { id: String(id), label };
         })
         .filter((t) => t.id);
       setAvailableTrunks(trunks);
       hasLoadedTrunksRef.current = true;
     } catch (err) {
-      showAlert(err?.message || 'Failed to load trunk list.');
+      showAlert(err?.message || "Failed to load trunk list.");
       setAvailableTrunks([]);
     } finally {
       setLoading((prev) => ({ ...prev, trunks: false }));
@@ -229,27 +288,28 @@ const OutboundRoutesPage = () => {
   const getTrunkLabel = (id) => trunkLabelMap.get(id) || id;
 
   const extensionAvailableList = useMemo(
-    () => availableExtensions.filter((item) => !memberExtensions.includes(item.id)),
-    [availableExtensions, memberExtensions]
+    () =>
+      availableExtensions.filter((item) => !memberExtensions.includes(item.id)),
+    [availableExtensions, memberExtensions],
   );
 
   const trunkAvailableList = useMemo(
     () => availableTrunks.filter((item) => !memberTrunks.includes(item.id)),
-    [availableTrunks, memberTrunks]
+    [availableTrunks, memberTrunks],
   );
 
   const resetForm = () => {
     setEditId(null);
-    setName('');
-    setPriority('');
-    setDescription('');
+    setName("");
+    setPriority("");
+    setDescription("");
     setNextRoute(false);
-    setEnabled('Yes');
-    setPasswordType('None');
-    setSinglePin('');
-    setRememoryHunt('No');
+    setEnabled("Yes");
+    setPasswordType("None");
+    setSinglePin("");
+    setRememoryHunt("No");
     setTimeConditions([]);
-    setDialPatterns([{ ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$' }]);
+    setDialPatterns([{ ...DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" }]);
     setCallerConversion({ ...DEFAULT_CALLER_CONVERSION });
     setMemberExtensions([]);
     setMemberTrunks([]);
@@ -282,18 +342,28 @@ const OutboundRoutesPage = () => {
 
   const handleOpenEditModal = async (row) => {
     setEditId(row.id);
-    setName(row.name || '');
-    setPriority(row.priority || '');
-    setDescription(row.description || '');
+    setName(row.name || "");
+    setPriority(row.priority || "");
+    setDescription(row.description || "");
     setNextRoute(!!row.nextRoute);
-    setEnabled(row.enabled || 'Yes');
-    setPasswordType(row.passwordType || 'None');
-    setSinglePin(row.singlePin || '');
-    setRememoryHunt(row.rememoryHunt || 'No');
-    setTimeConditions(Array.isArray(row.timeConditions) ? row.timeConditions : []);
-    setDialPatterns(Array.isArray(row.dialPatterns) && row.dialPatterns.length > 0 ? row.dialPatterns : [{ ...DEFAULT_DIAL_PATTERN }]);
-    setCallerConversion(row.callerConversion || { ...DEFAULT_CALLER_CONVERSION });
-    setMemberExtensions(Array.isArray(row.memberExtensions) ? row.memberExtensions : []);
+    setEnabled(row.enabled || "Yes");
+    setPasswordType(row.passwordType || "None");
+    setSinglePin(row.singlePin || "");
+    setRememoryHunt(row.rememoryHunt || "No");
+    setTimeConditions(
+      Array.isArray(row.timeConditions) ? row.timeConditions : [],
+    );
+    setDialPatterns(
+      Array.isArray(row.dialPatterns) && row.dialPatterns.length > 0
+        ? row.dialPatterns
+        : [{ ...DEFAULT_DIAL_PATTERN }],
+    );
+    setCallerConversion(
+      row.callerConversion || { ...DEFAULT_CALLER_CONVERSION },
+    );
+    setMemberExtensions(
+      Array.isArray(row.memberExtensions) ? row.memberExtensions : [],
+    );
     setMemberTrunks(Array.isArray(row.memberTrunks) ? row.memberTrunks : []);
     setAvailableExtensionSelected([]);
     setChosenExtensionSelected([]);
@@ -311,25 +381,33 @@ const OutboundRoutesPage = () => {
 
   const handleCheckAll = () => setSelected(rows.map((_, i) => i));
   const handleUncheckAll = () => setSelected([]);
-  const handleSelectRow = (idx) => setSelected((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
+  const handleSelectRow = (idx) =>
+    setSelected((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+    );
 
   const handleDelete = async () => {
     if (selected.length === 0) {
-      showAlert('Please select at least one row to delete.');
+      showAlert("Please select at least one row to delete.");
       return;
     }
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const idsToDelete = selected.map((idx) => rows[idx]?.id).filter((id) => id != null);
-      const results = await Promise.all(idsToDelete.map((id) => deleteOutboundRoute(id)));
+      const idsToDelete = selected
+        .map((idx) => rows[idx]?.id)
+        .filter((id) => id != null);
+      const results = await Promise.all(
+        idsToDelete.map((id) => deleteOutboundRoute(id)),
+      );
       const failed = results.find((r) => !r?.response);
-      if (failed) showAlert(failed?.message || 'Failed to delete one or more routes.');
-      else showAlert('Outbound route(s) deleted successfully.');
+      if (failed)
+        showAlert(failed?.message || "Failed to delete one or more routes.");
+      else showAlert("Outbound route(s) deleted successfully.");
       await fetchOutboundRoutes();
       setSelected([]);
       setPage(1);
     } catch (err) {
-      showAlert(err?.message || 'Failed to delete route(s).');
+      showAlert(err?.message || "Failed to delete route(s).");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -338,48 +416,52 @@ const OutboundRoutesPage = () => {
   const handleSave = async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      showAlert('Name is required.');
+      showAlert("Name is required.");
       return;
     }
     const parsedPriority = Number(priority);
-    if (!Number.isInteger(parsedPriority) || parsedPriority < 1 || parsedPriority > 99999) {
-      showAlert('Priority must be a number between 1 and 99999.');
+    if (
+      !Number.isInteger(parsedPriority) ||
+      parsedPriority < 1 ||
+      parsedPriority > 99999
+    ) {
+      showAlert("Priority must be a number between 1 and 99999.");
       return;
     }
-    if (passwordType === 'Single Pin' && !singlePin.trim()) {
-      showAlert('Please enter password for Single Pin.');
+    if (passwordType === "Single Pin" && !singlePin.trim()) {
+      showAlert("Please enter password for Single Pin.");
       return;
     }
-    if (passwordType === 'Single Pin' && !/^\d{1,16}$/.test(singlePin.trim())) {
-      showAlert('Password PIN must be digits only (1–16 digits).');
+    if (passwordType === "Single Pin" && !/^\d{1,16}$/.test(singlePin.trim())) {
+      showAlert("Password PIN must be digits only (1–16 digits).");
       return;
     }
     if (memberExtensions.length === 0) {
-      showAlert('Please select at least one member extension.');
+      showAlert("Please select at least one member extension.");
       return;
     }
     if (memberTrunks.length === 0) {
-      showAlert('Please select at least one member trunk.');
+      showAlert("Please select at least one member trunk.");
       return;
     }
-    if (timeConditions.includes('Holiday') && !timeConditions.includes('All')) {
-      showAlert('Holiday is only valid when All is checked.');
+    if (timeConditions.includes("Holiday") && !timeConditions.includes("All")) {
+      showAlert("Holiday is only valid when All is checked.");
       return;
     }
 
     const time_condition = {
-      work_time: timeConditions.includes('WorkTime'),
-      holiday: timeConditions.includes('Holiday'),
-      all: timeConditions.includes('All'),
+      work_time: timeConditions.includes("WorkTime"),
+      holiday: timeConditions.includes("Holiday"),
+      all: timeConditions.includes("All"),
     };
 
     const dial_patterns = dialPatterns
-      .filter((d) => String(d.pattern || '').trim())
+      .filter((d) => String(d.pattern || "").trim())
       .map((d) => ({
-        pattern: String(d.pattern || '').trim(),
+        pattern: String(d.pattern || "").trim(),
         strip: Number(d.strip || 0),
-        front: String(d.front || ''),
-        suffix: String(d.suffix || ''),
+        front: String(d.front || ""),
+        suffix: String(d.suffix || ""),
         delay_ms: Number(d.delay || 0),
       }));
 
@@ -387,17 +469,18 @@ const OutboundRoutesPage = () => {
       name: trimmedName,
       priority: parsedPriority,
       description: description || null,
-      next_route: toApiYesNo(nextRoute ? 'yes' : 'no', 'yes'),
-      enabled: toApiYesNo(enabled, 'yes'),
+      next_route: toApiYesNo(nextRoute ? "yes" : "no", "yes"),
+      enabled: toApiYesNo(enabled, "yes"),
       password_type: mapPasswordTypeToApi(passwordType),
-      password_pin: passwordType === 'Single Pin' ? singlePin.trim() : null,
-      rrmemory_hunt: toApiYesNo(rememoryHunt, 'no'),
+      password_pin: passwordType === "Single Pin" ? singlePin.trim() : null,
+      rrmemory_hunt: toApiYesNo(rememoryHunt, "no"),
       time_condition,
-      dial_patterns: dial_patterns.length > 0 ? dial_patterns : [{ pattern: '^\\d*$' }],
+      dial_patterns:
+        dial_patterns.length > 0 ? dial_patterns : [{ pattern: "^\\d*$" }],
       caller_number_conversion: {
         strip: Number(callerConversion.strip || 0),
-        front: String(callerConversion.front || ''),
-        suffix: String(callerConversion.suffix || ''),
+        front: String(callerConversion.front || ""),
+        suffix: String(callerConversion.suffix || ""),
       },
       member_extensions: [...memberExtensions],
       member_trunks: [...memberTrunks],
@@ -405,16 +488,23 @@ const OutboundRoutesPage = () => {
 
     setLoading((prev) => ({ ...prev, save: true }));
     try {
-      const res = editId != null ? await updateOutboundRoute(editId, apiPayload) : await createOutboundRoute(apiPayload);
+      const res =
+        editId != null
+          ? await updateOutboundRoute(editId, apiPayload)
+          : await createOutboundRoute(apiPayload);
       if (!res?.response) {
-        showAlert(res?.message || 'Failed to save outbound route.');
+        showAlert(res?.message || "Failed to save outbound route.");
         return;
       }
-      showAlert(editId != null ? 'Outbound route updated successfully.' : 'Outbound route created successfully.');
+      showAlert(
+        editId != null
+          ? "Outbound route updated successfully."
+          : "Outbound route created successfully.",
+      );
       await fetchOutboundRoutes();
       handleCloseModal();
     } catch (err) {
-      showAlert(err?.message || 'Failed to save outbound route.');
+      showAlert(err?.message || "Failed to save outbound route.");
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
@@ -422,28 +512,40 @@ const OutboundRoutesPage = () => {
 
   const toggleTimeCondition = (value) => {
     setTimeConditions((prev) => {
-      if (value === 'Holiday' && !prev.includes('All')) return prev;
+      if (value === "Holiday" && !prev.includes("All")) return prev;
       const exists = prev.includes(value);
-      const next = exists ? prev.filter((item) => item !== value) : [...prev, value];
-      if (value === 'All' && exists) {
-        return next.filter((item) => item !== 'Holiday');
+      const next = exists
+        ? prev.filter((item) => item !== value)
+        : [...prev, value];
+      if (value === "All" && exists) {
+        return next.filter((item) => item !== "Holiday");
       }
       return next;
     });
   };
 
   const updateDialPattern = (index, key, value) => {
-    setDialPatterns((prev) => prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)));
+    setDialPatterns((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
+    );
   };
 
   const addDialPattern = () =>
-    setDialPatterns((prev) => [...prev, { ...DEFAULT_DIAL_PATTERN, pattern: '^\\d*$' }]);
+    setDialPatterns((prev) => [
+      ...prev,
+      { ...DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" },
+    ]);
   const removeDialPatternAt = (index) =>
-    setDialPatterns((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
+    setDialPatterns((prev) =>
+      prev.length <= 1 ? prev : prev.filter((_, i) => i !== index),
+    );
 
   const addSelectedExtensions = () => {
     if (availableExtensionSelected.length === 0) return;
-    setMemberExtensions((prev) => [...prev, ...availableExtensionSelected.filter((id) => !prev.includes(id))]);
+    setMemberExtensions((prev) => [
+      ...prev,
+      ...availableExtensionSelected.filter((id) => !prev.includes(id)),
+    ]);
     setAvailableExtensionSelected([]);
   };
   const addAllExtensions = () => {
@@ -452,7 +554,9 @@ const OutboundRoutesPage = () => {
   };
   const removeSelectedExtensions = () => {
     if (chosenExtensionSelected.length === 0) return;
-    setMemberExtensions((prev) => prev.filter((id) => !chosenExtensionSelected.includes(id)));
+    setMemberExtensions((prev) =>
+      prev.filter((id) => !chosenExtensionSelected.includes(id)),
+    );
     setChosenExtensionSelected([]);
   };
   const removeAllExtensions = () => {
@@ -462,7 +566,10 @@ const OutboundRoutesPage = () => {
 
   const addSelectedTrunks = () => {
     if (availableTrunkSelected.length === 0) return;
-    setMemberTrunks((prev) => [...prev, ...availableTrunkSelected.filter((id) => !prev.includes(id))]);
+    setMemberTrunks((prev) => [
+      ...prev,
+      ...availableTrunkSelected.filter((id) => !prev.includes(id)),
+    ]);
     setAvailableTrunkSelected([]);
   };
   const addAllTrunks = () => {
@@ -471,7 +578,9 @@ const OutboundRoutesPage = () => {
   };
   const removeSelectedTrunks = () => {
     if (chosenTrunkSelected.length === 0) return;
-    setMemberTrunks((prev) => prev.filter((id) => !chosenTrunkSelected.includes(id)));
+    setMemberTrunks((prev) =>
+      prev.filter((id) => !chosenTrunkSelected.includes(id)),
+    );
     setChosenTrunkSelected([]);
   };
   const removeAllTrunks = () => {
@@ -481,32 +590,49 @@ const OutboundRoutesPage = () => {
 
   return (
     <div className="w-full max-w-full mx-auto p-2">
-
       {/* Import Modal */}
       <Dialog
         open={showImportModal}
-        onClose={() => { if (!importLoading) { setShowImportModal(false); setImportFile(null); } }}
+        onClose={() => {
+          if (!importLoading) {
+            setShowImportModal(false);
+            setImportFile(null);
+          }
+        }}
         maxWidth={false}
-        PaperProps={{ sx: { width: 420, maxWidth: '96vw', mx: 'auto', p: 0 } }}
+        PaperProps={{ sx: { width: 420, maxWidth: "96vw", mx: "auto", p: 0 } }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base"
-          style={{ background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)', borderBottom: '1px solid #444' }}
+          className="h-10 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
+          style={{
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          }}
         >
           Import Outbound Routes
         </DialogTitle>
-        <DialogContent style={{ backgroundColor: '#dde0e4', padding: '20px 24px 12px' }}>
+        <DialogContent
+          style={{ backgroundColor: "#dde0e4", padding: "20px 24px 12px" }}
+        >
           <div className="flex flex-col gap-4 pt-1">
-            <p className="text-[13px] text-gray-600">Select a CSV or JSON file containing outbound route data to import.</p>
+            <p className="text-[13px] text-gray-600">
+              Select a CSV or JSON file containing outbound route data to
+              import.
+            </p>
             <div
-              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
               onClick={() => importFileRef.current?.click()}
             >
               <div className="text-gray-500 text-[13px] mb-1">
                 {importFile ? (
-                  <span className="text-green-700 font-semibold">{importFile.name}</span>
+                  <span className="text-green-700 font-semibold">
+                    {importFile.name}
+                  </span>
                 ) : (
-                  <span>Click to choose file <span className="text-gray-400">(CSV / JSON)</span></span>
+                  <span>
+                    Click to choose file{" "}
+                    <span className="text-gray-400">(CSV / JSON)</span>
+                  </span>
                 )}
               </div>
               <input
@@ -514,162 +640,274 @@ const OutboundRoutesPage = () => {
                 type="file"
                 accept=".csv,.json"
                 className="hidden"
-                onChange={e => setImportFile(e.target.files?.[0] || null)}
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
               />
             </div>
           </div>
         </DialogContent>
-        <DialogActions style={{ backgroundColor: '#dde0e4', justifyContent: 'center', gap: 16, padding: '12px 24px 16px' }}>
+        <DialogActions
+          style={{
+            backgroundColor: "#dde0e4",
+            justifyContent: "center",
+            gap: 16,
+            padding: "12px 24px 16px",
+          }}
+        >
           <Button
             variant="contained"
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
-            startIcon={importLoading && <CircularProgress size={16} color="inherit" />}
-            sx={{ background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)', color: '#fff', fontWeight: 600, textTransform: 'none', minWidth: 100, '&:hover': { background: 'linear-gradient(to bottom, #0e8fd6, #3bb6f5)' } }}
+            startIcon={
+              importLoading && <CircularProgress size={16} color="inherit" />
+            }
+            sx={{
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              color: "#fff !important",
+              fontWeight: 600,
+              textTransform: "none",
+              minWidth: 100,
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+                color: "#fff",
+              },
+
+              "&:disabled": {
+                background: "#3E5475",
+                color: "#fff",
+              },
+            }}
           >
-            {importLoading ? 'Importing...' : 'Import'}
+            {importLoading ? "Importing..." : "Import"}
           </Button>
           <Button
             variant="contained"
-            onClick={() => { setShowImportModal(false); setImportFile(null); }}
+            onClick={() => {
+              setShowImportModal(false);
+              setImportFile(null);
+            }}
             disabled={importLoading}
-            sx={{ background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)', color: '#374151', fontWeight: 600, textTransform: 'none', minWidth: 100 }}
+            sx={{
+              background:
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+              color: "#3E5475 !important",
+              fontWeight: 600,
+              textTransform: "none",
+              minWidth: 100,
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+                color: "#2f405c",
+              },
+
+              "&:disabled": {
+                background: "#f1f5f9",
+                color: "#94a3b8",
+              },
+            }}
           >
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
 
-        <div
-          className="rounded-t-lg h-9 flex items-center justify-between px-3 font-semibold text-[18px] text-[#444] shadow-sm mt-0"
-          style={{ background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)' }}
-        >
-          <div className="flex-1" />
-          <span>Outbound Routes</span>
-          <div className="flex-1 flex justify-end gap-2">
-            <button
-              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-              style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)', color: '#1565c0', border: '1px solid #93c5fd', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)'}
-              onClick={() => { setImportFile(null); setShowImportModal(true); }}
-            >Import</button>
-            <button
-              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-              style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)', color: '#1565c0', border: '1px solid #93c5fd', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)'}
-              onClick={handleExport}
-            >Export</button>
-          </div>
+      <div
+        className="rounded-t-lg h-8 flex items-center justify-between px-3 font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+        style={{
+          background: "linear-gradient(#3E5475 100%)",
+          boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+        }}
+      >
+        <div className="flex-1" />
+        <span>Outbound Routes</span>
+        <div className="flex-1 flex justify-end gap-2">
+          <button
+            className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
+            style={{
+              background:
+                "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)",
+              color: "#1565c0",
+              border: "1px solid #93c5fd",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background =
+                "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background =
+                "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")
+            }
+            onClick={() => {
+              setImportFile(null);
+              setShowImportModal(true);
+            }}
+          >
+            Import
+          </button>
+          <button
+            className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
+            style={{
+              background:
+                "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)",
+              color: "#1565c0",
+              border: "1px solid #93c5fd",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background =
+                "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background =
+                "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")
+            }
+            onClick={handleExport}
+          >
+            Export
+          </button>
         </div>
+      </div>
 
-        <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-[900px] bg-[#f8fafd] border-2 border-t-0 border-gray-400 rounded-b-lg shadow-sm">
-            <thead>
+      <div className="overflow-x-auto w-full">
+        <table className="w-full min-w-[900px] bg-[#f8fafd] border-2 border-t-0 border-gray-400 rounded-b-lg shadow-sm">
+          <thead>
+            <tr>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
+                #
+              </th>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                Name
+              </th>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                Priority
+              </th>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                Enabled
+              </th>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                Password
+              </th>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                Member Extensions
+              </th>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                Member Trunks
+              </th>
+              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
               <tr>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">#</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Name</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Priority</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Enabled</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Password</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Member Extensions</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Member Trunks</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">Actions</th>
+                <td
+                  colSpan={9}
+                  className="border border-gray-300 px-2 py-4 text-center text-gray-500"
+                >
+                  No outbound routes yet. Click &quot;Add New&quot; to create
+                  one.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="border border-gray-300 px-2 py-4 text-center text-gray-500">
-                    No outbound routes yet. Click &quot;Add New&quot; to create one.
-                  </td>
-                </tr>
-              ) : (
-                pagedRows.map((row, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
-                  return (
-                    <tr key={row.id}>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(realIdx)}
-                          onChange={() => handleSelectRow(realIdx)}
-                          disabled={loading.delete}
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{realIdx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">{row.name}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.priority}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.enabled}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.passwordType === 'Single Pin' ? `Single Pin (${row.singlePin || ''})` : row.passwordType}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.memberExtensions?.map(getExtensionLabel).join(', ')}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.memberTrunks?.map(getTrunkLabel).join(', ')}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
-                          titleAccess="Edit"
-                          onClick={() => handleOpenEditModal(row)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+            ) : (
+              pagedRows.map((row, idx) => {
+                const realIdx = (page - 1) * itemsPerPage + idx;
+                return (
+                  <tr key={row.id}>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selected.includes(realIdx)}
+                        onChange={() => handleSelectRow(realIdx)}
+                        disabled={loading.delete}
+                      />
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {realIdx + 1}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center font-medium">
+                      {row.name}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {row.priority}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {row.enabled}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {row.passwordType === "Single Pin"
+                        ? `Single Pin (${row.singlePin || ""})`
+                        : row.passwordType}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {row.memberExtensions?.map(getExtensionLabel).join(", ")}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {row.memberTrunks?.map(getTrunkLabel).join(", ")}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      <EditDocumentIcon
+                        className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
+                        titleAccess="Edit"
+                        onClick={() => handleOpenEditModal(row)}
+                      />
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              onClick={handleCheckAll}
-              disabled={loading.delete}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              onClick={handleDelete}
-              disabled={loading.delete}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.save ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              onClick={handleOpenAddModal}
-              disabled={loading.save}
-            >
-              Add New
-            </button>
-          </div>
+      <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
+              loading.delete ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={handleCheckAll}
+            disabled={loading.delete}
+          >
+            Check All
+          </button>
+          <button
+            className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
+              loading.delete ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={handleUncheckAll}
+            disabled={loading.delete}
+          >
+            Uncheck All
+          </button>
+          <button
+            className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${
+              loading.delete ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={handleDelete}
+            disabled={loading.delete}
+          >
+            {loading.delete && <CircularProgress size={12} />}
+            Delete
+          </button>
         </div>
+        <div className="flex gap-2">
+          <button
+            className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
+              loading.save ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={handleOpenAddModal}
+            disabled={loading.save}
+          >
+            Add New
+          </button>
+        </div>
+      </div>
 
       <Dialog
         open={showModal}
@@ -677,25 +915,25 @@ const OutboundRoutesPage = () => {
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: 1000, maxWidth: '98vw', mx: 'auto', p: 0 },
+          sx: { width: 1000, maxWidth: "98vw", mx: "auto", p: 0 },
         }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base"
+          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)',
-            borderBottom: '1px solid #444444',
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
-          {editId != null ? 'Edit Outbound Route' : 'Add Outbound Route'}
+          {editId != null ? "Edit Outbound Route" : "Add Outbound Route"}
         </DialogTitle>
         <DialogContent
           className="pt-3 pb-0 px-2"
           style={{
-            padding: '12px 8px 0 8px',
-            backgroundColor: '#dde0e4',
-            border: '1px solid #444444',
-            borderTop: 'none',
+            padding: "12px 8px 0 8px",
+            backgroundColor: "#dde0e4",
+            border: "1px solid #444444",
+            borderTop: "none",
           }}
         >
           <div className="flex flex-col gap-3 w-full pb-2">
@@ -706,15 +944,31 @@ const OutboundRoutesPage = () => {
               <div className="p-4 flex flex-col gap-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3">
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
+                      <label
+                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                        style={{ width: 170, marginRight: 10 }}
+                      >
                         Name <span className="text-red-500">*</span>
                       </label>
-                      <input className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none" value={name} onChange={(e) => setName(e.target.value)} />
+                      <input
+                        className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
+                      <label
+                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                        style={{ width: 170, marginRight: 10 }}
+                      >
                         Priority <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -724,8 +978,14 @@ const OutboundRoutesPage = () => {
                       />
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 170, marginRight: 10 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
+                      <label
+                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                        style={{ width: 170, marginRight: 10 }}
+                      >
                         Description
                       </label>
                       <input
@@ -737,20 +997,39 @@ const OutboundRoutesPage = () => {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
+                      <label
+                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                        style={{ width: 190, marginRight: 10 }}
+                      >
                         Next Route
                       </label>
-                      <input type="checkbox" checked={nextRoute} onChange={(e) => setNextRoute(e.target.checked)} />
+                      <input
+                        type="checkbox"
+                        checked={nextRoute}
+                        onChange={(e) => setNextRoute(e.target.checked)}
+                      />
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
+                      <label
+                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                        style={{ width: 190, marginRight: 10 }}
+                      >
                         Enabled <span className="text-red-500">*</span>
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={enabled} onChange={(e) => setEnabled(e.target.value)}>
+                          <Select
+                            value={enabled}
+                            onChange={(e) => setEnabled(e.target.value)}
+                          >
                             {ENABLE_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -761,8 +1040,14 @@ const OutboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
+                      <label
+                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                        style={{ width: 190, marginRight: 10 }}
+                      >
                         Password
                       </label>
                       <div className="flex-1">
@@ -771,7 +1056,8 @@ const OutboundRoutesPage = () => {
                             value={passwordType}
                             onChange={(e) => {
                               setPasswordType(e.target.value);
-                              if (e.target.value !== 'Single Pin') setSinglePin('');
+                              if (e.target.value !== "Single Pin")
+                                setSinglePin("");
                             }}
                           >
                             {PASSWORD_OPTIONS.map((opt) => (
@@ -784,9 +1070,15 @@ const OutboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    {passwordType === 'Single Pin' && (
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                        <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                    {passwordType === "Single Pin" && (
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 32 }}
+                      >
+                        <label
+                          className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                          style={{ width: 190, marginRight: 10 }}
+                        >
                           Enter Password
                         </label>
                         <input
@@ -797,13 +1089,22 @@ const OutboundRoutesPage = () => {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
+                      <label
+                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                        style={{ width: 190, marginRight: 10 }}
+                      >
                         Rmemory Hunt
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={rememoryHunt} onChange={(e) => setRememoryHunt(e.target.value)}>
+                          <Select
+                            value={rememoryHunt}
+                            onChange={(e) => setRememoryHunt(e.target.value)}
+                          >
                             {REMEMORY_HUNT_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -814,18 +1115,30 @@ const OutboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap" style={{ minHeight: 32 }}>
-                      <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 190, marginRight: 10 }}>
+                    <div
+                      className="flex items-center gap-2 flex-wrap"
+                      style={{ minHeight: 32 }}
+                    >
+                      <label
+                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                        style={{ width: 190, marginRight: 10 }}
+                      >
                         Time Condition
                       </label>
                       <div className="flex items-center gap-3">
                         {TIME_CONDITION_OPTIONS.map((opt) => (
-                          <label key={opt} className="text-[13px] text-gray-700 flex items-center gap-1">
+                          <label
+                            key={opt}
+                            className="text-[13px] text-gray-700 flex items-center gap-1"
+                          >
                             <input
                               type="checkbox"
                               checked={timeConditions.includes(opt)}
                               onChange={() => toggleTimeCondition(opt)}
-                              disabled={opt === 'Holiday' && !timeConditions.includes('All')}
+                              disabled={
+                                opt === "Holiday" &&
+                                !timeConditions.includes("All")
+                              }
                             />
                             {opt}
                           </label>
@@ -836,50 +1149,79 @@ const OutboundRoutesPage = () => {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-[14px] text-gray-700 font-medium">Dial Patterns</label>
+                  <label className="text-[14px] text-gray-700 font-medium">
+                    Dial Patterns
+                  </label>
                   <div className="flex flex-col gap-2">
                     <div className="hidden md:grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center">
-                      <div className="text-[12px] text-gray-600 font-medium">Patterns</div>
-                      <div className="text-[12px] text-gray-600 font-medium">Strip</div>
-                      <div className="text-[12px] text-gray-600 font-medium">Front</div>
-                      <div className="text-[12px] text-gray-600 font-medium">Suffix</div>
-                      <div className="text-[12px] text-gray-600 font-medium">Delay</div>
+                      <div className="text-[12px] text-gray-600 font-medium">
+                        Patterns
+                      </div>
+                      <div className="text-[12px] text-gray-600 font-medium">
+                        Strip
+                      </div>
+                      <div className="text-[12px] text-gray-600 font-medium">
+                        Front
+                      </div>
+                      <div className="text-[12px] text-gray-600 font-medium">
+                        Suffix
+                      </div>
+                      <div className="text-[12px] text-gray-600 font-medium">
+                        Delay
+                      </div>
                       <div />
                     </div>
                     {dialPatterns.map((item, index) => (
-                      <div key={`pattern-${index}`} className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center">
+                      <div
+                        key={`pattern-${index}`}
+                        className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center"
+                      >
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? '' : undefined}
+                          placeholder={index === 0 ? "" : undefined}
                           value={item.pattern}
-                          onChange={(e) => updateDialPattern(index, 'pattern', e.target.value)}
+                          onChange={(e) =>
+                            updateDialPattern(index, "pattern", e.target.value)
+                          }
                         />
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? '' : undefined}
+                          placeholder={index === 0 ? "" : undefined}
                           value={item.strip}
-                          onChange={(e) => updateDialPattern(index, 'strip', e.target.value)}
+                          onChange={(e) =>
+                            updateDialPattern(index, "strip", e.target.value)
+                          }
                         />
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? '' : undefined}
+                          placeholder={index === 0 ? "" : undefined}
                           value={item.front}
-                          onChange={(e) => updateDialPattern(index, 'front', e.target.value)}
+                          onChange={(e) =>
+                            updateDialPattern(index, "front", e.target.value)
+                          }
                         />
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? '' : undefined}
+                          placeholder={index === 0 ? "" : undefined}
                           value={item.suffix}
-                          onChange={(e) => updateDialPattern(index, 'suffix', e.target.value)}
+                          onChange={(e) =>
+                            updateDialPattern(index, "suffix", e.target.value)
+                          }
                         />
                         <input
                           className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? 'Unit is ms' : undefined}
+                          placeholder={index === 0 ? "Unit is ms" : undefined}
                           value={item.delay}
-                          onChange={(e) => updateDialPattern(index, 'delay', e.target.value)}
+                          onChange={(e) =>
+                            updateDialPattern(index, "delay", e.target.value)
+                          }
                         />
                         <div className="flex gap-1">
-                          <button type="button" className="h-7 w-7 border border-gray-400 bg-[#d9dde3] text-sm font-semibold" onClick={addDialPattern}>
+                          <button
+                            type="button"
+                            className="h-7 w-7 border border-gray-400 bg-[#d9dde3] text-sm font-semibold"
+                            onClick={addDialPattern}
+                          >
                             +
                           </button>
                           <button
@@ -897,27 +1239,50 @@ const OutboundRoutesPage = () => {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-[14px] text-gray-700 font-medium">Caller Number Conversion</label>
+                  <label className="text-[14px] text-gray-700 font-medium">
+                    Caller Number Conversion
+                  </label>
                   <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <div className="text-[12px] text-gray-600 font-medium">Strip</div>
-                    <div className="text-[12px] text-gray-600 font-medium">Front</div>
-                    <div className="text-[12px] text-gray-600 font-medium">Suffix</div>
+                    <div className="text-[12px] text-gray-600 font-medium">
+                      Strip
+                    </div>
+                    <div className="text-[12px] text-gray-600 font-medium">
+                      Front
+                    </div>
+                    <div className="text-[12px] text-gray-600 font-medium">
+                      Suffix
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <input
                       className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
                       value={callerConversion.strip}
-                      onChange={(e) => setCallerConversion((prev) => ({ ...prev, strip: e.target.value }))}
+                      onChange={(e) =>
+                        setCallerConversion((prev) => ({
+                          ...prev,
+                          strip: e.target.value,
+                        }))
+                      }
                     />
                     <input
                       className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
                       value={callerConversion.front}
-                      onChange={(e) => setCallerConversion((prev) => ({ ...prev, front: e.target.value }))}
+                      onChange={(e) =>
+                        setCallerConversion((prev) => ({
+                          ...prev,
+                          front: e.target.value,
+                        }))
+                      }
                     />
                     <input
                       className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
                       value={callerConversion.suffix}
-                      onChange={(e) => setCallerConversion((prev) => ({ ...prev, suffix: e.target.value }))}
+                      onChange={(e) =>
+                        setCallerConversion((prev) => ({
+                          ...prev,
+                          suffix: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                 </div>
@@ -928,11 +1293,20 @@ const OutboundRoutesPage = () => {
                   </label>
                   <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                     <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">Available</div>
+                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
+                        Available
+                      </div>
                       <select
                         multiple
                         value={availableExtensionSelected}
-                        onChange={(e) => setAvailableExtensionSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))}
+                        onChange={(e) =>
+                          setAvailableExtensionSelected(
+                            Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value,
+                            ),
+                          )
+                        }
                         className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                       >
                         {loading.members ? (
@@ -950,26 +1324,51 @@ const OutboundRoutesPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={addSelectedExtensions}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={addSelectedExtensions}
+                      >
                         &gt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={addAllExtensions}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={addAllExtensions}
+                      >
                         &gt;&gt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={removeSelectedExtensions}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={removeSelectedExtensions}
+                      >
                         &lt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={removeAllExtensions}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={removeAllExtensions}
+                      >
                         &lt;&lt;
                       </button>
                     </div>
 
                     <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">Selected</div>
+                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
+                        Selected
+                      </div>
                       <select
                         multiple
                         value={chosenExtensionSelected}
-                        onChange={(e) => setChosenExtensionSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))}
+                        onChange={(e) =>
+                          setChosenExtensionSelected(
+                            Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value,
+                            ),
+                          )
+                        }
                         className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                       >
                         {memberExtensions.length === 0 ? (
@@ -985,16 +1384,32 @@ const OutboundRoutesPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={removeSelectedExtensions}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={removeSelectedExtensions}
+                      >
                         &lt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={addSelectedExtensions}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={addSelectedExtensions}
+                      >
                         &gt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={removeAllExtensions}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={removeAllExtensions}
+                      >
                         v
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={addAllExtensions}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={addAllExtensions}
+                      >
                         ^
                       </button>
                     </div>
@@ -1007,11 +1422,20 @@ const OutboundRoutesPage = () => {
                   </label>
                   <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                     <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">Available</div>
+                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
+                        Available
+                      </div>
                       <select
                         multiple
                         value={availableTrunkSelected}
-                        onChange={(e) => setAvailableTrunkSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))}
+                        onChange={(e) =>
+                          setAvailableTrunkSelected(
+                            Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value,
+                            ),
+                          )
+                        }
                         className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                       >
                         {loading.trunks ? (
@@ -1029,26 +1453,51 @@ const OutboundRoutesPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={addSelectedTrunks}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={addSelectedTrunks}
+                      >
                         &gt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={addAllTrunks}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={addAllTrunks}
+                      >
                         &gt;&gt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={removeSelectedTrunks}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={removeSelectedTrunks}
+                      >
                         &lt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={removeAllTrunks}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={removeAllTrunks}
+                      >
                         &lt;&lt;
                       </button>
                     </div>
 
                     <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">Selected</div>
+                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
+                        Selected
+                      </div>
                       <select
                         multiple
                         value={chosenTrunkSelected}
-                        onChange={(e) => setChosenTrunkSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))}
+                        onChange={(e) =>
+                          setChosenTrunkSelected(
+                            Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value,
+                            ),
+                          )
+                        }
                         className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                       >
                         {memberTrunks.length === 0 ? (
@@ -1064,16 +1513,32 @@ const OutboundRoutesPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={removeSelectedTrunks}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={removeSelectedTrunks}
+                      >
                         &lt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={addSelectedTrunks}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={addSelectedTrunks}
+                      >
                         &gt;
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={removeAllTrunks}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={removeAllTrunks}
+                      >
                         v
                       </button>
-                      <button type="button" className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold" onClick={addAllTrunks}>
+                      <button
+                        type="button"
+                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
+                        onClick={addAllTrunks}
+                      >
                         ^
                       </button>
                     </div>
@@ -1087,53 +1552,63 @@ const OutboundRoutesPage = () => {
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-              color: '#fff',
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              color: "#fff",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 8px #b3e0ff',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-                color: '#fff',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+                color: "#fff",
               },
-              '&:disabled': {
-                background: '#ccc',
-                color: '#666',
+
+              "&:disabled": {
+                background: "#cbd5e1",
+                color: "#64748b",
               },
             }}
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={loading.save && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading.save && <CircularProgress size={20} color="inherit" />
+            }
           >
-            {loading.save ? 'Saving...' : 'Save'}
+            {loading.save ? "Saving..." : "Save"}
           </Button>
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-              color: '#374151',
+              background:
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+              color: "#3E5475 ",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)',
-                color: '#374151',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+                color: "#2f405c",
               },
-              '&:disabled': {
-                background: '#f3f4f6',
-                color: '#9ca3af',
+
+              "&:disabled": {
+                background: "#f1f5f9",
+                color: "#94a3b8",
               },
             }}
             onClick={handleCloseModal}

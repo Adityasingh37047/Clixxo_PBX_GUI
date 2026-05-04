@@ -557,32 +557,48 @@ const InboundRoutesPage = () => {
 
   return (
     <div className="w-full max-w-full mx-auto p-2">
-
       {/* Import Modal */}
       <Dialog
         open={showImportModal}
-        onClose={() => { if (!importLoading) { setShowImportModal(false); setImportFile(null); } }}
+        onClose={() => {
+          if (!importLoading) {
+            setShowImportModal(false);
+            setImportFile(null);
+          }
+        }}
         maxWidth={false}
-        PaperProps={{ sx: { width: 420, maxWidth: '96vw', mx: 'auto', p: 0 } }}
+        PaperProps={{ sx: { width: 420, maxWidth: "96vw", mx: "auto", p: 0 } }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base"
-          style={{ background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)', borderBottom: '1px solid #444' }}
+          className="h-10 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
+          style={{
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          }}
         >
           Import Inbound Routes
         </DialogTitle>
-        <DialogContent style={{ backgroundColor: '#dde0e4', padding: '20px 24px 12px' }}>
+        <DialogContent
+          style={{ backgroundColor: "#dde0e4", padding: "20px 24px 12px" }}
+        >
           <div className="flex flex-col gap-4 pt-1">
-            <p className="text-[13px] text-gray-600">Select a CSV or JSON file containing inbound route data to import.</p>
+            <p className="text-[13px] text-gray-600">
+              Select a CSV or JSON file containing inbound route data to import.
+            </p>
             <div
-              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
               onClick={() => importFileRef.current?.click()}
             >
               <div className="text-gray-500 text-[13px] mb-1">
                 {importFile ? (
-                  <span className="text-green-700 font-semibold">{importFile.name}</span>
+                  <span className="text-green-700 font-semibold">
+                    {importFile.name}
+                  </span>
                 ) : (
-                  <span>Click to choose file <span className="text-gray-400">(CSV / JSON)</span></span>
+                  <span>
+                    Click to choose file{" "}
+                    <span className="text-gray-400">(CSV / JSON)</span>
+                  </span>
                 )}
               </div>
               <input
@@ -590,26 +606,63 @@ const InboundRoutesPage = () => {
                 type="file"
                 accept=".csv,.json"
                 className="hidden"
-                onChange={e => setImportFile(e.target.files?.[0] || null)}
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
               />
             </div>
           </div>
         </DialogContent>
-        <DialogActions style={{ backgroundColor: '#dde0e4', justifyContent: 'center', gap: 16, padding: '12px 24px 16px' }}>
+        <DialogActions
+          style={{
+            backgroundColor: "#dde0e4",
+            justifyContent: "center",
+            gap: 16,
+            padding: "12px 24px 16px",
+          }}
+        >
           <Button
             variant="contained"
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
-            startIcon={importLoading && <CircularProgress size={16} color="inherit" />}
-            sx={{ background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)', color: '#fff', fontWeight: 600, textTransform: 'none', minWidth: 100, '&:hover': { background: 'linear-gradient(to bottom, #0e8fd6, #3bb6f5)' } }}
+            startIcon={
+              importLoading && <CircularProgress size={16} color="inherit" />
+            }
+            sx={{
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              color: "#fff !important",
+              fontWeight: 600,
+              textTransform: "none",
+              minWidth: 100,
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+                color: "#fff",
+              },
+
+              "&:disabled": {
+                background: "#3E5475",
+                color: "#fff",
+              },
+            }}
           >
-            {importLoading ? 'Importing...' : 'Import'}
+            {importLoading ? "Importing..." : "Import"}
           </Button>
           <Button
             variant="contained"
-            onClick={() => { setShowImportModal(false); setImportFile(null); }}
+            onClick={() => {
+              setShowImportModal(false);
+              setImportFile(null);
+            }}
             disabled={importLoading}
-            sx={{ background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)', color: '#374151', fontWeight: 600, textTransform: 'none', minWidth: 100 }}
+            sx={{
+              background:
+                "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
+              color: "#374151",
+              fontWeight: 600,
+              textTransform: "none",
+              minWidth: 100,
+            }}
           >
             Cancel
           </Button>
@@ -618,26 +671,60 @@ const InboundRoutesPage = () => {
 
       <div className="w-full max-w-full mx-auto">
         <div
-          className="rounded-t-lg h-9 flex items-center justify-between px-3 font-semibold text-[18px] text-[#444] shadow-sm mt-0"
-          style={{ background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)' }}
+          className="rounded-t-lg h-8 flex items-center justify-between px-3 font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+          style={{
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          }}
         >
           <div className="flex-1" />
           <span>Inbound Routes</span>
           <div className="flex-1 flex justify-end gap-2">
             <button
               className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-              style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)', color: '#1565c0', border: '1px solid #93c5fd', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)'}
-              onClick={() => { setImportFile(null); setShowImportModal(true); }}
-            >Import</button>
+              style={{
+                background:
+                  "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)",
+                color: "#1565c0",
+                border: "1px solid #93c5fd",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background =
+                  "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background =
+                  "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")
+              }
+              onClick={() => {
+                setImportFile(null);
+                setShowImportModal(true);
+              }}
+            >
+              Import
+            </button>
             <button
               className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-              style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)', color: '#1565c0', border: '1px solid #93c5fd', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)'}
+              style={{
+                background:
+                  "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)",
+                color: "#1565c0",
+                border: "1px solid #93c5fd",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background =
+                  "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background =
+                  "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")
+              }
               onClick={handleExport}
-            >Export</button>
+            >
+              Export
+            </button>
           </div>
         </div>
 
@@ -646,21 +733,41 @@ const InboundRoutesPage = () => {
             <thead>
               <tr>
                 <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">#</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Name</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">DID Pattern</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Caller ID Pattern</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Destination</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Enabled</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Member Trunks</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">Actions</th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
+                  #
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Name
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  DID Pattern
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Caller ID Pattern
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Destination
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Enabled
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Member Trunks
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="border border-gray-300 px-2 py-4 text-center text-gray-500">
-                    No inbound routes yet. Click &quot;Add New&quot; to create one.
+                  <td
+                    colSpan={9}
+                    className="border border-gray-300 px-2 py-4 text-center text-gray-500"
+                  >
+                    No inbound routes yet. Click &quot;Add New&quot; to create
+                    one.
                   </td>
                 </tr>
               ) : (
@@ -676,20 +783,30 @@ const InboundRoutesPage = () => {
                           disabled={loading.delete}
                         />
                       </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{realIdx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">{row.name}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.didPattern}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.callerIdPattern}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.destination === 'Extension_Range'
-                          ? `${row.destination}: ${row.extensionRange || ''}`
-                          : row.destinationTarget
-                          ? `${row.destination}: ${row.destinationTarget}`
-                          : row.destination}
+                        {realIdx + 1}
                       </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.enabled}</td>
+                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">
+                        {row.name}
+                      </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.memberTrunks?.map(getTrunkLabel).join(', ')}
+                        {row.didPattern}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {row.callerIdPattern}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {row.destination === "Extension_Range"
+                          ? `${row.destination}: ${row.extensionRange || ""}`
+                          : row.destinationTarget
+                            ? `${row.destination}: ${row.destinationTarget}`
+                            : row.destination}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {row.enabled}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {row.memberTrunks?.map(getTrunkLabel).join(", ")}
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
                         <EditDocumentIcon
@@ -710,7 +827,7 @@ const InboundRoutesPage = () => {
           <div className="flex flex-wrap gap-2">
             <button
               className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleCheckAll}
               disabled={loading.delete}
@@ -719,7 +836,7 @@ const InboundRoutesPage = () => {
             </button>
             <button
               className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleUncheckAll}
               disabled={loading.delete}
@@ -728,7 +845,7 @@ const InboundRoutesPage = () => {
             </button>
             <button
               className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleDelete}
               disabled={loading.delete}
@@ -740,7 +857,7 @@ const InboundRoutesPage = () => {
           <div className="flex gap-2">
             <button
               className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.save ? 'opacity-50 cursor-not-allowed' : ''
+                loading.save ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleOpenAddModal}
               disabled={loading.save}
@@ -807,25 +924,25 @@ const InboundRoutesPage = () => {
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: 1000, maxWidth: '98vw', mx: 'auto', p: 0 },
+          sx: { width: 1000, maxWidth: "98vw", mx: "auto", p: 0 },
         }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base"
+          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)',
-            borderBottom: '1px solid #444444',
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
-          {editId != null ? 'Edit Inbound Route' : 'Add Inbound Route'}
+          {editId != null ? "Edit Inbound Route" : "Add Inbound Route"}
         </DialogTitle>
         <DialogContent
           className="pt-3 pb-0 px-2"
           style={{
-            padding: '12px 8px 0 8px',
-            backgroundColor: '#dde0e4',
-            border: '1px solid #444444',
-            borderTop: 'none',
+            padding: "12px 8px 0 8px",
+            backgroundColor: "#dde0e4",
+            border: "1px solid #444444",
+            borderTop: "none",
           }}
         >
           <div className="flex flex-col gap-3 w-full pb-2">
@@ -837,7 +954,10 @@ const InboundRoutesPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3">
                   {/* Left column fields */}
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 10 }}
@@ -851,7 +971,10 @@ const InboundRoutesPage = () => {
                       />
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 10 }}
@@ -865,7 +988,10 @@ const InboundRoutesPage = () => {
                       />
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 10 }}
@@ -879,7 +1005,10 @@ const InboundRoutesPage = () => {
                       />
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 10 }}
@@ -893,7 +1022,10 @@ const InboundRoutesPage = () => {
                       />
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 10 }}
@@ -902,7 +1034,10 @@ const InboundRoutesPage = () => {
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={enableT38} onChange={(e) => setEnableT38(e.target.value)}>
+                          <Select
+                            value={enableT38}
+                            onChange={(e) => setEnableT38(e.target.value)}
+                          >
                             {T38_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -913,7 +1048,10 @@ const InboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 10 }}
@@ -922,7 +1060,12 @@ const InboundRoutesPage = () => {
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={enableTimeCondition} onChange={(e) => setEnableTimeCondition(e.target.value)}>
+                          <Select
+                            value={enableTimeCondition}
+                            onChange={(e) =>
+                              setEnableTimeCondition(e.target.value)
+                            }
+                          >
                             {TIME_CONDITION_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -933,7 +1076,10 @@ const InboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 170, marginRight: 10 }}
@@ -946,8 +1092,8 @@ const InboundRoutesPage = () => {
                             value={destination}
                             onChange={(e) => {
                               setDestination(e.target.value);
-                              setDestinationTarget('');
-                              setExtensionRange('');
+                              setDestinationTarget("");
+                              setExtensionRange("");
                             }}
                             MenuProps={SELECT_MENU_PROPS}
                             displayEmpty
@@ -965,13 +1111,17 @@ const InboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    {destination === 'Extension_Range' ? (
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    {destination === "Extension_Range" ? (
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 32 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 170, marginRight: 10 }}
                         >
-                          Extension Range <span className="text-red-500">*</span>
+                          Extension Range{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
@@ -981,22 +1131,31 @@ const InboundRoutesPage = () => {
                         />
                       </div>
                     ) : needsDestinationTarget ? (
-                      <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ minHeight: 32 }}
+                      >
                         <label
                           className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                           style={{ width: 170, marginRight: 10 }}
                         >
-                          Destination Value <span className="text-red-500">*</span>
+                          Destination Value{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <div className="flex-1">
                           <FormControl size="small" fullWidth>
                             <Select
                               value={destinationTarget}
-                              onChange={(e) => setDestinationTarget(e.target.value)}
+                              onChange={(e) =>
+                                setDestinationTarget(e.target.value)
+                              }
                               displayEmpty
                               MenuProps={SELECT_MENU_PROPS}
                             >
-                              <MenuItem value="" disabled={destinationChoices.length === 0}>
+                              <MenuItem
+                                value=""
+                                disabled={destinationChoices.length === 0}
+                              >
                                 <em>Select</em>
                               </MenuItem>
                               {destinationChoices.length === 0 ? (
@@ -1019,7 +1178,10 @@ const InboundRoutesPage = () => {
 
                   {/* Right column fields */}
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 190, marginRight: 10 }}
@@ -1028,7 +1190,10 @@ const InboundRoutesPage = () => {
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={enabled} onChange={(e) => setEnabled(e.target.value)}>
+                          <Select
+                            value={enabled}
+                            onChange={(e) => setEnabled(e.target.value)}
+                          >
                             {ENABLE_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -1039,7 +1204,10 @@ const InboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 190, marginRight: 10 }}
@@ -1053,7 +1221,10 @@ const InboundRoutesPage = () => {
                       />
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 190, marginRight: 10 }}
@@ -1064,7 +1235,9 @@ const InboundRoutesPage = () => {
                         <FormControl size="small" fullWidth>
                           <Select
                             value={enableMobilityExtension}
-                            onChange={(e) => setEnableMobilityExtension(e.target.value)}
+                            onChange={(e) =>
+                              setEnableMobilityExtension(e.target.value)
+                            }
                           >
                             {MOBILITY_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
@@ -1076,7 +1249,10 @@ const InboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2" style={{ minHeight: 32 }}>
+                    <div
+                      className="flex items-center gap-2"
+                      style={{ minHeight: 32 }}
+                    >
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 190, marginRight: 10 }}
@@ -1085,7 +1261,10 @@ const InboundRoutesPage = () => {
                       </label>
                       <div className="flex-1">
                         <FormControl size="small" fullWidth>
-                          <Select value={sendRingTone} onChange={(e) => setSendRingTone(e.target.value)}>
+                          <Select
+                            value={sendRingTone}
+                            onChange={(e) => setSendRingTone(e.target.value)}
+                          >
                             {SEND_RINGTONE_OPTIONS.map((opt) => (
                               <MenuItem key={opt} value={opt}>
                                 {opt}
@@ -1105,12 +1284,19 @@ const InboundRoutesPage = () => {
                   </label>
                   <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                     <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">Available</div>
+                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
+                        Available
+                      </div>
                       <select
                         multiple
                         value={availableSelected}
                         onChange={(e) =>
-                          setAvailableSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))
+                          setAvailableSelected(
+                            Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value,
+                            ),
+                          )
                         }
                         className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                       >
@@ -1160,12 +1346,19 @@ const InboundRoutesPage = () => {
                     </div>
 
                     <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">Selected</div>
+                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
+                        Selected
+                      </div>
                       <select
                         multiple
                         value={chosenSelected}
                         onChange={(e) =>
-                          setChosenSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))
+                          setChosenSelected(
+                            Array.from(
+                              e.target.selectedOptions,
+                              (opt) => opt.value,
+                            ),
+                          )
                         }
                         className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                       >
@@ -1221,53 +1414,63 @@ const InboundRoutesPage = () => {
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-              color: '#fff',
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              color: "#fff",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 8px #b3e0ff',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-                color: '#fff',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+                color: "#fff",
               },
-              '&:disabled': {
-                background: '#ccc',
-                color: '#666',
+
+              "&:disabled": {
+                background: "#cbd5e1",
+                color: "#64748b",
               },
             }}
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={loading.save && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading.save && <CircularProgress size={20} color="inherit" />
+            }
           >
-            {loading.save ? 'Saving...' : 'Save'}
+            {loading.save ? "Saving..." : "Save"}
           </Button>
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-              color: '#374151',
+              background:
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+              color: "#3E5475 ",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)',
-                color: '#374151',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+                color: "#2f405c",
               },
-              '&:disabled': {
-                background: '#f3f4f6',
-                color: '#9ca3af',
+
+              "&:disabled": {
+                background: "#f1f5f9",
+                color: "#94a3b8",
               },
             }}
             onClick={handleCloseModal}
@@ -1282,4 +1485,3 @@ const InboundRoutesPage = () => {
 };
 
 export default InboundRoutesPage;
-

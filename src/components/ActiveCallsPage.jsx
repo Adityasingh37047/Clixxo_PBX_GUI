@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import HeadsetMicIcon from '@mui/icons-material/HeadsetMic';
-import CallEndIcon from '@mui/icons-material/CallEnd';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import { IconButton, CircularProgress, Tooltip } from '@mui/material';
-import { fetchAriChannels, ariHangup } from '../api/apiService';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import HeadsetMicIcon from "@mui/icons-material/HeadsetMic";
+import CallEndIcon from "@mui/icons-material/CallEnd";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { IconButton, CircularProgress, Tooltip } from "@mui/material";
+import { fetchAriChannels, ariHangup } from "../api/apiService";
 
 // 1s poll so "Talking" timer starts within ~1s of answer (was ~3s with 3s poll)
 const POLL_MS = 1000;
@@ -20,15 +20,18 @@ const TALKING_DISPLAY_OFFSET_SEC = 1;
 
 /** Hangup on 2nd leg returns ARI 404 after 1st leg already tore down — treat as OK */
 function isChannelAlreadyGone(resOrErr) {
-  const msg = JSON.stringify(resOrErr?.message ?? resOrErr ?? '');
+  const msg = JSON.stringify(resOrErr?.message ?? resOrErr ?? "");
   return /channel not found/i.test(msg) || /ARI 404/i.test(msg);
 }
 
 /** Parse creationtime e.g. "2026-03-12T10:55:20.580+0530" to Date */
 function parseCreationTime(iso) {
-  if (!iso || typeof iso !== 'string') return null;
+  if (!iso || typeof iso !== "string") return null;
   // Java-style offset +0530 → +05:30 for ISO parsing
-  const normalized = iso.replace(/([+-])(\d{2})(\d{2})$/, (_, s, h, m) => `${s}${h}:${m}`);
+  const normalized = iso.replace(
+    /([+-])(\d{2})(\d{2})$/,
+    (_, s, h, m) => `${s}${h}:${m}`,
+  );
   const d = new Date(normalized);
   return Number.isNaN(d.getTime()) ? null : d;
 }
@@ -40,19 +43,19 @@ function callInstanceKey(ch) {
     : ch.id
       ? [ch.id]
       : [];
-  if (!ids.length) return '';
-  return [...ids].sort().join(',');
+  if (!ids.length) return "";
+  return [...ids].sort().join(",");
 }
 
 /** Persist talking start across route changes (ref is lost on unmount) */
-const TALKING_START_STORAGE_KEY = 'activeCallsTalkingStarts';
+const TALKING_START_STORAGE_KEY = "activeCallsTalkingStarts";
 
 function loadTalkingStartsPersisted() {
   try {
     const raw = sessionStorage.getItem(TALKING_START_STORAGE_KEY);
     if (!raw) return {};
     const o = JSON.parse(raw);
-    return o && typeof o === 'object' ? o : {};
+    return o && typeof o === "object" ? o : {};
   } catch {
     return {};
   }
@@ -71,27 +74,27 @@ function saveTalkingStartsPersisted(obj) {
  * offsetSec: subtract from elapsed (e.g. align GUI with phone timer).
  */
 function formatDuration(startDateOrMs, offsetSec = 0) {
-  if (startDateOrMs == null) return '0:00:00';
+  if (startDateOrMs == null) return "0:00:00";
   const t =
-    typeof startDateOrMs === 'number'
+    typeof startDateOrMs === "number"
       ? startDateOrMs
-      : startDateOrMs.getTime?.() ?? 0;
-  if (!t) return '0:00:00';
+      : (startDateOrMs.getTime?.() ?? 0);
+  if (!t) return "0:00:00";
   const rawSec = Math.floor((Date.now() - t) / 1000);
   const sec = Math.max(0, rawSec - (offsetSec | 0));
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
   const s = sec % 60;
-  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 /** Map API state to display label */
 function stateLabel(state) {
-  if (!state) return '—';
+  if (!state) return "—";
   const u = String(state).toLowerCase();
-  if (u === 'up') return 'Talking';
-  if (u === 'ring') return 'Ringing';
-  if (u === 'ringing') return 'Ringing';
+  if (u === "up") return "Talking";
+  if (u === "ring") return "Ringing";
+  if (u === "ringing") return "Ringing";
   return state;
 }
 
@@ -100,7 +103,7 @@ function stateLabel(state) {
  * unordered pair of numbers. Merge into one card and hang up all legs.
  */
 function normalizeEndpoint(n) {
-  return String(n || '').trim();
+  return String(n || "").trim();
 }
 
 /** Stable key for two-party call: sorted numbers joined. Single unknown → no merge. */
@@ -109,7 +112,7 @@ function callPairKey(ch) {
   const b = normalizeEndpoint(ch.connected?.number);
   if (!a || !b) return null;
   if (a === b) return null; // same both sides, don't merge with others by pair
-  return [a, b].sort().join('\u0000');
+  return [a, b].sort().join("\u0000");
 }
 
 /**
@@ -150,7 +153,9 @@ function mergeCallLegs(list) {
     merged.push({
       ...primary,
       _mergedChannelIds: channelIds,
-      _mergedCreationTime: earliest ? earliest.d : parseCreationTime(primary.creationtime),
+      _mergedCreationTime: earliest
+        ? earliest.d
+        : parseCreationTime(primary.creationtime),
     });
   }
 
@@ -161,20 +166,20 @@ function mergeCallLegs(list) {
  * Build a display line like external_wan/+number from channel name + caller
  */
 function channelDisplayLine(channel) {
-  const name = channel?.name || '';
-  const callerNum = channel?.caller?.number || '';
-  const ctx = channel?.dialplan?.context || '';
+  const name = channel?.name || "";
+  const callerNum = channel?.caller?.number || "";
+  const ctx = channel?.dialplan?.context || "";
   // SS-style first line: external_wan/+number when context + caller present
   if (ctx && callerNum) {
     return `${ctx}/${callerNum}`;
   }
-  if (name.startsWith('PJSIP/')) {
-    const part = name.split('/')[1] || '';
-    const endpoint = part.split('-')[0] || part;
+  if (name.startsWith("PJSIP/")) {
+    const part = name.split("/")[1] || "";
+    const endpoint = part.split("-")[0] || part;
     if (callerNum && callerNum !== endpoint) return `${endpoint}/${callerNum}`;
     return callerNum || name;
   }
-  return callerNum || name || '—';
+  return callerNum || name || "—";
 }
 
 const ActiveCallsPage = () => {
@@ -196,7 +201,7 @@ const ActiveCallsPage = () => {
         ? [channelIdOrIds]
         : [];
     if (ids.length === 0) return;
-    const key = ids.join(',');
+    const key = ids.join(",");
     setHangupChannelId(key);
     try {
       // Hang up each leg; first success often destroys the other leg → next call gets 404
@@ -206,11 +211,11 @@ const ActiveCallsPage = () => {
           const res = await ariHangup(id);
           if (res?.response !== false) break; // success
           if (isChannelAlreadyGone(res)) continue; // already gone, try next or refresh
-          hardFailure = res?.message || 'Hangup failed.';
+          hardFailure = res?.message || "Hangup failed.";
           break;
         } catch (e) {
           if (isChannelAlreadyGone(e)) continue;
-          hardFailure = e?.message || String(e) || 'Hangup failed.';
+          hardFailure = e?.message || String(e) || "Hangup failed.";
           break;
         }
       }
@@ -221,7 +226,7 @@ const ActiveCallsPage = () => {
       await loadChannels();
     } catch (e) {
       if (!isChannelAlreadyGone(e)) {
-        showAlert(e?.message || String(e) || 'Hangup failed.');
+        showAlert(e?.message || String(e) || "Hangup failed.");
       } else {
         await loadChannels();
       }
@@ -245,10 +250,10 @@ const ActiveCallsPage = () => {
         const key = callInstanceKey(ch);
         if (!key) continue;
         currentKeys.add(key);
-        const isUp = String(ch.state || '').toLowerCase() === 'up';
+        const isUp = String(ch.state || "").toLowerCase() === "up";
         if (isUp && !map.has(key)) {
           const stored = persisted[key];
-          if (typeof stored === 'number' && stored > 0) {
+          if (typeof stored === "number" && stored > 0) {
             map.set(key, stored);
           } else {
             const now = Date.now();
@@ -268,7 +273,7 @@ const ActiveCallsPage = () => {
       setError(null);
     } catch (e) {
       if (!mounted.current) return;
-      setError(e?.message || 'Failed to load active calls');
+      setError(e?.message || "Failed to load active calls");
       setChannels([]);
     } finally {
       if (mounted.current) setLoading(false);
@@ -296,18 +301,18 @@ const ActiveCallsPage = () => {
     loadChannels();
   };
 
-  const panelBg = '#fff';
-  const titleColor = '#c62828';
+  const panelBg = "#fff";
+  const titleColor = "#c62828";
   // Light green card like SS (slightly warmer green, soft border)
-  const cardBg = '#f1f8f4';
-  const cardBorder = '#b8d4c0';
+  const cardBg = "#f1f8f4";
+  const cardBorder = "#b8d4c0";
 
   // Always reserve two columns on desktop so one card keeps the same size
   // as a two-call layout: call2 right of call1, call3 below call1, etc.
-  const gridClass = 'grid-cols-1 md:grid-cols-2';
+  const gridClass = "grid-cols-1 md:grid-cols-2";
 
   return (
-    <div className="min-h-full w-full flex flex-col justify-start px-4 py-4 md:px-6">
+    <div className="min-h-full w-full flex flex-col justify-start px-4 py-4 md:px-6 md:p-2 ">
       <div
         className="w-full max-w-full rounded-lg shadow border border-gray-200 overflow-hidden"
         style={{ backgroundColor: panelBg }}
@@ -319,8 +324,17 @@ const ActiveCallsPage = () => {
           </h1>
           <Tooltip title="Refresh">
             <span>
-              <IconButton size="small" onClick={handleRefresh} disabled={loading} aria-label="Refresh">
-                {loading ? <CircularProgress size={20} /> : <RefreshIcon fontSize="small" />}
+              <IconButton
+                size="small"
+                onClick={handleRefresh}
+                disabled={loading}
+                aria-label="Refresh"
+              >
+                {loading ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  <RefreshIcon fontSize="small" />
+                )}
               </IconButton>
             </span>
           </Tooltip>
@@ -340,12 +354,12 @@ const ActiveCallsPage = () => {
           {!error && channels.length > 0 && (
             <div className={`grid gap-3 ${gridClass}`}>
               {channels.map((ch) => {
-                const callerNum = ch.caller?.number || '';
-                const connectedNum = ch.connected?.number || '';
-                const callerName = ch.caller?.name || '';
-                const connectedName = ch.connected?.name || '';
+                const callerNum = ch.caller?.number || "";
+                const connectedNum = ch.connected?.number || "";
+                const callerName = ch.caller?.name || "";
+                const connectedName = ch.connected?.name || "";
                 const instanceKey = callInstanceKey(ch);
-                const isUp = String(ch.state || '').toLowerCase() === 'up';
+                const isUp = String(ch.state || "").toLowerCase() === "up";
                 // Talking: elapsed since we first saw Up (avoids 15s+ offset from creationtime)
                 const talkingStartMs =
                   isUp && instanceKey
@@ -356,21 +370,21 @@ const ActiveCallsPage = () => {
                       talkingStartMs ??
                         ch._mergedCreationTime ??
                         parseCreationTime(ch.creationtime),
-                      TALKING_DISPLAY_OFFSET_SEC
+                      TALKING_DISPLAY_OFFSET_SEC,
                     )
-                  : '0:00:00';
+                  : "0:00:00";
                 const hangupIds = ch._mergedChannelIds?.length
                   ? ch._mergedChannelIds
                   : ch.id
                     ? [ch.id]
                     : [];
-                const hangupKey = hangupIds.join(',');
+                const hangupKey = hangupIds.join(",");
                 const status = stateLabel(ch.state);
                 const topLine = channelDisplayLine(ch);
 
                 // SS layout: icon left | external_wan line + number + arrow+ext | Talking→ + duration + icons
-                const mainNumber = callerNum || callerName || '—';
-                const extNumber = connectedNum || connectedName || '';
+                const mainNumber = callerNum || callerName || "—";
+                const extNumber = connectedNum || connectedName || "";
 
                 return (
                   <div
@@ -384,7 +398,10 @@ const ActiveCallsPage = () => {
                   >
                     {/* Person icon – left edge like SS */}
                     <div className="flex items-center pl-3 pr-2 py-3 shrink-0">
-                      <PersonOutlineIcon className="text-gray-400" style={{ fontSize: 36 }} />
+                      <PersonOutlineIcon
+                        className="text-gray-400"
+                        style={{ fontSize: 36 }}
+                      />
                     </div>
 
                     {/* Center: external_wan line, number, arrow + extension */}
@@ -396,9 +413,12 @@ const ActiveCallsPage = () => {
                         {mainNumber}
                       </div>
                       <div className="flex items-center gap-1 mt-1">
-                        <KeyboardArrowDownIcon className="text-gray-500 shrink-0" style={{ fontSize: 18 }} />
+                        <KeyboardArrowDownIcon
+                          className="text-gray-500 shrink-0"
+                          style={{ fontSize: 18 }}
+                        />
                         <span className="text-gray-900 text-sm">
-                          {extNumber || '—'}
+                          {extNumber || "—"}
                         </span>
                       </div>
                     </div>
@@ -409,20 +429,31 @@ const ActiveCallsPage = () => {
                         <span className="text-sm font-medium">{status}</span>
                         <ArrowForwardIcon style={{ fontSize: 16 }} />
                       </div>
-                      <div className="text-gray-800 text-sm font-mono my-1">{duration}</div>
+                      <div className="text-gray-800 text-sm font-mono my-1">
+                        {duration}
+                      </div>
                       <div className="flex items-center gap-1 mt-auto">
-                        <HeadsetMicIcon className="text-gray-600" style={{ fontSize: 20 }} />
+                        <HeadsetMicIcon
+                          className="text-gray-600"
+                          style={{ fontSize: 20 }}
+                        />
                         <Tooltip title="Hang up">
                           <span>
                             <IconButton
                               size="small"
                               aria-label="Hang up"
-                              disabled={hangupIds.length === 0 || hangupChannelId === hangupKey}
+                              disabled={
+                                hangupIds.length === 0 ||
+                                hangupChannelId === hangupKey
+                              }
                               onClick={() => handleHangup(hangupIds)}
-                              sx={{ color: '#c62828', padding: '2px' }}
+                              sx={{ color: "#c62828", padding: "2px" }}
                             >
                               {hangupChannelId === hangupKey ? (
-                                <CircularProgress size={18} sx={{ color: '#c62828' }} />
+                                <CircularProgress
+                                  size={18}
+                                  sx={{ color: "#c62828" }}
+                                />
                               ) : (
                                 <CallEndIcon style={{ fontSize: 20 }} />
                               )}

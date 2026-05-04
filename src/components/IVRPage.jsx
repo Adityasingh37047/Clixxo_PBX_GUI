@@ -957,8 +957,11 @@ const IVRPage = () => {
     <div className="w-full max-w-full mx-auto p-2">
       <div className="w-full max-w-full mx-auto">
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm mt-0"
-          style={{ background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)' }}
+          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+          style={{
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          }}
         >
           IVR
         </div>
@@ -968,19 +971,36 @@ const IVRPage = () => {
             <thead>
               <tr>
                 <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">#</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Name</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">IVR Number</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Enabled</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Direct Outbound</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">Outbound Routes</th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">Actions</th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
+                  #
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Name
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  IVR Number
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Enabled
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Direct Outbound
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
+                  Outbound Routes
+                </th>
+                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="border border-gray-300 px-2 py-4 text-center text-gray-500">
+                  <td
+                    colSpan={8}
+                    className="border border-gray-300 px-2 py-4 text-center text-gray-500"
+                  >
                     No IVR routes yet. Click &quot;Add New&quot; to create one.
                   </td>
                 </tr>
@@ -997,13 +1017,25 @@ const IVRPage = () => {
                           disabled={loading.delete}
                         />
                       </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{realIdx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">{row.name}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.ivrNumber}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.enabled}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{row.directOutbound ? 'Yes' : 'No'}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
-                        {(row.memberOutboundIds || []).map(getOutboundRouteLabel).join(', ')}
+                        {realIdx + 1}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">
+                        {row.name}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {row.ivrNumber}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {row.enabled}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {row.directOutbound ? "Yes" : "No"}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {(row.memberOutboundIds || [])
+                          .map(getOutboundRouteLabel)
+                          .join(", ")}
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
                         <EditDocumentIcon
@@ -1024,7 +1056,7 @@ const IVRPage = () => {
           <div className="flex flex-wrap gap-2">
             <button
               className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleCheckAll}
               disabled={loading.delete}
@@ -1033,7 +1065,7 @@ const IVRPage = () => {
             </button>
             <button
               className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleUncheckAll}
               disabled={loading.delete}
@@ -1042,7 +1074,7 @@ const IVRPage = () => {
             </button>
             <button
               className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleDelete}
               disabled={loading.delete}
@@ -1054,7 +1086,7 @@ const IVRPage = () => {
           <div className="flex gap-2">
             <button
               className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.save ? 'opacity-50 cursor-not-allowed' : ''
+                loading.save ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleOpenAddModal}
               disabled={loading.save}
@@ -1122,48 +1154,60 @@ const IVRPage = () => {
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: activeTab === 'keypress' ? 760 : 1040, maxWidth: '98vw', mx: 'auto', p: 0 },
+          sx: {
+            width: activeTab === "keypress" ? 760 : 1040,
+            maxWidth: "98vw",
+            mx: "auto",
+            p: 0,
+          },
         }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold py-2 px-3 text-sm"
+          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)',
-            borderBottom: '1px solid #444444',
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
-          {editId != null ? 'Edit IVR' : 'Add IVR'}
+          {editId != null ? "Edit IVR" : "Add IVR"}
         </DialogTitle>
         <DialogContent
           className="pt-0 pb-0 px-0"
           style={{
-            backgroundColor: '#dde0e4',
-            border: '1px solid #444444',
-            borderTop: 'none',
+            backgroundColor: "#dde0e4",
+            border: "1px solid #444444",
+            borderTop: "none",
           }}
         >
           {/* Tabs */}
           <div className="flex border-b border-gray-300 bg-white px-3 pt-2">
             <button
               className={`px-3 pb-1.5 text-xs font-semibold border-b-2 ${
-                activeTab === 'basic' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-600'
+                activeTab === "basic"
+                  ? "border-teal-500 text-teal-600"
+                  : "border-transparent text-gray-600"
               }`}
-              onClick={() => setActiveTab('basic')}
+              onClick={() => setActiveTab("basic")}
             >
               BASIC
             </button>
             <button
               className={`px-3 pb-1.5 text-xs font-semibold border-b-2 ${
-                activeTab === 'keypress' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-600'
+                activeTab === "keypress"
+                  ? "border-teal-500 text-teal-600"
+                  : "border-transparent text-gray-600"
               }`}
-              onClick={() => setActiveTab('keypress')}
+              onClick={() => setActiveTab("keypress")}
             >
               KEY PRESS EVENT
             </button>
           </div>
 
-          {activeTab === 'basic' ? (
-            <div className="pt-0 pb-0 px-0" style={{ backgroundColor: '#dde0e4', borderTop: 'none' }}>
+          {activeTab === "basic" ? (
+            <div
+              className="pt-0 pb-0 px-0"
+              style={{ backgroundColor: "#dde0e4", borderTop: "none" }}
+            >
               <div className="pt-2 pb-3 px-3 bg-white">
                 <div className="border border-gray-300 rounded-md overflow-hidden">
                   <div className="px-3 py-1 border-b border-gray-300 text-[12px] font-semibold text-gray-700 bg-[#f5f7fa]">
@@ -1173,28 +1217,62 @@ const IVRPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-1.5">
                       {/* Left column */}
                       <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Name <span className="text-red-500">*</span>
                           </label>
-                          <input className={COMPACT_FIELD_CLASS} value={name} onChange={(e) => setName(e.target.value)} />
+                          <input
+                            className={COMPACT_FIELD_CLASS}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                          />
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             IVR Number <span className="text-red-500">*</span>
                           </label>
-                          <input className={COMPACT_FIELD_CLASS} value={ivrNumber} onChange={(e) => setIvrNumber(e.target.value)} />
+                          <input
+                            className={COMPACT_FIELD_CLASS}
+                            value={ivrNumber}
+                            onChange={(e) => setIvrNumber(e.target.value)}
+                          />
                         </div>
 
-                        <div className="flex items-center gap-2 flex-nowrap" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2 flex-nowrap"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Greet Long
                           </label>
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             <div className="min-w-0 w-full max-w-[220px]">
-                              <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                                <Select value={greetLong} onChange={(e) => setGreetLong(e.target.value)} MenuProps={SELECT_MENU_PROPS}>
+                              <FormControl
+                                size="small"
+                                fullWidth
+                                sx={COMPACT_SELECT_SX}
+                              >
+                                <Select
+                                  value={greetLong}
+                                  onChange={(e) => setGreetLong(e.target.value)}
+                                  MenuProps={SELECT_MENU_PROPS}
+                                >
                                   {greetLongOptions.map((opt) => (
                                     <MenuItem key={opt} value={opt}>
                                       {opt}
@@ -1203,20 +1281,40 @@ const IVRPage = () => {
                                 </Select>
                               </FormControl>
                             </div>
-                            <button type="button" className="text-[11px] text-blue-600 underline cursor-pointer shrink-0 leading-none" onClick={handleGoToVoicePrompts}>
+                            <button
+                              type="button"
+                              className="text-[11px] text-blue-600 underline cursor-pointer shrink-0 leading-none"
+                              onClick={handleGoToVoicePrompts}
+                            >
                               Prompt
                             </button>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 flex-nowrap" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2 flex-nowrap"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Greet Short
                           </label>
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             <div className="min-w-0 w-full max-w-[220px]">
-                              <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                                <Select value={greetShort} onChange={(e) => setGreetShort(e.target.value)} MenuProps={SELECT_MENU_PROPS}>
+                              <FormControl
+                                size="small"
+                                fullWidth
+                                sx={COMPACT_SELECT_SX}
+                              >
+                                <Select
+                                  value={greetShort}
+                                  onChange={(e) =>
+                                    setGreetShort(e.target.value)
+                                  }
+                                  MenuProps={SELECT_MENU_PROPS}
+                                >
                                   {greetShortOptions.map((opt) => (
                                     <MenuItem key={opt} value={opt}>
                                       {opt}
@@ -1225,24 +1323,47 @@ const IVRPage = () => {
                                 </Select>
                               </FormControl>
                             </div>
-                            <button type="button" className="text-[11px] text-blue-600 underline cursor-pointer shrink-0 leading-none" onClick={handleGoToVoicePrompts}>Prompt</button>
+                            <button
+                              type="button"
+                              className="text-[11px] text-blue-600 underline cursor-pointer shrink-0 leading-none"
+                              onClick={handleGoToVoicePrompts}
+                            >
+                              Prompt
+                            </button>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
-                            Response Timeout (ms) <span className="text-red-500">*</span>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
+                            Response Timeout (ms){" "}
+                            <span className="text-red-500">*</span>
                           </label>
-                          <input className={COMPACT_FIELD_CLASS} value={responseTimeout} onChange={(e) => setResponseTimeout(e.target.value)} />
+                          <input
+                            className={COMPACT_FIELD_CLASS}
+                            value={responseTimeout}
+                            onChange={(e) => setResponseTimeout(e.target.value)}
+                          />
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Password
                           </label>
                           <div className="flex items-center max-w-[220px] w-full border border-gray-300 rounded overflow-hidden bg-white">
                             <input
-                              type={showPassword ? 'text' : 'password'}
+                              type={showPassword ? "text" : "password"}
                               className="flex-1 min-w-0 border-0 px-1.5 py-0.5 text-[13px] leading-snug outline-none"
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
@@ -1252,23 +1373,50 @@ const IVRPage = () => {
                               type="button"
                               size="small"
                               tabIndex={-1}
-                              aria-label={showPassword ? 'Hide password' : 'Show password'}
+                              aria-label={
+                                showPassword ? "Hide password" : "Show password"
+                              }
                               onClick={() => setShowPassword((v) => !v)}
                               edge="end"
-                              sx={{ p: 0.35, borderRadius: 0, color: 'text.secondary' }}
+                              sx={{
+                                p: 0.35,
+                                borderRadius: 0,
+                                color: "text.secondary",
+                              }}
                             >
-                              {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                              {showPassword ? (
+                                <VisibilityOff sx={{ fontSize: 18 }} />
+                              ) : (
+                                <Visibility sx={{ fontSize: 18 }} />
+                              )}
                             </IconButton>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
-                            Check Voicemail <span className="text-red-500">*</span>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
+                            Check Voicemail{" "}
+                            <span className="text-red-500">*</span>
                           </label>
                           <div className="w-full max-w-[220px]">
-                            <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                              <Select value={checkVoicemail} onChange={(e) => setCheckVoicemail(e.target.value)} MenuProps={SELECT_MENU_PROPS}>
+                            <FormControl
+                              size="small"
+                              fullWidth
+                              sx={COMPACT_SELECT_SX}
+                            >
+                              <Select
+                                value={checkVoicemail}
+                                onChange={(e) =>
+                                  setCheckVoicemail(e.target.value)
+                                }
+                                MenuProps={SELECT_MENU_PROPS}
+                              >
                                 {CHECK_VOICEMAIL_OPTIONS.map((opt) => (
                                   <MenuItem key={opt} value={opt}>
                                     {opt}
@@ -1279,51 +1427,121 @@ const IVRPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Direct Outbound
                           </label>
-                          <input type="checkbox" className="h-4 w-4" checked={directOutbound} onChange={(e) => setDirectOutbound(e.target.checked)} />
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4"
+                            checked={directOutbound}
+                            onChange={(e) =>
+                              setDirectOutbound(e.target.checked)
+                            }
+                          />
                         </div>
                       </div>
 
                       {/* Right column */}
                       <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
-                            Inter-Digit Timeout (ms) <span className="text-red-500">*</span>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
+                            Inter-Digit Timeout (ms){" "}
+                            <span className="text-red-500">*</span>
                           </label>
-                          <input className={COMPACT_FIELD_CLASS} value={interDigitTimeout} onChange={(e) => setInterDigitTimeout(e.target.value)} />
+                          <input
+                            className={COMPACT_FIELD_CLASS}
+                            value={interDigitTimeout}
+                            onChange={(e) =>
+                              setInterDigitTimeout(e.target.value)
+                            }
+                          />
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Max Failures <span className="text-red-500">*</span>
                           </label>
-                          <input className={COMPACT_FIELD_CLASS} value={maxFailures} onChange={(e) => setMaxFailures(e.target.value)} />
+                          <input
+                            className={COMPACT_FIELD_CLASS}
+                            value={maxFailures}
+                            onChange={(e) => setMaxFailures(e.target.value)}
+                          />
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Max Timeouts <span className="text-red-500">*</span>
                           </label>
-                          <input className={COMPACT_FIELD_CLASS} value={maxTimeouts} onChange={(e) => setMaxTimeouts(e.target.value)} />
+                          <input
+                            className={COMPACT_FIELD_CLASS}
+                            value={maxTimeouts}
+                            onChange={(e) => setMaxTimeouts(e.target.value)}
+                          />
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Digit Length <span className="text-red-500">*</span>
                           </label>
-                          <input className={COMPACT_FIELD_CLASS} value={digitLength} onChange={(e) => setDigitLength(e.target.value)} />
+                          <input
+                            className={COMPACT_FIELD_CLASS}
+                            value={digitLength}
+                            onChange={(e) => setDigitLength(e.target.value)}
+                          />
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Enabled <span className="text-red-500">*</span>
                           </label>
                           <div className="w-full max-w-[220px]">
-                            <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                              <Select value={enabled} onChange={(e) => setEnabled(e.target.value)} MenuProps={SELECT_MENU_PROPS}>
+                            <FormControl
+                              size="small"
+                              fullWidth
+                              sx={COMPACT_SELECT_SX}
+                            >
+                              <Select
+                                value={enabled}
+                                onChange={(e) => setEnabled(e.target.value)}
+                                MenuProps={SELECT_MENU_PROPS}
+                              >
                                 {ENABLE_OPTIONS.map((opt) => (
                                   <MenuItem key={opt} value={opt}>
                                     {opt}
@@ -1334,13 +1552,30 @@ const IVRPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
-                            Direct Extension <span className="text-red-500">*</span>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
+                            Direct Extension{" "}
+                            <span className="text-red-500">*</span>
                           </label>
                           <div className="w-full max-w-[220px]">
-                            <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                              <Select value={directExtension} onChange={(e) => setDirectExtension(e.target.value)} MenuProps={SELECT_MENU_PROPS}>
+                            <FormControl
+                              size="small"
+                              fullWidth
+                              sx={COMPACT_SELECT_SX}
+                            >
+                              <Select
+                                value={directExtension}
+                                onChange={(e) =>
+                                  setDirectExtension(e.target.value)
+                                }
+                                MenuProps={SELECT_MENU_PROPS}
+                              >
                                 {DIRECT_EXTENSION_OPTIONS.map((opt) => (
                                   <MenuItem key={opt} value={opt}>
                                     {opt}
@@ -1351,13 +1586,30 @@ const IVRPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
-                            FXO Flash Transfer <span className="text-red-500">*</span>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
+                            FXO Flash Transfer{" "}
+                            <span className="text-red-500">*</span>
                           </label>
                           <div className="w-full max-w-[220px]">
-                            <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                              <Select value={fxoFlashTransfer} onChange={(e) => setFxoFlashTransfer(e.target.value)} MenuProps={SELECT_MENU_PROPS}>
+                            <FormControl
+                              size="small"
+                              fullWidth
+                              sx={COMPACT_SELECT_SX}
+                            >
+                              <Select
+                                value={fxoFlashTransfer}
+                                onChange={(e) =>
+                                  setFxoFlashTransfer(e.target.value)
+                                }
+                                MenuProps={SELECT_MENU_PROPS}
+                              >
                                 {FXO_FLASH_TRANSFER_OPTIONS.map((opt) => (
                                   <MenuItem key={opt} value={opt}>
                                     {opt}
@@ -1373,17 +1625,22 @@ const IVRPage = () => {
                     {directOutbound && (
                       <div className="mt-2 border-t border-gray-200 pt-2">
                         <div className="text-[13px] text-gray-700 font-medium mb-1.5">
-                          Outbound Routes <span className="text-red-500">*</span>
+                          Outbound Routes{" "}
+                          <span className="text-red-500">*</span>
                         </div>
                         <div className="grid grid-cols-[1fr_44px_1fr_44px] gap-2 items-start w-full">
                           <div>
-                            <div className="text-[12px] font-semibold text-[#325a84] text-center mb-1">Available</div>
+                            <div className="text-[12px] font-semibold text-[#325a84] text-center mb-1">
+                              Available
+                            </div>
                             <select
                               multiple
                               value={availableSelected.map(String)}
                               onChange={(e) =>
                                 setAvailableSelected(
-                                  Array.from(e.target.selectedOptions, (opt) => Number(opt.value)).filter((n) => Number.isFinite(n))
+                                  Array.from(e.target.selectedOptions, (opt) =>
+                                    Number(opt.value),
+                                  ).filter((n) => Number.isFinite(n)),
                                 )
                               }
                               className="w-full h-24 border border-gray-300 bg-white rounded px-1.5 py-0.5 text-[13px] outline-none"
@@ -1403,28 +1660,48 @@ const IVRPage = () => {
                           </div>
 
                           <div className="flex flex-col gap-0.5 pt-6">
-                            <button type="button" className={shuttleArrowClass} onClick={addSelectedOutboundRoutes}>
+                            <button
+                              type="button"
+                              className={shuttleArrowClass}
+                              onClick={addSelectedOutboundRoutes}
+                            >
                               &gt;
                             </button>
-                            <button type="button" className={shuttleArrowClass} onClick={addAllOutboundRoutes}>
+                            <button
+                              type="button"
+                              className={shuttleArrowClass}
+                              onClick={addAllOutboundRoutes}
+                            >
                               &gt;&gt;
                             </button>
-                            <button type="button" className={shuttleArrowClass} onClick={removeSelectedOutboundRoutes}>
+                            <button
+                              type="button"
+                              className={shuttleArrowClass}
+                              onClick={removeSelectedOutboundRoutes}
+                            >
                               &lt;
                             </button>
-                            <button type="button" className={shuttleArrowClass} onClick={removeAllOutboundRoutes}>
+                            <button
+                              type="button"
+                              className={shuttleArrowClass}
+                              onClick={removeAllOutboundRoutes}
+                            >
                               &lt;&lt;
                             </button>
                           </div>
 
                           <div>
-                            <div className="text-[12px] font-semibold text-[#325a84] text-center mb-1">Selected</div>
+                            <div className="text-[12px] font-semibold text-[#325a84] text-center mb-1">
+                              Selected
+                            </div>
                             <select
                               multiple
                               value={chosenSelected.map(String)}
                               onChange={(e) =>
                                 setChosenSelected(
-                                  Array.from(e.target.selectedOptions, (opt) => Number(opt.value)).filter((n) => Number.isFinite(n))
+                                  Array.from(e.target.selectedOptions, (opt) =>
+                                    Number(opt.value),
+                                  ).filter((n) => Number.isFinite(n)),
                                 )
                               }
                               className="w-full h-24 border border-gray-300 bg-white rounded px-1.5 py-0.5 text-[13px] outline-none"
@@ -1442,16 +1719,32 @@ const IVRPage = () => {
                           </div>
 
                           <div className="flex flex-col gap-0.5 pt-6">
-                            <button type="button" className={shuttleArrowClass} onClick={moveOutboundTop}>
+                            <button
+                              type="button"
+                              className={shuttleArrowClass}
+                              onClick={moveOutboundTop}
+                            >
                               &#8679;
                             </button>
-                            <button type="button" className={shuttleArrowClass} onClick={moveOutboundUp}>
+                            <button
+                              type="button"
+                              className={shuttleArrowClass}
+                              onClick={moveOutboundUp}
+                            >
                               &#8593;
                             </button>
-                            <button type="button" className={shuttleArrowClass} onClick={moveOutboundDown}>
+                            <button
+                              type="button"
+                              className={shuttleArrowClass}
+                              onClick={moveOutboundDown}
+                            >
                               &#8595;
                             </button>
-                            <button type="button" className={shuttleArrowClass} onClick={moveOutboundBottom}>
+                            <button
+                              type="button"
+                              className={shuttleArrowClass}
+                              onClick={moveOutboundBottom}
+                            >
                               &#8681;
                             </button>
                           </div>
@@ -1461,15 +1754,33 @@ const IVRPage = () => {
 
                     {/* Advanced section */}
                     <div className="mt-2 border-t border-gray-200 pt-2">
-                      <div className="text-[12px] font-semibold text-gray-700 mb-2">Advanced</div>
+                      <div className="text-[12px] font-semibold text-gray-700 mb-2">
+                        Advanced
+                      </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-1.5">
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Invalid Sound
                           </label>
                           <div className="w-full max-w-[220px]">
-                            <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                              <Select value={invalidSound} onChange={(e) => setInvalidSound(e.target.value)} MenuProps={SELECT_MENU_PROPS}>
+                            <FormControl
+                              size="small"
+                              fullWidth
+                              sx={COMPACT_SELECT_SX}
+                            >
+                              <Select
+                                value={invalidSound}
+                                onChange={(e) =>
+                                  setInvalidSound(e.target.value)
+                                }
+                                MenuProps={SELECT_MENU_PROPS}
+                              >
                                 {invalidSoundOptions.map((opt) => (
                                   <MenuItem key={opt} value={opt}>
                                     {opt}
@@ -1480,45 +1791,98 @@ const IVRPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Ring Back
                           </label>
                           <div className="w-full max-w-[220px]">
-                            <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                              <Select value={ringBack} onChange={(e) => setRingBack(e.target.value)} MenuProps={{ PaperProps: { sx: { maxHeight: 360 } } }}>
-                                {ringBack && !ringBackAllValues.includes(ringBack) && (
-                                  <MenuItem key={`ringback-current-${ringBack}`} value={ringBack}>
-                                    {ringBack}
-                                  </MenuItem>
-                                )}
+                            <FormControl
+                              size="small"
+                              fullWidth
+                              sx={COMPACT_SELECT_SX}
+                            >
+                              <Select
+                                value={ringBack}
+                                onChange={(e) => setRingBack(e.target.value)}
+                                MenuProps={{
+                                  PaperProps: { sx: { maxHeight: 360 } },
+                                }}
+                              >
+                                {ringBack &&
+                                  !ringBackAllValues.includes(ringBack) && (
+                                    <MenuItem
+                                      key={`ringback-current-${ringBack}`}
+                                      value={ringBack}
+                                    >
+                                      {ringBack}
+                                    </MenuItem>
+                                  )}
                                 {ringBackOptions.moh_categories.length > 0 && (
-                                  <ListSubheader disableSticky sx={{ fontWeight: 700, fontSize: 14, lineHeight: '34px' }}>
+                                  <ListSubheader
+                                    disableSticky
+                                    sx={{
+                                      fontWeight: 700,
+                                      fontSize: 14,
+                                      lineHeight: "34px",
+                                    }}
+                                  >
                                     Music on Hold
                                   </ListSubheader>
                                 )}
                                 {ringBackOptions.moh_categories.map((opt) => (
-                                  <MenuItem key={`moh-${opt}`} value={opt} sx={{ pl: 3, fontSize: 14 }}>
+                                  <MenuItem
+                                    key={`moh-${opt}`}
+                                    value={opt}
+                                    sx={{ pl: 3, fontSize: 14 }}
+                                  >
                                     {opt}
                                   </MenuItem>
                                 ))}
                                 {ringBackOptions.custom_prompts.length > 0 && (
-                                  <ListSubheader disableSticky sx={{ fontWeight: 700, fontSize: 14, lineHeight: '34px' }}>
+                                  <ListSubheader
+                                    disableSticky
+                                    sx={{
+                                      fontWeight: 700,
+                                      fontSize: 14,
+                                      lineHeight: "34px",
+                                    }}
+                                  >
                                     Custom Prompt
                                   </ListSubheader>
                                 )}
                                 {ringBackOptions.custom_prompts.map((opt) => (
-                                  <MenuItem key={`prompt-${opt}`} value={opt} sx={{ pl: 3, fontSize: 14 }}>
+                                  <MenuItem
+                                    key={`prompt-${opt}`}
+                                    value={opt}
+                                    sx={{ pl: 3, fontSize: 14 }}
+                                  >
                                     {opt}
                                   </MenuItem>
                                 ))}
                                 {ringBackOptions.country_tones.length > 0 && (
-                                  <ListSubheader disableSticky sx={{ fontWeight: 700, fontSize: 14, lineHeight: '34px' }}>
+                                  <ListSubheader
+                                    disableSticky
+                                    sx={{
+                                      fontWeight: 700,
+                                      fontSize: 14,
+                                      lineHeight: "34px",
+                                    }}
+                                  >
                                     Ring Back
                                   </ListSubheader>
                                 )}
                                 {ringBackOptions.country_tones.map((opt) => (
-                                  <MenuItem key={`tone-${opt}`} value={opt} sx={{ pl: 3, fontSize: 14 }}>
+                                  <MenuItem
+                                    key={`tone-${opt}`}
+                                    value={opt}
+                                    sx={{ pl: 3, fontSize: 14 }}
+                                  >
                                     {opt}
                                   </MenuItem>
                                 ))}
@@ -1527,13 +1891,27 @@ const IVRPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Exit Sound
                           </label>
                           <div className="w-full max-w-[220px]">
-                            <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
-                              <Select value={exitSound} onChange={(e) => setExitSound(e.target.value)} MenuProps={SELECT_MENU_PROPS}>
+                            <FormControl
+                              size="small"
+                              fullWidth
+                              sx={COMPACT_SELECT_SX}
+                            >
+                              <Select
+                                value={exitSound}
+                                onChange={(e) => setExitSound(e.target.value)}
+                                MenuProps={SELECT_MENU_PROPS}
+                              >
                                 {exitSoundOptions.map((opt) => (
                                   <MenuItem key={opt} value={opt}>
                                     {opt}
@@ -1544,21 +1922,35 @@ const IVRPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 md:col-span-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2 md:col-span-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Exit Action
                           </label>
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             <div className="w-full max-w-[220px]">
-                              <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
+                              <FormControl
+                                size="small"
+                                fullWidth
+                                sx={COMPACT_SELECT_SX}
+                              >
                                 <Select
-                                  value={exitActionType || ''}
+                                  value={exitActionType || ""}
                                   displayEmpty
                                   onChange={(e) => {
                                     setExitActionType(e.target.value);
-                                    setExitActionValue('');
+                                    setExitActionValue("");
                                   }}
-                                  renderValue={(value) => (value ? formatActionLabel(value) : 'Select action')}
+                                  renderValue={(value) =>
+                                    value
+                                      ? formatActionLabel(value)
+                                      : "Select action"
+                                  }
                                   MenuProps={SELECT_MENU_PROPS}
                                 >
                                   <MenuItem value="">
@@ -1573,16 +1965,34 @@ const IVRPage = () => {
                               </FormControl>
                             </div>
                             {exitActionType ? (
-                              <div className="w-full max-w-[220px] min-w-0">{renderDestinationSelect(exitActionType, exitActionValue, setExitActionValue)}</div>
+                              <div className="w-full max-w-[220px] min-w-0">
+                                {renderDestinationSelect(
+                                  exitActionType,
+                                  exitActionValue,
+                                  setExitActionValue,
+                                )}
+                              </div>
                             ) : null}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2" style={{ minHeight: 26 }}>
-                          <label className={IVR_LABEL_CLASS} style={{ width: 170, marginRight: 8 }}>
+                        <div
+                          className="flex items-center gap-2"
+                          style={{ minHeight: 26 }}
+                        >
+                          <label
+                            className={IVR_LABEL_CLASS}
+                            style={{ width: 170, marginRight: 8 }}
+                          >
                             Caller ID Name Prefix
                           </label>
-                          <input className={COMPACT_FIELD_CLASS} value={callerIdNamePrefix} onChange={(e) => setCallerIdNamePrefix(e.target.value)} />
+                          <input
+                            className={COMPACT_FIELD_CLASS}
+                            value={callerIdNamePrefix}
+                            onChange={(e) =>
+                              setCallerIdNamePrefix(e.target.value)
+                            }
+                          />
                         </div>
                       </div>
                     </div>
@@ -1604,19 +2014,32 @@ const IVRPage = () => {
                   </div>
                   <div className="flex flex-col gap-1.5">
                     {KEYS.map((key) => (
-                      <div key={key} className="grid grid-cols-1 md:grid-cols-[140px_220px_220px] items-center gap-1.5 md:gap-2 border-b border-gray-100 pb-1.5 last:border-0 last:pb-0">
-                        <span className="text-[13px] text-gray-700">Option Digit {key}:</span>
+                      <div
+                        key={key}
+                        className="grid grid-cols-1 md:grid-cols-[140px_220px_220px] items-center gap-1.5 md:gap-2 border-b border-gray-100 pb-1.5 last:border-0 last:pb-0"
+                      >
+                        <span className="text-[13px] text-gray-700">
+                          Option Digit {key}:
+                        </span>
                         <div className="w-full max-w-[220px]">
-                          <FormControl size="small" fullWidth sx={COMPACT_SELECT_SX}>
+                          <FormControl
+                            size="small"
+                            fullWidth
+                            sx={COMPACT_SELECT_SX}
+                          >
                             <Select
-                              value={keyDestinations[key] || ''}
+                              value={keyDestinations[key] || ""}
                               displayEmpty
                               onChange={(e) => {
                                 const value = e.target.value;
                                 handleKeyDestinationChange(key, value);
-                                handleKeyDestinationValueChange(key, '');
+                                handleKeyDestinationValueChange(key, "");
                               }}
-                              renderValue={(value) => (value ? formatActionLabel(value) : 'Select destination')}
+                              renderValue={(value) =>
+                                value
+                                  ? formatActionLabel(value)
+                                  : "Select destination"
+                              }
                               MenuProps={SELECT_MENU_PROPS}
                             >
                               <MenuItem value="">
@@ -1631,7 +2054,11 @@ const IVRPage = () => {
                           </FormControl>
                         </div>
                         <div className="w-full max-w-[220px] min-w-0">
-                          {renderDestinationSelect(keyDestinations[key], keyDestinationValues[key], (val) => handleKeyDestinationValueChange(key, val))}
+                          {renderDestinationSelect(
+                            keyDestinations[key],
+                            keyDestinationValues[key],
+                            (val) => handleKeyDestinationValueChange(key, val),
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1645,53 +2072,63 @@ const IVRPage = () => {
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-              color: '#fff',
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              color: "#fff",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 8px #b3e0ff',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-                color: '#fff',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+                color: "#fff",
               },
-              '&:disabled': {
-                background: '#ccc',
-                color: '#666',
+
+              "&:disabled": {
+                background: "#cbd5e1",
+                color: "#64748b",
               },
             }}
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={loading.save && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading.save && <CircularProgress size={20} color="inherit" />
+            }
           >
-            {loading.save ? 'Saving...' : 'Save'}
+            {loading.save ? "Saving..." : "Save"}
           </Button>
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-              color: '#374151',
+              background:
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+              color: "#3E5475 ",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)',
-                color: '#374151',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+                color: "#2f405c",
               },
-              '&:disabled': {
-                background: '#f3f4f6',
-                color: '#9ca3af',
+
+              "&:disabled": {
+                background: "#f1f5f9",
+                color: "#94a3b8",
               },
             }}
             onClick={handleCloseModal}
@@ -1706,4 +2143,3 @@ const IVRPage = () => {
 };
 
 export default IVRPage;
-

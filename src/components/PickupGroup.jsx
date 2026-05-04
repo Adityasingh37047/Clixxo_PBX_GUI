@@ -1,24 +1,36 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import EditDocumentIcon from '@mui/icons-material/EditDocument';
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 import {
   createPickupGroup,
   deletePickupGroup,
   listPickupGroupExtensions,
   listPickupGroups,
   updatePickupGroup,
-} from '../api/apiService';
-import { PICKUP_GROUP_ITEMS_PER_PAGE } from '../constants/PickupGroupConstants';
+} from "../api/apiService";
+import { PICKUP_GROUP_ITEMS_PER_PAGE } from "../constants/PickupGroupConstants";
 
 const PickupGroup = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({ save: false, delete: false, extensions: false, list: false });
+  const [loading, setLoading] = useState({
+    save: false,
+    delete: false,
+    extensions: false,
+    list: false,
+  });
   const hasLoadedExtensionsRef = useRef(false);
 
   const [editId, setEditId] = useState(null);
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
 
   // Dual list state (Available vs Selected)
   const [availableExtensions, setAvailableExtensions] = useState([]); // { value, label }
@@ -32,13 +44,22 @@ const PickupGroup = () => {
   const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   useEffect(() => {
-    setPage((current) => Math.min(Math.max(1, current), Math.max(1, Math.ceil(rows.length / itemsPerPage))));
+    setPage((current) =>
+      Math.min(
+        Math.max(1, current),
+        Math.max(1, Math.ceil(rows.length / itemsPerPage)),
+      ),
+    );
   }, [rows]);
 
   const showAlert = (text) => window.alert(text);
 
   const normalizePickupGroupList = (res) => {
-    const list = Array.isArray(res?.message) ? res.message : Array.isArray(res?.data) ? res.data : [];
+    const list = Array.isArray(res?.message)
+      ? res.message
+      : Array.isArray(res?.data)
+        ? res.data
+        : [];
     return list.map((g) => ({
       id: g.id,
       name: g.name,
@@ -51,13 +72,13 @@ const PickupGroup = () => {
     try {
       const res = await listPickupGroups();
       if (res?.response === false) {
-        showAlert(res?.message || 'Failed to list pickup groups.');
+        showAlert(res?.message || "Failed to list pickup groups.");
         setRows([]);
         return;
       }
       setRows(normalizePickupGroupList(res));
     } catch (err) {
-      showAlert(err?.message || 'Failed to list pickup groups.');
+      showAlert(err?.message || "Failed to list pickup groups.");
       setRows([]);
     } finally {
       setLoading((prev) => ({ ...prev, list: false }));
@@ -73,27 +94,32 @@ const PickupGroup = () => {
     try {
       const res = await listPickupGroupExtensions();
       if (res?.response === false) {
-        showAlert(res?.message || 'Failed to load extensions.');
+        showAlert(res?.message || "Failed to load extensions.");
         setAvailableExtensions([]);
         return;
       }
-      const list = Array.isArray(res?.message) ? res.message : Array.isArray(res?.data) ? res.data : [];
+      const list = Array.isArray(res?.message)
+        ? res.message
+        : Array.isArray(res?.data)
+          ? res.data
+          : [];
       const exts = list
         .filter((e) => e && e.extension)
         .map((e) => ({
           value: String(e.extension),
-          label: `${(e.display_name || '').trim() || String(e.extension)}-${String(e.extension)}`,
+          label: `${(e.display_name || "").trim() || String(e.extension)}-${String(e.extension)}`,
         }))
         .sort((a, b) => {
           const an = parseInt(a.value, 10);
           const bn = parseInt(b.value, 10);
-          if (!Number.isNaN(an) && !Number.isNaN(bn) && an !== bn) return an - bn;
+          if (!Number.isNaN(an) && !Number.isNaN(bn) && an !== bn)
+            return an - bn;
           return a.label.localeCompare(b.label);
         });
       setAvailableExtensions(exts);
       hasLoadedExtensionsRef.current = true;
     } catch (err) {
-      showAlert(err?.message || 'Failed to load extensions.');
+      showAlert(err?.message || "Failed to load extensions.");
       setAvailableExtensions([]);
     } finally {
       setLoading((prev) => ({ ...prev, extensions: false }));
@@ -102,7 +128,7 @@ const PickupGroup = () => {
 
   const resetForm = () => {
     setEditId(null);
-    setName('');
+    setName("");
     setMemberExtensions([]);
     setAvailableSelected([]);
     setChosenSelected([]);
@@ -118,7 +144,7 @@ const PickupGroup = () => {
 
   const handleOpenEditModal = async (row) => {
     setEditId(row.id);
-    setName(row.name || '');
+    setName(row.name || "");
     setMemberExtensions(Array.isArray(row.members) ? row.members : []);
     setAvailableSelected([]);
     setChosenSelected([]);
@@ -143,13 +169,17 @@ const PickupGroup = () => {
   const getExtLabel = (ext) => extensionLabelMap.get(ext) || ext;
 
   const availableList = useMemo(
-    () => availableExtensions.filter((e) => !memberExtensions.includes(e.value)),
-    [availableExtensions, memberExtensions]
+    () =>
+      availableExtensions.filter((e) => !memberExtensions.includes(e.value)),
+    [availableExtensions, memberExtensions],
   );
 
   const addSelectedMembers = () => {
     if (availableSelected.length === 0) return;
-    setMemberExtensions((prev) => [...prev, ...availableSelected.filter((id) => !prev.includes(id))]);
+    setMemberExtensions((prev) => [
+      ...prev,
+      ...availableSelected.filter((id) => !prev.includes(id)),
+    ]);
     setAvailableSelected([]);
   };
 
@@ -160,7 +190,9 @@ const PickupGroup = () => {
 
   const removeSelectedMembers = () => {
     if (chosenSelected.length === 0) return;
-    setMemberExtensions((prev) => prev.filter((id) => !chosenSelected.includes(id)));
+    setMemberExtensions((prev) =>
+      prev.filter((id) => !chosenSelected.includes(id)),
+    );
     setChosenSelected([]);
   };
 
@@ -172,12 +204,14 @@ const PickupGroup = () => {
   const handleCheckAll = () => setSelected(rows.map((_, i) => i));
   const handleUncheckAll = () => setSelected([]);
   const handleSelectRow = (idx) => {
-    setSelected((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
+    setSelected((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+    );
   };
 
   const handleDelete = () => {
     if (selected.length === 0) {
-      showAlert('Please select at least one row to delete.');
+      showAlert("Please select at least one row to delete.");
       return;
     }
     setLoading((prev) => ({ ...prev, delete: true }));
@@ -188,7 +222,7 @@ const PickupGroup = () => {
           if (row.id != null) {
             const res = await deletePickupGroup(row.id);
             if (res?.response === false) {
-              showAlert(res?.message || 'Failed to delete pickup group.');
+              showAlert(res?.message || "Failed to delete pickup group.");
               break;
             }
           }
@@ -196,7 +230,7 @@ const PickupGroup = () => {
         setSelected([]);
         await refreshPickupGroups();
       } catch (err) {
-        showAlert(err?.message || 'Failed to delete pickup group(s).');
+        showAlert(err?.message || "Failed to delete pickup group(s).");
       } finally {
         setLoading((prev) => ({ ...prev, delete: false }));
       }
@@ -206,32 +240,38 @@ const PickupGroup = () => {
   const handleSave = () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      showAlert('Name is required.');
+      showAlert("Name is required.");
       return;
     }
     if (!/^[A-Za-z0-9_]+$/.test(trimmed)) {
-      showAlert('Name may contain only letters, numbers, and underscore.');
+      showAlert("Name may contain only letters, numbers, and underscore.");
       return;
     }
     if (!memberExtensions.length) {
-      showAlert('Please select at least one Member.');
+      showAlert("Please select at least one Member.");
       return;
     }
     setLoading((prev) => ({ ...prev, save: true }));
     (async () => {
       try {
         if (editId != null) {
-          const res = await updatePickupGroup(editId, { name: trimmed, members: memberExtensions.map(String) });
+          const res = await updatePickupGroup(editId, {
+            name: trimmed,
+            members: memberExtensions.map(String),
+          });
           if (res?.response === false) {
-            showAlert(res?.message || 'Failed to update pickup group.');
+            showAlert(res?.message || "Failed to update pickup group.");
             return;
           }
           // update may not return full list → refresh
           await refreshPickupGroups();
         } else {
-          const res = await createPickupGroup(trimmed, memberExtensions.map(String));
+          const res = await createPickupGroup(
+            trimmed,
+            memberExtensions.map(String),
+          );
           if (res?.response === false) {
-            showAlert(res?.message || 'Failed to create pickup group.');
+            showAlert(res?.message || "Failed to create pickup group.");
             return;
           }
           // create returns full updated list per spec
@@ -239,7 +279,7 @@ const PickupGroup = () => {
         }
         handleCloseModal();
       } catch (err) {
-        showAlert(err?.message || 'Failed to save pickup group.');
+        showAlert(err?.message || "Failed to save pickup group.");
       } finally {
         setLoading((prev) => ({ ...prev, save: false }));
       }
@@ -250,10 +290,10 @@ const PickupGroup = () => {
     <div className="w-full max-w-full mx-auto p-2">
       <div className="w-full max-w-full mx-auto">
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm mt-0"
+          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)',
-            boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
           Pickup Group
@@ -281,8 +321,12 @@ const PickupGroup = () => {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="border border-gray-300 px-2 py-4 text-center text-gray-500">
-                    No pickup groups yet. Click &quot;Add New&quot; to create one.
+                  <td
+                    colSpan={5}
+                    className="border border-gray-300 px-2 py-4 text-center text-gray-500"
+                  >
+                    No pickup groups yet. Click &quot;Add New&quot; to create
+                    one.
                   </td>
                 </tr>
               ) : (
@@ -298,11 +342,20 @@ const PickupGroup = () => {
                           disabled={loading.delete}
                         />
                       </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">{realIdx + 1}</td>
-                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">{row.name}</td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
-                        {(row.members || []).slice(0, 4).map(getExtLabel).join(', ')}
-                        {(row.members || []).length > 4 ? ` +${(row.members || []).length - 4}` : ''}
+                        {realIdx + 1}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">
+                        {row.name}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {(row.members || [])
+                          .slice(0, 4)
+                          .map(getExtLabel)
+                          .join(", ")}
+                        {(row.members || []).length > 4
+                          ? ` +${(row.members || []).length - 4}`
+                          : ""}
                       </td>
                       <td className="border border-gray-300 px-2 py-1 text-center">
                         <EditDocumentIcon
@@ -323,7 +376,7 @@ const PickupGroup = () => {
           <div className="flex flex-wrap gap-2">
             <button
               className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleCheckAll}
               disabled={loading.delete}
@@ -332,7 +385,7 @@ const PickupGroup = () => {
             </button>
             <button
               className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleUncheckAll}
               disabled={loading.delete}
@@ -341,7 +394,7 @@ const PickupGroup = () => {
             </button>
             <button
               className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${
-                loading.delete ? 'opacity-50 cursor-not-allowed' : ''
+                loading.delete ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleDelete}
               disabled={loading.delete}
@@ -353,7 +406,7 @@ const PickupGroup = () => {
           <div className="flex gap-2">
             <button
               className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.save ? 'opacity-50 cursor-not-allowed' : ''
+                loading.save ? "opacity-50 cursor-not-allowed" : ""
               }`}
               onClick={handleOpenAddModal}
               disabled={loading.save}
@@ -398,7 +451,11 @@ const PickupGroup = () => {
             >
               Last
             </button>
-            <select className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]" value={page} onChange={(e) => setPage(Number(e.target.value))}>
+            <select
+              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
+              value={page}
+              onChange={(e) => setPage(Number(e.target.value))}
+            >
               {Array.from({ length: totalPages }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
                   {i + 1}
@@ -417,24 +474,24 @@ const PickupGroup = () => {
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: 820, maxWidth: '96vw', mx: 'auto', p: 0 },
+          sx: { width: 820, maxWidth: "96vw", mx: "auto", p: 0 },
         }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base"
+          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: 'linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)',
-            borderBottom: '1px solid #444444',
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
-          {editId != null ? 'Edit Pickup Group' : 'Add Pickup Group'}
+          {editId != null ? "Edit Pickup Group" : "Add Pickup Group"}
         </DialogTitle>
         <DialogContent
           className="pt-0 pb-0 px-0"
           style={{
-            backgroundColor: '#dde0e4',
-            border: '1px solid #444444',
-            borderTop: 'none',
+            backgroundColor: "#dde0e4",
+            border: "1px solid #444444",
+            borderTop: "none",
           }}
         >
           <div className="pt-4 pb-4 px-4 bg-white">
@@ -443,8 +500,14 @@ const PickupGroup = () => {
                 Pickup Group
               </div>
               <div className="px-4 py-4">
-                <div className="flex items-center gap-2 mb-4" style={{ minHeight: 30 }}>
-                  <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{ width: 140, marginRight: 8 }}>
+                <div
+                  className="flex items-center gap-2 mb-4"
+                  style={{ minHeight: 30 }}
+                >
+                  <label
+                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                    style={{ width: 140, marginRight: 8 }}
+                  >
                     Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -455,17 +518,29 @@ const PickupGroup = () => {
                 </div>
 
                 <div className="flex items-start gap-2">
-                  <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left pt-2" style={{ width: 140, marginRight: 8 }}>
+                  <label
+                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left pt-2"
+                    style={{ width: 140, marginRight: 8 }}
+                  >
                     Member <span className="text-red-500">*</span>
                   </label>
                   <div className="flex-1">
                     <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                       <div>
-                        <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">Available</div>
+                        <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
+                          Available
+                        </div>
                         <select
                           multiple
                           value={availableSelected}
-                          onChange={(e) => setAvailableSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))}
+                          onChange={(e) =>
+                            setAvailableSelected(
+                              Array.from(
+                                e.target.selectedOptions,
+                                (opt) => opt.value,
+                              ),
+                            )
+                          }
                           className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                         >
                           {loading.extensions ? (
@@ -514,11 +589,20 @@ const PickupGroup = () => {
                       </div>
 
                       <div>
-                        <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">Selected</div>
+                        <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
+                          Selected
+                        </div>
                         <select
                           multiple
                           value={chosenSelected}
-                          onChange={(e) => setChosenSelected(Array.from(e.target.selectedOptions, (opt) => opt.value))}
+                          onChange={(e) =>
+                            setChosenSelected(
+                              Array.from(
+                                e.target.selectedOptions,
+                                (opt) => opt.value,
+                              ),
+                            )
+                          }
                           className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                         >
                           {memberExtensions.length === 0 ? (
@@ -574,53 +658,63 @@ const PickupGroup = () => {
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-              color: '#fff',
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              color: "#fff",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 8px #b3e0ff',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-                color: '#fff',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+                color: "#fff",
               },
-              '&:disabled': {
-                background: '#ccc',
-                color: '#666',
+
+              "&:disabled": {
+                background: "#cbd5e1",
+                color: "#64748b",
               },
             }}
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={loading.save && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading.save && <CircularProgress size={20} color="inherit" />
+            }
           >
-            {loading.save ? 'Saving...' : 'Save'}
+            {loading.save ? "Saving..." : "Save"}
           </Button>
           <Button
             variant="contained"
             sx={{
-              background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-              color: '#374151',
+              background:
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+              color: "#3E5475 ",
               fontWeight: 600,
-              fontSize: '16px',
-              borderRadius: 2,
+              fontSize: "16px",
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)',
-                color: '#374151',
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              textTransform: "none",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+                color: "#2f405c",
               },
-              '&:disabled': {
-                background: '#f3f4f6',
-                color: '#9ca3af',
+
+              "&:disabled": {
+                background: "#f1f5f9",
+                color: "#94a3b8",
               },
             }}
             onClick={handleCloseModal}

@@ -8,7 +8,7 @@ const CONTEXT_OPTIONS = [
   'from-internal',
   'default',
 ];
-import { amiOriginate } from '../api/apiService';
+// import { amiOriginate } from '../api/apiService';
 
 /**
  * Builds callerid string for AMI: "Name" <number> or number only
@@ -116,8 +116,8 @@ const OriginateCallPage = () => {
     <div className="w-full max-w-full mx-auto p-2">
       <div className="w-full mx-auto max-w-3xl">
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm"
-          style={{ background: 'linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)' }}
+          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffffivr] shadow-sm"
+          style={{ background: 'linear-gradient(#3E5475 100%)', boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)' }}
         >
           Originate Call
         </div>
@@ -212,12 +212,12 @@ const OriginateCallPage = () => {
                   onClick={handleOriginate}
                   startIcon={loading && <CircularProgress size={18} color="inherit" />}
                   sx={{
-                    background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
+                    background: '#4F6A8F',
                     color: '#fff',
                     fontWeight: 600,
                     textTransform: 'none',
                     minWidth: 160,
-                    '&:hover': { background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)' },
+                    '&:hover': { background: '#3E5475' },
                   }}
                 >
                   {loading ? 'Sending…' : 'Originate'}
