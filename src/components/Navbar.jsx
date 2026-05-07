@@ -100,21 +100,16 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
       {/* Logo Row */}
       <div
         className="flex items-center justify-between overflow-hidden"
-        style={{ height: 48, backgroundColor: "#3E5475" }}
+        style={{
+          height: 48,
+          backgroundColor: "#1a2332",
+          borderBottom: "1px solid #243347",
+        }}
       >
-        <div className="flex items-center gap-2">
-          {/* Hamburger Menu Button for Mobile */}
+        {/* LEFT: hamburger + logo + datetime */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {isMobile && (
-            <IconButton
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              sx={{
-                color: "white",
-                ml: 1,
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                },
-              }}
-            >
+            <IconButton onClick={() => setSidebarOpen(!sidebarOpen)} sx={{ color: "white", ml: 1, "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}>
               <MenuIcon />
             </IconButton>
           )}
@@ -125,28 +120,17 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
             onClick={() => navigate("/")}
             style={{ maxWidth: "180px", objectFit: "contain" }}
           />
-        </div>
-        {/* <img
-          src={TOP_GIF}
-          className="h-150 w-auto"
-          alt="Animated bars"
-          style={{
-            marginRight: '15px',
-            objectFit: 'contain'
-          }}
-        /> */}
-      </div>
-      {/* Info Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-gray-800 font-bold min-h-[36px] py-1 bg-[#EAF0F6] px-3 sm:px-6 gap-2">
-        <div className="flex flex-row gap-2 text-sm">
-          {serverDateTime ? (
-            <>
-              <div>{formattedDate}</div>
-              <div>{formattedTime}</div>
-            </>
-          ) : (
-            <div className="text-gray-400">Loading time...</div>
-          )}
+          {/* Datetime — anchored to logo */}
+          <div style={{ color: '#b0b8c8', display: 'flex', flexDirection: 'row', gap: 6, fontSize: 13, fontWeight: 600, marginLeft: 12, borderLeft: '1px solid #2e4060', paddingLeft: 12 }}>
+            {serverDateTime ? (
+              <>
+                <span>{formattedDate}</span>
+                <span>{formattedTime}</span>
+              </>
+            ) : (
+              <span style={{ color: '#5a7a9a' }}>—</span>
+            )}
+          </div>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           {/* <p className="text-red-500 text-xs hidden sm:block">
@@ -155,15 +139,15 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
           <p className="text-red-500 text-xs sm:hidden">
             Web SSH Ftp Telnet risk - set whitelist
           </p>
-          <div className="text-sm">
+          <div style={{ color: '#b0b8c8', fontSize: 13, fontWeight: 600 }}>
             Current User:{" "}
-            <span className="font-bold text-purple-500">
+            <span style={{ fontWeight: 700, color: '#4fc3f7' }}>
               {user?.username || "admin"}
             </span>
           </div>
           <button
             onClick={handleLogout}
-            className="clixxo-logout-btn group flex items-center bg-gray-300 text-black text-xs sm:text-sm px-2 sm:px-3 py-1 border-2 border-gray-500 rounded-full shadow transition-all font-medium gap-1 sm:gap-2 outline-none min-w-[60px] sm:min-w-[80px] cursor-pointer"
+            className="clixxo-logout-btn group flex items-center bg-[#F1F5F9] text-[#2F4362] text-xs sm:text-sm px-2 sm:px-3 py-1 border border-[#D8E0EA] rounded-full shadow-sm hover:bg-[#E2E8F0] hover:text-[#1E2F47] active:bg-[#D1DAE6] transition-all font-medium gap-1 sm:gap-2 outline-none min-w-[60px] sm:min-w-[80px] cursor-pointer"
             style={{ boxShadow: "0 2px 4px rgba(0,0,0,0.08)" }}
           >
             <span className="transition-colors">Logout</span>

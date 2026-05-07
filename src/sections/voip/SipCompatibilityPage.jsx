@@ -70,12 +70,18 @@ const SipCompatibilityPage = () => {
       <div className="flex justify-center">
         <div className="w-full" style={{ maxWidth: "1024px" }}>
           {/* Page Title Bar */}
-          <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-\[#b3e0ff] via-\[#6ec1f7] to-\[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
-            <span>SIP Compatibility</span>
+          <div
+            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+            style={{
+              background: "linear-gradient(#3E5475 100%)",
+              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            }}
+          >
+            <span>SIP Compatibilityd</span>
           </div>
 
           {/* Main Card */}
-          <div className="rounded-b-lg bg-[#dde0e4] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
+          <div className="rounded-b-lg bg-[#ffffff] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
             <div className="flex justify-center pl-8">
               <table
                 className="text-sm"
@@ -171,7 +177,7 @@ const SipCompatibilityPage = () => {
               onClick={handleSave}
               style={{
                 background:
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
                 color: "#fff",
                 fontWeight: 600,
                 fontSize: "16px",
@@ -180,17 +186,19 @@ const SipCompatibilityPage = () => {
                 height: "42px",
                 textTransform: "none",
                 padding: "6px 24px",
-                boxShadow: "0 2px 8px #3E5475",
-                border: "1px solid #2C3E57",
+                boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+                border: "1px solid #cbd5e1",
                 cursor: "pointer",
               }}
               onMouseEnter={(e) => {
                 e.target.style.background =
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
+                e.target.style.color = "#fff";
               }}
               onMouseLeave={(e) => {
                 e.target.style.background =
-                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
+                e.target.style.color = "#fff";
               }}
             >
               Save
@@ -200,8 +208,8 @@ const SipCompatibilityPage = () => {
               onClick={handleReset}
               style={{
                 background:
-                  "linear-gradient(to bottom, #9CA3AF 0%, #6B7280 60%, #4B5563 100%)",
-                color: "#fff",
+                  "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+                color: "#3E5475",
                 fontWeight: 600,
                 fontSize: "16px",
                 borderRadius: "6px",
@@ -209,17 +217,19 @@ const SipCompatibilityPage = () => {
                 height: "42px",
                 textTransform: "none",
                 padding: "6px 24px",
-                boxShadow: "0 2px 8px #6B7280",
-                border: "1px solid #4B5563",
+                boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+                border: "1px solid #cbd5e1",
                 cursor: "pointer",
               }}
               onMouseEnter={(e) => {
                 e.target.style.background =
-                  "linear-gradient(to bottom, #9CA3AF 0%, #6B7280 60%, #4B5563 100%)";
+                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)";
+                e.target.style.color = "#2f405c";
               }}
               onMouseLeave={(e) => {
                 e.target.style.background =
-                  "linear-gradient(to bottom, #6B7280 0%, #9CA3AF 100%)";
+                  "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)";
+                e.target.style.color = "#3E5475";
               }}
             >
               Reset

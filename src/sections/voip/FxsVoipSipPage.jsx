@@ -3,7 +3,7 @@ import {
   SIP_SETTINGS_FIELDS,
   SIP_SETTINGS_NOTE,
 } from "./constants/SipSipConstants";
- 
+
 const getInitialState = () => {
   const state = {};
   SIP_SETTINGS_FIELDS.forEach((f) => {
@@ -19,10 +19,10 @@ const getInitialState = () => {
   });
   return state;
 };
- 
+
 const FxsVoipSipPage = () => {
   const [form, setForm] = useState(getInitialState());
- 
+
   const handleChange = (key, value) => {
     const fieldDef = SIP_SETTINGS_FIELDS.find((f) => f.key === key);
     if (fieldDef && fieldDef.validation === "integer") {
@@ -33,25 +33,25 @@ const FxsVoipSipPage = () => {
       setForm((prev) => ({ ...prev, [key]: value }));
     }
   };
- 
+
   const handleCheckbox = (key) => {
     setForm((prev) => ({ ...prev, [key]: !prev[key] }));
   };
- 
+
   const handleSave = () => {
     alert("Settings saved successfully!");
   };
- 
+
   const handleReset = () => {
     setForm(getInitialState());
   };
- 
+
   // Check if field should be shown based on conditional logic
   const shouldShowField = (field) => {
     if (!field.conditional) return true;
- 
+
     const conditionalValue = form[field.conditional];
- 
+
     if (field.conditionalValues) {
       return field.conditionalValues.includes(conditionalValue);
     } else if (field.conditionalValue !== undefined) {
@@ -60,7 +60,7 @@ const FxsVoipSipPage = () => {
       return !!conditionalValue;
     }
   };
- 
+
   return (
     <div
       className="bg-gray-50 min-h-[calc(100vh-128px)] py-2"
@@ -69,12 +69,18 @@ const FxsVoipSipPage = () => {
       <div className="flex justify-center">
         <div className="w-full" style={{ maxWidth: "1024px" }}>
           {/* Page Title Bar */}
-          <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-\[#b3e0ff] via-\[#6ec1f7] to-\[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+          <div
+            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+            style={{
+              background: "linear-gradient(#3E5475 100%)",
+              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            }}
+          >
             <span>SIP Settings</span>
           </div>
- 
+
           {/* Main Card */}
-          <div className="rounded-b-lg bg-[#dde0e4] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
+          <div className="rounded-b-lg bg-[#ffffff] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
             <div className="flex justify-center pl-8">
               <table
                 className="text-sm"
@@ -87,12 +93,12 @@ const FxsVoipSipPage = () => {
                 <tbody>
                   {SIP_SETTINGS_FIELDS.map((field, idx) => {
                     if (!shouldShowField(field)) return null;
- 
+
                     return (
                       <React.Fragment key={field.key}>
                         {/* Spacer row before each field */}
                         {idx > 0 && <tr className="h-3" />}
- 
+
                         <tr>
                           <td className="align-middle text-gray-700 pr-12 text-left">
                             {field.label}
@@ -112,7 +118,7 @@ const FxsVoipSipPage = () => {
                                   {form[field.key]}
                                 </div>
                               )}
- 
+
                               {/* Text input */}
                               {field.type === "text" && (
                                 <input
@@ -125,7 +131,7 @@ const FxsVoipSipPage = () => {
                                   style={{ height: "28px", width: "200px" }}
                                 />
                               )}
- 
+
                               {/* Select dropdown */}
                               {field.type === "select" && (
                                 <select
@@ -143,7 +149,7 @@ const FxsVoipSipPage = () => {
                                   ))}
                                 </select>
                               )}
- 
+
                               {/* Checkbox */}
                               {field.type === "checkbox" && (
                                 <label className="flex items-center gap-2 cursor-pointer">
@@ -156,7 +162,7 @@ const FxsVoipSipPage = () => {
                                   <span className="text-gray-700">Enable</span>
                                 </label>
                               )}
- 
+
                               {/* Helper text */}
                               {field.helper && (
                                 <div
@@ -175,14 +181,14 @@ const FxsVoipSipPage = () => {
                       </React.Fragment>
                     );
                   })}
- 
+
                   {/* Spacer at the end */}
                   <tr className="h-4" />
                 </tbody>
               </table>
             </div>
           </div>
- 
+
           {/* Buttons - Outside the bordered box */}
           <div className="flex justify-center gap-6 py-6">
             <button
@@ -253,5 +259,5 @@ const FxsVoipSipPage = () => {
     </div>
   );
 };
- 
+
 export default FxsVoipSipPage;

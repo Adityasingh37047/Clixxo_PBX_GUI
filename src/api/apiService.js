@@ -3,6 +3,108 @@ import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import axios from "axios";
 
+// User Permission API
+export const fetchUserPermissionGroups = async () => {
+  try {
+    const response = await axiosInstance.post('/user-permission', { type: 'permission_groups' });
+    return response.data?.message ?? response.data;
+  } catch (error) {
+    console.error('Error fetching permission groups:', error.message);
+    throw error;
+  }
+};
+
+export const fetchUserList = async () => {
+  try {
+    const response = await axiosInstance.post('/user-permission', { type: 'list' });
+    const msg = response.data?.message;
+    // Handle: { message: { users: [...] } } or { message: [...] } or { message: { rows: [...] } }
+    if (Array.isArray(msg)) return msg;
+    if (Array.isArray(msg?.users)) return msg.users;
+    if (Array.isArray(msg?.rows)) return msg.rows;
+    if (Array.isArray(response.data)) return response.data;
+    return [];
+  } catch (error) {
+    console.error('Error fetching user list:', error.message);
+    throw error;
+  }
+};
+
+export const createUser = async ({ username, password, sections, pages }) => {
+  try {
+    const response = await axiosInstance.post('/user-permission', { type: 'create', username, password, sections, pages });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating user:', error.message);
+    throw error;
+  }
+};
+
+export const updateUserAccess = async ({ id, password, sections, pages }) => {
+  try {
+    const response = await axiosInstance.post('/user-permission', { type: 'update_access', id, password, sections, pages });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user access:', error.message);
+    throw error;
+  }
+};
+
+export const resetUserPassword = async ({ id, password }) => {
+  try {
+    const response = await axiosInstance.post('/user-permission', { type: 'reset_password', id, password });
+    return response.data;
+  } catch (error) {
+    console.error('Error resetting password:', error.message);
+    throw error;
+  }
+};
+
+export const deleteUser = async (id) => {
+  try {
+    const response = await axiosInstance.post('/user-permission', { type: 'delete', id });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user:', error.message);
+    throw error;
+  }
+};
+
+// Call Queue Stats API
+export const fetchCallQueueActivity = async () => {
+  try {
+    const response = await axiosInstance.post('/call-queue-stats', { type: 'activity' });
+    const data = response.data;
+    // Unwrap: { response: true, message: { queues: [...] } }
+    return data?.message?.queues ?? data?.queues ?? data ?? [];
+  } catch (error) {
+    console.error('Error fetching call queue activity:', error.message);
+    throw error;
+  }
+};
+
+export const fetchCallQueueAgentStats = async (queue_number) => {
+  try {
+    const response = await axiosInstance.post('/call-queue-stats', { type: 'agent_statistics', queue_number });
+    const data = response.data;
+    return data?.message?.rows ?? data?.message?.agents ?? data?.agents ?? data ?? [];
+  } catch (error) {
+    console.error('Error fetching agent statistics:', error.message);
+    throw error;
+  }
+};
+
+export const fetchCallQueueQueueStats = async (queue_number) => {
+  try {
+    const response = await axiosInstance.post('/call-queue-stats', { type: 'queue_statistics', queue_number });
+    const data = response.data;
+    return data?.message?.rows ?? data?.message?.queues ?? data?.queues ?? data ?? [];
+  } catch (error) {
+    console.error('Error fetching queue statistics:', error.message);
+    throw error;
+  }
+};
+
 // GROUP API Functions
 export const listTrunkIds = async () => {
   try {

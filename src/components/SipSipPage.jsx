@@ -817,7 +817,13 @@ echo "Configuration persists across reboots"
           </Alert>
         )}
         {/* Header */}
-        <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+        <div
+          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+          style={{
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          }}
+        >
           SIP Settings
         </div>
 
@@ -1062,25 +1068,28 @@ echo "Configuration persists across reboots"
             disabled={loading || saving}
             sx={{
               background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
               color: "#fff",
               fontWeight: 600,
               fontSize: "16px",
-              minWidth: 100,
-              minHeight: 42,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px #3E5475",
+              borderRadius: "6px",
+              minWidth: "100px",
+              height: "42px",
               textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-                color: "#fff",
-              },
-              "&:disabled": {
-                background: "#cccccc",
-                color: "#666666",
-              },
+              padding: "6px 24px",
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              border: "1px solid #cbd5e1",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background =
+                "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
+              e.target.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background =
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
+              e.target.style.color = "#fff";
             }}
             onClick={handleSave}
             startIcon={saving && <CircularProgress size={20} color="inherit" />}
@@ -1091,21 +1100,28 @@ echo "Configuration persists across reboots"
             variant="contained"
             sx={{
               background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-              color: "#fff",
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+              color: "#3E5475",
               fontWeight: 600,
               fontSize: "16px",
-              minWidth: 100,
-              minHeight: 42,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px #3E5475",
+              borderRadius: "6px",
+              minWidth: "100px",
+              height: "42px",
               textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-                color: "#fff",
-              },
+              padding: "6px 24px",
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              border: "1px solid #cbd5e1",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background =
+                "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)";
+              e.target.style.color = "#2f405c";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background =
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)";
+              e.target.style.color = "#3E5475";
             }}
             onClick={handleReset}
           >

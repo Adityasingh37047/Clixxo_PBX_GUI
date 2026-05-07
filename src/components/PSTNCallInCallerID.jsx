@@ -46,20 +46,20 @@ const grayButtonSx = {
   },
 };
 const blueButtonSx = {
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
+  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
   color: "#fff",
   fontWeight: 600,
   fontSize: 16,
   borderRadius: 1.5,
   minWidth: 120,
-  boxShadow: "0 2px 6px #0002",
+  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
   textTransform: "none",
   px: 3,
   py: 1.5,
   padding: "6px 28px",
-  border: "1px solid #0e8fd6",
+  border: "1px solid #5A6F8F",
   "&:hover": {
-    background: "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
+    background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
     color: "#fff",
   },
 };
@@ -658,7 +658,7 @@ const PSTNCallInCallerID = () => {
           <div className="w-full max-w-full mx-auto">
             {/* Blue header bar - always show */}
             <div
-              className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[16px] text-[#444] shadow-sm mt-0"
+              className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
               style={{
                 background: "linear-gradient(#3E5475 100%)",
                 boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
@@ -670,12 +670,13 @@ const PSTNCallInCallerID = () => {
             <div
               style={{
                 border: "2px solid #bbb",
-                borderRadius: 8,
+                borderBottomLeftRadius: 8,
+                borderBottomRightRadius: 8,
                 boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
               }}
             >
               <div
-                className="bg-white w-full flex flex-col overflow-hidden"
+                className="bg-white rounded-b-lg w-full flex flex-col overflow-hidden"
                 style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
               >
                 <div
@@ -978,7 +979,7 @@ const PSTNCallInCallerID = () => {
             </div>
             {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
             <div
-              className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
+              className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
               style={{ background: "#e3e7ef", marginTop: 12 }}
             >
               <div className="flex flex-wrap gap-2">
@@ -1034,7 +1035,7 @@ const PSTNCallInCallerID = () => {
               </button>
             </div>
             <div
-              className="flex flex-wrap items-center gap-2 w-full px-2 py-2 text-[15px]"
+              className="rounded-lg flex flex-wrap items-center gap-2 w-full px-2 py-2 text-[15px]"
               style={{ background: "#e3e7ef", marginTop: 8 }}
             >
               <span>{rules.length} Items Total</span>
@@ -1099,11 +1100,10 @@ const PSTNCallInCallerID = () => {
         disableEnforceFocus
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base"
+          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background:
-              "linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)",
-            borderBottom: "1px solid #444444",
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
           {editIndex !== null
@@ -1180,21 +1180,27 @@ const PSTNCallInCallerID = () => {
             variant="contained"
             sx={{
               background:
-                "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
               color: "#fff",
               fontWeight: 600,
               fontSize: "16px",
-              borderRadius: 2,
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: "0 2px 8px #b3e0ff",
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
               textTransform: "none",
+
               "&:hover": {
                 background:
-                  "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
+                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
                 color: "#fff",
+              },
+
+              "&:disabled": {
+                background: "#cbd5e1",
+                color: "#64748b",
               },
             }}
             onClick={handleSave}
@@ -1206,21 +1212,27 @@ const PSTNCallInCallerID = () => {
             variant="contained"
             sx={{
               background:
-                "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-              color: "#374151",
+                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+              color: "#3E5475 ",
               fontWeight: 600,
               fontSize: "16px",
-              borderRadius: 2,
+              borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
               px: 2,
               py: 0.5,
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
               textTransform: "none",
+
               "&:hover": {
                 background:
-                  "linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)",
-                color: "#374151",
+                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+                color: "#2f405c",
+              },
+
+              "&:disabled": {
+                background: "#f1f5f9",
+                color: "#94a3b8",
               },
             }}
             onClick={handleCloseModal}

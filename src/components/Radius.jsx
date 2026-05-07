@@ -85,7 +85,13 @@ const Radius = () => {
     <div className="bg-gray-50 min-h-[calc(100vh-80px)] p-4 flex flex-col items-center md:p-2">
       <div className="w-full max-w-4xl mx-auto">
         {/* Radius Configuration Section */}
-        <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+        <div
+          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+          style={{
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          }}
+        >
           Radius Configuration
         </div>
 

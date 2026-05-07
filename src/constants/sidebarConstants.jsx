@@ -45,6 +45,7 @@ export const SIDEBAR_SECTIONS = [
         items: [
           { id: 'pbxMonitor', title: 'PBX Monitor', path: '/pbx-status/pbx-monitor' },
           { id: 'ActiveCalls', title: 'Active Calls', path: '/pbx-status/active-calls' },
+          {id : 'activecallqueue', title: 'Active Call Queue', path: '/pbx-status/active-call-queue' },
 
         ]
       },
@@ -208,8 +209,8 @@ export const SIDEBAR_SECTIONS = [
         icon: RouteIcon,
         items: [
           { id: 'fxsRoutingParameters', title: 'Routing Parameters', path: ROUTE_PATHS.FXS_ROUTE },
-          { id: 'fxsIpToPstn',          title: 'IP->PSTN',           path: ROUTE_PATHS.FXS_ROUTE_IP_TO_PSTN },
-          { id: 'fxsPstnToIp',          title: 'PSTN->IP',           path: ROUTE_PATHS.FXS_ROUTE_PSTN_TO_IP },
+          { id: 'fxsIpToPstn',          title: 'IP->Tel',           path: ROUTE_PATHS.FXS_ROUTE_IP_TO_PSTN },
+          { id: 'fxsPstnToIp',          title: 'Tel->IP',           path: ROUTE_PATHS.FXS_ROUTE_PSTN_TO_IP },
         ]
       },
       {
@@ -384,6 +385,28 @@ export const SIDEBAR_SECTIONS = [
     ]
   },
 
+
+   {
+    id: 'userManage',
+    title: 'User Manage',
+    icon: PeopleIcon,
+    hasSubmenu: true,
+    path: ROUTE_PATHS.USER_MANAGE,
+    submenuItems: [
+      {
+        id: 'userPermission',
+        title: 'User Permission',
+        icon: VpnKeyIcon,
+        items: [
+          { id: 'userList', title: 'User Manage', path: '/user-manage/users' },
+          { id: 'accountManage', title: 'Account Manage', path: '/system-tools/account-manage' },
+          { id: 'changePassword', title: 'Change Password', path: '/system-tools/change-password' },
+        ]
+      },
+    ]
+  }
+]
+
   // --------------------------------------------------------------------------------------------------------
 
   // FXS Routing
@@ -458,24 +481,4 @@ export const SIDEBAR_SECTIONS = [
 
   // DHCP
 
-  {
-    id: 'userManage',
-    title: 'User Manage',
-    icon: PeopleIcon,
-    hasSubmenu: true,
-    path: ROUTE_PATHS.USER_MANAGE,
-    submenuItems: [
-      {
-        id: 'userPermission',
-        title: 'User Permission',
-        icon: VpnKeyIcon,
-        items: [
-          { id: 'userList', title: 'User Manage', path: '/user-manage/users' },
-          { id: 'accountManage', title: 'Account Manage', path: '/system-tools/account-manage' },
-          { id: 'changePassword', title: 'Change Password', path: '/system-tools/change-password' },
-        ]
-      },
-    ]
-  }
-]
-
+ 

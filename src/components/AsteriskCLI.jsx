@@ -9,14 +9,19 @@ import {
 import { Button, Alert } from "@mui/material";
 
 const blueBar = (title) => (
-  <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+  <div
+    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+    style={{
+      background: "linear-gradient(#3E5475 100%)",
+      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+    }}
+  >
     {title}
   </div>
 );
 
 const buttonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
   color: "#fff",
   fontWeight: 600,
   fontSize: "16px",
@@ -24,10 +29,10 @@ const buttonSx = {
   minWidth: 90,
   px: 2,
   py: 0.5,
-  boxShadow: "0 2px 8px #3E5475",
+  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
   textTransform: "none",
   "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
   },
 };
 

@@ -1,46 +1,96 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { fetchSystemInfo, postLinuxCmd } from "../api/apiService";
-import { Paper, Button, CircularProgress } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-// import {
-//   LAN_INTERFACES,
-//   SYSTEM_INFO,
-//   VERSION_INFO,
-// } from "../constants/SystemInfoConstants";
 
-const InfoRow = ({ label, values, isIndented = false }) => (
-  <div
-    className={`grid grid-cols-1 md:grid-cols-12 gap-4 text-xs ${isIndented ? "pl-4" : ""}`}
-    style={{ padding: "1px 0" }}
-  >
-    <div className="md:col-span-3 font-medium text-gray-700 break-words">
-      {label}
+// ── Color palette ─────────────────────────────────────────────────────────────
+const C = {
+  cardBg: '#ffffff',
+  cardBorder: '#dde4ed',
+  cardHeader: '#1e2d42',
+  labelText: '#64748b',
+  valueText: '#1e293b',
+  mutedText: '#94a3b8',
+  accent: '#29a8e0',
+  successGreen: '#16a34a',
+  warningAmber: '#d97706',
+  pageBg: '#eef2f7',
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const renderPktsValue = (val) => {
+  const str = Array.isArray(val) ? val.join('  ') : String(val ?? '');
+  const parts = str.split(/(\bErr:\s*\d+|\bDrop:\s*\d+)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        const t = part.trim();
+        if (/^Err:\s*0$/.test(t)) return <span key={i} style={{ color: C.successGreen, marginLeft: 2 }}>{part}</span>;
+        if (/^Err:/.test(t))      return <span key={i} style={{ color: C.warningAmber, marginLeft: 2 }}>{part}</span>;
+        if (/^Drop:\s*0$/.test(t)) return <span key={i} style={{ color: C.mutedText, marginLeft: 2 }}>{part}</span>;
+        if (/^Drop:/.test(t))     return <span key={i} style={{ color: C.warningAmber, marginLeft: 2 }}>{part}</span>;
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+};
+
+const renderCellValue = (key, val) => {
+  if (val === null || val === undefined || val === '') return <span style={{ color: C.mutedText }}>—</span>;
+  const lk = (key || '').toLowerCase();
+  const isPkts = lk.includes('pkts') || lk.includes('packet');
+  if (isPkts) return renderPktsValue(val);
+  const str = Array.isArray(val) ? val.join(', ') : String(val);
+  if ((lk.includes('dcms') || lk.includes('status')) && str) {
+    const running = str.toLowerCase() === 'running';
+    return (
+      <span style={{ background: running ? '#dcfce7' : '#fee2e2', color: running ? C.successGreen : '#dc2626', padding: '1px 8px', borderRadius: 10, fontSize: 11, fontWeight: 700 }}>
+        {str}
+      </span>
+    );
+  }
+  return str;
+};
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+const Card = ({ title, children, style }) => (
+  <div style={{ background: C.cardBg, border: `1px solid ${C.cardBorder}`, borderRadius: 8, overflow: 'hidden', ...style }}>
+    <div style={{ background: C.cardHeader, padding: '8px 14px', color: '#fff', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.accent, display: 'inline-block' }} />
+      {title}
     </div>
-    {Array.isArray(values) ? (
-      values.map((value, idx) => (
-        <div key={idx} className="md:col-span-3 col-span-1 break-words">
-          {value || ""}
-        </div>
-      ))
-    ) : (
-      <div className="md:col-span-9 col-span-1 break-words">{values}</div>
-    )}
+    {children}
   </div>
 );
 
-const LanSection = ({ name, data }) => (
-  <div
-    className=" last:border-b-0"
-    style={{ backgroundColor: "#dde0e4", borderBottom: "1px solid #222222" }}
-  >
-    <h3 className="font-semibold text-black mb-1 text-base">{name}</h3>
-    <div className="space-y-0">
-      {Object.entries(data).map(([key, value]) => (
-        <InfoRow key={key} label={key} values={value} />
-      ))}
-    </div>
+const InfoTableRow = ({ label, value, keyName, even }) => (
+  <div style={{ display: 'flex', borderBottom: '0.5px solid #f1f5f9', padding: '5px 14px', minHeight: 28, alignItems: 'center', background: even ? '#f8fafc' : '#ffffff' }}>
+    <span style={{ color: C.labelText, fontSize: 12, width: '42%', flexShrink: 0 }}>{label}</span>
+    <span style={{ color: C.valueText, fontSize: 12, flex: 1 }}>{renderCellValue(keyName || label, value)}</span>
   </div>
 );
+
+const StatCard = ({ label, value, type, accentColor }) => {
+  const accent = accentColor || C.accent;
+  let content;
+  if (type === 'status') {
+    const running = String(value ?? '').toLowerCase() === 'running';
+    content = value
+      ? <div style={{ alignSelf: 'flex-start', display: 'inline-block' }}><span style={{ background: running ? '#dcfce7' : '#fee2e2', color: running ? C.successGreen : '#dc2626', padding: '3px 12px', borderRadius: 12, fontSize: 13, fontWeight: 700, display: 'inline-block' }}>{value}</span></div>
+      : <span style={{ color: C.mutedText, fontSize: 18, fontWeight: 700 }}>—</span>;
+  } else if (type === 'cpu') {
+    const pct = parseFloat(value) || 0;
+    content = <span style={{ fontSize: 20, fontWeight: 700, color: pct > 80 ? C.warningAmber : C.successGreen }}>{value || '0.00%'}</span>;
+  } else {
+    content = <span style={{ fontSize: 20, fontWeight: 700, color: C.valueText }}>{value || '0.00%'}</span>;
+  }
+  return (
+    <div style={{ background: C.cardBg, border: '0.5px solid #dde6f0', borderLeft: `3px solid ${accent}`, borderRadius: 8, padding: '16px 18px', minHeight: 80, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: C.mutedText, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
+      {content}
+    </div>
+  );
+};
 
 const SystemInfo = () => {
   const [LAN_INTERFACES, setLAN_INTERFACES] = useState([]);
@@ -50,24 +100,6 @@ const SystemInfo = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [licenseSerialNumber, setLicenseSerialNumber] = useState("");
 
-  // Button styling matching Licence page
-  const blueButtonSx = {
-    background: "linear-gradient(to bottom, #5D7FA3 0%, #3E5475 100%)",
-    color: "#fff",
-    fontWeight: 500,
-    fontSize: 14,
-    minWidth: 100,
-    boxShadow: "0 2px 6px #0002",
-    textTransform: "none",
-    px: 2,
-    py: 1.5,
-    padding: "6px 16px",
-    border: "1px solid #5D7FA3",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #3E5475 0%, #5D7FA3 100%)",
-      color: "#fff",
-    },
-  };
   const setSystemInfo = async () => {
     try {
       setIsRefreshing(true);
@@ -255,80 +287,97 @@ const SystemInfo = () => {
     //   setSystemInfo();
     // },5000)
   }, []);
+  // Extract top-level stats from SYSTEM_INFO
+  const getMetric = (keywords) => {
+    const item = (SYSTEM_INFO || []).find(i =>
+      keywords.some(k => (i.label || '').toLowerCase().includes(k.toLowerCase()))
+    );
+    return item?.value ?? null;
+  };
+
+  const runtime    = getMetric(['runtime', 'uptime']);
+  const cpuUsage   = getMetric(['cpu']);
+  const dcmsStatus = getMetric(['dcms']);
+  const packetLoss = getMetric(['packet loss', 'packet_loss', 'rx loss']);
+
+  const refreshBtnSx = {
+    background: '#ffffff',
+    color: C.accent,
+    fontWeight: 600,
+    fontSize: 13,
+    border: `1px solid ${C.accent}`,
+    borderRadius: 24,
+    textTransform: 'none',
+    px: 3, py: 1,
+    boxShadow: '0 1px 4px rgba(41,168,224,0.12)',
+    '&:hover': { background: '#f0f7fd', borderColor: C.accent, color: C.accent },
+  };
+
   return (
-    <div
-      className="bg-gray-50 min-h-[calc(100vh-80px)] py-0 flex flex-col items-center md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
-    >
-      <div className="w-full max-w-4xl mx-auto">
-        {/* Simple error message */}
+    <div style={{ backgroundColor: C.pageBg, minHeight: 'calc(100vh - 80px)', padding: '16px' }}>
+      <div style={{ maxWidth: '100%', margin: '0 auto' }}>
+
         {error && (
-          <div className="mb-3 p-2 bg-red-50 border-l-2 border-red-400 text-red-700 text-sm rounded">
+          <div style={{ background: '#fef2f2', borderLeft: `3px solid #f87171`, color: '#b91c1c', padding: '8px 14px', borderRadius: 6, marginBottom: 14, fontSize: 13 }}>
             {error}
           </div>
         )}
 
-        {/* Header */}
-        <div className="rounded-t-lg w-full h-8 bg-[#3E5475] flex items-center justify-center font-semibold text-lg text-gray-200 shadow mb-0">
-          System Info
+        {/* Breadcrumb */}
+        <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
+          Status &rsaquo; System Status &rsaquo; <span style={{ color: '#1e293b', fontWeight: 600 }}>System Info</span>
         </div>
 
-        {/* Content */}
-        <div
-          className="rounded-b-lg border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
-        >
-          <div className="flex-1 py-2 px-4">
-            <div className="space-y-0">
-              {LAN_INTERFACES.map((lan) => (
-                <LanSection key={lan.name} name={lan.name} data={lan.data} />
-              ))}
+        {/* Top stat cards — equal height, accent borders */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 14, alignItems: 'stretch' }}>
+          <StatCard label="RUNTIME"         value={runtime}    type="default" accentColor={C.accent} />
+          <StatCard label="CPU USAGE"        value={cpuUsage}   type="cpu"     accentColor={C.successGreen} />
+          <StatCard label="DCMS STATUS"      value={dcmsStatus} type="status"  accentColor={C.successGreen} />
+          <StatCard label="PACKET LOSS (RX)" value={packetLoss} type="default" accentColor="#94a3b8" />
+        </div>
 
-              <div className="space-y-0" style={{ backgroundColor: "#dde0e4" }}>
-                {SYSTEM_INFO.map((info, idx) => (
-                  <div key={idx}>
-                    <InfoRow label={info.label} values={info.value} />
-                    {info.extra && (
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs mt-0 mb-0 pl-1">
-                        <div className="md:col-span-6 col-span-1"></div>
-                        <div className="md:col-span-6 col-span-1">
-                          {info.extra.map((item, i) => (
-                            <div key={i}>{item}</div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+        {/* LAN cards — 2 columns, alternating rows */}
+        {LAN_INTERFACES.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 14, alignItems: 'stretch' }}>
+            {LAN_INTERFACES.map((lan) => (
+              <Card key={lan.name} title={lan.name} style={{ height: '100%' }}>
+                {Object.entries(lan.data || {}).map(([key, val], idx) => (
+                  <InfoTableRow key={key} label={key} value={val} keyName={key} even={idx % 2 === 1} />
                 ))}
-
-                <InfoRow label="Current Version" values="" isIndented={true} />
-                {VERSION_INFO.map((version, idx) => (
-                  <InfoRow
-                    key={`ver-${idx}`}
-                    label={version.label}
-                    values={version.value}
-                    isIndented={true}
-                  />
-                ))}
-              </div>
-            </div>
+              </Card>
+            ))}
           </div>
+        )}
+
+        {/* System Details + Version Info — stretch so both cards same height, filler fills white space */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16, alignItems: 'stretch' }}>
+          <Card title="System Details" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {(SYSTEM_INFO || []).map((info, idx) => (
+              <InfoTableRow key={idx} label={info.label} value={info.value} keyName={info.label} even={idx % 2 === 1} />
+            ))}
+            <div style={{ flex: 1, background: '#f8fafc', borderTop: '0.5px solid #f1f5f9', minHeight: 8 }} />
+          </Card>
+          <Card title="Version Info" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {(VERSION_INFO || []).map((v, idx) => (
+              <InfoTableRow key={idx} label={v.label} value={v.value} keyName={v.label} even={idx % 2 === 1} />
+            ))}
+            <div style={{ flex: 1, background: '#f8fafc', borderTop: '0.5px solid #f1f5f9', minHeight: 8 }} />
+          </Card>
         </div>
 
-        {/* Refresh Button - Outside border */}
-        <div className="flex justify-center pt-4 pb-2">
+        {/* Refresh button — tight below cards, no floating space */}
+        <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 16 }}>
           <Button
-            variant="contained"
-            startIcon={
-              isRefreshing ? <CircularProgress size={20} /> : <RefreshIcon />
-            }
+            variant="outlined"
+            startIcon={isRefreshing ? <CircularProgress size={16} /> : <RefreshIcon />}
             onClick={setSystemInfo}
             disabled={isRefreshing}
-            sx={blueButtonSx}
+            sx={refreshBtnSx}
           >
-            {isRefreshing ? "Refreshing..." : "Refresh"}
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
         </div>
+
       </div>
     </div>
   );

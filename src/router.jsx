@@ -55,11 +55,11 @@ import Whitelist from './components/Whitelist';
 import Blacklist from './components/Blacklist';
 import NumberPool from './components/NumberPool';
 import FilteringRule from './components/FilteringRule';
-import IPCallInCallerID from './sections/numManipulate/IPCallInCallerID';
-import IPCallInCalleeID from './sections/numManipulate/IPCallInCalleeID';
+import IPCallInCallerID from './components/IPCallInCallerID';
+import IPCallInCalleeID from './components/IPCallInCalleeID';
 import IPCallInOriCalleeID from './components/IPCallInOriCalleeID';
-import PSTNCallInCallerID from './sections/numManipulate/PSTNCallInCallerID';
-import PSTNCallInCalleeID from './sections/numManipulate/PSTNCallInCalleeID';
+import PSTNCallInCallerID from './components/PSTNCallInCallerID';
+import PSTNCallInCalleeID from './components/PSTNCallInCalleeID';
 import PSTNCallInOriCalleeID from './components/PSTNCallInOriCalleeID';
 import CallerIDPool from './components/CallerIDPool';
 import CallerIDReservePool from './components/CallerIDReservePool';
@@ -136,11 +136,12 @@ import UserManage from './components/UserManage';
 import FxsRouteRoutingParameterPage from './sections/route/RouteRoutingParameterPage';
 import FxsRouteIpToTelPage from './sections/route/RouteIpToTelPage';
 import FxsRouteTelToIpPage from './sections/route/RouteTelToIPpage';
-// FXS → sections/numManipulate pages (already imported above for E1-PRI but aliased here)
-import FxsIPCallInCallerID from './sections/numManipulate/IPCallInCallerID';
-import FxsIPCallInCalleeID from './sections/numManipulate/IPCallInCalleeID';
-import FxsPSTNCallInCallerID from './sections/numManipulate/PSTNCallInCallerID';
-import FxsPSTNCallInCalleeID from './sections/numManipulate/PSTNCallInCalleeID';
+// FXS → sections/numManipulate pages (Fxs-specific versions)
+import FxsIPCallInCallerID from './sections/numManipulate/FxsIPCallInCallerID';
+import FxsIPCallInCalleeID from './sections/numManipulate/FxsIPCallInCalleeID';
+import FxsPSTNCallInCallerID from './sections/numManipulate/FxsPSTNCallInCallerID';
+import FxsPSTNCallInCalleeID from './sections/numManipulate/FxsPSTNCallInCalleeID';
+import ActiveCallQueue from './components/ActiveCallQueue';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -544,6 +545,11 @@ export const router = createBrowserRouter([
         path: '/pbx-status/pbx-monitor',
         element: <PbxMonitor />,
       },
+      {
+        path: '/pbx-status/active-call-queue',
+        element: <ActiveCallQueue />,
+      },
+
       { path: ROUTE_PATHS.PORT_FXS, element: <PortFxsPage /> },
       { path: ROUTE_PATHS.PORT_FXS_ADVANCED, element: <PortFxsAdvancedPage /> },
       { path: ROUTE_PATHS.FXS_GENERAL, element: <FxsPage /> },

@@ -82,6 +82,8 @@ useEffect(() => {
           role: response.data?.role || 'admin',
           id: response.data?.id,
           ...response.data,
+          // Capture access from wherever the backend places it
+          access: response.data?.access ?? response.access ?? null,
           password: undefined, // never store password
         };
         delete userData.password;

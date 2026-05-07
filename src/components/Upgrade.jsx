@@ -10,38 +10,39 @@ import {
 import axiosInstance from "../api/axiosInstance";
 
 const blueButtonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
   color: "#fff",
   fontWeight: 600,
   fontSize: 16,
   borderRadius: 1.5,
   minWidth: 110,
-  boxShadow: "0 2px 8px #3E5475",
+  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
   textTransform: "none",
   px: 3,
   py: 1.5,
   padding: "6px 28px",
   "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+
     color: "#fff",
   },
 };
 
 const grayButtonSx = {
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
+  background: "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
   color: "#444",
   fontWeight: 600,
   fontSize: 15,
   borderRadius: 1.5,
   minWidth: 120,
-  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
   textTransform: "none",
   px: 3,
   py: 1.5,
   padding: "6px 28px",
   "&:hover": {
-    background: "linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)",
+    background: "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+
     color: "#444",
   },
 };
@@ -314,7 +315,13 @@ const Upgrade = () => {
         )}
         {/* Version Table */}
         <div className="w-full border border-gray-400 bg-white rounded-lg overflow-x-auto">
-          <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+          <div
+            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+            style={{
+              background: "linear-gradient(#3E5475 100%)",
+              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            }}
+          >
             <span>{UPGRADE_LABELS.currentVersion}</span>
             {versionLoading && (
               <span className="absolute right-4 top-1/2 -translate-y-1/2">

@@ -1,6 +1,12 @@
 // components / Sidebar.jsx
 
-import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { canAccessLicence } from "../constants/authAccess";
@@ -17,7 +23,7 @@ import { SIDEBAR_SECTIONS } from "../constants/sidebarConstants";
 // ─── Window width hook ────────────────────────────────────────────────────────
 const useWindowSize = () => {
   const [width, setWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1280
+    typeof window !== "undefined" ? window.innerWidth : 1280,
   );
   useEffect(() => {
     let raf;
@@ -50,15 +56,15 @@ const Sidebar = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const screenW  = useWindowSize();
+  const screenW = useWindowSize();
 
   // ─── Breakpoints ──────────────────────────────────────────────────────────
   const isMobile = screenW < 768;
   const isTablet = screenW >= 768 && screenW < 1024;
-  const isTouch  = isTouchDevice();
+  const isTouch = isTouchDevice();
   const canHover = !isTouch && !isMobile;
 
-  const LEFT_W  = isMobile ? 70  : isTablet ? 80  : 95;
+  const LEFT_W = isMobile ? 70 : isTablet ? 80 : 95;
   const RIGHT_W = isMobile ? 160 : isTablet ? 175 : 195;
 
   // ─── Filter sections ──────────────────────────────────────────────────────
@@ -89,14 +95,14 @@ const Sidebar = ({
   }, [user]);
 
   // ─── State ────────────────────────────────────────────────────────────────
-  const [activeMenu,   setActiveMenu]   = useState(null); // click → persistent
-  const [hoveredMenu,  setHoveredMenu]  = useState(null); // hover → temporary
-  const [openItems,    setOpenItems]    = useState({});
+  const [activeMenu, setActiveMenu] = useState(null); // click → persistent
+  const [hoveredMenu, setHoveredMenu] = useState(null); // hover → temporary
+  const [openItems, setOpenItems] = useState({});
   const [scrollTarget, setScrollTarget] = useState("submenu");
 
   const hoverLeaveTimer = useRef(null);
-  const mainMenuRef     = useRef(null);
-  const subMenuRef      = useRef(null);
+  const mainMenuRef = useRef(null);
+  const subMenuRef = useRef(null);
 
   // Derived: activeMenu wins; hoveredMenu fills when nothing clicked
   const activeSection = activeMenu || (canHover ? hoveredMenu : null);
@@ -122,15 +128,18 @@ const Sidebar = ({
   }, [isMobile]);
 
   // ─── Navigation ───────────────────────────────────────────────────────────
-  const handleNavigation = useCallback((path) => {
-    if (!path) return;
-    if (location.pathname === path) {
-      navigate(path, { replace: true, state: { refresh: Date.now() } });
-    } else {
-      navigate(path);
-    }
-    if (isMobile) setSidebarOpen(false);
-  }, [location.pathname, navigate, isMobile, setSidebarOpen]);
+  const handleNavigation = useCallback(
+    (path) => {
+      if (!path) return;
+      if (location.pathname === path) {
+        navigate(path, { replace: true, state: { refresh: Date.now() } });
+      } else {
+        navigate(path);
+      }
+      if (isMobile) setSidebarOpen(false);
+    },
+    [location.pathname, navigate, isMobile, setSidebarOpen],
+  );
 
   const handleToggle = (id) =>
     setOpenItems((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -174,7 +183,7 @@ const Sidebar = ({
   // RENDER FUNCTIONS — 4 LEVELS OF NESTING
   // ============================================
 
-  // LEVEL 4
+  // LEVEL 4 — leaf page items
   const renderDeepItem = (item) => (
     <ListItem
       key={item.id}
@@ -182,26 +191,27 @@ const Sidebar = ({
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNavigation(item.path); }}
       sx={{
         cursor: "pointer",
-        backgroundColor: isActive(item.path) ? "#1a3a5c" : "#f2f4f7",
-        borderBottom: "1px solid #ced2d9",
-        borderTop: "1px solid rgba(255,255,255,0.8)",
+        backgroundColor: isActive(item.path) ? "#d0ecf8" : "#ffffff",
+        borderBottom: "1px solid #e8edf3",
+        borderLeft: isActive(item.path) ? "3px solid #29a8e0" : "3px solid transparent",
         minHeight: isMobile ? "26px" : "28px",
         display: "flex", alignItems: "center",
         width: "100%", boxSizing: "border-box",
         padding: isMobile ? "3px 6px" : "3px 8px 3px 10px",
-        transition: "background-color 0.2s ease",
+        transition: "background-color 0.15s ease",
+        "&:hover": { backgroundColor: isActive(item.path) ? "#d0ecf8" : "#f0f7fd" },
       }}
     >
       <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
-        <div style={{ width: "2px", height: "14px", backgroundColor: isActive(item.path) ? "#ffffff" : "#d4d8e0" }} />
+        <div style={{ width: "2px", height: "14px", backgroundColor: isActive(item.path) ? "#29a8e0" : "#cbd5e1" }} />
       </ListItemIcon>
       <ListItemText
         primary={item.title}
         sx={{
           "& .MuiTypography-root": {
-            color: isActive(item.path) ? "#ffffff" : "#1e293b",
-            fontWeight: 600,
-            fontSize: isMobile ? 12 : isTablet ? 13 : 13.5,
+            color: isActive(item.path) ? "#29a8e0" : "#374151",
+            fontWeight: isActive(item.path) ? 700 : 500,
+            fontSize: isMobile ? 12 : isTablet ? 11 : 12,
             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           },
         }}
@@ -209,7 +219,7 @@ const Sidebar = ({
     </ListItem>
   );
 
-  // LEVEL 3
+  // LEVEL 3 — subgroup with items
   const renderSubGroup = (group) => {
     const IconComponent = group.icon;
     const isOpen = openItems[group.id] || false;
@@ -227,35 +237,31 @@ const Sidebar = ({
             });
           }}
           sx={{
-            cursor: "pointer", backgroundColor: "#d5dae3",
-            borderBottom: "1px solid #bfc4cc",
-            borderTop: "1px solid rgba(255,255,255,0.8)",
+            cursor: "pointer",
+            backgroundColor: "#eaeff5",
+            borderBottom: "1px solid #dde4ed",
+            borderTop: "1px solid rgba(255,255,255,0.9)",
             minHeight: isMobile ? "26px" : "28px",
             display: "flex", alignItems: "center",
             padding: isMobile ? "4px 6px" : "6px 8px 6px 10px",
             width: "100%", boxSizing: "border-box",
-            transition: "background-color 0.2s ease",
+            transition: "background-color 0.15s ease",
           }}
         >
           <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
-            <IconComponent sx={{ color: "#2563eb", fontSize: isMobile ? 14 : 16 }} />
+            <IconComponent sx={{ color: "#29a8e0", fontSize: isMobile ? 14 : 15 }} />
           </ListItemIcon>
           <ListItemText
             primary={group.title}
             sx={{
               "& .MuiTypography-root": {
-                color: "#1e293b", fontWeight: 700,
-                fontSize: isMobile ? 12 : isTablet ? 13 : 14,
+                color: "#334155", fontWeight: 700,
+                fontSize: isMobile ? 12 : isTablet ? 12 : 13,
                 whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
               },
             }}
           />
-          <ExpandLess sx={{
-            color: "#4b5563",
-            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-            fontSize: isMobile ? 14 : 16,
-            transition: "transform 0.2s ease", flexShrink: 0,
-          }} />
+          <ExpandLess sx={{ color: "#64748b", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", fontSize: isMobile ? 15 : 16, transition: "transform 0.2s ease", flexShrink: 0 }} />
         </ListItem>
         <Collapse in={isOpen} timeout={200} unmountOnExit>
           <List component="div" disablePadding>
@@ -266,7 +272,7 @@ const Sidebar = ({
     );
   };
 
-  // LEVEL 2
+  // LEVEL 2 — group with subgroups
   const renderGroupItem = (item) => {
     const isOpen = openItems[item.id] || false;
     return (
@@ -275,35 +281,31 @@ const Sidebar = ({
           component="div"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggle(item.id); }}
           sx={{
-            cursor: "pointer", backgroundColor: "#d5dae3",
-            borderBottom: "1px solid #c0c4c8",
-            borderTop: "1px solid rgba(255,255,255,0.8)",
+            cursor: "pointer",
+            backgroundColor: "#eaeff5",
+            borderBottom: "1px solid #dde4ed",
+            borderTop: "1px solid rgba(255,255,255,0.9)",
             minHeight: isMobile ? "26px" : "28px",
             display: "flex", alignItems: "center",
             width: "100%", boxSizing: "border-box",
             padding: isMobile ? "2px 6px" : "2px 8px",
-            transition: "background-color 0.2s ease",
+            transition: "background-color 0.15s ease",
           }}
         >
           <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
-            <div style={{ width: "1px", height: "12px", backgroundColor: "#2563eb" }} />
+            <div style={{ width: "2px", height: "12px", backgroundColor: "#29a8e0" }} />
           </ListItemIcon>
           <ListItemText
             primary={item.title}
             sx={{
               "& .MuiTypography-root": {
-                color: "#374151", fontWeight: 700,
+                color: "#334155", fontWeight: 700,
                 fontSize: isMobile ? 11 : isTablet ? 11.5 : 12,
                 whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
               },
             }}
           />
-          <ExpandLess sx={{
-            color: "#4b5563",
-            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-            fontSize: isMobile ? 14 : 16,
-            transition: "transform 0.2s ease", flexShrink: 0,
-          }} />
+          <ExpandLess sx={{ color: "#64748b", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", fontSize: isMobile ? 14 : 16, transition: "transform 0.2s ease", flexShrink: 0 }} />
         </ListItem>
         <Collapse in={isOpen} timeout={200} unmountOnExit>
           <List component="div" disablePadding>
@@ -314,7 +316,7 @@ const Sidebar = ({
     );
   };
 
-  // LEVEL 1
+  // LEVEL 1 — simple nav item
   const renderSimpleItem = (item) => (
     <ListItem
       key={item.id}
@@ -322,24 +324,25 @@ const Sidebar = ({
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNavigation(item.path); }}
       sx={{
         cursor: "pointer",
-        backgroundColor: isActive(item.path) ? "#1a3a5c" : "transparent",
-        borderBottom: "1px solid #ced2d9",
-        borderTop: "1px solid rgba(255,255,255,0.8)",
+        backgroundColor: isActive(item.path) ? "#d0ecf8" : "transparent",
+        borderBottom: "1px solid #e8edf3",
+        borderLeft: isActive(item.path) ? "3px solid #29a8e0" : "3px solid transparent",
         minHeight: isMobile ? "26px" : "28px",
         display: "flex", alignItems: "center",
         width: "100%", boxSizing: "border-box",
         padding: isMobile ? "1px 6px" : "1px 10px",
+        "&:hover": { backgroundColor: isActive(item.path) ? "#d0ecf8" : "#f0f7fd" },
       }}
     >
       <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
-        <div style={{ width: "1px", height: "12px", backgroundColor: isActive(item.path) ? "#60a5fa" : "#9ca3af" }} />
+        <div style={{ width: "2px", height: "12px", backgroundColor: isActive(item.path) ? "#29a8e0" : "#cbd5e1" }} />
       </ListItemIcon>
       <ListItemText
         primary={item.title}
         sx={{
           "& .MuiTypography-root": {
-            color: isActive(item.path) ? "#ffffff" : "#1e293b",
-            fontWeight: isActive(item.path) ? 600 : 500,
+            color: isActive(item.path) ? "#29a8e0" : "#374151",
+            fontWeight: isActive(item.path) ? 700 : 500,
             fontSize: isMobile ? 12 : isTablet ? 12.5 : 13,
             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           },
@@ -352,13 +355,13 @@ const Sidebar = ({
   const renderSubmenuItems = (submenuItems) =>
     submenuItems.map((item) => {
       if (item.isGroup && item.subGroups) return renderGroupItem(item);
-      if (item.items && item.icon)        return renderSubGroup(item);
+      if (item.items && item.icon) return renderSubGroup(item);
       return renderSimpleItem(item);
     });
 
-  // Main section header
+  // Main section header (left icon panel)
   const renderSidebarSection = (section) => {
-    const IconComponent   = section.icon;
+    const IconComponent = section.icon;
     const isCurrentActive = activeSection === section.id;
 
     return (
@@ -370,23 +373,19 @@ const Sidebar = ({
         onMouseLeave={handleLeftItemMouseLeave}
         sx={{
           cursor: "pointer",
-          backgroundColor: isCurrentActive ? "#1a2f4a" : "transparent",
-          borderBottom: "1px solid #1e2d42",
-          borderLeft: isCurrentActive ? "3px solid #60a5fa" : "3px solid transparent",
-          minHeight: isMobile ? "50px" : isTablet ? "55px" : "60px",
+          backgroundColor: isCurrentActive ? "#29a8e0" : "transparent",
+          borderBottom: "1px solid #162233",
+          minHeight: isMobile ? "44px" : isTablet ? "48px" : "52px",
           display: "flex", flexDirection: "column",
           justifyContent: "center", alignItems: "center",
-          padding: isMobile ? "8px 4px" : "13px",
-          transition: "background-color 0.2s ease",
-          "&:hover": { backgroundColor: isCurrentActive ? "#1a2f4a" : "#3a5070" },
+          padding: isMobile ? "6px 4px" : "10px 8px",
+          transition: "background-color 0.15s ease",
+          "&:hover": { backgroundColor: isCurrentActive ? "#29a8e0" : "#2a3f58" },
         }}
         title={section.title}
       >
         <ListItemIcon sx={{ minWidth: 0, marginBottom: isMobile ? 0 : -0.5 }}>
-          <IconComponent sx={{
-            color: isCurrentActive ? "#ffffff" : "#60a5fa",
-            fontSize: isMobile ? 18 : isTablet ? 20 : 21,
-          }} />
+          <IconComponent sx={{ color: isCurrentActive ? "#ffffff" : "#5a7a9a", fontSize: isMobile ? 18 : isTablet ? 20 : 21 }} />
         </ListItemIcon>
         {!isMobile && (
           <ListItemText
@@ -394,9 +393,9 @@ const Sidebar = ({
             sx={{
               textAlign: "center",
               "& .MuiTypography-root": {
-                color: isCurrentActive ? "#e0e0e0" : "#ffffff",
+                color: isCurrentActive ? "#ffffff" : "#8aacca",
                 fontWeight: 700,
-                fontSize: isTablet ? 13 : 14,
+                fontSize: isTablet ? 11 : 11.5,
                 lineHeight: 1.2,
                 whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 maxWidth: LEFT_W - 8,
@@ -416,11 +415,13 @@ const Sidebar = ({
 
   const handleScroll = (e) => {
     const scrollTop = e.target.scrollTop;
-    if (scrollTarget === "main"    && mainMenuRef.current) mainMenuRef.current.scrollTop = scrollTop;
-    if (scrollTarget === "submenu" && subMenuRef.current)  subMenuRef.current.scrollTop  = scrollTop;
+    if (scrollTarget === "main" && mainMenuRef.current)
+      mainMenuRef.current.scrollTop = scrollTop;
+    if (scrollTarget === "submenu" && subMenuRef.current)
+      subMenuRef.current.scrollTop = scrollTop;
   };
 
-  const sidebarLeft  = isMobile ? (sidebarOpen ? 0 : "-100%") : 0;
+  const sidebarLeft = isMobile ? (sidebarOpen ? 0 : "-100%") : 0;
   const sidebarWidth = isMobile
     ? "100%"
     : activeSection
@@ -434,10 +435,14 @@ const Sidebar = ({
         <div
           onClick={() => setSidebarOpen(false)}
           style={{
-            position: "fixed", top: 0, left: 0,
-            width: "100%", height: "100%",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
             backgroundColor: "rgba(0,0,0,0.5)",
-            zIndex: 39, touchAction: "none",
+            zIndex: 39,
+            touchAction: "none",
           }}
         />
       )}
@@ -463,10 +468,12 @@ const Sidebar = ({
           ref={mainMenuRef}
           onMouseEnter={() => setScrollTarget("main")}
           style={{
-            minWidth: LEFT_W, width: LEFT_W,
-            background: "#2c3e5c",
-            borderRight: "1px solid #1e2d42",
-            overflowY: "auto", overflowX: "hidden",
+            minWidth: LEFT_W,
+            width: LEFT_W,
+            background: "#1e2d42",
+            borderRight: "1px solid #162233",
+            overflowY: "auto",
+            overflowX: "hidden",
             WebkitOverflowScrolling: "touch",
           }}
         >
@@ -483,9 +490,10 @@ const Sidebar = ({
             onMouseLeave={handleSubmenuMouseLeave}
             style={{
               width: isMobile ? `calc(100vw - ${LEFT_W}px)` : RIGHT_W,
-              background: "#dde0e4",
-              borderRight: "2px solid #ECEEF3",
-              overflowY: "auto", overflowX: "hidden",
+              background: "#f0f4f8",
+              borderRight: "1px solid #dde4ed",
+              overflowY: "auto",
+              overflowX: "hidden",
               WebkitOverflowScrolling: "touch",
               animation: "sbSlideIn 0.15s ease",
             }}

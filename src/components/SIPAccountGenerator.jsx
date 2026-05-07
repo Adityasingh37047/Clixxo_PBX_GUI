@@ -155,7 +155,13 @@ const SIPAccountGenerator = () => {
         </div>
         {/* Upload Section */}
         <div className="w-full max-w-5xl border border-gray-400 rounded-lg bg-white mb-6">
-          <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+          <div
+            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+            style={{
+              background: "linear-gradient(#3E5475 100%)",
+              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            }}
+          >
             {SIP_ACCOUNT_UPLOAD.title}
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between px-4 py-6 gap-4">
@@ -198,7 +204,7 @@ const SIPAccountGenerator = () => {
                   background:
                     "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
                   color: "#fff",
-                  borderRadius: "4px",
+                  borderRadius: "6px",
                   minWidth: "90px",
                   fontWeight: 500,
                   fontSize: "16px",
@@ -217,7 +223,13 @@ const SIPAccountGenerator = () => {
         </div>
         {/* Download Section */}
         <div className="w-full max-w-5xl border border-gray-400 rounded-lg bg-white mb-6">
-          <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+          <div
+            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+            style={{
+              background: "linear-gradient(#3E5475 100%)",
+              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            }}
+          >
             {SIP_ACCOUNT_DOWNLOAD.title}
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between px-4 py-6 gap-4">
@@ -239,7 +251,7 @@ const SIPAccountGenerator = () => {
                   background:
                     "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
                   color: "#fff",
-                  borderRadius: "4px",
+                  borderRadius: "6px",
                   minWidth: "110px",
                   fontWeight: 500,
                   fontSize: "16px",

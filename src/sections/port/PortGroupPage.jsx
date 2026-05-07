@@ -68,14 +68,13 @@ const controlButtonStyle = {
 };
 
 const buttonCancel = {
-  background:
-    "linear-gradient(to bottom, #E5E7EB 0%, #D1D5DB 60%, #9CA3AF 100%)",
+  background: "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
   color: "#374151",
   fontWeight: 600,
   fontSize: 14,
   borderRadius: 4,
-  minWidth: 80,
-  height: 32,
+  minWidth: 100,
+  height: 40,
   padding: "4px 20px",
   boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
   border: "1px solid #D1D5DB",
@@ -89,8 +88,8 @@ const blueActionButtonStyle = {
   fontWeight: 600,
   fontSize: 14,
   borderRadius: 4,
-  minWidth: 80,
-  height: 32,
+  minWidth: 100,
+  height: 40,
   padding: "4px 20px",
   boxShadow: "0 2px 4px #2C3E57",
   border: "1px solid #5A6F8F",
@@ -99,7 +98,7 @@ const blueActionButtonStyle = {
 
 const emptyButtonStyle = {
   ...blueActionButtonStyle,
-  minWidth: 120,
+  minWidth: 100,
 };
 
 const initialFormState = () => ({

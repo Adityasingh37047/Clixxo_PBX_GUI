@@ -46,21 +46,20 @@ const grayButtonSx = {
   },
 };
 const blueButtonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
   color: "#fff",
   fontWeight: 600,
   fontSize: 16,
   borderRadius: 1.5,
   minWidth: 120,
-  boxShadow: "0 2px 8px #3E5475",
+  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
   textTransform: "none",
   px: 3,
   py: 1.5,
-  padding: "6px 24px",
-  border: "1px solid #2C3E57",
+  padding: "6px 28px",
+  border: "1px solid #5A6F8F",
   "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
     color: "#fff",
   },
 };
@@ -659,7 +658,7 @@ const PSTNCallInOriCalleeID = () => {
           <div className="w-full max-w-full mx-auto">
             {/* Blue header bar - always show */}
             <div
-              className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[16px] text-[#444] shadow-sm mt-0"
+              className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
               style={{
                 background: "linear-gradient(#3E5475 100%)",
                 boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
@@ -671,12 +670,13 @@ const PSTNCallInOriCalleeID = () => {
             <div
               style={{
                 border: "2px solid #bbb",
-                borderRadius: 8,
+                borderBottomLeftRadius: 8,
+                borderBottomRightRadius: 8,
                 boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
               }}
             >
               <div
-                className="bg-white w-full flex flex-col overflow-hidden"
+                className="bg-white rounded-lg w-full flex flex-col overflow-hidden"
                 style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
               >
                 <div
@@ -968,7 +968,7 @@ const PSTNCallInOriCalleeID = () => {
             </div>
             {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
             <div
-              className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
+              className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
               style={{ background: "#e3e7ef", marginTop: 12 }}
             >
               <div className="flex flex-wrap gap-2">
@@ -1024,7 +1024,7 @@ const PSTNCallInOriCalleeID = () => {
               </button>
             </div>
             <div
-              className="flex flex-wrap items-center gap-2 w-full px-2 py-2 text-[15px]"
+              className="flex rounded-lg flex-wrap items-center gap-2 w-full px-2 py-2 text-[15px]"
               style={{ background: "#e3e7ef", marginTop: 8 }}
             >
               <span>{rules.length} Items Total</span>

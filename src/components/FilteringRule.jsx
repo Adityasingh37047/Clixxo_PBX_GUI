@@ -385,7 +385,13 @@ const FilteringRule = () => {
     <div className="bg-gray-50 min-h-[calc(100vh-80px)] p-2 md:p-2">
       <div className="w-full mx-auto">
         <div className="bg-gray-200 w-full flex flex-col">
-          <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-\[#b3e0ff] via-\[#6ec1f7] to-\[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+          <div
+            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+            style={{
+              background: "linear-gradient(#3E5475 100%)",
+              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            }}
+          >
             Filtering Rule
           </div>
           <div
@@ -685,13 +691,13 @@ const FilteringRule = () => {
           </DialogContent>
           <DialogActions className="flex justify-center gap-6 pb-4">
             <button
-              className="bg-gradient-to-b from-[#9ca3af] to-[#6b7280] text-white font-semibold text-xs rounded px-3 py-1 min-w-[100px] shadow hover:from-[#6b7280] hover:to-[#9ca3af]"
+              className="bg-gradient-to-b from-[#9ca3af] to-[#6b7280] text-white font-semibold text-s rounded px-3 py-1 min-w-[100px] shadow hover:from-[#6b7280] hover:to-[#9ca3af]"
               onClick={handleSave}
             >
               Save
             </button>
             <button
-              className="bg-gradient-to-b from-[#d1d5db] to-[#9ca3af] text-[#111827] font-semibold text-xs rounded px-3 py-1 min-w-[100px] shadow hover:from-[#9ca3af] hover:to-[#d1d5db]"
+              className="bg-gradient-to-b from-[#d1d5db] to-[#9ca3af] text-[#fff] font-semibold text-s rounded px-3 py-1 min-w-[100px] shadow hover:from-[#9ca3af] hover:to-[#d1d5db]"
               onClick={closeModal}
             >
               Close
