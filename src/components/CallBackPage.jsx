@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
+  Alert,
   Button,
   Dialog,
   DialogTitle,
@@ -8,10 +9,15 @@ import {
   DialogActions,
   TextField,
   CircularProgress,
-  Select,
+  Select as MuiSelect,
   MenuItem,
   FormControl,
+  Checkbox,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
+
 import {
   fetchSipAccounts,
   listTrunkIds,
@@ -20,6 +26,107 @@ import {
   updateCallbackRule,
   deleteCallbackRule,
 } from "../api/apiService";
+
+// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
+};
+
+// ── Shared: Action Button ────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e2d42",
+      color: "#fff",
+      border: "1px solid #162233",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ── Shared: Table Header ──────────────────────────────────────────────────────
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const CallBackPage = () => {
   const [rows, setRows] = useState([]);
@@ -31,7 +138,15 @@ const CallBackPage = () => {
     save: false,
     extensions: false,
   });
+  const [error, setError] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+  // Search & Pagination
+  const itemsPerPage = 20;
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   // Add/Edit modal state
   const [editId, setEditId] = useState(null);
@@ -45,15 +160,17 @@ const CallBackPage = () => {
   const [throughSelect, setThroughSelect] = useState(false);
   const [extensionOptions, setExtensionOptions] = useState([]);
   const [trunkOptions, setTrunkOptions] = useState([]);
-  const orderOptions = Array.from({ length: 21 }, (_, i) => i * 5); // 0,5,...100
+  const orderOptions = Array.from({ length: 21 }, (_, i) => i * 5);
 
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
-  const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  // Import modal
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const importFileRef = useRef(null);
 
-  const showAlert = (text) => {
-    window.alert(text);
+  const showAlert = (type, text) => {
+    setError({ type, text });
+    setTimeout(() => setError({ type: "", text: "" }), 5000);
   };
 
   const loadRows = async () => {
@@ -75,8 +192,9 @@ const CallBackPage = () => {
           throughSelect: item.through_mode === "select",
         })),
       );
+      setLastUpdated(new Date());
     } catch (err) {
-      showAlert(err?.message || "Failed to load callbacks.");
+      showAlert("error", err?.message || "Failed to load callbacks.");
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
     }
@@ -97,7 +215,7 @@ const CallBackPage = () => {
         .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
       setExtensionOptions(exts);
     } catch (err) {
-      showAlert(err?.message || "Failed to load extensions.");
+      showAlert("error", err?.message || "Failed to load extensions.");
       setExtensionOptions([]);
     } finally {
       setLoading((prev) => ({ ...prev, extensions: false }));
@@ -127,33 +245,87 @@ const CallBackPage = () => {
     }
   }, []);
 
-  const handleCheckAll = () => setSelected(rows.map((_, i) => i));
-  const handleUncheckAll = () => setSelected([]);
-  const handleSelectRow = (idx) => {
+  // ── Search & Pagination Logic ──
+  const filteredRows = searchQuery.trim()
+    ? rows.filter((r) =>
+        [r.name, r.destination, r.delay].some((v) =>
+          String(v || "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+        ),
+      )
+    : rows;
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
+  const pagedRows = filteredRows.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage,
+  );
+
+  useEffect(() => {
+    setPage((current) =>
+      Math.min(
+        Math.max(1, current),
+        Math.max(1, Math.ceil(filteredRows.length / itemsPerPage)),
+      ),
+    );
+  }, [filteredRows.length]);
+
+  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
+  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
+
+  // ── Checkbox Logic ──
+  const pageIndices = pagedRows.map(
+    (_, idx) => (page - 1) * itemsPerPage + idx,
+  );
+  const allPageSelected =
+    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
+  const somePageSelected =
+    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
+
+  const handleToggleRow = (idx) => {
     setSelected((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
     );
   };
 
+  const handleToggleAll = () => {
+    if (!pageIndices.length) return;
+    setSelected((prev) =>
+      allPageSelected
+        ? prev.filter((i) => !pageIndices.includes(i))
+        : Array.from(new Set([...prev, ...pageIndices])),
+    );
+  };
+
   const handleDelete = async () => {
     if (selected.length === 0) {
-      showAlert("Please select at least one row to delete.");
+      showAlert("error", "Please select at least one row to delete.");
       return;
     }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selected.length} records?`,
+      )
+    )
+      return;
+
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const ids = selected.map((i) => rows[i]?.id).filter(Boolean);
+      const ids = selected.map((i) => filteredRows[i]?.id).filter(Boolean);
       await Promise.all(ids.map((id) => deleteCallbackRule(id)));
       setSelected([]);
+      setPage(1);
       await loadRows();
-      showAlert(`Deleted ${ids.length} item(s).`);
+      showAlert("success", `Deleted ${ids.length} item(s).`);
     } catch (err) {
-      showAlert(err?.message || "Failed to delete.");
+      showAlert("error", err?.message || "Failed to delete.");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
   };
 
+  // ── Form Modal Handlers ──
   const resetForm = () => {
     setEditId(null);
     setName("");
@@ -187,32 +359,24 @@ const CallBackPage = () => {
   };
 
   const handleCloseModal = () => {
+    if (loading.save) return;
     setShowModal(false);
     resetForm();
   };
 
   const handleSave = async () => {
     const trimmedName = name.trim();
-    if (!trimmedName) {
-      showAlert("Please enter a Name.");
-      return;
-    }
-    if (!delay) {
-      showAlert("Please enter Delay (s).");
-      return;
-    }
-    if (!destination) {
-      showAlert("Please select Destination.");
-      return;
-    }
+    if (!trimmedName) return showAlert("error", "Please enter a Name.");
+    if (!delay) return showAlert("error", "Please enter Delay (s).");
+    if (!destination) return showAlert("error", "Please select Destination.");
+
     const delaySec = Number(delay) || 0;
     const stripDigits = strip === "" ? 0 : Number(strip) || 0;
+
     let through_mode = "auto";
-    if (throughSelect) {
-      through_mode = "select";
-    } else if (throughFromComeIn) {
-      through_mode = "from_in";
-    }
+    if (throughSelect) through_mode = "select";
+    else if (throughFromComeIn) through_mode = "from_in";
+
     const apiPayload = {
       name: trimmedName,
       delay_sec: delaySec,
@@ -221,26 +385,35 @@ const CallBackPage = () => {
       destination,
       through_mode,
       enabled: true,
-      // Trunks will be filled when UI is added; for now send empty
-      trunks: [],
+      trunks: [], // Logic kept exactly as original
     };
 
     setLoading((prev) => ({ ...prev, save: true }));
     try {
       if (editId != null) {
         await updateCallbackRule({ id: editId, ...apiPayload });
-        showAlert("Callback updated.");
+        showAlert("success", "Callback updated.");
       } else {
         await createCallbackRule(apiPayload);
-        showAlert("Callback created.");
+        showAlert("success", "Callback created.");
       }
       await loadRows();
       handleCloseModal();
     } catch (err) {
-      showAlert(err?.message || "Failed to save.");
+      showAlert("error", err?.message || "Failed to save.");
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importFile)
+      return showAlert("error", "Please select a file to import");
+    showAlert("info", "Import API not yet configured");
+  };
+
+  const handleExport = () => {
+    showAlert("info", "Export API not yet configured");
   };
 
   const renderThrough = (row) => {
@@ -252,561 +425,998 @@ const CallBackPage = () => {
   };
 
   return (
-    <div className="w-full max-w-full mx-auto p-2">
-      <div className="w-full max-w-full mx-auto">
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
+    >
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Error / Success Banner */}
+        {error.text && (
+          <Alert
+            severity={
+              error.type === "error"
+                ? "error"
+                : error.type === "success"
+                  ? "success"
+                  : "info"
+            }
+            onClose={() => setError({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {error.text}
+          </Alert>
+        )}
+
+        {/* Breadcrumb + Last Updated */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          CallBack
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Call Features &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>CallBack</span>
+          </div>
         </div>
 
-        <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-[900px] bg-[#f8fafd] border-2 border-t-0 border-gray-400 rounded-b-lg shadow-sm">
-            <thead>
-              <tr>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
-                  #
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Name
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Delay (s)
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Strip
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Prepend
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Destination
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Through
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading.fetch ? (
-                <tr>
-                  <td
-                    colSpan={9}
-                    className="border border-gray-300 px-2 py-4 text-center"
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
+              >
+                Page {page} · {filteredRows.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              {/* <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#ffffff",
+                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
+                  borderRadius: 6,
+                  padding: "5px 10px",
+                  transition: "border-color 0.15s ease",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: searchFocused ? C.accent : C.mutedText,
+                  }}
+                >
+                  🔍
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  placeholder="Search callbacks..."
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    fontSize: 11,
+                    color: C.valueText,
+                    outline: "none",
+                    width: 160,
+                  }}
+                />
+                {searchQuery && (
+                  <span
+                    onClick={() => setSearchQuery("")}
+                    style={{
+                      fontSize: 11,
+                      color: C.mutedText,
+                      cursor: "pointer",
+                    }}
                   >
-                    <div className="flex items-center justify-center gap-2">
-                      <CircularProgress size={20} />
-                      <span>Loading callbacks...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={9}
-                    className="border border-gray-300 px-2 py-4 text-center text-gray-500"
-                  >
-                    No callbacks yet. Click &quot;Add New&quot; to create one.
-                  </td>
-                </tr>
-              ) : (
-                pagedRows.map((row, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
-                  return (
-                    <tr key={row.id}>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(realIdx)}
-                          onChange={() => handleSelectRow(realIdx)}
-                          disabled={loading.delete}
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {realIdx + 1}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">
-                        {row.name}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.delay}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.strip}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.prepend}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.destination}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {renderThrough(row)}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
-                          titleAccess="Edit"
-                          onClick={() => handleOpenEditModal(row)}
-                        />
+                    ✕
+                  </span>
+                )}
+              </div> */}
+
+              {/* <Btn
+                onClick={handlePrev}
+                disabled={loading.fetch || page <= 1}
+                variant="outline"
+              >
+                ← Prev
+              </Btn>
+              <Btn
+                onClick={handleNext}
+                disabled={loading.fetch || page >= totalPages}
+                variant="outline"
+              >
+                Next →
+              </Btn> */}
+
+              <Btn
+                onClick={() => {
+                  setImportFile(null);
+                  setShowImportModal(true);
+                }}
+                variant="outline"
+              >
+                ⬇ Import
+              </Btn>
+              <Btn onClick={handleExport} variant="outline">
+                ⬆ Export
+              </Btn>
+              {/* <Btn
+                onClick={loadRows}
+                disabled={loading.fetch}
+                variant="default"
+              >
+                {loading.fetch ? (
+                  <CircularProgress size={11} style={{ color: "#fff" }} />
+                ) : (
+                  "Refresh"
+                )}
+              </Btn> */}
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="danger"
+              >
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.fetch}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            {loading.fetch ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  tableLayout: "auto",
+                  minWidth: 900,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        sx={{
+                          padding: "1px",
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                        }}
+                      />
+                    </TH>
+                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Name
+                    </TH>
+                    <TH>Delay (s)</TH>
+                    <TH>Strip</TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Prepend
+                    </TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Destination
+                    </TH>
+                    <TH>Through</TH>
+                    <TH style={{ width: 60 }}>Modify</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedRows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={9}
+                        style={{
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
+                        }}
+                      >
+                        {searchQuery
+                          ? `No results for "${searchQuery}"`
+                          : "No callbacks found. Click '+ Add New' to create one."}
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ) : (
+                    pagedRows.map((row, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const rowBgColor = isSelected
+                        ? "#f0f9ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
 
-        <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleDelete}
-              disabled={loading.delete || loading.fetch}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
+                      return (
+                        <tr
+                          key={row.id || realIdx}
+                          style={{
+                            background: rowBgColor,
+                            borderBottom: "0.5px solid #9ca3af",
+                            transition: "background 0.1s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f0f9ff";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBgColor;
+                          }}
+                        >
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 0",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleToggleRow(realIdx)}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 4px",
+                              fontSize: 11,
+                              color: C.mutedText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {realIdx + 1}
+                          </td>
+                          <td
+                            style={{
+                              padding: "7px 16px",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.name}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              fontSize: 12,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <span
+                              style={{
+                                background: "#f1f5f9",
+                                padding: "2px 8px",
+                                borderRadius: 10,
+                                fontSize: 10,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {row.delay}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              fontSize: 12,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.strip || "—"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "7px 16px",
+                              fontSize: 12,
+                              fontFamily: "monospace",
+                              color: C.labelText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.prepend || "—"}
+                          </td>
+                          <td
+                            style={{
+                              padding: "7px 16px",
+                              fontSize: 12,
+                              fontWeight: 500,
+                              color: C.labelText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.destination || "—"}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <span
+                              style={{
+                                background: row.throughAuto
+                                  ? "#dcfce7"
+                                  : row.throughFromComeIn
+                                    ? "#e0f2fe"
+                                    : "#f3e8ff",
+                                color: row.throughAuto
+                                  ? "#15803d"
+                                  : row.throughFromComeIn
+                                    ? "#0369a1"
+                                    : "#7e22ce",
+                                padding: "2px 8px",
+                                borderRadius: 10,
+                                fontSize: 10,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {renderThrough(row)}
+                            </span>
+                          </td>
+                          <td
+                            style={{ textAlign: "center", padding: "4px 8px" }}
+                          >
+                            <Btn
+                              onClick={() => handleOpenEditModal(row)}
+                              variant="outline"
+                              style={{
+                                fontSize: 10,
+                                padding: "3px 10px",
+                                margin: "0 auto",
+                              }}
+                            >
+                              Edit
+                            </Btn>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
-          <div className="flex gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleOpenAddModal}
-              disabled={loading.save || loading.fetch}
-            >
-              Add New
-            </button>
-          </div>
-        </div>
 
-        {totalPages > 1 && (
-          <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-            <span>{rows.length} items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
+          {/* Footer Pagination */}
+          {!loading.fetch && filteredRows.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+              }}
             >
-              First
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => setPage(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
-          </div>
-        )}
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.fetch || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.fetch || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Add / Edit Callback Modal */}
+      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 650, maxWidth: "95vw", mx: "auto", p: 0 },
-        }}
+        PaperProps={{ sx: { width: 700, maxWidth: "95vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
           }}
         >
-          {editId != null ? "Edit CallBack" : "Add CallBack"}
+          {editId != null ? "Edit CallBack Rule" : "Add CallBack"}
         </DialogTitle>
+
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-          }}
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
         >
-          <div className="flex flex-col gap-3 w-full pb-2">
-            <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
-              <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 12,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
                 CallBack Settings
-              </div>
-              <div className="p-3 flex flex-col gap-2">
+              </h3>
+
+              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px 32px",
+                }}
+              >
+                {/* ── LEFT COLUMN ── */}
                 <div
-                  className="flex items-center gap-2"
-                  style={{ minHeight: 32 }}
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  <label
-                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                    style={{ width: 200, marginRight: 10 }}
+                  {/* Name */}
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
-                    Name:
-                  </label>
-                  <div className="flex-1">
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 90,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Name <span style={{ color: C.labelText }}>:</span>
+                    </label>
                     <TextField
+                      size="small"
                       fullWidth
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-input": {
-                          padding: "8px 12px",
-                          fontSize: 14,
-                        },
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
                       }}
                     />
                   </div>
-                </div>
-                <div
-                  className="flex items-center gap-2"
-                  style={{ minHeight: 32 }}
-                >
-                  <label
-                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                    style={{ width: 200, marginRight: 10 }}
+
+                  {/* Strip */}
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
-                    Delay (s):
-                  </label>
-                  <div className="flex-1">
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 90,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Strip :
+                    </label>
                     <TextField
+                      size="small"
+                      fullWidth
+                      type="number"
+                      value={strip}
+                      onChange={(e) => setStrip(e.target.value)}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
+                      }}
+                    />
+                  </div>
+
+                  {/* Destination */}
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+                  >
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 90,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Destination <span style={{ color: C.labelText }}>:</span>
+                    </label>
+                    <FormControl size="small" fullWidth>
+                      <MuiSelect
+                        value={destination}
+                        onChange={(e) => setDestination(e.target.value)}
+                        displayEmpty
+                        sx={{ fontSize: 13 }}
+                      >
+                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                          <span style={{ color: C.mutedText }}>
+                            {loading.extensions
+                              ? "Loading..."
+                              : "Select Destination"}
+                          </span>
+                        </MenuItem>
+                        {extensionOptions.map((ext) => (
+                          <MenuItem key={ext} value={ext} sx={{ fontSize: 13 }}>
+                            {ext}
+                          </MenuItem>
+                        ))}
+                      </MuiSelect>
+                    </FormControl>
+                  </div>
+                </div>
+
+                {/* ── RIGHT COLUMN ── */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                >
+                  {/* Delay */}
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+                  >
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 90,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Delay (s) <span style={{ color: C.labelText }}>:</span>
+                    </label>
+                    <TextField
+                      size="small"
                       fullWidth
                       type="number"
                       value={delay}
                       onChange={(e) => setDelay(e.target.value)}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-input": {
-                          padding: "8px 12px",
-                          fontSize: 14,
-                        },
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
                       }}
                     />
                   </div>
-                </div>
-                <div
-                  className="flex items-center gap-2"
-                  style={{ minHeight: 32 }}
-                >
-                  <label
-                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                    style={{ width: 200, marginRight: 10 }}
+
+                  {/* Prepend */}
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
-                    Strip:
-                  </label>
-                  <div className="flex-1">
-                    <TextField
-                      fullWidth
-                      value={strip}
-                      onChange={(e) => setStrip(e.target.value)}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-input": {
-                          padding: "8px 12px",
-                          fontSize: 14,
-                        },
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 90,
+                        flexShrink: 0,
                       }}
-                    />
-                  </div>
-                </div>
-                <div
-                  className="flex items-center gap-2"
-                  style={{ minHeight: 32 }}
-                >
-                  <label
-                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                    style={{ width: 200, marginRight: 10 }}
-                  >
-                    Prepend:
-                  </label>
-                  <div className="flex-1">
+                    >
+                      Prepend :
+                    </label>
                     <TextField
+                      size="small"
                       fullWidth
                       value={prepend}
                       onChange={(e) => setPrepend(e.target.value)}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-input": {
-                          padding: "8px 12px",
-                          fontSize: 14,
-                        },
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
                       }}
                     />
                   </div>
-                </div>
-                <div
-                  className="flex items-center gap-2"
-                  style={{ minHeight: 32 }}
-                >
-                  <label
-                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                    style={{ width: 200, marginRight: 10 }}
+
+                  {/* Through Mode */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 12,
+                    }}
                   >
-                    Destination:
-                  </label>
-                  <div className="flex-1">
-                    <FormControl size="small" fullWidth>
-                      <Select
-                        value={destination}
-                        onChange={(e) => setDestination(e.target.value)}
-                        displayEmpty
-                        renderValue={(value) => {
-                          if (!value) {
-                            return "Select Destination";
-                          }
-                          return value;
-                        }}
-                      >
-                        {extensionOptions.length === 0 ? (
-                          <MenuItem value="">
-                            {loading.extensions
-                              ? "Loading extensions..."
-                              : "No extensions"}
-                          </MenuItem>
-                        ) : (
-                          <>
-                            <MenuItem value="">Select Destination</MenuItem>
-                            {extensionOptions.map((ext) => (
-                              <MenuItem key={ext} value={ext}>
-                                {ext}
-                              </MenuItem>
-                            ))}
-                          </>
-                        )}
-                      </Select>
-                    </FormControl>
-                  </div>
-                </div>
-                <div
-                  className="flex items-start gap-2"
-                  style={{ minHeight: 32 }}
-                >
-                  <label
-                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                    style={{ width: 200, marginRight: 10, marginTop: 4 }}
-                  >
-                    Through:
-                  </label>
-                  <div className="flex-1 flex flex-col gap-2 text-[14px] text-gray-700">
-                    <div className="flex flex-wrap gap-4">
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="throughMode"
-                          checked={
-                            throughAuto && !throughFromComeIn && !throughSelect
-                          }
-                          onChange={() => {
-                            setThroughAuto(true);
-                            setThroughFromComeIn(false);
-                            setThroughSelect(false);
-                          }}
-                        />
-                        <span>Auto</span>
-                      </label>
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="throughMode"
-                          checked={throughFromComeIn}
-                          onChange={() => {
-                            setThroughAuto(false);
-                            setThroughFromComeIn(true);
-                            setThroughSelect(false);
-                          }}
-                        />
-                        <span>From come in</span>
-                      </label>
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="throughMode"
-                          checked={throughSelect}
-                          onChange={() => {
-                            setThroughAuto(false);
-                            setThroughFromComeIn(false);
-                            setThroughSelect(true);
-                          }}
-                        />
-                        <span>Select</span>
-                      </label>
-                    </div>
-                    {throughSelect && (
-                      <div className="w-full mt-2">
-                        <div className="flex items-center mb-1 text-[13px] text-gray-700 font-medium">
-                          <span className="flex-1">Trunk</span>
-                          <span style={{ width: 80, textAlign: "center" }}>
-                            Order
-                          </span>
-                        </div>
-                        {[0, 1, 2, 3, 4].map((idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-2 mb-1"
-                          >
-                            <div className="flex-1">
-                              <FormControl size="small" fullWidth>
-                                <Select value={""} displayEmpty>
-                                  <MenuItem value="">
-                                    {trunkOptions.length
-                                      ? "Select trunk"
-                                      : "No trunks"}
-                                  </MenuItem>
-                                  {trunkOptions.map((t) => (
-                                    <MenuItem key={t} value={t}>
-                                      {t}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </div>
-                            <div style={{ width: 80 }}>
-                              <FormControl size="small" fullWidth>
-                                <Select value={0}>
-                                  {orderOptions.map((val) => (
-                                    <MenuItem key={val} value={val}>
-                                      {val}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 90,
+                        flexShrink: 0,
+                        marginTop: 4,
+                      }}
+                    >
+                      Through :
+                    </label>
+                    <RadioGroup
+                      value={
+                        throughSelect
+                          ? "select"
+                          : throughFromComeIn
+                            ? "from_in"
+                            : "auto"
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setThroughAuto(val === "auto");
+                        setThroughFromComeIn(val === "from_in");
+                        setThroughSelect(val === "select");
+                      }}
+                      sx={{ display: "flex", flexDirection: "column", gap: 0 }}
+                    >
+                      <FormControlLabel
+                        value="auto"
+                        control={<Radio size="small" sx={{ p: 0.5 }} />}
+                        label={<span style={{ fontSize: 13 }}>Auto</span>}
+                        sx={{ m: 0 }}
+                      />
+                      <FormControlLabel
+                        value="from_in"
+                        control={<Radio size="small" sx={{ p: 0.5 }} />}
+                        label={
+                          <span style={{ fontSize: 13 }}>From come in</span>
+                        }
+                        sx={{ m: 0 }}
+                      />
+                      <FormControlLabel
+                        value="select"
+                        control={<Radio size="small" sx={{ p: 0.5 }} />}
+                        label={<span style={{ fontSize: 13 }}>Select</span>}
+                        sx={{ m: 0 }}
+                      />
+                    </RadioGroup>
                   </div>
                 </div>
               </div>
+
+              {/* Dynamic Select Trunks (Visible only if Through == Select) */}
+              {throughSelect && (
+                <div
+                  style={{
+                    marginTop: 16,
+                    paddingTop: 16,
+                    borderTop: `1px dashed ${C.cardBorder}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 8,
+                      paddingLeft: 102,
+                    }}
+                  >
+                    <div
+                      style={{
+                        flex: 1,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.mutedText,
+                      }}
+                    >
+                      Trunk
+                    </div>
+                    <div
+                      style={{
+                        width: 80,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.mutedText,
+                        textAlign: "center",
+                      }}
+                    >
+                      Order
+                    </div>
+                  </div>
+                  {[0, 1, 2, 3, 4].map((idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div style={{ width: 90 }}></div>{" "}
+                      {/* spacer to align with labels */}
+                      <div style={{ flex: 1 }}>
+                        <FormControl size="small" fullWidth>
+                          <MuiSelect
+                            value=""
+                            displayEmpty
+                            sx={{ fontSize: 13 }}
+                          >
+                            <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                              {trunkOptions.length
+                                ? "Select trunk"
+                                : "No trunks"}
+                            </MenuItem>
+                            {trunkOptions.map((t) => (
+                              <MenuItem key={t} value={t} sx={{ fontSize: 13 }}>
+                                {t}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                      <div style={{ width: 80 }}>
+                        <FormControl size="small" fullWidth>
+                          <MuiSelect value={0} sx={{ fontSize: 13 }}>
+                            {orderOptions.map((val) => (
+                              <MenuItem
+                                key={val}
+                                value={val}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {val}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
 
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
+          <Btn
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
+            variant="default"
+            style={{ padding: "8px 24px", fontSize: 13 }}
           >
-            {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+            {loading.save ? (
+              <CircularProgress
+                size={14}
+                style={{ color: "#fff", marginRight: 8 }}
+              />
+            ) : null}
+            {loading.save
+              ? "Saving..."
+              : editId != null
+                ? "Update Rule"
+                : "Create"}
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
+            variant="outline"
+            style={{ padding: "8px 24px", fontSize: 13 }}
           >
-            Close
-          </Button>
+            Cancel
+          </Btn>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Import Modal ── */}
+      <Dialog
+        open={showImportModal}
+        onClose={() => !importLoading && setShowImportModal(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { p: 0, borderRadius: 2 } }}
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
+          }}
+        >
+          Import Callbacks
+        </DialogTitle>
+        <DialogContent
+          style={{ padding: "24px 16px", backgroundColor: C.pageBg }}
+        >
+          <div
+            style={{
+              textAlign: "center",
+              border: `2px dashed ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 32,
+              cursor: "pointer",
+              background: "#fff",
+            }}
+            onClick={() => importFileRef.current?.click()}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                color: importFile ? "#15803d" : C.mutedText,
+                fontWeight: importFile ? 600 : 400,
+              }}
+            >
+              {importFile ? importFile.name : "Click to choose CSV/JSON file"}
+            </div>
+            <input
+              ref={importFileRef}
+              type="file"
+              accept=".csv,.json"
+              style={{ display: "none" }}
+              onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+            />
+          </div>
+        </DialogContent>
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
+          <Btn
+            onClick={handleImportSubmit}
+            disabled={importLoading || !importFile}
+            variant="default"
+            style={{ padding: "8px 24px" }}
+          >
+            Import
+          </Btn>
+          <Btn
+            onClick={() => {
+              setShowImportModal(false);
+              setImportFile(null);
+            }}
+            disabled={importLoading}
+            variant="outline"
+            style={{ padding: "8px 24px" }}
+          >
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   Button,
@@ -7,6 +7,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Checkbox,
+  TextField,
+  Alert,
 } from "@mui/material";
 import {
   createSpeedDial,
@@ -17,6 +20,145 @@ import {
   importSpeedDialCsv,
 } from "../api/apiService";
 
+// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
+};
+
+// ── Shared UI Components ──────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e2d42",
+      color: "#fff",
+      border: "1px solid #162233",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const FieldRow = ({ label, children, required, align = "center" }) => (
+  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 150,
+        flexShrink: 0,
+        paddingTop: align === "flex-start" ? 8 : 0,
+      }}
+    >
+      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+    </label>
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 16px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SpeedDialPage = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -26,77 +168,31 @@ const SpeedDialPage = () => {
     save: false,
     delete: false,
   });
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [lastUpdated, setLastUpdated] = useState(null);
 
+  // Search & Pagination
+  const itemsPerPage = 20;
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+
+  // Form state
   const [editId, setEditId] = useState(null);
   const [name, setName] = useState("");
   const [speedDialNumber, setSpeedDialNumber] = useState("");
   const [destination, setDestination] = useState("");
 
+  // Import / Export State
   const [showImportModal, setShowImportModal] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState(null);
-  const importFileRef = React.useRef(null);
+  const importFileRef = useRef(null);
 
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
-  const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
-  useEffect(() => {
-    setPage((current) =>
-      Math.min(
-        Math.max(1, current),
-        Math.max(1, Math.ceil(rows.length / itemsPerPage)),
-      ),
-    );
-  }, [rows]);
-
-  const showAlert = (text) => window.alert(text);
-
-  const handleExport = async () => {
-    try {
-      const { blob, filename } = await exportSpeedDialCsv();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      showAlert(e?.message || "Export failed");
-    }
-  };
-
-  const handleImportSubmit = async () => {
-    if (!importFile) { showAlert("Please select a CSV file"); return; }
-    setImportLoading(true);
-    setImportResult(null);
-    try {
-      const csv = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = () => reject(new Error("Failed to read file"));
-        reader.readAsText(importFile);
-      });
-      const res = await importSpeedDialCsv({ csv, dryRun: false });
-      setImportResult(res);
-      if (res?.response) {
-        // Success — refresh list and close if no errors
-        const fresh = await listSpeedDials();
-        setRows(normalizeList(fresh).map(mapFromApi));
-        if (!res.validation_errors?.length && !res.runtime_errors?.length) {
-          setShowImportModal(false);
-          setImportFile(null);
-          setImportResult(null);
-        }
-      }
-      // Validation errors (response: false) are shown in the modal via importResult
-    } catch (e) {
-      showAlert(e?.message || "Import failed");
-    } finally {
-      setImportLoading(false);
-    }
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
   const normalizeList = (raw) => {
@@ -116,13 +212,14 @@ const SpeedDialPage = () => {
     try {
       const res = await listSpeedDials();
       if (!res?.response) {
-        showAlert(res?.message || "Failed to load speed dials.");
+        showMessage("error", res?.message || "Failed to load speed dials.");
         setRows([]);
         return;
       }
       setRows(normalizeList(res).map(mapFromApi));
+      setLastUpdated(new Date());
     } catch (err) {
-      showAlert(err?.message || "Failed to load speed dials.");
+      showMessage("error", err?.message || "Failed to load speed dials.");
       setRows([]);
     } finally {
       setLoading((prev) => ({ ...prev, list: false }));
@@ -133,6 +230,60 @@ const SpeedDialPage = () => {
     fetchSpeedDials();
   }, []);
 
+  // ── Search & Pagination Logic ──
+  const filteredRows = searchQuery.trim()
+    ? rows.filter((r) =>
+        [r.name, r.speedDialNumber, r.destination].some((v) =>
+          String(v || "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+        ),
+      )
+    : rows;
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
+  const pagedRows = filteredRows.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage,
+  );
+
+  useEffect(() => {
+    setPage((current) =>
+      Math.min(
+        Math.max(1, current),
+        Math.max(1, Math.ceil(filteredRows.length / itemsPerPage)),
+      ),
+    );
+  }, [filteredRows.length]);
+
+  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
+  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
+
+  // ── Checkbox Logic ──
+  const pageIndices = pagedRows.map(
+    (_, idx) => (page - 1) * itemsPerPage + idx,
+  );
+  const allPageSelected =
+    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
+  const somePageSelected =
+    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
+
+  const handleToggleRow = (idx) => {
+    setSelected((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+    );
+  };
+
+  const handleToggleAll = () => {
+    if (!pageIndices.length) return;
+    setSelected((prev) =>
+      allPageSelected
+        ? prev.filter((i) => !pageIndices.includes(i))
+        : Array.from(new Set([...prev, ...pageIndices])),
+    );
+  };
+
+  // ── Form Handlers ──
   const resetForm = () => {
     setEditId(null);
     setName("");
@@ -159,37 +310,40 @@ const SpeedDialPage = () => {
     resetForm();
   };
 
-  const handleCheckAll = () => setSelected(rows.map((_, i) => i));
-  const handleUncheckAll = () => setSelected([]);
-  const handleSelectRow = (idx) =>
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-    );
-
   const handleDelete = async () => {
     if (selected.length === 0) {
-      showAlert("Please select at least one row to delete.");
+      showMessage("error", "Please select at least one row to delete.");
       return;
     }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selected.length} records?`,
+      )
+    )
+      return;
+
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       const idsToDelete = selected
-        .map((idx) => rows[idx]?.id)
+        .map((idx) => filteredRows[idx]?.id)
         .filter((id) => id != null);
       const results = await Promise.all(
         idsToDelete.map((id) => deleteSpeedDial(id)),
       );
       const failed = results.find((r) => !r?.response);
-      if (failed)
-        showAlert(
+      if (failed) {
+        showMessage(
+          "error",
           failed?.message || "Failed to delete one or more speed dials.",
         );
-      else showAlert("Speed dial(s) deleted successfully.");
+      } else {
+        showMessage("success", "Speed dial(s) deleted successfully.");
+      }
       await fetchSpeedDials();
       setSelected([]);
       setPage(1);
     } catch (err) {
-      showAlert(err?.message || "Failed to delete speed dial(s).");
+      showMessage("error", err?.message || "Failed to delete speed dial(s).");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -200,18 +354,10 @@ const SpeedDialPage = () => {
     const trimmedSpeed = speedDialNumber.trim();
     const trimmedDest = destination.trim();
 
-    if (!trimmedName) {
-      showAlert("Name is required.");
-      return;
-    }
-    if (!trimmedSpeed) {
-      showAlert("Speed Dial Number is required.");
-      return;
-    }
-    if (!trimmedDest) {
-      showAlert("Destination is required.");
-      return;
-    }
+    if (!trimmedName) return showMessage("error", "Name is required.");
+    if (!trimmedSpeed)
+      return showMessage("error", "Speed Dial Number is required.");
+    if (!trimmedDest) return showMessage("error", "Destination is required.");
 
     const apiPayload = {
       name: trimmedName,
@@ -225,11 +371,13 @@ const SpeedDialPage = () => {
         editId != null
           ? await updateSpeedDial(editId, apiPayload)
           : await createSpeedDial(apiPayload);
+
       if (!res?.response) {
-        showAlert(res?.message || "Failed to save speed dial.");
+        showMessage("error", res?.message || "Failed to save speed dial.");
         return;
       }
-      showAlert(
+      showMessage(
+        "success",
         editId != null
           ? "Speed dial updated successfully."
           : "Speed dial created successfully.",
@@ -237,469 +385,861 @@ const SpeedDialPage = () => {
       await fetchSpeedDials();
       handleCloseModal();
     } catch (err) {
-      showAlert(err?.message || "Failed to save speed dial.");
+      showMessage("error", err?.message || "Failed to save speed dial.");
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
   };
 
-  return (
-    <div className="w-full max-w-full mx-auto p-2">
+  // ── Import / Export Logic ──
+  const handleExport = async () => {
+    try {
+      const { blob, filename } = await exportSpeedDialCsv();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      showMessage("error", e?.message || "Export failed");
+    }
+  };
 
-      {/* Import Modal */}
-      <Dialog
-        open={showImportModal}
-        onClose={() => { if (!importLoading) { setShowImportModal(false); setImportFile(null); setImportResult(null); } }}
-        maxWidth={false}
-        PaperProps={{ sx: { width: 520, maxWidth: "96vw", mx: "auto", p: 0 } }}
-      >
-        <DialogTitle
-          className="h-10 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
-          style={{ background: "linear-gradient(#3E5475 100%)", boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)" }}
+  const handleImportSubmit = async () => {
+    if (!importFile) {
+      showMessage("error", "Please select a CSV file");
+      return;
+    }
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      const csv = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsText(importFile);
+      });
+      const res = await importSpeedDialCsv({ csv, dryRun: false });
+      setImportResult(res);
+      if (res?.response) {
+        const fresh = await listSpeedDials();
+        setRows(normalizeList(fresh).map(mapFromApi));
+        if (!res.validation_errors?.length && !res.runtime_errors?.length) {
+          setShowImportModal(false);
+          setImportFile(null);
+          setImportResult(null);
+          showMessage("success", "Speed Dials imported successfully.");
+        }
+      }
+    } catch (e) {
+      showMessage("error", e?.message || "Import failed");
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
+    >
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Error / Success Banner */}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* Breadcrumb + Last Updated */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
         >
-          Import Speed Dial
-        </DialogTitle>
-        <DialogContent style={{ backgroundColor: "#f8fafc", padding: "20px 24px 12px" }}>
-          <div className="flex flex-col gap-4 pt-1">
-            {/* File picker */}
-            <div
-              className="border-2 border-dashed border-gray-400 rounded-lg p-5 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
-              onClick={() => importFileRef.current?.click()}
-            >
-              <div className="text-gray-500 text-[13px]">
-                {importFile
-                  ? <span className="text-green-700 font-semibold">{importFile.name}</span>
-                  : <span>Click to choose CSV file <span className="text-gray-400">(.csv)</span></span>}
-              </div>
-              <input ref={importFileRef} type="file" accept=".csv" className="hidden"
-                onChange={(e) => { setImportFile(e.target.files?.[0] || null); setImportResult(null); }} />
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Call Features &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+              Speed Dial
+            </span>
+          </div>
+        </div>
+
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
+              >
+                Page {page} · {filteredRows.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
             </div>
 
-            {/* Result summary */}
-            {importResult && (
-              <div style={{ background: importResult.response ? "#f0fdf4" : "#fef2f2", border: `1px solid ${importResult.response ? "#86efac" : "#fca5a5"}`, borderRadius: 6, padding: "10px 14px" }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: importResult.response ? "#15803d" : "#b91c1c", marginBottom: 4 }}>
-                  {importResult.response ? "Import complete" : importResult.error || "Validation failed — fix errors and retry"}
-                </p>
-                {/* Stats row */}
-                <div style={{ fontSize: 12, color: "#374151", display: "flex", gap: 16, flexWrap: "wrap" }}>
-                  {importResult.total        != null && <span>Total: <b>{importResult.total}</b></span>}
-                  {importResult.created_count != null && <span>Created: <b style={{ color: "#16a34a" }}>{importResult.created_count}</b></span>}
-                  {importResult.invalid_rows  != null && importResult.invalid_rows > 0 && <span>Invalid rows: <b style={{ color: "#d97706" }}>{importResult.invalid_rows}</b></span>}
-                  {importResult.would_create  != null && <span>Would create: <b style={{ color: "#16a34a" }}>{importResult.would_create}</b></span>}
-                </div>
-                {/* Validation error table */}
-                {importResult.validation_errors?.length > 0 && (
-                  <div style={{ marginTop: 8, maxHeight: 180, overflowY: "auto" }}>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: "#b91c1c", marginBottom: 4 }}>
-                      Validation Errors ({importResult.invalid_rows ?? importResult.validation_errors.length} row{importResult.validation_errors.length !== 1 ? "s" : ""})
-                    </p>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-                      <thead>
-                        <tr style={{ background: "#fee2e2" }}>
-                          {["Row", "Speed Number", "Field", "Error"].map((h) => (
-                            <th key={h} style={{ padding: "3px 6px", textAlign: "left", borderBottom: "1px solid #fca5a5", color: "#7f1d1d", fontWeight: 600 }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {importResult.validation_errors.flatMap((ve, vi) =>
-                          (ve.errors || []).map((err, ei) => (
-                            <tr key={`${vi}-${ei}`} style={{ background: vi % 2 === 0 ? "#fff" : "#fff7f7" }}>
-                              <td style={{ padding: "2px 6px", borderBottom: "1px solid #fee2e2" }}>{ve.row}</td>
-                              <td style={{ padding: "2px 6px", borderBottom: "1px solid #fee2e2", fontFamily: "monospace" }}>{ve.speed_number ?? "—"}</td>
-                              <td style={{ padding: "2px 6px", borderBottom: "1px solid #fee2e2", fontFamily: "monospace" }}>{err.field}</td>
-                              <td style={{ padding: "2px 6px", borderBottom: "1px solid #fee2e2", color: "#b91c1c" }}>{err.error}</td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                onClick={() => {
+                  setImportFile(null);
+                  setShowImportModal(true);
+                  setImportResult(null);
+                }}
+                variant="outline"
+              >
+                ⬇ Import
+              </Btn>
+              <Btn onClick={handleExport} variant="outline">
+                ⬆ Export
+              </Btn>
+
+              {/* <Btn
+                onClick={fetchSpeedDials}
+                disabled={loading.list}
+                variant="default"
+              >
+                {loading.list ? (
+                  <CircularProgress size={11} style={{ color: "#fff" }} />
+                ) : (
+                  "Refresh"
                 )}
+              </Btn> */}
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.list || selected.length === 0
+                }
+                variant="danger"
+              >
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.list}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            {loading.list ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
               </div>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  tableLayout: "auto",
+                  minWidth: 700,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        sx={{
+                          padding: "1px",
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                        }}
+                      />
+                    </TH>
+                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Name
+                    </TH>
+                    <TH>Speed Dial Number</TH>
+                    <TH>Destination</TH>
+                    <TH style={{ width: 60 }}>Modify</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedRows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        style={{
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
+                        }}
+                      >
+                        {searchQuery
+                          ? `No results for "${searchQuery}"`
+                          : "No speed dials found. Click '+ Add New' to create one."}
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedRows.map((row, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const rowBgColor = isSelected
+                        ? "#f0f9ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+
+                      return (
+                        <tr
+                          key={row.id || realIdx}
+                          style={{
+                            background: rowBgColor,
+                            borderBottom: "0.5px solid #9ca3af",
+                            transition: "background 0.1s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f0f9ff";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBgColor;
+                          }}
+                        >
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 0",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleToggleRow(realIdx)}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 4px",
+                              fontSize: 11,
+                              color: C.mutedText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {realIdx + 1}
+                          </td>
+                          <td
+                            style={{
+                              padding: "7px 16px",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.name}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              fontSize: 12,
+                              fontFamily: "monospace",
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <span
+                              style={{
+                                background: "#f1f5f9",
+                                padding: "2px 8px",
+                                borderRadius: 10,
+                                fontSize: 10,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {row.speedDialNumber}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              fontSize: 12,
+                              color: C.labelText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.destination}
+                          </td>
+                          <td
+                            style={{ textAlign: "center", padding: "4px 8px" }}
+                          >
+                            <Btn
+                              onClick={() => handleOpenEditModal(row)}
+                              variant="outline"
+                              style={{
+                                fontSize: 10,
+                                padding: "3px 10px",
+                                margin: "0 auto",
+                              }}
+                            >
+                              Edit
+                            </Btn>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             )}
           </div>
+
+          {/* Footer Pagination */}
+          {!loading.list && filteredRows.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.list || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.list || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Add/Edit Modal ── */}
+      <Dialog
+        open={showModal}
+        onClose={loading.save ? null : handleCloseModal}
+        maxWidth={false}
+        PaperProps={{ sx: { width: 700, maxWidth: "95vw", borderRadius: 2 } }}
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
+          }}
+        >
+          {editId != null ? "Edit Speed Dial" : "Add Speed Dial"}
+        </DialogTitle>
+
+        <DialogContent
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: "20px 24px 16px",
+              }}
+            >
+              <SectionHeading title="General Settings" />
+
+              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px 32px",
+                }}
+              >
+                {/* ── LEFT COLUMN ── */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                >
+                  <FieldRow label="Name" required>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
+                      }}
+                    />
+                  </FieldRow>
+
+                  <FieldRow label="Speed Dial Number" required>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={speedDialNumber}
+                      onChange={(e) => setSpeedDialNumber(e.target.value)}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
+                      }}
+                    />
+                  </FieldRow>
+                </div>
+
+                {/* ── RIGHT COLUMN ── */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                >
+                  <FieldRow label="Destination" required>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={destination}
+                      onChange={(e) => setDestination(e.target.value)}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
+                      }}
+                    />
+                  </FieldRow>
+                </div>
+              </div>
+            </div>
+          </div>
         </DialogContent>
-        <DialogActions style={{ backgroundColor: "#f8fafc", justifyContent: "center", gap: 16, padding: "12px 24px 16px" }}>
-          <Button variant="contained" onClick={handleImportSubmit}
-            disabled={importLoading || !importFile}
-            startIcon={importLoading && <CircularProgress size={16} color="inherit" />}
-            sx={{ background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)", color: "#fff !important", fontWeight: 600, textTransform: "none", minWidth: 100,
-              "&:hover": { background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)" },
-              "&:disabled": { background: "#94a3b8", color: "#fff" } }}
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
+          <Button
+            onClick={handleSave}
+            disabled={loading.save}
+            variant="contained"
+            sx={{
+              background: "#1e2d42",
+              color: "#fff",
+              fontWeight: 600,
+              fontSize: 13,
+              textTransform: "none",
+              padding: "6px 24px",
+              minWidth: 120,
+              "&:hover": { background: "#0f172a" },
+            }}
           >
-            {importLoading ? "Importing..." : "Import"}
+            {loading.save ? (
+              <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
+            ) : null}
+            {loading.save
+              ? "Saving..."
+              : editId != null
+                ? "Update Speed Dial"
+                : "Create Speed Dial"}
           </Button>
-          <Button variant="contained"
-            onClick={() => { setShowImportModal(false); setImportFile(null); setImportResult(null); }}
-            disabled={importLoading}
-            sx={{ background: "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)", color: "#3E5475 !important", fontWeight: 600, textTransform: "none", minWidth: 100,
-              "&:hover": { background: "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)" },
-              "&:disabled": { background: "#f1f5f9", color: "#94a3b8" } }}
+          <Button
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            variant="outlined"
+            sx={{
+              color: "#1e293b",
+              borderColor: "#9ca3af",
+              fontWeight: 600,
+              fontSize: 13,
+              textTransform: "none",
+              padding: "6px 24px",
+              minWidth: 100,
+              "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
+            }}
           >
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
 
-      <div className="w-full max-w-full mx-auto">
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-between px-3 font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          <div className="flex-1" />
-          <span>Speed Dial</span>
-          <div className="flex-1 flex justify-end gap-2">
-            <button
-              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-              style={{ background: "linear-gradient(to bottom, #FFFFFF 0%, #DCE6F2 100%)", color: "#1565c0", border: "1px solid #93c5fd", boxShadow: "0 2px 4px rgba(0,0,0,0.15)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(to bottom, #FFFFFF 0%, #DCE6F2 100%)")}
-              onClick={() => { setShowImportModal(true); setImportFile(null); setImportResult(null); }}
-            >
-              Import
-            </button>
-            <button
-              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-              style={{ background: "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)", color: "#1565c0", border: "1px solid #93c5fd", boxShadow: "0 2px 4px rgba(0,0,0,0.15)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")}
-              onClick={handleExport}
-            >
-              Export
-            </button>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-[700px] bg-[#f8fafd] border-2 border-t-0 border-gray-400 rounded-b-lg shadow-sm">
-            <thead>
-              <tr>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
-                  #
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Name
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Speed Dial Number
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Destination
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="border border-gray-300 px-2 py-4 text-center text-gray-500"
-                  >
-                    No speed dials yet. Click &quot;Add New&quot; to create one.
-                  </td>
-                </tr>
-              ) : (
-                pagedRows.map((row, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
-                  return (
-                    <tr key={row.id}>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(realIdx)}
-                          onChange={() => handleSelectRow(realIdx)}
-                          disabled={loading.delete}
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {realIdx + 1}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">
-                        {row.name}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.speedDialNumber}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.destination}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
-                          titleAccess="Edit"
-                          onClick={() => handleOpenEditModal(row)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleCheckAll}
-              disabled={loading.delete}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.delete ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${
-                loading.delete ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleDelete}
-              disabled={loading.delete}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                loading.save ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleOpenAddModal}
-              disabled={loading.save}
-            >
-              Add New
-            </button>
-          </div>
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-            <span>{rows.length} items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
-            >
-              First
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => setPage(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
-          </div>
-        )}
-      </div>
-
+      {/* ── Import Modal ── */}
       <Dialog
-        open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
-        maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 760, maxWidth: "98vw", mx: "auto", p: 0 },
+        open={showImportModal}
+        onClose={() => {
+          if (!importLoading) {
+            setShowImportModal(false);
+            setImportFile(null);
+            setImportResult(null);
+          }
         }}
+        maxWidth={false}
+        PaperProps={{ sx: { width: 560, maxWidth: "96vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
           }}
         >
-          {editId != null ? "Edit Speed Dial" : "Add Speed Dial"}
+          Import Speed Dial
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
+          style={{ padding: "24px 16px", backgroundColor: C.pageBg }}
+        >
+          <div
+            style={{
+              textAlign: "center",
+              border: `2px dashed ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 32,
+              cursor: "pointer",
+              background: "#fff",
+            }}
+            onClick={() => importFileRef.current?.click()}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                color: importFile ? "#15803d" : C.mutedText,
+                fontWeight: importFile ? 600 : 400,
+              }}
+            >
+              {importFile ? importFile.name : "Click to choose CSV file"}
+            </div>
+            <input
+              ref={importFileRef}
+              type="file"
+              accept=".csv"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                setImportFile(e.target.files?.[0] || null);
+                setImportResult(null);
+              }}
+            />
+          </div>
+
+          {importResult && (
+            <div
+              style={{
+                background: importResult.response ? "#f0fdf4" : "#fef2f2",
+                border: `1px solid ${importResult.response ? "#86efac" : "#fca5a5"}`,
+                borderRadius: 6,
+                padding: "10px 14px",
+                marginTop: 16,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: importResult.response ? "#15803d" : "#b91c1c",
+                  marginBottom: 4,
+                }}
+              >
+                {importResult.response
+                  ? "Import complete"
+                  : importResult.error ||
+                    "Validation failed — fix errors and retry"}
+              </p>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#374151",
+                  display: "flex",
+                  gap: 16,
+                  flexWrap: "wrap",
+                }}
+              >
+                {importResult.total != null && (
+                  <span>
+                    Total: <b>{importResult.total}</b>
+                  </span>
+                )}
+                {importResult.created_count != null && (
+                  <span>
+                    Created:{" "}
+                    <b style={{ color: "#16a34a" }}>
+                      {importResult.created_count}
+                    </b>
+                  </span>
+                )}
+                {importResult.invalid_rows != null &&
+                  importResult.invalid_rows > 0 && (
+                    <span>
+                      Invalid rows:{" "}
+                      <b style={{ color: "#d97706" }}>
+                        {importResult.invalid_rows}
+                      </b>
+                    </span>
+                  )}
+                {importResult.would_create != null && (
+                  <span>
+                    Would create:{" "}
+                    <b style={{ color: "#16a34a" }}>
+                      {importResult.would_create}
+                    </b>
+                  </span>
+                )}
+              </div>
+              {importResult.validation_errors?.length > 0 && (
+                <div
+                  style={{ marginTop: 8, maxHeight: 180, overflowY: "auto" }}
+                >
+                  <p
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#b91c1c",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Validation Errors (
+                    {importResult.invalid_rows ??
+                      importResult.validation_errors.length}{" "}
+                    row{importResult.validation_errors.length !== 1 ? "s" : ""})
+                  </p>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      fontSize: 11,
+                    }}
+                  >
+                    <thead>
+                      <tr style={{ background: "#fee2e2" }}>
+                        {["Row", "Speed Number", "Field", "Error"].map((h) => (
+                          <th
+                            key={h}
+                            style={{
+                              padding: "3px 6px",
+                              textAlign: "left",
+                              borderBottom: "1px solid #fca5a5",
+                              color: "#7f1d1d",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importResult.validation_errors.flatMap((ve, vi) =>
+                        (ve.errors || []).map((err, ei) => (
+                          <tr
+                            key={`${vi}-${ei}`}
+                            style={{
+                              background: vi % 2 === 0 ? "#fff" : "#fff7f7",
+                            }}
+                          >
+                            <td
+                              style={{
+                                padding: "2px 6px",
+                                borderBottom: "1px solid #fee2e2",
+                              }}
+                            >
+                              {ve.row}
+                            </td>
+                            <td
+                              style={{
+                                padding: "2px 6px",
+                                borderBottom: "1px solid #fee2e2",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {ve.speed_number ?? "—"}
+                            </td>
+                            <td
+                              style={{
+                                padding: "2px 6px",
+                                borderBottom: "1px solid #fee2e2",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {err.field}
+                            </td>
+                            <td
+                              style={{
+                                padding: "2px 6px",
+                                borderBottom: "1px solid #fee2e2",
+                                color: "#b91c1c",
+                              }}
+                            >
+                              {err.error}
+                            </td>
+                          </tr>
+                        )),
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions
           style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
           }}
         >
-          <div className="flex flex-col gap-3 w-full pb-2">
-            <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
-              <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
-                Speed Dial
-              </div>
-              <div className="p-4 flex flex-col gap-4">
-                <div className="grid grid-cols-1 gap-y-3">
-                  <div
-                    className="flex items-center gap-2"
-                    style={{ minHeight: 32 }}
-                  >
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                      style={{ width: 190, marginRight: 10 }}
-                    >
-                      Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </div>
-
-                  <div
-                    className="flex items-center gap-2"
-                    style={{ minHeight: 32 }}
-                  >
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                      style={{ width: 190, marginRight: 10 }}
-                    >
-                      Speed Dial Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
-                      value={speedDialNumber}
-                      inputMode="numeric"
-                      onChange={(e) => setSpeedDialNumber(e.target.value.replace(/\D/g, ""))}
-                    />
-                  </div>
-
-                  <div
-                    className="flex items-center gap-2"
-                    style={{ minHeight: 32 }}
-                  >
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                      style={{ width: 190, marginRight: 10 }}
-                    >
-                      Destination <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
-                      value={destination}
-                      inputMode="tel"
-                      onChange={(e) => setDestination(e.target.value.replace(/[^\d+]/g, ""))}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
           <Button
+            onClick={handleImportSubmit}
+            disabled={importLoading || !importFile}
             variant="contained"
             sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              background: "#1e2d42",
               color: "#fff",
               fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              fontSize: 13,
               textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
+              padding: "6px 24px",
+              minWidth: 120,
+              "&:hover": { background: "#0f172a" },
+              "&:disabled": { background: "#cbd5e1", color: "#64748b" },
             }}
-            onClick={handleSave}
-            disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
           >
-            {loading.save ? "Saving..." : "Save"}
+            {importLoading ? (
+              <CircularProgress size={14} sx={{ color: "#64748b", mr: 1 }} />
+            ) : null}
+            {importLoading ? "Importing..." : "Import"}
           </Button>
           <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
+            onClick={() => {
+              setShowImportModal(false);
+              setImportFile(null);
+              setImportResult(null);
             }}
-            onClick={handleCloseModal}
-            disabled={loading.save}
+            disabled={importLoading}
+            variant="outlined"
+            sx={{
+              color: "#1e293b",
+              borderColor: "#9ca3af",
+              fontWeight: 600,
+              fontSize: 13,
+              textTransform: "none",
+              padding: "6px 24px",
+              minWidth: 100,
+              "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
+            }}
           >
-            Close
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>

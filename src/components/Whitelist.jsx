@@ -11,7 +11,6 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { FaPencilAlt } from "react-icons/fa";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import SearchIcon from "@mui/icons-material/Search";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -24,32 +23,112 @@ import {
   deleteAllNumberFilters,
 } from "../api/apiService";
 
-// Reusable styles
-const styles = {
-  button: {
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    fontWeight: 600,
-    fontSize: "14px",
-    borderRadius: "6px",
-    minWidth: "110px",
-    height: "32px",
-    textTransform: "none",
-    padding: "4px 12px",
-    boxShadow: "0 2px 8px #3E5475",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      boxShadow: "0 2px 8px #3E5475",
-    },
-  },
+// ── Color Palette ─────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
 };
+
+// ── Shared: Action Button ─────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ── Shared: Table Header ──────────────────────────────────────────────────────
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 
 const Whitelist = () => {
   const [callerRows, setCallerRows] = useState([]);
   const [calleeRows, setCalleeRows] = useState([]);
   const [callerSearch, setCallerSearch] = useState("");
   const [calleeSearch, setCalleeSearch] = useState("");
+  const [callerSearchFocused, setCallerSearchFocused] = useState(false);
+  const [calleeSearchFocused, setCalleeSearchFocused] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("caller");
   const [modalData, setModalData] = useState({
@@ -70,7 +149,6 @@ const Whitelist = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
 
-  // Fetch data on component mount
   useEffect(() => {
     fetchWhitelistData();
   }, []);
@@ -86,9 +164,7 @@ const Whitelist = () => {
     setIsInitialLoading(true);
     try {
       const response = await fetchAllNumberFilters("whitelist");
-
       if (response.success && response.data) {
-        // Separate caller and callee data based on subtype
         const callerData = response.data
           .filter((item) => item.type === "callerid")
           .map((item) => ({
@@ -97,13 +173,10 @@ const Whitelist = () => {
             callerId: item.number,
           }))
           .sort((a, b) => {
-            // First sort by Group No. (ascending)
             const groupDiff = parseInt(a.groupNo) - parseInt(b.groupNo);
             if (groupDiff !== 0) return groupDiff;
-            // Then sort by No. in Group (ascending)
             return parseInt(a.noInGroup) - parseInt(b.noInGroup);
           });
-
         const calleeData = response.data
           .filter((item) => item.type === "calleeid")
           .map((item) => ({
@@ -112,13 +185,10 @@ const Whitelist = () => {
             calleeId: item.number,
           }))
           .sort((a, b) => {
-            // First sort by Group No. (ascending)
             const groupDiff = parseInt(a.groupNo) - parseInt(b.groupNo);
             if (groupDiff !== 0) return groupDiff;
-            // Then sort by No. in Group (ascending)
             return parseInt(a.noInGroup) - parseInt(b.noInGroup);
           });
-
         setCallerRows(callerData);
         setCalleeRows(calleeData);
       }
@@ -137,32 +207,20 @@ const Whitelist = () => {
     const entriesInGroup = existingRows.filter(
       (row) => row.groupNo === groupNo,
     );
-
-    if (entriesInGroup.length === 0) {
-      return "0"; // First entry in group
-    }
-
-    // Get all existing "No. in Group" values for this group
+    if (entriesInGroup.length === 0) return "0";
     const existingNos = entriesInGroup
       .map((row) => parseInt(row.noInGroup))
       .sort((a, b) => a - b);
-
-    // Find the first gap in the sequence starting from 0
     for (let i = 0; i <= Math.max(...existingNos) + 1; i++) {
-      if (!existingNos.includes(i)) {
-        return i.toString();
-      }
+      if (!existingNos.includes(i)) return i.toString();
     }
-
-    // If no gaps, return the next number after the highest
     return (Math.max(...existingNos) + 1).toString();
   };
 
   const handleAddNew = (type) => {
     setModalType(type);
-    // Calculate the next "No. in Group" value based on existing entries in the selected group
     const existingRows = type === "caller" ? callerRows : calleeRows;
-    const selectedGroup = "0"; // Default group
+    const selectedGroup = "0";
     const nextNoInGroup = getNextAvailableNoInGroup(
       existingRows,
       selectedGroup,
@@ -201,13 +259,10 @@ const Whitelist = () => {
   };
 
   const handleSave = async () => {
-    // Validate form data
     if (!modalData.idValue.trim()) {
       displayToast("Please enter a valid ID value.", "error");
       return;
     }
-
-    // Check for duplicate ID (skip the current record in edit mode)
     const existingRows = modalType === "caller" ? callerRows : calleeRows;
     const trimmedId = modalData.idValue.trim();
     const isDuplicate = existingRows.some((row) => {
@@ -216,13 +271,11 @@ const Whitelist = () => {
         isEditMode &&
         rowId === originalIdValue &&
         String(row.groupNo) === String(originalGroupNo);
-      if (sameRecord) return false; // ignore the one we're editing
-      // Only consider duplicates within the target group
+      if (sameRecord) return false;
       return (
         rowId === trimmedId && String(row.groupNo) === String(modalData.groupNo)
       );
     });
-
     if (!isEditMode && isDuplicate) {
       displayToast(
         `${modalType === "caller" ? "Caller" : "Callee"} ID "${trimmedId}" already exists. Please use a different ID.`,
@@ -230,27 +283,19 @@ const Whitelist = () => {
       );
       return;
     }
-
-    // If editing and group not changed, no-op
     if (isEditMode && String(modalData.groupNo) === String(originalGroupNo)) {
       setShowModal(false);
       displayToast("No changes to save.", "info");
       return;
     }
-
     setIsLoading(true);
-
     try {
-      // In edit mode, create first in the new group. On success, delete the old record.
       if (modalType === "caller") {
-        const apiData = {
+        await saveCallerWhitelist({
           groupNo: modalData.groupNo,
           noInGroup: modalData.noInGroup,
           callerId: modalData.idValue,
-        };
-
-        await saveCallerWhitelist(apiData);
-
+        });
         displayToast(
           isEditMode
             ? "Caller ID updated successfully!"
@@ -258,14 +303,11 @@ const Whitelist = () => {
           "success",
         );
       } else {
-        const apiData = {
+        await saveCalleeWhitelist({
           groupNo: modalData.groupNo,
           noInGroup: modalData.noInGroup,
           calleeId: modalData.idValue,
-        };
-
-        await saveCalleeWhitelist(apiData);
-
+        });
         displayToast(
           isEditMode
             ? "Callee ID updated successfully!"
@@ -273,8 +315,6 @@ const Whitelist = () => {
           "success",
         );
       }
-
-      // If editing, verify new record exists in the target group before deleting the old one
       if (isEditMode) {
         const subtype = modalType === "caller" ? "callerid" : "calleeid";
         try {
@@ -297,28 +337,22 @@ const Whitelist = () => {
               subtype,
               originalGroupNo,
             );
-          } else {
-            console.warn(
-              "Skip delete: new record not confirmed in target group",
-            );
           }
         } catch (e) {
           console.warn("Verification or delete failed after update:", e);
         }
       }
-
       setShowModal(false);
       setIsEditMode(false);
-
-      // Refresh data after successful save
       await fetchWhitelistData();
     } catch (error) {
       console.error("Error saving whitelist:", error);
-      const errorMessage =
+      displayToast(
         error.response?.data?.message ||
-        error.message ||
-        "Failed to save whitelist. Please try again.";
-      displayToast(errorMessage, "error");
+          error.message ||
+          "Failed to save whitelist. Please try again.",
+        "error",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -329,17 +363,13 @@ const Whitelist = () => {
       displayToast("Please enter a caller ID to search", "error");
       return;
     }
-
     setIsSearching(true);
-
     try {
       const response = await fetchNumberFilters(
         "whitelist",
         callerSearch.trim(),
       );
-
       if (response && response.success && response.data) {
-        // Get caller data
         const callerData = response.data
           .filter((item) => item.type === "callerid")
           .map((item) => ({
@@ -348,41 +378,19 @@ const Whitelist = () => {
             callerId: item.number,
           }))
           .sort((a, b) => {
-            // First sort by Group No. (ascending)
-            const groupDiff = parseInt(a.groupNo) - parseInt(b.groupNo);
-            if (groupDiff !== 0) return groupDiff;
-            // Then sort by No. in Group (ascending)
-            return parseInt(a.noInGroup) - parseInt(b.noInGroup);
+            const g = parseInt(a.groupNo) - parseInt(b.groupNo);
+            return g !== 0 ? g : parseInt(a.noInGroup) - parseInt(b.noInGroup);
           });
-
         setCallerRows(callerData);
-
-        if (callerData.length === 0) {
+        if (callerData.length === 0)
           displayToast("No caller IDs found matching your search", "info");
-        }
       } else {
         setCallerRows([]);
         displayToast("No data found", "info");
       }
     } catch (error) {
       console.error("Error searching caller data:", error);
-
-      if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
-        displayToast("Search request timed out. Please try again.", "error");
-      } else if (error.response?.status === 404) {
-        displayToast(
-          "Search endpoint not found. Please check the API.",
-          "error",
-        );
-      } else if (error.response?.status >= 500) {
-        displayToast("Server error. Please try again later.", "error");
-      } else {
-        displayToast(
-          "Failed to search caller data. Please try again.",
-          "error",
-        );
-      }
-
+      displayToast("Failed to search caller data. Please try again.", "error");
       setCallerRows([]);
     } finally {
       setIsSearching(false);
@@ -394,17 +402,13 @@ const Whitelist = () => {
       displayToast("Please enter a callee ID to search", "error");
       return;
     }
-
     setIsSearching(true);
-
     try {
       const response = await fetchNumberFilters(
         "whitelist",
         calleeSearch.trim(),
       );
-
       if (response && response.success && response.data) {
-        // Get callee data
         const calleeData = response.data
           .filter((item) => item.type === "calleeid")
           .map((item) => ({
@@ -413,41 +417,19 @@ const Whitelist = () => {
             calleeId: item.number,
           }))
           .sort((a, b) => {
-            // First sort by Group No. (ascending)
-            const groupDiff = parseInt(a.groupNo) - parseInt(b.groupNo);
-            if (groupDiff !== 0) return groupDiff;
-            // Then sort by No. in Group (ascending)
-            return parseInt(a.noInGroup) - parseInt(b.noInGroup);
+            const g = parseInt(a.groupNo) - parseInt(b.groupNo);
+            return g !== 0 ? g : parseInt(a.noInGroup) - parseInt(b.noInGroup);
           });
-
         setCalleeRows(calleeData);
-
-        if (calleeData.length === 0) {
+        if (calleeData.length === 0)
           displayToast("No callee IDs found matching your search", "info");
-        }
       } else {
         setCalleeRows([]);
         displayToast("No data found", "info");
       }
     } catch (error) {
       console.error("Error searching callee data:", error);
-
-      if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
-        displayToast("Search request timed out. Please try again.", "error");
-      } else if (error.response?.status === 404) {
-        displayToast(
-          "Search endpoint not found. Please check the API.",
-          "error",
-        );
-      } else if (error.response?.status >= 500) {
-        displayToast("Server error. Please try again later.", "error");
-      } else {
-        displayToast(
-          "Failed to search callee data. Please try again.",
-          "error",
-        );
-      }
-
+      displayToast("Failed to search callee data. Please try again.", "error");
       setCalleeRows([]);
     } finally {
       setIsSearching(false);
@@ -465,49 +447,38 @@ const Whitelist = () => {
 
   const handleCallerDelete = async () => {
     if (callerChecked.length === 0) return;
-
-    // Show browser confirmation dialog
     if (
       !window.confirm(
         `Are you sure you want to delete ${callerChecked.length} selected caller ID(s)?`,
       )
-    ) {
+    )
       return;
-    }
-
     setIsDeleting(true);
-
     try {
-      // Delete each selected item in a loop
       for (const idx of callerChecked) {
         const item = callerRows[idx];
-
         const response = await deleteNumberFilter(
           "whitelist",
           item.callerId,
           "callerid",
           item.groupNo,
         );
-        if (!response.success) {
+        if (!response.success)
           throw new Error(`Failed to delete caller ID: ${item.callerId}`);
-        }
       }
-
       displayToast(
         `Successfully deleted ${callerChecked.length} caller ID(s)!`,
         "success",
       );
       setCallerChecked([]);
-
-      // Refresh data after successful deletion
       await fetchWhitelistData();
     } catch (error) {
-      console.error("Error deleting caller IDs:", error);
-      const errorMessage =
+      displayToast(
         error.response?.data?.message ||
-        error.message ||
-        "Failed to delete caller IDs. Please try again.";
-      displayToast(errorMessage, "error");
+          error.message ||
+          "Failed to delete caller IDs. Please try again.",
+        "error",
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -515,37 +486,27 @@ const Whitelist = () => {
 
   const handleCallerClear = async () => {
     if (callerRows.length === 0) return;
-
-    // Show browser confirmation dialog
     if (
       !window.confirm(
         `Are you sure you want to clear all ${callerRows.length} caller IDs?`,
       )
-    ) {
+    )
       return;
-    }
-
     setIsDeleting(true);
-
     try {
       const response = await deleteAllNumberFilters("whitelist", "callerid");
-
       if (response.success) {
         displayToast(`Successfully cleared all caller IDs!`, "success");
         setCallerChecked([]);
-
-        // Refresh data after successful deletion
         await fetchWhitelistData();
-      } else {
-        throw new Error("Failed to clear all caller IDs");
-      }
+      } else throw new Error("Failed to clear all caller IDs");
     } catch (error) {
-      console.error("Error clearing caller IDs:", error);
-      const errorMessage =
+      displayToast(
         error.response?.data?.message ||
-        error.message ||
-        "Failed to clear caller IDs. Please try again.";
-      displayToast(errorMessage, "error");
+          error.message ||
+          "Failed to clear caller IDs. Please try again.",
+        "error",
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -553,49 +514,38 @@ const Whitelist = () => {
 
   const handleCalleeDelete = async () => {
     if (calleeChecked.length === 0) return;
-
-    // Show browser confirmation dialog
     if (
       !window.confirm(
         `Are you sure you want to delete ${calleeChecked.length} selected callee ID(s)?`,
       )
-    ) {
+    )
       return;
-    }
-
     setIsDeleting(true);
-
     try {
-      // Delete each selected item in a loop
       for (const idx of calleeChecked) {
         const item = calleeRows[idx];
-
         const response = await deleteNumberFilter(
           "whitelist",
           item.calleeId,
           "calleeid",
           item.groupNo,
         );
-        if (!response.success) {
+        if (!response.success)
           throw new Error(`Failed to delete callee ID: ${item.calleeId}`);
-        }
       }
-
       displayToast(
         `Successfully deleted ${calleeChecked.length} callee ID(s)!`,
         "success",
       );
       setCalleeChecked([]);
-
-      // Refresh data after successful deletion
       await fetchWhitelistData();
     } catch (error) {
-      console.error("Error deleting callee IDs:", error);
-      const errorMessage =
+      displayToast(
         error.response?.data?.message ||
-        error.message ||
-        "Failed to delete callee IDs. Please try again.";
-      displayToast(errorMessage, "error");
+          error.message ||
+          "Failed to delete callee IDs. Please try again.",
+        "error",
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -603,37 +553,27 @@ const Whitelist = () => {
 
   const handleCalleeClear = async () => {
     if (calleeRows.length === 0) return;
-
-    // Show browser confirmation dialog
     if (
       !window.confirm(
         `Are you sure you want to clear all ${calleeRows.length} callee IDs?`,
       )
-    ) {
+    )
       return;
-    }
-
     setIsDeleting(true);
-
     try {
       const response = await deleteAllNumberFilters("whitelist", "calleeid");
-
       if (response.success) {
         displayToast(`Successfully cleared all callee IDs!`, "success");
         setCalleeChecked([]);
-
-        // Refresh data after successful deletion
         await fetchWhitelistData();
-      } else {
-        throw new Error("Failed to clear all callee IDs");
-      }
+      } else throw new Error("Failed to clear all callee IDs");
     } catch (error) {
-      console.error("Error clearing callee IDs:", error);
-      const errorMessage =
+      displayToast(
         error.response?.data?.message ||
-        error.message ||
-        "Failed to clear callee IDs. Please try again.";
-      displayToast(errorMessage, "error");
+          error.message ||
+          "Failed to clear callee IDs. Please try again.",
+        "error",
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -643,666 +583,580 @@ const Whitelist = () => {
     setCallerSearch("");
     fetchWhitelistData();
   };
-
   const handleCalleeReset = () => {
     setCalleeSearch("");
     fetchWhitelistData();
   };
 
+  // Reusable table panel
+  const renderTablePanel = ({
+    title,
+    rows,
+    checkedItems,
+    searchValue,
+    searchFocused,
+    onSearchChange,
+    onSearchFocus,
+    onSearchBlur,
+    onSearch,
+    onReset,
+    onCheck,
+    onDelete,
+    onClear,
+    onAddNew,
+    onEdit,
+    idKey,
+    isSearchingFlag,
+  }) => (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      {/* Search bar */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <label
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: C.labelText,
+            minWidth: 72,
+          }}
+        >
+          {idKey === "callerId" ? "CallerID:" : "CalleeID:"}
+        </label>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "#ffffff",
+            border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
+            borderRadius: 6,
+            padding: "5px 10px",
+            transition: "border-color 0.15s ease",
+            flex: 1,
+            minWidth: 140,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 12,
+              color: searchFocused ? C.accent : C.mutedText,
+            }}
+          >
+            🔍
+          </span>
+          <input
+            type="text"
+            value={searchValue}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onFocus={onSearchFocus}
+            onBlur={onSearchBlur}
+            onKeyPress={(e) => e.key === "Enter" && onSearch()}
+            placeholder={`Search ${idKey === "callerId" ? "caller" : "callee"} ID...`}
+            style={{
+              border: "none",
+              background: "transparent",
+              fontSize: 11,
+              color: C.valueText,
+              outline: "none",
+              width: "100%",
+            }}
+          />
+          {searchValue && (
+            <span
+              onClick={() => onSearchChange("")}
+              style={{ fontSize: 11, color: C.mutedText, cursor: "pointer" }}
+            >
+              ✕
+            </span>
+          )}
+        </div>
+        <Btn
+          onClick={onSearch}
+          disabled={isSearchingFlag}
+          variant="default"
+          style={{ gap: 4 }}
+        >
+          {isSearchingFlag ? (
+            <CircularProgress size={11} style={{ color: "#fff" }} />
+          ) : null}
+          {isSearchingFlag ? "Searching..." : "Search"}
+        </Btn>
+        <Btn onClick={onReset} disabled={isSearchingFlag} variant="outline">
+          Reset
+        </Btn>
+      </div>
+
+      {/* Card */}
+      <div
+        style={{
+          background: C.cardBg,
+          border: `1px solid ${C.cardBorder}`,
+          borderRadius: 8,
+          overflow: "hidden",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+        }}
+      >
+        {/* Toolbar */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 14px",
+            borderBottom: `1px solid ${C.cardBorder}`,
+            background: "#DCE6F2",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                background: "#f1f5f9",
+                border: `0.5px solid ${C.cardBorder}`,
+                color: "#475569",
+                fontSize: 11,
+                fontWeight: 600,
+                padding: "3px 12px",
+                borderRadius: 20,
+              }}
+            >
+              {rows.length} records
+            </span>
+            {checkedItems.length > 0 && (
+              <span
+                style={{
+                  background: "#e0f2fe",
+                  color: C.accent,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 10px",
+                  borderRadius: 20,
+                  border: `0.5px solid ${C.accent}`,
+                }}
+              >
+                {checkedItems.length} selected
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Btn
+              onClick={onDelete}
+              disabled={checkedItems.length === 0 || isDeleting}
+              variant="danger"
+            >
+              {isDeleting ? (
+                <CircularProgress size={11} style={{ color: C.errorRed }} />
+              ) : null}
+              🗑 Delete
+            </Btn>
+            <Btn
+              onClick={onClear}
+              disabled={rows.length === 0 || isDeleting}
+              variant="danger"
+            >
+              Clear All
+            </Btn>
+            <Btn onClick={onAddNew} disabled={isDeleting} variant="accent">
+              + Add New
+            </Btn>
+          </div>
+        </div>
+
+        {/* Table header title */}
+        <div
+          style={{
+            background: "#f3f4f6",
+            color: "#1e293b",
+            fontWeight: 700,
+            fontSize: 13,
+            textAlign: "center",
+            padding: "8px 14px",
+            letterSpacing: "0.02em",
+            borderBottom: "0.5px solid #9ca3af",
+          }}
+        >
+          {title}
+        </div>
+
+        {/* Table */}
+        <div style={{ overflowX: "auto", overflowY: "auto", maxHeight: 360 }}>
+          <table
+            style={{ width: "100%", borderCollapse: "collapse", minWidth: 460 }}
+          >
+            <thead>
+              <tr>
+                <TH style={{ width: 56 }}>Check</TH>
+                <TH>Group No.</TH>
+                <TH>{idKey === "callerId" ? "CallerID" : "CalleeID"}</TH>
+                <TH style={{ width: 80 }}>Modify</TH>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    style={{
+                      textAlign: "center",
+                      padding: "36px 0",
+                      color: C.mutedText,
+                      fontSize: 13,
+                    }}
+                  >
+                    No entries found.
+                  </td>
+                </tr>
+              ) : (
+                rows.map((row, idx) => {
+                  const isChecked = checkedItems.includes(idx);
+                  const rowBg = isChecked
+                    ? "#f0f9ff"
+                    : idx % 2 === 1
+                      ? "#f8fafc"
+                      : "#ffffff";
+                  return (
+                    <tr
+                      key={idx}
+                      style={{
+                        background: rowBg,
+                        borderBottom: "0.5px solid #9ca3af",
+                        transition: "background 0.1s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isChecked)
+                          e.currentTarget.style.background = "#f0f9ff";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isChecked)
+                          e.currentTarget.style.background = rowBg;
+                      }}
+                    >
+                      <td
+                        style={{
+                          textAlign: "center",
+                          padding: "6px 4px",
+                          borderRight: "0.5px solid #edf2f7",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => onCheck(idx)}
+                          style={{
+                            width: 14,
+                            height: 14,
+                            cursor: "pointer",
+                            accentColor: C.accent,
+                          }}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          textAlign: "center",
+                          padding: "7px 8px",
+                          fontSize: 12,
+                          color: C.valueText,
+                          borderRight: "0.5px solid #edf2f7",
+                        }}
+                      >
+                        {row.groupNo}
+                      </td>
+                      <td
+                        style={{
+                          textAlign: "center",
+                          padding: "7px 8px",
+                          fontSize: 12,
+                          color: C.valueText,
+                          borderRight: "0.5px solid #edf2f7",
+                        }}
+                      >
+                        {row[idKey]}
+                      </td>
+                      <td style={{ textAlign: "center", padding: "4px 8px" }}>
+                        <Btn
+                          onClick={() => onEdit(row)}
+                          variant="outline"
+                          style={{
+                            fontSize: 10,
+                            padding: "3px 10px",
+                            margin: "0 auto",
+                          }}
+                        >
+                          Edit
+                        </Btn>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            padding: "8px 14px",
+            borderTop: `0.5px solid ${C.cardBorder}`,
+            background: "#f8fafc",
+          }}
+        >
+          <span style={{ fontSize: 11, color: C.mutedText }}>
+            {rows.length} record{rows.length !== 1 ? "s" : ""} total
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-80px)] p-2 sm:p-4 md:p-6">
-      {isInitialLoading && (
-        <div className="flex justify-center items-center h-64">
-          <div className="flex flex-col items-center gap-4">
-            <CircularProgress size={40} />
-            <span className="text-gray-600 text-sm sm:text-base">
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
+    >
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
+        <div style={{ fontSize: 11, color: C.mutedText, marginBottom: 12 }}>
+          E1-PRI &rsaquo; Number Filter &rsaquo;{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>Whitelist</span>
+        </div>
+
+        {isInitialLoading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: 64,
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
+            <CircularProgress size={32} style={{ color: C.accent }} />
+            <span style={{ fontSize: 13, color: C.mutedText }}>
               Loading whitelist data...
             </span>
           </div>
-        </div>
-      )}
-
-      {!isInitialLoading && (
-        <>
-          <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 w-full mx-auto">
-            {/* CallerID Table */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center mb-3 gap-2 sm:gap-3">
-                <label className="font-semibold text-sm sm:text-base min-w-[60px] sm:min-w-[80px]">
-                  CallerID:
-                </label>
-                <TextField
-                  value={callerSearch}
-                  onChange={(e) => setCallerSearch(e.target.value)}
-                  size="small"
-                  variant="outlined"
-                  className="flex-1 w-full sm:w-auto"
-                  onKeyPress={(e) => e.key === "Enter" && handleCallerSearch()}
-                  sx={{ "& .MuiInputBase-root": { backgroundColor: "white" } }}
-                />
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Button
-                    variant="contained"
-                    startIcon={
-                      isSearching ? (
-                        <CircularProgress size={16} color="inherit" />
-                      ) : (
-                        <SearchIcon />
-                      )
-                    }
-                    sx={styles.button}
-                    onClick={handleCallerSearch}
-                    disabled={isSearching}
-                    className="flex-1 sm:flex-none"
-                  >
-                    {isSearching ? "Searching..." : "Search"}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={<RestartAltIcon />}
-                    sx={styles.button}
-                    onClick={handleCallerReset}
-                    disabled={isSearching}
-                    className="flex-1 sm:flex-none"
-                  >
-                    Reset
-                  </Button>
-                </div>
-              </div>
-              <div className="bg-gray-200 w-full flex flex-col">
-                <div
-                  className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-                  style={{
-                    background: "linear-gradient(#3E5475 100%)",
-                    boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-                  }}
-                >
-                  {" "}
-                  CallerID Whitelist
-                </div>
-                <div
-                  className="overflow-x-auto w-full border-l-2 border-r-2 border-b-2 border-gray-400"
-                  style={{
-                    height: "360px",
-                    maxHeight: "360px",
-                    overflowY: "auto",
-                  }}
-                >
-                  <table className="w-full min-w-[460px] border-collapse table-auto">
-                    <thead>
-                      <tr>
-                        <th
-                          className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                          style={{
-                            padding: "6px 8px",
-                            height: 20,
-                            minWidth: "90px",
-                          }}
-                        >
-                          Check
-                        </th>
-                        <th
-                          className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                          style={{
-                            padding: "6px 8px",
-                            height: 32,
-                            minWidth: "120px",
-                          }}
-                        >
-                          Group No.
-                        </th>
-                        {/* <th className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center" style={{ padding: '6px 8px', height: 32 }}>No. in Group</th> */}
-                        <th
-                          className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                          style={{
-                            padding: "6px 8px",
-                            height: 32,
-                            minWidth: "220px",
-                          }}
-                        >
-                          CallerID
-                        </th>
-                        <th
-                          className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                          style={{
-                            padding: "6px 8px",
-                            height: 32,
-                            minWidth: "110px",
-                          }}
-                        >
-                          Modify
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {callerRows.map((row, idx) => (
-                        <tr
-                          key={idx}
-                          style={{ borderBottom: "1px solid #bbb", height: 32 }}
-                        >
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              padding: "6px 8px",
-                              height: 32,
-                              minWidth: "90px",
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={callerChecked.includes(idx)}
-                              onChange={() => handleCallerCheck(idx)}
-                              className="w-4 h-4"
-                            />
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white text-xs"
-                            style={{
-                              padding: "6px 8px",
-                              height: 32,
-                              minWidth: "120px",
-                            }}
-                          >
-                            {row.groupNo}
-                          </td>
-                          {/* <td className="border border-gray-400 text-center bg-white text-xs" style={{ padding: '6px 8px', height: 32 }}>{row.noInGroup}</td> */}
-                          <td
-                            className="border border-gray-400 text-center bg-white text-xs"
-                            style={{
-                              padding: "6px 8px",
-                              height: 32,
-                              minWidth: "220px",
-                            }}
-                          >
-                            {row.callerId}
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              padding: "6px 8px",
-                              height: 32,
-                              minWidth: "110px",
-                            }}
-                          >
-                            <EditDocumentIcon
-                              onClick={() => handleEdit("caller", row)}
-                              style={{
-                                color: "#0e8fd6",
-                                cursor: "pointer",
-                                margin: "0 auto",
-                              }}
-                              className="w-5 h-5"
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                      {Array.from({
-                        length: Math.max(0, 12 - callerRows.length),
-                      }).map((_, idx) => (
-                        <tr
-                          key={`empty-caller-${idx}`}
-                          style={{
-                            borderBottom: "1px solid #bbb",
-                            background: "#fff",
-                            height: 32,
-                          }}
-                        >
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              color: "#aaa",
-                              padding: "6px 8px",
-                              height: 32,
-                            }}
-                          >
-                            &nbsp;
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              color: "#aaa",
-                              padding: "6px 8px",
-                              height: 32,
-                            }}
-                          >
-                            &nbsp;
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              color: "#aaa",
-                              padding: "6px 8px",
-                              height: 32,
-                            }}
-                          >
-                            &nbsp;
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              color: "#aaa",
-                              padding: "6px 8px",
-                              height: 32,
-                            }}
-                          >
-                            &nbsp;
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div className="flex justify-between items-center bg-gray-300 rounded-b-lg px-1 py-0.5 mt-1 border-l-2 border-r-2 border-b-2 border-gray-400">
-                <div className="flex gap-1">
-                  <button
-                    className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
-                    disabled={callerChecked.length === 0 || isDeleting}
-                    onClick={handleCallerDelete}
-                  >
-                    {isDeleting ? (
-                      <CircularProgress size={16} color="inherit" />
-                    ) : (
-                      "Delete"
-                    )}
-                  </button>
-                  <button
-                    className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
-                    disabled={callerRows.length === 0 || isDeleting}
-                    onClick={handleCallerClear}
-                  >
-                    {isDeleting ? (
-                      <CircularProgress size={16} color="inherit" />
-                    ) : (
-                      "Clear All"
-                    )}
-                  </button>
-                </div>
-                <button
-                  className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
-                  onClick={() => handleAddNew("caller")}
-                  disabled={isDeleting}
-                >
-                  Add New
-                </button>
-              </div>
+        ) : (
+          <>
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+              {renderTablePanel({
+                title: "CallerID Whitelist",
+                rows: callerRows,
+                checkedItems: callerChecked,
+                searchValue: callerSearch,
+                searchFocused: callerSearchFocused,
+                onSearchChange: setCallerSearch,
+                onSearchFocus: () => setCallerSearchFocused(true),
+                onSearchBlur: () => setCallerSearchFocused(false),
+                onSearch: handleCallerSearch,
+                onReset: handleCallerReset,
+                onCheck: handleCallerCheck,
+                onDelete: handleCallerDelete,
+                onClear: handleCallerClear,
+                onAddNew: () => handleAddNew("caller"),
+                onEdit: (row) => handleEdit("caller", row),
+                idKey: "callerId",
+                isSearchingFlag: isSearching,
+              })}
+              {renderTablePanel({
+                title: "CalleeID Whitelist",
+                rows: calleeRows,
+                checkedItems: calleeChecked,
+                searchValue: calleeSearch,
+                searchFocused: calleeSearchFocused,
+                onSearchChange: setCalleeSearch,
+                onSearchFocus: () => setCalleeSearchFocused(true),
+                onSearchBlur: () => setCalleeSearchFocused(false),
+                onSearch: handleCalleeSearch,
+                onReset: handleCalleeReset,
+                onCheck: handleCalleeCheck,
+                onDelete: handleCalleeDelete,
+                onClear: handleCalleeClear,
+                onAddNew: () => handleAddNew("callee"),
+                onEdit: (row) => handleEdit("callee", row),
+                idKey: "calleeId",
+                isSearchingFlag: isSearching,
+              })}
             </div>
 
-            {/* CalleeID Table */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center mb-3 gap-2 sm:gap-3">
-                <label className="font-semibold text-sm sm:text-base min-w-[60px] sm:min-w-[80px]">
-                  CalleeID:
-                </label>
-                <TextField
-                  value={calleeSearch}
-                  onChange={(e) => setCalleeSearch(e.target.value)}
-                  size="small"
-                  variant="outlined"
-                  className="flex-1 w-full sm:w-auto"
-                  onKeyPress={(e) => e.key === "Enter" && handleCalleeSearch()}
-                  sx={{ "& .MuiInputBase-root": { backgroundColor: "white" } }}
-                />
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Button
-                    variant="contained"
-                    startIcon={
-                      isSearching ? (
-                        <CircularProgress size={16} color="inherit" />
-                      ) : (
-                        <SearchIcon />
-                      )
-                    }
-                    sx={styles.button}
-                    onClick={handleCalleeSearch}
-                    disabled={isSearching}
-                    className="flex-1 sm:flex-none"
-                  >
-                    {isSearching ? "Searching..." : "Search"}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={<RestartAltIcon />}
-                    sx={styles.button}
-                    onClick={handleCalleeReset}
-                    disabled={isSearching}
-                    className="flex-1 sm:flex-none"
-                  >
-                    Reset
-                  </Button>
-                </div>
-              </div>
-              <div className="bg-gray-200 w-full flex flex-col">
-                <div
-                  className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-                  style={{
-                    background: "linear-gradient(#3E5475 100%)",
-                    boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-                  }}
-                >
-                  {" "}
-                  CalleeID Whitelist
-                </div>
-                <div
-                  className="overflow-x-auto w-full border-l-2 border-r-2 border-b-2 border-gray-400"
-                  style={{
-                    height: "360px",
-                    maxHeight: "360px",
-                    overflowY: "auto",
-                  }}
-                >
-                  <table className="w-full min-w-[460px] border-collapse table-auto">
-                    <thead>
-                      <tr>
-                        <th
-                          className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                          style={{
-                            padding: "6px 8px",
-                            height: 20,
-                            minWidth: "90px",
-                          }}
-                        >
-                          Check
-                        </th>
-                        <th
-                          className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                          style={{
-                            padding: "6px 8px",
-                            height: 32,
-                            minWidth: "120px",
-                          }}
-                        >
-                          Group No.
-                        </th>
-                        {/* <th className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center" style={{ padding: '6px 8px', height: 32 }}>No. in Group</th> */}
-                        <th
-                          className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                          style={{
-                            padding: "6px 8px",
-                            height: 32,
-                            minWidth: "220px",
-                          }}
-                        >
-                          CalleeID
-                        </th>
-                        <th
-                          className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                          style={{
-                            padding: "6px 8px",
-                            height: 32,
-                            minWidth: "110px",
-                          }}
-                        >
-                          Modify
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {calleeRows.map((row, idx) => (
-                        <tr
-                          key={idx}
-                          style={{ borderBottom: "1px solid #bbb", height: 32 }}
-                        >
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              padding: "6px 8px",
-                              height: 32,
-                              minWidth: "90px",
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={calleeChecked.includes(idx)}
-                              onChange={() => handleCalleeCheck(idx)}
-                              className="w-4 h-4"
-                            />
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white text-xs"
-                            style={{
-                              padding: "6px 8px",
-                              height: 32,
-                              minWidth: "120px",
-                            }}
-                          >
-                            {row.groupNo}
-                          </td>
-                          {/* <td className="border border-gray-400 text-center bg-white text-xs" style={{ padding: '6px 8px', height: 32 }}>{row.noInGroup}</td> */}
-                          <td
-                            className="border border-gray-400 text-center bg-white text-xs"
-                            style={{
-                              padding: "6px 8px",
-                              height: 32,
-                              minWidth: "220px",
-                            }}
-                          >
-                            {row.calleeId}
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              padding: "6px 8px",
-                              height: 32,
-                              minWidth: "110px",
-                            }}
-                          >
-                            <EditDocumentIcon
-                              onClick={() => handleEdit("callee", row)}
-                              style={{
-                                color: "#0e8fd6",
-                                cursor: "pointer",
-                                margin: "0 auto",
-                              }}
-                              className="w-5 h-5"
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                      {Array.from({
-                        length: Math.max(0, 12 - calleeRows.length),
-                      }).map((_, idx) => (
-                        <tr
-                          key={`empty-callee-${idx}`}
-                          style={{
-                            borderBottom: "1px solid #bbb",
-                            background: "#fff",
-                            height: 32,
-                          }}
-                        >
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              color: "#aaa",
-                              padding: "6px 8px",
-                              height: 32,
-                            }}
-                          >
-                            &nbsp;
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              color: "#aaa",
-                              padding: "6px 8px",
-                              height: 32,
-                            }}
-                          >
-                            &nbsp;
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              color: "#aaa",
-                              padding: "6px 8px",
-                              height: 32,
-                            }}
-                          >
-                            &nbsp;
-                          </td>
-                          <td
-                            className="border border-gray-400 text-center bg-white"
-                            style={{
-                              color: "#aaa",
-                              padding: "6px 8px",
-                              height: 32,
-                            }}
-                          >
-                            &nbsp;
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div className="flex justify-between items-center bg-gray-300 rounded-b-lg px-1 py-0.5 mt-1 border-l-2 border-r-2 border-b-2 border-gray-400">
-                <div className="flex gap-1">
-                  <button
-                    className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
-                    disabled={calleeChecked.length === 0 || isDeleting}
-                    onClick={handleCalleeDelete}
-                  >
-                    {isDeleting ? (
-                      <CircularProgress size={16} color="inherit" />
-                    ) : (
-                      "Delete"
-                    )}
-                  </button>
-                  <button
-                    className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
-                    disabled={calleeRows.length === 0 || isDeleting}
-                    onClick={handleCalleeClear}
-                  >
-                    {isDeleting ? (
-                      <CircularProgress size={16} color="inherit" />
-                    ) : (
-                      "Clear All"
-                    )}
-                  </button>
-                </div>
-                <button
-                  className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
-                  onClick={() => handleAddNew("callee")}
-                  disabled={isDeleting}
-                >
-                  Add New
-                </button>
-              </div>
+            <div
+              style={{
+                textAlign: "center",
+                color: C.errorRed,
+                fontSize: 12,
+                marginTop: 24,
+                padding: "8px 16px",
+                // background: "#fef2f2",
+                // border: "0.5px solid #fecaca",
+                borderRadius: 6,
+              }}
+            >
+              Note: The one list, only the latest 200 pieces will be displayed.
+              To check all the records, please backup the file.
             </div>
-          </div>
-
-          <div className="text-center text-red-600 text-sm sm:text-base mt-6 sm:mt-8 px-2">
-            Note: The one list, only the latest 200 pieces will be displayed. To
-            check all the records, please backup the file.
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
 
       {/* Modal */}
       <Dialog
         open={showModal}
         onClose={() => setShowModal(false)}
         maxWidth={false}
-        PaperProps={{
-          sx: {
-            maxWidth: "95vw",
-            width: { xs: "95vw", sm: 380 },
-            background: "#f4f6fa",
-            borderRadius: 2,
-            border: "1.5px solid #888",
-          },
-        }}
+        PaperProps={{ sx: { width: 400, maxWidth: "96vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            marginBottom: 12,
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
           }}
         >
           {modalType === "caller"
             ? "CallerIDs in Whitelist"
             : "CalleeIDs in Whitelist"}
         </DialogTitle>
-        <DialogContent className="bg-gray-200 flex flex-col gap-3 py-4">
-          <div className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white mb-1">
-            <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
-              Group No.:
-            </label>
-            <div className="flex-1 min-w-0">
-              <MuiSelect
-                value={modalData.groupNo}
-                onChange={(e) => handleGroupNoChange(e.target.value)}
-                size="small"
-                fullWidth
-                sx={{ fontSize: "12px" }}
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 200,
-                      overflow: "auto",
-                    },
-                  },
+
+        <DialogContent
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 6,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+            }}
+          >
+            {/* Group No. */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <label
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.labelText,
+                  width: 120,
+                  flexShrink: 0,
                 }}
               >
-                {[...Array(200).keys()].map((i) => (
-                  <MenuItem key={i} value={i} sx={{ fontSize: "12px" }}>
-                    {i}
-                  </MenuItem>
-                ))}
-              </MuiSelect>
+                Group No.:
+              </label>
+              <div style={{ flex: 1 }}>
+                <MuiSelect
+                  value={modalData.groupNo}
+                  onChange={(e) => handleGroupNoChange(e.target.value)}
+                  size="small"
+                  fullWidth
+                  sx={{ fontSize: 13, background: "#fff" }}
+                  MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
+                >
+                  {[...Array(200).keys()].map((i) => (
+                    <MenuItem key={i} value={i} sx={{ fontSize: 13 }}>
+                      {i}
+                    </MenuItem>
+                  ))}
+                </MuiSelect>
+              </div>
             </div>
-          </div>
-          {/* No. in Group removed from modal as requested */}
-          <div className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white mb-1">
-            <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
-              {modalType === "caller" ? "CallerID:" : "CalleeID:"}
-            </label>
-            <div className="flex-1 min-w-0">
-              <TextField
-                type="text"
-                value={modalData.idValue}
-                onChange={(e) =>
-                  setModalData({ ...modalData, idValue: e.target.value })
-                }
-                size="small"
-                fullWidth
-                disabled={isEditMode}
-                sx={{ "& .MuiInputBase-input": { fontSize: "12px" } }}
-              />
+
+            {/* ID Value */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <label
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.labelText,
+                  width: 120,
+                  flexShrink: 0,
+                }}
+              >
+                {modalType === "caller" ? "CallerID:" : "CalleeID:"}
+              </label>
+              <div style={{ flex: 1 }}>
+                <TextField
+                  type="text"
+                  value={modalData.idValue}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, idValue: e.target.value })
+                  }
+                  size="small"
+                  fullWidth
+                  disabled={isEditMode}
+                  sx={{
+                    "& .MuiInputBase-input": { fontSize: 13 },
+                    "& .MuiInputBase-root": { background: "#fff" },
+                  }}
+                />
+              </div>
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="flex justify-center gap-6 pb-4">
-          <button
-            className="bg-gradient-to-b from-[#9ca3af] to-[#6b7280] text-white font-semibold text-s rounded px-3 py-1 min-w-[100px] shadow hover:from-[#6b7280] hover:to-[#9ca3af] disabled:opacity-50 disabled:cursor-not-allowed"
+
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
+          <Btn
             onClick={handleSave}
             disabled={isLoading}
+            style={{ padding: "8px 28px", fontSize: 13 }}
           >
             {isLoading ? (
-              <div className="flex items-center gap-2">
-                <CircularProgress size={16} color="inherit" />
-                <span>Saving...</span>
-              </div>
-            ) : (
-              "Save"
-            )}
-          </button>
-          <button
-            className="bg-gradient-to-b from-[#003d9a] to-[#0a3071] text-[white] font-semibold text-s rounded px-3 py-1 min-w-[100px] shadow hover:from-[#9ca3af] hover:to-[#d1d5db] disabled:opacity-50 disabled:cursor-not-allowed"
+              <CircularProgress
+                size={13}
+                style={{ color: "#fff", marginRight: 6 }}
+              />
+            ) : null}
+            {isLoading ? "Saving..." : "Save"}
+          </Btn>
+          <Btn
             onClick={() => setShowModal(false)}
             disabled={isLoading}
+            variant="outline"
+            style={{ padding: "8px 28px", fontSize: 13 }}
           >
             Close
-          </button>
+          </Btn>
         </DialogActions>
       </Dialog>
 
-      {/* Toast Notification */}
+      {/* Toast */}
       {showToast && (
-        <div className="fixed top-4 right-4 z-50 max-w-sm w-[90vw] sm:w-auto">
+        <div
+          style={{
+            position: "fixed",
+            top: 16,
+            right: 16,
+            zIndex: 9999,
+            maxWidth: 360,
+          }}
+        >
           <Alert
             severity={toastType}
             onClose={() => setShowToast(false)}

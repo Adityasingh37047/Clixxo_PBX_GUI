@@ -3,14 +3,138 @@ import {
   ROUTE_MODE_OPTIONS,
   ROUTE_ROUTING_PARAMETER_INITIAL_FORM,
 } from "./constants/RouteRoutingParameterPageConstants";
-import {
-  Button,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
-  TextField,
-} from "@mui/material";
+import { Select as MuiSelect, MenuItem, FormControl } from "@mui/material";
 
+// ── Color Palette (From Source) ───────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+// ── Shared UI Components (From Source) ────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+  type = "button",
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const FieldRow = ({ label, children, style }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12, ...style }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 220,
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1 }}>{children}</div>
+  </div>
+);
+
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const inputStyle = {
+  height: 32,
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  width: "100%",
+};
+
+// ── Main Component ────────────────────────────────────────────────────────────
 const RouteRoutingParameterPage = () => {
   const [formData, setFormData] = useState(
     ROUTE_ROUTING_PARAMETER_INITIAL_FORM,
@@ -38,35 +162,49 @@ const RouteRoutingParameterPage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-128px)] py-2 px-2 sm:px-4"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div style={{ width: "950px", maxWidth: "95%", margin: "0 auto" }}>
-        {/* Blue header bar */}
+      <div style={{ maxWidth: 800, margin: "0 auto" }}>
+        {/* Breadcrumb */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          Routing Parameters
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            FXS &rsaquo; Route &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              Routing Parameters
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white border-2 rounded-b-lg border-gray-400 border-t-0 shadow-sm p-4">
-          <table style={{ width: "100%", tableLayout: "fixed" }}>
-            <colgroup>
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "40%" }} />
-              <col style={{ width: "50%" }} />
-            </colgroup>
-            <tbody>
-              {/* IP->TEL */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>IP-&gt;TEL</td>
-                <td>
-                  <FormControl size="small" sx={{ width: "70%" }}>
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{ padding: "24px 28px" }}>
+            <SectionHeading title="Routing Parameters" />
+
+            <div style={{ padding: "24px 32px" }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <FieldRow label="IP->TEL">
+                  <FormControl size="small" fullWidth>
                     <MuiSelect
                       value={formData.ipInRouteMode}
                       onChange={(e) =>
@@ -74,17 +212,14 @@ const RouteRoutingParameterPage = () => {
                       }
                       variant="outlined"
                       sx={{
-                        fontSize: 14,
-                        height: 28,
+                        fontSize: 13,
+                        height: 32,
                         backgroundColor: "white",
                         "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#bbb",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#999",
+                          borderColor: C.cardBorder,
                         },
                         "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#3b82f6",
+                          borderColor: C.accent,
                         },
                         "& .MuiSelect-select": { padding: "4px 8px" },
                       }}
@@ -93,25 +228,17 @@ const RouteRoutingParameterPage = () => {
                         <MenuItem
                           key={opt.value}
                           value={opt.value}
-                          sx={{ fontSize: 14 }}
+                          sx={{ fontSize: 13 }}
                         >
                           {opt.label}
                         </MenuItem>
                       ))}
                     </MuiSelect>
                   </FormControl>
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
+                </FieldRow>
 
-              {/* TEL->IP */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>TEL-&gt;IP</td>
-                <td>
-                  <FormControl size="small" sx={{ width: "70%" }}>
+                <FieldRow label="TEL->IP">
+                  <FormControl size="small" fullWidth>
                     <MuiSelect
                       value={formData.pstnToIPRouteMode}
                       onChange={(e) =>
@@ -119,17 +246,14 @@ const RouteRoutingParameterPage = () => {
                       }
                       variant="outlined"
                       sx={{
-                        fontSize: 14,
-                        height: 28,
+                        fontSize: 13,
+                        height: 32,
                         backgroundColor: "white",
                         "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#bbb",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#999",
+                          borderColor: C.cardBorder,
                         },
                         "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#3b82f6",
+                          borderColor: C.accent,
                         },
                         "& .MuiSelect-select": { padding: "4px 8px" },
                       }}
@@ -138,95 +262,51 @@ const RouteRoutingParameterPage = () => {
                         <MenuItem
                           key={opt.value}
                           value={opt.value}
-                          sx={{ fontSize: 14 }}
+                          sx={{ fontSize: 13 }}
                         >
                           {opt.label}
                         </MenuItem>
                       ))}
                     </MuiSelect>
                   </FormControl>
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
+                </FieldRow>
 
-              {/* Route Detection Cycle (s) */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>
-                  Route Detection Cycle (s)
-                </td>
-                <td>
-                  <TextField
+                <FieldRow label="Route Detection Cycle (s)">
+                  <input
                     id="RouteCheckPeriod"
+                    type="text"
                     value={formData.routeCheckPeriod || ""}
                     onChange={(e) =>
                       handleInputChange("routeCheckPeriod", e.target.value)
                     }
                     onKeyPress={handleNumberKeyPress}
-                    size="small"
-                    variant="outlined"
-                    inputProps={{
-                      maxLength: 31,
-                      style: { fontSize: 14, padding: "4px 8px" },
-                    }}
-                    sx={{
-                      width: "70%",
-                      "& .MuiOutlinedInput-root": {
-                        height: "28px",
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#bbb" },
-                        "&:hover fieldset": { borderColor: "#999" },
-                        "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                      },
-                    }}
+                    maxLength={31}
+                    style={inputStyle}
                   />
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </FieldRow>
+              </div>
+            </div>
 
-      {/* Save Button */}
-      <div
-        className="flex justify-center"
-        style={{ marginTop: "24px", marginBottom: "16px" }}
-      >
-        <Button
-          variant="contained"
-          sx={{
-            background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-            color: "#fff",
-            fontWeight: 600,
-            fontSize: "16px",
-            borderRadius: "6px",
-            minWidth: "100px",
-            height: "42px",
-            textTransform: "none",
-            padding: "6px 24px",
-            boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-            border: "1px solid #cbd5e1",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background =
-              "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
-            e.target.style.color = "#fff";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background =
-              "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
-            e.target.style.color = "#fff";
-          }}
-          onClick={handleSave}
-        >
-          Save
-        </Button>
+            {/* Action Buttons */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 12,
+                marginTop: 24,
+                paddingTop: 16,
+                borderTop: `1px solid ${C.cardBorder}`,
+              }}
+            >
+              <Btn
+                onClick={handleSave}
+                style={{ padding: "8px 36px", fontSize: 13 }}
+              >
+                Save
+              </Btn>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

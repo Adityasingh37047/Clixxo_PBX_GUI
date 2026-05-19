@@ -5,6 +5,7 @@ import {
   PCM_TRUNK_GROUP_TABLE_COLUMNS,
 } from "../constants/PcmTrunkGroupConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import EditIcon from "@mui/icons-material/Edit";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -21,103 +22,103 @@ import {
   listIpPstnRoutes,
   listNumberManipulations,
 } from "../api/apiService";
-import { CircularProgress, Alert } from "@mui/material";
+import { CircularProgress, Alert, Checkbox, IconButton } from "@mui/material";
 
-const modalOverlayStyle = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100vw",
-  height: "100vh",
-  zIndex: 1000,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
 };
 
-const modalStyle = {
-  background: "#f8fafd",
-  border: "2px solid #222",
-  borderRadius: 6,
-  width: 440,
-  maxWidth: "95vw",
-  maxHeight: "calc(100vh - 120px)",
-  marginTop: 80,
-  overflowY: "auto",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-  display: "flex",
-  flexDirection: "column",
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
 };
-const modalHeaderStyle = {
-  background: "linear-gradient(to bottom, #23272b 0%, #6e7a8a 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 18,
-  padding: "10px 0",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-const modalBodyStyle = {
-  padding: "12px 8px 0 8px",
-  display: "flex",
-  flexDirection: "column",
-  gap: 8,
-};
-const modalRowStyle = {
-  display: "flex",
-  alignItems: "center",
-  background: "#f4f6fa",
-  border: "1px solid #c0c6cc",
-  borderRadius: 4,
-  padding: "6px 8px",
-  marginBottom: 2,
-  minHeight: 32,
-  gap: 10,
-};
-const modalLabelStyle = {
-  width: 180,
-  fontSize: 14,
-  color: "#222",
-  textAlign: "left",
-  marginRight: 10,
-  whiteSpace: "nowrap",
-};
-const modalInputStyle = {
-  width: "100%",
-  fontSize: 14,
-  padding: "3px 6px",
-  borderRadius: 3,
-  border: "1px solid #bbb",
-  background: "#fff",
-};
-const modalFooterStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 24,
-  padding: "18px 0",
-};
-const modalButtonStyle = {
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-  fontSize: 16,
-  padding: "6px 32px",
-  border: "none",
-  borderRadius: 4,
-  boxShadow: "0 2px 4px rgba(0,0,0,0.10)",
-  cursor: "pointer",
-  minWidth: 90,
-};
-const modalButtonGrayStyle = {
-  ...modalButtonStyle,
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#222",
-};
-const addNewButtonStyle = {
-  ...modalButtonStyle,
-  marginTop: 24,
-  minWidth: 120,
-};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 
 // const LOCAL_STORAGE_KEY = 'pcmTrunkGroups';
 
@@ -618,9 +619,45 @@ const PcmTrunkGroupPage = () => {
     background: "#fff",
   };
 
-  // Fix Check All and Uncheck All to work on visible rows
+  const pagedRowIndexes = pagedGroups.map(
+    (_, idx) => (page - 1) * itemsPerPage + idx,
+  );
+  const allPageSelected =
+    pagedRowIndexes.length > 0 &&
+    pagedRowIndexes.every((idx) => selected.includes(idx));
+  const somePageSelected =
+    pagedRowIndexes.length > 0 &&
+    pagedRowIndexes.some((idx) => selected.includes(idx)) &&
+    !allPageSelected;
+
+  const handleToggleAll = () => {
+    if (allPageSelected) {
+      setSelected((prev) =>
+        prev.filter((idx) => !pagedRowIndexes.includes(idx)),
+      );
+    } else {
+      setSelected((prev) => {
+        const next = [...prev];
+        pagedRowIndexes.forEach((idx) => {
+          if (!next.includes(idx)) next.push(idx);
+        });
+        return next;
+      });
+    }
+  };
+
+  const handleInverse = () => {
+    const otherPageSelections = selected.filter(
+      (idx) => !pagedRowIndexes.includes(idx),
+    );
+    const invertedPagedSelections = pagedRowIndexes.filter(
+      (idx) => !selected.includes(idx),
+    );
+    setSelected([...otherPageSelections, ...invertedPagedSelections]);
+  };
+
   const handleCheckAllRows = () => {
-    setSelected(pagedGroups.map((_, idx) => (page - 1) * itemsPerPage + idx));
+    setSelected(pagedRowIndexes);
   };
   const handleUncheckAllRows = () => {
     setSelected([]);
@@ -856,8 +893,12 @@ const PcmTrunkGroupPage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        background: C.pageBg,
+        minHeight: "calc(100vh - 120px)",
+        padding: "24px 20px",
+        boxSizing: "border-box",
+      }}
     >
       {/* Message Display */}
       {message.text && (
@@ -876,285 +917,392 @@ const PcmTrunkGroupPage = () => {
           {message.text}
         </Alert>
       )}
-      <div className="w-full max-w-full mx-auto md:p-2">
-        {/* Header */}
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          PCM Trunk Group
+
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb Path */}
+        <div style={{ fontSize: 11, color: C.mutedText }}>
+          E1-PRI &rsaquo; PCM &rsaquo;{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            PCM Trunk Group
+          </span>
         </div>
 
+        {/* Card wrapper */}
         <div
-          className="w-full max-w-full mx-auto"
           style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            background: C.cardBg,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div
-              className="overflow-x-auto w-full border-b border-gray-300"
-              style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
-              }}
-            >
-              <table
-                className="w-full min-w-[1200px] border border-gray-300 border-collapse whitespace-nowrap"
-                style={{ tableLayout: "auto", border: "1px solid #bbb" }}
+          {/* Action Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            {/* Left side: Page info badge & selection counts */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
               >
-                <thead>
-                  <tr style={{ minHeight: 32 }}>
-                    <th
-                      className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                Page {page} · {groups.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    border: "0.5px solid #bae6fd",
+                    color: "#0369a1",
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    padding: "2px 10px",
+                    borderRadius: 12,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+
+            {/* Right side: action buttons */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Btn
+                onClick={handleInverse}
+                disabled={isLoadingData}
+                variant="outline"
+              >
+                Inverse
+              </Btn>
+              <Btn
+                onClick={handleClearAll}
+                disabled={isLoadingData || groups.length === 0}
+                variant="danger"
+              >
+                Clear All
+              </Btn>
+              <Btn
+                onClick={handleDeleteSelected}
+                disabled={isLoadingData || selected.length === 0}
+                variant="danger"
+              >
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={() => handleOpenModal()}
+                disabled={isLoadingSpans}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table Container */}
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <TH style={{ width: 50 }}>
+                    <Checkbox
+                      size="small"
+                      checked={allPageSelected}
+                      indeterminate={somePageSelected}
+                      onChange={handleToggleAll}
+                      sx={{
+                        padding: "1px",
+                        color: C.accent,
+                        "&.Mui-checked": { color: C.accent },
+                        "&.MuiCheckbox-indeterminate": { color: C.accent },
+                      }}
+                    />
+                  </TH>
+                  {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                    (c) => c.key !== "check",
+                  ).map((c) => (
+                    <TH key={c.key}>{c.label}</TH>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {isLoadingData ? (
+                  <tr>
+                    <td
+                      colSpan={PCM_TRUNK_GROUP_TABLE_COLUMNS.length}
                       style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
+                        padding: "24px",
+                        textAlign: "center",
+                        borderBottom: `1px solid ${C.cardBorder}`,
+                        fontSize: 13,
+                        color: C.labelText,
                       }}
                     >
-                      Check
-                    </th>
-                    {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                      (c) => c.key !== "check",
-                    ).map((c) => (
-                      <th
-                        key={c.key}
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                      <div
                         style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
                         }}
                       >
-                        {c.label}
-                      </th>
-                    ))}
+                        <CircularProgress size={20} sx={{ color: C.accent }} />
+                        <span>Loading PCM Trunk Group data...</span>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {isLoadingData ? (
-                    <tr>
-                      <td
-                        colSpan={PCM_TRUNK_GROUP_TABLE_COLUMNS.length}
-                        className="border border-gray-300 px-2 py-4 text-center"
+                ) : groups.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={PCM_TRUNK_GROUP_TABLE_COLUMNS.length}
+                      style={{
+                        padding: "16px",
+                        textAlign: "center",
+                        borderBottom: `1px solid ${C.cardBorder}`,
+                        fontSize: 13,
+                        color: C.mutedText,
+                      }}
+                    >
+                      No data
+                    </td>
+                  </tr>
+                ) : (
+                  pagedGroups.map((item, idx) => {
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isRowChecked = selected.includes(realIdx);
+                    const rowBg = isRowChecked
+                      ? "#f0f9ff"
+                      : idx % 2 === 0
+                        ? "#ffffff"
+                        : "#f8fafc";
+
+                    return (
+                      <tr
+                        key={realIdx}
+                        style={{
+                          background: rowBg,
+                          transition: "background-color 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isRowChecked)
+                            e.currentTarget.style.backgroundColor = "#f1f5f9";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isRowChecked)
+                            e.currentTarget.style.backgroundColor = rowBg;
+                        }}
                       >
-                        <div className="flex items-center justify-center gap-2">
-                          <CircularProgress size={20} />
-                          <span>Loading PCM Trunk Group data...</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : groups.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={PCM_TRUNK_GROUP_TABLE_COLUMNS.length}
-                        className="border border-gray-300 px-2 py-1 text-center"
-                      >
-                        No data
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedGroups.map((item, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      return (
-                        <tr key={realIdx} style={{ minHeight: 32 }}>
-                          <td
-                            className="border border-gray-300 text-center bg-white"
-                            style={{
-                              border: "1px solid #bbb",
-                              padding: "6px 8px",
-                              minHeight: 32,
-                              whiteSpace: "nowrap",
+                        {/* Checkbox column */}
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            textAlign: "center",
+                            borderBottom: "1px solid #e2e8f0",
+                            borderRight: "0.5px solid #e2e8f0",
+                            width: 50,
+                          }}
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={isRowChecked}
+                            onChange={() => handleSelectRow(realIdx)}
+                            sx={{
+                              padding: "1px",
+                              color: C.accent,
+                              "&.Mui-checked": { color: C.accent },
                             }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selected.includes(realIdx)}
-                              onChange={() => handleSelectRow(realIdx)}
-                            />
-                          </td>
-                          {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                            (col) => col.key !== "check",
-                          ).map((col) => {
-                            if (col.key === "modify") {
-                              return (
-                                <td
-                                  key={col.key}
-                                  className="border border-gray-300 text-center bg-white"
-                                  style={{
-                                    border: "1px solid #bbb",
-                                    padding: "6px 8px",
-                                    minHeight: 32,
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
-                                  <EditDocumentIcon
-                                    className="cursor-pointer text-blue-600 mx-auto"
-                                    onClick={() =>
-                                      handleOpenModal(item, realIdx)
-                                    }
-                                    style={{ fontSize: 22 }}
-                                  />
-                                </td>
-                              );
-                            }
-                            if (col.key === "pstnIds") {
-                              return (
-                                <td
-                                  key={col.key}
-                                  className="border border-gray-300 text-center bg-white"
-                                  style={{
-                                    border: "1px solid #bbb",
-                                    padding: "6px 8px",
-                                    minHeight: 32,
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
-                                  {item.pstnIds && item.pstnIds.length > 0
-                                    ? item.pstnIds.join(", ")
-                                    : "--"}
-                                </td>
-                              );
-                            }
+                          />
+                        </td>
+
+                        {/* Other columns */}
+                        {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                          (col) => col.key !== "check",
+                        ).map((col) => {
+                          if (col.key === "modify") {
                             return (
                               <td
                                 key={col.key}
-                                className="border border-gray-300 text-center bg-white"
                                 style={{
-                                  border: "1px solid #bbb",
                                   padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
+                                  textAlign: "center",
+                                  borderBottom: "1px solid #e2e8f0",
+                                  borderRight: "0.5px solid #e2e8f0",
+                                  width: 80,
                                 }}
                               >
-                                {item[col.key] !== undefined &&
-                                item[col.key] !== ""
-                                  ? item[col.key]
+                                <IconButton
+                                  onClick={() => handleOpenModal(item, realIdx)}
+                                  sx={{
+                                    padding: "4px",
+                                    color: C.accent,
+                                    "&:hover": { backgroundColor: "#e2e8f0" },
+                                  }}
+                                >
+                                  <EditIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                              </td>
+                            );
+                          }
+                          if (col.key === "pstnIds") {
+                            return (
+                              <td
+                                key={col.key}
+                                style={{
+                                  padding: "9px 8px",
+                                  textAlign: "center",
+                                  fontSize: 13,
+                                  color: C.valueText,
+                                  borderBottom: "1px solid #e2e8f0",
+                                  borderRight: "0.5px solid #e2e8f0",
+                                }}
+                              >
+                                {item.pstnIds && item.pstnIds.length > 0
+                                  ? item.pstnIds.join(", ")
                                   : "--"}
                               </td>
                             );
-                          })}
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          }
+                          return (
+                            <td
+                              key={col.key}
+                              style={{
+                                padding: "9px 8px",
+                                textAlign: "center",
+                                fontSize: 13,
+                                color: C.valueText,
+                                borderBottom: "1px solid #e2e8f0",
+                                borderRight: "0.5px solid #e2e8f0",
+                              }}
+                            >
+                              {item[col.key] !== undefined &&
+                              item[col.key] !== ""
+                                ? item[col.key]
+                                : "--"}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
 
-        {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-        <div
-          className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleCheckAllRows}
+          {/* Bottom Pagination Control Section */}
+          {groups.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+                flexWrap: "wrap",
+                gap: 12,
+              }}
             >
-              Check All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleUncheckAllRows}
-            >
-              Uncheck All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded cursor-pointer px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={() =>
-                setSelected(
-                  pagedGroups
-                    .map((_, idx) => (page - 1) * itemsPerPage + idx)
-                    .filter((i) => !selected.includes(i)),
-                )
-              }
-            >
-              Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                selected.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleDeleteSelected}
-              disabled={selected.length === 0}
-            >
-              Delete
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleClearAll}
-            >
-              Clear All
-            </button>
-          </div>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => handleOpenModal()}
-          >
-            Add New
-          </button>
-        </div>
-        {/* Pagination */}
-        <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-          <span>{groups.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => setPage(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => setPage(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => setPage(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => setPage(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => setPage(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedGroups.length} record
+                {pagedGroups.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Btn
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
+                <Btn
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={() => setPage(page + 1)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+                <Btn
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
+                <span
+                  style={{ fontSize: 11, color: C.mutedText, marginLeft: 8 }}
+                >
+                  Go to Page:
+                </span>
+                <select
+                  value={page}
+                  onChange={(e) => setPage(Number(e.target.value))}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                    background: C.cardBg,
+                    color: C.labelText,
+                    padding: "4px 8px",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       {/* Modal Dialog */}
@@ -1163,283 +1311,416 @@ const PcmTrunkGroupPage = () => {
         onClose={handleCloseModal}
         maxWidth="xs"
         fullWidth
-        PaperProps={{ sx: { width: 600, maxWidth: "95vw", p: 0 } }}
+        PaperProps={{
+          sx: {
+            width: 500,
+            maxWidth: "95vw",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            marginBottom: 12,
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "16px 24px",
           }}
         >
-          PCM Trunk Group
+          {formData.originalIndex !== undefined
+            ? "Edit PCM Trunk Group"
+            : "Add PCM Trunk Group"}
         </DialogTitle>
         <DialogContent
-          className="flex flex-col gap-2 py-4"
           style={{
-            backgroundColor: "#dde0e4",
-            border: "1px solid #bbb",
-            borderTop: "none",
+            padding: "20px 24px",
+            backgroundColor: "#f8fafc",
           }}
         >
-          {PCM_TRUNK_GROUP_FIELDS.map((field) => (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              width: "100%",
+            }}
+          >
+            {PCM_TRUNK_GROUP_FIELDS.map((field) => (
+              <div
+                key={field.name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  background: "#ffffff",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 6,
+                  padding: "6px 12px",
+                  gap: 12,
+                  minHeight: 40,
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "#1e293b",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 160,
+                  }}
+                >
+                  {field.label}:
+                </label>
+                <div className="flex-1" style={{ maxWidth: 280 }}>
+                  {field.type === "select" ? (
+                    <Select
+                      value={formData[field.name]}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          [field.name]: e.target.value,
+                        }))
+                      }
+                      size="small"
+                      fullWidth
+                      variant="outlined"
+                      MenuProps={{
+                        PaperProps: {
+                          style: { maxHeight: 240, width: "auto" },
+                        },
+                      }}
+                      sx={{
+                        fontSize: 13,
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#cbd5e1",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#94a3b8",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#1e2d42",
+                        },
+                      }}
+                    >
+                      {field.options.map((option) => (
+                        <MenuItem
+                          key={option.value}
+                          value={option.value}
+                          sx={{ fontSize: 13 }}
+                        >
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  ) : (
+                    <TextField
+                      type={field.type}
+                      value={formData[field.name] || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          [field.name]: e.target.value,
+                        }))
+                      }
+                      size="small"
+                      fullWidth
+                      variant="outlined"
+                      placeholder={field.placeholder || ""}
+                      sx={{
+                        fontSize: 13,
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#cbd5e1",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#94a3b8",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#1e2d42",
+                        },
+                      }}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* PCM Trunks Block */}
             <div
-              key={field.name}
-              className="flex flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                background: "#ffffff",
+                border: "1px solid #cbd5e1",
+                borderRadius: 6,
+                padding: "12px",
+                gap: 8,
+                marginTop: 4,
+              }}
             >
-              <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[160px] mr-2">
-                {field.label}:
-              </label>
-              <div className="flex-1 min-w-0">
-                {field.type === "select" ? (
-                  <Select
-                    value={formData[field.name]}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        [field.name]: e.target.value,
-                      }))
-                    }
-                    size="small"
-                    fullWidth
-                    variant="outlined"
-                    className="bg-white"
-                    MenuProps={{
-                      PaperProps: {
-                        style: { maxHeight: 240, width: "auto" },
-                      },
+              {/* Warning message for multiple trunk selection */}
+              {formData.pstnIds && formData.pstnIds.length > 1 && (
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    background: "#fffbeb",
+                    border: "1px solid #fef3c7",
+                    borderRadius: 6,
+                    color: "#b45309",
+                    fontSize: 12,
+                    fontWeight: 500,
+                  }}
+                >
+                  <strong>Note:</strong> You have selected{" "}
+                  {formData.pstnIds.length} PSTN IDs. This will create{" "}
+                  {formData.pstnIds.length} separate groups, each with a unique
+                  Group ID.
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: "#1e293b",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 160,
+                  }}
+                >
+                  PCM Trunks:
+                </span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: 2,
+                  }}
+                >
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      cursor: "pointer",
                     }}
-                    sx={{ maxWidth: "100%", minWidth: 0 }}
                   >
-                    {field.options.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                ) : (
-                  <TextField
-                    type={field.type}
-                    value={formData[field.name] || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        [field.name]: e.target.value,
-                      }))
-                    }
-                    size="small"
-                    fullWidth
-                    variant="outlined"
-                    className="bg-white"
-                    sx={{ maxWidth: "100%", minWidth: 0 }}
-                    placeholder={field.placeholder || ""}
-                  />
-                )}
-              </div>
-            </div>
-          ))}
-          {/* PCM Trunks Block */}
-          <div className="flex flex-col border border-gray-200 rounded bg-white p-2 mb-2 w-full">
-            {/* Warning message for multiple trunk selection */}
-            {formData.pstnIds && formData.pstnIds.length > 1 && (
-              <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
-                <strong>Note:</strong> You have selected{" "}
-                {formData.pstnIds.length} PSTN IDs. This will create{" "}
-                {formData.pstnIds.length} separate groups, each with a unique
-                Group ID.
-              </div>
-            )}
-            <div className="flex flex-row items-center justify-between mb-2">
-              <span className="font-medium text-[15px] text-gray-700 min-w-[160px]">
-                PCM Trunks:
-              </span>
-              <div className="flex flex-col items-end">
-                <label className="flex items-center text-[14px] font-medium">
-                  <input
-                    type="checkbox"
-                    checked={(() => {
+                    <Checkbox
+                      size="small"
+                      checked={(() => {
+                        const isEditing = formData.originalIndex !== undefined;
+                        const availableSpans = spansData.filter((span) =>
+                          isSpanAvailable(
+                            span.spanNo,
+                            isEditing,
+                            formData.originalIndex,
+                          ),
+                        );
+                        return (
+                          availableSpans.length > 0 &&
+                          formData.pstnIds &&
+                          formData.pstnIds.length === availableSpans.length
+                        );
+                      })()}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          const isEditing =
+                            formData.originalIndex !== undefined;
+                          const availableSpans = spansData
+                            .filter((span) =>
+                              isSpanAvailable(
+                                span.spanNo,
+                                isEditing,
+                                formData.originalIndex,
+                              ),
+                            )
+                            .map((span) => String(span.spanNo));
+                          setFormData((prev) => ({
+                            ...prev,
+                            pstnIds: availableSpans,
+                          }));
+                        } else {
+                          setFormData((prev) => ({ ...prev, pstnIds: [] }));
+                        }
+                      }}
+                      sx={{
+                        padding: "2px",
+                        color: C.accent,
+                        "&.Mui-checked": { color: C.accent },
+                      }}
+                    />
+                    Check All
+                  </label>
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      color: C.mutedText,
+                      marginTop: 2,
+                    }}
+                  >
+                    Selects all available PSTN spans
+                    {(() => {
                       const isEditing = formData.originalIndex !== undefined;
-                      const availableSpans = spansData.filter((span) =>
+                      const availableCount = spansData.filter((span) =>
                         isSpanAvailable(
                           span.spanNo,
                           isEditing,
                           formData.originalIndex,
                         ),
-                      );
+                      ).length;
+                      const usedCount = spansData.length - availableCount;
                       return (
-                        availableSpans.length > 0 &&
-                        formData.pstnIds &&
-                        formData.pstnIds.length === availableSpans.length
+                        <span style={{ marginLeft: 4 }}>
+                          ({availableCount} available
+                          {usedCount > 0 ? `, ${usedCount} used` : ""})
+                        </span>
                       );
                     })()}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        const isEditing = formData.originalIndex !== undefined;
-                        const availableSpans = spansData
-                          .filter((span) =>
-                            isSpanAvailable(
-                              span.spanNo,
-                              isEditing,
-                              formData.originalIndex,
-                            ),
-                          )
-                          .map((span) => String(span.spanNo));
-                        setFormData((prev) => ({
-                          ...prev,
-                          pstnIds: availableSpans,
-                        }));
-                      } else {
-                        setFormData((prev) => ({ ...prev, pstnIds: [] }));
-                      }
-                    }}
-                    className="mr-2"
-                  />
-                  Check All
-                </label>
-                <span className="text-xs text-gray-500 mt-1">
-                  Selects all available PSTN spans
-                  {(() => {
-                    const isEditing = formData.originalIndex !== undefined;
-                    const availableCount = spansData.filter((span) =>
-                      isSpanAvailable(
-                        span.spanNo,
-                        isEditing,
-                        formData.originalIndex,
-                      ),
-                    ).length;
-                    const usedCount = spansData.length - availableCount;
-                    return (
-                      <span className="ml-2">
-                        ({availableCount} available
-                        {usedCount > 0 ? `, ${usedCount} used` : ""})
-                      </span>
-                    );
-                  })()}
-                </span>
-                {formData.pstnIds && formData.pstnIds.length > 1 && (
-                  <span className="text-xs text-blue-600 mt-1">
-                    Will create {formData.pstnIds.length} separate groups
                   </span>
+                  {formData.pstnIds && formData.pstnIds.length > 1 && (
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        color: "#0284c7",
+                        fontWeight: 600,
+                        marginTop: 2,
+                      }}
+                    >
+                      Will create {formData.pstnIds.length} separate groups
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* Spans checklist grid */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  marginTop: 8,
+                  padding: "8px 0 0 0",
+                  borderTop: "1px dashed #e2e8f0",
+                }}
+              >
+                {isLoadingSpans ? (
+                  <div style={{ fontSize: 12, color: C.mutedText }}>
+                    Loading spans...
+                  </div>
+                ) : spansData.length > 0 ? (
+                  spansData.map((span) => {
+                    const isEditing = formData.originalIndex !== undefined;
+                    const isAvailable = isSpanAvailable(
+                      span.spanNo,
+                      isEditing,
+                      formData.originalIndex,
+                    );
+                    const isChecked =
+                      formData.pstnIds &&
+                      formData.pstnIds.includes(String(span.spanNo));
+                    const isUsed = !isAvailable && !isChecked;
+
+                    return (
+                      <label
+                        key={span.spanNo}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          background: isChecked ? "#f0f9ff" : "#ffffff",
+                          border: `1px solid ${
+                            isChecked ? "#0284c7" : "#cbd5e1"
+                          }`,
+                          borderRadius: 6,
+                          padding: "2px 8px",
+                          cursor: isAvailable ? "pointer" : "not-allowed",
+                          opacity: isAvailable ? 1 : 0.6,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: isUsed ? C.errorRed : C.labelText,
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={isChecked}
+                          disabled={!isAvailable}
+                          onChange={() =>
+                            handleTrunkCheckbox(String(span.spanNo))
+                          }
+                          sx={{
+                            padding: "2px",
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>
+                          {span.spanNo}
+                          {isUsed && (
+                            <span
+                              style={{
+                                fontSize: 10,
+                                color: C.errorRed,
+                                marginLeft: 4,
+                              }}
+                            >
+                              (used)
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    );
+                  })
+                ) : (
+                  <div style={{ fontSize: 12, color: C.mutedText }}>
+                    No spans available
+                  </div>
                 )}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {isLoadingSpans ? (
-                <div className="text-gray-500 text-sm">Loading spans...</div>
-              ) : spansData.length > 0 ? (
-                spansData.map((span) => {
-                  const isEditing = formData.originalIndex !== undefined;
-                  const isAvailable = isSpanAvailable(
-                    span.spanNo,
-                    isEditing,
-                    formData.originalIndex,
-                  );
-                  const isChecked =
-                    formData.pstnIds &&
-                    formData.pstnIds.includes(String(span.spanNo));
-                  const isUsed = !isAvailable && !isChecked;
-
-                  return (
-                    <label
-                      key={span.spanNo}
-                      className={`flex items-center text-[14px] font-medium mb-0 py-1 min-h-[28px] border-b border-r border-gray-100 last:border-b-0 last:border-r-0 pl-1 ${
-                        !isAvailable
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() =>
-                          handleTrunkCheckbox(String(span.spanNo))
-                        }
-                        disabled={!isAvailable}
-                        className="mr-2"
-                      />
-                      <span className={isUsed ? "text-red-600" : ""}>
-                        {span.spanNo}
-                        {isUsed && (
-                          <span className="text-xs text-red-500 ml-1">
-                            (used)
-                          </span>
-                        )}
-                      </span>
-                    </label>
-                  );
-                })
-              ) : (
-                <div className="text-gray-500 text-sm">No spans available</div>
-              )}
-            </div>
           </div>
         </DialogContent>
-        <DialogActions className="flex justify-center gap-6 pb-4">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+        <DialogActions
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
+          }}
+        >
+          <Btn
             onClick={handleSave}
             disabled={isSaving}
+            variant="accent"
+            style={{ padding: "8px 24px", fontSize: 13, minWidth: 100 }}
           >
             {isSaving ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
             disabled={isSaving}
+            variant="outline"
+            style={{ padding: "8px 24px", fontSize: 13, minWidth: 100 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

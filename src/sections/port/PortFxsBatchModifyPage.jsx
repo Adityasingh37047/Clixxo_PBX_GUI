@@ -6,6 +6,7 @@ import {
   PORT_FXS_BATCH_MODIFY_TITLE,
 } from "./constants/PortFxsPageConstants";
 // import { postBatchModifyFxs } from './controller';
+import { Alert, Checkbox } from "@mui/material";
 import { ROUTE_PATHS } from "../../constants/routeConstatns";
 
 // Initialize batch modify form
@@ -92,6 +93,12 @@ const PortFxsBatchModifyPage = ({
     const initialPorts = propInitialPorts || location.state || null;
     return getInitialBatchForm(initialPorts);
   });
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   // Handle form changes
   const handleChange = (key, value) => {
@@ -172,7 +179,8 @@ const PortFxsBatchModifyPage = ({
 
     // Validation
     if (parseInt(form.startingPort) > parseInt(form.endingPort)) {
-      alert(
+      showMessage(
+        "error",
         "The starting port number cannot be larger than the ending port one!",
       );
       return;
@@ -182,26 +190,26 @@ const PortFxsBatchModifyPage = ({
       // Allow empty starting SIP account (user may intentionally clear it).
       // Only validate SIP step size when a starting SIP account is provided.
       if (form.startingSipAccount && !form.sipAccountBatchStepSize) {
-        alert("Please enter the batch step size of SIP account!");
+        showMessage("error", "Please enter the batch step size of SIP account!");
         return;
       }
       if (
         form.displayNameBatchRule !== "All Same" &&
         !form.displayNameBatchStepSize
       ) {
-        alert("Please enter the batch step size of display name!");
+        showMessage("error", "Please enter the batch step size of display name!");
         return;
       }
       if (form.registerPort === "Yes" && form.batchRegister) {
         if (!form.startingAuthPassword) {
-          alert("Please enter your password!");
+          showMessage("error", "Please enter your password!");
           return;
         }
         if (
           form.authPasswordBatchRule !== "All Same" &&
           !form.authPasswordBatchStepSize
         ) {
-          alert("Please enter the batch step size of authentication password!");
+          showMessage("error", "Please enter the batch step size of authentication password!");
           return;
         }
       }
@@ -209,27 +217,27 @@ const PortFxsBatchModifyPage = ({
 
     if (form.batchConfigure) {
       if (form.autoDialNumberEnable && !form.autoDialNumber) {
-        alert("Please enter 'Auto Dial Number'!");
+        showMessage("error", "Please enter 'Auto Dial Number'!");
         return;
       }
       if (form.autoDialNumberEnable && !form.waitTimeBeforeAutoDial) {
-        alert("Please enter 'Wait Time before Auto Dial'!");
+        showMessage("error", "Please enter 'Wait Time before Auto Dial'!");
         return;
       }
       if (!form.inputGain || form.inputGain < -6 || form.inputGain > 6) {
-        alert("The value range of Input Gain is -6~6!");
+        showMessage("error", "The value range of Input Gain is -6~6!");
         return;
       }
       if (!form.outputGain || form.outputGain < -6 || form.outputGain > 6) {
-        alert("The value range of Output Gain is -6~6!");
+        showMessage("error", "The value range of Output Gain is -6~6!");
         return;
       }
       if (form.callForward && !form.forwardNumber) {
-        alert("Please enter an forward number!");
+        showMessage("error", "Please enter an forward number!");
         return;
       }
       if (form.forwardType === "No Reply" && !form.noAnswerDelayTime) {
-        alert("Please enter a time threshold for 'No Reply'!");
+        showMessage("error", "Please enter a time threshold for 'No Reply'!");
         return;
       }
     }
@@ -283,7 +291,7 @@ const PortFxsBatchModifyPage = ({
         console.debug("Sending batch modify payload:", payload);
         const res = await postBatchModifyFxs(payload);
         console.debug("Batch modify response:", res);
-        alert("Batch modify settings saved successfully!");
+        showMessage("success", "Batch modify settings saved successfully!");
         if (typeof onSaved === "function") {
           await onSaved();
         } else if (typeof onClose === "function") {
@@ -293,7 +301,7 @@ const PortFxsBatchModifyPage = ({
         }
       } catch (err) {
         console.error("Batch modify API failed:", err);
-        alert(err?.message || "Failed to save batch modify settings");
+        showMessage("error", err?.message || "Failed to save batch modify settings");
       }
     })();
   };
@@ -313,6 +321,23 @@ const PortFxsBatchModifyPage = ({
     >
       <div className="flex justify-center" style={{ padding: "0 20px" }}>
         <div style={{ width: "62%", maxWidth: "1000px", minWidth: "700px" }}>
+          {/* Error / Success Banner */}
+          {message.text && (
+            <Alert
+              severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
+              onClose={() => setMessage({ type: "", text: "" })}
+              sx={{
+                position: "fixed",
+                top: 20,
+                right: 20,
+                zIndex: 9999,
+                minWidth: 300,
+                boxShadow: 3,
+              }}
+            >
+              {message.text}
+            </Alert>
+          )}
           {/* Page Title Bar */}
           <div className="rounded-t-lg w-full h-8 bg-[#3E5475] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
             <span>{PORT_FXS_BATCH_MODIFY_TITLE}</span>

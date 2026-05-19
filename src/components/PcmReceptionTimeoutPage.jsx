@@ -4,6 +4,7 @@ import {
   PCM_RECEPTION_TIMEOUT_INITIAL_FORM,
   PCM_RECEPTION_TIMEOUT_TABLE_COLUMNS,
 } from "../constants/PcmReceptionTimeoutConstants";
+import EditIcon from "@mui/icons-material/Edit";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -11,6 +12,99 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+
+// ── Theme tokens ──────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+// ── Reusable Button ───────────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "outline",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: C.accent,
+      color: "#fff",
+      border: `1px solid ${C.cardBorder}`,
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.outline;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ── Reusable Table Header ─────────────────────────────────────────────────────
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 
 const PcmReceptionTimeoutPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,247 +139,263 @@ const PcmReceptionTimeoutPage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        background: C.pageBg,
+        minHeight: "calc(100vh - 120px)",
+        padding: "24px 20px",
+        boxSizing: "border-box",
+      }}
     >
-      <div className="w-full max-w-full mx-auto">
-        {/* Header */}
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          Number-receiving Timeout Info
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
+        <div style={{ fontSize: 11, color: C.mutedText, marginBottom: 12 }}>
+          E1-PRI &rsaquo; PCM &rsaquo;{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            Number-Receiving Timeout Info
+          </span>
         </div>
 
+        {/* Main Card */}
         <div
-          className="w-full max-w-full mx-auto"
           style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div
-              className="overflow-x-auto w-full border-b border-gray-300"
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <span
               style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
+                background: "#f1f5f9",
+                border: `0.5px solid ${C.cardBorder}`,
+                color: "#475569",
+                fontSize: 11,
+                fontWeight: 600,
+                padding: "3px 12px",
+                borderRadius: 8,
               }}
             >
-              <table
-                className="w-full min-w-[1200px] border border-gray-300 border-collapse whitespace-nowrap"
-                style={{ tableLayout: "auto", border: "1px solid #bbb" }}
-              >
-                <colgroup>
-                  <col className="w-1/3" />
-                  <col className="w-1/3" />
-                  <col className="w-1/3" />
-                </colgroup>
-                <thead>
-                  <tr style={{ minHeight: 32 }}>
-                    <th
-                      className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                      style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
+              Number-Receiving Timeout Info
+            </span>
+            {/* <Btn onClick={handleOpenModal} variant="accent">
+              ✏ Edit
+            </Btn> */}
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto w-full">
+            <table
+              className="w-full border-collapse whitespace-nowrap"
+              style={{ tableLayout: "auto" }}
+            >
+              <colgroup>
+                <col style={{ width: "33%" }} />
+                <col style={{ width: "33%" }} />
+                <col style={{ width: "34%" }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <TH>Inter Digit Timeout(s)</TH>
+                  <TH>Description</TH>
+                  <TH>Modify</TH>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  style={{
+                    background: "#ffffff",
+                    transition: "background-color 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f1f5f9";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#ffffff";
+                  }}
+                >
+                  <td
+                    style={{
+                      padding: "9px 8px",
+                      textAlign: "center",
+                      fontSize: 13,
+                      color: C.valueText,
+                      borderBottom: "1px solid #e2e8f0",
+                      borderRight: "0.5px solid #e2e8f0",
+                    }}
+                  >
+                    {timeoutData.interDigitTimeout}
+                  </td>
+                  <td
+                    style={{
+                      padding: "9px 8px",
+                      textAlign: "center",
+                      fontSize: 13,
+                      color: C.valueText,
+                      borderBottom: "1px solid #e2e8f0",
+                      borderRight: "0.5px solid #e2e8f0",
+                    }}
+                  >
+                    {timeoutData.description}
+                  </td>
+                  <td
+                    style={{
+                      padding: "6px 8px",
+                      textAlign: "center",
+                      borderBottom: "1px solid #e2e8f0",
+                      borderRight: "0.5px solid #e2e8f0",
+                      width: 80,
+                    }}
+                  >
+                    <IconButton
+                      onClick={handleOpenModal}
+                      sx={{
+                        padding: "4px",
+                        color: C.accent,
+                        "&:hover": { backgroundColor: "#e2e8f0" },
                       }}
                     >
-                      Inter Digit Timeout(s)
-                    </th>
-                    <th
-                      className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                      style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Description
-                    </th>
-                    <th
-                      className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                      style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Modify
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ minHeight: 32 }}>
-                    <td
-                      className="border border-gray-300 text-center bg-white"
-                      style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {timeoutData.interDigitTimeout}
-                    </td>
-                    <td
-                      className="border border-gray-300 text-center bg-white"
-                      style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {timeoutData.description}
-                    </td>
-                    <td
-                      className="border border-gray-300 text-center bg-white"
-                      style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      <EditDocumentIcon
-                        className="cursor-pointer text-blue-600 mx-auto"
-                        onClick={handleOpenModal}
-                        style={{ fontSize: 22 }}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                      <EditIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+
+      {/* Modal */}
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 600 } }}
+        PaperProps={{
+          sx: {
+            width: 500,
+            maxWidth: "95vw",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            marginBottom: 12,
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "16px 24px",
           }}
         >
           Number-Receiving Timeout
         </DialogTitle>
         <DialogContent
-          className="flex flex-col gap-2 py-4"
+          style={{ padding: "20px 24px", backgroundColor: "#f8fafc" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              width: "100%",
+            }}
+          >
+            {PCM_RECEPTION_TIMEOUT_FIELDS.map((field) => (
+              <div
+                key={field.name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  background: "#ffffff",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 6,
+                  padding: "6px 12px",
+                  gap: 12,
+                  minHeight: 40,
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "#1e293b",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 160,
+                  }}
+                >
+                  {field.label}:
+                </label>
+                <div className="flex-1" style={{ maxWidth: 280 }}>
+                  <TextField
+                    type={field.type}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={handleInputChange}
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    placeholder={field.placeholder || ""}
+                    sx={{
+                      fontSize: 13,
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#cbd5e1",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#94a3b8",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#1e2d42",
+                      },
+                    }}
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+        <DialogActions
           style={{
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
           }}
         >
-          {PCM_RECEPTION_TIMEOUT_FIELDS.map((field) => (
-            <div
-              key={field.name}
-              className="flex flex-row items-center border border-gray-300 rounded px-3 py-2 gap-3 w-full bg-white mb-2"
-            >
-              <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
-                {field.label}:
-              </label>
-              <div className="flex-1 min-w-0">
-                <TextField
-                  type={field.type}
-                  name={field.name}
-                  value={formData[field.name]}
-                  onChange={handleInputChange}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  className="bg-white"
-                  sx={{
-                    maxWidth: "100%",
-                    minWidth: 0,
-                    backgroundColor: "#ffffff",
-                  }}
-                  placeholder={field.placeholder || ""}
-                />
-              </div>
-            </div>
-          ))}
-        </DialogContent>
-        <DialogActions className="flex justify-center gap-6 pb-4">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+          <Btn
             onClick={handleSave}
+            variant="accent"
+            style={{ padding: "8px 24px", fontSize: 13, minWidth: 100 }}
           >
             Save
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
+            variant="outline"
+            style={{ padding: "8px 24px", fontSize: 13, minWidth: 100 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

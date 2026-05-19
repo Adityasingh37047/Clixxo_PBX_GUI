@@ -6,7 +6,6 @@ import {
 } from "../constants/RouteIPIPConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -16,6 +15,7 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
+  FormControl,
 } from "@mui/material";
 import {
   listIpPstnRoutes,
@@ -24,6 +24,121 @@ import {
   deleteIpPstnRoute,
   listGroups,
 } from "../api/apiService";
+
+// ── Color Palette (From RouteIpPstnPage) ──────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+// ── Shared UI Components ──────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e2d42",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const FieldRow = ({ label, children }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 170,
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1 }}>{children}</div>
+  </div>
+);
 
 const RouteIPIPPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,7 +158,6 @@ const RouteIPIPPage = () => {
     width: 0,
     scrollWidth: 0,
   });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
   const [sipTrunkGroups, setSipTrunkGroups] = useState([]);
   const [loading, setLoading] = useState({
     fetch: false,
@@ -84,13 +198,15 @@ const RouteIPIPPage = () => {
   const handleSave = async () => {
     const { originalIndex, ...dataToSave } = formData;
     if (!validatePrefix(dataToSave.callerIdPrefix)) {
-      alert(
+      showMessage(
+        "error",
         "Invalid CallerID Prefix! Only numbers (0-9) and asterisks (*) are allowed.",
       );
       return;
     }
     if (!validatePrefix(dataToSave.calleeIdPrefix)) {
-      alert(
+      showMessage(
+        "error",
         "Invalid CalleeID Prefix! Only numbers (0-9) and asterisks (*) are allowed.",
       );
       return;
@@ -114,29 +230,25 @@ const RouteIPIPPage = () => {
           "ip_to_ip",
         );
         if (response?.response) {
-          alert("Route updated successfully!");
+          showMessage("success", "Route updated successfully!");
+          handleCloseModal();
+          await fetchRules();
         } else {
-          alert(response?.message || "Failed to update route");
+          showMessage("error", response?.message || "Failed to update route");
         }
       } else {
         const response = await createIpPstnRoute(apiData, "ip_to_ip");
         if (response?.response) {
-          alert("Route created successfully!");
+          showMessage("success", "Route created successfully!");
+          handleCloseModal();
+          await fetchRules();
         } else {
-          alert(response?.message || "Failed to create route");
+          showMessage("error", response?.message || "Failed to create route");
         }
       }
-      // Force a fresh reload of the table like IP->PSTN page
-      setRules([]);
-      await fetchRules();
-      handleCloseModal();
     } catch (e) {
-      console.error("Error saving IP-&gt;IP rule:", e);
-      if (e.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", e.message || "Failed to save IP-&gt;IP rule");
-      }
+      console.error("Error saving IP->IP rule:", e);
+      showMessage("error", e.message || "Failed to save IP->IP rule");
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
@@ -146,22 +258,27 @@ const RouteIPIPPage = () => {
       const newData = { ...prev, [key]: value };
 
       // Validation: Prevent same SIP trunk group ID in call source and call destination
-      if (key === "callSource" && value === prev.callDestination) {
-        // If call source is set to same as call destination, clear call destination
+      if (
+        key === "callSource" &&
+        value === prev.callDestination &&
+        value !== ""
+      ) {
         newData.callDestination = "";
         setValidationMessage(
           "Call source and call destination cannot be the same. Call destination has been cleared.",
         );
         setTimeout(() => setValidationMessage(""), 3000);
-      } else if (key === "callDestination" && value === prev.callSource) {
-        // If call destination is set to same as call source, clear call source
+      } else if (
+        key === "callDestination" &&
+        value === prev.callSource &&
+        value !== ""
+      ) {
         newData.callSource = "";
         setValidationMessage(
           "Call source and call destination cannot be the same. Call source has been cleared.",
         );
         setTimeout(() => setValidationMessage(""), 3000);
       } else {
-        // Clear validation message if no conflict
         setValidationMessage("");
       }
 
@@ -206,14 +323,10 @@ const RouteIPIPPage = () => {
       }
       await fetchRules();
       setSelected([]);
-      alert("Selected routes deleted successfully!");
+      showMessage("success", "Selected routes deleted successfully!");
     } catch (e) {
       console.error("Delete failed:", e);
-      if (e.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", e.message || "Failed to delete routes");
-      }
+      showMessage("error", e.message || "Failed to delete routes");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -237,14 +350,10 @@ const RouteIPIPPage = () => {
       await fetchRules();
       setSelected([]);
       setPage(1);
-      alert("All routes deleted successfully!");
+      showMessage("success", "All routes deleted successfully!");
     } catch (e) {
       console.error("Clear all failed:", e);
-      if (e.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", e.message || "Failed to clear all routes");
-      }
+      showMessage("error", e.message || "Failed to clear all routes");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -252,27 +361,12 @@ const RouteIPIPPage = () => {
   const handlePageChange = (newPage) =>
     setPage(Math.max(1, Math.min(totalPages, newPage)));
 
-  // Scroll handling functions
   const handleTableScroll = (e) =>
     setScrollState({
       left: e.target.scrollLeft,
       width: e.target.clientWidth,
       scrollWidth: e.target.scrollWidth,
     });
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
 
   // Update scroll state when data or page changes
   useEffect(() => {
@@ -284,7 +378,6 @@ const RouteIPIPPage = () => {
           width: el.clientWidth,
           scrollWidth: el.scrollWidth,
         });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
       }
     };
     update();
@@ -295,7 +388,6 @@ const RouteIPIPPage = () => {
   // Helper function to format display values for table
   const formatDisplayValue = (key, value, rowIndex = 0) => {
     if (key === "index") {
-      // Calculate index based on current page and row position
       return (page - 1) * itemsPerPage + rowIndex + 1;
     }
 
@@ -325,11 +417,6 @@ const RouteIPIPPage = () => {
       }
     } catch (e) {
       console.error("Failed to load SIP groups", e);
-      if (e.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", e.message || "Failed to load SIP trunk groups");
-      }
       setSipTrunkGroups([]);
     }
   };
@@ -353,17 +440,8 @@ const RouteIPIPPage = () => {
         setRules([]);
       }
     } catch (e) {
-      console.error("Failed to load IP-&gt;IP routes", e);
-      if (e.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else if (e.response?.status === 500) {
-        showMessage(
-          "error",
-          "Server error. The IP-&gt;IP routes endpoint may have issues.",
-        );
-      } else {
-        showMessage("error", e.message || "Failed to load IP-&gt;IP routes");
-      }
+      console.error("Failed to load IP->IP routes", e);
+      showMessage("error", e.message || "Failed to load IP->IP routes");
       setRules([]);
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
@@ -377,627 +455,538 @@ const RouteIPIPPage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      {/* Message Display */}
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {/* Toast Alert */}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
 
-      <div className="w-full max-w-full mx-auto">
-        {/* Blue header bar - always show */}
+        {/* Breadcrumb */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-2"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          IP-&gt;IP Routing Rule
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            E1-PRI &rsaquo; Route &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              IP-&gt;IP Routing Rule
+            </span>
+          </div>
         </div>
 
+        {/* Main Card */}
         <div
-          className="w-full max-w-full mx-auto"
           style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div
-              className="w-full border-b border-gray-300"
-              style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
-              }}
-            >
-              <div
-                ref={tableScrollRef}
-                onScroll={handleTableScroll}
-                className="scrollbar-hide"
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
                 style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  maxHeight: 240,
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
                 }}
               >
-                <table
-                  className="w-full min-w-[1400px] border border-gray-300 border-collapse whitespace-nowrap"
-                  style={{ tableLayout: "auto", border: "1px solid #bbb" }}
+                Page {page} · {rules.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
                 >
-                  <thead>
-                    <tr style={{ minHeight: 32 }}>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Btn onClick={handleCheckAll} variant="outline">
+                Check All
+              </Btn>
+              <Btn onClick={handleUncheckAll} variant="outline">
+                Uncheck All
+              </Btn>
+              <Btn onClick={handleInverse} variant="outline">
+                Inverse
+              </Btn>
+              <Btn
+                onClick={handleDelete}
+                disabled={selected.length === 0 || loading.delete}
+                variant="danger"
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "🗑 Delete"
+                )}
+              </Btn>
+              <Btn
+                onClick={handleClearAll}
+                disabled={rules.length === 0 || loading.delete}
+                variant="danger"
+              >
+                Clear All
+              </Btn>
+              <Btn onClick={() => handleOpenModal()} variant="accent">
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table Area */}
+          <div
+            style={{ width: "100%", display: "flex", flexDirection: "column" }}
+          >
+            <div
+              ref={tableScrollRef}
+              onScroll={handleTableScroll}
+              style={{
+                overflowX: "auto",
+                overflowY: "auto",
+                maxHeight: 400,
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  minWidth: 1200,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH
+                      style={{
+                        width: 40,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Check
+                    </TH>
+                    {ROUTE_IP_IP_TABLE_COLUMNS.map((col) => (
+                      <TH
+                        key={col.key}
+                        style={{ position: "sticky", top: 0, zIndex: 10 }}
+                      >
+                        {col.label}
+                      </TH>
+                    ))}
+                    <TH
+                      style={{
+                        width: 70,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading.fetch ? (
+                    <tr>
+                      <td
+                        colSpan={ROUTE_IP_IP_TABLE_COLUMNS.length + 2}
+                        style={{ textAlign: "center", padding: "36px 0" }}
+                      >
+                        <CircularProgress size={24} />
+                      </td>
+                    </tr>
+                  ) : rules.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={ROUTE_IP_IP_TABLE_COLUMNS.length + 2}
                         style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
                         }}
                       >
-                        Check
-                      </th>
-                      {ROUTE_IP_IP_TABLE_COLUMNS.map((c) => (
-                        <th
-                          key={c.key}
-                          className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                        No data. Click '+ Add New' to create one.
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedRules.map((item, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      return (
+                        <tr
+                          key={realIdx}
                           style={{
-                            border: "1px solid #bbb",
-                            padding: "6px 8px",
-                            minHeight: 32,
-                            whiteSpace: "nowrap",
+                            background: isSelected
+                              ? "#f0f9ff"
+                              : idx % 2 === 1
+                                ? "#f8fafc"
+                                : "#ffffff",
+                            borderBottom: "0.5px solid #9ca3af",
+                            transition: "background 0.1s ease",
                           }}
                         >
-                          {c.label}
-                        </th>
-                      ))}
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Modify
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading.fetch ? (
-                      <tr>
-                        <td
-                          colSpan={ROUTE_IP_IP_TABLE_COLUMNS.length + 2}
-                          className="border border-gray-300 px-2 py-4 text-center"
-                        >
-                          <div className="flex items-center justify-center gap-2">
-                            <CircularProgress size={20} />
-                            <span>Loading IP-&gt;IP routes...</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : rules.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={ROUTE_IP_IP_TABLE_COLUMNS.length + 2}
-                          className="border border-gray-300 px-2 py-1 text-center"
-                        >
-                          No data
-                        </td>
-                      </tr>
-                    ) : (
-                      pagedRules.map((item, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        return (
-                          <tr key={realIdx} style={{ minHeight: 32 }}>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 8px",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleSelectRow(idx)}
+                              style={{ cursor: "pointer" }}
+                            />
+                          </td>
+                          {ROUTE_IP_IP_TABLE_COLUMNS.map((col) => (
                             <td
-                              className="border border-gray-300 text-center bg-white"
+                              key={col.key}
                               style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
+                                textAlign: "center",
+                                fontSize: 12,
+                                padding: "7px 8px",
+                                color: C.valueText,
+                                borderRight: "0.5px solid #edf2f7",
                               }}
                             >
-                              <input
-                                type="checkbox"
-                                checked={selected.includes(realIdx)}
-                                onChange={() => handleSelectRow(idx)}
-                              />
+                              {formatDisplayValue(col.key, item[col.key], idx)}
                             </td>
-                            {ROUTE_IP_IP_TABLE_COLUMNS.map((col) => (
-                              <td
-                                key={col.key}
-                                className="border border-gray-300 text-center bg-white"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {formatDisplayValue(
-                                  col.key,
-                                  item[col.key],
-                                  idx,
-                                )}
-                              </td>
-                            ))}
-                            <td
-                              className="border border-gray-300 text-center bg-white"
+                          ))}
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 8px",
+                            }}
+                          >
+                            <div
                               style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
+                                display: "flex",
+                                justifyContent: "center",
                               }}
                             >
                               <EditDocumentIcon
-                                className="cursor-pointer text-blue-600 mx-auto"
+                                className="cursor-pointer text-blue-600"
                                 onClick={() => handleOpenModal(item, realIdx)}
+                                style={{ fontSize: 20 }}
                               />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Pagination Footer */}
+          {!loading.fetch && rules.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+                gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRules.length} records on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={() => handlePageChange(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
+                <Btn
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  &larr; Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Next &rarr;
+                </Btn>
+                <Btn
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
               </div>
             </div>
-            {/* Custom scrollbar row below the table */}
-            {(() => {
-              const thumbWidth =
-                scrollState.width && scrollState.scrollWidth
-                  ? Math.max(
-                      40,
-                      (scrollState.width / scrollState.scrollWidth) *
-                        (scrollState.width - 8),
-                    )
-                  : 40;
-              const thumbLeft =
-                scrollState.width &&
-                scrollState.scrollWidth &&
-                scrollState.scrollWidth > scrollState.width
-                  ? (scrollState.left /
-                      (scrollState.scrollWidth - scrollState.width)) *
-                    (scrollState.width - thumbWidth - 16)
-                  : 0;
-              return (
-                showCustomScrollbar && (
-                  <div
-                    style={{
-                      width: "100%",
-                      margin: "0 auto",
-                      background: "#f4f6fa",
-                      display: "flex",
-                      alignItems: "center",
-                      height: 24,
-                      borderBottomLeftRadius: 8,
-                      borderBottomRightRadius: 8,
-                      border: "none",
-                      borderTop: "none",
-                      padding: "0 4px",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                      onClick={() => handleArrowClick("left")}
-                    >
-                      &#9664;
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        height: 12,
-                        background: "#e3e7ef",
-                        borderRadius: 8,
-                        position: "relative",
-                        margin: "0 4px",
-                        overflow: "hidden",
-                      }}
-                      onClick={handleScrollbarDrag}
-                    >
-                      <div
-                        style={{
-                          position: "absolute",
-                          height: 12,
-                          background: "#888",
-                          borderRadius: 8,
-                          cursor: "pointer",
-                          top: 0,
-                          width: thumbWidth,
-                          left: thumbLeft,
-                        }}
-                        draggable
-                        onDrag={handleScrollbarDrag}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                      onClick={() => handleArrowClick("right")}
-                    >
-                      &#9654;
-                    </div>
-                  </div>
-                )
-              );
-            })()}
-          </div>
-        </div>
-
-        {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-        <div
-          className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleCheckAll}
-            >
-              Check All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleUncheckAll}
-            >
-              Uncheck All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleInverse}
-            >
-              Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                selected.length === 0 || loading.delete
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-              onClick={handleDelete}
-              disabled={selected.length === 0 || loading.delete}
-            >
-              {loading.delete ? <CircularProgress size={12} /> : "Delete"}
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                rules.length === 0 || loading.delete
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-              onClick={handleClearAll}
-              disabled={rules.length === 0 || loading.delete}
-            >
-              {loading.delete ? <CircularProgress size={12} /> : "Clear All"}
-            </button>
-          </div>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => handleOpenModal()}
-          >
-            Add New
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-          <span>{rules.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => handlePageChange(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
+          )}
         </div>
 
         {/* Note Message */}
-        <div className="text-red-600 text-base mt-4 text-center">
+        <div
+          style={{
+            color: "#dc2626",
+            fontSize: "14px",
+            marginTop: "16px",
+            textAlign: "center",
+            fontWeight: 500,
+          }}
+        >
           Note: The IP-&gt;IP route takes effect after authorization!
         </div>
       </div>
+
       {/* Modal */}
       <Dialog
         open={isModalOpen}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 600, maxWidth: "95vw", mx: "auto", p: 0 },
-        }}
-        disableRestoreFocus
-        disableEnforceFocus
+        PaperProps={{ sx: { width: 550, maxWidth: "95vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
           }}
         >
-          {formData.originalIndex !== undefined
-            ? "Edit IP-&gt;IP Routing Rule"
-            : "Add IP-&gt;IP Routing Rule"}
+          {formData.originalIndex !== undefined && formData.originalIndex > -1
+            ? "Edit IP->IP Routing Rule"
+            : "Add IP->IP Routing Rule"}
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-          }}
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
         >
-          <div className="flex flex-col gap-2 w-full">
-            {/* Validation Message */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {validationMessage && (
-              <Alert severity="warning" sx={{ fontSize: 14, mb: 1 }}>
+              <Alert severity="warning" sx={{ fontSize: 13 }}>
                 {validationMessage}
               </Alert>
             )}
-            {ROUTE_IP_IP_FIELDS.filter((f) => f.key !== "index").map(
-              (field) => (
-                <div
-                  key={field.key}
-                  className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-                  style={{ minHeight: 32 }}
-                >
-                  <label
-                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                    style={{ width: 180, marginRight: 10 }}
-                  >
-                    {field.label}
-                  </label>
-                  <div className="flex-1">
-                    {field.type === "select" ? (
-                      <MuiSelect
-                        value={formData[field.key] || ""}
-                        onChange={(e) =>
-                          handleInputChange(field.key, e.target.value)
-                        }
-                        size="small"
-                        fullWidth
-                        variant="outlined"
-                        sx={{ fontSize: 14 }}
-                        displayEmpty
-                      >
-                        {field.key === "callSource" ||
-                        field.key === "callDestination"
-                          ? [
-                              // Add "Please select" placeholder option
-                              <MenuItem
-                                key="placeholder"
-                                value=""
-                                sx={{ fontSize: 14, color: "#999" }}
-                              >
-                                Please select
-                              </MenuItem>,
-                              // Add SIP trunk group options
-                              ...(sipTrunkGroups || []).map((group) => {
-                                const id = group.group_id || group.id || "";
-                                const label =
-                                  id !== ""
-                                    ? `SIP Trunk Group [${id}]`
-                                    : "SIP Trunk Group [Any]";
-
-                                // Filter out the value that's already selected in the other field
-                                const isDisabled =
-                                  (field.key === "callSource" &&
-                                    id === formData.callDestination) ||
-                                  (field.key === "callDestination" &&
-                                    id === formData.callSource);
-
-                                return (
-                                  <MenuItem
-                                    key={id || "any"}
-                                    value={id}
-                                    sx={{
-                                      fontSize: 14,
-                                      color: isDisabled ? "#ccc" : "inherit",
-                                      backgroundColor: isDisabled
-                                        ? "#f5f5f5"
-                                        : "inherit",
-                                    }}
-                                    disabled={isDisabled}
-                                  >
-                                    {label}
-                                  </MenuItem>
-                                );
-                              }),
-                            ]
-                          : field.options.map((opt) => (
-                              <MenuItem
-                                key={opt}
-                                value={opt}
-                                sx={{ fontSize: 14 }}
-                              >
-                                {opt}
-                              </MenuItem>
-                            ))}
-                      </MuiSelect>
-                    ) : (
-                      <TextField
-                        type={field.type}
-                        value={formData[field.key] || ""}
-                        onChange={(e) =>
-                          handleInputChange(field.key, e.target.value)
-                        }
-                        size="small"
-                        fullWidth
-                        variant="outlined"
-                        inputProps={{
-                          style: { fontSize: 14, padding: "3px 6px" },
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
-              ),
-            )}
+            <div
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                Configuration
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
+                {ROUTE_IP_IP_FIELDS.filter((f) => f.key !== "index").map(
+                  (field) => (
+                    <FieldRow key={field.key} label={`${field.label}:`}>
+                      {field.type === "select" ? (
+                        <FormControl size="small" fullWidth>
+                          <MuiSelect
+                            value={formData[field.key] || ""}
+                            onChange={(e) =>
+                              handleInputChange(field.key, e.target.value)
+                            }
+                            displayEmpty
+                            sx={{
+                              fontSize: 13,
+                              height: 32,
+                              backgroundColor: "#fff",
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: C.cardBorder,
+                              },
+                            }}
+                          >
+                            <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                              Please select
+                            </MenuItem>
+                            {field.key === "callSource" ||
+                            field.key === "callDestination" ? (
+                              sipTrunkGroups.length > 0 ? (
+                                sipTrunkGroups.map((g) => {
+                                  const id = g.group_id || g.id || "";
+                                  const isDisabled =
+                                    (field.key === "callSource" &&
+                                      id === formData.callDestination &&
+                                      id !== "") ||
+                                    (field.key === "callDestination" &&
+                                      id === formData.callSource &&
+                                      id !== "");
+                                  return (
+                                    <MenuItem
+                                      key={id || "any"}
+                                      value={id}
+                                      disabled={isDisabled}
+                                      sx={{ fontSize: 13 }}
+                                    >
+                                      SIP Trunk Group [{id || "Any"}]
+                                    </MenuItem>
+                                  );
+                                })
+                              ) : (
+                                <MenuItem value="any" sx={{ fontSize: 13 }}>
+                                  SIP Trunk Group [Any]
+                                </MenuItem>
+                              )
+                            ) : (
+                              field.options?.map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))
+                            )}
+                          </MuiSelect>
+                        </FormControl>
+                      ) : (
+                        <TextField
+                          value={formData[field.key] || ""}
+                          onChange={(e) =>
+                            handleInputChange(field.key, e.target.value)
+                          }
+                          size="small"
+                          fullWidth
+                          variant="outlined"
+                          inputProps={{
+                            style: {
+                              fontSize: 13,
+                              height: 32,
+                              padding: "0 8px",
+                              boxSizing: "border-box",
+                            },
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                            },
+                          }}
+                        />
+                      )}
+                    </FieldRow>
+                  ),
+                )}
+              </div>
+            </div>
           </div>
         </DialogContent>
         <DialogActions
-          className="p-4 justify-center gap-5"
           style={{
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
           }}
         >
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+          <Btn
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
+            style={{ padding: "8px 36px", fontSize: 13 }}
           >
-            {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+            {loading.save ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : (
+              "Save"
+            )}
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
-            disabled={loading.save}
+            variant="outline"
+            style={{ padding: "8px 36px", fontSize: 13 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

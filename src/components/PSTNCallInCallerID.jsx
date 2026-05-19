@@ -27,60 +27,109 @@ import {
 
 const LOCAL_STORAGE_KEY = "pstnCallInCallerIdRules";
 
-const grayButtonSx = {
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#222",
-  fontWeight: 600,
-  fontSize: 15,
-  borderRadius: 1.5,
-  minWidth: 110,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-  textTransform: "none",
-  px: 2.25,
-  py: 1,
-  padding: "4px 18px",
-  border: "1px solid #bbb",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)",
-    color: "#222",
-  },
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#cbd5e1",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
 };
-const blueButtonSx = {
-  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  border: "1px solid #5A6F8F",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-    color: "#fff",
-  },
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 12px",
+        borderRadius: 4,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.1s ease",
+        outline: "none",
+        boxSizing: "border-box",
+        height: 26,
+        textTransform: "none",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = "translateY(-0.5px)";
+          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = "none";
+          e.currentTarget.style.boxShadow = "none";
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
 };
-const paginationButtonSx = {
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#222",
-  fontWeight: 600,
-  fontSize: 13,
-  borderRadius: 1.5,
-  minWidth: 60,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-  textTransform: "none",
-  px: 1.25,
-  py: 0.5,
-  padding: "2px 10px",
-  border: "1px solid #bbb",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)",
-    color: "#222",
-  },
-};
+
+const TH = ({ children, style: extraStyle }) => (
+  <th
+    style={{
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid ${C.cardBorder}`,
+      padding: "10px 8px",
+      fontSize: 11,
+      fontWeight: 800,
+      color: "#475569",
+      textAlign: "center",
+      background: "#f3f4f6",
+      textTransform: "uppercase",
+      letterSpacing: "0.03em",
+      userSelect: "none",
+      ...extraStyle,
+    }}
+  >
+    {children}
+  </th>
+);
 
 const PSTNCallInCallerID = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -619,292 +668,394 @@ const PSTNCallInCallerID = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      {loading.fetch ? (
-        <div className="flex items-center justify-center h-64">
-          <CircularProgress />
-          <span className="ml-2">Loading number manipulations...</span>
-        </div>
-      ) : rules.length === 0 ? (
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
         <div
-          className="w-full h-full flex flex-col items-center justify-center"
-          style={{ minHeight: "15vh" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
         >
-          <div className="text-gray-600 text-xl md:text-[16px] font-semibold mb-4 text-center">
-            No available number manipulation rule (PSTN Call In CallerID)!
-          </div>
-          <Button
-            variant="contained"
-            sx={{
-              ...blueButtonSx,
-              minWidth: 80,
-              minHeight: 28,
-              fontSize: "14px",
-              fontWeight: 350,
-              px: 0.5,
-              py: 0.5,
-              boxShadow: "0 2px 8px #b3e0ff",
-              textTransform: "none",
-            }}
-            onClick={() => handleOpenModal()}
-          >
-            Add New
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="w-full max-w-full mx-auto">
-            {/* Blue header bar - always show */}
-            <div
-              className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-              style={{
-                background: "linear-gradient(#3E5475 100%)",
-                boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-              }}
-            >
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            E1-PRI &rsaquo; Num Manipulate &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
               PSTN Call In CallerID
-            </div>
+            </span>
+          </div>
+        </div>
 
-            <div
-              style={{
-                border: "2px solid #bbb",
-                borderBottomLeftRadius: 8,
-                borderBottomRightRadius: 8,
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-              }}
-            >
-              <div
-                className="bg-white rounded-b-lg w-full flex flex-col overflow-hidden"
-                style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1.5px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            {/* Left Section: Pagination Info pill & selection pill */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
               >
-                <div
-                  className="w-full border-b border-gray-300"
+                Page {page} · {rules.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
                   style={{
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                    borderBottom: "none",
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
                   }}
                 >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+
+            {/* Right Section: Actions */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Btn
+                variant="outline"
+                onClick={handleInverse}
+                disabled={loading.delete || rules.length === 0}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                variant="outline"
+                onClick={handleUncheckAll}
+                disabled={loading.delete || selected.length === 0}
+              >
+                Clear Selection
+              </Btn>
+              <Btn
+                variant="danger"
+                onClick={handleDelete}
+                disabled={loading.delete || selected.length === 0}
+              >
+                {loading.delete ? "Deleting..." : "🗑 Delete"}
+              </Btn>
+              <Btn
+                variant="danger"
+                onClick={handleClearAll}
+                disabled={loading.delete || rules.length === 0}
+              >
+                {loading.delete ? "Clearing..." : "Clear All"}
+              </Btn>
+              <Btn
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={loading.fetch}
+              >
+                {loading.fetch ? "Refreshing..." : "Refresh"}
+              </Btn>
+              <Btn
+                variant="accent"
+                onClick={() => handleOpenModal()}
+                disabled={loading.fetch}
+                style={{
+                  background: "linear-gradient(135deg, #1e2d42 0%, #111827 100%)",
+                  color: "#fff",
+                  border: "none",
+                  padding: "6px 16px",
+                }}
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          <div style={{ position: "relative" }}>
+            {loading.fetch ? (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 280,
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <CircularProgress size={28} style={{ color: C.accent }} />
                   <div
-                    ref={tableScrollRef}
-                    onScroll={handleTableScroll}
-                    className="scrollbar-hide"
                     style={{
-                      overflowX: "auto",
-                      overflowY: "auto",
-                      maxHeight: 240,
-                      scrollbarWidth: "none",
-                      msOverflowStyle: "none",
+                      marginTop: 12,
+                      color: "#64748b",
+                      fontSize: 13,
+                      fontWeight: 500,
                     }}
                   >
-                    <table
-                      className="w-full min-w-[1400px] border border-gray-300 border-collapse whitespace-nowrap"
-                      style={{ tableLayout: "auto", border: "1px solid #bbb" }}
-                    >
-                      <thead>
-                        <tr style={{ minHeight: 32 }}>
-                          {PSTN_CALL_IN_CALLERID_TABLE_COLUMNS.map((c) => (
-                            <th
-                              key={c.key}
-                              className="bg-white text-[#222] font-semibold text-[12px] border border-gray-300 text-center"
+                    Loading number manipulations...
+                  </div>
+                </div>
+              </div>
+            ) : rules.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#64748b",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No available number manipulation rule (PSTN Call In CallerID)!
+                </div>
+                <Btn
+                  variant="default"
+                  onClick={() => handleOpenModal()}
+                  style={{
+                    background: "linear-gradient(135deg, #1e2d42 0%, #111827 100%)",
+                    border: "none",
+                    padding: "8px 24px",
+                    fontSize: 12,
+                  }}
+                >
+                  + Add New Rule
+                </Btn>
+              </div>
+            ) : (
+              <>
+                <div
+                  ref={tableScrollRef}
+                  onScroll={handleTableScroll}
+                  className="scrollbar-hide"
+                  style={{
+                    overflowX: "auto",
+                    overflowY: "auto",
+                    maxHeight: 460,
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                  }}
+                >
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      minWidth: 1400,
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <TH style={{ width: 40 }}>
+                          <input
+                            type="checkbox"
+                            checked={rules.length > 0 && selected.length === rules.length}
+                            ref={(el) => {
+                              if (el)
+                                el.indeterminate =
+                                  selected.length > 0 && selected.length < rules.length;
+                            }}
+                            onChange={(e) => {
+                              if (e.target.checked) handleCheckAll();
+                              else handleUncheckAll();
+                            }}
+                            style={{ cursor: "pointer", accentColor: "#1e2d42" }}
+                          />
+                        </TH>
+                        <TH style={{ width: 50 }}>#</TH>
+                        <TH>Call Initiator</TH>
+                        <TH>CallerID Prefix</TH>
+                        <TH>CalleeID Prefix</TH>
+                        <TH>Stripped Digits from Right</TH>
+                        <TH>Reserved Digits from Right</TH>
+                        <TH style={{ width: 60 }}>Modify</TH>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagedRules.map((item, idx) => {
+                        const realIdx = (page - 1) * itemsPerPage + idx;
+                        const isSelected = selected.includes(realIdx);
+                        const rowBg = isSelected
+                          ? "#f0f9ff"
+                          : idx % 2 === 1
+                            ? "#f8fafc"
+                            : "#ffffff";
+
+                        return (
+                          <tr
+                            key={item.id || realIdx}
+                            style={{
+                              background: rowBg,
+                              borderBottom: `0.5px solid #e2e8f0`,
+                              transition: "background-color 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = "#f1f5f9";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = rowBg;
+                            }}
+                          >
+                            <td
                               style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
+                                borderRight: "0.5px solid #e2e8f0",
+                                padding: "7px 8px",
+                                textAlign: "center",
                               }}
                             >
-                              {c.label}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pagedRules.map((item, idx) => {
-                          const realIdx = (page - 1) * itemsPerPage + idx;
-                          return (
-                            <tr key={realIdx} style={{ minHeight: 32 }}>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selected.includes(realIdx)}
-                                  onChange={() => handleSelectRow(idx)}
-                                />
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {realIdx + 1}
-                              </td>
-                              {/* <td className="border border-gray-300 text-center bg-white text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}>PCM Trunk Group [{getPstnIdsForGroup(item.call_initiator)}]</td> */}
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                PCM Trunk Group [
-                                {getPcmGroupIdLabel(item.call_initiator)}]
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.callerid_prefix}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.calleeid_prefix}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.with_original_calleeid}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.stripped_digits_from_left}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.stripped_digits_from_right}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.reserved_digits_from_right}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.prefix_to_add}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.suffix_to_add}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.description}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleSelectRow(idx)}
+                                style={{ cursor: "pointer", accentColor: "#1e2d42" }}
+                              />
+                            </td>
+                            <td
+                              style={{
+                                borderRight: "0.5px solid #e2e8f0",
+                                padding: "7px 8px",
+                                fontSize: 12,
+                                color: C.valueText,
+                                textAlign: "center",
+                              }}
+                            >
+                              {realIdx + 1}
+                            </td>
+                            <td
+                              style={{
+                                borderRight: "0.5px solid #e2e8f0",
+                                padding: "7px 8px",
+                                fontSize: 12,
+                                color: C.valueText,
+                                textAlign: "center",
+                              }}
+                            >
+                              PCM Trunk Group [{getPcmGroupIdLabel(item.call_initiator)}]
+                            </td>
+                            <td
+                              style={{
+                                borderRight: "0.5px solid #e2e8f0",
+                                padding: "7px 8px",
+                                fontSize: 12,
+                                color: C.valueText,
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.callerid_prefix}
+                            </td>
+                            <td
+                              style={{
+                                borderRight: "0.5px solid #e2e8f0",
+                                padding: "7px 8px",
+                                fontSize: 12,
+                                color: C.valueText,
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.calleeid_prefix}
+                            </td>
+                            <td
+                              style={{
+                                borderRight: "0.5px solid #e2e8f0",
+                                padding: "7px 8px",
+                                fontSize: 12,
+                                color: C.valueText,
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.stripped_digits_from_right}
+                            </td>
+                            <td
+                              style={{
+                                borderRight: "0.5px solid #e2e8f0",
+                                padding: "7px 8px",
+                                fontSize: 12,
+                                color: C.valueText,
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.reserved_digits_from_right}
+                            </td>
+                            <td
+                              style={{
+                                padding: "7px 8px",
+                                textAlign: "center",
+                              }}
+                            >
+                              <div style={{ display: "flex", justifyContent: "center" }}>
                                 <EditDocumentIcon
                                   style={{
                                     cursor: "pointer",
-                                    color: "#0e8fd6",
-                                    display: "block",
-                                    margin: "0 auto",
+                                    color: "#1e2d42",
+                                    fontSize: 18,
+                                    transition: "transform 0.15s ease",
                                   }}
                                   onClick={() => handleOpenModal(item, realIdx)}
+                                  onMouseEnter={(e) =>
+                                    (e.currentTarget.style.transform = "scale(1.15)")
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.currentTarget.style.transform = "scale(1)")
+                                  }
                                 />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                {/* Custom scrollbar row below the table */}
+
+                {/* Custom scrollbar */}
                 {showCustomScrollbar && (
                   <div
                     style={{
                       width: "100%",
-                      margin: "0 auto",
-                      background: "#f4f6fa",
+                      background: "#f8fafc",
                       display: "flex",
                       alignItems: "center",
                       height: 24,
-                      borderBottomLeftRadius: 8,
-                      borderBottomRightRadius: 8,
-                      border: "none",
-                      borderTop: "none",
-                      padding: "0 4px",
+                      borderTop: `1px solid ${C.cardBorder}`,
+                      padding: "0 12px",
                       boxSizing: "border-box",
                     }}
                   >
@@ -912,14 +1063,14 @@ const PSTNCallInCallerID = () => {
                       style={{
                         width: 18,
                         height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
+                        background: "#fff",
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: 4,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
+                        fontSize: 11,
+                        color: C.labelText,
                         cursor: "pointer",
                         userSelect: "none",
                       }}
@@ -930,11 +1081,11 @@ const PSTNCallInCallerID = () => {
                     <div
                       style={{
                         flex: 1,
-                        height: 12,
-                        background: "#e3e7ef",
-                        borderRadius: 8,
+                        height: 8,
+                        background: "#e2e8f0",
+                        borderRadius: 4,
                         position: "relative",
-                        margin: "0 4px",
+                        margin: "0 8px",
                         overflow: "hidden",
                       }}
                       onClick={handleScrollbarDrag}
@@ -942,9 +1093,9 @@ const PSTNCallInCallerID = () => {
                       <div
                         style={{
                           position: "absolute",
-                          height: 12,
-                          background: "#888",
-                          borderRadius: 8,
+                          height: 8,
+                          background: C.mutedText,
+                          borderRadius: 4,
                           cursor: "pointer",
                           top: 0,
                           width: thumbWidth,
@@ -958,14 +1109,14 @@ const PSTNCallInCallerID = () => {
                       style={{
                         width: 18,
                         height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
+                        background: "#fff",
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: 4,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
+                        fontSize: 11,
+                        color: C.labelText,
                         cursor: "pointer",
                         userSelect: "none",
                       }}
@@ -975,135 +1126,86 @@ const PSTNCallInCallerID = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-            {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-            <div
-              className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-              style={{ background: "#e3e7ef", marginTop: 12 }}
-            >
-              <div className="flex flex-wrap gap-2">
-                <button
-                  className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                  onClick={handleCheckAll}
-                  disabled={loading.delete}
+
+                {/* Pagination Footer matching SipRegisterPage */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 14px",
+                    background: "#f3f4f6",
+                    borderTop: `1px solid ${C.cardBorder}`,
+                  }}
                 >
-                  Check All
-                </button>
-                <button
-                  className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                  onClick={handleUncheckAll}
-                  disabled={loading.delete}
-                >
-                  Uncheck All
-                </button>
-                <button
-                  className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                  onClick={handleInverse}
-                  disabled={loading.delete}
-                >
-                  Inverse
-                </button>
-                <button
-                  className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                  onClick={handleDelete}
-                  disabled={loading.delete || selected.length === 0}
-                >
-                  {loading.delete ? "Deleting..." : "Delete"}
-                </button>
-                <button
-                  className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                  onClick={handleClearAll}
-                  disabled={loading.delete || rules.length === 0}
-                >
-                  {loading.delete ? "Clearing..." : "Clear All"}
-                </button>
-                <button
-                  className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                  onClick={handleRefresh}
-                  disabled={loading.fetch}
-                >
-                  {loading.fetch ? "Refreshing..." : "Refresh"}
-                </button>
-              </div>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={() => handleOpenModal()}
-                disabled={loading.save}
-              >
-                {loading.save ? "Saving..." : "Add New"}
-              </button>
-            </div>
-            <div
-              className="rounded-lg flex flex-wrap items-center gap-2 w-full px-2 py-2 text-[15px]"
-              style={{ background: "#e3e7ef", marginTop: 8 }}
-            >
-              <span>{rules.length} Items Total</span>
-              <span>{itemsPerPage} Items/Page</span>
-              <span>
-                {page}/{totalPages}
-              </span>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={() => handlePageChange(1)}
-                disabled={page === 1}
-              >
-                First
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-              >
-                Previous
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-              >
-                Next
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={() => handlePageChange(totalPages)}
-                disabled={page === totalPages}
-              >
-                Last
-              </button>
-              <span>Go to Page</span>
-              <select
-                className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-                value={page}
-                onChange={(e) => handlePageChange(Number(e.target.value))}
-              >
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1}
-                  </option>
-                ))}
-              </select>
-              <span>{totalPages} Pages Total</span>
-            </div>
+                  <span style={{ fontSize: 11, color: C.mutedText }}>
+                    Showing {pagedRules.length} record
+                    {pagedRules.length !== 1 ? "s" : ""} on page {page}
+                  </span>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Btn
+                      onClick={() => handlePageChange(page - 1)}
+                      disabled={page <= 1}
+                      variant="outline"
+                    >
+                      ← Prev
+                    </Btn>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: C.accent,
+                        background: "#e0f2fe",
+                        padding: "5px 14px",
+                        borderRadius: 6,
+                        border: `0.5px solid ${C.cardBorder}`,
+                      }}
+                    >
+                      Page {page} of {totalPages}
+                    </span>
+                    <Btn
+                      onClick={() => handlePageChange(page + 1)}
+                      disabled={page >= totalPages}
+                      variant="outline"
+                    >
+                      Next →
+                    </Btn>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-        </>
-      )}
+        </div>
+      </div>
+
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: 600, maxWidth: "95vw", mx: "auto", p: 0 },
+          sx: {
+            width: 600,
+            maxWidth: "95vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
         }}
         disableRestoreFocus
         disableEnforceFocus
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "16px 24px",
           }}
         >
           {editIndex !== null
@@ -1111,28 +1213,46 @@ const PSTNCallInCallerID = () => {
             : "Add PSTN Call In CallerID"}
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
           style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+            padding: "20px 24px",
+            backgroundColor: C.pageBg,
           }}
         >
-          <div className="flex flex-col gap-2 w-full">
+          <div
+            style={{
+              background: "#fff",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 6,
+              padding: "16px 20px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              width: "100%",
+              boxSizing: "border-box",
+            }}
+          >
             {getUpdatedFields().map((field) => (
               <div
                 key={field.name}
-                className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-                style={{ minHeight: 32 }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  minHeight: 32,
+                }}
               >
                 <label
-                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                  style={{ width: 180, marginRight: 10 }}
+                  style={{
+                    fontSize: 13,
+                    color: C.labelText,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 180,
+                  }}
                 >
-                  {field.label}:
+                  {field.label}
                 </label>
-                <div className="flex-1">
+                <div style={{ flex: 1 }}>
                   {field.type === "select" ? (
                     <FormControl size="small" fullWidth>
                       <MuiSelect
@@ -1143,13 +1263,25 @@ const PSTNCallInCallerID = () => {
                           })
                         }
                         variant="outlined"
-                        sx={{ fontSize: 14 }}
+                        sx={{
+                          fontSize: 13,
+                          borderRadius: 1,
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#cbd5e1",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#94a3b8",
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#1e2d42",
+                          },
+                        }}
                       >
                         {field.options.map((opt) => (
                           <MenuItem
                             key={opt.value}
                             value={opt.value}
-                            sx={{ fontSize: 14 }}
+                            sx={{ fontSize: 13 }}
                           >
                             {opt.label}
                           </MenuItem>
@@ -1166,7 +1298,16 @@ const PSTNCallInCallerID = () => {
                       fullWidth
                       variant="outlined"
                       inputProps={{
-                        style: { fontSize: 14, padding: "3px 6px" },
+                        style: { fontSize: 13, padding: "6px 10px" },
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 1,
+                          fontSize: 13,
+                          "& fieldset": { borderColor: "#cbd5e1" },
+                          "& :hover fieldset": { borderColor: "#94a3b8" },
+                          "&.Mui-focused fieldset": { borderColor: "#1e2d42" },
+                        },
                       }}
                     />
                   )}
@@ -1175,70 +1316,49 @@ const PSTNCallInCallerID = () => {
             ))}
           </div>
         </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: "#f1f5f9",
+            borderTop: `1px solid ${C.cardBorder}`,
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 12,
+          }}
+        >
           <Button
-            variant="contained"
+            variant="outlined"
+            onClick={handleCloseModal}
             sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
+              color: "#1e293b",
+              borderColor: "#9ca3af",
               fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              fontSize: 13,
               textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
+              padding: "6px 24px",
+              borderRadius: 1.5,
+              "&:hover": { borderColor: "#1e293b", background: "#e2e8f0" },
             }}
-            onClick={handleSave}
-            disabled={loading.save}
           >
-            Save
+            Close
           </Button>
           <Button
             variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
-            onClick={handleCloseModal}
+            onClick={handleSave}
             disabled={loading.save}
+            sx={{
+              background: "#1e2d42",
+              color: "#fff",
+              fontWeight: 600,
+              fontSize: 13,
+              textTransform: "none",
+              padding: "6px 24px",
+              borderRadius: 1.5,
+              "&:hover": { background: "#0f172a" },
+              "&:disabled": { background: "#cbd5e1", color: "#64748b" },
+            }}
           >
-            Cancel
+            {loading.save ? "Saving..." : "Save"}
           </Button>
         </DialogActions>
       </Dialog>

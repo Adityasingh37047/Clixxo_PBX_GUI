@@ -2,10 +2,67 @@ import React, { useState } from "react";
 import { TONE_GENERATOR_INITIAL_FORM } from "./constants/ToneGeneratorConstants";
 import { Button, TextField } from "@mui/material";
 
+// ── Color Palette (Matched from Reference) ──────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+};
+
+// ── Shared UI Layout Components (Matched from Reference) ────────────────────
+const FieldRow = ({ label, children }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      minHeight: 32,
+      marginBottom: 16,
+    }}
+  >
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 120,
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
 const ToneGeneratorPage = () => {
   const [formData, setFormData] = useState(TONE_GENERATOR_INITIAL_FORM);
 
-  // Validation function based on checkPara from HTML
+  // ── Functionality (UNTOUCHED) ─────────────────────────────────────────────
   const checkPara = (value) => {
     const numTest = /^[1234567890]*$/;
     const linepara = value.split(",");
@@ -15,10 +72,7 @@ const ToneGeneratorPage = () => {
     let highvalue = 0;
 
     for (let i = 0; i < totallinenum; i++) {
-      if (linepara[i] === "") {
-        return false;
-      }
-
+      if (linepara[i] === "") return false;
       parapart = linepara[i].split("/");
       if (
         parapart.length !== 2 ||
@@ -28,21 +82,10 @@ const ToneGeneratorPage = () => {
       ) {
         return false;
       }
-
-      if (parapart[0] !== "0") {
-        highvalue++;
-      }
-
-      if (highvalue > 4) {
-        return false;
-      }
-
-      // 200-3500
+      if (parapart[0] !== "0") highvalue++;
+      if (highvalue > 4) return false;
       paraadd = parapart[0].split("+");
-      if (i === 0 && paraadd.length === 1 && paraadd[0] === "0") {
-        return false;
-      }
-
+      if (i === 0 && paraadd.length === 1 && paraadd[0] === "0") return false;
       if (paraadd.length === 1) {
         if (
           !numTest.test(paraadd[0]) ||
@@ -52,7 +95,6 @@ const ToneGeneratorPage = () => {
           return false;
         }
       }
-
       if (paraadd.length === 2) {
         for (let j = 0; j < paraadd.length; j++) {
           if (
@@ -64,12 +106,8 @@ const ToneGeneratorPage = () => {
           }
         }
       }
-
-      if (paraadd.length > 2) {
-        return false;
-      }
+      if (paraadd.length > 2) return false;
     }
-
     return true;
   };
 
@@ -79,7 +117,6 @@ const ToneGeneratorPage = () => {
 
   const handleKeyPress = (e) => {
     const key = e.keyCode || e.which;
-    // Allow: numbers (47-57 = 0-9), + (43), comma (44), backspace (8)
     if (!((key >= 47 && key <= 57) || key === 43 || key === 44 || key === 8)) {
       e.preventDefault();
     }
@@ -91,20 +128,16 @@ const ToneGeneratorPage = () => {
       document.getElementById("dialTone").focus();
       return;
     }
-
     if (!checkPara(formData.ringbackTone)) {
       alert("Invalid Parameters of Ringback Tone Transmitter!");
       document.getElementById("ringbackTone").focus();
       return;
     }
-
     if (!checkPara(formData.busyTone)) {
       alert("Invalid Parameters of Busy Tone Transmitter!");
       document.getElementById("busyTone").focus();
       return;
     }
-
-    // Save logic here (you can add API call later)
     alert("Settings saved successfully!");
   };
 
@@ -112,304 +145,235 @@ const ToneGeneratorPage = () => {
     setFormData(TONE_GENERATOR_INITIAL_FORM);
   };
 
+  // ── Redesigned UI ─────────────────────────────────────────────────────────
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4", padding: "4px" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+        fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+      }}
     >
-      {/* Header */}
-      <div style={{ width: "750px", maxWidth: "95%" }}>
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-1"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          Tone Generator
+      <div style={{ maxWidth: "1024px", margin: "0 auto" }}>
+        {/* Breadcrumb style Title */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            FXS &rsaquo; Advanced &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              Tone Generator
+            </span>
+          </div>
         </div>
 
-        {/* Main Content Container */}
+        {/* Main Card */}
         <div
           style={{
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444",
-            borderTop: "none",
-            width: "750px",
-            padding: "16px",
-            borderBottomLeftRadius: "8px",
-            borderBottomRightRadius: "8px",
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
-          <div className="flex" style={{ minHeight: "400px" }}>
-            {/* Left Column - Input Fields */}
-            <div style={{ width: "45%" }}>
-              <div style={{ marginTop: "16px" }}>
-                <div style={{ height: "24px" }}></div>
-                {/* Dial Tone */}
-                <div style={{ marginBottom: "24px" }}>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <div style={{ width: "5%" }}></div>
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap"
-                      style={{ marginRight: "12px", width: "110px" }}
-                    >
-                      Dial Tone
-                    </label>
-                    <TextField
-                      id="dialTone"
-                      value={formData.dialTone}
-                      onChange={(e) =>
-                        handleInputChange("dialTone", e.target.value)
-                      }
-                      onKeyPress={(e) => handleKeyPress(e)}
-                      inputProps={{
-                        maxLength: 63,
-                        style: { fontSize: 14, padding: "4px 8px" },
-                      }}
-                      sx={{
-                        flex: 1,
-                        "& .MuiOutlinedInput-root": {
-                          height: "28px",
-                          backgroundColor: "white",
-                          "& fieldset": {
-                            borderColor: "#bbb",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#999",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#3b82f6",
-                          },
-                        },
-                      }}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </div>
-                </div>
+          <div style={{ padding: "24px 28px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "40px",
+                flexWrap: "wrap",
+              }}
+            >
+              {/* Left Column: Form Fields */}
+              <div style={{ flex: "1 1 400px" }}>
+                <SectionHeading title="Tone Generator" />
 
-                <div style={{ height: "24px" }}></div>
+                <FieldRow label="Dial Tone">
+                  <TextField
+                    id="dialTone"
+                    value={formData.dialTone}
+                    onChange={(e) =>
+                      handleInputChange("dialTone", e.target.value)
+                    }
+                    onKeyPress={handleKeyPress}
+                    size="small"
+                    fullWidth
+                    inputProps={{
+                      maxLength: 63,
+                      style: { fontSize: 13, padding: "6px 8px" },
+                    }}
+                  />
+                </FieldRow>
 
-                {/* Ringback Tone */}
-                <div style={{ marginBottom: "24px" }}>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <div style={{ width: "5%" }}></div>
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap"
-                      style={{ marginRight: "12px", width: "110px" }}
-                    >
-                      Ringback Tone
-                    </label>
-                    <TextField
-                      id="ringbackTone"
-                      value={formData.ringbackTone}
-                      onChange={(e) =>
-                        handleInputChange("ringbackTone", e.target.value)
-                      }
-                      onKeyPress={(e) => handleKeyPress(e)}
-                      inputProps={{
-                        maxLength: 63,
-                        style: { fontSize: 14, padding: "4px 8px" },
-                      }}
-                      sx={{
-                        flex: 1,
-                        "& .MuiOutlinedInput-root": {
-                          height: "28px",
-                          backgroundColor: "white",
-                          "& fieldset": {
-                            borderColor: "#bbb",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#999",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#3b82f6",
-                          },
-                        },
-                      }}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </div>
-                </div>
+                <FieldRow label="Ringback Tone">
+                  <TextField
+                    id="ringbackTone"
+                    value={formData.ringbackTone}
+                    onChange={(e) =>
+                      handleInputChange("ringbackTone", e.target.value)
+                    }
+                    onKeyPress={handleKeyPress}
+                    size="small"
+                    fullWidth
+                    inputProps={{
+                      maxLength: 63,
+                      style: { fontSize: 13, padding: "6px 8px" },
+                    }}
+                  />
+                </FieldRow>
 
-                <div style={{ height: "24px" }}></div>
-
-                {/* Busy Tone */}
-                <div style={{ marginBottom: "24px" }}>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <div style={{ width: "5%" }}></div>
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap"
-                      style={{ marginRight: "12px", width: "110px" }}
-                    >
-                      Busy Tone
-                    </label>
-                    <TextField
-                      id="busyTone"
-                      value={formData.busyTone}
-                      onChange={(e) =>
-                        handleInputChange("busyTone", e.target.value)
-                      }
-                      onKeyPress={(e) => handleKeyPress(e)}
-                      inputProps={{
-                        maxLength: 63,
-                        style: { fontSize: 14, padding: "4px 8px" },
-                      }}
-                      sx={{
-                        flex: 1,
-                        "& .MuiOutlinedInput-root": {
-                          height: "28px",
-                          backgroundColor: "white",
-                          "& fieldset": {
-                            borderColor: "#bbb",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#999",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#3b82f6",
-                          },
-                        },
-                      }}
-                      variant="outlined"
-                      size="small"
-                    />
-                  </div>
-                </div>
+                <FieldRow label="Busy Tone">
+                  <TextField
+                    id="busyTone"
+                    value={formData.busyTone}
+                    onChange={(e) =>
+                      handleInputChange("busyTone", e.target.value)
+                    }
+                    onKeyPress={handleKeyPress}
+                    size="small"
+                    fullWidth
+                    inputProps={{
+                      maxLength: 63,
+                      style: { fontSize: 13, padding: "6px 8px" },
+                    }}
+                  />
+                </FieldRow>
               </div>
-            </div>
 
-            {/* Vertical Divider */}
-            <div style={{ width: "1%", backgroundColor: "#d1d5db" }}></div>
+              {/* Right Column: Documentation/Examples */}
+              <div
+                style={{
+                  flex: "1 1 300px",
+                  borderLeft: `1px solid ${C.pageBg}`,
+                  paddingLeft: "40px",
+                }}
+              >
+                <SectionHeading title="Parameter Examples" />
 
-            {/* Right Column - Descriptions */}
-            <div style={{ width: "54%" }}>
-              <div style={{ marginTop: "16px" }}>
-                <div style={{ marginLeft: "2%", width: "96%" }}>
-                  <p style={{ marginTop: "16px", marginBottom: "8px" }}></p>
-                  <p
-                    className="text-[14px] font-medium text-gray-800"
-                    style={{ marginBottom: "8px" }}
+                <div style={{ marginBottom: 20 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.valueText,
+                      marginBottom: 4,
+                    }}
                   >
                     350+440/0
-                  </p>
-                  <p
-                    className="text-[13px] text-gray-600"
-                    style={{ lineHeight: "1.6", marginBottom: "16px" }}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#64748b",
+                      lineHeight: "1.5",
+                    }}
                   >
                     Continuously play a dual tone which is composed of 350HZ and
                     440HZ.Note: The value range of the frequency is 200~3500HZ.
-                  </p>
+                  </div>
+                </div>
 
-                  <p style={{ marginBottom: "8px" }}></p>
-                  <p
-                    className="text-[14px] font-medium text-gray-800"
-                    style={{ marginBottom: "8px" }}
+                <div style={{ marginBottom: 20 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.valueText,
+                      marginBottom: 4,
+                    }}
                   >
                     480+620/500,0/500
-                  </p>
-                  <p
-                    className="text-[13px] text-gray-600"
-                    style={{ lineHeight: "1.6", marginBottom: "16px" }}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#64748b",
+                      lineHeight: "1.5",
+                    }}
                   >
                     Repeatedly play a dual tone which is composed of 480HZ and
                     620HZ in the method of 500ms play with 500ms pause. Note:
                     0/500 denotes 500ms silence and the tone cannot start with
                     the silence.
-                  </p>
+                  </div>
+                </div>
 
-                  <p style={{ marginBottom: "8px" }}></p>
-                  <p
-                    className="text-[14px] font-medium text-gray-800"
-                    style={{ marginBottom: "8px" }}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.valueText,
+                      marginBottom: 4,
+                    }}
                   >
                     950/333,1400/333,1800/333,0/1000
-                  </p>
-                  <p
-                    className="text-[13px] text-gray-600"
-                    style={{ lineHeight: "1.6", marginBottom: "16px" }}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#64748b",
+                      lineHeight: "1.5",
+                    }}
                   >
                     Repeatedly play tones in turn: first a 333ms 950HZ tone,
                     followed by a 333ms 1400HZ tone, then a 333ms 1800HZ tone
                     and at last a 1s silence.Note: The count of signals at ON
                     state in a period cannot be greater than 4.
-                  </p>
-                  <p style={{ marginBottom: "8px" }}></p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Save and Reset Buttons */}
-        <div
-          className="flex justify-center gap-4"
-          style={{ marginTop: "24px", marginBottom: "16px" }}
-        >
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: "6px",
-              minWidth: "100px",
-              height: "42px",
-              textTransform: "none",
-              padding: "6px 24px",
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              border: "1px solid #cbd5e1",
-              cursor: "pointer",
+          {/* Bottom Actions Footer (Matched from Reference) */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              padding: "16px 24px",
+              borderTop: `1px solid ${C.cardBorder}`,
+              background: "#f8fafc",
             }}
-            onMouseEnter={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
-              e.target.style.color = "#fff";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
-              e.target.style.color = "#fff";
-            }}
-            onClick={handleSave}
           >
-            Save
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: "6px",
-              minWidth: "100px",
-              height: "42px",
-              textTransform: "none",
-              padding: "6px 24px",
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              border: "1px solid #cbd5e1",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)";
-              e.target.style.color = "#2f405c";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)";
-              e.target.style.color = "#3E5475";
-            }}
-            onClick={handleReset}
-          >
-            Reset
-          </Button>
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              sx={{
+                background:
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 13,
+                textTransform: "none",
+                padding: "6px 32px",
+                minWidth: 120,
+                "&:hover": { background: "#1e2d42" },
+              }}
+            >
+              Save
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleReset}
+              sx={{
+                color: C.accent,
+                borderColor: C.cardBorder,
+                background:
+                  "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
+                fontWeight: 600,
+                fontSize: 13,
+                textTransform: "none",
+                padding: "6px 32px",
+                minWidth: 100,
+                "&:hover": { borderColor: C.accent, background: "#f1f5f9" },
+              }}
+            >
+              Reset
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -4,22 +4,27 @@ import {
   TextField,
   CircularProgress,
   FormControl,
-  Select,
+  Select as MuiSelect,
   MenuItem,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Checkbox,
+  Alert,
 } from "@mui/material";
 
-/** Dialplan contexts for two-step originate (add more as needed on device) */
+// Agar amiOriginate apiService me defined hai to isko uncomment kar lena:
+// import { amiOriginate } from "../api/apiService";
+
+/** Dialplan contexts for two-step originate */
 const CONTEXT_OPTIONS = [
   "siproute",
   "outbound-mobile",
   "from-internal",
   "default",
 ];
-// import { amiOriginate } from '../api/apiService';
 
-/**
- * Builds callerid string for AMI: "Name" <number> or number only
- */
+/** Builds callerid string for AMI: "Name" <number> or number only */
 function buildCallerId(name, number) {
   const n = (number || "").trim();
   const nm = (name || "").trim();
@@ -29,30 +34,56 @@ function buildCallerId(name, number) {
   return undefined;
 }
 
+// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const OriginateCallPage = () => {
   const [mode, setMode] = useState("simple"); // 'simple' | 'twostep'
-  const [name, setName] = useState("");
+
+  // Left Column States
   const [extension, setExtension] = useState("");
+  const [name, setName] = useState("");
   const [callerIdName, setCallerIdName] = useState("");
   const [callerIdNumber, setCallerIdNumber] = useState("");
-  // Mode 1 – Simple
+
+  // Right Column States (Simple Mode)
   const [useFixedApp, setUseFixedApp] = useState(true);
   const [application, setApplication] = useState("Wait");
   const [appData, setAppData] = useState("30");
-  // Mode 2 – Two-step
+
+  // Right Column States (Two-step Mode)
   const [context, setContext] = useState("siproute");
   const [exten, setExten] = useState("");
   const [priority, setPriority] = useState("1");
-  const [loading, setLoading] = useState(false);
 
-  const showAlert = (text) => window.alert(text);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   const handleOriginate = async () => {
     const ext = extension.trim();
     if (!ext) {
-      showAlert("Call / Dial this extension (extension) is required.");
+      showMessage("error", "Call / Dial this extension is required.");
       return;
     }
+
     const callerid = buildCallerId(callerIdName, callerIdNumber);
     let data = { extension: ext };
     if (callerid) data.callerid = callerid;
@@ -64,7 +95,8 @@ const OriginateCallPage = () => {
       } else {
         const app = application.trim();
         if (!app) {
-          showAlert(
+          showMessage(
+            "error",
             "Application is required for Simple mode when not using fixed Wait.",
           );
           return;
@@ -76,7 +108,8 @@ const OriginateCallPage = () => {
       const ctx = context.trim();
       const ex = exten.trim();
       if (!ctx || !ex) {
-        showAlert(
+        showMessage(
+          "error",
           "Context and Extension/Exten are required for two-step mode.",
         );
         return;
@@ -89,200 +122,548 @@ const OriginateCallPage = () => {
 
     setLoading(true);
     try {
+      // Dummy check if amiOriginate is not imported
+      if (typeof amiOriginate === "undefined") {
+        throw new Error(
+          "amiOriginate function is not imported or defined. Please check apiService.",
+        );
+      }
+
+      // eslint-disable-next-line no-undef
       const res = await amiOriginate(data);
       if (res?.response === false) {
-        showAlert(res?.message || "Originate failed.");
+        showMessage("error", res?.message || "Originate failed.");
       } else {
-        showAlert(res?.message || "Originate sent.");
+        showMessage("success", res?.message || "Originate sent successfully.");
       }
     } catch (err) {
-      showAlert(err?.message || String(err) || "Originate failed.");
+      showMessage("error", err?.message || String(err) || "Originate failed.");
     } finally {
       setLoading(false);
     }
   };
 
-  const row = (label, children) => (
-    <div className="flex items-center gap-2" style={{ minHeight: 36 }}>
-      <label
-        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-        style={{ width: 220, marginRight: 10 }}
-      >
-        {label}
-      </label>
-      <div className="flex-1">{children}</div>
-    </div>
-  );
-
-  const textField = (value, onChange, placeholder = "") => (
-    <TextField
-      fullWidth
-      size="small"
-      variant="outlined"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      sx={{
-        "& .MuiOutlinedInput-input": { padding: "8px 12px", fontSize: 14 },
-      }}
-    />
-  );
-
   return (
-    <div className="w-full max-w-full mx-auto p-2">
-      <div className="w-full mx-auto max-w-3xl">
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
+    >
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        {/* Error / Success Banner */}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* Breadcrumb */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          Originate Call
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Call Features &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+              Originate Call
+            </span>
+          </div>
         </div>
-        <div
-          className="border-2 border-t-0 border-gray-400 rounded-b-lg p-4"
-          style={{ backgroundColor: "#F1F5F9" }}
-        >
-          <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
-            <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-800 bg-[#f5f7fa]">
-              AMI Originate (POST /api/ami — type: ami_originate)
-            </div>
-            <div className="p-3 flex flex-col gap-3">
-              {row(
-                "Name (label only)",
-                textField(name, setName, "Optional — not sent to API"),
-              )}
 
-              <div className="flex items-center gap-4 text-[14px] text-gray-700">
-                <span className="font-medium">Mode:</span>
-                <label className="flex items-center gap-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="originateMode"
-                    checked={mode === "simple"}
-                    onChange={() => setMode("simple")}
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              padding: "12px 16px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+            }}
+          >
+            <h2
+              style={{
+                margin: 0,
+                fontSize: 14,
+                fontWeight: 700,
+                color: C.accent,
+              }}
+            >
+              AMI Originate
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#475569",
+                  marginLeft: 8,
+                }}
+              >
+                (POST /api/ami — type: ami_originate)
+              </span>
+            </h2>
+          </div>
+
+          {/* Form Content */}
+          <div style={{ padding: 24 }}>
+            {/* Top-to-Bottom 2-Column Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "24px 48px",
+              }}
+            >
+              {/* ── LEFT COLUMN (Basic Info) ── */}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 140,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Dial Extension <span style={{ color: C.errorRed }}>*</span>
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={extension}
+                    onChange={(e) => setExtension(e.target.value)}
+                    placeholder="e.g. 1004"
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                   />
-                  <span>Simple (application — no context/exten)</span>
-                </label>
-                <label className="flex items-center gap-1 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="originateMode"
-                    checked={mode === "twostep"}
-                    onChange={() => setMode("twostep")}
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 140,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Name (label only)
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Optional — not sent to API"
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                   />
-                  <span>Two-step (context + exten after A answers)</span>
-                </label>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 140,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Caller ID Name
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={callerIdName}
+                    onChange={(e) => setCallerIdName(e.target.value)}
+                    placeholder="e.g. Front Desk"
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 140,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Caller ID Number
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={callerIdNumber}
+                    onChange={(e) => setCallerIdNumber(e.target.value)}
+                    placeholder="e.g. 1000"
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                  />
+                </div>
               </div>
 
-              {row(
-                "Call / Dial this extension *",
-                textField(extension, setExtension, "e.g. 1004"),
-              )}
-              {row(
-                "Caller ID name",
-                textField(callerIdName, setCallerIdName, "e.g. Front Desk"),
-              )}
-              {row(
-                "Caller ID number",
-                textField(callerIdNumber, setCallerIdNumber, "e.g. 1000"),
-              )}
-
-              {mode === "simple" && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="fixedApp"
-                      checked={useFixedApp}
-                      onChange={(e) => setUseFixedApp(e.target.checked)}
+              {/* ── RIGHT COLUMN (Mode & Routing) ── */}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 100,
+                      flexShrink: 0,
+                      marginTop: 4,
+                    }}
+                  >
+                    Mode <span style={{ color: C.errorRed }}>*</span>
+                  </label>
+                  <RadioGroup
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value)}
+                    sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
+                  >
+                    <FormControlLabel
+                      value="simple"
+                      control={
+                        <Radio
+                          size="small"
+                          sx={{
+                            p: 0.5,
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                          }}
+                        />
+                      }
+                      label={
+                        <span style={{ fontSize: 13 }}>
+                          Simple (application — no context/exten)
+                        </span>
+                      }
+                      sx={{ m: 0 }}
                     />
-                    <label
-                      htmlFor="fixedApp"
-                      className="text-[14px] text-gray-700 cursor-pointer"
-                    >
-                      Use fixed Application Wait + appData below (recommended)
-                    </label>
-                  </div>
-                  {useFixedApp ? (
-                    row(
-                      "Application data (seconds)",
-                      textField(appData, setAppData, "30"),
-                    )
-                  ) : (
-                    <>
-                      {row(
-                        "Application *",
-                        textField(application, setApplication, "Wait"),
-                      )}
-                      {row(
-                        "Application data",
-                        textField(appData, setAppData, "1"),
-                      )}
-                    </>
-                  )}
-                </>
-              )}
+                    <FormControlLabel
+                      value="twostep"
+                      control={
+                        <Radio
+                          size="small"
+                          sx={{
+                            p: 0.5,
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                          }}
+                        />
+                      }
+                      label={
+                        <span style={{ fontSize: 13 }}>
+                          Two-step (context + exten after A answers)
+                        </span>
+                      }
+                      sx={{ m: 0 }}
+                    />
+                  </RadioGroup>
+                </div>
 
-              {mode === "twostep" && (
-                <>
-                  {row(
-                    "Context *",
-                    <FormControl size="small" fullWidth>
-                      <Select
-                        value={context}
-                        onChange={(e) => setContext(e.target.value)}
-                        sx={{
-                          "& .MuiSelect-select": {
-                            padding: "8px 12px",
-                            fontSize: 14,
-                          },
-                        }}
-                      >
-                        {CONTEXT_OPTIONS.map((ctx) => (
-                          <MenuItem key={ctx} value={ctx}>
-                            {ctx}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>,
-                  )}
-                  {row(
-                    "Extension / Exten (B leg) *",
-                    textField(exten, setExten, "e.g. 1005"),
-                  )}
-                  {row("Priority", textField(priority, setPriority, "1"))}
-                </>
-              )}
-
-              <div className="flex justify-center pt-2">
-                <Button
-                  variant="contained"
-                  disabled={loading}
-                  onClick={handleOriginate}
-                  startIcon={
-                    loading && <CircularProgress size={18} color="inherit" />
-                  }
-                  sx={{
-                    background: "#4F6A8F",
-                    color: "#fff",
-                    fontWeight: 600,
-                    textTransform: "none",
-                    minWidth: 140,
-                    "&:hover": { background: "#3E5475" },
+                {/* Conditional Fields based on Mode */}
+                <div
+                  style={{
+                    background: "#f8fafc",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 6,
+                    padding: 12,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 16,
                   }}
                 >
-                  {loading ? "Sending…" : "Originate"}
-                </Button>
-              </div>
+                  {mode === "simple" ? (
+                    <>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <Checkbox
+                          id="fixedApp"
+                          checked={useFixedApp}
+                          onChange={(e) => setUseFixedApp(e.target.checked)}
+                          size="small"
+                          sx={{
+                            p: 0,
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                          }}
+                        />
+                        <label
+                          htmlFor="fixedApp"
+                          style={{
+                            fontSize: 13,
+                            color: C.labelText,
+                            cursor: "pointer",
+                            fontWeight: 500,
+                          }}
+                        >
+                          Use fixed Application Wait + appData below
+                          (recommended)
+                        </label>
+                      </div>
 
-              <p className="text-xs text-gray-500 mt-2">
-                Bearer JWT is sent automatically when logged in. Simple mode
-                sends application + appData only (no context/exten). Two-step
-                sends context, exten, priority.
-              </p>
+                      {!useFixedApp && (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                          }}
+                        >
+                          <label
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: C.labelText,
+                              width: 120,
+                              flexShrink: 0,
+                            }}
+                          >
+                            Application{" "}
+                            <span style={{ color: C.errorRed }}>*</span>
+                          </label>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={application}
+                            onChange={(e) => setApplication(e.target.value)}
+                            placeholder="Wait"
+                            inputProps={{
+                              style: { fontSize: 13, padding: "6px 8px" },
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                        }}
+                      >
+                        <label
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: 120,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {useFixedApp ? "App Data (s)" : "Application Data"}
+                        </label>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={appData}
+                          onChange={(e) => setAppData(e.target.value)}
+                          placeholder={useFixedApp ? "30" : "1"}
+                          inputProps={{
+                            style: { fontSize: 13, padding: "6px 8px" },
+                          }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                        }}
+                      >
+                        <label
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: 120,
+                            flexShrink: 0,
+                          }}
+                        >
+                          Context <span style={{ color: C.errorRed }}>*</span>
+                        </label>
+                        <FormControl size="small" fullWidth>
+                          <MuiSelect
+                            value={context}
+                            onChange={(e) => setContext(e.target.value)}
+                            sx={{ fontSize: 13, background: "#fff" }}
+                          >
+                            {CONTEXT_OPTIONS.map((ctx) => (
+                              <MenuItem
+                                key={ctx}
+                                value={ctx}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {ctx}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                        }}
+                      >
+                        <label
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: 120,
+                            flexShrink: 0,
+                          }}
+                        >
+                          Exten (B leg){" "}
+                          <span style={{ color: C.errorRed }}>*</span>
+                        </label>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={exten}
+                          onChange={(e) => setExten(e.target.value)}
+                          placeholder="e.g. 1005"
+                          inputProps={{
+                            style: {
+                              fontSize: 13,
+                              padding: "6px 8px",
+                              background: "#fff",
+                            },
+                          }}
+                        />
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                        }}
+                      >
+                        <label
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: 120,
+                            flexShrink: 0,
+                          }}
+                        >
+                          Priority
+                        </label>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          type="number"
+                          value={priority}
+                          onChange={(e) => setPriority(e.target.value)}
+                          placeholder="1"
+                          inputProps={{
+                            style: {
+                              fontSize: 13,
+                              padding: "6px 8px",
+                              background: "#fff",
+                            },
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
+
+            <p
+              style={{
+                fontSize: 12,
+                color: C.mutedText,
+                marginTop: 24,
+                textAlign: "center",
+              }}
+            >
+              Bearer JWT is sent automatically when logged in. Simple mode sends
+              application + appData only (no context/exten). Two-step sends
+              context, exten, and priority.
+            </p>
+          </div>
+
+          {/* Footer Action */}
+          <div
+            style={{
+              padding: "16px 24px",
+              background: "#f8fafc",
+              borderTop: `1px solid ${C.cardBorder}`,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Button
+              variant="contained"
+              disabled={loading}
+              onClick={handleOriginate}
+              startIcon={
+                loading && <CircularProgress size={16} color="inherit" />
+              }
+              sx={{
+                background: "#1e2d42",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 13,
+                textTransform: "none",
+                minWidth: 160,
+                padding: "8px 24px",
+                borderRadius: 1.5,
+                "&:hover": { background: "#0f172a" },
+                "&:disabled": { background: "#cbd5e1", color: "#64748b" },
+              }}
+            >
+              {loading ? "Sending…" : "Originate Call"}
+            </Button>
           </div>
         </div>
       </div>

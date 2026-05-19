@@ -20,8 +20,109 @@ import {
   Select as MuiSelect,
   MenuItem,
   Alert,
+  CircularProgress,
+  Checkbox,
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+
+// ── Color Palette & Shared Styles ─────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+// ── Shared: Action Button ─────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: "#fff",
+      color: "#1e293b",
+      border: "1px solid #9ca3af",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ── Shared: Table Header ──────────────────────────────────────────────────────
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 
 const MIN_ROWS = 14;
 const initialForm = {
@@ -36,58 +137,6 @@ const initialForm = {
   calleeIdPoolBlacklist: "none",
   originalCallerIdPoolWhitelist: "none",
   originalCallerIdPoolBlacklist: "none",
-};
-
-// Custom scrollbar styles
-const customScrollbarRowStyle = {
-  width: "100%",
-  margin: "0 auto",
-  background: "#f4f6fa",
-  display: "flex",
-  alignItems: "center",
-  height: 24,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-  borderTop: "1px solid #bbb",
-  borderLeft: "2px solid #888",
-  borderRight: "2px solid #888",
-  borderBottom: "2px solid #888",
-  padding: "0 4px",
-  boxSizing: "border-box",
-};
-
-const customScrollbarTrackStyle = {
-  flex: 1,
-  height: 12,
-  background: "#e3e7ef",
-  borderRadius: 8,
-  position: "relative",
-  margin: "0 4px",
-  overflow: "hidden",
-};
-
-const customScrollbarThumbStyle = {
-  position: "absolute",
-  height: 12,
-  background: "#888",
-  borderRadius: 8,
-  cursor: "pointer",
-  top: 0,
-};
-
-const customScrollbarArrowStyle = {
-  width: 18,
-  height: 18,
-  background: "#e3e7ef",
-  border: "1px solid #bbb",
-  borderRadius: 8,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: 16,
-  color: "#888",
-  cursor: "pointer",
-  userSelect: "none",
 };
 
 const FilteringRule = () => {
@@ -105,75 +154,15 @@ const FilteringRule = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const displayToast = (message, type = "success") => {
     setToastMessage(message);
     setToastType(type);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
-
-  // Custom scrollbar state
-  const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-
-  useEffect(() => {
-    const el = tableScrollRef.current;
-    if (el) {
-      setScrollState({
-        left: el.scrollLeft,
-        width: el.clientWidth,
-        scrollWidth: el.scrollWidth,
-      });
-    }
-  }, [rows.length]);
-
-  const handleTableScroll = (e) => {
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-  };
-
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    const newScrollLeft =
-      (scrollState.scrollWidth - scrollState.width) * percent;
-    if (tableScrollRef.current) {
-      tableScrollRef.current.scrollLeft = newScrollLeft;
-    }
-  };
-
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current) {
-      const delta = dir === "left" ? -100 : 100;
-      tableScrollRef.current.scrollLeft += delta;
-    }
-  };
-
-  // Custom scrollbar thumb calculations
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
 
   const openModal = (rowIdx = null) => {
     setEditIndex(rowIdx);
@@ -184,7 +173,7 @@ const FilteringRule = () => {
     }
     setModalOpen(true);
   };
-  // Load dropdown group options from whitelist/blacklist/number pool
+
   const loadGroupOptions = async () => {
     try {
       const [filtersRes, poolRes] = await Promise.all([
@@ -296,11 +285,16 @@ const FilteringRule = () => {
       ),
     };
     try {
+      setIsLoading(true);
       await createFinalNumberFilter(payload);
       await loadRows();
+      displayToast("Filtering rule saved successfully.", "success");
       closeModal();
     } catch (e) {
       console.error("Failed to save filtering rule", e);
+      displayToast("Failed to save filtering rule.", "error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -319,11 +313,22 @@ const FilteringRule = () => {
       `Are you sure you want to delete ${toDelete.length} selected item(s)?`,
     );
     if (!confirmed) return;
-    for (const id of toDelete) {
-      await deleteFinalNumberFilter(id);
+    setIsDeleting(true);
+    try {
+      for (const id of toDelete) {
+        await deleteFinalNumberFilter(id);
+      }
+      await loadRows();
+      displayToast(
+        `Deleted ${toDelete.length} item(s) successfully.`,
+        "success",
+      );
+    } catch (e) {
+      console.error("Delete filtering rule failed", e);
+      displayToast("Delete failed. Please try again.", "error");
+    } finally {
+      setIsDeleting(false);
     }
-    await loadRows();
-    displayToast(`Deleted ${toDelete.length} item(s) successfully.`, "success");
   };
 
   const handleClearAll = async () => {
@@ -332,12 +337,23 @@ const FilteringRule = () => {
       `Are you sure you want to delete ALL ${rows.length} item(s)?`,
     );
     if (!confirmed) return;
-    const ids = rows.map((r) => r.id).filter(Boolean);
-    for (const id of ids) {
-      await deleteFinalNumberFilter(id);
+    setIsDeleting(true);
+    try {
+      const ids = rows.map((r) => r.id).filter(Boolean);
+      for (const id of ids) {
+        await deleteFinalNumberFilter(id);
+      }
+      await loadRows();
+      displayToast(
+        `Cleared all ${ids.length} item(s) successfully.`,
+        "success",
+      );
+    } catch (e) {
+      console.error("Clear all filtering rules failed", e);
+      displayToast("Clear all failed.", "error");
+    } finally {
+      setIsDeleting(false);
     }
-    await loadRows();
-    displayToast(`Cleared all ${ids.length} item(s) successfully.`, "success");
   };
 
   const loadRows = async () => {
@@ -373,7 +389,6 @@ const FilteringRule = () => {
     loadRows();
   }, []);
 
-  // Fill up to MIN_ROWS for grid look
   const displayRows = [
     ...rows,
     ...Array.from({ length: Math.max(0, MIN_ROWS - rows.length) }).map(
@@ -382,226 +397,315 @@ const FilteringRule = () => {
   ];
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-80px)] p-2 md:p-2">
-      <div className="w-full mx-auto">
-        <div className="bg-gray-200 w-full flex flex-col">
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
+    >
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb / Title area */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            E1-PRI &rsaquo; Number Filter &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              Filtering Rule
+            </span>
+          </div>
+        </div>
+
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Toolbar */}
           <div
-            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
             style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
             }}
           >
-            Filtering Rule
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    background: "#f1f5f9",
+                    border: `0.5px solid ${C.cardBorder}`,
+                    color: "#475569",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 12px",
+                    borderRadius: 20,
+                  }}
+                >
+                  {rows.length} rules
+                </span>
+                {rows.some((r) => r.checked) && (
+                  <span
+                    style={{
+                      background: "#e0f2fe",
+                      color: C.accent,
+                      fontSize: 11,
+                      fontWeight: 600,
+                      padding: "3px 10px",
+                      borderRadius: 20,
+                      border: `0.5px solid ${C.accent}`,
+                    }}
+                  >
+                    {rows.filter((r) => r.checked).length} selected
+                  </span>
+                )}
+              </div>
+              <div
+                style={{
+                  color: "#000",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  letterSpacing: "0.02em",
+                }}
+              >
+                Filtering Rule
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Btn
+                onClick={handleDelete}
+                disabled={!rows.some((r) => r.checked) || isDeleting}
+                variant="danger"
+              >
+                {isDeleting ? (
+                  <CircularProgress size={11} style={{ color: C.errorRed }} />
+                ) : null}
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={handleClearAll}
+                disabled={rows.length === 0 || isDeleting}
+                variant="danger"
+              >
+                Clear All
+              </Btn>
+              <Btn
+                onClick={() => openModal()}
+                disabled={isDeleting}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
+            </div>
           </div>
+
+          {/* Table Area */}
           <div
-            ref={tableScrollRef}
-            onScroll={handleTableScroll}
-            className="overflow-x-auto w-full border-l-2 border-r-2 border-b-2 border-gray-400 custom-horizontal-scroll"
             style={{
-              height: 400,
-              maxHeight: 400,
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
+              overflowX: "auto",
               overflowY: "auto",
+              maxHeight: 400,
             }}
           >
             <table
-              className="w-full border-collapse table-auto whitespace-nowrap"
-              style={{ minWidth: "1800px" }}
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                minWidth: "1800px",
+              }}
             >
               <thead>
                 <tr>
                   {FILTERING_RULE_COLUMNS.map((col) => (
-                    <th
+                    <TH
                       key={col.key}
-                      className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 text-center"
                       style={{
-                        padding: "6px 8px",
-                        height: 32,
-                        minWidth:
-                          col.key === "description"
-                            ? "180px"
-                            : col.key === "callerIdPoolWhitelist" ||
-                                col.key === "callerIdPoolBlacklist" ||
-                                col.key === "calleeIdPoolWhitelist" ||
-                                col.key === "calleeIdPoolBlacklist" ||
-                                col.key === "originalCallerIdPoolWhitelist" ||
-                                col.key === "originalCallerIdPoolBlacklist"
-                              ? "160px"
-                              : col.key === "callerIdWhitelist" ||
-                                  col.key === "calleeIdWhitelist" ||
-                                  col.key === "callerIdBlacklist" ||
-                                  col.key === "calleeIdBlacklist"
-                                ? "140px"
-                                : col.key === "modify"
-                                  ? "100px"
-                                  : "100px",
+                        width:
+                          col.key === "check"
+                            ? 60
+                            : col.key === "modify"
+                              ? 80
+                              : col.key === "description"
+                                ? 180
+                                : [
+                                      "callerIdPoolWhitelist",
+                                      "callerIdPoolBlacklist",
+                                      "calleeIdPoolWhitelist",
+                                      "calleeIdPoolBlacklist",
+                                      "originalCallerIdPoolWhitelist",
+                                      "originalCallerIdPoolBlacklist",
+                                    ].includes(col.key)
+                                  ? 160
+                                  : [
+                                        "callerIdWhitelist",
+                                        "calleeIdWhitelist",
+                                        "callerIdBlacklist",
+                                        "calleeIdBlacklist",
+                                      ].includes(col.key)
+                                    ? 140
+                                    : 100,
                       }}
                     >
                       {col.label}
-                    </th>
+                    </TH>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {displayRows.map((row, idx) =>
-                  row ? (
-                    <tr
-                      key={idx}
-                      style={{ borderBottom: "1px solid #bbb", height: 32 }}
-                    >
-                      {FILTERING_RULE_COLUMNS.map((col) => (
-                        <td
-                          key={col.key}
-                          className="border border-gray-400 text-center bg-white"
-                          style={{ padding: "6px 8px", height: 32 }}
-                        >
-                          {col.key === "check" ? (
-                            <input
-                              type="checkbox"
-                              checked={!!row.checked}
-                              onChange={() => handleCheck(idx)}
-                              className="w-4 h-4"
-                            />
-                          ) : col.key === "modify" ? (
-                            <EditDocumentIcon
-                              style={{
-                                color: "#0e8fd6",
-                                cursor: "pointer",
-                                margin: "0 auto",
-                              }}
-                              onClick={() => openModal(idx)}
-                            />
-                          ) : (
-                            <span className="text-xs">{row[col.key]}</span>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ) : (
+                {displayRows.map((row, idx) => {
+                  const isChecked = row?.checked || false;
+                  const rowBg = isChecked
+                    ? "#f0f9ff"
+                    : idx % 2 === 1
+                      ? "#f8fafc"
+                      : "#ffffff";
+                  return (
                     <tr
                       key={idx}
                       style={{
-                        borderBottom: "1px solid #bbb",
-                        background: "#fff",
-                        height: 32,
+                        background: rowBg,
+                        borderBottom: "0.5px solid #9ca3af",
+                        transition: "background 0.1s ease",
                       }}
                     >
                       {FILTERING_RULE_COLUMNS.map((col) => (
                         <td
                           key={col.key}
-                          className="border border-gray-400 text-center bg-white"
                           style={{
-                            color: "#aaa",
-                            padding: "6px 8px",
+                            textAlign: "center",
+                            padding: "7px 8px",
+                            fontSize: 12,
+                            color: C.valueText,
+                            borderRight: "0.5px solid #edf2f7",
                             height: 32,
                           }}
                         >
-                          {"\u00A0"}
+                          {row ? (
+                            col.key === "check" ? (
+                              <Checkbox
+                                checked={isChecked}
+                                onChange={() => handleCheck(idx)}
+                                size="small"
+                                sx={{
+                                  padding: 0,
+                                  color: C.accent,
+                                  "&.Mui-checked": { color: C.accent },
+                                }}
+                              />
+                            ) : col.key === "modify" ? (
+                              <Btn
+                                onClick={() => openModal(idx)}
+                                variant="outline"
+                                style={{
+                                  fontSize: 10,
+                                  padding: "3px 10px",
+                                  margin: "0 auto",
+                                }}
+                              >
+                                Edit
+                              </Btn>
+                            ) : (
+                              row[col.key]
+                            )
+                          ) : (
+                            "\u00A0"
+                          )}
                         </td>
                       ))}
                     </tr>
-                  ),
-                )}
+                  );
+                })}
               </tbody>
             </table>
           </div>
-          {/* Custom scrollbar row */}
-          <div style={customScrollbarRowStyle}>
-            <div
-              style={customScrollbarArrowStyle}
-              onClick={() => handleArrowClick("left")}
-            >
-              &#9664;
-            </div>
-            <div
-              style={customScrollbarTrackStyle}
-              onClick={handleScrollbarDrag}
-            >
-              <div
-                style={{
-                  ...customScrollbarThumbStyle,
-                  width: thumbWidth,
-                  left: thumbLeft,
-                }}
-                draggable
-                onDrag={handleScrollbarDrag}
-              />
-            </div>
-            <div
-              style={customScrollbarArrowStyle}
-              onClick={() => handleArrowClick("right")}
-            >
-              &#9654;
-            </div>
-          </div>
-        </div>
-        {/* hide native scrollbar for webkit */}
-        <style>{`.custom-horizontal-scroll::-webkit-scrollbar{display:none;}`}</style>
-        <div className="flex justify-between items-center bg-gray-300 rounded-b-lg px-1 py-0.5 mt-1 border-l-2 border-r-2 border-b-2 border-gray-400">
-          <div className="flex gap-1">
-            <button
-              className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
-              onClick={handleDelete}
-              disabled={!rows.some((r) => r.checked)}
-            >
-              Delete
-            </button>
-            <button
-              className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500"
-              onClick={handleClearAll}
-            >
-              Clear All
-            </button>
-          </div>
-          <button
-            className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500"
-            onClick={() => openModal()}
-          >
-            Add New
-          </button>
-        </div>
-        {/* Modal */}
-        <Dialog
-          open={modalOpen}
-          onClose={closeModal}
-          maxWidth={false}
-          PaperProps={{
-            sx: {
-              maxWidth: "95vw",
-              width: 420,
-              background: "#f4f6fa",
-              borderRadius: 2,
-              border: "1.5px solid #888",
-            },
-          }}
-        >
-          <DialogTitle
-            className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
+
+          {/* Footer */}
+          <div
             style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-              marginBottom: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              padding: "8px 14px",
+              borderTop: `0.5px solid ${C.cardBorder}`,
+              background: "#f8fafc",
             }}
           >
-            Filtering Rule
-          </DialogTitle>
-          <DialogContent className="bg-gray-200 flex flex-col gap-3 py-4">
-            <div className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white">
-              <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[160px] mr-2">
+            <span style={{ fontSize: 11, color: C.mutedText }}>
+              {rows.length} rule{rows.length !== 1 ? "s" : ""} total
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal */}
+      <Dialog
+        open={modalOpen}
+        onClose={closeModal}
+        maxWidth={false}
+        PaperProps={{ sx: { width: 440, borderRadius: 2 } }}
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
+          }}
+        >
+          {editIndex !== null ? "Edit" : "Add"} Filtering Rule
+        </DialogTitle>
+        <DialogContent
+          style={{ padding: "20px 24px", backgroundColor: "#eef2f7" }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 6,
+              padding: 16,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <label
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: C.labelText,
+                  width: 160,
+                }}
+              >
                 No.:
               </label>
-              <div className="flex-1 min-w-0">
-                <TextField
-                  name="id"
-                  value={form.id}
-                  onChange={handleFormChange}
-                  size="small"
-                  fullWidth
-                  sx={{ "& .MuiInputBase-input": { fontSize: "12px" } }}
-                />
-              </div>
+              <TextField
+                name="id"
+                value={form.id}
+                onChange={handleFormChange}
+                size="small"
+                fullWidth
+                inputProps={{ style: { fontSize: 12, height: 16 } }}
+                sx={{ backgroundColor: "#fff" }}
+              />
             </div>
             {[
               {
@@ -657,56 +761,82 @@ const FilteringRule = () => {
             ].map((field) => (
               <div
                 key={field.key}
-                className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white"
+                style={{ display: "flex", alignItems: "center", gap: 10 }}
               >
-                <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[160px] mr-2">
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    width: 160,
+                  }}
+                >
                   {field.label}
                 </label>
-                <div className="flex-1 min-w-0">
-                  <MuiSelect
-                    name={field.key}
-                    value={form[field.key] || "none"}
-                    onChange={handleFormChange}
-                    size="small"
-                    fullWidth
-                    sx={{ fontSize: "12px" }}
-                  >
-                    {[
-                      "none",
-                      ...Array.from(
-                        new Set(
-                          (field.options || []).filter((o) => o !== "none"),
-                        ),
+                <MuiSelect
+                  name={field.key}
+                  value={form[field.key] || "none"}
+                  onChange={handleFormChange}
+                  size="small"
+                  fullWidth
+                  sx={{
+                    fontSize: 12,
+                    height: 32,
+                    backgroundColor: "#fff",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#999999",
+                    },
+                  }}
+                >
+                  {[
+                    "none",
+                    ...Array.from(
+                      new Set(
+                        (field.options || []).filter((o) => o !== "none"),
                       ),
-                    ].map((opt) => (
-                      <MenuItem key={opt} value={opt} sx={{ fontSize: "12px" }}>
-                        {opt}
-                      </MenuItem>
-                    ))}
-                  </MuiSelect>
-                </div>
+                    ),
+                  ].map((opt) => (
+                    <MenuItem key={opt} value={opt} sx={{ fontSize: 12 }}>
+                      {opt}
+                    </MenuItem>
+                  ))}
+                </MuiSelect>
               </div>
             ))}
-            {/* Description removed as per requirement */}
-          </DialogContent>
-          <DialogActions className="flex justify-center gap-6 pb-4">
-            <button
-              className="bg-gradient-to-b from-[#9ca3af] to-[#6b7280] text-white font-semibold text-s rounded px-3 py-1 min-w-[100px] shadow hover:from-[#6b7280] hover:to-[#9ca3af]"
-              onClick={handleSave}
-            >
-              Save
-            </button>
-            <button
-              className="bg-gradient-to-b from-[#d1d5db] to-[#9ca3af] text-[#fff] font-semibold text-s rounded px-3 py-1 min-w-[100px] shadow hover:from-[#9ca3af] hover:to-[#d1d5db]"
-              onClick={closeModal}
-            >
-              Close
-            </button>
-          </DialogActions>
-        </Dialog>
-      </div>
+          </div>
+        </DialogContent>
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: "#eef2f7",
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
+          <Btn
+            onClick={handleSave}
+            disabled={isLoading}
+            style={{ padding: "8px 32px" }}
+          >
+            {isLoading ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : (
+              "Save"
+            )}
+          </Btn>
+          <Btn
+            onClick={closeModal}
+            variant="outline"
+            style={{ padding: "8px 32px" }}
+          >
+            Cancel
+          </Btn>
+        </DialogActions>
+      </Dialog>
+
       {showToast && (
-        <div className="fixed top-4 right-4 z-50 max-w-sm w-[90vw] sm:w-auto">
+        <div className="fixed top-4 right-4 z-[9999] max-w-sm w-[90vw] sm:w-auto">
           <Alert
             severity={toastType}
             onClose={() => setShowToast(false)}
