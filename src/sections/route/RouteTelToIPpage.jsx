@@ -3,199 +3,149 @@ import {
   ROUTE_PSTN_IP_INITIAL_FORM,
   ROUTE_PSTN_IP_TABLE_COLUMNS,
 } from "./constants/RoutePstnToIPConstants";
-import { FaPencilAlt } from "react-icons/fa";
 import {
-  Button,
   Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Select as MuiSelect,
   MenuItem,
   FormControl,
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
-const blueBarStyle = {
-  width: "100%",
-  height: 36,
-  background:
-    "linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-  marginBottom: 0,
-  display: "flex",
-  alignItems: "center",
-  fontWeight: 600,
-  fontSize: 18,
-  color: "#2266aa",
-  justifyContent: "center",
-  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-};
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-  background: "#f8fafd",
-  border: "2px solid #888",
-  borderRadius: 8,
-  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-};
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-const thStyle = {
-  background: "#fff",
-  color: "#222",
-  fontWeight: 600,
-  fontSize: 15,
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  whiteSpace: "nowrap",
-};
-const tdStyle = {
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  fontSize: 14,
-  background: "#fff",
-  textAlign: "center",
-  whiteSpace: "nowrap",
-};
-const tableButtonStyle = {
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#222",
-  fontSize: 15,
-  padding: "4px 18px",
-  border: "1px solid #bbb",
-  borderRadius: 6,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-  cursor: "pointer",
-  fontWeight: 500,
-};
-const addNewButtonStyle = {
-  ...tableButtonStyle,
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-};
-const paginationBarStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  fontSize: 14,
-  color: "#222",
-  background: "#e3e7ef",
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-  borderTop: "1px solid #bbb",
-  padding: "2px 8px",
-  marginTop: 0,
-  minHeight: 32,
-};
-const paginationButtonStyle = {
-  ...tableButtonStyle,
-  fontSize: 13,
-  padding: "2px 10px",
-  minWidth: 0,
-  borderRadius: 4,
-};
-const pageSelectStyle = {
-  fontSize: 13,
-  padding: "2px 6px",
-  borderRadius: 3,
-  border: "1px solid #bbb",
-  background: "#fff",
-};
-const modalOverlayStyle = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100vw",
-  height: "100vh",
-  zIndex: 1000,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
-const modalStyle = {
-  background: "#f8fafd",
-  border: "2px solid #222",
-  borderRadius: 6,
-  width: 440,
-  maxWidth: "95vw",
-  marginTop: 80,
-  boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-  display: "flex",
-  flexDirection: "column",
-};
-const modalHeaderStyle = {
-  background: "linear-gradient(to bottom, #23272b 0%, #6e7a8a 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 18,
-  padding: "10px 0",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-const modalBodyStyle = {
-  padding: "12px 8px 0 8px",
-  display: "flex",
-  flexDirection: "column",
-  gap: 8,
-};
-const modalRowStyle = {
-  display: "flex",
-  alignItems: "center",
-  background: "#f4f6fa",
-  border: "1px solid #c0c6cc",
-  borderRadius: 4,
-  padding: "6px 8px",
-  marginBottom: 2,
-  minHeight: 32,
-  gap: 10,
-};
-const modalLabelStyle = {
-  width: 160,
-  fontSize: 14,
-  color: "#222",
-  textAlign: "left",
-  marginRight: 10,
-  whiteSpace: "nowrap",
-};
-const modalInputStyle = {
-  width: "100%",
-  fontSize: 14,
-  padding: "3px 6px",
-  borderRadius: 3,
-  border: "1px solid #bbb",
-  background: "#fff",
-};
-const modalFooterStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 24,
-  padding: "18px 0",
-};
-const modalButtonStyle = {
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-  fontSize: 16,
-  padding: "6px 32px",
-  border: "none",
-  borderRadius: 4,
-  boxShadow: "0 2px 4px rgba(0,0,0,0.10)",
-  cursor: "pointer",
-  minWidth: 90,
-};
-const modalButtonGrayStyle = {
-  ...modalButtonStyle,
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#222",
+// ── Color Palette (From Source) ───────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
 };
 
+// ── Shared UI Components (From Source) ────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+  type = "button",
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const FieldRow = ({ label, children, style }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12, ...style }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 170,
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1 }}>{children}</div>
+  </div>
+);
+
+const inputStyle = {
+  height: 32,
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  width: "100%",
+};
+
+// ── Main Component ────────────────────────────────────────────────────────────
 const RoutePstnToIPPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(ROUTE_PSTN_IP_INITIAL_FORM);
@@ -219,7 +169,6 @@ const RoutePstnToIPPage = () => {
     page * itemsPerPage,
   );
 
-  // Get available indices for dropdown (0-63 excluding used ones, but include current edit index)
   const getAvailableIndices = (currentEditIndex = null) => {
     const currentIndex =
       currentEditIndex !== null && rules[currentEditIndex]
@@ -237,7 +186,6 @@ const RoutePstnToIPPage = () => {
       .map((idx) => ({ value: String(idx), label: String(idx) }));
   };
 
-  // Scroll state for custom horizontal scrollbar
   const tableScrollRef = useRef(null);
   const [scrollState, setScrollState] = useState({
     left: 0,
@@ -261,7 +209,6 @@ const RoutePstnToIPPage = () => {
       setIndexSelect(String(item.index || ""));
       setEditIndex(index);
     } else {
-      // Set default values with first available index
       const defaultFormData = { ...ROUTE_PSTN_IP_INITIAL_FORM };
       const available = getAvailableIndices();
       const firstAvailable = available.length > 0 ? available[0].value : "0";
@@ -284,7 +231,6 @@ const RoutePstnToIPPage = () => {
     setFormData((prev) => ({ ...prev, index: value }));
   };
 
-  // Validation function for IP address
   const validateIPAddress = (ip) => {
     if (!ip || ip === "" || ip === "*") return true; // Allow empty or *
     const ipRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
@@ -297,7 +243,6 @@ const RoutePstnToIPPage = () => {
     return true;
   };
 
-  // Validation function for prefixes
   const validatePrefix = (prefix) => {
     if (!prefix || prefix === "") return false;
     const regTest = /^[^\%\&\~\!\|\(\)\;\"\'\=\\]*$/;
@@ -305,7 +250,6 @@ const RoutePstnToIPPage = () => {
   };
 
   const handleSave = () => {
-    // Validate Index
     if (!formData.index || formData.index === "") {
       alert("Index is required.");
       return;
@@ -316,7 +260,6 @@ const RoutePstnToIPPage = () => {
       return;
     }
 
-    // Check for duplicate index
     if (editIndex === null) {
       if (rules.some((r) => r.index === indexNum)) {
         alert("Index already exists. Please choose a different index.");
@@ -329,7 +272,6 @@ const RoutePstnToIPPage = () => {
       }
     }
 
-    // Validate Description
     if (!formData.description || formData.description === "") {
       alert("Description is required.");
       return;
@@ -341,7 +283,6 @@ const RoutePstnToIPPage = () => {
       return;
     }
 
-    // Validate CallerID Prefix
     if (!formData.callerIdPrefix || formData.callerIdPrefix === "") {
       alert("Please enter a CallerID Prefix!");
       return;
@@ -353,7 +294,6 @@ const RoutePstnToIPPage = () => {
       return;
     }
 
-    // Validate CalleeID Prefix
     if (!formData.calleeIdPrefix || formData.calleeIdPrefix === "") {
       alert("Please enter a CalleeID Prefix!");
       return;
@@ -365,7 +305,6 @@ const RoutePstnToIPPage = () => {
       return;
     }
 
-    // Validate Destination Address if RouteSelf is not checked
     if (!formData.routeSelf) {
       if (!formData.destinationAddress || formData.destinationAddress === "") {
         alert("Please enter a Destination Address!");
@@ -395,17 +334,14 @@ const RoutePstnToIPPage = () => {
 
     try {
       if (editIndex !== null && editIndex > -1) {
-        // Update existing route
         setRules((prev) =>
           prev.map((rule, idx) => (idx === editIndex ? normalized : rule)),
         );
         alert("Route updated successfully!");
       } else {
-        // Create new route
         setRules((prev) => [...prev, normalized]);
         alert("Route created successfully!");
       }
-
       handleCloseModal();
     } catch (error) {
       console.error("Error saving route:", error);
@@ -424,7 +360,6 @@ const RoutePstnToIPPage = () => {
   const handlePageChange = (newPage) =>
     setPage(Math.max(1, Math.min(totalPages, newPage)));
 
-  // Scroll handling functions
   const handleTableScroll = (e) =>
     setScrollState({
       left: e.target.scrollLeft,
@@ -446,7 +381,6 @@ const RoutePstnToIPPage = () => {
       tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
   };
 
-  // Update scroll state when data or page changes
   useEffect(() => {
     const update = () => {
       if (tableScrollRef.current) {
@@ -473,8 +407,7 @@ const RoutePstnToIPPage = () => {
     );
   };
 
-  // Helper function to format display values for table
-  const formatDisplayValue = (key, value, rowIndex = 0) => {
+  const formatDisplayValue = (key, value) => {
     if (value === undefined || value === null || value === "") return "--";
 
     switch (key) {
@@ -492,6 +425,7 @@ const RoutePstnToIPPage = () => {
         return String(value);
     }
   };
+
   const handleCheckAll = () => setSelected(rules.map((_, idx) => idx));
   const handleUncheckAll = () => setSelected([]);
   const handleInverse = () =>
@@ -500,12 +434,12 @@ const RoutePstnToIPPage = () => {
         .map((_, idx) => (!selected.includes(idx) ? idx : null))
         .filter((i) => i !== null),
     );
+
   const handleDelete = () => {
     if (selected.length === 0) {
       alert("Please select at least one item to delete.");
       return;
     }
-
     const confirmed = window.confirm(
       `Are you sure you want to delete ${selected.length} selected item(s)?`,
     );
@@ -520,12 +454,12 @@ const RoutePstnToIPPage = () => {
       alert(error.message || "Failed to delete routes");
     }
   };
+
   const handleClearAll = () => {
     if (rules.length === 0) {
       alert("No routes to clear.");
       return;
     }
-
     const confirmed = window.confirm(
       `Are you sure you want to delete ALL ${rules.length} routes? This action cannot be undone.`,
     );
@@ -542,180 +476,280 @@ const RoutePstnToIPPage = () => {
     }
   };
 
-  const rootStyle = {
-    background: "#fff",
-    minHeight: "calc(100vh - 128px)",
-    padding: "40px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: rules.length === 0 ? "center" : "flex-start",
-    position: "relative",
-    boxSizing: "border-box",
-  };
-
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="w-full max-w-full mx-auto">
-        {/* Blue header bar - always show */}
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          Tel-&gt;IP Routing Rule
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Route &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              Tel-&gt;IP Routing Rule
+            </span>
+          </div>
         </div>
 
+        {/* Main Card */}
         <div
-          className="w-full max-w-full mx-auto"
           style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div
-              className="w-full border-b border-gray-300"
-              style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
-              }}
-            >
-              <div
-                ref={tableScrollRef}
-                onScroll={handleTableScroll}
-                className="scrollbar-hide"
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
                 style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  maxHeight: 240,
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
                 }}
               >
-                <table
-                  className="w-full min-w-[1200px] border border-gray-300 border-collapse whitespace-nowrap"
-                  style={{ tableLayout: "auto", border: "1px solid #bbb" }}
+                Tel-&gt;IP Routing Rule · {rules.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
                 >
-                  <thead>
-                    <tr style={{ minHeight: 32 }}>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn onClick={handleCheckAll} variant="outline">
+                Check All
+              </Btn>
+              <Btn onClick={handleUncheckAll} variant="outline">
+                Uncheck All
+              </Btn>
+              <Btn onClick={handleInverse} variant="outline">
+                Inverse
+              </Btn>
+              <Btn
+                onClick={handleDelete}
+                disabled={selected.length === 0}
+                variant="danger"
+              >
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={handleClearAll}
+                disabled={rules.length === 0}
+                variant="danger"
+              >
+                Clear All
+              </Btn>
+              <Btn onClick={() => handleOpenModal()} variant="accent">
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table Container with Custom Scrollbar preserved */}
+          <div
+            style={{ width: "100%", display: "flex", flexDirection: "column" }}
+          >
+            <div
+              ref={tableScrollRef}
+              onScroll={handleTableScroll}
+              style={{
+                overflowX: "auto",
+                overflowY: "auto",
+                maxHeight: 400,
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  minWidth: 1200,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH
+                      style={{
+                        width: 40,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Check
+                    </TH>
+                    {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
+                      <TH
+                        key={col.key}
+                        style={{ position: "sticky", top: 0, zIndex: 10 }}
+                      >
+                        {col.label}
+                      </TH>
+                    ))}
+                    <TH
+                      style={{
+                        width: 70,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rules.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={ROUTE_PSTN_IP_TABLE_COLUMNS.length + 2}
                         style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
                         }}
                       >
-                        Check
-                      </th>
-                      {ROUTE_PSTN_IP_TABLE_COLUMNS.map((c) => (
-                        <th
-                          key={c.key}
-                          className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                        No data. Click '+ Add New' to create one.
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedRules.map((item, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const rowBg = isSelected
+                        ? "#f0f9ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      return (
+                        <tr
+                          key={realIdx}
                           style={{
-                            border: "1px solid #bbb",
-                            padding: "6px 8px",
-                            minHeight: 32,
-                            whiteSpace: "nowrap",
+                            background: rowBg,
+                            borderBottom: "0.5px solid #9ca3af",
+                            transition: "background 0.1s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f0f9ff";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          {c.label}
-                        </th>
-                      ))}
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Modify
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rules.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={ROUTE_PSTN_IP_TABLE_COLUMNS.length + 2}
-                          className="border border-gray-300 px-2 py-1 text-center"
-                        >
-                          No data
-                        </td>
-                      </tr>
-                    ) : (
-                      pagedRules.map((item, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        return (
-                          <tr key={realIdx} style={{ minHeight: 32 }}>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 8px",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleSelectRow(idx)}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                          </td>
+                          {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
                             <td
-                              className="border border-gray-300 text-center bg-white"
+                              key={col.key}
                               style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
+                                textAlign: "center",
+                                fontSize: 12,
+                                padding: "7px 8px",
+                                color: C.valueText,
+                                borderRight: "0.5px solid #edf2f7",
                               }}
                             >
-                              <input
-                                type="checkbox"
-                                checked={selected.includes(realIdx)}
-                                onChange={() => handleSelectRow(idx)}
-                              />
+                              {formatDisplayValue(col.key, item[col.key])}
                             </td>
-                            {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
-                              <td
-                                key={col.key}
-                                className="border border-gray-300 text-center bg-white"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {formatDisplayValue(
-                                  col.key,
-                                  item[col.key],
-                                  idx,
-                                )}
-                              </td>
-                            ))}
-                            <td
-                              className="border border-gray-300 text-center bg-white"
+                          ))}
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 8px",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <Btn
+                              onClick={() => handleOpenModal(item, realIdx)}
+                              variant="outline"
                               style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
+                                fontSize: 10,
+                                padding: "3px 10px",
+                                margin: "0 auto",
                               }}
                             >
                               <EditDocumentIcon
-                                className="cursor-pointer text-blue-600 mx-auto"
-                                onClick={() => handleOpenModal(item, realIdx)}
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                                style={{ fontSize: 12, marginRight: 2 }}
+                              />{" "}
+                              Edit
+                            </Btn>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
-            {/* Custom scrollbar row below the table */}
+
+            {/* Custom Scrollbar Retained but styled for the new theme */}
             {(() => {
               const thumbWidth =
                 scrollState.width && scrollState.scrollWidth
@@ -743,10 +777,7 @@ const RoutePstnToIPPage = () => {
                       display: "flex",
                       alignItems: "center",
                       height: 24,
-                      borderBottomLeftRadius: 8,
-                      borderBottomRightRadius: 8,
-                      border: "none",
-                      borderTop: "none",
+                      borderBottom: `1px solid ${C.cardBorder}`,
                       padding: "0 4px",
                       boxSizing: "border-box",
                     }}
@@ -755,14 +786,14 @@ const RoutePstnToIPPage = () => {
                       style={{
                         width: 18,
                         height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
+                        background: "#fff",
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: 4,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
+                        fontSize: 10,
+                        color: C.mutedText,
                         cursor: "pointer",
                         userSelect: "none",
                       }}
@@ -774,7 +805,7 @@ const RoutePstnToIPPage = () => {
                       style={{
                         flex: 1,
                         height: 12,
-                        background: "#e3e7ef",
+                        background: "#eef2f7",
                         borderRadius: 8,
                         position: "relative",
                         margin: "0 4px",
@@ -786,7 +817,7 @@ const RoutePstnToIPPage = () => {
                         style={{
                           position: "absolute",
                           height: 12,
-                          background: "#888",
+                          background: C.cardBorder,
                           borderRadius: 8,
                           cursor: "pointer",
                           top: 0,
@@ -801,14 +832,14 @@ const RoutePstnToIPPage = () => {
                       style={{
                         width: 18,
                         height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
+                        background: "#fff",
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: 4,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
+                        fontSize: 10,
+                        color: C.mutedText,
                         cursor: "pointer",
                         userSelect: "none",
                       }}
@@ -821,434 +852,281 @@ const RoutePstnToIPPage = () => {
               );
             })()}
           </div>
-        </div>
 
-        {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-        <div
-          className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleCheckAll}
+          {/* Footer Pagination */}
+          {rules.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                background: "#f8fafc",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
             >
-              Check All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleUncheckAll}
-            >
-              Uncheck All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleInverse}
-            >
-              Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                selected.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleDelete}
-              disabled={selected.length === 0}
-            >
-              Delete
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                rules.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleClearAll}
-              disabled={rules.length === 0}
-            >
-              Clear All
-            </button>
-          </div>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => handleOpenModal()}
-          >
-            Add New
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-          <span>{rules.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => handlePageChange(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRules.length} records of {rules.length} Total (
+                {itemsPerPage} / Page)
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={() => handlePageChange(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
+                <Btn
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+                <Btn
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
+                <span
+                  style={{ fontSize: 11, color: C.mutedText, marginLeft: 8 }}
+                >
+                  Go to Page:
+                </span>
+                <select
+                  style={{
+                    fontSize: 11,
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                    border: `1px solid ${C.cardBorder}`,
+                    background: "#fff",
+                    color: C.valueText,
+                    outline: "none",
+                  }}
+                  value={page}
+                  onChange={(e) => handlePageChange(Number(e.target.value))}
+                >
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Modal */}
+      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 500, maxWidth: "95vw", mx: "auto", p: 0 },
-        }}
+        PaperProps={{ sx: { width: 550, maxWidth: "95vw", borderRadius: 2 } }}
         disableRestoreFocus
         disableEnforceFocus
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
           }}
         >
           Tel-&gt;IP Routing Rule
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-          }}
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
         >
-          <div className="flex flex-col gap-2 w-full">
-            {/* Index field with dropdown only */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
-              className="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
             >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
               >
-                Index:
-              </label>
-              <div className="flex-1">
-                <FormControl fullWidth size="small">
-                  <MuiSelect
-                    value={indexSelect || ""}
-                    onChange={(e) => handleIndexSelectChange(e.target.value)}
-                    size="small"
-                    fullWidth
-                    variant="outlined"
-                    sx={{ fontSize: 14 }}
-                  >
-                    {getAvailableIndices(editIndex).map((opt) => (
-                      <MenuItem
-                        key={opt.value}
-                        value={opt.value}
-                        sx={{ fontSize: 14 }}
-                      >
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </MuiSelect>
-                </FormControl>
+                Configuration
               </div>
-            </div>
-
-            {/* Description field */}
-            <div
-              className="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
               >
-                Description:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  value={formData.description || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                />
-              </div>
-            </div>
-
-            {/* Source Port Group field */}
-            <div
-              className="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
-              >
-                Source Port Group:
-              </label>
-              <div className="flex-1">
-                <FormControl fullWidth size="small">
-                  <MuiSelect
-                    value={formData.sourcePortGroup || "*"}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        sourcePortGroup: e.target.value,
-                      }))
-                    }
-                    size="small"
-                    fullWidth
-                    variant="outlined"
-                    sx={{ fontSize: 14 }}
-                  >
-                    {portGroups.map((group) => {
-                      const groupId = group.group_id ?? group.id ?? group;
-                      return (
+                <FieldRow label="Index:">
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={indexSelect || ""}
+                      onChange={(e) => handleIndexSelectChange(e.target.value)}
+                      sx={{
+                        fontSize: 13,
+                        height: 32,
+                        backgroundColor: "#fff",
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: C.cardBorder,
+                        },
+                      }}
+                    >
+                      {getAvailableIndices(editIndex).map((opt) => (
                         <MenuItem
-                          key={String(groupId)}
-                          value={String(groupId)}
-                          sx={{ fontSize: 14 }}
+                          key={opt.value}
+                          value={opt.value}
+                          sx={{ fontSize: 13 }}
                         >
-                          {String(groupId)}
+                          {opt.label}
                         </MenuItem>
-                      );
-                    })}
-                  </MuiSelect>
-                </FormControl>
-              </div>
-            </div>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </FieldRow>
 
-            {/* CallerID Prefix field */}
-            <div
-              className="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
-              >
-                CallerID Prefix:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  value={formData.callerIdPrefix || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      callerIdPrefix: e.target.value,
-                    }))
-                  }
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                />
-              </div>
-            </div>
+                <FieldRow label="Description:">
+                  <input
+                    type="text"
+                    name="description"
+                    value={formData.description || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                  />
+                </FieldRow>
 
-            {/* CalleeID Prefix field */}
-            <div
-              className="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
-              >
-                CalleeID Prefix:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  value={formData.calleeIdPrefix || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      calleeIdPrefix: e.target.value,
-                    }))
-                  }
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                />
-              </div>
-            </div>
+                <FieldRow label="Source Port Group:">
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={formData.sourcePortGroup || "*"}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          sourcePortGroup: e.target.value,
+                        }))
+                      }
+                      sx={{
+                        fontSize: 13,
+                        height: 32,
+                        backgroundColor: "#fff",
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: C.cardBorder,
+                        },
+                      }}
+                    >
+                      {portGroups.map((group) => {
+                        const groupId = group.group_id ?? group.id ?? group;
+                        return (
+                          <MenuItem
+                            key={String(groupId)}
+                            value={String(groupId)}
+                            sx={{ fontSize: 13 }}
+                          >
+                            {String(groupId)}
+                          </MenuItem>
+                        );
+                      })}
+                    </MuiSelect>
+                  </FormControl>
+                </FieldRow>
 
-            {/* Destination Address field */}
-            <div
-              className="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
-              >
-                Destination Address:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  value={formData.destinationAddress || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      destinationAddress: e.target.value,
-                    }))
-                  }
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                />
-              </div>
-            </div>
+                <FieldRow label="CallerID Prefix:">
+                  <input
+                    type="text"
+                    name="callerIdPrefix"
+                    value={formData.callerIdPrefix || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                  />
+                </FieldRow>
 
-            {/* Destination Port field */}
-            <div
-              className="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
-              >
-                Destination Port:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  value={formData.destinationPort || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      destinationPort: e.target.value,
-                    }))
-                  }
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                />
+                <FieldRow label="CalleeID Prefix:">
+                  <input
+                    type="text"
+                    name="calleeIdPrefix"
+                    value={formData.calleeIdPrefix || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                  />
+                </FieldRow>
+
+                <FieldRow label="Destination Address:">
+                  <input
+                    type="text"
+                    name="destinationAddress"
+                    value={formData.destinationAddress || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                  />
+                </FieldRow>
+
+                <FieldRow label="Destination Port:">
+                  <input
+                    type="text"
+                    name="destinationPort"
+                    value={formData.destinationPort || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                  />
+                </FieldRow>
               </div>
             </div>
           </div>
         </DialogContent>
         <DialogActions
-          className="p-4 justify-center gap-5"
           style={{
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
           }}
         >
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+          <Btn
             onClick={handleSave}
+            style={{ padding: "8px 36px", fontSize: 13 }}
           >
             Save
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
+            variant="outline"
+            style={{ padding: "8px 36px", fontSize: 13 }}
           >
-            Close
-          </Button>
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

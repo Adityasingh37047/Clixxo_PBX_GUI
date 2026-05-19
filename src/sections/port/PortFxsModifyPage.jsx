@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Alert } from "@mui/material";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ROUTE_PATHS } from '../../constants/routeConstatns';
 import { PORT_FXS_TOTAL_PORTS } from './constants/PortFxsPageConstants';
@@ -35,6 +36,12 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -117,12 +124,12 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
       const res = await updateFxsPort(payload);
       // notify parent to reload ports list so UI shows authoritative data
       if (typeof onSaved === 'function') await onSaved();
-      alert(res?.message || 'Modify saved successfully!');
+      showMessage('success', res?.message || 'Modify saved successfully!');
       if (typeof onClose === 'function') onClose();
       else navigate(ROUTE_PATHS.PORT_FXS);
     } catch (err) {
       console.error('Failed to update port:', err);
-      alert(err?.message || 'Failed to update port');
+      showMessage('error', err?.message || 'Failed to update port');
     } finally {
       setSaving(false);
     }
@@ -144,6 +151,23 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
     <div className="bg-gray-50 min-h-[calc(100vh-128px)] py-1" style={{ backgroundColor: '#dde0e4' }}>
       <div className="flex justify-center" style={{ padding: '0 20px' }}>
         <div style={{ width: '62%', maxWidth: '1000px', minWidth: '700px' }}>
+          {/* Error / Success Banner */}
+          {message.text && (
+            <Alert
+              severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
+              onClose={() => setMessage({ type: "", text: "" })}
+              sx={{
+                position: "fixed",
+                top: 20,
+                right: 20,
+                zIndex: 9999,
+                minWidth: 300,
+                boxShadow: 3,
+              }}
+            >
+              {message.text}
+            </Alert>
+          )}
           <div className="w-full h-8 bg-linear-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-gray-700 shadow mb-0">
             <span>FXS-Modify</span>
           </div>

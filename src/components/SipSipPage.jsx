@@ -35,12 +35,28 @@ const getInitialState = () => {
   return state;
 };
 
+// ── Color Palette ─────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
 const SipSipPage = () => {
   const [form, setForm] = useState(getInitialState());
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [loadSuccess, setLoadSuccess] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
   // Seed options from cache for instant render; will refresh after API returns
   const getCachedWanOptions = () => {
     try {
@@ -54,6 +70,27 @@ const SipSipPage = () => {
     } catch (_) {}
     return [];
   };
+
+  const SectionHeading = ({ title }) => (
+    <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+      <span
+        style={{
+          position: "absolute",
+          top: -10,
+          left: 0,
+          background: "#fff",
+          paddingRight: 8,
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.mutedText,
+        }}
+      >
+        {title}
+      </span>
+    </div>
+  );
+
   const [sipWanOptions, setSipWanOptions] = useState(getCachedWanOptions());
   // Track previous sipWan value to detect changes
   const previousSipWanRef = useRef(null);
@@ -133,7 +170,6 @@ const SipSipPage = () => {
     const fetchSettings = async () => {
       try {
         setLoading(true);
-        setError("");
         const [sysInfo, listRes, netData] = await Promise.all([
           fetchSystemInfo(),
           listSipSettings(),
@@ -351,7 +387,7 @@ const SipSipPage = () => {
         previousSipWanRef.current = next.sipWan || "1";
       } catch (e) {
         console.error("Failed to fetch SIP settings:", e);
-        setError("Failed to load SIP settings. Please try again.");
+        showMessage("error", "Failed to load SIP settings. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -379,7 +415,6 @@ const SipSipPage = () => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      setError(""); // Clear any previous errors
       // Build settings payload
       const settingsPayload = { id: 1 };
       Object.entries(uiToApiKeyMap).forEach(([uiKey, apiKey]) => {
@@ -470,7 +505,7 @@ fi`;
       if (true) {
         try {
           // Show progress message
-          setError("Configuring routing... Please wait.");
+          showMessage("info", "Configuring routing... Please wait.");
 
           // --- UNIVERSAL CLEAN ROUTING UPDATE LOGIC ---
           // Fetch real gateway info for each interface
@@ -707,9 +742,6 @@ echo "Configuration persists across reboots"
           console.log("Routing update cmd:", cmd);
           const linuxCmdRes = await postLinuxCmd({ cmd });
 
-          // Clear the progress message
-          setError("");
-
           if (
             linuxCmdRes?.response &&
             linuxCmdRes?.responseData !== undefined
@@ -741,8 +773,9 @@ echo "Configuration persists across reboots"
           console.error("Failed to execute routing command:", cmdError);
           // Config files may have been updated even if command failed
           // The changes will still apply on next reboot
-          alert(
-            "Settings saved. Routing update encountered an issue, but config files were updated. Changes will apply after reboot. If you need immediate routing change, please reboot the device.",
+          showMessage(
+            "error",
+            "Settings saved. Routing update encountered an issue, but config files were updated. Changes will apply after reboot.",
           );
         }
 
@@ -765,14 +798,24 @@ echo "Configuration persists across reboots"
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-80px)] py-0 flex flex-col items-center md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="w-full max-w-4xl mx-auto">
-        {error && !saving && (
+      <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
+        {/* Error / Success Banner */}
+        {message.text && !saving && (
           <Alert
-            severity="error"
-            onClose={() => setError("")}
+            severity={
+              message.type === "error"
+                ? "error"
+                : message.type === "success"
+                  ? "success"
+                  : "info"
+            }
+            onClose={() => setMessage({ type: "", text: "" })}
             sx={{
               position: "fixed",
               top: 20,
@@ -782,9 +825,10 @@ echo "Configuration persists across reboots"
               boxShadow: 3,
             }}
           >
-            {error}
+            {message.text}
           </Alert>
         )}
+
         {saving && (
           <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
             <div
@@ -801,332 +845,326 @@ echo "Configuration persists across reboots"
             </div>
           </div>
         )}
-        {loadSuccess && (
-          <Alert
-            severity="success"
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            SIP settings loaded successfully.
-          </Alert>
-        )}
-        {/* Header */}
+
+        {/* Breadcrumb */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          SIP Settings
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; SIP &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+              SIP Settings
+            </span>
+          </div>
         </div>
 
-        {/* Content */}
+        {/* Main Card */}
         <div
-          className="rounded-b-lg border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
         >
-          {loading ? (
-            <div className="rounded-b-lg flex items-center justify-center min-h-[400px] bg-white">
-              <div className="text-center">
-                <CircularProgress size={40} sx={{ color: "#0e8fd6" }} />
-                <div className="mt-3 text-gray-600">
-                  Loading SIP settings...
+          <div style={{ padding: "24px 28px" }}>
+            <SectionHeading title="SIP Settings" />
+
+            <div style={{ padding: "24px 32px" }}>
+              {loading ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <div className="text-center">
+                    <CircularProgress size={40} sx={{ color: "#0e8fd6" }} />
+                    <div className="mt-3 text-gray-600">
+                      Loading SIP settings...
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 py-4 px-16">
-              <div className="space-y-4">
-                {SIP_SETTINGS_FIELDS.map((field, idx) => {
-                  // Skip conditional fields if their condition is not met
-                  if (field.conditional) {
-                    if (field.conditionalValues) {
-                      // Check for multiple possible values (e.g., assertedId === 'P-Asserted-Identity' || 'P-Preferred-Identity')
-                      if (
-                        !field.conditionalValues.includes(
-                          form[field.conditional],
-                        )
-                      ) {
-                        return null;
-                      }
-                    } else if (field.conditionalValue) {
-                      // Check for specific value condition (e.g., softSwitch === 'VOS')
-                      if (form[field.conditional] !== field.conditionalValue) {
-                        return null;
-                      }
-                    } else {
-                      // Check for boolean condition (e.g., tls === true)
-                      if (field.conditionalInverted) {
-                        // Inverted condition: show when field is false (e.g., workingPeriod === false)
-                        if (form[field.conditional]) {
-                          return null;
-                        }
-                      } else {
-                        // Normal condition: show when field is true (e.g., tls === true)
-                        // For radio fields, check if value is 'Yes'
-                        if (field.type === "radio") {
-                          if (form[field.conditional] !== "Yes") {
+              ) : (
+                <div className="flex-1 py-4 px-16">
+                  <div className="space-y-4">
+                    {SIP_SETTINGS_FIELDS.map((field, idx) => {
+                      // Skip conditional fields if their condition is not met
+                      if (field.conditional) {
+                        if (field.conditionalValues) {
+                          // Check for multiple possible values (e.g., assertedId === 'P-Asserted-Identity' || 'P-Preferred-Identity')
+                          if (
+                            !field.conditionalValues.includes(
+                              form[field.conditional],
+                            )
+                          ) {
+                            return null;
+                          }
+                        } else if (field.conditionalValue) {
+                          // Check for specific value condition (e.g., softSwitch === 'VOS')
+                          if (
+                            form[field.conditional] !== field.conditionalValue
+                          ) {
                             return null;
                           }
                         } else {
-                          if (!form[field.conditional]) {
-                            return null;
+                          // Check for boolean condition (e.g., tls === true)
+                          if (field.conditionalInverted) {
+                            // Inverted condition: show when field is false (e.g., workingPeriod === false)
+                            if (form[field.conditional]) {
+                              return null;
+                            }
+                          } else {
+                            // Normal condition: show when field is true (e.g., tls === true)
+                            // For radio fields, check if value is 'Yes'
+                            if (field.type === "radio") {
+                              if (form[field.conditional] !== "Yes") {
+                                return null;
+                              }
+                            } else {
+                              if (!form[field.conditional]) {
+                                return null;
+                              }
+                            }
                           }
                         }
                       }
-                    }
-                  }
 
-                  return (
-                    <div
-                      key={field.key}
-                      className="flex items-center justify-between"
-                    >
-                      <label
-                        className={`text-sm text-gray-600 font-medium text-left ${field.key === "externalBound" ? "" : "whitespace-nowrap"}`}
-                        style={{
-                          width:
-                            field.key === "externalBound" ? "380px" : "320px",
-                          marginRight: "10px",
-                          lineHeight: "1.4",
-                        }}
-                      >
-                        {field.key === "externalBound"
-                          ? "When the externally bound is enabled, only the externally bound address is matched to confirm the SIP trunk"
-                          : field.label}
-                      </label>
-
-                      {field.type === "text" && (
-                        <input
-                          type={
-                            field.key === "calledPrefix" ? "text" : "number"
-                          }
-                          value={form[field.key]}
-                          className="border border-gray-400 bg-white"
-                          style={{
-                            width: "200px",
-                            height: "28px",
-                            padding: "4px 10px",
-                            fontSize: "13px",
-                            borderRadius: "4px",
-                            outline: "none",
-                          }}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (field.key === "calledPrefix") {
-                              if (
-                                /^[0-9:]*$/.test(value) &&
-                                value.split(":").length <= 6
-                              ) {
-                                handleChange(field.key, value);
-                              }
-                            } else {
-                              if (/^\d*$/.test(value) || value === "") {
-                                handleChange(field.key, value);
-                              }
-                            }
-                          }}
-                          placeholder={
-                            field.key === "calledPrefix"
-                              ? "e.g., 123:456:789"
-                              : ""
-                          }
-                        />
-                      )}
-
-                      {field.type === "select" && (
-                        <FormControl size="small">
-                          <Select
-                            value={form[field.key]}
-                            onChange={(e) =>
-                              handleChange(field.key, e.target.value)
-                            }
-                            variant="outlined"
-                            style={{ width: "200px", height: "28px" }}
-                            sx={{
-                              fontSize: 13,
-                              height: 28,
-                              backgroundColor: "#ffffff",
-                              "& .MuiOutlinedInput-root": {
-                                backgroundColor: "#ffffff",
-                                height: 28,
-                                "& fieldset": {
-                                  borderColor: "#999999",
-                                },
-                                "&:hover fieldset": {
-                                  borderColor: "#999999",
-                                },
-                                "&.Mui-focused fieldset": {
-                                  borderColor: "#999999",
-                                },
-                              },
-                              "& .MuiSelect-select": {
-                                backgroundColor: "#ffffff",
-                                padding: "4px 10px",
-                                height: "auto",
-                                display: "flex",
-                                alignItems: "center",
-                                fontSize: "13px",
-                              },
+                      return (
+                        <div
+                          key={field.key}
+                          className="flex items-center justify-between"
+                        >
+                          <label
+                            className={`text-sm text-gray-600 font-medium text-left ${field.key === "externalBound" ? "" : "whitespace-nowrap"}`}
+                            style={{
+                              width:
+                                field.key === "externalBound"
+                                  ? "380px"
+                                  : "320px",
+                              marginRight: "10px",
+                              lineHeight: "1.4",
                             }}
                           >
-                            {field.key === "sipWan" && sipWanOptions.length > 0
-                              ? sipWanOptions.map((o) => (
-                                  <MenuItem key={o.value} value={o.value}>
-                                    {o.label}
-                                  </MenuItem>
-                                ))
-                              : field.options.map((opt) => (
-                                  <MenuItem key={opt} value={opt}>
-                                    {opt}
-                                  </MenuItem>
-                                ))}
-                          </Select>
-                        </FormControl>
-                      )}
+                            {field.key === "externalBound"
+                              ? "When the externally bound is enabled, only the externally bound address is matched to confirm the SIP trunk"
+                              : field.label}
+                          </label>
 
-                      {field.type === "checkbox" && (
-                        <div
-                          className="flex items-center"
-                          style={{ width: "200px", height: "28px" }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={!!form[field.key]}
-                            className="w-4 h-4 mr-2 accent-blue-600"
-                            onChange={() => handleCheckbox(field.key)}
-                          />
-                          {field.key === "workingPeriod" ? (
-                            field.labelAfter && (
-                              <span className="text-sm text-gray-600">
-                                {field.labelAfter}
-                              </span>
-                            )
-                          ) : (
-                            <>
-                              <span className="text-sm text-gray-600">
-                                Enable
-                              </span>
-                              {field.labelAfter && (
-                                <span className="text-sm ml-2 text-gray-600">
-                                  {field.labelAfter}
-                                </span>
+                          {field.type === "text" && (
+                            <input
+                              type={
+                                field.key === "calledPrefix" ? "text" : "number"
+                              }
+                              value={form[field.key]}
+                              className="border border-gray-400 bg-white"
+                              style={{
+                                width: "200px",
+                                height: "28px",
+                                padding: "4px 10px",
+                                fontSize: "13px",
+                                borderRadius: "4px",
+                                outline: "none",
+                              }}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (field.key === "calledPrefix") {
+                                  if (
+                                    /^[0-9:]*$/.test(value) &&
+                                    value.split(":").length <= 6
+                                  ) {
+                                    handleChange(field.key, value);
+                                  }
+                                } else {
+                                  if (/^\d*$/.test(value) || value === "") {
+                                    handleChange(field.key, value);
+                                  }
+                                }
+                              }}
+                              placeholder={
+                                field.key === "calledPrefix"
+                                  ? "e.g., 123:456:789"
+                                  : ""
+                              }
+                            />
+                          )}
+
+                          {field.type === "select" && (
+                            <FormControl size="small">
+                              <Select
+                                value={form[field.key]}
+                                onChange={(e) =>
+                                  handleChange(field.key, e.target.value)
+                                }
+                                variant="outlined"
+                                style={{ width: "200px", height: "28px" }}
+                                sx={{
+                                  fontSize: 13,
+                                  height: 28,
+                                  backgroundColor: "#ffffff",
+                                  "& .MuiOutlinedInput-root": {
+                                    backgroundColor: "#ffffff",
+                                    height: 28,
+                                    "& fieldset": {
+                                      borderColor: "#999999",
+                                    },
+                                    "&:hover fieldset": {
+                                      borderColor: "#999999",
+                                    },
+                                    "&.Mui-focused fieldset": {
+                                      borderColor: "#999999",
+                                    },
+                                  },
+                                  "& .MuiSelect-select": {
+                                    backgroundColor: "#ffffff",
+                                    padding: "4px 10px",
+                                    height: "auto",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    fontSize: "13px",
+                                  },
+                                }}
+                              >
+                                {field.key === "sipWan" &&
+                                sipWanOptions.length > 0
+                                  ? sipWanOptions.map((o) => (
+                                      <MenuItem key={o.value} value={o.value}>
+                                        {o.label}
+                                      </MenuItem>
+                                    ))
+                                  : field.options.map((opt) => (
+                                      <MenuItem key={opt} value={opt}>
+                                        {opt}
+                                      </MenuItem>
+                                    ))}
+                              </Select>
+                            </FormControl>
+                          )}
+
+                          {field.type === "checkbox" && (
+                            <div
+                              className="flex items-center"
+                              style={{ width: "200px", height: "28px" }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={!!form[field.key]}
+                                className="w-4 h-4 mr-2 accent-blue-600"
+                                onChange={() => handleCheckbox(field.key)}
+                              />
+                              {field.key === "workingPeriod" ? (
+                                field.labelAfter && (
+                                  <span className="text-sm text-gray-600">
+                                    {field.labelAfter}
+                                  </span>
+                                )
+                              ) : (
+                                <>
+                                  <span className="text-sm text-gray-600">
+                                    Enable
+                                  </span>
+                                  {field.labelAfter && (
+                                    <span className="text-sm ml-2 text-gray-600">
+                                      {field.labelAfter}
+                                    </span>
+                                  )}
+                                </>
                               )}
-                            </>
+                            </div>
+                          )}
+
+                          {field.type === "radio" && (
+                            <div
+                              className="flex items-center"
+                              style={{ width: "200px", height: "28px" }}
+                            >
+                              <label className="flex items-center text-sm mr-4">
+                                <input
+                                  type="radio"
+                                  name={field.key}
+                                  value="Yes"
+                                  checked={form[field.key] === "Yes"}
+                                  onChange={() =>
+                                    handleChange(field.key, "Yes")
+                                  }
+                                  className="mr-1 accent-blue-600"
+                                />
+                                Yes
+                              </label>
+                              <label className="flex items-center text-sm">
+                                <input
+                                  type="radio"
+                                  name={field.key}
+                                  value="No"
+                                  checked={form[field.key] === "No"}
+                                  onChange={() => handleChange(field.key, "No")}
+                                  className="mr-1 accent-blue-600"
+                                />
+                                No
+                              </label>
+                            </div>
                           )}
                         </div>
-                      )}
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
-                      {field.type === "radio" && (
-                        <div
-                          className="flex items-center"
-                          style={{ width: "200px", height: "28px" }}
-                        >
-                          <label className="flex items-center text-sm mr-4">
-                            <input
-                              type="radio"
-                              name={field.key}
-                              value="Yes"
-                              checked={form[field.key] === "Yes"}
-                              onChange={() => handleChange(field.key, "Yes")}
-                              className="mr-1 accent-blue-600"
-                            />
-                            Yes
-                          </label>
-                          <label className="flex items-center text-sm">
-                            <input
-                              type="radio"
-                              name={field.key}
-                              value="No"
-                              checked={form[field.key] === "No"}
-                              onChange={() => handleChange(field.key, "No")}
-                              className="mr-1 accent-blue-600"
-                            />
-                            No
-                          </label>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+          {/* Bottom Actions Footer */}
+          {!loading && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 16,
+                padding: "16px 24px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={handleSave}
+                disabled={loading || saving}
+                startIcon={
+                  saving && <CircularProgress size={16} color="inherit" />
+                }
+                sx={{
+                  background: "#1e2d42",
+                  color: "#fff",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  textTransform: "none",
+                  padding: "6px 32px",
+                  minWidth: 120,
+                  "&:hover": { background: "#0f172a" },
+                }}
+              >
+                {saving ? "Saving..." : "Save"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleReset}
+                sx={{
+                  color: "#1e293b",
+                  borderColor: "#9ca3af",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  textTransform: "none",
+                  padding: "6px 32px",
+                  minWidth: 100,
+                  "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
+                }}
+              >
+                Reset
+              </Button>
             </div>
           )}
-        </div>
-
-        {/* Buttons */}
-        <div className="flex justify-center gap-8 mt-6">
-          <Button
-            variant="contained"
-            disabled={loading || saving}
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: "6px",
-              minWidth: "100px",
-              height: "42px",
-              textTransform: "none",
-              padding: "6px 24px",
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              border: "1px solid #cbd5e1",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
-              e.target.style.color = "#fff";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
-              e.target.style.color = "#fff";
-            }}
-            onClick={handleSave}
-            startIcon={saving && <CircularProgress size={20} color="inherit" />}
-          >
-            {saving ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: "6px",
-              minWidth: "100px",
-              height: "42px",
-              textTransform: "none",
-              padding: "6px 24px",
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              border: "1px solid #cbd5e1",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)";
-              e.target.style.color = "#2f405c";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)";
-              e.target.style.color = "#3E5475";
-            }}
-            onClick={handleReset}
-          >
-            Reset
-          </Button>
         </div>
 
         {/* Note */}

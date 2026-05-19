@@ -1,19 +1,78 @@
 import React, { useState } from "react";
 import { RINGING_SCHEME_INITIAL_FORM } from "./constants/RingingSchemeConstants";
-import { TextField, Button } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Select as MuiSelect,
+  MenuItem,
+  FormControl,
+} from "@mui/material";
+
+// ── Color Palette (Standard Admin Theme) ───────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+// ── Shared UI Layout Components ─────────────────────────────────────────────
+const FieldRow = ({ label, children }) => (
+  <div
+    style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
+  >
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 140,
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const RingingSchemePage = () => {
   const [formData, setFormData] = useState(RINGING_SCHEME_INITIAL_FORM);
   const [changeTime, setChangeTime] = useState(0);
 
+  // --- API / FUNCTIONALITY (UNTOUCHED) ---
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSchemeChange = (value) => {
     const newData = { ...formData, ringScheme: value };
-
-    // Swap values between CallerID/Alert-Info fields if switching schemes
     if (changeTime > 0) {
       for (let i = 1; i <= 4; i++) {
         const tempMode = newData[`ringMode${i}`];
@@ -21,7 +80,6 @@ const RingingSchemePage = () => {
         newData[`ringMode${i}bak`] = tempMode;
       }
     } else {
-      // Initial load: clear opposite fields if mode is empty
       for (let i = 1; i <= 4; i++) {
         if (value === "0") {
           if (newData[`ringMode${i}`] === "") {
@@ -38,41 +96,20 @@ const RingingSchemePage = () => {
         }
       }
     }
-
     setFormData(newData);
     setChangeTime((prev) => prev + 1);
   };
 
   const handleKeyPress = (e) => {
     const key = e.keyCode || e.which;
-    // Allow: numbers (48-57), comma (44), backspace (8)
-    if (!((key >= 48 && key <= 57) || key === 44 || key === 8)) {
+    if (!((key >= 48 && key <= 57) || key === 44 || key === 8))
       e.preventDefault();
-    }
   };
 
   const handleKeyPress1 = (e) => {
     const key = e.keyCode || e.which;
-    // Block: space (32), ! (33), " (34), & (38), ' (39), ( (40), ) (41), ; (59), = (61), \ (92), | (124), ~ (126)
-    // Allow all others except these specific keys
-    if (
-      key === 32 ||
-      key === 33 ||
-      key === 34 ||
-      key === 38 ||
-      key === 39 ||
-      key === 40 ||
-      key === 41 ||
-      key === 59 ||
-      key === 61 ||
-      key === 92 ||
-      key === 124 ||
-      key === 126
-    ) {
-      if (key !== 8) {
-        e.preventDefault();
-      }
-    }
+    const blocked = [32, 33, 34, 38, 39, 40, 41, 59, 61, 92, 124, 126];
+    if (blocked.includes(key) && key !== 8) e.preventDefault();
   };
 
   const handleSave = () => {
@@ -97,7 +134,6 @@ const RingingSchemePage = () => {
             document.getElementById(`ringCallerId${i}`)?.focus();
             return;
           }
-
           if (ringModeObj === "") {
             alert(`Please input a ringing mode for Scheme ${ringNumInfo}!`);
             document.getElementById(`ringMode${i}`)?.focus();
@@ -172,12 +208,10 @@ const RingingSchemePage = () => {
               return;
             }
           }
-        } else {
-          if (ringModeObj !== "") {
-            alert(`Please input the CallerID for Scheme ${ringNumInfo}!`);
-            document.getElementById(`ringCallerId${i}`)?.focus();
-            return;
-          }
+        } else if (ringModeObj !== "") {
+          alert(`Please input the CallerID for Scheme ${ringNumInfo}!`);
+          document.getElementById(`ringCallerId${i}`)?.focus();
+          return;
         }
       } else {
         if (ringAlertInfoObj !== "") {
@@ -255,19 +289,14 @@ const RingingSchemePage = () => {
               return;
             }
           }
-        } else {
-          if (ringModeObj !== "") {
-            alert(
-              `Please input the Alert-Info Value for Scheme ${ringNumInfo}!`,
-            );
-            document.getElementById(`ringAlertInfo${i}`)?.focus();
-            return;
-          }
+        } else if (ringModeObj !== "") {
+          alert(`Please input the Alert-Info Value for Scheme ${ringNumInfo}!`);
+          document.getElementById(`ringAlertInfo${i}`)?.focus();
+          return;
         }
       }
     }
 
-    // Check for duplicate CallerID or Alert-Info
     const ringCallerIdArr = [
       formData.ringCallerId1,
       formData.ringCallerId2,
@@ -304,7 +333,6 @@ const RingingSchemePage = () => {
         }
       }
     }
-
     alert("Settings saved successfully!");
   };
 
@@ -313,281 +341,165 @@ const RingingSchemePage = () => {
     setChangeTime(0);
   };
 
-  const renderSchemeRow = (schemeNum) => {
-    const showCallerId = formData.ringScheme === "0";
-    const showAlertInfo = formData.ringScheme === "1";
-
+  // ── Render Helpers ─────────────────────────────────────────────────────────
+  const renderSchemeContent = (n) => {
+    const isCallerId = formData.ringScheme === "0";
     return (
-      <React.Fragment key={schemeNum}>
-        <tr style={{ height: "22px" }}>
-          <td style={{ width: "20%" }}></td>
-          <td colSpan={2} style={{ fontSize: "14px", color: "#333" }}>
-            Scheme {schemeNum}
-          </td>
-          <td style={{ width: "45%" }}></td>
-        </tr>
-
-        {/* CallerID or Alert-Info field */}
-        {showCallerId && (
-          <tr style={{ height: "22px" }}>
-            <td></td>
-            <td style={{ width: "5%" }}></td>
-            <td style={{ width: "30%", fontSize: "14px", color: "#333" }}>
-              CallerID
-            </td>
-            <td style={{ width: "45%" }}>
-              <TextField
-                id={`ringCallerId${schemeNum}`}
-                value={formData[`ringCallerId${schemeNum}`]}
-                onChange={(e) =>
-                  handleInputChange(`ringCallerId${schemeNum}`, e.target.value)
-                }
-                onKeyPress={handleKeyPress1}
-                inputProps={{
-                  maxLength: 128,
-                  style: { fontSize: 14, padding: "4px 8px" },
-                }}
-                sx={{
-                  width: "100%",
-                  maxWidth: "300px",
-                  "& .MuiOutlinedInput-root": {
-                    height: "28px",
-                    backgroundColor: "white",
-                    "& fieldset": {
-                      borderColor: "#999",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#666",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#3b82f6",
-                    },
-                  },
-                }}
-                variant="outlined"
-                size="small"
-              />
-            </td>
-          </tr>
-        )}
-
-        {showAlertInfo && (
-          <tr style={{ height: "22px" }}>
-            <td></td>
-            <td style={{ width: "5%" }}></td>
-            <td style={{ width: "30%", fontSize: "14px", color: "#333" }}>
-              Alert-Info Value
-            </td>
-            <td style={{ width: "45%" }}>
-              <TextField
-                id={`ringAlertInfo${schemeNum}`}
-                value={formData[`ringAlertInfo${schemeNum}`]}
-                onChange={(e) =>
-                  handleInputChange(`ringAlertInfo${schemeNum}`, e.target.value)
-                }
-                onKeyPress={handleKeyPress1}
-                inputProps={{
-                  maxLength: 128,
-                  style: { fontSize: 14, padding: "4px 8px" },
-                }}
-                sx={{
-                  width: "100%",
-                  maxWidth: "300px",
-                  "& .MuiOutlinedInput-root": {
-                    height: "28px",
-                    backgroundColor: "white",
-                    "& fieldset": {
-                      borderColor: "#999",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#666",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#3b82f6",
-                    },
-                  },
-                }}
-                variant="outlined"
-                size="small"
-              />
-            </td>
-          </tr>
-        )}
-
-        {/* Ringing Mode field */}
-        <tr style={{ height: "22px" }}>
-          <td></td>
-          <td style={{ width: "5%" }}></td>
-          <td style={{ width: "30%", fontSize: "14px", color: "#333" }}>
-            Ringing Mode
-          </td>
-          <td style={{ width: "45%" }}>
+      <div key={n} style={{ marginBottom: 24 }}>
+        <SectionHeading title={`Scheme ${n}`} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "16px 40px",
+          }}
+        >
+          <FieldRow label={isCallerId ? "CallerID" : "Alert-Info Value"}>
             <TextField
-              id={`ringMode${schemeNum}`}
-              value={formData[`ringMode${schemeNum}`]}
+              id={isCallerId ? `ringCallerId${n}` : `ringAlertInfo${n}`}
+              size="small"
+              fullWidth
+              value={
+                isCallerId
+                  ? formData[`ringCallerId${n}`]
+                  : formData[`ringAlertInfo${n}`]
+              }
               onChange={(e) =>
-                handleInputChange(`ringMode${schemeNum}`, e.target.value)
+                handleInputChange(
+                  isCallerId ? `ringCallerId${n}` : `ringAlertInfo${n}`,
+                  e.target.value,
+                )
+              }
+              onKeyPress={handleKeyPress1}
+              inputProps={{
+                maxLength: 128,
+                style: { fontSize: 13, padding: "6px 8px" },
+              }}
+            />
+          </FieldRow>
+          <FieldRow label="Ringing Mode">
+            <TextField
+              id={`ringMode${n}`}
+              size="small"
+              fullWidth
+              value={formData[`ringMode${n}`]}
+              onChange={(e) =>
+                handleInputChange(`ringMode${n}`, e.target.value)
               }
               onKeyPress={handleKeyPress}
               inputProps={{
                 maxLength: 128,
-                style: { fontSize: 14, padding: "4px 8px" },
+                style: { fontSize: 13, padding: "6px 8px" },
               }}
-              sx={{
-                width: "100%",
-                maxWidth: "300px",
-                "& .MuiOutlinedInput-root": {
-                  height: "28px",
-                  backgroundColor: "white",
-                  "& fieldset": {
-                    borderColor: "#999",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#666",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#3b82f6",
-                  },
-                },
-              }}
-              variant="outlined"
-              size="small"
             />
-          </td>
-        </tr>
-
-        <tr>
-          <td style={{ height: "8px" }}></td>
-        </tr>
-      </React.Fragment>
+          </FieldRow>
+        </div>
+      </div>
     );
   };
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-128px)] py-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="flex justify-center">
-        <div className="w-full" style={{ maxWidth: "1024px" }}>
-          {/* Page Title Bar */}
+      <div style={{ maxWidth: "1024px", margin: "0 auto" }}>
+        {/* Breadcrumb / Title */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            FXS &rsaquo; Advanced &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              Ringing Scheme
+            </span>
+          </div>
+        </div>
+
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{ padding: "24px 28px" }}>
+            <SectionHeading title="General Configuration" />
+            <FieldRow label="Matching Scheme">
+              <FormControl size="small" sx={{ width: 260 }}>
+                <MuiSelect
+                  value={formData.ringScheme}
+                  onChange={(e) => handleSchemeChange(e.target.value)}
+                  sx={{ fontSize: 13, height: 32 }}
+                >
+                  <MenuItem value="0" sx={{ fontSize: 13 }}>
+                    CallerID Matching
+                  </MenuItem>
+                  <MenuItem value="1" sx={{ fontSize: 13 }}>
+                    Alert-Info Matching
+                  </MenuItem>
+                </MuiSelect>
+              </FormControl>
+            </FieldRow>
+
+            {[1, 2, 3, 4].map((n) => renderSchemeContent(n))}
+          </div>
+
+          {/* Bottom Actions Footer */}
           <div
-            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
             style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              padding: "16px 24px",
+              borderTop: `1px solid ${C.cardBorder}`,
+              background: "#f8fafc",
             }}
           >
-            {" "}
-            <span>Ringing Scheme</span>
-          </div>
-
-          {/* Main Card */}
-          <div className="rounded-b-lg bg-[#dde0e4] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
-            <div className="flex justify-center pl-8">
-              <table
-                className="text-sm"
-                style={{ tableLayout: "fixed", width: "500px" }}
-              >
-                <colgroup>
-                  <col style={{ width: "20%" }} />
-                  <col style={{ width: "5%" }} />
-                  <col style={{ width: "30%" }} />
-                  <col style={{ width: "45%" }} />
-                </colgroup>
-                <tbody>
-                  <tr style={{ height: "22px" }}>
-                    <td></td>
-                    <td colSpan={2} style={{ fontSize: "14px", color: "#333" }}>
-                      Matching Scheme
-                    </td>
-                    <td>
-                      <select
-                        value={formData.ringScheme}
-                        onChange={(e) => handleSchemeChange(e.target.value)}
-                        className="border border-gray-400 rounded-sm px-1 bg-white"
-                        style={{
-                          height: "28px",
-                          width: "155px",
-                          fontSize: "14px",
-                        }}
-                      >
-                        <option value="0">CallerID Matching</option>
-                        <option value="1">Alert-Info Matching</option>
-                      </select>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ height: "8px" }}></td>
-                  </tr>
-
-                  {[1, 2, 3, 4].map((num) => renderSchemeRow(num))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Save and Reset Buttons */}
-          <div className="flex justify-center gap-4 mt-6 mb-4">
             <Button
               variant="contained"
+              onClick={handleSave}
               sx={{
                 background:
                   "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
                 color: "#fff",
                 fontWeight: 600,
-                fontSize: "16px",
-                borderRadius: "6px",
-                minWidth: "100px",
-                height: "42px",
+                fontSize: 13,
                 textTransform: "none",
-                padding: "6px 24px",
-                boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                border: "1px solid #cbd5e1",
-                cursor: "pointer",
+                padding: "6px 32px",
+                minWidth: 120,
+                "&:hover": { background: "#1e2d42" },
               }}
-              onMouseEnter={(e) => {
-                e.target.style.background =
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
-                e.target.style.color = "#fff";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background =
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
-                e.target.style.color = "#fff";
-              }}
-              onClick={handleSave}
             >
               Save
             </Button>
             <Button
-              variant="contained"
+              variant="outlined"
+              onClick={handleReset}
               sx={{
+                color: C.accent,
+                borderColor: C.cardBorder,
                 background:
                   "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-                color: "#3E5475",
                 fontWeight: 600,
-                fontSize: "16px",
-                borderRadius: "6px",
-                minWidth: "100px",
-                height: "42px",
+                fontSize: 13,
                 textTransform: "none",
-                padding: "6px 24px",
-                boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                border: "1px solid #cbd5e1",
-                cursor: "pointer",
+                padding: "6px 32px",
+                minWidth: 100,
+                "&:hover": { borderColor: C.accent, background: "#f1f5f9" },
               }}
-              onMouseEnter={(e) => {
-                e.target.style.background =
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)";
-                e.target.style.color = "#2f405c";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background =
-                  "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)";
-                e.target.style.color = "#3E5475";
-              }}
-              onClick={handleReset}
             >
               Reset
             </Button>

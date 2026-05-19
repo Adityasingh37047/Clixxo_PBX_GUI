@@ -1,8 +1,71 @@
 import React, { useState } from "react";
 import {
+  Button,
+  FormControl,
+  MenuItem,
+  Select as MuiSelect,
+  Checkbox,
+  TextField,
+} from "@mui/material";
+import {
   NAT_SETTINGS_FIELDS,
   NAT_SETTINGS_NOTE,
-} from "./constants/NatSettingsConstants";
+} from "./constants/NatSettingsConstants"; // Adjust path if needed
+
+// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
+};
+
+// ── Shared UI Components ──────────────────────────────────────────────────────
+const FieldRow = ({ label, children, required, align = "center" }) => (
+  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 220, // Sufficient width for NAT setting labels
+        flexShrink: 0,
+        paddingTop: align === "flex-start" ? 8 : 0,
+      }}
+    >
+      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+    </label>
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const getInitialState = () => {
   const state = {};
@@ -22,6 +85,12 @@ const getInitialState = () => {
 
 const NatSettingsPage = () => {
   const [form, setForm] = useState(getInitialState());
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   const handleChange = (key, value) => {
     const fieldDef = NAT_SETTINGS_FIELDS.find((f) => f.key === key);
@@ -54,7 +123,7 @@ const NatSettingsPage = () => {
   };
 
   const handleSave = () => {
-    alert("Settings saved successfully!");
+    showMessage("success", "Settings saved successfully!");
   };
 
   const handleReset = () => {
@@ -96,272 +165,332 @@ const NatSettingsPage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-128px)] py-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="flex justify-center">
-        <div className="w-full" style={{ maxWidth: "1024px" }}>
-          {/* Page Title Bar */}
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Error / Success Banner */}
+        {message.text && (
           <div
-            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
             style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+              background:
+                message.type === "error"
+                  ? "#fef2f2"
+                  : message.type === "success"
+                    ? "#f0fdf4"
+                    : "#eff6ff",
+              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
+              color:
+                message.type === "error"
+                  ? "#b91c1c"
+                  : message.type === "success"
+                    ? "#166534"
+                    : "#1e40af",
+              padding: "10px 14px",
+              borderRadius: 6,
+              marginBottom: 12,
+              fontSize: 13,
+              display: "flex",
+              justifyContent: "space-between",
             }}
           >
-            <span>NAT Settings</span>
+            <span>{message.text}</span>
+            <span
+              onClick={() => setMessage({ type: "", text: "" })}
+              style={{ cursor: "pointer", fontSize: 16 }}
+            >
+              ✕
+            </span>
           </div>
+        )}
 
-          {/* Main Card */}
-          <div className="rounded-b-lg bg-[#ffffff] border-2 border-gray-400 border-t-0 shadow-sm py-6 text-sm">
-            <div className="flex justify-center pl-8">
-              <table
-                className="text-sm"
-                style={{ tableLayout: "fixed", width: "800px" }}
-              >
-                <colgroup>
-                  <col style={{ width: "50%" }} />
-                  <col style={{ width: "50%" }} />
-                </colgroup>
-                <tbody>
-                  {Object.entries(groupedFields).map(
-                    ([sectionName, methods], sectionIdx) => (
-                      <React.Fragment key={sectionName}>
-                        {/* Section Header */}
-                        <tr>
-                          <td
-                            colSpan={2}
-                            className="text-gray-700 font-semibold text-left pb-2 pt-4"
-                            style={{ paddingLeft: "0px" }}
+        {/* Breadcrumb */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            FXS &rsaquo; VoIP &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              NAT Settings
+            </span>
+          </div>
+        </div>
+
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{ padding: "24px 28px" }}>
+            {Object.entries(groupedFields).map(
+              ([sectionName, methods], sectionIdx) => (
+                <div key={sectionName} style={{ marginBottom: 32 }}>
+                  {/* Line-Cut Section Heading */}
+                  <SectionHeading title={sectionName} />
+
+                  {Object.entries(methods).map(
+                    ([methodName, fields], methodIdx) => (
+                      <div
+                        key={`${sectionName}-${methodName}`}
+                        style={{
+                          marginBottom: methodName !== "no-method" ? 24 : 0,
+                        }}
+                      >
+                        {/* Method Sub-Heading (if applicable) */}
+                        {methodName !== "no-method" && (
+                          <div
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 700,
+                              color: C.accent,
+                              marginBottom: 16,
+                              borderBottom: `1px dashed ${C.cardBorder}`,
+                              paddingBottom: 4,
+                            }}
                           >
-                            {sectionName}
-                          </td>
-                        </tr>
-
-                        {Object.entries(methods).map(
-                          ([methodName, fields], methodIdx) => (
-                            <React.Fragment
-                              key={`${sectionName}-${methodName}`}
-                            >
-                              {/* Method Label (if exists) */}
-                              {methodName !== "no-method" && (
-                                <tr>
-                                  <td
-                                    colSpan={2}
-                                    className="text-gray-700 text-left pb-1 pt-2"
-                                    style={{ paddingLeft: "20px" }}
-                                  >
-                                    {methodName}
-                                  </td>
-                                </tr>
-                              )}
-
-                              {/* Fields under this method */}
-                              {fields.map((field, fieldIdx) => (
-                                <tr key={field.key}>
-                                  <td
-                                    className="align-middle text-gray-700 text-left"
-                                    style={{
-                                      paddingLeft: "40px",
-                                      paddingRight: "16px",
-                                    }}
-                                  >
-                                    {field.label}
-                                  </td>
-                                  <td className="align-middle text-left">
-                                    <div>
-                                      {/* Readonly field */}
-                                      {field.type === "readonly" && (
-                                        <div
-                                          className="border border-gray-400 rounded px-2 bg-gray-200 text-gray-700"
-                                          style={{
-                                            height: "28px",
-                                            lineHeight: "28px",
-                                            width: "200px",
-                                            borderRadius: "6px",
-                                          }}
-                                        >
-                                          {form[field.key] ||
-                                            field.default ||
-                                            ""}
-                                        </div>
-                                      )}
-
-                                      {/* Text input */}
-                                      {field.type === "text" && (
-                                        <input
-                                          type="text"
-                                          value={form[field.key]}
-                                          onChange={(e) =>
-                                            handleChange(
-                                              field.key,
-                                              e.target.value,
-                                            )
-                                          }
-                                          className="border border-gray-400 rounded-sm px-2 bg-white"
-                                          style={{
-                                            height: "28px",
-                                            width: "200px",
-                                          }}
-                                        />
-                                      )}
-
-                                      {/* Select dropdown */}
-                                      {field.type === "select" && (
-                                        <select
-                                          value={form[field.key]}
-                                          onChange={(e) =>
-                                            handleChange(
-                                              field.key,
-                                              e.target.value,
-                                            )
-                                          }
-                                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                                          style={{
-                                            height: "28px",
-                                            width: "200px",
-                                          }}
-                                        >
-                                          {field.options.map((opt) => (
-                                            <option key={opt} value={opt}>
-                                              {opt}
-                                            </option>
-                                          ))}
-                                        </select>
-                                      )}
-
-                                      {/* Checkbox */}
-                                      {field.type === "checkbox" && (
-                                        <label
-                                          className={`flex items-center gap-2 ${field.key === "autoDetectNatIp" && !form.learnNat ? "cursor-not-allowed" : "cursor-pointer"}`}
-                                        >
-                                          <input
-                                            type="checkbox"
-                                            checked={!!form[field.key]}
-                                            onChange={() =>
-                                              handleCheckbox(field.key)
-                                            }
-                                            disabled={
-                                              field.key === "autoDetectNatIp" &&
-                                              !form.learnNat
-                                            }
-                                            className="h-4 w-4 accent-blue-600"
-                                            style={
-                                              field.key === "autoDetectNatIp" &&
-                                              !form.learnNat
-                                                ? {
-                                                    opacity: 0.6,
-                                                    cursor: "not-allowed",
-                                                  }
-                                                : {}
-                                            }
-                                          />
-                                          <span
-                                            className={`text-gray-700 ${field.key === "autoDetectNatIp" && !form.learnNat ? "opacity-60" : ""}`}
-                                          >
-                                            Enable
-                                          </span>
-                                        </label>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </React.Fragment>
-                          ),
+                            {methodName}
+                          </div>
                         )}
-                      </React.Fragment>
+
+                        {/* 2-Column Grid Layout for Fields */}
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "16px 40px",
+                          }}
+                        >
+                          {fields.map((field) => {
+                            const isDisabledCheckbox =
+                              field.key === "autoDetectNatIp" && !form.learnNat;
+
+                            return (
+                              <div
+                                key={field.key}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                }}
+                              >
+                                <FieldRow
+                                  label={field.label}
+                                  align={
+                                    field.type === "checkbox"
+                                      ? "center"
+                                      : "flex-start"
+                                  }
+                                >
+                                  {/* Readonly Field */}
+                                  {field.type === "readonly" && (
+                                    <TextField
+                                      size="small"
+                                      fullWidth
+                                      disabled
+                                      value={
+                                        form[field.key] || field.default || ""
+                                      }
+                                      inputProps={{
+                                        style: {
+                                          fontSize: 13,
+                                          padding: "6px 8px",
+                                          background: "#f1f5f9",
+                                          color: C.valueText,
+                                        },
+                                      }}
+                                    />
+                                  )}
+
+                                  {/* Text / Number Input */}
+                                  {field.type === "text" && (
+                                    <TextField
+                                      size="small"
+                                      fullWidth
+                                      value={form[field.key] || ""}
+                                      onChange={(e) =>
+                                        handleChange(field.key, e.target.value)
+                                      }
+                                      inputProps={{
+                                        style: {
+                                          fontSize: 13,
+                                          padding: "6px 8px",
+                                        },
+                                      }}
+                                    />
+                                  )}
+
+                                  {/* Select Dropdown */}
+                                  {field.type === "select" && (
+                                    <FormControl size="small" fullWidth>
+                                      <MuiSelect
+                                        value={form[field.key] || ""}
+                                        onChange={(e) =>
+                                          handleChange(
+                                            field.key,
+                                            e.target.value,
+                                          )
+                                        }
+                                        sx={{ fontSize: 13 }}
+                                      >
+                                        {field.options.map((opt) => (
+                                          <MenuItem
+                                            key={opt}
+                                            value={opt}
+                                            sx={{ fontSize: 13 }}
+                                          >
+                                            {opt}
+                                          </MenuItem>
+                                        ))}
+                                      </MuiSelect>
+                                    </FormControl>
+                                  )}
+
+                                  {/* Checkbox */}
+                                  {field.type === "checkbox" && (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 8,
+                                      }}
+                                    >
+                                      <Checkbox
+                                        checked={!!form[field.key]}
+                                        onChange={() =>
+                                          handleCheckbox(field.key)
+                                        }
+                                        disabled={isDisabledCheckbox}
+                                        size="small"
+                                        sx={{
+                                          padding: "2px",
+                                          color: C.accent,
+                                          "&.Mui-checked": { color: C.accent },
+                                        }}
+                                      />
+                                      <span
+                                        style={{
+                                          fontSize: 13,
+                                          color: C.valueText,
+                                          cursor: isDisabledCheckbox
+                                            ? "not-allowed"
+                                            : "pointer",
+                                          opacity: isDisabledCheckbox ? 0.6 : 1,
+                                        }}
+                                        onClick={() => {
+                                          if (!isDisabledCheckbox)
+                                            handleCheckbox(field.key);
+                                        }}
+                                      >
+                                        Enable
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Helper Text */}
+                                  {field.helper && (
+                                    <div
+                                      style={{
+                                        fontSize: 11,
+                                        color: C.errorRed,
+                                        marginTop: 6,
+                                        lineHeight: 1.4,
+                                      }}
+                                    >
+                                      {field.helper}
+                                    </div>
+                                  )}
+                                </FieldRow>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     ),
                   )}
+                </div>
+              ),
+            )}
 
-                  {/* Note Section */}
-                  <tr>
-                    <td
-                      colSpan={2}
-                      className="text-gray-700 font-semibold text-left pb-2 pt-6"
-                      style={{ paddingLeft: "20px" }}
-                    >
-                      Note:
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      colSpan={2}
-                      className="text-gray-700 text-left pb-2"
-                      style={{ paddingLeft: "40px", whiteSpace: "pre-line" }}
-                    >
-                      {NAT_SETTINGS_NOTE}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            {/* Note Section */}
+            {NAT_SETTINGS_NOTE && (
+              <div
+                style={{
+                  marginTop: 24,
+                  fontSize: 12,
+                  color: C.mutedText,
+                  lineHeight: 1.6,
+                  whiteSpace: "pre-line",
+                  background: "#f8fafc",
+                  padding: "12px 16px",
+                  borderRadius: 6,
+                  border: `1px solid #e2e8f0`,
+                }}
+              >
+                <span style={{ fontWeight: 600, color: C.labelText }}>
+                  Note:
+                </span>
+                <br />
+                {NAT_SETTINGS_NOTE}
+              </div>
+            )}
           </div>
 
-          {/* Buttons - Outside the bordered box */}
-          <div className="flex justify-center gap-6 py-6">
-            <button
-              type="button"
+          {/* Bottom Actions Footer */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              padding: "16px 24px",
+              borderTop: `1px solid ${C.cardBorder}`,
+              background: "#f8fafc",
+            }}
+          >
+            <Button
+              variant="contained"
               onClick={handleSave}
-              style={{
-                background:
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              sx={{
+                background: "#1e2d42",
                 color: "#fff",
                 fontWeight: 600,
-                fontSize: "16px",
-                borderRadius: "6px",
-                minWidth: "100px",
-                height: "42px",
+                fontSize: 13,
                 textTransform: "none",
-                padding: "6px 24px",
-                boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                border: "1px solid #cbd5e1",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background =
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
-                e.target.style.color = "#fff";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background =
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
-                e.target.style.color = "#fff";
+                padding: "6px 32px",
+                minWidth: 120,
+                "&:hover": { background: "#0f172a" },
               }}
             >
               Save
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outlined"
               onClick={handleReset}
-              style={{
-                background:
-                  "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-                color: "#3E5475",
+              sx={{
+                color: "#1e293b",
+                borderColor: "#9ca3af",
                 fontWeight: 600,
-                fontSize: "16px",
-                borderRadius: "6px",
-                minWidth: "100px",
-                height: "42px",
+                fontSize: 13,
                 textTransform: "none",
-                padding: "6px 24px",
-                boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                border: "1px solid #cbd5e1",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background =
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)";
-                e.target.style.color = "#2f405c";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background =
-                  "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)";
-                e.target.style.color = "#3E5475";
+                padding: "6px 32px",
+                minWidth: 100,
+                "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
               }}
             >
               Reset
-            </button>
+            </Button>
           </div>
         </div>
       </div>

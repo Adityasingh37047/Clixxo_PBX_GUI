@@ -4,12 +4,57 @@ import {
   SIP_MEDIA_CODEC_FIELD,
   SIP_MEDIA_INITIAL_FORM,
 } from "../constants/SipMediaconstants";
-import { Select, MenuItem, Button, CircularProgress } from "@mui/material";
+import {
+  Select,
+  MenuItem,
+  Button,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import { listMediaSettings, updateMediaSettings } from "../api/apiService";
+
+// ── Design System ─────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 const SipMediaPage = () => {
   const [formData, setFormData] = useState(SIP_MEDIA_INITIAL_FORM);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -60,6 +105,7 @@ const SipMediaPage = () => {
         setFormData(next);
       } catch (e) {
         console.error("Failed to fetch media settings:", e);
+        showMessage("error", "Failed to load media settings");
       } finally {
         setLoading(false);
       }
@@ -69,98 +115,196 @@ const SipMediaPage = () => {
 
   const handleSave = async () => {
     try {
+      setSaving(true);
       const payload = { id: 1 };
       Object.entries(uiToApi).forEach(([u, a]) => {
         payload[a] = formData[u] ?? null;
       });
       const res = await updateMediaSettings(payload);
-      alert(res?.message || "Settings Updated!");
+      if (res?.response) {
+        showMessage("success", res?.message || "Settings Updated!");
+      } else {
+        showMessage("error", res?.message || "Save failed");
+      }
     } catch (e) {
       console.error("Failed to save media settings:", e);
-      alert(e?.message || "Save failed");
+      showMessage("error", e?.message || "Network error while saving");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleReset = () => {
     setFormData(SIP_MEDIA_INITIAL_FORM);
+    showMessage("info", "Form reset to defaults");
   };
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-150px)] py-0 flex flex-col items-center md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="w-full max-w-4xl mx-auto">
-        {/* Header */}
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          Media Parameters
+      <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
+        {/* Toast Alert */}
+        {message.text && (
+          <div
+            style={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              maxWidth: 420,
+            }}
+          >
+            <Alert
+              severity={message.type}
+              onClose={() => setMessage({ type: "", text: "" })}
+              sx={{ boxShadow: 3 }}
+            >
+              {message.text}
+            </Alert>
+          </div>
+        )}
+
+        {/* Breadcrumb */}
+        <div style={{ fontSize: 11, color: C.mutedText, marginBottom: 12 }}>
+          PBX &rsaquo; SIP &rsaquo;{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            Media Parameters
+          </span>
         </div>
 
-        {/* Content */}
+        {/* Main Card */}
         <div
-          className="rounded-b-lg border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
         >
-          {loading ? (
-            <div className="rounded-b-lg flex items-center justify-center min-h-[400px] bg-white">
-              <div className="text-center">
-                <CircularProgress size={40} sx={{ color: "#0e8fd6" }} />
-                <div className="mt-3 text-gray-600">
-                  Loading media parameters...
+          <div style={{ padding: "24px 28px" }}>
+            <SectionHeading title="Media Parameters" />
+
+            <div style={{ padding: "24px 32px" }}>
+              {loading ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <div className="text-center">
+                    <CircularProgress size={40} sx={{ color: "#0e8fd6" }} />
+                    <div className="mt-3 text-gray-600">
+                      Loading media parameters...
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 py-4 px-16">
-              <div className="space-y-3">
-                {/* Regular Media Fields */}
-                {SIP_MEDIA_FIELDS.map((field) => {
-                  // Skip conditional fields if their condition is not met
-                  if (field.conditional) {
-                    if (field.conditionalValues) {
-                      // Check for multiple possible values (e.g., dtmfTransmitMode === 'RFC2833' || 'RFC2833+SingAling')
-                      if (
-                        !field.conditionalValues.includes(
-                          formData[field.conditional],
-                        )
-                      ) {
-                        return null;
+              ) : (
+                <div className="flex-1 py-4 px-16">
+                  <div className="space-y-4">
+                    {/* Regular Media Fields */}
+                    {SIP_MEDIA_FIELDS.map((field) => {
+                      if (field.conditional) {
+                        const condVal = formData[field.conditional];
+                        if (field.conditionalValues) {
+                          if (!field.conditionalValues.includes(condVal))
+                            return null;
+                        } else if (field.conditionalValue) {
+                          if (condVal !== field.conditionalValue) return null;
+                        }
                       }
-                    } else if (field.conditionalValue) {
-                      // Check for specific value condition
-                      if (
-                        formData[field.conditional] !== field.conditionalValue
-                      ) {
-                        return null;
-                      }
-                    }
-                  }
 
-                  return (
-                    <div
-                      key={field.name}
-                      className="flex items-center justify-between"
-                    >
+                      return (
+                        <div
+                          key={field.name}
+                          className="flex items-center justify-between"
+                        >
+                          <label
+                            className="text-sm text-gray-600 font-medium text-left whitespace-nowrap"
+                            style={{
+                              width: "320px",
+                              marginRight: "10px",
+                              lineHeight: "1.4",
+                            }}
+                          >
+                            {field.label}
+                          </label>
+                          <div style={{ width: "200px" }}>
+                            {field.type === "select" ? (
+                              <Select
+                                name={field.name}
+                                value={formData[field.name]}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                                style={{ width: "200px", height: "28px" }}
+                                sx={{
+                                  fontSize: 13,
+                                  height: 28,
+                                  backgroundColor: "#ffffff",
+                                  "& .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: "#999999",
+                                  },
+                                  "& .MuiSelect-select": {
+                                    padding: "4px 10px",
+                                    lineHeight: "18px",
+                                    backgroundColor: "transparent",
+                                    fontSize: "13px",
+                                  },
+                                }}
+                              >
+                                {field.options.map((option) => (
+                                  <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                    sx={{ fontSize: 13 }}
+                                  >
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            ) : (
+                              <input
+                                type="text"
+                                name={field.name}
+                                value={formData[field.name]}
+                                onChange={handleInputChange}
+                                className="border border-gray-400 bg-white"
+                                style={{
+                                  width: "200px",
+                                  height: "28px",
+                                  padding: "4px 10px",
+                                  fontSize: "13px",
+                                  borderRadius: "4px",
+                                  outline: "none",
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    <SectionHeading title="CODEC Settings" />
+
+                    <div className="flex items-center justify-between">
                       <label
-                        className="text-sm text-gray-700 font-medium whitespace-nowrap"
-                        style={{ width: "320px", marginRight: "20px" }}
+                        className="text-sm text-gray-600 font-medium text-left whitespace-nowrap"
+                        style={{
+                          width: "320px",
+                          marginRight: "10px",
+                          lineHeight: "1.4",
+                        }}
                       >
-                        {field.label}:
+                        Gateway Negotiation Coding Sequence:
                       </label>
-
-                      {field.type === "select" ? (
+                      <div style={{ width: "200px" }}>
                         <Select
-                          name={field.name}
-                          value={formData[field.name]}
+                          name={SIP_MEDIA_CODEC_FIELD.name}
+                          value={formData[SIP_MEDIA_CODEC_FIELD.name]}
                           onChange={handleInputChange}
                           variant="outlined"
-                          size="small"
                           style={{ width: "200px", height: "28px" }}
                           sx={{
                             fontSize: 13,
@@ -177,145 +321,75 @@ const SipMediaPage = () => {
                             },
                           }}
                         >
-                          {field.options.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
+                          {SIP_MEDIA_CODEC_FIELD.options.map((option) => (
+                            <MenuItem
+                              key={option.value}
+                              value={option.value}
+                              sx={{ fontSize: 13 }}
+                            >
                               {option.label}
                             </MenuItem>
                           ))}
                         </Select>
-                      ) : (
-                        <input
-                          type="text"
-                          name={field.name}
-                          value={formData[field.name]}
-                          onChange={handleInputChange}
-                          style={{
-                            width: "200px",
-                            height: "28px",
-                            padding: "4px 10px",
-                            border: "1px solid #999999",
-                            borderRadius: "4px",
-                            backgroundColor: "#ffffff",
-                            fontSize: "13px",
-                            outline: "none",
-                          }}
-                        />
-                      )}
+                      </div>
                     </div>
-                  );
-                })}
-
-                {/* CODEC Setting Section */}
-                <div className="pt-2">
-                  <div className="text-sm text-gray-700 font-medium mb-3">
-                    CODEC Setting
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label
-                      className="text-sm text-gray-700 font-medium whitespace-nowrap"
-                      style={{ width: "320px", marginRight: "20px" }}
-                    >
-                      Gateway Negotiation Coding Sequence:
-                    </label>
-                    <Select
-                      name={SIP_MEDIA_CODEC_FIELD.name}
-                      value={formData[SIP_MEDIA_CODEC_FIELD.name]}
-                      onChange={handleInputChange}
-                      variant="outlined"
-                      size="small"
-                      style={{ width: "200px", height: "28px" }}
-                      sx={{
-                        fontSize: 13,
-                        height: 28,
-                        backgroundColor: "#ffffff",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#999999",
-                        },
-                        "& .MuiSelect-select": {
-                          padding: "4px 10px",
-                          lineHeight: "18px",
-                          backgroundColor: "transparent",
-                          fontSize: "13px",
-                        },
-                      }}
-                    >
-                      {SIP_MEDIA_CODEC_FIELD.options.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
                   </div>
                 </div>
-              </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Actions Footer */}
+          {!loading && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 16,
+                padding: "16px 24px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={handleSave}
+                disabled={loading || saving}
+                startIcon={
+                  saving && <CircularProgress size={16} color="inherit" />
+                }
+                sx={{
+                  background: "#1e2d42",
+                  color: "#fff",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  textTransform: "none",
+                  padding: "6px 32px",
+                  minWidth: 120,
+                  "&:hover": { background: "#0f172a" },
+                }}
+              >
+                {saving ? "Saving..." : "Save"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleReset}
+                sx={{
+                  color: "#1e293b",
+                  borderColor: "#9ca3af",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  textTransform: "none",
+                  padding: "6px 32px",
+                  minWidth: 100,
+                  "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
+                }}
+              >
+                Reset
+              </Button>
             </div>
           )}
-        </div>
-
-        {/* Buttons */}
-        <div className="flex justify-center gap-8 mt-6">
-          <Button
-            variant="contained"
-            onClick={handleSave}
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: "6px",
-              minWidth: "100px",
-              height: "42px",
-              textTransform: "none",
-              padding: "6px 24px",
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              border: "1px solid #cbd5e1",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
-              e.target.style.color = "#fff";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
-              e.target.style.color = "#fff";
-            }}
-          >
-            Save
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleReset}
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: "6px",
-              minWidth: "100px",
-              height: "42px",
-              textTransform: "none",
-              padding: "6px 24px",
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              border: "1px solid #cbd5e1",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)";
-              e.target.style.color = "#2f405c";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background =
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)";
-              e.target.style.color = "#3E5475";
-            }}
-          >
-            Reset
-          </Button>
         </div>
       </div>
     </div>

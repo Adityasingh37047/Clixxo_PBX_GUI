@@ -11,102 +11,138 @@ import {
   WEEK_DAYS,
 } from "./constants/PortFxsAdvancedPageConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import { Alert, Checkbox } from "@mui/material";
 
-// Styles
-const blueBarStyle = {
-  width: "100%",
+// ── Color Palette (From Source) ───────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+// ── Shared UI Components (From Source) ────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const FieldRow = ({ label, children, style }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12, ...style }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 220,
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1 }}>{children}</div>
+  </div>
+);
+
+const inputStyle = {
   height: 32,
-  background: "linear-gradient(#3E5475 100%)",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-  marginBottom: 0,
-  display: "flex",
-  alignItems: "center",
-  fontWeight: 600,
-  fontSize: 18,
-  color: "#ffffff",
-  justifyContent: "center",
-  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-  position: "relative",
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  width: "280px",
 };
 
-const batchModifyButtonStyle = {
-  position: "absolute",
-  left: 8,
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#000",
-  fontSize: 12,
-  padding: "3px 12px",
-  border: "1px solid #999",
-  borderRadius: 3,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
-  cursor: "pointer",
-  fontWeight: 500,
-  height: 24,
-};
-
-const thStyle = {
-  background: "#fff",
-  color: "#222",
-  fontWeight: 600,
-  fontSize: 12,
-  border: "1px solid #bbb",
-  padding: "3px 4px",
-  whiteSpace: "nowrap",
-  textAlign: "center",
-  height: "24px",
-  lineHeight: "18px",
-};
-
-const tdStyle = {
-  border: "1px solid #bbb",
-  padding: "3px 4px",
-  fontSize: 12,
-  background: "#f8fafd",
-  textAlign: "center",
-  whiteSpace: "nowrap",
-  height: "24px",
-  lineHeight: "18px",
-};
-
-const paginationStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "4px auto 0",
-  background: "#e3e7ef",
-  borderRadius: 8,
-  border: "1px solid #ccc",
-  borderTop: "none",
-  padding: "4px 8px",
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  gap: 6,
-  minHeight: 28,
-  fontSize: 12,
-  justifyContent: "flex-start",
-};
-
-const paginationButtonStyle = {
-  background: "transparent",
-  color: "#222",
-  fontSize: 12,
-  padding: "2px 4px",
-  border: "none",
-  borderRadius: 0,
-  cursor: "pointer",
-  fontWeight: 400,
-  minWidth: "auto",
-  textDecoration: "none",
-};
-
-const paginationLinkStyle = {
-  ...paginationButtonStyle,
-  color: "#0066cc",
-  textDecoration: "underline",
-};
-
-// Initialize port data
+// ── Initial State Logic ───────────────────────────────────────────────────────
 const initializePortData = () => {
   return Array.from({ length: PORT_FXS_ADVANCED_TOTAL_PORTS }, (_, i) => ({
     ...PORT_FXS_ADVANCED_INITIAL_DATA,
@@ -114,7 +150,6 @@ const initializePortData = () => {
   }));
 };
 
-// Initialize batch modify form
 const getInitialBatchForm = () => {
   const form = {
     port: "1",
@@ -125,7 +160,6 @@ const getInitialBatchForm = () => {
     prohibitLimitCount: 1,
   };
 
-  // Initialize period fields for up to 5 periods
   for (let i = 1; i <= 5; i++) {
     form[`period${i}Start1`] = "00:00:00";
     form[`period${i}End1`] = "00:00:00";
@@ -141,12 +175,19 @@ const getInitialBatchForm = () => {
   return form;
 };
 
+// ── Main Component ────────────────────────────────────────────────────────────
 const PortFxsAdvancedPage = () => {
   const [ports, setPorts] = useState(initializePortData());
   const [page, setPage] = useState(1);
   const [showBatchModify, setShowBatchModify] = useState(false);
   const [batchForm, setBatchForm] = useState(getInitialBatchForm());
   const [prohibitLimitCount, setProhibitLimitCount] = useState(1);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   const totalPages = Math.max(
     1,
@@ -157,18 +198,15 @@ const PortFxsAdvancedPage = () => {
     page * PORT_FXS_ADVANCED_ITEMS_PER_PAGE,
   );
 
-  // Handle page change
   const handlePageChange = (newPage) => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
   };
 
-  // Handle batch modify button click - show form in same page
   const handleBatchModify = () => {
     setShowBatchModify(true);
     setBatchForm(getInitialBatchForm());
   };
 
-  // Handle form changes
   const handleFormChange = (key, value) => {
     setBatchForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -177,7 +215,6 @@ const PortFxsAdvancedPage = () => {
     setBatchForm((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Handle period count changes
   const handlePeriodCountChange = (action) => {
     if (action === "plus" && prohibitLimitCount < 5) {
       setProhibitLimitCount((prev) => prev + 1);
@@ -186,33 +223,32 @@ const PortFxsAdvancedPage = () => {
     }
   };
 
-  // Check if field should be shown
   const shouldShowField = (field) => {
     if (!field.conditional) return true;
     return !!batchForm[field.conditional];
   };
 
-  // Handle form submission
   const handleSave = (e) => {
     e.preventDefault();
 
-    // Validation
     if (
       batchForm.forbidOutgoingCall &&
       batchForm.wayOfForbidOutgoingCall === "Select time"
     ) {
-      // Validate time periods
       for (let i = 1; i <= prohibitLimitCount; i++) {
         const start1 = batchForm[`period${i}Start1`];
         const end1 = batchForm[`period${i}End1`];
         if (!start1 || !end1) {
-          alert(`Please input the start and end time for period ${i}!`);
+          showMessage(
+            "error",
+            `Please input the start and end time for period ${i}!`,
+          );
           return;
         }
-        // Time format validation (hh:mm:ss)
         const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
         if (!timeRegex.test(start1) || !timeRegex.test(end1)) {
-          alert(
+          showMessage(
+            "error",
             `Please input the time in the right format (hh:mm:ss) for period ${i}!`,
           );
           return;
@@ -220,8 +256,7 @@ const PortFxsAdvancedPage = () => {
       }
     }
 
-    // Save logic here (API call)
-    alert("Batch modify settings saved successfully!");
+    showMessage("success", "Batch modify settings saved successfully!");
     setShowBatchModify(false);
   };
 
@@ -236,7 +271,6 @@ const PortFxsAdvancedPage = () => {
     setProhibitLimitCount(1);
   };
 
-  // Render time period rows
   const renderTimePeriods = () => {
     if (
       !batchForm.forbidOutgoingCall ||
@@ -246,141 +280,134 @@ const PortFxsAdvancedPage = () => {
     }
 
     const periods = [];
-    // Show periods 1 through prohibitLimitCount
     for (let i = 1; i <= prohibitLimitCount; i++) {
       periods.push(
-        <React.Fragment key={i}>
-          <tr>
-            <td style={{ height: "22px" }}>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td colSpan="1" style={{ fontSize: "12px" }}>
-              Period(hh:mm:ss)：
-            </td>
-            <td>
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            padding: "16px 12px",
+            border: `1px dashed ${C.cardBorder}`,
+            borderRadius: 6,
+            marginTop: 8,
+            backgroundColor: "#f8fafc",
+          }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}>
+            Time Period {i}
+          </div>
+          <FieldRow label="Period 1 (hh:mm:ss):">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
                 type="text"
                 value={batchForm[`period${i}Start1`] || "00:00:00"}
                 onChange={(e) =>
                   handleFormChange(`period${i}Start1`, e.target.value)
                 }
-                className="border border-gray-400 rounded-sm px-1 bg-white"
-                style={{ height: "22px", width: "80px", fontSize: "12px" }}
+                style={{ ...inputStyle, width: 100 }}
                 maxLength={8}
                 placeholder="00:00:00"
               />
-              <span style={{ margin: "0 4px" }}>-</span>
+              <span style={{ color: C.mutedText }}>-</span>
               <input
                 type="text"
                 value={batchForm[`period${i}End1`] || "00:00:00"}
                 onChange={(e) =>
                   handleFormChange(`period${i}End1`, e.target.value)
                 }
-                className="border border-gray-400 rounded-sm px-1 bg-white"
-                style={{ height: "22px", width: "80px", fontSize: "12px" }}
+                style={{ ...inputStyle, width: 100 }}
                 maxLength={8}
                 placeholder="00:00:00"
               />
-            </td>
-          </tr>
-          <tr>
-            <td style={{ height: "22px" }}>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td colSpan="1" style={{ fontSize: "12px" }}>
-              Period(hh:mm:ss)：
-            </td>
-            <td>
+            </div>
+          </FieldRow>
+          <FieldRow label="Period 2 (hh:mm:ss):">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
                 type="text"
                 value={batchForm[`period${i}Start2`] || "00:00:00"}
                 onChange={(e) =>
                   handleFormChange(`period${i}Start2`, e.target.value)
                 }
-                className="border border-gray-400 rounded-sm px-1 bg-white"
-                style={{ height: "22px", width: "80px", fontSize: "12px" }}
+                style={{ ...inputStyle, width: 100 }}
                 maxLength={8}
                 placeholder="00:00:00"
               />
-              <span style={{ margin: "0 4px" }}>-</span>
+              <span style={{ color: C.mutedText }}>-</span>
               <input
                 type="text"
                 value={batchForm[`period${i}End2`] || "00:00:00"}
                 onChange={(e) =>
                   handleFormChange(`period${i}End2`, e.target.value)
                 }
-                className="border border-gray-400 rounded-sm px-1 bg-white"
-                style={{ height: "22px", width: "80px", fontSize: "12px" }}
+                style={{ ...inputStyle, width: 100 }}
                 maxLength={8}
                 placeholder="00:00:00"
               />
-            </td>
-          </tr>
-          <tr>
-            <td style={{ height: "22px" }}>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td colSpan="1" style={{ fontSize: "12px" }}>
-              Period(hh:mm:ss)：
-            </td>
-            <td>
+            </div>
+          </FieldRow>
+          <FieldRow label="Period 3 (hh:mm:ss):">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
                 type="text"
                 value={batchForm[`period${i}Start3`] || "00:00:00"}
                 onChange={(e) =>
                   handleFormChange(`period${i}Start3`, e.target.value)
                 }
-                className="border border-gray-400 rounded-sm px-1 bg-white"
-                style={{ height: "22px", width: "80px", fontSize: "12px" }}
+                style={{ ...inputStyle, width: 100 }}
                 maxLength={8}
                 placeholder="00:00:00"
               />
-              <span style={{ margin: "0 4px" }}>-</span>
+              <span style={{ color: C.mutedText }}>-</span>
               <input
                 type="text"
                 value={batchForm[`period${i}End3`] || "00:00:00"}
                 onChange={(e) =>
                   handleFormChange(`period${i}End3`, e.target.value)
                 }
-                className="border border-gray-400 rounded-sm px-1 bg-white"
-                style={{ height: "22px", width: "80px", fontSize: "12px" }}
+                style={{ ...inputStyle, width: 100 }}
                 maxLength={8}
                 placeholder="00:00:00"
               />
-            </td>
-          </tr>
-          <tr>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td colSpan="1" style={{ fontSize: "12px" }}>
-              Week：
-            </td>
-            <td>
-              <table style={{ width: "400px" }}>
-                <colgroup>
-                  {WEEK_DAYS.map(() => (
-                    <col key={Math.random()} style={{ width: "10%" }} />
-                  ))}
-                </colgroup>
-                <tr>
-                  {WEEK_DAYS.map((day, idx) => (
-                    <td key={day}>
-                      <input
-                        type="checkbox"
-                        checked={!!batchForm[`period${i}Week${idx}`]}
-                        onChange={() =>
-                          handleFormChange(
-                            `period${i}Week${idx}`,
-                            !batchForm[`period${i}Week${idx}`],
-                          )
-                        }
-                        style={{ marginRight: "4px" }}
-                      />
-                      {day}
-                    </td>
-                  ))}
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </React.Fragment>,
+            </div>
+          </FieldRow>
+          <FieldRow label="Week:">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              {WEEK_DAYS.map((day, idx) => (
+                <label
+                  key={day}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontSize: 12,
+                    color: C.valueText,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={!!batchForm[`period${i}Week${idx}`]}
+                    onChange={() =>
+                      handleFormChange(
+                        `period${i}Week${idx}`,
+                        !batchForm[`period${i}Week${idx}`],
+                      )
+                    }
+                    sx={{
+                      padding: "2px",
+                      marginRight: "2px",
+                      color: C.accent,
+                      "&.Mui-checked": { color: C.accent },
+                    }}
+                  />
+                  {day}
+                </label>
+              ))}
+            </div>
+          </FieldRow>
+        </div>,
       );
     }
     return periods;
@@ -388,546 +415,544 @@ const PortFxsAdvancedPage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4", padding: "8px" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="w-full max-w-full mx-auto">
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Error / Success Banner */}
+        {message.text && (
+          <Alert
+            severity={
+              message.type === "error"
+                ? "error"
+                : message.type === "success"
+                  ? "success"
+                  : "info"
+            }
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* Breadcrumb */}
+        {!showBatchModify && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 12,
+            }}
+          >
+            <div style={{ fontSize: 11, color: C.mutedText }}>
+              FXS &rsaquo; Port &rsaquo;{" "}
+              <span style={{ color: "#1e293b", fontWeight: 600 }}>
+                FXS Advanced
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Main Table View */}
         {!showBatchModify ? (
-          <>
-            {/* Blue bar + table view */}
-            <div style={blueBarStyle}>
-              <button
-                style={batchModifyButtonStyle}
-                onClick={handleBatchModify}
-              >
-                Batch Modify
-              </button>
-              <span>{PORT_FXS_ADVANCED_PAGE_TITLE}</span>
+          <div
+            style={{
+              background: C.cardBg,
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              overflow: "hidden",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            }}
+          >
+            {/* Toolbar */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderBottom: `1px solid ${C.cardBorder}`,
+                background: "#DCE6F2",
+                flexWrap: "wrap",
+                gap: 8,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    background: "#f1f5f9",
+                    border: `0.5px solid ${C.cardBorder}`,
+                    color: "#475569",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 12px",
+                    borderRadius: 20,
+                  }}
+                >
+                  {PORT_FXS_ADVANCED_PAGE_TITLE} · {ports.length} records
+                </span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Btn onClick={handleBatchModify} variant="accent">
+                  Batch Modify
+                </Btn>
+              </div>
             </div>
 
-            <div
-              className="w-full bg-white border-2 border-gray-400 border-t-0 rounded-b-lg"
-              style={{ overflowX: "auto", overflowY: "visible" }}
-            >
+            <div style={{ overflowX: "auto" }}>
               <table
-                className="w-full"
                 style={{
-                  backgroundColor: "#f8fafd",
-                  tableLayout: "auto",
-                  borderCollapse: "collapse",
                   width: "100%",
-                  minWidth: "600px",
+                  borderCollapse: "collapse",
+                  minWidth: 600,
                 }}
               >
                 <thead>
                   <tr>
                     {PORT_FXS_ADVANCED_TABLE_COLUMNS.map((col) => (
-                      <th key={col.key} style={thStyle}>
-                        {col.label}
-                      </th>
+                      <TH key={col.key}>{col.label}</TH>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedPorts.map((port, idx) => (
-                    <tr key={port.port}>
-                      <td style={tdStyle}>
-                        <button
-                          onClick={() => {
-                            const portNumber = String(port.port);
-                            setBatchForm((prev) => ({
-                              ...prev,
-                              port: portNumber,
-                              type: "FXS",
-                            }));
-                            setShowBatchModify(true);
-                          }}
+                  {pagedPorts.map((port, idx) => {
+                    const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                    return (
+                      <tr
+                        key={port.port}
+                        style={{
+                          background: rowBg,
+                          borderBottom: "0.5px solid #9ca3af",
+                          transition: "background 0.1s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#f0f9ff";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: 0,
+                            textAlign: "center",
+                            padding: "4px 8px",
+                            borderRight: "0.5px solid #edf2f7",
                           }}
                         >
-                          <EditDocumentIcon
-                            style={{ fontSize: 16, color: "#0e8fd6" }}
-                          />
-                        </button>
-                      </td>
-                      <td style={tdStyle}>{port.port}</td>
-                      <td style={tdStyle}>{port.type}</td>
-                      <td style={tdStyle}>{port.forbidOutgoingCall}</td>
-                      <td style={tdStyle}>{port.blacklistOfOutCalls}</td>
-                    </tr>
-                  ))}
+                          <Btn
+                            onClick={() => {
+                              const portNumber = String(port.port);
+                              setBatchForm((prev) => ({
+                                ...prev,
+                                port: portNumber,
+                                type: "FXS",
+                              }));
+                              setShowBatchModify(true);
+                            }}
+                            variant="outline"
+                            style={{
+                              fontSize: 10,
+                              padding: "3px 10px",
+                              margin: "0 auto",
+                            }}
+                          >
+                            <EditDocumentIcon
+                              style={{ fontSize: 12, marginRight: 2 }}
+                            />{" "}
+                            Edit
+                          </Btn>
+                        </td>
+                        <td
+                          style={{
+                            textAlign: "center",
+                            fontSize: 12,
+                            padding: "7px 4px",
+                            color: C.valueText,
+                            borderRight: "0.5px solid #edf2f7",
+                          }}
+                        >
+                          {port.port}
+                        </td>
+                        <td
+                          style={{
+                            textAlign: "center",
+                            fontSize: 12,
+                            padding: "7px 4px",
+                            color: C.valueText,
+                            borderRight: "0.5px solid #edf2f7",
+                          }}
+                        >
+                          {port.type}
+                        </td>
+                        <td
+                          style={{
+                            textAlign: "center",
+                            fontSize: 12,
+                            padding: "7px 4px",
+                            color: C.valueText,
+                            borderRight: "0.5px solid #edf2f7",
+                          }}
+                        >
+                          {port.forbidOutgoingCall}
+                        </td>
+                        <td
+                          style={{
+                            textAlign: "center",
+                            fontSize: 12,
+                            padding: "7px 4px",
+                            color: C.valueText,
+                            borderRight: "0.5px solid #edf2f7",
+                          }}
+                        >
+                          {port.blacklistOfOutCalls}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
-            <div style={paginationStyle}>
-              <span>
-                {ports.length} Items Total&nbsp;&nbsp;{" "}
-                {PORT_FXS_ADVANCED_ITEMS_PER_PAGE} Items/Page
-              </span>
-              <span>
-                &nbsp;&nbsp; {page}/{totalPages}&nbsp;&nbsp;
-              </span>
-              {page > 1 ? (
-                <button
-                  style={paginationLinkStyle}
-                  onClick={() => handlePageChange(1)}
-                >
-                  First
-                </button>
-              ) : (
-                <span>First</span>
-              )}
-              <span>&nbsp;&nbsp;</span>
-              {page > 1 ? (
-                <button
-                  style={paginationLinkStyle}
-                  onClick={() => handlePageChange(page - 1)}
-                >
-                  Previous
-                </button>
-              ) : (
-                <span>Previous</span>
-              )}
-              <span>&nbsp;&nbsp;</span>
-              {page < totalPages ? (
-                <button
-                  style={paginationLinkStyle}
-                  onClick={() => handlePageChange(page + 1)}
-                >
-                  Next
-                </button>
-              ) : (
-                <span>Next</span>
-              )}
-              <span>&nbsp;&nbsp;</span>
-              {page < totalPages ? (
-                <button
-                  style={paginationLinkStyle}
-                  onClick={() => handlePageChange(totalPages)}
-                >
-                  Last
-                </button>
-              ) : (
-                <span>Last</span>
-              )}
-              <span>&nbsp;&nbsp; Go to Page </span>
-              <select
-                style={{
-                  fontSize: 12,
-                  padding: "1px 4px",
-                  borderRadius: 2,
-                  border: "1px solid #bbb",
-                  background: "#fff",
-                }}
-                value={page}
-                onChange={(e) => handlePageChange(Number(e.target.value))}
-              >
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1}
-                  </option>
-                ))}
-              </select>
-              <span>&nbsp;&nbsp; {totalPages} Pages Total</span>
-            </div>
-          </>
-        ) : (
-          <div className="flex justify-center">
-            <div style={{ width: "62%", maxWidth: "800px", minWidth: "500px" }}>
+            {/* Pagination */}
+            {ports.length > 0 && (
               <div
                 style={{
-                  ...blueBarStyle,
-                  width: "100%",
-                  borderTopLeftRadius: 8,
-                  borderTopRightRadius: 8,
-                  borderBottomLeftRadius: 0,
-                  borderBottomRightRadius: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "10px 14px",
+                  borderTop: `0.5px solid ${C.cardBorder}`,
+                  background: "#f8fafc",
+                  gap: 8,
+                  flexWrap: "wrap",
                 }}
               >
-                <span>{PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE}</span>
-              </div>
-
-              {/* Form Content - grey like outer, only inputs/controls are white */}
-              <div
-                style={{
-                  border: "1px solid #444444",
-                  borderTop: "none",
-                  backgroundColor: "#dde0e4",
-                  padding: "8px 0",
-                }}
-              >
-                <form onSubmit={handleSave} style={{ width: "100%" }}>
-                  <table
-                    cellPadding="0"
-                    cellSpacing="0"
-                    width="100%"
-                    style={{ margin: "0 auto" }}
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  Showing {pagedPorts.length} records of {ports.length} Total (
+                  {PORT_FXS_ADVANCED_ITEMS_PER_PAGE} / Page)
+                </span>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <Btn
+                    onClick={() => handlePageChange(1)}
+                    disabled={page === 1}
+                    variant="outline"
                   >
-                    <tr>
-                      <td width="5%">&nbsp;</td>
-                      <td width="95%">
-                        <table width="100%" cellSpacing="0" cellPadding="0">
-                          <colgroup>
-                            <col style={{ width: "10%" }} />
-                            <col style={{ width: "3%" }} />
-                            <col style={{ width: "37%" }} />
-                            <col style={{ width: "50%" }} />
-                          </colgroup>
-                          <tbody>
-                            {/* Port */}
-                            <tr>
-                              <td style={{ height: "22px" }}>&nbsp;</td>
-                              <td colSpan="2" style={{ fontSize: "12px" }}>
-                                Port
-                              </td>
-                              <td>
-                                <select
-                                  value={batchForm.port}
-                                  onChange={(e) =>
-                                    handleFormChange("port", e.target.value)
-                                  }
-                                  className="border border-gray-400 rounded-sm px-1 bg-white"
-                                  style={{
-                                    height: "22px",
-                                    width: "228px",
-                                    fontSize: "12px",
-                                  }}
-                                >
-                                  {Array.from(
-                                    { length: PORT_FXS_ADVANCED_TOTAL_PORTS },
-                                    (_, i) => (
-                                      <option key={i + 1} value={String(i + 1)}>
-                                        {i + 1}
-                                      </option>
-                                    ),
-                                  )}
-                                </select>
-                              </td>
-                            </tr>
-
-                            {/* Type */}
-                            <tr>
-                              <td style={{ height: "22px" }}>&nbsp;</td>
-                              <td colSpan="2" style={{ fontSize: "12px" }}>
-                                Type
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  value={batchForm.type || "FXS"}
-                                  onChange={(e) =>
-                                    handleFormChange("type", e.target.value)
-                                  }
-                                  className="border border-gray-400 rounded-sm px-1 bg-white"
-                                  style={{
-                                    height: "22px",
-                                    width: "228px",
-                                    fontSize: "12px",
-                                  }}
-                                />
-                              </td>
-                            </tr>
-
-                            {/* Spacer */}
-                            <tr>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                            </tr>
-                            <tr>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                            </tr>
-
-                            {/* Forbid Outgoing Call */}
-                            <tr>
-                              <td style={{ height: "22px" }}>&nbsp;</td>
-                              <td colSpan="2" style={{ fontSize: "12px" }}>
-                                Forbid Outgoing Call
-                              </td>
-                              <td style={{ fontSize: "12px" }}>
-                                <input
-                                  type="checkbox"
-                                  checked={!!batchForm.forbidOutgoingCall}
-                                  onChange={() =>
-                                    handleCheckbox("forbidOutgoingCall")
-                                  }
-                                  style={{ marginRight: "4px" }}
-                                />
-                                Enable
-                              </td>
-                            </tr>
-
-                            {/* Way Of Forbid Outgoing Call */}
-                            {shouldShowField({
-                              conditional: "forbidOutgoingCall",
-                            }) && (
-                              <tr>
-                                <td style={{ height: "22px" }}>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td colSpan="1" style={{ fontSize: "12px" }}>
-                                  Way Of Forbid Outgoing Call
-                                </td>
-                                <td>
-                                  <select
-                                    value={batchForm.wayOfForbidOutgoingCall}
-                                    onChange={(e) =>
-                                      handleFormChange(
-                                        "wayOfForbidOutgoingCall",
-                                        e.target.value,
-                                      )
-                                    }
-                                    className="border border-gray-400 rounded-sm px-1 bg-white"
-                                    style={{
-                                      height: "22px",
-                                      width: "228px",
-                                      fontSize: "12px",
-                                    }}
-                                  >
-                                    <option value="All time">All time</option>
-                                    <option value="Select time">
-                                      Select time
-                                    </option>
-                                  </select>
-                                </td>
-                              </tr>
-                            )}
-
-                            {/* Time Periods */}
-                            {batchForm.forbidOutgoingCall &&
-                              batchForm.wayOfForbidOutgoingCall ===
-                                "Select time" &&
-                              renderTimePeriods()}
-
-                            {/* Period Count Controls */}
-                            {batchForm.forbidOutgoingCall &&
-                              batchForm.wayOfForbidOutgoingCall ===
-                                "Select time" && (
-                                <tr>
-                                  <td>&nbsp;</td>
-                                  <td>&nbsp;</td>
-                                  <td width="30%">
-                                    <input
-                                      type="hidden"
-                                      id="IdProhibitLimit_cnt"
-                                      value={prohibitLimitCount}
-                                    />
-                                  </td>
-                                  <td width="50%">
-                                    {prohibitLimitCount < 5 && (
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handlePeriodCountChange("plus")
-                                        }
-                                        style={{
-                                          background:
-                                            "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-                                          color: "#000",
-                                          fontSize: "14px",
-                                          padding: "2px 8px",
-                                          border: "1px solid #999",
-                                          borderRadius: 3,
-                                          cursor: "pointer",
-                                          marginRight: "4px",
-                                        }}
-                                      >
-                                        +
-                                      </button>
-                                    )}
-                                    {prohibitLimitCount > 1 && (
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handlePeriodCountChange("minus")
-                                        }
-                                        style={{
-                                          background:
-                                            "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-                                          color: "#000",
-                                          fontSize: "14px",
-                                          padding: "2px 8px",
-                                          border: "1px solid #999",
-                                          borderRadius: 3,
-                                          cursor: "pointer",
-                                        }}
-                                      >
-                                        -
-                                      </button>
-                                    )}
-                                  </td>
-                                </tr>
-                              )}
-
-                            {/* Spacer */}
-                            <tr>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                            </tr>
-
-                            {/* Blacklist of FXS Out Calls */}
-                            <tr>
-                              <td style={{ height: "22px" }}>&nbsp;</td>
-                              <td colSpan="2" style={{ fontSize: "12px" }}>
-                                Blacklist of FXS Out Calls
-                              </td>
-                              <td>
-                                <textarea
-                                  value={batchForm.blacklistOfFxsOutCalls}
-                                  onChange={(e) =>
-                                    handleFormChange(
-                                      "blacklistOfFxsOutCalls",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="border border-gray-400 rounded-sm px-1 bg-white"
-                                  style={{
-                                    width: "300px",
-                                    height: "50px",
-                                    fontSize: "12px",
-                                    resize: "none",
-                                  }}
-                                  maxLength={1000}
-                                />
-                              </td>
-                            </tr>
-
-                            {/* Spacer */}
-                            <tr>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </td>
-                      <td width="5%">&nbsp;</td>
-                    </tr>
-                  </table>
-
-                  {/* Notes */}
-                  <table
-                    width="100%"
-                    cellSpacing="0"
-                    cellPadding="0"
-                    style={{ marginTop: "8px" }}
+                    First
+                  </Btn>
+                  <Btn
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
+                    variant="outline"
                   >
-                    <tr>
-                      <td width="20%"></td>
-                      <td width="50%"></td>
-                      <td width="5%"></td>
-                    </tr>
-                    {PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES.map((note, idx) => (
-                      <tr key={idx}>
-                        <td>&nbsp;</td>
-                        <td style={{ fontSize: "12px", color: "red" }}>
-                          {note}
-                        </td>
-                        <td>&nbsp;</td>
-                      </tr>
+                    ← Prev
+                  </Btn>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: C.accent,
+                      background: "#e0f2fe",
+                      padding: "5px 14px",
+                      borderRadius: 6,
+                      border: `0.5px solid ${C.cardBorder}`,
+                    }}
+                  >
+                    Page {page} of {totalPages}
+                  </span>
+                  <Btn
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                    variant="outline"
+                  >
+                    Next →
+                  </Btn>
+                  <Btn
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={page === totalPages}
+                    variant="outline"
+                  >
+                    Last
+                  </Btn>
+                  <span
+                    style={{ fontSize: 11, color: C.mutedText, marginLeft: 8 }}
+                  >
+                    Go to Page:
+                  </span>
+                  <select
+                    style={{
+                      fontSize: 11,
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      border: `1px solid ${C.cardBorder}`,
+                      background: "#fff",
+                      color: C.valueText,
+                      outline: "none",
+                    }}
+                    value={page}
+                    onChange={(e) => handlePageChange(Number(e.target.value))}
+                  >
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </option>
                     ))}
-                  </table>
-                </form>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Modify View */
+          <div style={{ maxWidth: 800, margin: "0 auto" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <div style={{ fontSize: 11, color: C.mutedText }}>
+                PBX &rsaquo; Port FXS Advanced &rsaquo;{" "}
+                <span style={{ color: C.valueText, fontWeight: 600 }}>
+                  Modify
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: C.cardBg,
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 8,
+                overflow: "hidden",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              }}
+            >
+              <div
+                style={{
+                  background: "#1e2d42",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  textAlign: "center",
+                  padding: "14px 24px",
+                }}
+              >
+                {PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE}
               </div>
 
-              {/* Buttons outside border */}
-              <div style={{ textAlign: "center", padding: "16px 0 0 0" }}>
-                <input
-                  type="button"
-                  value="Modify"
-                  onClick={handleSave}
-                  style={{
-                    background:
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                    color: "#fff",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                    borderRadius: "4px",
-                    minWidth: "90px",
-                    height: "32px",
-                    padding: "4px 24px",
-                    boxShadow: "0 2px 8px #3E5475",
-                    border: "1px solid #2C3E57",
+              <div style={{ padding: "24px 32px" }}>
+                <form onSubmit={handleSave}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 16,
+                    }}
+                  >
+                    <FieldRow label="Port">
+                      <select
+                        value={batchForm.port}
+                        onChange={(e) =>
+                          handleFormChange("port", e.target.value)
+                        }
+                        style={inputStyle}
+                      >
+                        {Array.from(
+                          { length: PORT_FXS_ADVANCED_TOTAL_PORTS },
+                          (_, i) => (
+                            <option key={i + 1} value={String(i + 1)}>
+                              {i + 1}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </FieldRow>
 
-                    cursor: "pointer",
-                    marginRight: "40px",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background =
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background =
-                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-                  }}
-                />
-                <input
-                  type="button"
-                  value="Reset"
-                  onClick={handleReset}
-                  style={{
-                    background:
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                    color: "#fff",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                    borderRadius: "4px",
-                    minWidth: "90px",
-                    height: "32px",
-                    padding: "4px 24px",
-                    boxShadow: "0 2px 8px #3E5475",
-                    border: "1px solid #2C3E57",
-                    cursor: "pointer",
-                    marginRight: "40px",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background =
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background =
-                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-                  }}
-                />
-                <input
-                  type="button"
-                  value="Cancel"
-                  onClick={handleCancel}
-                  style={{
-                    background:
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                    color: "#fff",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                    borderRadius: "4px",
-                    minWidth: "90px",
-                    height: "32px",
-                    padding: "4px 24px",
-                    boxShadow: "0 2px 8px #3E5475",
-                    border: "1px solid #2C3E57",
+                    <FieldRow label="Type">
+                      <input
+                        type="text"
+                        value={batchForm.type || "FXS"}
+                        onChange={(e) =>
+                          handleFormChange("type", e.target.value)
+                        }
+                        style={inputStyle}
+                        readOnly
+                      />
+                    </FieldRow>
 
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background =
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background =
-                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-                  }}
-                />
+                    <FieldRow label="Forbid Outgoing Call">
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          fontSize: 13,
+                          color: C.valueText,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={!!batchForm.forbidOutgoingCall}
+                          onChange={() => handleCheckbox("forbidOutgoingCall")}
+                          sx={{
+                            padding: "2px",
+                            marginRight: "4px",
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                          }}
+                        />
+                        Enable
+                      </label>
+                    </FieldRow>
+
+                    {shouldShowField({ conditional: "forbidOutgoingCall" }) && (
+                      <FieldRow label="Way Of Forbid Outgoing Call">
+                        <select
+                          value={batchForm.wayOfForbidOutgoingCall}
+                          onChange={(e) =>
+                            handleFormChange(
+                              "wayOfForbidOutgoingCall",
+                              e.target.value,
+                            )
+                          }
+                          style={inputStyle}
+                        >
+                          <option value="All time">All time</option>
+                          <option value="Select time">Select time</option>
+                        </select>
+                      </FieldRow>
+                    )}
+
+                    {batchForm.forbidOutgoingCall &&
+                      batchForm.wayOfForbidOutgoingCall === "Select time" && (
+                        <>
+                          {renderTimePeriods()}
+
+                          {/* Limit controls inline with the previous blocks */}
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              marginTop: 8,
+                            }}
+                          >
+                            <div style={{ display: "flex", gap: 8 }}>
+                              {prohibitLimitCount < 5 && (
+                                <Btn
+                                  variant="outline"
+                                  onClick={() =>
+                                    handlePeriodCountChange("plus")
+                                  }
+                                  style={{ padding: "4px 12px" }}
+                                >
+                                  + Add Period
+                                </Btn>
+                              )}
+                              {prohibitLimitCount > 1 && (
+                                <Btn
+                                  variant="outline"
+                                  onClick={() =>
+                                    handlePeriodCountChange("minus")
+                                  }
+                                  style={{ padding: "4px 12px" }}
+                                >
+                                  - Remove Period
+                                </Btn>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                    <FieldRow
+                      label="Blacklist of FXS Out Calls"
+                      style={{ alignItems: "flex-start" }}
+                    >
+                      <textarea
+                        value={batchForm.blacklistOfFxsOutCalls}
+                        onChange={(e) =>
+                          handleFormChange(
+                            "blacklistOfFxsOutCalls",
+                            e.target.value,
+                          )
+                        }
+                        style={{
+                          ...inputStyle,
+                          height: "80px",
+                          resize: "vertical",
+                          paddingTop: "8px",
+                        }}
+                        maxLength={1000}
+                      />
+                    </FieldRow>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 32,
+                      padding: 16,
+                      background: "#fef2f2",
+                      borderRadius: 6,
+                      border: "1px dashed #fecaca",
+                      fontSize: 12,
+                      color: C.errorRed,
+                    }}
+                  >
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES.map((note, idx) => (
+                        <li key={idx} style={{ marginBottom: 4 }}>
+                          {note}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: 12,
+                      marginTop: 24,
+                      paddingTop: 16,
+                      borderTop: `1px solid ${C.cardBorder}`,
+                    }}
+                  >
+                    <Btn
+                      onClick={handleSave}
+                      style={{ padding: "8px 36px", fontSize: 13 }}
+                    >
+                      Modify
+                    </Btn>
+                    <Btn
+                      onClick={handleReset}
+                      variant="outline"
+                      style={{ padding: "8px 36px", fontSize: 13 }}
+                    >
+                      Reset
+                    </Btn>
+                    <Btn
+                      onClick={handleCancel}
+                      variant="outline"
+                      style={{ padding: "8px 36px", fontSize: 13 }}
+                    >
+                      Cancel
+                    </Btn>
+                  </div>
+                </form>
               </div>
             </div>
           </div>

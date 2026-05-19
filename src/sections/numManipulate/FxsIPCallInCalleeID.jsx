@@ -6,18 +6,16 @@ import {
 } from "./constants/IPCallInCalleeIDConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  Button,
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Select as MuiSelect,
   MenuItem,
   FormControl,
   CircularProgress,
 } from "@mui/material";
-// import { listNumberManipulations, createNumberManipulation, updateNumberManipulation, deleteNumberManipulation, listGroups } from './controller';
 
 // Stub functions when API imports are commented out
 const listNumberManipulations = async () => ({ response: true, message: [] });
@@ -35,232 +33,137 @@ const deleteNumberManipulation = async () => ({
 });
 const listGroups = async () => ({ response: true, message: [] });
 
-const modalOverlayStyle = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100vw",
-  height: "100vh",
-  zIndex: 1000,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
+// ── Color Palette (From Source) ───────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
 };
-const modalStyle = {
-  background: "#f8fafd",
-  border: "2px solid #222",
-  borderRadius: 6,
-  width: 440,
-  maxWidth: "95vw",
-  maxHeight: "calc(100vh - 120px)",
-  marginTop: 80,
-  overflowY: "auto",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-  display: "flex",
-  flexDirection: "column",
+
+// ── Shared UI Components (From Source) ────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+  type = "button",
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
 };
-const modalHeaderStyle = {
-  background: "linear-gradient(to bottom, #23272b 0%, #6e7a8a 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 18,
-  padding: "10px 0",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-const modalBodyStyle = {
-  padding: "12px 8px 0 8px",
-  display: "flex",
-  flexDirection: "column",
-  gap: 8,
-};
-const modalRowStyle = {
-  display: "flex",
-  alignItems: "center",
-  background: "#f4f6fa",
-  border: "1px solid #c0c6cc",
-  borderRadius: 4,
-  padding: "6px 8px",
-  marginBottom: 2,
-  minHeight: 32,
-  gap: 10,
-};
-const modalLabelStyle = {
-  width: 180,
-  fontSize: 14,
-  color: "#222",
-  textAlign: "left",
-  marginRight: 10,
-  whiteSpace: "nowrap",
-};
-const modalInputStyle = {
-  width: "100%",
-  fontSize: 14,
-  padding: "3px 6px",
-  borderRadius: 3,
-  border: "1px solid #bbb",
-  background: "#fff",
-};
-const modalFooterStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 24,
-  padding: "18px 0",
-};
-const modalButtonStyle = {
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-  fontSize: 16,
-  padding: "6px 32px",
-  border: "none",
-  borderRadius: 4,
-  boxShadow: "0 2px 4px rgba(0,0,0,0.10)",
-  cursor: "pointer",
-  minWidth: 90,
-};
-const modalButtonGrayStyle = {
-  ...modalButtonStyle,
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#222",
-};
-const blueBarStyle = {
-  width: "100%",
-  height: 36,
-  background: "linear-gradient(#3E5475 100%)",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-  marginBottom: 0,
-  display: "flex",
-  alignItems: "center",
-  fontWeight: 600,
-  fontSize: 18,
-  color: "#2266aa",
-  justifyContent: "center",
-  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-};
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-  background: "#f8fafd",
-  border: "2px solid #888",
-  borderRadius: 8,
-  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-};
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-const thStyle = {
-  background: "#fff",
-  color: "#222",
-  fontWeight: 600,
-  fontSize: 15,
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  whiteSpace: "nowrap",
-};
-const tdStyle = {
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  fontSize: 14,
-  background: "#fff",
-  textAlign: "center",
-  whiteSpace: "nowrap",
-};
-const tableButtonStyle = {
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#222",
-  fontSize: 15,
-  padding: "4px 18px",
-  border: "1px solid #bbb",
-  borderRadius: 6,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-  cursor: "pointer",
-  fontWeight: 500,
-};
-const addNewButtonStyle = {
-  ...tableButtonStyle,
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-};
-const paginationBarStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  fontSize: 14,
-  color: "#222",
-  background: "#e3e7ef",
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-  borderTop: "1px solid #bbb",
-  padding: "2px 8px",
-  marginTop: 0,
-  minHeight: 32,
-};
-const paginationButtonStyle = {
-  ...tableButtonStyle,
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const FieldRow = ({ label, children, style }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12, ...style }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 180,
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1 }}>{children}</div>
+  </div>
+);
+
+const inputStyle = {
+  height: 32,
+  padding: "0 8px",
   fontSize: 13,
-  padding: "2px 10px",
-  minWidth: 0,
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: 4,
-};
-const pageSelectStyle = {
-  fontSize: 13,
-  padding: "2px 6px",
-  borderRadius: 3,
-  border: "1px solid #bbb",
-  background: "#fff",
-};
-const customScrollbarRowStyle = {
-  width: "100%",
-  margin: "0 auto",
-  background: "#f4f6fa",
-  display: "flex",
-  alignItems: "center",
-  height: 24,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-  border: "2px solid #888",
-  borderTop: "none",
-  padding: "0 4px",
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
   boxSizing: "border-box",
-};
-const customScrollbarTrackStyle = {
-  flex: 1,
-  height: 12,
-  background: "#e3e7ef",
-  borderRadius: 8,
-  position: "relative",
-  margin: "0 4px",
-  overflow: "hidden",
-};
-const customScrollbarThumbStyle = {
-  position: "absolute",
-  height: 12,
-  background: "#888",
-  borderRadius: 8,
-  cursor: "pointer",
-  top: 0,
-};
-const customScrollbarArrowStyle = {
-  width: 18,
-  height: 18,
-  background: "#e3e7ef",
-  border: "1px solid #bbb",
-  borderRadius: 8,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: 16,
-  color: "#888",
-  cursor: "pointer",
-  userSelect: "none",
+  width: "100%",
 };
 
-const LOCAL_STORAGE_KEY = "ipCallInCalleeIdRules";
-
+// ── Main Component ────────────────────────────────────────────────────────────
 const IPCallInCalleeID = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(IP_CALL_IN_CALLEEID_INITIAL_FORM);
@@ -292,15 +195,10 @@ const IPCallInCalleeID = () => {
   const fetchNumberManipulations = async () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
     try {
-      // console.log('Fetching number manipulations...');
       const response = await listNumberManipulations("ip_in_calleeid");
-      // console.log('Fetch response:', response);
-
       if (response.response && response.message) {
-        // console.log('Number manipulations data:', response.message);
         setRules(response.message);
       } else {
-        // console.log('No data in response, setting empty array');
         setRules([]);
       }
     } catch (error) {
@@ -352,7 +250,7 @@ const IPCallInCalleeID = () => {
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSave = async () => {
-    // Validation: required fields
+    // Validation: only these are mandatory
     if (!formData.call_initiator) {
       alert("Call Initiator is required.");
       return;
@@ -404,25 +302,17 @@ const IPCallInCalleeID = () => {
           suffix_to_add: normalized.suffix_to_add,
           description: normalized.description,
         };
-        // console.log('Update request data:', updateData);
         response = await updateNumberManipulation(updateData, "ip_in_calleeid");
-        // console.log('Update response:', response);
         if (response.response) {
           alert(
             response.message || "Number manipulation updated successfully!",
           );
-
-          // Try to reload data, but don't fail if it doesn't work
           try {
-            await new Promise((resolve) => setTimeout(resolve, 500)); // Allow backend to process
-            // console.log('Attempting to reload after successful update...');
+            await new Promise((resolve) => setTimeout(resolve, 500));
             await fetchNumberManipulations();
-            // console.log('Reload successful after update');
           } catch (reloadError) {
-            // console.log('Updating item in local state as fallback');
-            // Update the item in local state
             setRules((prev) =>
-              prev.map((rule, idx) =>
+              prev.map((rule) =>
                 rule.id === editIndex ? { ...rule, ...normalized } : rule,
               ),
             );
@@ -432,23 +322,15 @@ const IPCallInCalleeID = () => {
         }
       } else {
         // Create new
-        // console.log('Create request data:', normalized);
         response = await createNumberManipulation(normalized, "ip_in_calleeid");
-        // console.log('Create response:', response);
         if (response.response) {
           alert(
             response.message || "Number manipulation created successfully!",
           );
-
-          // Try to reload data, but don't fail if it doesn't work
           try {
-            await new Promise((resolve) => setTimeout(resolve, 500)); // Allow backend to process
-            // console.log('Attempting to reload after successful creation...');
+            await new Promise((resolve) => setTimeout(resolve, 500));
             await fetchNumberManipulations();
-            // console.log('Reload successful after creation');
           } catch (reloadError) {
-            // console.log('Adding item to local state as fallback');
-            // Add the new item to local state
             const newItem = {
               ...normalized,
               id: Date.now(), // Temporary ID for local state
@@ -504,7 +386,6 @@ const IPCallInCalleeID = () => {
       return;
     }
 
-    // Show browser confirmation dialog
     const confirmed = window.confirm(
       `Are you sure you want to delete ${selected.length} selected item(s)?`,
     );
@@ -512,11 +393,9 @@ const IPCallInCalleeID = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      // console.log('Deleting selected items:', selected);
       const deletePromises = selected.map(async (idx) => {
         const item = rules[idx];
         if (item && item.id) {
-          // console.log('Deleting item with ID:', item.id);
           return await deleteNumberManipulation(item.id);
         }
         return null;
@@ -531,27 +410,18 @@ const IPCallInCalleeID = () => {
       ).length;
       const failCount = results.length - successCount;
 
-      // console.log('Delete results:', results);
-
       if (successCount > 0) {
         alert(`${successCount} item(s) deleted successfully`);
-
-        // Try to reload data, but don't fail if it doesn't work
         try {
           await fetchNumberManipulations();
         } catch (reloadError) {
-          console.warn(
-            "Failed to reload after delete, removing from local state:",
-            reloadError,
-          );
-          // Remove deleted items from local state as fallback
           const selectedItems = selected.map((idx) => rules[idx]);
           const selectedIds = selectedItems.map((item) => item.id);
           setRules((prev) =>
             prev.filter((item) => !selectedIds.includes(item.id)),
           );
         }
-        setSelected([]); // Clear selection
+        setSelected([]);
       }
 
       if (failCount > 0) {
@@ -585,10 +455,8 @@ const IPCallInCalleeID = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      // console.log('Clearing all number manipulations:', rules.map(item => item.id));
       const deletePromises = rules.map(async (item) => {
         if (item && item.id) {
-          // console.log('Deleting item:', item.id);
           return await deleteNumberManipulation(item.id);
         }
         return null;
@@ -605,16 +473,9 @@ const IPCallInCalleeID = () => {
 
       if (successCount > 0) {
         alert(`All ${successCount} item(s) deleted successfully`);
-
-        // Try to reload data, but don't fail if it doesn't work
         try {
           await fetchNumberManipulations();
         } catch (reloadError) {
-          console.warn(
-            "Failed to reload after clear all, clearing local state:",
-            reloadError,
-          );
-          // Clear all items from local state as fallback
           setRules([]);
         }
         setSelected([]);
@@ -657,12 +518,10 @@ const IPCallInCalleeID = () => {
       tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
   };
 
-  // Load data on component mount
   useEffect(() => {
     fetchNumberManipulations();
   }, []);
 
-  // Refresh function
   const handleRefresh = async () => {
     await fetchNumberManipulations();
   };
@@ -684,709 +543,722 @@ const IPCallInCalleeID = () => {
     return () => window.removeEventListener("resize", update);
   }, [rules, page]);
 
-  const rootStyle = {
-    background: "#fff",
-    minHeight: "calc(100vh - 128px)",
-    padding: "40px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: rules.length === 0 ? "center" : "flex-start",
-    position: "relative",
-    boxSizing: "border-box",
-  };
-
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
-
-  // Add these sx objects for button hover effects and correct sizing
-  const grayButtonSx = {
-    background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-    color: "#222",
-    fontWeight: 600,
-    fontSize: 15,
-    borderRadius: 1.5,
-    minWidth: 110,
-    boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-    textTransform: "none",
-    px: 2.25,
-    py: 1,
-    padding: "4px 18px",
-    border: "1px solid #bbb",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)",
-      color: "#222",
-    },
-  };
-  const blueButtonSx = {
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    fontWeight: 600,
-    fontSize: 16,
-    borderRadius: 1.5,
-    minWidth: 120,
-    boxShadow: "0 2px 8px #3E5475",
-    textTransform: "none",
-    px: 3,
-    py: 1.5,
-    padding: "6px 24px",
-    border: "1px solid #2C3E57",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      color: "#fff",
-    },
-  };
-  const paginationButtonSx = {
-    background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-    color: "#222",
-    fontWeight: 600,
-    fontSize: 13,
-    borderRadius: 1.5,
-    minWidth: 60,
-    boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-    textTransform: "none",
-    px: 1.25,
-    py: 0.5,
-    padding: "2px 10px",
-    border: "1px solid #bbb",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)",
-      color: "#222",
-    },
-  };
-
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      {loading.fetch ? (
-        <div className="flex items-center justify-center h-64">
-          <CircularProgress />
-          <span className="ml-2">Loading number manipulations...</span>
-        </div>
-      ) : rules.length === 0 ? (
+      <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto" }}>
+        {/* Breadcrumb */}
         <div
-          className="w-full h-full flex flex-col items-center justify-center"
-          style={{ minHeight: "15vh" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
         >
-          <div className="text-gray-600 text-xl md:text-[16px] font-semibold mb-4 text-center">
-            No available number manipulation rule!
-          </div>
-          <Button
-            variant="contained"
-            sx={{
-              ...blueButtonSx,
-              minWidth: 80,
-              minHeight: 28,
-              fontSize: "14px",
-              fontWeight: 350,
-              px: 0.5,
-              py: 0.5,
-              boxShadow: "0 2px 8px #3E5475",
-              textTransform: "none",
-            }}
-            onClick={() => handleOpenModal()}
-          >
-            Add New
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="w-full max-w-full mx-auto">
-            {/* Blue header bar - always show */}
-            <div
-              className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[16px] text-[#444] shadow-sm mt-0"
-              style={{
-                background: "linear-gradient(#3E5475 100%)",
-                boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-              }}
-            >
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            FXS &rsaquo; Num Manipulate &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
               IP Call In CalleeID
-            </div>
+            </span>
+          </div>
+        </div>
 
-            <div
-              style={{
-                border: "2px solid #bbb",
-                borderRadius: 8,
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow-sm w-full flex flex-col overflow-hidden">
-                <div
-                  className="w-full border-b border-gray-300"
-                  style={{
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                    borderBottom: "none",
-                  }}
-                >
-                  <div
-                    ref={tableScrollRef}
-                    onScroll={handleTableScroll}
-                    className="scrollbar-hide"
-                    style={{
-                      overflowX: "auto",
-                      overflowY: "auto",
-                      maxHeight: 240,
-                      scrollbarWidth: "none",
-                      msOverflowStyle: "none",
-                    }}
-                  >
-                    <table
-                      className="w-full min-w-[1400px] border border-gray-300 border-collapse whitespace-nowrap"
-                      style={{ tableLayout: "auto", border: "1px solid #bbb" }}
-                    >
-                      <thead>
-                        <tr style={{ minHeight: 32 }}>
-                          {IP_CALL_IN_CALLEEID_TABLE_COLUMNS.map((c) => (
-                            <th
-                              key={c.key}
-                              className="bg-white text-[#222] font-semibold text-[12px] border border-gray-300 text-center"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {c.label}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pagedRules.map((item, idx) => {
-                          const realIdx = (page - 1) * itemsPerPage + idx;
-                          return (
-                            <tr key={realIdx} style={{ minHeight: 32 }}>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selected.includes(realIdx)}
-                                  onChange={() => handleSelectRow(idx)}
-                                />
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {realIdx + 1}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.call_initiator}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.callerid_prefix}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.calleeid_prefix}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.with_original_calleeid}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.stripped_digits_from_left}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.stripped_digits_from_right}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.reserved_digits_from_right}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.prefix_to_add}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.suffix_to_add}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.description}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                <EditDocumentIcon
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "#0e8fd6",
-                                    display: "block",
-                                    margin: "0 auto",
-                                  }}
-                                  onClick={() => handleOpenModal(item, realIdx)}
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{}}>
+            {/* <SectionHeading title="IP Call In CallerID" /> */}
+            {loading.fetch ? (
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center">
+                  <CircularProgress size={40} sx={{ color: "#1e2d42" }} />
+                  <div className="mt-3 text-gray-600 font-medium">
+                    Loading number manipulations...
                   </div>
                 </div>
-                {/* Custom scrollbar row below the table */}
-                {showCustomScrollbar && (
+              </div>
+            ) : rules.length === 0 ? (
+              <div
+                className="w-full h-full flex flex-col items-center justify-center"
+                style={{ minHeight: "200px" }}
+              >
+                <div className="text-gray-600 text-sm font-semibold mb-4 text-center">
+                  No available number manipulation rule!{" "}
+                </div>
+
+                <Btn
+                  onClick={() => handleOpenModal()}
+                  style={{
+                    fontSize: 13,
+                    padding: "6px 20px",
+                  }}
+                >
+                  + Add New
+                </Btn>
+              </div>
+            ) : (
+              <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+                {/* Breadcrumb */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div style={{ fontSize: 11, color: C.mutedText }}>
+                    FXS &rsaquo; Num Manipulate &rsaquo;{" "}
+                    <span style={{ color: C.valueText, fontWeight: 600 }}>
+                      IP Call In CalleeID
+                    </span>
+                  </div>
+                </div>
+
+                {/* Main Card */}
+                <div
+                  style={{
+                    background: C.cardBg,
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  {/* Toolbar */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 14px",
+                      borderBottom: `1px solid ${C.cardBorder}`,
+                      background: "#DCE6F2",
+                      flexWrap: "wrap",
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 8 }}
+                    >
+                      <span
+                        style={{
+                          background: "#f1f5f9",
+                          border: `0.5px solid ${C.cardBorder}`,
+                          color: "#475569",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          padding: "3px 12px",
+                          borderRadius: 20,
+                        }}
+                      >
+                        IP Call In CalleeID · {rules.length} records
+                      </span>
+                      {selected.length > 0 && (
+                        <span
+                          style={{
+                            background: "#e0f2fe",
+                            color: C.accent,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            padding: "3px 10px",
+                            borderRadius: 20,
+                            border: `0.5px solid ${C.accent}`,
+                          }}
+                        >
+                          {selected.length} selected
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <Btn
+                        onClick={handleCheckAll}
+                        disabled={loading.delete}
+                        variant="outline"
+                      >
+                        Check All
+                      </Btn>
+                      <Btn
+                        onClick={handleUncheckAll}
+                        disabled={loading.delete}
+                        variant="outline"
+                      >
+                        Uncheck All
+                      </Btn>
+                      <Btn
+                        onClick={handleInverse}
+                        disabled={loading.delete}
+                        variant="outline"
+                      >
+                        Inverse
+                      </Btn>
+                      <Btn
+                        onClick={handleDelete}
+                        disabled={loading.delete || selected.length === 0}
+                        variant="danger"
+                      >
+                        {loading.delete ? "Deleting..." : "🗑 Delete"}
+                      </Btn>
+                      <Btn
+                        onClick={handleClearAll}
+                        disabled={loading.delete || rules.length === 0}
+                        variant="danger"
+                      >
+                        {loading.delete ? "Clearing..." : "Clear All"}
+                      </Btn>
+                      <Btn
+                        onClick={handleRefresh}
+                        disabled={loading.fetch}
+                        variant="outline"
+                      >
+                        {loading.fetch ? "Refreshing..." : "Refresh"}
+                      </Btn>
+                      <Btn
+                        onClick={() => handleOpenModal()}
+                        disabled={loading.save}
+                        variant="accent"
+                      >
+                        + Add New
+                      </Btn>
+                    </div>
+                  </div>
+
+                  {/* Table Container with Custom Scrollbar preserved */}
                   <div
                     style={{
                       width: "100%",
-                      margin: "0 auto",
-                      background: "#f4f6fa",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <div
+                      ref={tableScrollRef}
+                      onScroll={handleTableScroll}
+                      style={{
+                        overflowX: "auto",
+                        overflowY: "auto",
+                        maxHeight: 400,
+                        scrollbarWidth: "none",
+                        msOverflowStyle: "none",
+                      }}
+                    >
+                      <table
+                        style={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          minWidth: 1400,
+                        }}
+                      >
+                        <thead>
+                          <tr>
+                            <TH
+                              style={{
+                                width: 40,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 10,
+                              }}
+                            >
+                              Check
+                            </TH>
+                            <TH
+                              style={{
+                                width: 40,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 10,
+                              }}
+                            >
+                              #
+                            </TH>
+                            {IP_CALL_IN_CALLEEID_TABLE_COLUMNS.map((col) => (
+                              <TH
+                                key={col.key}
+                                style={{
+                                  position: "sticky",
+                                  top: 0,
+                                  zIndex: 10,
+                                }}
+                              >
+                                {col.label}
+                              </TH>
+                            ))}
+                            <TH
+                              style={{
+                                width: 70,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 10,
+                              }}
+                            >
+                              Modify
+                            </TH>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pagedRules.map((item, idx) => {
+                            const realIdx = (page - 1) * itemsPerPage + idx;
+                            const isSelected = selected.includes(realIdx);
+                            const rowBg = isSelected
+                              ? "#f0f9ff"
+                              : idx % 2 === 1
+                                ? "#f8fafc"
+                                : "#ffffff";
+                            return (
+                              <tr
+                                key={realIdx}
+                                style={{
+                                  background: rowBg,
+                                  borderBottom: "0.5px solid #9ca3af",
+                                  transition: "background 0.1s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isSelected)
+                                    e.currentTarget.style.background =
+                                      "#f0f9ff";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isSelected)
+                                    e.currentTarget.style.background = rowBg;
+                                }}
+                              >
+                                <td
+                                  style={{
+                                    textAlign: "center",
+                                    padding: "4px 8px",
+                                    borderRight: "0.5px solid #edf2f7",
+                                  }}
+                                >
+                                  <Checkbox
+                                    size="small"
+                                    checked={isSelected}
+                                    onChange={() => handleSelectRow(idx)}
+                                    sx={{
+                                      padding: "1px",
+                                      color: C.accent,
+                                      "&.Mui-checked": { color: C.accent },
+                                    }}
+                                  />
+                                </td>
+                                <td
+                                  style={{
+                                    textAlign: "center",
+                                    fontSize: 11,
+                                    color: C.mutedText,
+                                    padding: "7px 8px",
+                                    borderRight: "0.5px solid #edf2f7",
+                                  }}
+                                >
+                                  {realIdx + 1}
+                                </td>
+                                {IP_CALL_IN_CALLEEID_TABLE_COLUMNS.map(
+                                  (col) => (
+                                    <td
+                                      key={col.key}
+                                      style={{
+                                        textAlign: "center",
+                                        fontSize: 12,
+                                        padding: "7px 8px",
+                                        color: C.valueText,
+                                        borderRight: "0.5px solid #edf2f7",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {item[col.key] !== undefined &&
+                                      item[col.key] !== null &&
+                                      item[col.key] !== ""
+                                        ? String(item[col.key])
+                                        : "--"}
+                                    </td>
+                                  ),
+                                )}
+                                <td
+                                  style={{
+                                    textAlign: "center",
+                                    padding: "4px 8px",
+                                    borderRight: "0.5px solid #edf2f7",
+                                  }}
+                                >
+                                  <Btn
+                                    onClick={() =>
+                                      handleOpenModal(item, item.id)
+                                    }
+                                    variant="outline"
+                                    style={{
+                                      fontSize: 10,
+                                      padding: "3px 10px",
+                                      margin: "0 auto",
+                                    }}
+                                  >
+                                    <EditDocumentIcon
+                                      style={{ fontSize: 12, marginRight: 2 }}
+                                    />{" "}
+                                    Edit
+                                  </Btn>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Custom Scrollbar Retained but styled for the new theme */}
+                    {(() => {
+                      const thumbWidth =
+                        scrollState.width && scrollState.scrollWidth
+                          ? Math.max(
+                              40,
+                              (scrollState.width / scrollState.scrollWidth) *
+                                (scrollState.width - 8),
+                            )
+                          : 40;
+                      const thumbLeft =
+                        scrollState.width &&
+                        scrollState.scrollWidth &&
+                        scrollState.scrollWidth > scrollState.width
+                          ? (scrollState.left /
+                              (scrollState.scrollWidth - scrollState.width)) *
+                            (scrollState.width - thumbWidth - 16)
+                          : 0;
+                      return (
+                        showCustomScrollbar && (
+                          <div
+                            style={{
+                              width: "100%",
+                              margin: "0 auto",
+                              background: "#f4f6fa",
+                              display: "flex",
+                              alignItems: "center",
+                              height: 24,
+                              borderBottom: `1px solid ${C.cardBorder}`,
+                              padding: "0 4px",
+                              boxSizing: "border-box",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: 18,
+                                height: 18,
+                                background: "#fff",
+                                border: `1px solid ${C.cardBorder}`,
+                                borderRadius: 4,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 10,
+                                color: C.mutedText,
+                                cursor: "pointer",
+                                userSelect: "none",
+                              }}
+                              onClick={() => handleArrowClick("left")}
+                            >
+                              &#9664;
+                            </div>
+                            <div
+                              style={{
+                                flex: 1,
+                                height: 12,
+                                background: "#eef2f7",
+                                borderRadius: 8,
+                                position: "relative",
+                                margin: "0 4px",
+                                overflow: "hidden",
+                              }}
+                              onClick={handleScrollbarDrag}
+                            >
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  height: 12,
+                                  background: C.cardBorder,
+                                  borderRadius: 8,
+                                  cursor: "pointer",
+                                  top: 0,
+                                  width: thumbWidth,
+                                  left: thumbLeft,
+                                }}
+                                draggable
+                                onDrag={handleScrollbarDrag}
+                              />
+                            </div>
+                            <div
+                              style={{
+                                width: 18,
+                                height: 18,
+                                background: "#fff",
+                                border: `1px solid ${C.cardBorder}`,
+                                borderRadius: 4,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 10,
+                                color: C.mutedText,
+                                cursor: "pointer",
+                                userSelect: "none",
+                              }}
+                              onClick={() => handleArrowClick("right")}
+                            >
+                              &#9654;
+                            </div>
+                          </div>
+                        )
+                      );
+                    })()}
+                  </div>
+
+                  {/* Footer Pagination */}
+                  <div
+                    style={{
                       display: "flex",
                       alignItems: "center",
-                      height: 24,
-                      borderBottomLeftRadius: 8,
-                      borderBottomRightRadius: 8,
-                      border: "none",
-                      borderTop: "none",
-                      padding: "0 4px",
-                      boxSizing: "border-box",
+                      justifyContent: "space-between",
+                      padding: "10px 14px",
+                      background: "#f8fafc",
+                      gap: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: C.mutedText }}>
+                      Showing {pagedRules.length} records of {rules.length}{" "}
+                      Total ({itemsPerPage} / Page)
+                    </span>
+                    <div
+                      style={{ display: "flex", gap: 8, alignItems: "center" }}
+                    >
+                      <Btn
+                        onClick={() => handlePageChange(1)}
+                        disabled={page === 1}
+                        variant="outline"
+                      >
+                        First
+                      </Btn>
+                      <Btn
+                        onClick={() => handlePageChange(page - 1)}
+                        disabled={page === 1}
+                        variant="outline"
+                      >
+                        ← Prev
+                      </Btn>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: C.accent,
+                          background: "#e0f2fe",
+                          padding: "5px 14px",
+                          borderRadius: 6,
+                          border: `0.5px solid ${C.cardBorder}`,
+                        }}
+                      >
+                        Page {page} of {totalPages}
+                      </span>
+                      <Btn
+                        onClick={() => handlePageChange(page + 1)}
+                        disabled={page === totalPages}
+                        variant="outline"
+                      >
+                        Next →
+                      </Btn>
+                      <Btn
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={page === totalPages}
+                        variant="outline"
+                      >
+                        Last
+                      </Btn>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: C.mutedText,
+                          marginLeft: 8,
+                        }}
+                      >
+                        Go to Page:
+                      </span>
+                      <select
+                        style={{
+                          fontSize: 11,
+                          padding: "2px 6px",
+                          borderRadius: 4,
+                          border: `1px solid ${C.cardBorder}`,
+                          background: "#fff",
+                          color: C.valueText,
+                          outline: "none",
+                        }}
+                        value={page}
+                        onChange={(e) =>
+                          handlePageChange(Number(e.target.value))
+                        }
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {i + 1}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Add/Edit Modal ── */}
+            <Dialog
+              open={isModalOpen}
+              onClose={handleCloseModal}
+              maxWidth={false}
+              PaperProps={{
+                sx: { width: 550, maxWidth: "95vw", borderRadius: 2 },
+              }}
+              disableRestoreFocus
+              disableEnforceFocus
+            >
+              <DialogTitle
+                style={{
+                  background: "#1e2d42",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  textAlign: "center",
+                  padding: "14px 24px",
+                }}
+              >
+                {editIndex !== null
+                  ? "Edit IP Call In CalleeID"
+                  : "Add IP Call In CalleeID"}
+              </DialogTitle>
+              <DialogContent
+                style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+              >
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                >
+                  <div
+                    style={{
+                      background: "#fff",
+                      border: `1px solid ${C.cardBorder}`,
+                      borderRadius: 6,
+                      padding: 16,
                     }}
                   >
                     <div
                       style={{
-                        width: 18,
-                        height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
-                        cursor: "pointer",
-                        userSelect: "none",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: C.labelText,
+                        marginBottom: 14,
+                        borderBottom: `1px solid ${C.cardBorder}`,
+                        paddingBottom: 6,
                       }}
-                      onClick={() => handleArrowClick("left")}
                     >
-                      &#9664;
+                      Configuration
                     </div>
                     <div
                       style={{
-                        flex: 1,
-                        height: 12,
-                        background: "#e3e7ef",
-                        borderRadius: 8,
-                        position: "relative",
-                        margin: "0 4px",
-                        overflow: "hidden",
-                      }}
-                      onClick={handleScrollbarDrag}
-                    >
-                      <div
-                        style={{
-                          position: "absolute",
-                          height: 12,
-                          background: "#888",
-                          borderRadius: 8,
-                          cursor: "pointer",
-                          top: 0,
-                          width: thumbWidth,
-                          left: thumbLeft,
-                        }}
-                        draggable
-                        onDrag={handleScrollbarDrag}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
-                        cursor: "pointer",
-                        userSelect: "none",
+                        flexDirection: "column",
+                        gap: 14,
                       }}
-                      onClick={() => handleArrowClick("right")}
                     >
-                      &#9654;
+                      {IP_CALL_IN_CALLEEID_FIELDS.map((field) => (
+                        <FieldRow key={field.name} label={`${field.label}:`}>
+                          {field.type === "select" ? (
+                            <FormControl size="small" fullWidth>
+                              <MuiSelect
+                                value={formData[field.name] || ""}
+                                onChange={(e) =>
+                                  handleInputChange({
+                                    target: {
+                                      name: field.name,
+                                      value: e.target.value,
+                                    },
+                                  })
+                                }
+                                sx={{
+                                  fontSize: 13,
+                                  height: 32,
+                                  backgroundColor: "#fff",
+                                  "& .MuiOutlinedInput-notchedOutline": {
+                                    borderColor: C.cardBorder,
+                                  },
+                                }}
+                              >
+                                {field.options.map((opt) => (
+                                  <MenuItem
+                                    key={opt.value}
+                                    value={opt.value}
+                                    sx={{ fontSize: 13 }}
+                                  >
+                                    {opt.label}
+                                  </MenuItem>
+                                ))}
+                              </MuiSelect>
+                            </FormControl>
+                          ) : (
+                            <input
+                              type={field.type || "text"}
+                              name={field.name}
+                              value={formData[field.name] || ""}
+                              onChange={handleInputChange}
+                              style={inputStyle}
+                            />
+                          )}
+                        </FieldRow>
+                      ))}
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-          {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-          <div
-            className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-            style={{ background: "#e3e7ef", marginTop: 12 }}
-          >
-            <div className="flex flex-wrap gap-2">
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleCheckAll}
-                disabled={loading.delete}
-              >
-                Check All
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleUncheckAll}
-                disabled={loading.delete}
-              >
-                Uncheck All
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleInverse}
-                disabled={loading.delete}
-              >
-                Inverse
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleDelete}
-                disabled={loading.delete || selected.length === 0}
-              >
-                {loading.delete ? "Deleting..." : "Delete"}
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleClearAll}
-                disabled={loading.delete || rules.length === 0}
-              >
-                {loading.delete ? "Clearing..." : "Clear All"}
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleRefresh}
-                disabled={loading.fetch}
-              >
-                {loading.fetch ? "Refreshing..." : "Refresh"}
-              </button>
-            </div>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handleOpenModal()}
-              disabled={loading.save}
-            >
-              {loading.save ? "Saving..." : "Add New"}
-            </button>
-          </div>
-          <div
-            className="flex flex-wrap items-center gap-2 w-full px-2 py-2 text-[15px]"
-            style={{ background: "#e3e7ef", marginTop: 8 }}
-          >
-            <span>{rules.length} Items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(1)}
-              disabled={page === 1}
-            >
-              First
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <span>Go to Page</span>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => handlePageChange(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
-          </div>
-        </>
-      )}
-      <Dialog
-        open={isModalOpen}
-        onClose={handleCloseModal}
-        maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 600, maxWidth: "95vw", mx: "auto", p: 0 },
-        }}
-        disableRestoreFocus
-        disableEnforceFocus
-      >
-        <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          {formData.originalIndex !== undefined
-            ? "Edit IP Call In CalleeID"
-            : "Add IP Call In CalleeID"}
-        </DialogTitle>
-        <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-          }}
-        >
-          <div className="flex flex-col gap-2 w-full">
-            {IP_CALL_IN_CALLEEID_FIELDS.map((field) => (
-              <div
-                key={field.name}
-                className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-                style={{ minHeight: 32 }}
-              >
-                <label
-                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                  style={{ width: 180, marginRight: 10 }}
-                >
-                  {field.label}:
-                </label>
-                <div className="flex-1">
-                  {field.type === "select" ? (
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={formData[field.name] || ""}
-                        onChange={(e) =>
-                          handleInputChange({
-                            target: { name: field.name, value: e.target.value },
-                          })
-                        }
-                        variant="outlined"
-                        sx={{ fontSize: 14 }}
-                      >
-                        {field.options.map((opt) => (
-                          <MenuItem
-                            key={opt.value}
-                            value={opt.value}
-                            sx={{ fontSize: 14 }}
-                          >
-                            {opt.label}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  ) : (
-                    <TextField
-                      type={field.type || "text"}
-                      name={field.name}
-                      value={formData[field.name] || ""}
-                      onChange={handleInputChange}
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      inputProps={{
-                        style: { fontSize: 14, padding: "3px 6px" },
-                      }}
-                    />
-                  )}
                 </div>
-              </div>
-            ))}
+              </DialogContent>
+              <DialogActions
+                style={{
+                  padding: "16px 24px",
+                  background: C.pageBg,
+                  borderTop: `1px solid ${C.cardBorder}`,
+                  justifyContent: "center",
+                  gap: 12,
+                }}
+              >
+                <Btn
+                  onClick={handleSave}
+                  disabled={loading.save}
+                  style={{ padding: "8px 36px", fontSize: 13 }}
+                >
+                  {loading.save ? "Saving..." : "Save"}
+                </Btn>
+                <Btn
+                  onClick={handleCloseModal}
+                  disabled={loading.save}
+                  variant="outline"
+                  style={{ padding: "8px 36px", fontSize: 13 }}
+                >
+                  Cancel
+                </Btn>
+              </DialogActions>
+            </Dialog>
           </div>
-        </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
-            onClick={handleSave}
-            disabled={loading.save}
-          >
-            Save
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
-            onClick={handleCloseModal}
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </div>
+      </div>
     </div>
   );
 };

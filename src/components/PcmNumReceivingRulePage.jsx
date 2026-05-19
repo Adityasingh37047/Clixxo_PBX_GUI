@@ -6,6 +6,7 @@ import {
 } from "../constants/PcmNumReceivingRouleConstants";
 import { listNumRecv, createNumRecv, deleteNumRecv } from "../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Button,
   Dialog,
@@ -17,7 +18,106 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
+  Checkbox,
+  IconButton,
 } from "@mui/material";
+
+// ── Theme tokens ──────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+// ── Reusable Button ───────────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: "0.5px solid #fecaca",
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ── Reusable Table Header ─────────────────────────────────────────────────────
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 
 const PcmNumReceivingRulePage = () => {
   // State
@@ -459,8 +559,12 @@ const PcmNumReceivingRulePage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        background: C.pageBg,
+        minHeight: "calc(100vh - 120px)",
+        padding: "24px 20px",
+        boxSizing: "border-box",
+      }}
     >
       {/* Message Display */}
       {message.text && (
@@ -480,203 +584,427 @@ const PcmNumReceivingRulePage = () => {
         </Alert>
       )}
 
-      <div className="w-full max-w-full mx-auto md:p-2">
-        {/* Header */}
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          Number-receiving Rule
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
+        <div style={{ fontSize: 11, color: C.mutedText, marginBottom: 12 }}>
+          E1-PRI &rsaquo; PCM &rsaquo;{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            Number-Receiving Rule
+          </span>
         </div>
 
+        {/* Main Card */}
         <div
-          className="w-full max-w-full mx-auto"
           style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div
-              className="overflow-x-auto w-full border-b border-gray-300"
-              style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
-              }}
-            >
-              <table
-                className="w-full min-w-[1200px] border border-gray-300 border-collapse whitespace-nowrap"
-                style={{ tableLayout: "auto", border: "1px solid #bbb" }}
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            {/* Left: badges */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
               >
-                <thead>
-                  <tr style={{ minHeight: 32 }}>
-                    <th
-                      className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                      style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Check
-                    </th>
-                    {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
-                      (c) => c.key !== "check",
-                    ).map((c) => (
-                      <th
-                        key={c.key}
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {c.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading.fetch ? (
-                    <tr>
-                      <td
-                        colSpan={NUM_RECEIVING_RULE_TABLE_COLUMNS.length}
-                        className="border border-gray-300 px-2 py-4 text-center"
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          <CircularProgress size={20} />
-                          <span>Loading Number Receiving Rule data...</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : rules.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={NUM_RECEIVING_RULE_TABLE_COLUMNS.length}
-                        className="border border-gray-300 px-2 py-1 text-center"
-                      >
-                        No data
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedRules.map((item, idx) => renderTableRow(item, idx))
-                  )}
-                </tbody>
-              </table>
+                Page {page} · {rules.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    border: "0.5px solid #bae6fd",
+                    color: "#0369a1",
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    padding: "2px 10px",
+                    borderRadius: 12,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            {/* Right: action buttons */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Btn
+                onClick={handleInverse}
+                disabled={loading.delete}
+                variant="outline"
+              >
+                Inverse
+              </Btn>
+              <Btn
+                onClick={handleClearAll}
+                disabled={loading.delete || rules.length === 0}
+                variant="danger"
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Clear All"
+                )}
+              </Btn>
+              <Btn
+                onClick={handleDelete}
+                disabled={loading.delete || selected.length === 0}
+                variant="danger"
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "🗑 Delete"
+                )}
+              </Btn>
+              <Btn
+                onClick={() => handleOpenModal()}
+                disabled={loading.save}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
-        </div>
 
-        {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-        <div
-          className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleCheckAllRows}
+          {/* Table */}
+          <div className="overflow-x-auto w-full">
+            <table
+              className="w-full min-w-[900px] border-collapse whitespace-nowrap"
+              style={{ tableLayout: "auto" }}
             >
-              Check All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleUncheckAllRows}
-            >
-              Uncheck All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded cursor-pointer px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleInverse}
-            >
-              Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                selected.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleDelete}
-              disabled={selected.length === 0}
-            >
-              {loading.delete ? <CircularProgress size={12} /> : "Delete"}
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-                rules.length === 0 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleClearAll}
-              disabled={rules.length === 0}
-            >
-              {loading.delete ? <CircularProgress size={12} /> : "Clear All"}
-            </button>
+              <thead>
+                <tr>
+                  <TH style={{ width: 36 }}>
+                    <Checkbox
+                      size="small"
+                      checked={
+                        pagedRules.length > 0 &&
+                        pagedRules.every((_, idx) =>
+                          selected.includes((page - 1) * itemsPerPage + idx),
+                        )
+                      }
+                      indeterminate={
+                        pagedRules.some((_, idx) =>
+                          selected.includes((page - 1) * itemsPerPage + idx),
+                        ) &&
+                        !pagedRules.every((_, idx) =>
+                          selected.includes((page - 1) * itemsPerPage + idx),
+                        )
+                      }
+                      onChange={() => {
+                        const allSelected = pagedRules.every((_, idx) =>
+                          selected.includes((page - 1) * itemsPerPage + idx),
+                        );
+                        if (allSelected) handleUncheckAllRows();
+                        else handleCheckAllRows();
+                      }}
+                      sx={{
+                        padding: "1px",
+                        color: C.accent,
+                        "&.Mui-checked": { color: C.accent },
+                        "&.MuiCheckbox-indeterminate": { color: C.accent },
+                      }}
+                    />
+                  </TH>
+                  {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
+                    (c) => c.key !== "check",
+                  ).map((c) => (
+                    <TH key={c.key}>{c.label}</TH>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading.fetch ? (
+                  <tr>
+                    <td
+                      colSpan={NUM_RECEIVING_RULE_TABLE_COLUMNS.length}
+                      style={{
+                        padding: "24px",
+                        textAlign: "center",
+                        borderBottom: `1px solid ${C.cardBorder}`,
+                        fontSize: 13,
+                        color: C.labelText,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <CircularProgress size={20} sx={{ color: C.accent }} />
+                        <span>Loading Number Receiving Rule data...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : rules.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={NUM_RECEIVING_RULE_TABLE_COLUMNS.length}
+                      style={{
+                        padding: "36px 0",
+                        textAlign: "center",
+                        color: C.mutedText,
+                        fontSize: 12,
+                        borderBottom: `0.5px solid ${C.cardBorder}`,
+                      }}
+                    >
+                      No data
+                    </td>
+                  </tr>
+                ) : (
+                  pagedRules.map((item, idx) => {
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const globalIndex = realIdx + 1;
+                    const isRowChecked = selected.includes(realIdx);
+                    const rowBg = isRowChecked
+                      ? "#f0f9ff"
+                      : idx % 2 === 0
+                        ? "#ffffff"
+                        : "#f8fafc";
+                    return (
+                      <tr
+                        key={item.id || realIdx}
+                        style={{
+                          background: rowBg,
+                          transition: "background-color 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isRowChecked)
+                            e.currentTarget.style.backgroundColor = "#f1f5f9";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isRowChecked)
+                            e.currentTarget.style.backgroundColor = rowBg;
+                        }}
+                      >
+                        {/* Checkbox cell */}
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            textAlign: "center",
+                            borderBottom: "1px solid #e2e8f0",
+                            borderRight: "0.5px solid #e2e8f0",
+                            width: 36,
+                          }}
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={isRowChecked}
+                            onChange={() => handleSelectRow(realIdx)}
+                            sx={{
+                              padding: "1px",
+                              color: C.accent,
+                              "&.Mui-checked": { color: C.accent },
+                            }}
+                          />
+                        </td>
+                        {/* Data cells */}
+                        {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
+                          (col) => col.key !== "check",
+                        ).map((col) => {
+                          if (col.key === "index") {
+                            return (
+                              <td
+                                key={col.key}
+                                style={{
+                                  padding: "9px 8px",
+                                  textAlign: "center",
+                                  fontSize: 13,
+                                  color: C.mutedText,
+                                  borderBottom: "1px solid #e2e8f0",
+                                  borderRight: "0.5px solid #e2e8f0",
+                                }}
+                              >
+                                {globalIndex}
+                              </td>
+                            );
+                          }
+                          if (col.key === "modify") {
+                            return (
+                              <td
+                                key={col.key}
+                                style={{
+                                  padding: "6px 8px",
+                                  textAlign: "center",
+                                  borderBottom: "1px solid #e2e8f0",
+                                  borderRight: "0.5px solid #e2e8f0",
+                                  width: 80,
+                                }}
+                              >
+                                <IconButton
+                                  onClick={() => handleOpenModal(item, realIdx)}
+                                  sx={{
+                                    padding: "4px",
+                                    color: C.accent,
+                                    "&:hover": { backgroundColor: "#e2e8f0" },
+                                  }}
+                                >
+                                  <EditIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                              </td>
+                            );
+                          }
+                          return (
+                            <td
+                              key={col.key}
+                              style={{
+                                padding: "9px 8px",
+                                textAlign: "center",
+                                fontSize: 13,
+                                color: C.valueText,
+                                borderBottom: "1px solid #e2e8f0",
+                                borderRight: "0.5px solid #e2e8f0",
+                              }}
+                            >
+                              {item[col.key] !== undefined &&
+                              item[col.key] !== ""
+                                ? item[col.key]
+                                : "--"}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => handleOpenModal()}
-          >
-            Add New
-          </button>
+
+          {/* Pagination footer — matches PcmPstnPage exactly */}
+          {rules.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+                flexWrap: "wrap",
+                gap: 12,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRules.length} record
+                {pagedRules.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Btn
+                  onClick={() => handlePageChange(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
+                <Btn
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+                <Btn
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
+                <span
+                  style={{ fontSize: 11, color: C.mutedText, marginLeft: 8 }}
+                >
+                  Go to Page:
+                </span>
+                <select
+                  value={page}
+                  onChange={(e) => handlePageChange(Number(e.target.value))}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                    background: C.cardBg,
+                    color: C.labelText,
+                    padding: "4px 8px",
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-          <span>{rules.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => handlePageChange(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
-        </div>
-
-        <div className="text-red-600 text-xs mt-8 text-center w-full">
+        {/* Rule note */}
+        <div
+          style={{
+            fontSize: 11,
+            color: C.errorRed,
+            marginTop: 12,
+            textAlign: "center",
+          }}
+        >
           Rule: "x"(lowercase) indicates a random number, "*" indicates multiple
           random characters.
         </div>
@@ -687,97 +1015,165 @@ const PcmNumReceivingRulePage = () => {
         open={showModal}
         onClose={handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 600 } }}
+        PaperProps={{
+          sx: {
+            width: 500,
+            maxWidth: "95vw",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            marginBottom: 12,
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "16px 24px",
           }}
         >
-          Number-Receiving Rule
+          {editIndex !== null
+            ? "Edit Number-Receiving Rule"
+            : "Add Number-Receiving Rule"}
         </DialogTitle>
         <DialogContent
-          className="flex flex-col gap-2 py-4"
+          style={{ padding: "20px 24px", backgroundColor: "#f8fafc" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              width: "100%",
+            }}
+          >
+            {NUM_RECEIVING_RULE_FIELDS.map((field) => (
+              <div
+                key={field.name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  background: "#ffffff",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 6,
+                  padding: "6px 12px",
+                  gap: 12,
+                  minHeight: 40,
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: "#1e293b",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 140,
+                  }}
+                >
+                  {field.label}:
+                </label>
+                <div className="flex-1" style={{ maxWidth: 300 }}>
+                  {field.type === "select" ? (
+                    <Select
+                      value={form[field.name]}
+                      onChange={(e) =>
+                        handleInputChange(field.name, e.target.value)
+                      }
+                      size="small"
+                      fullWidth
+                      variant="outlined"
+                      MenuProps={{ PaperProps: { style: { maxHeight: 240 } } }}
+                      sx={{
+                        fontSize: 13,
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#cbd5e1",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#94a3b8",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#1e2d42",
+                        },
+                      }}
+                    >
+                      {field.options.map((option) => (
+                        <MenuItem
+                          key={option.value}
+                          value={option.value}
+                          sx={{ fontSize: 13 }}
+                        >
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  ) : (
+                    <TextField
+                      type={field.type}
+                      value={form[field.name] || ""}
+                      onChange={(e) =>
+                        handleInputChange(field.name, e.target.value)
+                      }
+                      size="small"
+                      fullWidth
+                      variant="outlined"
+                      placeholder={field.placeholder || ""}
+                      sx={{
+                        fontSize: 13,
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#cbd5e1",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#94a3b8",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#1e2d42",
+                        },
+                      }}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" },
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+        <DialogActions
           style={{
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
           }}
         >
-          {NUM_RECEIVING_RULE_FIELDS.map(renderFormField)}
-        </DialogContent>
-        <DialogActions className="flex justify-center gap-6 pb-4">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+          <Btn
             onClick={handleSave}
             disabled={loading.save}
+            variant="accent"
+            style={{ padding: "8px 24px", fontSize: 13, minWidth: 100 }}
           >
             {loading.save ? (
-              <CircularProgress size={20} color="inherit" />
+              <CircularProgress size={16} color="inherit" />
             ) : (
               "Save"
             )}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
+            variant="outline"
+            style={{ padding: "8px 24px", fontSize: 13, minWidth: 100 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

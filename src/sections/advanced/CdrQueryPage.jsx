@@ -3,7 +3,7 @@ import {
   CDR_QUERY_INITIAL_FORM,
   PORT_OPTIONS,
   CALL_DIRECTION_OPTIONS,
-} from "./constants/CdrQueryConstants";
+} from "./constants/CdrQueryConstants"; // Adjust path if needed
 import {
   TextField,
   Button,
@@ -12,8 +12,69 @@ import {
   FormControl,
 } from "@mui/material";
 
+// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
+};
+
+// ── Shared UI Components ──────────────────────────────────────────────────────
+const FieldRow = ({ label, children, required, align = "center" }) => (
+  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 140, // Optimized for CDR Query labels
+        flexShrink: 0,
+        paddingTop: align === "flex-start" ? 8 : 0,
+      }}
+    >
+      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+    </label>
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const CdrQueryPage = () => {
   const [formData, setFormData] = useState(CDR_QUERY_INITIAL_FORM);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -66,7 +127,10 @@ const CdrQueryPage = () => {
       formData.enddate &&
       formData.startdate > formData.enddate
     ) {
-      alert("The Ending Date should not be earlier than the Starting Date!");
+      showMessage(
+        "error",
+        "The Ending Date should not be earlier than the Starting Date!",
+      );
       return;
     }
 
@@ -78,393 +142,294 @@ const CdrQueryPage = () => {
       formData.maxtalktime &&
       minTalkTime > maxTalkTime
     ) {
-      alert(
+      showMessage(
+        "error",
         "The max talk duration should not be smaller than the min talk duration!",
       );
       return;
     }
 
     // Here you would typically submit the query
-    alert("Query submitted successfully!");
+    showMessage("success", "Query submitted successfully!");
   };
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-128px)] py-2 px-2 sm:px-4"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div style={{ width: "950px", maxWidth: "95%", margin: "0 auto" }}>
-        {/* Blue header bar */}
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Error / Success Banner */}
+        {message.text && (
+          <div
+            style={{
+              background:
+                message.type === "error"
+                  ? "#fef2f2"
+                  : message.type === "success"
+                    ? "#f0fdf4"
+                    : "#eff6ff",
+              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
+              color:
+                message.type === "error"
+                  ? "#b91c1c"
+                  : message.type === "success"
+                    ? "#166534"
+                    : "#1e40af",
+              padding: "10px 14px",
+              borderRadius: 6,
+              marginBottom: 12,
+              fontSize: 13,
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span>{message.text}</span>
+            <span
+              onClick={() => setMessage({ type: "", text: "" })}
+              style={{ cursor: "pointer", fontSize: 16 }}
+            >
+              ✕
+            </span>
+          </div>
+        )}
+
+        {/* Breadcrumb */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          {" "}
-          CDR Inquire
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            FXS &rsaquo; Advanced &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              CDR Inquire
+            </span>
+          </div>
         </div>
 
-        <div className="rounded-b-lg bg-white border-2 border-gray-400 border-t-0 shadow-sm p-4">
-          <table className="w-full" style={{ tableLayout: "auto" }}>
-            <colgroup>
-              <col style={{ width: "15%" }} />
-              <col style={{ width: "45%" }} />
-              <col style={{ width: "40%" }} />
-            </colgroup>
-            <tbody>
-              {/* Starting Date */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>
-                  Starting Date
-                </td>
-                <td>
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{ padding: "24px 28px" }}>
+            <SectionHeading title="CDR Query Filters" />
+
+            {/* 2-Column Grid Layout for Form Fields */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "16px 40px",
+              }}
+            >
+              {/* ── LEFT COLUMN ── */}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <FieldRow label="Starting Date">
                   <TextField
-                    id="startdate"
                     type="date"
+                    size="small"
+                    fullWidth
                     value={formData.startdate || ""}
                     onChange={(e) =>
                       handleInputChange("startdate", e.target.value)
                     }
-                    size="small"
-                    variant="outlined"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    inputProps={{ style: { fontSize: 14, padding: "4px 8px" } }}
-                    sx={{
-                      width: "132px",
-                      "& .MuiOutlinedInput-root": {
-                        height: "28px",
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#bbb" },
-                        "&:hover fieldset": { borderColor: "#999" },
-                        "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                      },
-                    }}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                   />
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
+                </FieldRow>
 
-              {/* Ending Date */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>Ending Date</td>
-                <td>
-                  <TextField
-                    id="enddate"
-                    type="date"
-                    value={formData.enddate || ""}
-                    onChange={(e) =>
-                      handleInputChange("enddate", e.target.value)
-                    }
-                    size="small"
-                    variant="outlined"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    inputProps={{ style: { fontSize: 14, padding: "4px 8px" } }}
-                    sx={{
-                      width: "132px",
-                      "& .MuiOutlinedInput-root": {
-                        height: "28px",
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#bbb" },
-                        "&:hover fieldset": { borderColor: "#999" },
-                        "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                      },
-                    }}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
-
-              {/* Port */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>Port</td>
-                <td>
-                  <FormControl size="small" sx={{ width: "132px" }}>
+                <FieldRow label="Port">
+                  <FormControl size="small" fullWidth>
                     <MuiSelect
                       value={formData.port}
                       onChange={(e) =>
                         handleInputChange("port", e.target.value)
                       }
-                      variant="outlined"
-                      sx={{
-                        fontSize: 14,
-                        height: 28,
-                        backgroundColor: "white",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#bbb",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#999",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#3b82f6",
-                        },
-                        "& .MuiSelect-select": { padding: "4px 8px" },
-                      }}
+                      sx={{ fontSize: 13 }}
                     >
                       {PORT_OPTIONS.map((opt) => (
                         <MenuItem
                           key={opt.value}
                           value={opt.value}
-                          sx={{ fontSize: 14 }}
+                          sx={{ fontSize: 13 }}
                         >
                           {opt.label}
                         </MenuItem>
                       ))}
                     </MuiSelect>
                   </FormControl>
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
+                </FieldRow>
 
-              {/* Call Direction */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>
-                  Call Direction
-                </td>
-                <td>
-                  <FormControl size="small" sx={{ width: "132px" }}>
-                    <MuiSelect
-                      value={formData.billtype}
-                      onChange={(e) =>
-                        handleInputChange("billtype", e.target.value)
-                      }
-                      variant="outlined"
-                      sx={{
-                        fontSize: 14,
-                        height: 28,
-                        backgroundColor: "white",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#bbb",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#999",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#3b82f6",
-                        },
-                        "& .MuiSelect-select": { padding: "4px 8px" },
-                      }}
-                    >
-                      {CALL_DIRECTION_OPTIONS.map((opt) => (
-                        <MenuItem
-                          key={opt.value}
-                          value={opt.value}
-                          sx={{ fontSize: 14 }}
-                        >
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </MuiSelect>
-                  </FormControl>
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
-
-              {/* CallerID */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>CallerID</td>
-                <td>
+                <FieldRow label="CallerID">
                   <TextField
-                    id="callingnum"
+                    size="small"
+                    fullWidth
                     value={formData.callingnum || ""}
                     onChange={(e) =>
                       handleInputChange("callingnum", e.target.value)
                     }
                     onKeyPress={handleStringKeyPress}
-                    size="small"
-                    variant="outlined"
-                    inputProps={{ style: { fontSize: 14, padding: "4px 8px" } }}
-                    sx={{
-                      width: "132px",
-                      "& .MuiOutlinedInput-root": {
-                        height: "28px",
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#bbb" },
-                        "&:hover fieldset": { borderColor: "#999" },
-                        "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                      },
-                    }}
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                   />
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
+                </FieldRow>
 
-              {/* CalleeID */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>CalleeID</td>
-                <td>
+                <FieldRow label="Call Duration(s)">
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <TextField
+                      size="small"
+                      value={formData.mintalktime || ""}
+                      onChange={(e) =>
+                        handleInputChange("mintalktime", e.target.value)
+                      }
+                      onKeyPress={handleNumberKeyPress}
+                      inputProps={{
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          textAlign: "center",
+                        },
+                      }}
+                      sx={{ flex: 1 }}
+                      placeholder="Min"
+                    />
+                    <span style={{ fontSize: 13, color: C.mutedText }}>—</span>
+                    <TextField
+                      size="small"
+                      value={formData.maxtalktime || ""}
+                      onChange={(e) =>
+                        handleInputChange("maxtalktime", e.target.value)
+                      }
+                      onKeyPress={handleNumberKeyPress}
+                      inputProps={{
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          textAlign: "center",
+                        },
+                      }}
+                      sx={{ flex: 1 }}
+                      placeholder="Max"
+                    />
+                  </div>
+                </FieldRow>
+              </div>
+
+              {/* ── RIGHT COLUMN ── */}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <FieldRow label="Ending Date">
                   <TextField
-                    id="callednum"
+                    type="date"
+                    size="small"
+                    fullWidth
+                    value={formData.enddate || ""}
+                    onChange={(e) =>
+                      handleInputChange("enddate", e.target.value)
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                  />
+                </FieldRow>
+
+                <FieldRow label="Call Direction">
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={formData.billtype}
+                      onChange={(e) =>
+                        handleInputChange("billtype", e.target.value)
+                      }
+                      sx={{ fontSize: 13 }}
+                    >
+                      {CALL_DIRECTION_OPTIONS.map((opt) => (
+                        <MenuItem
+                          key={opt.value}
+                          value={opt.value}
+                          sx={{ fontSize: 13 }}
+                        >
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </FieldRow>
+
+                <FieldRow label="CalleeID">
+                  <TextField
+                    size="small"
+                    fullWidth
                     value={formData.callednum || ""}
                     onChange={(e) =>
                       handleInputChange("callednum", e.target.value)
                     }
                     onKeyPress={handleStringKeyPress}
-                    size="small"
-                    variant="outlined"
-                    inputProps={{ style: { fontSize: 14, padding: "4px 8px" } }}
-                    sx={{
-                      width: "132px",
-                      "& .MuiOutlinedInput-root": {
-                        height: "28px",
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#bbb" },
-                        "&:hover fieldset": { borderColor: "#999" },
-                        "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                      },
-                    }}
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                   />
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
+                </FieldRow>
 
-              {/* Call Duration(s) */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>
-                  Call Duration(s)
-                </td>
-                <td
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
+                <FieldRow label="Keyword">
                   <TextField
-                    id="mintalktime"
-                    value={formData.mintalktime || ""}
-                    onChange={(e) =>
-                      handleInputChange("mintalktime", e.target.value)
-                    }
-                    onKeyPress={handleNumberKeyPress}
                     size="small"
-                    variant="outlined"
-                    inputProps={{ style: { fontSize: 14, padding: "4px 8px" } }}
-                    sx={{
-                      width: "55px",
-                      "& .MuiOutlinedInput-root": {
-                        height: "28px",
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#bbb" },
-                        "&:hover fieldset": { borderColor: "#999" },
-                        "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                      },
-                    }}
-                  />
-                  <span style={{ fontSize: "14px", color: "#333" }}>---</span>
-                  <TextField
-                    id="maxtalktime"
-                    value={formData.maxtalktime || ""}
-                    onChange={(e) =>
-                      handleInputChange("maxtalktime", e.target.value)
-                    }
-                    onKeyPress={handleNumberKeyPress}
-                    size="small"
-                    variant="outlined"
-                    inputProps={{ style: { fontSize: 14, padding: "4px 8px" } }}
-                    sx={{
-                      width: "55px",
-                      "& .MuiOutlinedInput-root": {
-                        height: "28px",
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#bbb" },
-                        "&:hover fieldset": { borderColor: "#999" },
-                        "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                      },
-                    }}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
-
-              {/* Keyword */}
-              <tr style={{ height: "22px" }}>
-                <td></td>
-                <td style={{ fontSize: "14px", color: "#333" }}>Keyword</td>
-                <td>
-                  <TextField
-                    id="keyword"
+                    fullWidth
                     value={formData.keyword || ""}
                     onChange={(e) =>
                       handleInputChange("keyword", e.target.value)
                     }
                     onKeyPress={handleStringKeyPress}
-                    size="small"
-                    variant="outlined"
-                    inputProps={{ style: { fontSize: 14, padding: "4px 8px" } }}
-                    sx={{
-                      width: "132px",
-                      "& .MuiOutlinedInput-root": {
-                        height: "28px",
-                        backgroundColor: "white",
-                        "& fieldset": { borderColor: "#bbb" },
-                        "&:hover fieldset": { borderColor: "#999" },
-                        "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                      },
-                    }}
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                   />
-                </td>
-              </tr>
-              <tr>
-                <td style={{ height: "8px" }}></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </FieldRow>
+              </div>
+            </div>
+          </div>
 
-      {/* Query Button */}
-      <div
-        className="flex justify-center"
-        style={{ marginTop: "24px", marginBottom: "16px" }}
-      >
-        <Button
-          variant="contained"
-          sx={{
-            background:
-              "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-            color: "#fff",
-            fontWeight: 600,
-            fontSize: "14px",
-            borderRadius: 1.5,
-            minWidth: 100,
-            px: 3,
-            py: 1,
-            boxShadow: "0 2px 8px #2C3E57",
-            textTransform: "none",
-            "&:hover": {
-              background:
-                "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-              color: "#fff",
-            },
-          }}
-          onClick={handleQuery}
-        >
-          Query
-        </Button>
+          {/* Bottom Actions Footer */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              padding: "16px 24px",
+              borderTop: `1px solid ${C.cardBorder}`,
+              background: "#f8fafc",
+            }}
+          >
+            <Button
+              variant="contained"
+              onClick={handleQuery}
+              sx={{
+                background: "#1e2d42",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 13,
+                textTransform: "none",
+                padding: "6px 32px",
+                minWidth: 120,
+                "&:hover": { background: "#0f172a" },
+              }}
+            >
+              Query
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

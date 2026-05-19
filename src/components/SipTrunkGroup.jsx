@@ -21,6 +21,7 @@ import {
   MenuItem,
   TextField,
   CircularProgress,
+  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -30,240 +31,102 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
-const panelStyle = {
-  background: "#fff",
-  width: 950,
-  maxWidth: "98vw",
-  margin: "0 auto",
-  marginTop: 0,
-  boxSizing: "border-box",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
-};
-const blueBarStyle = {
-  width: "100%",
-  height: 36,
-  background: "linear-gradient(#3E5475 100%)",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-  marginBottom: 0,
-  display: "flex",
-  alignItems: "center",
-  fontWeight: 600,
-  fontSize: 18,
-  color: "#505559",
-  paddingLeft: 0,
-  justifyContent: "center",
-  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-};
-const formBodyStyle = {
-  width: "100%",
-  padding: "36px 40px 36px 40px",
-  display: "flex",
-  flexDirection: "column",
-  gap: 28,
-  background: "#fff",
-};
-const rowStyle = {
-  display: "flex",
-  alignItems: "center",
-  minHeight: 38,
-  margin: "0 0 0 0",
-  gap: 0,
-};
-const labelStyle = {
-  width: 320,
-  fontSize: 16,
-  color: "#505559",
-  textAlign: "right",
-  marginRight: 32,
-  whiteSpace: "nowrap",
-  fontWeight: 400,
-};
-const inputStyle = {
-  flex: 1,
-  fontSize: 16,
-  padding: "10px 16px",
-  borderRadius: 4,
-  border: "1px solid #bbb",
-  background: "#fff",
-  boxSizing: "border-box",
-};
-const checkboxRowStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-};
-const checkboxStyle = {
-  width: 18,
-  height: 18,
-  accentColor: "#3bb6f5",
-  border: "1.5px solid #3bb6f5",
-  background: "#fff",
-};
-const footerStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 48,
-  padding: "36px 0 24px 0",
-};
-const buttonStyle = {
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-  fontSize: 18,
-  padding: "7px 38px",
-  border: "none",
-  borderRadius: 6,
-  boxShadow: "0 2px 4px rgba(0,0,0,0.10)",
-  cursor: "pointer",
-  minWidth: 120,
-  transition: "background 0.2s, box-shadow 0.2s",
-};
-const buttonGrayStyle = {
-  ...buttonStyle,
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#505559",
-};
-const infoTextStyle = {
-  color: "red",
-  fontSize: 15,
-  margin: "18px 0 0 0",
-  textAlign: "left",
-  lineHeight: 1.5,
-  padding: "0 0 24px 0",
-  maxWidth: 950,
-  marginLeft: "auto",
-  marginRight: "auto",
+// ── Color Palette ─────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
 };
 
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-  background: "#f8fafd",
-  border: "2px solid #888",
-  borderRadius: 8,
-  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-};
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-const thStyle = {
-  background: "#fff",
-  color: "#505559",
-  fontWeight: 600,
-  fontSize: 15,
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  whiteSpace: "nowrap",
-};
-const tdStyle = {
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  fontSize: 14,
-  background: "#fff",
-  textAlign: "center",
-  whiteSpace: "nowrap",
-};
-
-// --- Add classic SIP Register table styles ---
-const tableButtonStyle = {
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#505559",
-  fontSize: 16,
-  padding: "6px 28px",
-  border: "1px solid #bbb",
-  borderRadius: 6,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.07)",
-  cursor: "pointer",
-  minWidth: 90,
-  marginRight: 4,
-  marginLeft: 0,
-  transition: "background 0.2s, box-shadow 0.2s",
-};
-const addNewButtonStyle = {
-  ...tableButtonStyle,
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-  minWidth: 120,
-  marginLeft: 12,
-};
-const paginationBarStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  fontSize: 14,
-  color: "#505559",
-  background: "#e3e7ef",
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-  borderTop: "1px solid #bbb",
-  padding: "2px 8px",
-  marginTop: 0,
-  minHeight: 32,
-};
-const paginationButtonStyle = {
-  ...tableButtonStyle,
-  fontSize: 13,
-  padding: "2px 10px",
-  minWidth: 0,
-  borderRadius: 4,
-};
-const pageSelectStyle = {
-  fontSize: 13,
-  padding: "2px 6px",
-  borderRadius: 3,
-  border: "1px solid #bbb",
-  background: "#fff",
-};
-const customScrollbarRowStyle = {
-  width: "100%",
-  margin: "0 auto",
-  background: "#f4f6fa",
-  display: "flex",
-  alignItems: "center",
-  height: 24,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-  border: "2px solid #888",
-  borderTop: "none",
-  padding: "0 4px",
-  boxSizing: "border-box",
-};
-const customScrollbarTrackStyle = {
-  flex: 1,
-  height: 12,
-  background: "#e3e7ef",
-  borderRadius: 8,
-  position: "relative",
-  margin: "0 4px",
-  overflow: "hidden",
-};
-const customScrollbarThumbStyle = {
-  position: "absolute",
-  height: 12,
-  background: "#888",
-  borderRadius: 8,
-  cursor: "pointer",
-  top: 0,
-};
-const customScrollbarArrowStyle = {
-  width: 18,
-  height: 18,
-  background: "#e3e7ef",
-  border: "1px solid #bbb",
-  borderRadius: 8,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: 16,
-  color: "#888",
-  cursor: "pointer",
-  userSelect: "none",
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
 };
 
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: "#1e293b",
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: "1px solid #9ca3af",
+      borderRight: "0.5px solid #9ca3af",
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 const SipTrunkGroup = () => {
   const [formData, setFormData] = useState(SIP_TRUNK_GROUP_INITIAL_FORM);
   const [groups, setGroups] = useState([]);
@@ -277,19 +140,18 @@ const SipTrunkGroup = () => {
     delete: false,
   });
   const [showModal, setShowModal] = useState(false);
-  const [error, setError] = useState(null);
+  const [message, setMessage] = useState({ type: "", text: "" });
   const itemsPerPage = 20;
   const totalPages = Math.max(1, Math.ceil(groups.length / itemsPerPage));
   const pagedGroups = groups.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
-  const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -369,17 +231,19 @@ const SipTrunkGroup = () => {
   // Fetch groups from API
   const fetchGroups = async () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
-    setError(null); // Clear any previous errors
     try {
       const response = await listGroups();
       if (response.response && response.message) {
         // Sort groups by ID to ensure proper order
         const sortedGroups = response.message.sort((a, b) => a.id - b.id);
         setGroups(sortedGroups);
+      } else {
+        // If response is successful but no data, ensure groups is empty
+        setGroups([]);
       }
     } catch (error) {
       console.error("Error fetching groups:", error);
-      setError("Network error. Please check your connection.");
+      showMessage("error", "Network error. Please check your connection.");
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
     }
@@ -387,47 +251,43 @@ const SipTrunkGroup = () => {
 
   const handleSave = async () => {
     if (!formData.sip_trunk_id || !formData.group_id) {
-      alert("Please fill in all required fields");
+      showMessage("error", "Please fill in all required fields");
       return;
     }
-
-    // Prevent multiple entries with the same Group ID (regardless of SIP trunk)
     const desiredGroupId = String(formData.group_id ?? "").trim();
     if (desiredGroupId === "") {
-      alert("Group ID is required.");
+      showMessage("error", "Group ID is required.");
       return;
     }
-
     const isDuplicate = groups.some((group, index) => {
-      // Allow saving when editing the same item
       if (editIndex !== -1 && index === editIndex) return false;
       return String(group.group_id ?? "").trim() === desiredGroupId;
     });
-
     if (isDuplicate) {
-      alert(
+      showMessage(
+        "error",
         `Group ID "${desiredGroupId}" already exists. Please choose a different Group ID.`,
       );
       return;
     }
-
     setLoading((prev) => ({ ...prev, save: true }));
     try {
       const response = await addGroup({
         sip_trunk_id: formData.sip_trunk_id,
         group_id: formData.group_id,
       });
-
       if (response.response) {
-        alert(response.message);
-        setShowModal(false); // Close modal after confirmation
+        showMessage("success", response.message || "Saved successfully");
+        setShowModal(false);
         setFormData(SIP_TRUNK_GROUP_INITIAL_FORM);
         setEditIndex(-1);
-        await fetchGroups(); // Refresh the list
+        await fetchGroups();
+      } else {
+        showMessage("error", response.message || "Save failed");
       }
     } catch (error) {
       console.error("Error saving group:", error);
-      setError("Network error. Please check your connection.");
+      showMessage("error", "Network error. Please check your connection.");
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
@@ -469,60 +329,56 @@ const SipTrunkGroup = () => {
     );
   const handleDelete = async () => {
     if (selected.length === 0) {
-      alert("Please select items to delete");
+      showMessage("error", "Please select items to delete");
       return;
     }
-
-    if (!confirm("Are you sure you want to delete the selected groups?")) {
+    if (!window.confirm("Are you sure you want to delete the selected groups?"))
       return;
-    }
-
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       for (const idx of selected) {
         const group = groups[idx];
         const inUse = await isGroupReferenced(group.group_id);
         if (inUse) {
-          alert(
+          showMessage(
+            "error",
             "The SIP trunk group cannot be deleted because it is quoted by the routing rule!",
           );
           continue;
         }
         await deleteGroup(group.id);
       }
-      await fetchGroups(); // Refresh the list
+      await fetchGroups();
       setSelected([]);
     } catch (error) {
       console.error("Error deleting groups:", error);
-      setError("Network error. Please check your connection.");
+      showMessage("error", "Network error. Please check your connection.");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
   };
 
   const handleClearAll = async () => {
-    if (!confirm("Are you sure you want to delete all groups?")) {
-      return;
-    }
-
+    if (!window.confirm("Are you sure you want to delete all groups?")) return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       for (const group of groups) {
         const inUse = await isGroupReferenced(group.group_id);
         if (inUse) {
-          alert(
+          showMessage(
+            "error",
             `Group ${group.group_id} cannot be deleted because it is quoted by the routing rule!`,
           );
           continue;
         }
         await deleteGroup(group.id);
       }
-      await fetchGroups(); // Refresh the list
+      await fetchGroups();
       setSelected([]);
       setPage(1);
     } catch (error) {
       console.error("Error clearing all groups:", error);
-      setError("Network error. Please check your connection.");
+      showMessage("error", "Network error. Please check your connection.");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -536,25 +392,26 @@ const SipTrunkGroup = () => {
   const handleSingleDelete = async (idx) => {
     const group = groups[idx];
     if (
-      !confirm(`Are you sure you want to delete group "${group.group_id}"?`)
-    ) {
+      !window.confirm(
+        `Are you sure you want to delete group "${group.group_id}"?`,
+      )
+    )
       return;
-    }
-
     try {
       const inUse = await isGroupReferenced(group.group_id);
       if (inUse) {
-        alert(
+        showMessage(
+          "error",
           "The SIP trunk group cannot be deleted because it is quoted by the routing rule!",
         );
         return;
       }
       await deleteGroup(group.id);
-      await fetchGroups(); // Refresh the list
+      await fetchGroups();
       if (editIndex === idx) handleAddNew();
     } catch (error) {
       console.error("Error deleting group:", error);
-      setError("Network error. Please check your connection.");
+      showMessage("error", "Network error. Please check your connection.");
     }
   };
 
@@ -648,498 +505,534 @@ const SipTrunkGroup = () => {
     }
   };
 
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
-
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      {/* Error Message */}
-      {error && (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50 flex items-center gap-2">
-          <span>{error}</span>
-          <button
-            onClick={() => setError(null)}
-            className="text-white hover:text-gray-200 font-bold text-lg"
-          >
-            ×
-          </button>
-        </div>
-      )}
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        <>
-          <div className="w-full max-w-full mx-auto bg-white rounded-t-lg shadow-sm overflow-hidden">
-            <div
-              style={{
-                width: "100%",
-                height: 32,
-                background: "linear-gradient(#3E5475 100%)",
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                margin: "0 auto",
-                display: "flex",
-                alignItems: "center",
-                fontWeight: 600,
-                fontSize: 18,
-                color: "#ffffff",
-                justifyContent: "center",
-                boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-                maxWidth: "100%",
-              }}
-            >
-              SIP Trunk Group
-            </div>
-            <div
-              className="w-full max-w-full mx-auto"
-              style={{
-                border: "2px solid #9CA3AF",
-                borderTop: "none",
-              }}
-            >
-              <div className="bg-white shadow-sm w-full flex flex-col overflow-hidden">
-                <div
-                  className="overflow-x-auto w-full border-b border-gray-300"
-                  style={{
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                    borderBottom: "none",
-                  }}
-                >
-                  <table
-                    className="w-full min-w-[1200px] border border-gray-400 border-collapse whitespace-nowrap"
-                    style={{ tableLayout: "auto", border: "1px solid #bbb" }}
-                  >
-                    <thead>
-                      <tr style={{ minHeight: 32 }}>
-                        {SIP_TRUNK_GROUP_TABLE_COLUMNS.map((col) => (
-                          <th
-                            key={col.key}
-                            className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                            style={{
-                              border: "1px solid #bbb",
-                              padding: "6px 8px",
-                              minHeight: 32,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {col.label}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading.fetch ? (
-                        <tr style={{ minHeight: 32 }}>
-                          <td
-                            colSpan={SIP_TRUNK_GROUP_TABLE_COLUMNS.length}
-                            className="border border-gray-300 text-center bg-white"
-                            style={{
-                              border: "1px solid #bbb",
-                              padding: "6px 8px",
-                              minHeight: 32,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            <div className="flex items-center justify-center gap-2">
-                              <CircularProgress size={20} />
-                              <span>Loading groups...</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : pagedGroups.length === 0 ? (
-                        <tr style={{ minHeight: 32 }}>
-                          <td
-                            colSpan={SIP_TRUNK_GROUP_TABLE_COLUMNS.length}
-                            className="border border-gray-300 text-center bg-white"
-                            style={{
-                              border: "1px solid #bbb",
-                              padding: "6px 8px",
-                              minHeight: 32,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            No data
-                          </td>
-                        </tr>
-                      ) : (
-                        pagedGroups.map((item, idx) => {
-                          const realIdx = (page - 1) * itemsPerPage + idx;
-                          return (
-                            <tr key={realIdx} style={{ minHeight: 32 }}>
-                              {SIP_TRUNK_GROUP_TABLE_COLUMNS.map((col) => {
-                                if (col.key === "check") {
-                                  return (
-                                    <td
-                                      key={col.key}
-                                      className="border border-gray-300 text-center bg-white"
-                                      style={{
-                                        border: "1px solid #bbb",
-                                        padding: "6px 8px",
-                                        minHeight: 32,
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={selected.includes(realIdx)}
-                                        onChange={() =>
-                                          handleSelectRow(realIdx)
-                                        }
-                                        disabled={loading.delete}
-                                      />
-                                    </td>
-                                  );
-                                }
-                                if (col.key === "modify") {
-                                  return (
-                                    <td
-                                      key={col.key}
-                                      className="border border-gray-300 text-center bg-white"
-                                      style={{
-                                        border: "1px solid #bbb",
-                                        padding: "6px 8px",
-                                        minHeight: 32,
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      <EditDocumentIcon
-                                        className={`cursor-pointer text-blue-600 mx-auto ${loading.delete ? "opacity-50" : ""}`}
-                                        onClick={() =>
-                                          !loading.delete && handleEdit(realIdx)
-                                        }
-                                      />
-                                    </td>
-                                  );
-                                }
-                                let value = item[col.key];
-                                // For index column, show auto-increment number
-                                if (col.key === "index") {
-                                  value = realIdx + 1;
-                                }
-                                return (
-                                  <td
-                                    key={col.key}
-                                    className="border border-gray-300 text-center bg-white"
-                                    style={{
-                                      border: "1px solid #bbb",
-                                      padding: "6px 8px",
-                                      minHeight: 32,
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {value !== undefined &&
-                                    value !== null &&
-                                    value !== ""
-                                      ? value
-                                      : "--"}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            style={{ minHeight: 32, padding: "4px 6px" }}
-            className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 gap-2 w-full mt-0"
-          >
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:opacity-50"
-                onClick={handleCheckAll}
-                disabled={loading.delete}
-              >
-                Check All
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:opacity-50"
-                onClick={handleUncheckAll}
-                disabled={loading.delete}
-              >
-                Uncheck All
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:opacity-50"
-                onClick={handleInverse}
-                disabled={loading.delete}
-              >
-                Inverse
-              </button>
-              <button
-                className={`font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow transition-all ${
-                  selected.length > 0 && !loading.delete
-                    ? "bg-gray-300 text-gray-700 hover:bg-gray-400 cursor-pointer"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
-                onClick={handleDelete}
-                disabled={selected.length === 0 || loading.delete}
-              >
-                {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
-                ) : (
-                  "Delete"
-                )}
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:opacity-50"
-                onClick={handleClearAll}
-                disabled={loading.delete}
-              >
-                Clear All
-              </button>
-            </div>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleAddNew}
-            >
-              Add New
-            </button>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-            <span>{groups.length} items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
-            >
-              First
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(page + 1)}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <span>Go to Page</span>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => setPage(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
-          </div>
-        </>
-
-        {/* Modal for Add/Edit */}
-        <Dialog
-          open={showModal}
-          onClose={() => setShowModal(false)}
-          maxWidth={false}
-          className="z-50"
-          PaperProps={{
-            sx: {
-              width: 520,
-              maxWidth: "90vw",
-              mx: "auto",
-              p: 0,
-              borderRadius: 1,
-            },
+      {/* Toast Alert */}
+      {message.text && (
+        <div
+          style={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            maxWidth: 420,
           }}
         >
-          <DialogTitle
-            className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{ boxShadow: 3 }}
+          >
+            {message.text}
+          </Alert>
+        </div>
+      )}
+
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
+        <div style={{ fontSize: 11, color: C.mutedText, marginBottom: 12 }}>
+          PBX &rsaquo; SIP &rsaquo;{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            SIP Trunk Group
+          </span>
+        </div>
+
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Toolbar */}
+          <div
             style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
             }}
           >
-            {editIndex !== -1 ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
-          </DialogTitle>
-          <DialogContent
-            className="pt-3 pb-0 px-2"
-            style={{
-              padding: "12px 12px 0 12px",
-              backgroundColor: "#dde0e4",
-              border: "1px solid #444444",
-              borderTop: "none",
-            }}
-          >
-            <div className="flex flex-col gap-2 w-full">
-              <div
-                className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-                style={{ minHeight: 32 }}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
               >
-                <label
-                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                  style={{ width: 160, marginRight: 10 }}
+                Page {page} · {groups.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
                 >
-                  SIP Trunk ID:
-                </label>
-                <div className="flex-1">
-                  <Select
-                    name="sip_trunk_id"
-                    value={formData.sip_trunk_id}
-                    onChange={handleInputChange}
-                    size="small"
-                    displayEmpty
-                    sx={{
-                      width: 300,
-                      "& .MuiOutlinedInput-input": {
-                        padding: "6px 8px",
-                        fontSize: 14,
-                      },
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Btn
+                onClick={handleCheckAll}
+                disabled={loading.delete}
+                variant="outline"
+              >
+                Check All
+              </Btn>
+              <Btn
+                onClick={handleUncheckAll}
+                disabled={loading.delete}
+                variant="outline"
+              >
+                Uncheck All
+              </Btn>
+              <Btn
+                onClick={handleInverse}
+                disabled={loading.delete}
+                variant="outline"
+              >
+                Inverse
+              </Btn>
+              <Btn
+                onClick={handleDelete}
+                disabled={loading.delete || selected.length === 0}
+                variant="danger"
+              >
+                {loading.delete && (
+                  <CircularProgress size={11} style={{ color: "#dc2626" }} />
+                )}
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={handleClearAll}
+                disabled={loading.delete}
+                variant="outline"
+              >
+                Clear All
+              </Btn>
+              <Btn
+                onClick={handleAddNew}
+                disabled={loading.fetch}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                minWidth: 600,
+              }}
+            >
+              <thead>
+                <tr>
+                  <TH style={{ width: 36 }}>
+                    <Checkbox
+                      size="small"
+                      checked={
+                        selected.length > 0 && selected.length === groups.length
+                      }
+                      indeterminate={
+                        selected.length > 0 && selected.length < groups.length
+                      }
+                      onChange={
+                        selected.length === groups.length
+                          ? handleUncheckAll
+                          : handleCheckAll
+                      }
+                      disabled={loading.delete}
+                      sx={{
+                        padding: "1px",
+                        color: C.accent,
+                        "&.Mui-checked": { color: C.accent },
+                      }}
+                    />
+                  </TH>
+                  {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                    (c) => c.key !== "check" && c.key !== "modify",
+                  ).map((col) => (
+                    <TH key={col.key}>{col.label}</TH>
+                  ))}
+                  <TH style={{ width: 70 }}>Actions</TH>
+                </tr>
+              </thead>
+              <tbody>
+                {loading.fetch ? (
+                  <tr>
+                    <td
+                      colSpan={SIP_TRUNK_GROUP_TABLE_COLUMNS.length + 2}
+                      style={{ textAlign: "center", padding: "48px 0" }}
+                    >
+                      <CircularProgress size={28} style={{ color: C.accent }} />
+                    </td>
+                  </tr>
+                ) : pagedGroups.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={SIP_TRUNK_GROUP_TABLE_COLUMNS.length + 2}
+                      style={{
+                        textAlign: "center",
+                        padding: "36px 0",
+                        color: C.mutedText,
+                        fontSize: 13,
+                      }}
+                    >
+                      No groups found.
+                    </td>
+                  </tr>
+                ) : (
+                  pagedGroups.map((item, idx) => {
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSel = selected.includes(realIdx);
+                    const rowBg = isSel
+                      ? "#f0f9ff"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    return (
+                      <tr
+                        key={realIdx}
+                        style={{
+                          background: rowBg,
+                          borderBottom: "0.5px solid #9ca3af",
+                        }}
+                      >
+                        <td
+                          style={{
+                            textAlign: "center",
+                            padding: "4px 0",
+                            borderRight: "0.5px solid #edf2f7",
+                          }}
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={isSel}
+                            onChange={() => handleSelectRow(realIdx)}
+                            disabled={loading.delete}
+                            sx={{
+                              padding: "1px",
+                              color: C.accent,
+                              "&.Mui-checked": { color: C.accent },
+                            }}
+                          />
+                        </td>
+                        {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                          (c) => c.key !== "check" && c.key !== "modify",
+                        ).map((col) => {
+                          let value = item[col.key];
+                          if (col.key === "index") value = realIdx + 1;
+                          return (
+                            <td
+                              key={col.key}
+                              style={{
+                                textAlign: "center",
+                                fontSize: 12,
+                                borderRight: "0.5px solid #edf2f7",
+                                padding: "6px 8px",
+                              }}
+                            >
+                              {value !== undefined &&
+                              value !== null &&
+                              value !== ""
+                                ? value
+                                : "--"}
+                            </td>
+                          );
+                        })}
+                        <td style={{ textAlign: "center", padding: "4px 0" }}>
+                          <Btn
+                            onClick={() => handleEdit(realIdx)}
+                            disabled={loading.delete}
+                            variant="outline"
+                            style={{ margin: "0 auto" }}
+                          >
+                            Edit
+                          </Btn>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Footer */}
+          {!loading.fetch && groups.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+                flexWrap: "wrap",
+                gap: 12,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  fontSize: 11,
+                  color: C.mutedText,
+                }}
+              >
+                <span>
+                  Showing {pagedGroups.length} records on page {page}
+                </span>
+                {/* <span>{groups.length} items Total</span>   */}
+                {/* <span>{itemsPerPage} Items/Page</span> */}
+                {/* <span style={{ color: C.accent, fontWeight: 600 }}>{page} / {totalPages} Pages</span> */}
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
+                <Btn
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontSize: 11,
+                    color: C.mutedText,
+                    margin: "0 4px",
+                  }}
+                >
+                  <span>Go to</span>
+                  <select
+                    value={page}
+                    onChange={(e) => setPage(Number(e.target.value))}
+                    style={{
+                      padding: "2px 4px",
+                      borderRadius: 4,
+                      border: `1px solid ${C.cardBorder}`,
+                      fontSize: 11,
+                      background: "#fff",
+                      cursor: "pointer",
                     }}
                   >
-                    <MenuItem value="" disabled>
-                      Select SIP Trunk ID
-                    </MenuItem>
-                    {trunkIds.length === 0 ? (
-                      <MenuItem value="" disabled>
-                        No options
-                      </MenuItem>
-                    ) : (
-                      trunkIds.map((opt) => (
-                        <MenuItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </MenuItem>
-                      ))
-                    )}
-                  </Select>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </div>
-              <div
-                className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-                style={{ minHeight: 32 }}
-              >
-                <label
-                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                  style={{ width: 160, marginRight: 10 }}
+
+                <Btn
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  variant="outline"
                 >
-                  Group ID:
-                </label>
-                <div className="flex-1">
-                  <TextField
-                    type="text"
-                    name="group_id"
-                    value={formData.group_id}
-                    onChange={handleInputChange}
-                    size="small"
-                    variant="outlined"
-                    placeholder="Enter Group ID"
-                    sx={{ width: 300 }}
-                    inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                  />
-                </div>
+                  Next →
+                </Btn>
+                <Btn
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
               </div>
             </div>
-          </DialogContent>
-          <DialogActions className="p-4 justify-center gap-6">
-            <Button
-              variant="contained"
-              onClick={handleSave}
-              disabled={loading.save}
-              sx={{
-                background:
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: "16px",
-                borderRadius: 1.5,
-                minWidth: 120,
-                minHeight: 40,
-                px: 2,
-                py: 0.5,
-                boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                textTransform: "none",
-
-                "&:hover": {
-                  background:
-                    "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                  color: "#fff",
-                },
-
-                "&:disabled": {
-                  background: "#cbd5e1",
-                  color: "#64748b",
-                },
-              }}
-            >
-              {loading.save ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                "Save"
-              )}
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => setShowModal(false)}
-              sx={{
-                background:
-                  "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-                color: "#3E5475 ",
-                fontWeight: 600,
-                fontSize: "16px",
-                borderRadius: 1.5,
-                minWidth: 120,
-                minHeight: 40,
-                px: 2,
-                py: 0.5,
-                boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                textTransform: "none",
-
-                "&:hover": {
-                  background:
-                    "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                  color: "#2f405c",
-                },
-
-                "&:disabled": {
-                  background: "#f1f5f9",
-                  color: "#94a3b8",
-                },
-              }}
-            >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
+          )}
+        </div>
       </div>
+
+      {/* Modal for Add/Edit */}
+      <Dialog
+        open={showModal}
+        onClose={() => !loading.save && setShowModal(false)}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            width: 520,
+            maxWidth: "90vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
+          }}
+        >
+          {editIndex !== -1 ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
+        </DialogTitle>
+        <DialogContent
+          style={{ padding: "12px 12px 0 12px", backgroundColor: "#f8fafc" }}
+        >
+          <div className="flex flex-col gap-2 w-full">
+            <div
+              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
+              style={{ minHeight: 32 }}
+            >
+              <label
+                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                style={{ width: 160, marginRight: 10 }}
+              >
+                SIP Trunk ID:
+              </label>
+              <div className="flex-1">
+                <Select
+                  name="sip_trunk_id"
+                  value={formData.sip_trunk_id}
+                  onChange={handleInputChange}
+                  size="small"
+                  displayEmpty
+                  sx={{
+                    width: 300,
+                    "& .MuiOutlinedInput-input": {
+                      padding: "6px 8px",
+                      fontSize: 14,
+                    },
+                  }}
+                >
+                  <MenuItem value="" disabled>
+                    Select SIP Trunk ID
+                  </MenuItem>
+                  {trunkIds.length === 0 ? (
+                    <MenuItem value="" disabled>
+                      No options
+                    </MenuItem>
+                  ) : (
+                    trunkIds.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </MenuItem>
+                    ))
+                  )}
+                </Select>
+              </div>
+            </div>
+            <div
+              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
+              style={{ minHeight: 32 }}
+            >
+              <label
+                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                style={{ width: 160, marginRight: 10 }}
+              >
+                Group ID:
+              </label>
+              <div className="flex-1">
+                <TextField
+                  type="text"
+                  name="group_id"
+                  value={formData.group_id}
+                  onChange={handleInputChange}
+                  size="small"
+                  variant="outlined"
+                  placeholder="Enter Group ID"
+                  sx={{ width: 300 }}
+                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
+                />
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+        <DialogActions
+          style={{
+            background: "#f8fafc",
+            padding: "16px 24px",
+            justifyContent: "center",
+            gap: 16,
+          }}
+        >
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            disabled={loading.save}
+            startIcon={
+              loading.save ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : null
+            }
+            sx={{
+              background: "#1e2d42",
+              color: "#fff",
+              fontWeight: 600,
+              fontSize: 13,
+              textTransform: "none",
+              padding: "6px 32px",
+              minWidth: 120,
+              "&:hover": { background: "#0f172a" },
+            }}
+          >
+            {loading.save ? "Saving..." : "Save"}
+          </Button>
+          <Button
+            onClick={() => setShowModal(false)}
+            variant="outlined"
+            disabled={loading.save}
+            sx={{
+              color: "#1e293b",
+              borderColor: "#9ca3af",
+              fontWeight: 600,
+              fontSize: 13,
+              textTransform: "none",
+              padding: "6px 32px",
+              minWidth: 100,
+              "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

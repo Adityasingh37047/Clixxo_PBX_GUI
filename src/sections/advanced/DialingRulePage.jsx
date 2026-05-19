@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   DIALING_RULE_TABLE_COLUMNS,
-  DIALING_RULE_MODAL_FIELDS,
   DIALING_RULE_INITIAL_FORM,
   DIALING_RULE_INITIAL_DATA,
-} from "./constants/DialingRuleConstants";
+} from "./constants/DialingRuleConstants"; // Adjust path if needed
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   Button,
@@ -16,7 +15,147 @@ import {
   Select as MuiSelect,
   MenuItem,
   FormControl,
+  Checkbox,
 } from "@mui/material";
+
+// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
+};
+
+// ── Shared UI Components ──────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e2d42",
+      color: "#fff",
+      border: "1px solid #162233",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const FieldRow = ({ label, children, required, align = "center" }) => (
+  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 120,
+        flexShrink: 0,
+        paddingTop: align === "flex-start" ? 8 : 0,
+      }}
+    >
+      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+    </label>
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const DialingRulePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,12 +163,15 @@ const DialingRulePage = () => {
   const [rules, setRules] = useState(DIALING_RULE_INITIAL_DATA);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
   const itemsPerPage = 20;
   const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
   const pagedRules = rules.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
+
   const [editIndex, setEditIndex] = useState(null);
   const [indexSelect, setIndexSelect] = useState("");
 
@@ -40,6 +182,11 @@ const DialingRulePage = () => {
     scrollWidth: 0,
   });
   const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
   // Get available indices for dropdown (0-99 excluding used ones, but include current edit index)
   const getAvailableIndices = (currentEditIndex = null) => {
@@ -61,7 +208,6 @@ const DialingRulePage = () => {
 
   const handleOpenModal = (item = null, idx = -1) => {
     if (item) {
-      // Editing existing item
       setFormData({
         index: String(item.index),
         description: item.description || "default",
@@ -70,7 +216,6 @@ const DialingRulePage = () => {
       setIndexSelect(String(item.index));
       setEditIndex(idx);
     } else {
-      // Adding new item - set first available index
       const available = getAvailableIndices();
       const firstAvailable = available.length > 0 ? available[0].value : "0";
       setFormData({
@@ -100,56 +245,58 @@ const DialingRulePage = () => {
   };
 
   const handleSave = () => {
-    // Validation
     if (!formData.index || formData.index === "") {
-      alert("Index is required.");
+      showMessage("error", "Index is required.");
       return;
     }
 
     const indexNum = parseInt(formData.index);
     if (isNaN(indexNum) || indexNum < 0 || indexNum > 99) {
-      alert("Index must be between 0 and 99.");
+      showMessage("error", "Index must be between 0 and 99.");
       return;
     }
 
-    // Check for duplicate index (if adding new or if index changed during edit)
     if (editIndex === null) {
-      // Adding new - check if index already exists
       if (rules.some((r) => r.index === indexNum)) {
-        alert("Index already exists. Please choose a different index.");
+        showMessage(
+          "error",
+          "Index already exists. Please choose a different index.",
+        );
         return;
       }
     } else {
-      // Editing - check if index exists in other rows
       if (rules.some((r, idx) => idx !== editIndex && r.index === indexNum)) {
-        alert("Index already exists. Please choose a different index.");
+        showMessage(
+          "error",
+          "Index already exists. Please choose a different index.",
+        );
         return;
       }
     }
 
     if (!formData.dialingRule || formData.dialingRule.trim() === "") {
-      alert("Dialing Rule is required.");
+      showMessage("error", "Dialing Rule is required.");
       return;
     }
 
-    // Validate dialing rule format: only 0-9, A-Z, a-z, '.', '#', '*', '[', ']', ',', '-'
     const dialingRuleRegex = /^[0-9A-Za-z.*#\[\]\-,]{1,128}$/;
     if (!dialingRuleRegex.test(formData.dialingRule)) {
-      alert(
+      showMessage(
+        "error",
         "The Dialing Rule can consist only of 0~9, A~Z, a-z, '.', '#', '*' and special characters like '[', ']', ',', '-'!",
       );
       return;
     }
 
     if (!formData.description || formData.description.trim() === "") {
-      alert("Description is required.");
+      showMessage("error", "Description is required.");
       return;
     }
 
-    // Validate description: cannot contain special characters like '~', '!', '&', '|', '='
     const descriptionRegex = /^[^\%\&\~\!\|\(\)\;\"\'\=\\]*$/;
     if (!descriptionRegex.test(formData.description)) {
-      alert(
+      showMessage(
+        "error",
         "The Description cannot contain special characters like '~', '!', '&', '|' and '='!",
       );
       return;
@@ -163,21 +310,17 @@ const DialingRulePage = () => {
 
     try {
       if (editIndex !== null) {
-        // Update existing
         setRules((prev) =>
           prev.map((rule, idx) => (idx === editIndex ? normalized : rule)),
         );
-        alert("Dialing rule updated successfully!");
+        showMessage("success", "Dialing rule updated successfully!");
       } else {
-        // Create new
         setRules((prev) => [...prev, normalized]);
-        alert("Dialing rule created successfully!");
+        showMessage("success", "Dialing rule created successfully!");
       }
-
       handleCloseModal();
     } catch (error) {
-      console.error("Error saving dialing rule:", error);
-      alert(error.message || "Failed to save dialing rule");
+      showMessage("error", error.message || "Failed to save dialing rule");
     }
   };
 
@@ -210,7 +353,7 @@ const DialingRulePage = () => {
 
   const handleDelete = () => {
     if (selected.length === 0) {
-      alert("Please select at least one item to delete.");
+      showMessage("error", "Please select at least one item to delete.");
       return;
     }
 
@@ -230,31 +373,27 @@ const DialingRulePage = () => {
           ),
         );
       }
-      alert(`${selected.length} item(s) deleted successfully`);
+      showMessage("success", `${selected.length} item(s) deleted successfully`);
     } catch (error) {
-      console.error("Error deleting selected items:", error);
-      alert(error.message || "Failed to delete selected items");
+      showMessage("error", error.message || "Failed to delete selected items");
     }
   };
 
   const handleClearAll = () => {
     if (rules.length === 0) {
-      alert("No data to clear");
+      showMessage("error", "No data to clear");
       return;
     }
 
-    if (!window.confirm("Are you sure to clear all dialing rules?")) {
-      return;
-    }
+    if (!window.confirm("Are you sure to clear all dialing rules?")) return;
 
     try {
       setRules([]);
       setSelected([]);
       setPage(1);
-      alert(`All dialing rules cleared successfully`);
+      showMessage("success", `All dialing rules cleared successfully`);
     } catch (error) {
-      console.error("Error clearing all items:", error);
-      alert(error.message || "Failed to clear all items");
+      showMessage("error", error.message || "Failed to clear all items");
     }
   };
 
@@ -323,190 +462,335 @@ const DialingRulePage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-128px)] py-2 px-2 sm:px-4"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      {rules.length === 0 ? (
-        <div
-          className="w-full h-full flex flex-col items-center justify-center"
-          style={{ minHeight: "15vh" }}
-        >
-          <div className="text-gray-600 text-xl md:text-[16px] font-semibold mb-4 text-center">
-            No available dialing rule!
-          </div>
-          <Button
-            variant="contained"
-            sx={{
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Error / Success Banner */}
+        {message.text && (
+          <div
+            style={{
               background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-              color: "#fff",
-              fontWeight: 350,
-              fontSize: "14px",
-              borderRadius: 1.5,
-              minWidth: 100,
-              minHeight: 30,
-              px: 0.5,
-              py: 0.5,
-              boxShadow: "0 2px 8px #2C3E57",
-              textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-                color: "#fff",
-              },
+                message.type === "error"
+                  ? "#fef2f2"
+                  : message.type === "success"
+                    ? "#f0fdf4"
+                    : "#eff6ff",
+              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
+              color:
+                message.type === "error"
+                  ? "#b91c1c"
+                  : message.type === "success"
+                    ? "#166534"
+                    : "#1e40af",
+              padding: "10px 14px",
+              borderRadius: 6,
+              marginBottom: 12,
+              fontSize: 13,
+              display: "flex",
+              justifyContent: "space-between",
             }}
-            onClick={() => handleOpenModal()}
           >
-            Add New
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="w-full max-w-full">
-            {/* Blue header bar */}
-            <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
-              Dialing Rule
-            </div>
+            <span>{message.text}</span>
+            <span
+              onClick={() => setMessage({ type: "", text: "" })}
+              style={{ cursor: "pointer", fontSize: 16 }}
+            >
+              ✕
+            </span>
+          </div>
+        )}
 
-            <div className="bg-white border-2 border-gray-400 border-t-0 shadow-sm">
-              <div className="w-full flex flex-col overflow-hidden">
-                <div
-                  className="w-full border-b border-gray-300"
-                  style={{
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                    borderBottom: "none",
-                  }}
-                >
-                  <div
-                    ref={tableScrollRef}
-                    onScroll={handleTableScroll}
-                    className="scrollbar-hide"
+        {/* Breadcrumb */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            FXS &rsaquo; Advanced &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              Dialing Rule
+            </span>
+          </div>
+        </div>
+
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {rules.length === 0 ? (
+            // Empty State
+            <div
+              style={{
+                padding: "60px 20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{ fontSize: 14, color: C.mutedText, marginBottom: 16 }}
+              >
+                No available dialing rule!
+              </div>
+              <Btn onClick={() => handleOpenModal()} variant="accent">
+                + Add New
+              </Btn>
+            </div>
+          ) : (
+            <>
+              {/* Toolbar - Placed on Top */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "10px 14px",
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  background: "#DCE6F2",
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
+                {/* Left Toolbar Info */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span
                     style={{
-                      overflowX: "auto",
-                      overflowY: "auto",
-                      maxHeight: 240,
-                      scrollbarWidth: "none",
-                      msOverflowStyle: "none",
+                      background: "#f1f5f9",
+                      border: `0.5px solid ${C.cardBorder}`,
+                      color: "#475569",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      padding: "3px 12px",
+                      borderRadius: 20,
                     }}
                   >
-                    <table
-                      className="w-full min-w-[800px] border border-gray-300 border-collapse whitespace-nowrap"
-                      style={{ tableLayout: "auto", border: "1px solid #bbb" }}
+                    Page {page} · {rules.length} items total
+                  </span>
+                  {selected.length > 0 && (
+                    <span
+                      style={{
+                        background: "#e0f2fe",
+                        color: C.accent,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        padding: "3px 10px",
+                        borderRadius: 20,
+                        border: `0.5px solid ${C.accent}`,
+                      }}
                     >
-                      <thead>
-                        <tr style={{ minHeight: 32 }}>
-                          {DIALING_RULE_TABLE_COLUMNS.map((c) => (
-                            <th
-                              key={c.key}
-                              className="bg-white text-[#222] font-semibold text-[12px] border border-gray-300 text-center"
+                      {selected.length} selected
+                    </span>
+                  )}
+                </div>
+
+                {/* Right Toolbar Actions */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Btn
+                    onClick={handleCheckAll}
+                    variant="outline"
+                    style={{ fontSize: 10, padding: "4px 8px" }}
+                  >
+                    Check All
+                  </Btn>
+                  <Btn
+                    onClick={handleUncheckAll}
+                    variant="outline"
+                    style={{ fontSize: 10, padding: "4px 8px" }}
+                  >
+                    Uncheck All
+                  </Btn>
+                  <Btn
+                    onClick={handleInverse}
+                    variant="outline"
+                    style={{ fontSize: 10, padding: "4px 8px" }}
+                  >
+                    Inverse
+                  </Btn>
+
+                  <Btn
+                    onClick={handleDelete}
+                    disabled={selected.length === 0}
+                    variant="danger"
+                  >
+                    🗑 Delete
+                  </Btn>
+                  <Btn
+                    onClick={handleClearAll}
+                    disabled={rules.length === 0}
+                    variant="danger"
+                  >
+                    🗑 Clear All
+                  </Btn>
+                  <Btn onClick={() => handleOpenModal()} variant="accent">
+                    + Add New
+                  </Btn>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div>
+                <div
+                  ref={tableScrollRef}
+                  onScroll={handleTableScroll}
+                  style={{
+                    overflowX: "auto",
+                    overflowY: "auto",
+                    maxHeight: 400,
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                  }}
+                >
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      tableLayout: "auto",
+                      minWidth: 800,
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        {DIALING_RULE_TABLE_COLUMNS.map((c) => (
+                          <TH key={c.key}>{c.label}</TH>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagedRules.map((item, idx) => {
+                        const realIdx = (page - 1) * itemsPerPage + idx;
+                        const isSelected = selected.includes(realIdx);
+                        const rowBgColor = isSelected
+                          ? "#f0f9ff"
+                          : idx % 2 === 1
+                            ? "#f8fafc"
+                            : "#ffffff";
+
+                        return (
+                          <tr
+                            key={realIdx}
+                            style={{
+                              background: rowBgColor,
+                              borderBottom: "0.5px solid #9ca3af",
+                              transition: "background 0.1s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = "#f0f9ff";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = rowBgColor;
+                            }}
+                          >
+                            <td
                               style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
+                                textAlign: "center",
+                                padding: "4px 0",
+                                borderRight: "0.5px solid #edf2f7",
                               }}
                             >
-                              {c.label}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pagedRules.map((item, idx) => {
-                          const realIdx = (page - 1) * itemsPerPage + idx;
-                          return (
-                            <tr key={realIdx} style={{ minHeight: 32 }}>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
+                              <EditDocumentIcon
                                 style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
+                                  cursor: "pointer",
+                                  color: "#0284c7",
+                                  fontSize: 18,
+                                  margin: "0 auto",
+                                  opacity: 0.8,
                                 }}
-                              >
-                                <EditDocumentIcon
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "#0e8fd6",
-                                    display: "block",
-                                    margin: "0 auto",
-                                  }}
-                                  onClick={() => handleOpenModal(item, realIdx)}
-                                />
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
+                                onClick={() => handleOpenModal(item, realIdx)}
+                              />
+                            </td>
+                            <td
+                              style={{
+                                textAlign: "center",
+                                padding: "4px 0",
+                                borderRight: "0.5px solid #edf2f7",
+                              }}
+                            >
+                              <Checkbox
+                                size="small"
+                                checked={isSelected}
+                                onChange={() => handleSelectRow(idx)}
+                                sx={{
+                                  padding: "1px",
+                                  color: C.accent,
+                                  "&.Mui-checked": { color: C.accent },
                                 }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selected.includes(realIdx)}
-                                  onChange={() => handleSelectRow(idx)}
-                                />
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.index}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.dialingRule}
-                              </td>
-                              <td
-                                className="border border-gray-300 text-center bg-white text-[12px]"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.description}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                              />
+                            </td>
+                            <td
+                              style={{
+                                textAlign: "center",
+                                padding: "7px 16px",
+                                fontSize: 12,
+                                color: C.valueText,
+                                borderRight: "0.5px solid #edf2f7",
+                              }}
+                            >
+                              {item.index}
+                            </td>
+                            <td
+                              style={{
+                                textAlign: "center",
+                                padding: "7px 16px",
+                                fontSize: 12,
+                                color: C.valueText,
+                                borderRight: "0.5px solid #edf2f7",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {item.dialingRule}
+                            </td>
+                            <td
+                              style={{
+                                textAlign: "center",
+                                padding: "7px 16px",
+                                fontSize: 12,
+                                color: C.mutedText,
+                              }}
+                            >
+                              {item.description}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
+
                 {/* Custom scrollbar row below the table */}
                 {showCustomScrollbar && (
                   <div
                     style={{
                       width: "100%",
-                      margin: "0 auto",
                       background: "#f4f6fa",
                       display: "flex",
                       alignItems: "center",
                       height: 24,
-                      borderBottomLeftRadius: 8,
-                      borderBottomRightRadius: 8,
-                      border: "none",
-                      borderTop: "none",
                       padding: "0 4px",
-                      boxSizing: "border-box",
+                      borderBottom: `1px solid ${C.cardBorder}`,
                     }}
                   >
                     <div
@@ -577,319 +861,209 @@ const DialingRulePage = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-          {/* Action and pagination rows OUTSIDE the border */}
-          <div
-            className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-            style={{ background: "#e3e7ef", marginTop: 12 }}
-          >
-            <div className="flex flex-wrap gap-2">
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleCheckAll}
+
+              {/* Bottom Footer Pagination */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "10px 14px",
+                  borderTop: `0.5px solid ${C.cardBorder}`,
+                  background: "#f8fafc",
+                }}
               >
-                Check All
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleUncheckAll}
-              >
-                Uncheck All
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleInverse}
-              >
-                Inverse
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleDelete}
-                disabled={selected.length === 0}
-              >
-                Delete
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-                onClick={handleClearAll}
-                disabled={rules.length === 0}
-              >
-                Clear All
-              </button>
-            </div>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handleOpenModal()}
-            >
-              Add New
-            </button>
-          </div>
-          <div
-            className="flex flex-wrap items-center gap-2 w-full px-2 py-2 text-[15px]"
-            style={{ background: "#e3e7ef", marginTop: 8 }}
-          >
-            <span>{rules.length} Items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(1)}
-              disabled={page === 1}
-            >
-              First
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <span>Go to Page</span>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => handlePageChange(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
-          </div>
-        </>
-      )}
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  Showing {pagedRules.length} items ({itemsPerPage}/page)
+                </span>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <Btn
+                    onClick={() => handlePageChange(1)}
+                    disabled={page === 1}
+                    variant="outline"
+                  >
+                    First
+                  </Btn>
+                  <Btn
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
+                    variant="outline"
+                  >
+                    Prev
+                  </Btn>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: C.accent,
+                      background: "#e0f2fe",
+                      padding: "5px 14px",
+                      borderRadius: 6,
+                      border: `0.5px solid ${C.accent}`,
+                    }}
+                  >
+                    {page} / {totalPages}
+                  </span>
+                  <Btn
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                    variant="outline"
+                  >
+                    Next
+                  </Btn>
+                  <Btn
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={page === totalPages}
+                    variant="outline"
+                  >
+                    Last
+                  </Btn>
+                  <select
+                    style={{
+                      fontSize: 11,
+                      border: `1px solid ${C.cardBorder}`,
+                      borderRadius: 4,
+                      padding: "4px 8px",
+                      outline: "none",
+                      background: "#fff",
+                    }}
+                    value={page}
+                    onChange={(e) => handlePageChange(Number(e.target.value))}
+                  >
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 500, maxWidth: "95vw", mx: "auto", p: 0 },
-        }}
         disableRestoreFocus
         disableEnforceFocus
+        PaperProps={{ sx: { width: 500, maxWidth: "95vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
           }}
         >
-          Dialing Rule
+          {editIndex !== null ? "Edit Dialing Rule" : "Add Dialing Rule"}
         </DialogTitle>
+
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-            maxHeight: "calc(100vh - 200px)",
-            overflowY: "auto",
-          }}
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
         >
-          <div className="flex flex-col gap-2 w-full">
-            {/* Index field with dropdown only */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-0.5 gap-2"
-              style={{ minHeight: 28 }}
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: "20px 24px 16px",
+              }}
             >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 180, marginRight: 10, flexShrink: 0 }}
-              >
-                Index:
-              </label>
-              <div className="flex-1">
+              <SectionHeading title="General Settings" />
+
+              <FieldRow label="Index" required>
                 <FormControl size="small" fullWidth>
                   <MuiSelect
                     value={indexSelect || ""}
                     onChange={(e) => handleIndexSelectChange(e.target.value)}
-                    variant="outlined"
-                    sx={{
-                      fontSize: 14,
-                      height: 28,
-                      backgroundColor: "white",
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#bbb",
-                      },
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#999",
-                      },
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#3b82f6",
-                      },
-                      "& .MuiSelect-select": { padding: "4px 8px" },
-                    }}
+                    sx={{ fontSize: 13 }}
                   >
                     {getAvailableIndices(editIndex).map((opt) => (
                       <MenuItem
                         key={opt.value}
                         value={opt.value}
-                        sx={{ fontSize: 14 }}
+                        sx={{ fontSize: 13 }}
                       >
                         {opt.label}
                       </MenuItem>
                     ))}
                   </MuiSelect>
                 </FormControl>
-              </div>
-            </div>
-            {/* Description field */}
-            <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-0.5 gap-2"
-              style={{ minHeight: 28 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 180, marginRight: 10, flexShrink: 0 }}
-              >
-                Description:
-              </label>
-              <div className="flex-1">
+              </FieldRow>
+
+              <FieldRow label="Description" required>
                 <TextField
                   name="description"
                   value={formData.description || ""}
                   onChange={handleInputChange}
-                  size="small"
                   fullWidth
-                  variant="outlined"
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      height: "28px",
-                      backgroundColor: "white",
-                      "& fieldset": { borderColor: "#bbb" },
-                      "&:hover fieldset": { borderColor: "#999" },
-                      "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                    },
-                    "& .MuiOutlinedInput-input": {
-                      padding: "4px 8px",
-                      fontSize: 14,
-                    },
-                  }}
+                  size="small"
+                  inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                 />
-              </div>
-            </div>
-            {/* Dialing Rule field */}
-            <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-0.5 gap-2"
-              style={{ minHeight: 28 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 180, marginRight: 10, flexShrink: 0 }}
-              >
-                Dialing Rule:
-              </label>
-              <div className="flex-1">
+              </FieldRow>
+
+              <FieldRow label="Dialing Rule" required>
                 <TextField
                   name="dialingRule"
                   value={formData.dialingRule || ""}
                   onChange={handleInputChange}
-                  size="small"
                   fullWidth
-                  variant="outlined"
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      height: "28px",
-                      backgroundColor: "white",
-                      "& fieldset": { borderColor: "#bbb" },
-                      "&:hover fieldset": { borderColor: "#999" },
-                      "&.Mui-focused fieldset": { borderColor: "#3b82f6" },
-                    },
-                    "& .MuiOutlinedInput-input": {
-                      padding: "4px 8px",
-                      fontSize: 14,
-                    },
-                  }}
+                  size="small"
+                  inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                 />
-              </div>
+              </FieldRow>
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
+
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
           <Button
+            onClick={handleSave}
             variant="contained"
             sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+              background: "#1e2d42",
               color: "#fff",
               fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+              fontSize: 13,
               textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
+              padding: "6px 24px",
+              minWidth: 120,
+              "&:hover": { background: "#0f172a" },
             }}
-            onClick={handleSave}
           >
-            Save
+            {editIndex !== null ? "Update" : "Save"}
           </Button>
           <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
             onClick={handleCloseModal}
+            variant="outlined"
+            sx={{
+              color: "#1e293b",
+              borderColor: "#9ca3af",
+              fontWeight: 600,
+              fontSize: 13,
+              textTransform: "none",
+              padding: "6px 24px",
+              minWidth: 100,
+              "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
+            }}
           >
-            Close
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>
