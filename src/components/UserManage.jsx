@@ -180,6 +180,8 @@ export default function UserManage() {
   const [editUser, setEditUser] = useState(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [accessType, setAccessType] = useState('custom');
+  const [rolePermission, setRolePermission] = useState('Read, Write');
   const [permissions, setPermissions] = useState({ ...INITIAL_PERMISSIONS });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
@@ -197,8 +199,13 @@ export default function UserManage() {
     try {
       const data = await fetchUserList();
       setUsers(Array.isArray(data) ? data : []);
-    } catch {
-      setListError('Failed to load users.');
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || '';
+      if (msg.toLowerCase().includes('only superadmin')) {
+        showToast(msg, 'error');
+      } else {
+        setListError('Failed to load users.');
+      }
     } finally {
       setLoadingList(false);
     }
@@ -209,6 +216,8 @@ export default function UserManage() {
   const openAdd = () => {
     setMode('add'); setEditUser(null);
     setUsername(''); setPassword('');
+    setAccessType('custom');
+    setRolePermission('Read, Write');
     setPermissions({ ...INITIAL_PERMISSIONS });
     setFormError('');
   };
@@ -217,7 +226,10 @@ export default function UserManage() {
     setMode('edit'); setEditUser(user);
     setUsername(user.username || '');
     setPassword('');
-    // pages may be at user.access.pages, user.pages, or user.access_pages
+    const at = user.access?.access_type ?? user.access_type ?? 'custom';
+    const rp = user.access?.role_permission ?? user.role_permission ?? 'Read, Write';
+    setAccessType(at);
+    setRolePermission(rp);
     const pages = user.access?.pages ?? user.pages ?? user.access_pages ?? [];
     setPermissions(buildPermsFromPages(pages));
     setFormError('');
@@ -234,8 +246,7 @@ export default function UserManage() {
       if (password.length < 8) { setFormError('Password must be at least 8 characters.'); return; }
       setSaving(true);
       try {
-        const res = await createUser({ username: username.trim(), password, sections, pages });
-        // Check if backend returned response:false
+        const res = await createUser({ username: username.trim(), password, access_type: accessType, role_permission: rolePermission, sections, pages });
         if (res?.response === false) {
           setFormError(res?.message || 'Failed to create user.');
           return;
@@ -246,14 +257,12 @@ export default function UserManage() {
       } catch (err) {
         const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || 'Failed to create user.';
         setFormError(typeof msg === 'string' ? msg : JSON.stringify(msg));
-        console.error('Create user error:', err?.response?.data || err);
       } finally { setSaving(false); }
 
     } else if (mode === 'edit') {
-      if (!password) { setFormError('Please enter your password to confirm changes.'); return; }
       setSaving(true);
       try {
-        const res = await updateUserAccess({ id: editUser.id, password, sections, pages });
+        const res = await updateUserAccess({ id: editUser.id, access_type: accessType, role_permission: rolePermission, sections, pages });
         if (res?.response === false) {
           setFormError(res?.message || 'Failed to update user access.');
           return;
@@ -264,7 +273,6 @@ export default function UserManage() {
       } catch (err) {
         const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || 'Failed to update user access.';
         setFormError(typeof msg === 'string' ? msg : JSON.stringify(msg));
-        console.error('Update user error:', err?.response?.data || err);
       } finally { setSaving(false); }
     }
   };
@@ -317,7 +325,7 @@ export default function UserManage() {
                   // access may be nested under user.access or directly on user
                   const access = user.access || user || {};
                   const accessType = access.access_type ?? user.access_type ?? user.role ?? '';
-                  const isSuperAdmin = accessType === 'superadmin' || user.username === 'admin';
+                  const isSuperAdmin = accessType === 'superadmin' || accessType === 'admin';
                   return (
                     <tr key={user.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '7px 12px', color: '#6b7280' }}>{i + 1}</td>
@@ -373,26 +381,28 @@ export default function UserManage() {
                 {mode === 'add' && (
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-[#333] w-32 shrink-0">Username</span>
-                    <input
-                      style={inputStyle}
-                      type="text"
-                      value={username}
-                      onChange={e => setUsername(e.target.value)}
-                      placeholder="Min 5 characters"
-                    />
+                    <input style={inputStyle} type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Min 5 characters" />
+                  </div>
+                )}
+                {mode === 'add' && (
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-[#333] w-32 shrink-0">Password</span>
+                    <input style={inputStyle} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 8 characters" />
                   </div>
                 )}
                 <div className="flex items-center gap-4">
-                  <span className="text-sm text-[#333] w-32 shrink-0">
-                    {mode === 'edit' ? 'Verify Password' : 'Password'}
-                  </span>
-                  <input
-                    style={inputStyle}
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder={mode === 'edit' ? 'Enter password to confirm changes' : 'Min 8 characters'}
-                  />
+                  <span className="text-sm text-[#333] w-32 shrink-0">Access Type</span>
+                  <select style={inputStyle} value={accessType} onChange={e => setAccessType(e.target.value)}>
+                    <option value="custom">Custom</option>
+                    <option value="superadmin">Super Admin</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-[#333] w-32 shrink-0">Role Permission</span>
+                  <select style={inputStyle} value={rolePermission} onChange={e => setRolePermission(e.target.value)}>
+                    <option value="Read, Write">Read, Write</option>
+                    <option value="Read">Read</option>
+                  </select>
                 </div>
               </div>
             </div>

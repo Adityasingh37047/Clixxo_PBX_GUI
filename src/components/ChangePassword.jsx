@@ -59,76 +59,45 @@ const ChangePassword = () => {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [showPasswords, setShowPasswords] = useState({
-    currentPassword: false,
-    newPassword: false,
-    confirmNewPassword: false,
+    password: false,
+    confirmPassword: false,
   });
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Set current username and password from auth context
+  // Pre-fill current username
   useEffect(() => {
     if (user?.username) {
-      setForm((prev) => ({
-        ...prev,
-        currentUsername: user.username,
-        currentPassword: user.password || "", // Get stored password if available
-      }));
+      setForm((prev) => ({ ...prev, username: user.username }));
     }
   }, [user]);
-
-  // Validation functions
-  const passwordRegex = /^[A-Za-z0-9_]{5,}$/;
 
   const validatePassword = (password) => {
     if (!password) return "Password is required";
     if (password.length < 5) return "Password must be at least 5 characters";
-    if (password.length > 12) return "Password must be maximum 12 characters";
-    if (!passwordRegex.test(password)) {
-      return "Password can only contain letters, numbers, and underscores";
-    }
+    if (password.length > 16) return "Password must be maximum 16 characters";
     return "";
   };
 
   const validateUsername = (username) => {
     if (!username) return "Username is required";
     if (username.length < 5) return "Username must be at least 5 characters";
-    if (username.length > 12) return "Username must be maximum 12 characters";
-    if (!passwordRegex.test(username)) {
-      return "Username can only contain letters, numbers, and underscores";
-    }
     return "";
   };
 
   const validateForm = () => {
     const errors = {};
 
-    // Validate current username
-    if (!form.currentUsername) {
-      errors.currentUsername = "Current username is required";
-    }
+    if (!form.username) errors.username = "Current username is required";
 
-    // Validate current password
-    if (!form.currentPassword) {
-      errors.currentPassword = "Current password is required";
-    }
+    if (form.newUsername && form.newUsername.length < 5)
+      errors.newUsername = "New username must be at least 5 characters";
 
-    // Validate new username
-    const usernameError = validateUsername(form.newUsername);
-    if (usernameError) {
-      errors.newUsername = usernameError;
-    }
+    const passwordError = validatePassword(form.password);
+    if (passwordError) errors.password = passwordError;
 
-    // Validate new password
-    const passwordError = validatePassword(form.newPassword);
-    if (passwordError) {
-      errors.newPassword = passwordError;
-    }
-
-    // Validate confirm password
-    if (form.newPassword !== form.confirmNewPassword) {
-      errors.confirmNewPassword = "Passwords do not match";
-    }
+    if (form.password !== form.confirmPassword)
+      errors.confirmPassword = "Passwords do not match";
 
     return errors;
   };
@@ -169,39 +138,15 @@ const ChangePassword = () => {
       setError("");
       setFieldErrors({});
 
-      const changePasswordData = {
-        currentUsername: form.currentUsername,
-        currentPassword: form.currentPassword,
-        newUsername: form.newUsername,
-        newPassword: form.newPassword,
-        confirmNewPassword: form.confirmNewPassword,
-      };
-
-      console.log("Changing password with data:", changePasswordData);
-      const response = await fetchChangePassword(changePasswordData);
+      const response = await fetchChangePassword({
+        username:        form.username,
+        newUsername:     form.newUsername || undefined,
+        password:        form.password,
+        confirmPassword: form.confirmPassword,
+      });
 
       if (response.response === true) {
-        // Update user data with new username and password
-        const updatedUserData = {
-          ...user,
-          username: form.newUsername,
-          password: form.newPassword, // Store the new password
-        };
-        updateUser(updatedUserData);
-
-        // Reset form to show new credentials
-        setForm({
-          currentUsername: form.newUsername, // Update to new username
-          currentPassword: form.newPassword, // Update to new password
-          newUsername: "",
-          newPassword: "",
-          confirmNewPassword: "",
-        });
-
-        alert(
-          "Username and password changed successfully! You will be redirected to login page.",
-        );
-        // Logout and redirect to login
+        alert("Credentials updated successfully! You will be redirected to login.");
         logout();
         navigate("/login");
       } else {

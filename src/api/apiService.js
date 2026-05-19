@@ -30,9 +30,9 @@ export const fetchUserList = async () => {
   }
 };
 
-export const createUser = async ({ username, password, sections, pages }) => {
+export const createUser = async ({ username, password, access_type, role_permission, sections, pages }) => {
   try {
-    const response = await axiosInstance.post('/user-permission', { type: 'create', username, password, sections, pages });
+    const response = await axiosInstance.post('/user-permission', { type: 'create', username, password, access_type, role_permission, sections, pages });
     return response.data;
   } catch (error) {
     console.error('Error creating user:', error.message);
@@ -40,9 +40,9 @@ export const createUser = async ({ username, password, sections, pages }) => {
   }
 };
 
-export const updateUserAccess = async ({ id, password, sections, pages }) => {
+export const updateUserAccess = async ({ id, access_type, role_permission, sections, pages }) => {
   try {
-    const response = await axiosInstance.post('/user-permission', { type: 'update_access', id, password, sections, pages });
+    const response = await axiosInstance.post('/user-permission', { type: 'update_access', id, access_type, role_permission, sections, pages });
     return response.data;
   } catch (error) {
     console.error('Error updating user access:', error.message);
@@ -884,11 +884,9 @@ export const fetchLogin = async ({ username, password }) => {
   }
 };
 
-export const fetchChangePassword = async (data) => {
+export const fetchChangePassword = async ({ username, newUsername, password, confirmPassword }) => {
   try {
-    console.log('🔐 Changing password with data:', data);
-    const response = await axiosInstance.post('/change-password', data);
-    console.log('🔐 Change password response:', response.data);
+    const response = await axiosInstance.post('/change-password', { username, newUsername, password, confirmPassword });
     return response.data;
   } catch (error) {
     console.log('Error Changing Password', error.message);
@@ -1005,9 +1003,9 @@ export const fetchAccountManageGetAll= async ()=>{
 
 export const fetchAccountManageUpdate= async (data)=>{
   try{
-      const response = await axiosInstance.post('/delete-user', data);
+    const response = await axiosInstance.post('/register-user', data);
     return response.data;
-  }catch(error){          
+  }catch(error){
     console.log('Error updating user', error.message);
     throw error;
   }
@@ -1349,6 +1347,42 @@ export const deleteSipAccount = async (extension, context) => {
       throw new Error('Network Error');
     }
     throw error.response?.data || { message: 'Server unavailable' };
+  }
+};
+
+// SIP Account CSV Export — returns a Blob for download
+export const exportSipAccountsCsv = async () => {
+  const token = sessionStorage.getItem('authToken');
+  const baseUrl = axiosInstance.defaults.baseURL;
+  const res = await fetch(`${baseUrl}/pjsip`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ type: 'export_csv' }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Export failed (${res.status})`);
+  }
+  const blob = await res.blob();
+  const disposition = res.headers.get('Content-Disposition') || '';
+  const filename = disposition.match(/filename="?([^";]+)/)?.[1] ?? 'extensions.csv';
+  return { blob, filename };
+};
+
+// SIP Account CSV Import — JSON body (FileReader text)
+export const importSipAccountsCsv = async ({ csv, mode = 'skip', dryRun = false }) => {
+  try {
+    const response = await axiosInstance.post('/pjsip', {
+      type: 'import_csv',
+      data: { csv, mode, dry_run: dryRun },
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response?.data) return error.response.data;
+    throw new Error(error.message || 'Import failed');
   }
 };
 
@@ -1754,6 +1788,22 @@ export const deleteCCRoute = async (id) => {
     throw error.response?.data || { message: 'Server unavailable' };
   }
 };
+
+// Time Condition API
+const tcPost = async (payload) => {
+  try {
+    const response = await axiosInstance.post('/time-condition', payload);
+    return response.data;
+  } catch (error) {
+    if (error.code === 'ECONNABORTED' || error.message === 'Network Error') throw new Error('Network Error');
+    throw error.response?.data || { message: 'Server unavailable' };
+  }
+};
+export const fetchTimeConditions     = ()      => tcPost({ type: 'list' });
+export const createTimeCondition     = (data)  => tcPost({ type: 'create', ...data });
+export const updateTimeCondition     = (data)  => tcPost({ type: 'update', ...data });
+export const deleteTimeCondition     = (id)    => tcPost({ type: 'delete', id });
+export const deleteAllTimeConditions = (ids)   => tcPost({ type: 'delete_all', ids });
 
 // OpenVPN API Services
 export const uploadOpenVpnFile = async (file) => {
@@ -2825,6 +2875,40 @@ export const deleteSpeedDial = async (id) => {
   } catch (error) {
     console.error('Error deleting speed dial:', error.message);
     throw error;
+  }
+};
+
+// Speed Dial CSV Export
+export const exportSpeedDialCsv = async () => {
+  const token = sessionStorage.getItem('authToken');
+  const baseUrl = axiosInstance.defaults.baseURL;
+  const res = await fetch(`${baseUrl}/speed-dial`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ type: 'export_csv' }),
+  });
+  if (!res.ok) throw new Error((await res.text()) || `Export failed (${res.status})`);
+  const blob = await res.blob();
+  const disposition = res.headers.get('Content-Disposition') || '';
+  const filename = disposition.match(/filename="?([^";]+)/)?.[1] ?? 'speed_dial_export.csv';
+  return { blob, filename };
+};
+
+// Speed Dial CSV Import — no mode, full-file validation
+export const importSpeedDialCsv = async ({ csv, dryRun = false }) => {
+  try {
+    const response = await axiosInstance.post('/speed-dial', {
+      type: 'import_csv',
+      data: { csv, dry_run: dryRun },
+    });
+    return response.data;
+  } catch (error) {
+    // 400 = validation failed — return the body so the UI can show errors
+    if (error.response?.data) return error.response.data;
+    throw new Error(error.message || 'Import failed');
   }
 };
 

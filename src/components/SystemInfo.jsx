@@ -40,7 +40,12 @@ const renderCellValue = (key, val) => {
   const lk = (key || '').toLowerCase();
   const isPkts = lk.includes('pkts') || lk.includes('packet');
   if (isPkts) return renderPktsValue(val);
-  const str = Array.isArray(val) ? val.join(', ') : String(val);
+  let str = Array.isArray(val) ? val.join(', ') : String(val);
+  // For IP Address field, strip IPv6 addresses (entries containing ':')
+  if (lk === 'ip address') {
+    const parts = str.split(',').map(s => s.trim()).filter(s => !s.includes(':'));
+    str = parts.length > 0 ? parts.join(', ') : str;
+  }
   if ((lk.includes('dcms') || lk.includes('status')) && str) {
     const running = str.toLowerCase() === 'running';
     return (
@@ -65,8 +70,8 @@ const Card = ({ title, children, style }) => (
 
 const InfoTableRow = ({ label, value, keyName, even }) => (
   <div style={{ display: 'flex', borderBottom: '0.5px solid #f1f5f9', padding: '5px 14px', minHeight: 28, alignItems: 'center', background: even ? '#f8fafc' : '#ffffff' }}>
-    <span style={{ color: C.labelText, fontSize: 12, width: '42%', flexShrink: 0 }}>{label}</span>
-    <span style={{ color: C.valueText, fontSize: 12, flex: 1 }}>{renderCellValue(keyName || label, value)}</span>
+    <span style={{ color: C.labelText, fontSize: 12, width: '42%', flexShrink: 0, fontWeight: 500 }}>{label}</span>
+    <span style={{ color: C.valueText, fontSize: 12, flex: 1, fontWeight: 600 }}>{renderCellValue(keyName || label, value)}</span>
   </div>
 );
 

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -10,7 +8,9 @@ import {
   CircularProgress,
   Checkbox,
   FormControlLabel,
+  Alert,
 } from "@mui/material";
+
 import {
   fetchSipAccounts,
   fetchExtensionGroups,
@@ -18,40 +18,142 @@ import {
   updateExtensionGroup,
   deleteExtensionGroup,
 } from "../api/apiService";
-import { blue } from "@mui/material/colors";
+
+// ── Color palette (matches PBX / CDR) ────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
+  amber: "#d97706",
+};
+
+// ── Shared: Action Button ────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ── Shared: Table Header ──────────────────────────────────────────────────────
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const ExtensionGroupsPage = () => {
   const [groups, setGroups] = useState([]);
-  const [selected, setSelected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState({
     fetch: false,
     delete: false,
     save: false,
+    extensions: false,
   });
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+
   const hasInitialLoadRef = useRef(false);
 
-  // Add/Edit modal state
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
   const [editGroupId, setEditGroupId] = useState(null);
   const [groupName, setGroupName] = useState("");
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [selectedExtensions, setSelectedExtensions] = useState([]);
-  const [loadingExtensions, setLoadingExtensions] = useState(false);
 
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(groups.length / itemsPerPage));
-  const pagedGroups = groups.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  const showAlert = (text) => {
-    window.alert(text);
-  };
-
+  // ── Load Data ──
   const loadGroups = async () => {
-    setLoading((prev) => ({ ...prev, fetch: true }));
+    setLoading((p) => ({ ...p, fetch: true }));
+    setMessage({ type: "", text: "" });
     try {
       const res = await fetchExtensionGroups();
       const raw = res?.message ?? res?.data ?? res;
@@ -65,10 +167,11 @@ const ExtensionGroupsPage = () => {
             : [],
         })),
       );
+      setLastUpdated(new Date());
     } catch (err) {
-      showAlert(err?.message || "Failed to load extension groups.");
+      showMessage("error", err?.message || "Failed to load extension groups.");
     } finally {
-      setLoading((prev) => ({ ...prev, fetch: false }));
+      setLoading((p) => ({ ...p, fetch: false }));
     }
   };
 
@@ -79,35 +182,71 @@ const ExtensionGroupsPage = () => {
     }
   }, []);
 
-  const handleCheckAll = () => setSelected(groups.map((_, i) => i));
-  const handleUncheckAll = () => setSelected([]);
-  const handleSelectRow = (idx) => {
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+  // ── Search & Pagination ──
+  const filteredGroups = searchQuery.trim()
+    ? groups.filter(
+        (g) =>
+          g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          g.extensions.some((ext) =>
+            ext.toLowerCase().includes(searchQuery.toLowerCase()),
+          ),
+      )
+    : groups;
+
+  const totalPages = Math.max(1, Math.ceil(filteredGroups.length / limit));
+  const pagedGroups = filteredGroups.slice((page - 1) * limit, page * limit);
+
+  // ── Checkbox Selection Logic ──
+  const pageIds = pagedGroups.map((g) => g.id);
+  const allPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+  const somePageSelected =
+    pagedGroups.some((g) => selectedIds.includes(g.id)) && !allPageSelected;
+
+  const handleToggleRow = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
+  const handleToggleAll = () => {
+    if (!pageIds.length) return;
+    setSelectedIds((prev) =>
+      allPageSelected
+        ? prev.filter((id) => !pageIds.includes(id))
+        : Array.from(new Set([...prev, ...pageIds])),
+    );
+  };
+
+  // ── Delete ──
   const handleDelete = async () => {
-    if (selected.length === 0) {
-      showAlert("Please select at least one group to delete.");
+    if (!selectedIds.length) {
+      showMessage("error", "Please select at least one record to delete.");
       return;
     }
-    setLoading((prev) => ({ ...prev, delete: true }));
+    const msg =
+      selectedIds.length === 1
+        ? "Are you sure you want to delete this group?"
+        : `Are you sure you want to delete ${selectedIds.length} groups?`;
+
+    if (!window.confirm(msg)) return;
+
+    setLoading((p) => ({ ...p, delete: true }));
+    setMessage({ type: "", text: "" });
     try {
-      const ids = selected.map((i) => groups[i]?.id).filter(Boolean);
-      await Promise.all(ids.map((id) => deleteExtensionGroup(id)));
-      setSelected([]);
+      await Promise.all(selectedIds.map((id) => deleteExtensionGroup(id)));
+      setSelectedIds([]);
       await loadGroups();
-      showAlert(`Deleted ${ids.length} group(s).`);
     } catch (err) {
-      showAlert(err?.message || "Failed to delete groups.");
+      showMessage("error", err?.message || "Failed to delete some groups.");
     } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
+      setLoading((p) => ({ ...p, delete: false }));
     }
   };
 
+  // ── Modal Actions ──
   const openExtensionList = () => {
-    setLoadingExtensions(true);
+    setLoading((p) => ({ ...p, extensions: true }));
     fetchSipAccounts()
       .then((res) => {
         const list = res?.message ?? [];
@@ -121,9 +260,12 @@ const ExtensionGroupsPage = () => {
       })
       .catch(() => {
         setAvailableExtensions([]);
-        showAlert("Failed to load extensions.");
+        showMessage(
+          "error",
+          "Failed to load available extensions for the modal.",
+        );
       })
-      .finally(() => setLoadingExtensions(false));
+      .finally(() => setLoading((p) => ({ ...p, extensions: false })));
   };
 
   const handleOpenAddModal = () => {
@@ -144,7 +286,7 @@ const ExtensionGroupsPage = () => {
     openExtensionList();
   };
 
-  const handleCloseAddModal = () => {
+  const handleCloseModal = () => {
     setShowModal(false);
     setEditGroupId(null);
     setGroupName("");
@@ -162,317 +304,580 @@ const ExtensionGroupsPage = () => {
 
   const handleSaveGroup = async () => {
     const name = groupName?.trim();
-    if (!name) {
-      showAlert("Please enter a group name.");
-      return;
-    }
-    if (selectedExtensions.length === 0) {
-      showAlert("Please select at least one extension.");
-      return;
-    }
+    if (!name) return showMessage("error", "Please enter a group name.");
+    if (selectedExtensions.length === 0)
+      return showMessage("error", "Please select at least one extension.");
+
     const extensions = [...selectedExtensions].sort(
       (a, b) => (parseInt(a) || 0) - (parseInt(b) || 0),
     );
-    setLoading((prev) => ({ ...prev, save: true }));
+    setLoading((p) => ({ ...p, save: true }));
+    setMessage({ type: "", text: "" });
+
     try {
       if (editGroupId != null) {
         await updateExtensionGroup({ id: editGroupId, name, extensions });
-        showAlert("Group updated.");
       } else {
         await createExtensionGroup({ name, extensions });
-        showAlert("Group created.");
       }
       await loadGroups();
-      handleCloseAddModal();
+      handleCloseModal();
     } catch (err) {
-      showAlert(err?.message || "Failed to save group.");
+      showMessage("error", err?.message || "Failed to save group.");
     } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
+      setLoading((p) => ({ ...p, save: false }));
     }
   };
 
   return (
-    <div className="w-full max-w-full mx-auto p-2 md:p-2">
-      <div className="w-full max-w-full mx-auto">
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
+    >
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Error Banner */}
+        {/* ── Error / Success Floating Banner ── */}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* Breadcrumb + Last Updated */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          Extension Groups
+          {/* Breadcrumb */}
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Extesions &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+              Extension Group
+            </span>
+          </div>
         </div>
 
-        <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-[600px] bg-[#f8fafd] border-2 border-t-0 border-gray-400 rounded-b-lg shadow-sm">
-            <thead>
-              <tr>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
-                  #
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Group Name
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Extensions
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading.fetch ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="border border-gray-300 px-2 py-4 text-center"
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            {/* Left Toolbar Info */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
+              >
+                Page {page} · {filteredGroups.length} records
+              </span>
+              {selectedIds.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
+                >
+                  {selectedIds.length} selected
+                </span>
+              )}
+            </div>
+
+            {/* Right Toolbar Actions */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              {/* Search Box */}
+              {/* <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#ffffff",
+                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
+                  borderRadius: 6,
+                  padding: "5px 10px",
+                  transition: "border-color 0.15s ease",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: searchFocused ? C.accent : C.mutedText,
+                  }}
+                >
+                  🔍
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  placeholder="Search group name or ext..."
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    fontSize: 11,
+                    color: C.valueText,
+                    outline: "none",
+                    width: 200,
+                  }}
+                />
+                {searchQuery && (
+                  <span
+                    onClick={() => setSearchQuery("")}
+                    style={{
+                      fontSize: 11,
+                      color: C.mutedText,
+                      cursor: "pointer",
+                    }}
                   >
-                    <div className="flex items-center justify-center gap-2">
-                      <CircularProgress size={20} />
-                      <span>Loading groups...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : groups.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="border border-gray-300 px-2 py-4 text-center text-gray-500"
-                  >
-                    No extension groups yet. Click &quot;Add New&quot; to create
-                    one.
-                  </td>
-                </tr>
-              ) : (
-                pagedGroups.map((group, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
-                  return (
-                    <tr key={group.id}>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(realIdx)}
-                          onChange={() => handleSelectRow(realIdx)}
-                          disabled={loading.delete}
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {realIdx + 1}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">
-                        {group.name}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center text-gray-700">
-                        {group.extensions?.length
-                          ? group.extensions.join(", ")
-                          : "—"}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
-                          titleAccess="Edit"
-                          onClick={() => handleOpenEditModal(group)}
-                        />
+                    ✕
+                  </span>
+                )}
+              </div> */}
+
+              {/* Action Buttons */}
+              {/* <Btn
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={loading.fetch || page <= 1}
+                variant="outline"
+              >
+                ← Prev
+              </Btn>
+              <Btn
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={loading.fetch || page >= totalPages}
+                variant="outline"
+              >
+                Next →
+              </Btn> */}
+              {/* <Btn
+                onClick={loadGroups}
+                disabled={loading.fetch}
+                variant="default"
+              >
+                {loading.fetch ? (
+                  <CircularProgress size={11} style={{ color: "#fff" }} />
+                ) : (
+                  "Refresh"
+                )}
+              </Btn> */}
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selectedIds.length === 0
+                }
+                variant="danger"
+              >
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.fetch}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            {loading.fetch ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  tableLayout: "auto",
+                  minWidth: 800,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        sx={{
+                          padding: "1px",
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                        }}
+                      />
+                    </TH>
+                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Group Name
+                    </TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Extensions
+                    </TH>
+                    <TH style={{ width: 80 }}>Actions</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedGroups.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        style={{
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
+                        }}
+                      >
+                        {searchQuery
+                          ? `No results for "${searchQuery}"`
+                          : "No extension groups found. Click '+ Add New' to create one."}
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ) : (
+                    pagedGroups.map((row, idx) => {
+                      const isSelected = selectedIds.includes(row.id);
+                      const rowBg = isSelected
+                        ? "#f0f9ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      const realIndex = (page - 1) * limit + idx + 1;
 
-        <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleDelete}
-              disabled={loading.delete || loading.fetch}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
+                      return (
+                        <tr
+                          key={row.id}
+                          style={{
+                            background: rowBg,
+                            borderBottom: "0.5px solid #9ca3af",
+                            transition: "background 0.1s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f0f9ff";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
+                          }}
+                        >
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 0",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleToggleRow(row.id)}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 4px",
+                              fontSize: 11,
+                              color: C.mutedText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {realIndex}
+                          </td>
+                          <td
+                            style={{
+                              padding: "7px 16px",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.name}
+                          </td>
+                          <td
+                            style={{
+                              padding: "7px 16px",
+                              fontSize: 12,
+                              color: C.labelText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.extensions?.length > 0 ? (
+                              row.extensions.join(", ")
+                            ) : (
+                              <span style={{ color: C.mutedText }}>—</span>
+                            )}
+                          </td>
+                          <td
+                            style={{ textAlign: "center", padding: "4px 8px" }}
+                          >
+                            <Btn
+                              onClick={() => handleOpenEditModal(row)}
+                              variant="outline"
+                              style={{
+                                fontSize: 10,
+                                padding: "3px 10px",
+                                margin: "0 auto",
+                              }}
+                            >
+                              Edit
+                            </Btn>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
-          <div className="flex gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleOpenAddModal}
-              disabled={loading.save || loading.fetch}
-            >
-              Add New
-            </button>
-          </div>
-        </div>
 
-        {totalPages > 1 && (
-          <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-            <span>{groups.length} items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
+          {/* Footer Pagination */}
+          {!loading.fetch && filteredGroups.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+              }}
             >
-              First
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => setPage(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
-          </div>
-        )}
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedGroups.length} record
+                {pagedGroups.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                {/* <Btn
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={loading.fetch || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn> */}
+                {/* <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span> */}
+                {/* <Btn
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={loading.fetch || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn> */}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Add New Group Modal */}
+      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
-        onClose={loading.save ? null : handleCloseAddModal}
+        onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 520, maxWidth: "95vw", mx: "auto", p: 0 },
-        }}
+        PaperProps={{ sx: { width: 500, maxWidth: "95vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
           }}
         >
           {editGroupId != null
             ? "Edit Extension Group"
             : "Add New Extension Group"}
         </DialogTitle>
+
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-          }}
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
         >
-          <div className="flex flex-col gap-3 w-full pb-2">
-            <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
-              <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
-                Group Details
-              </div>
-              <div className="p-2">
-                <TextField
-                  fullWidth
-                  label="Group Name"
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                  placeholder="e.g. Sales, Support"
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    "& .MuiOutlinedInput-input": {
-                      padding: "10px 14px",
-                      fontSize: 14,
-                      lineHeight: 1.4,
-                    },
-                  }}
-                />
-              </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Group Name Field */}
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.labelText,
+                  marginBottom: 6,
+                }}
+              >
+                Group Name
+              </label>
+              <TextField
+                fullWidth
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="e.g. Sales, Support"
+                size="small"
+                variant="outlined"
+                sx={{ background: "#fff" }}
+                inputProps={{ style: { fontSize: 13, padding: "8px 12px" } }}
+              />
             </div>
-            <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
-              <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa] flex items-center justify-between">
-                <span>Select extensions</span>
-                <div className="flex gap-1">
-                  <Button
-                    size="small"
+
+            {/* Extensions Selection */}
+            <div
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 12px",
+                  background: "#f8fafc",
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                }}
+              >
+                <span
+                  style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}
+                >
+                  Select Extensions
+                </span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn
                     onClick={handleExtensionCheckAll}
-                    sx={{
-                      fontSize: 13,
-                      textTransform: "none",
-                      minWidth: 0,
-                      color: "#3E5475",
-                      px: 1,
-                    }}
+                    variant="outline"
+                    style={{ fontSize: 10, padding: "2px 8px" }}
                   >
                     Check All
-                  </Button>
-                  <Button
-                    size="small"
+                  </Btn>
+                  <Btn
                     onClick={handleExtensionUncheckAll}
-                    sx={{
-                      fontSize: 13,
-                      textTransform: "none",
-                      minWidth: 0,
-                      color: "#3E5475",
-                      px: 1,
-                    }}
+                    variant="outline"
+                    style={{ fontSize: 10, padding: "2px 8px" }}
                   >
                     Uncheck All
-                  </Button>
+                  </Btn>
                 </div>
               </div>
-              <div
-                className="p-2 border-t-0 max-h-[280px] overflow-y-auto"
-                style={{ borderTop: "none" }}
-              >
-                {loadingExtensions ? (
-                  <div className="flex items-center justify-center py-8">
-                    <CircularProgress size={24} />
-                    <span className="ml-2 text-sm">Loading extensions...</span>
+
+              <div style={{ maxHeight: 220, overflowY: "auto", padding: 12 }}>
+                {loading.extensions ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: 30,
+                    }}
+                  >
+                    <CircularProgress size={20} />
                   </div>
                 ) : availableExtensions.length === 0 ? (
-                  <p className="text-gray-500 text-sm py-4 text-center">
+                  <p
+                    style={{
+                      textAlign: "center",
+                      fontSize: 12,
+                      color: C.mutedText,
+                      margin: "20px 0",
+                    }}
+                  >
                     No extensions found. Create SIP accounts first.
                   </p>
                 ) : (
-                  <div className="flex flex-col gap-1">
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 4 }}
+                  >
                     {availableExtensions.map(({ extension, name }) => (
                       <FormControlLabel
                         key={extension}
@@ -481,100 +886,65 @@ const ExtensionGroupsPage = () => {
                             checked={selectedExtensions.includes(extension)}
                             onChange={() => toggleExtension(extension)}
                             size="small"
-                            sx={{ "& .MuiSvgIcon-root": { fontSize: 18 } }}
+                            sx={{
+                              padding: "2px 8px",
+                              color: C.accent,
+                              "&.Mui-checked": { color: C.accent },
+                            }}
                           />
                         }
                         label={
-                          <span style={{ fontSize: 14 }}>
-                            {extension}
-                            {name ? ` — ${name}` : ""}
+                          <span style={{ fontSize: 13, color: C.valueText }}>
+                            {extension} {name ? `— ${name}` : ""}
                           </span>
                         }
+                        sx={{ margin: 0 }}
                       />
                     ))}
                   </div>
                 )}
-                {selectedExtensions.length > 0 && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    {selectedExtensions.length} extension(s) selected
-                  </p>
-                )}
               </div>
+            </div>
+
+            <div
+              style={{ fontSize: 11, color: C.mutedText, textAlign: "right" }}
+            >
+              {selectedExtensions.length} extension(s) selected
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
 
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
+          <Btn
             onClick={handleSaveGroup}
             disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
+            variant="default"
+            style={{ padding: "8px 24px", fontSize: 13 }}
           >
-            {loading.save
-              ? "Saving..."
-              : editGroupId != null
-                ? "Update Group"
-                : "Create Group"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
-            onClick={handleCloseAddModal}
+            {loading.save ? (
+              <CircularProgress
+                size={14}
+                style={{ color: "#fff", marginRight: 8 }}
+              />
+            ) : null}
+            {loading.save ? "Saving..." : "Save Group"}
+          </Btn>
+          <Btn
+            onClick={handleCloseModal}
             disabled={loading.save}
+            variant="outline"
+            style={{ padding: "8px 24px", fontSize: 13 }}
           >
-            Close
-          </Button>
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

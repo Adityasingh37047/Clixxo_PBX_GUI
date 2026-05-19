@@ -13,6 +13,8 @@ import {
   deleteSpeedDial,
   listSpeedDials,
   updateSpeedDial,
+  exportSpeedDialCsv,
+  importSpeedDialCsv,
 } from "../api/apiService";
 
 const SpeedDialPage = () => {
@@ -30,6 +32,12 @@ const SpeedDialPage = () => {
   const [speedDialNumber, setSpeedDialNumber] = useState("");
   const [destination, setDestination] = useState("");
 
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  const importFileRef = React.useRef(null);
+
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
@@ -45,6 +53,51 @@ const SpeedDialPage = () => {
   }, [rows]);
 
   const showAlert = (text) => window.alert(text);
+
+  const handleExport = async () => {
+    try {
+      const { blob, filename } = await exportSpeedDialCsv();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      showAlert(e?.message || "Export failed");
+    }
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importFile) { showAlert("Please select a CSV file"); return; }
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      const csv = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsText(importFile);
+      });
+      const res = await importSpeedDialCsv({ csv, dryRun: false });
+      setImportResult(res);
+      if (res?.response) {
+        // Success — refresh list and close if no errors
+        const fresh = await listSpeedDials();
+        setRows(normalizeList(fresh).map(mapFromApi));
+        if (!res.validation_errors?.length && !res.runtime_errors?.length) {
+          setShowImportModal(false);
+          setImportFile(null);
+          setImportResult(null);
+        }
+      }
+      // Validation errors (response: false) are shown in the modal via importResult
+    } catch (e) {
+      showAlert(e?.message || "Import failed");
+    } finally {
+      setImportLoading(false);
+    }
+  };
 
   const normalizeList = (raw) => {
     const list = raw?.message ?? raw?.data ?? raw;
@@ -192,15 +245,134 @@ const SpeedDialPage = () => {
 
   return (
     <div className="w-full max-w-full mx-auto p-2">
+
+      {/* Import Modal */}
+      <Dialog
+        open={showImportModal}
+        onClose={() => { if (!importLoading) { setShowImportModal(false); setImportFile(null); setImportResult(null); } }}
+        maxWidth={false}
+        PaperProps={{ sx: { width: 520, maxWidth: "96vw", mx: "auto", p: 0 } }}
+      >
+        <DialogTitle
+          className="h-10 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
+          style={{ background: "linear-gradient(#3E5475 100%)", boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)" }}
+        >
+          Import Speed Dial
+        </DialogTitle>
+        <DialogContent style={{ backgroundColor: "#f8fafc", padding: "20px 24px 12px" }}>
+          <div className="flex flex-col gap-4 pt-1">
+            {/* File picker */}
+            <div
+              className="border-2 border-dashed border-gray-400 rounded-lg p-5 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
+              onClick={() => importFileRef.current?.click()}
+            >
+              <div className="text-gray-500 text-[13px]">
+                {importFile
+                  ? <span className="text-green-700 font-semibold">{importFile.name}</span>
+                  : <span>Click to choose CSV file <span className="text-gray-400">(.csv)</span></span>}
+              </div>
+              <input ref={importFileRef} type="file" accept=".csv" className="hidden"
+                onChange={(e) => { setImportFile(e.target.files?.[0] || null); setImportResult(null); }} />
+            </div>
+
+            {/* Result summary */}
+            {importResult && (
+              <div style={{ background: importResult.response ? "#f0fdf4" : "#fef2f2", border: `1px solid ${importResult.response ? "#86efac" : "#fca5a5"}`, borderRadius: 6, padding: "10px 14px" }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: importResult.response ? "#15803d" : "#b91c1c", marginBottom: 4 }}>
+                  {importResult.response ? "Import complete" : importResult.error || "Validation failed — fix errors and retry"}
+                </p>
+                {/* Stats row */}
+                <div style={{ fontSize: 12, color: "#374151", display: "flex", gap: 16, flexWrap: "wrap" }}>
+                  {importResult.total        != null && <span>Total: <b>{importResult.total}</b></span>}
+                  {importResult.created_count != null && <span>Created: <b style={{ color: "#16a34a" }}>{importResult.created_count}</b></span>}
+                  {importResult.invalid_rows  != null && importResult.invalid_rows > 0 && <span>Invalid rows: <b style={{ color: "#d97706" }}>{importResult.invalid_rows}</b></span>}
+                  {importResult.would_create  != null && <span>Would create: <b style={{ color: "#16a34a" }}>{importResult.would_create}</b></span>}
+                </div>
+                {/* Validation error table */}
+                {importResult.validation_errors?.length > 0 && (
+                  <div style={{ marginTop: 8, maxHeight: 180, overflowY: "auto" }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "#b91c1c", marginBottom: 4 }}>
+                      Validation Errors ({importResult.invalid_rows ?? importResult.validation_errors.length} row{importResult.validation_errors.length !== 1 ? "s" : ""})
+                    </p>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                      <thead>
+                        <tr style={{ background: "#fee2e2" }}>
+                          {["Row", "Speed Number", "Field", "Error"].map((h) => (
+                            <th key={h} style={{ padding: "3px 6px", textAlign: "left", borderBottom: "1px solid #fca5a5", color: "#7f1d1d", fontWeight: 600 }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {importResult.validation_errors.flatMap((ve, vi) =>
+                          (ve.errors || []).map((err, ei) => (
+                            <tr key={`${vi}-${ei}`} style={{ background: vi % 2 === 0 ? "#fff" : "#fff7f7" }}>
+                              <td style={{ padding: "2px 6px", borderBottom: "1px solid #fee2e2" }}>{ve.row}</td>
+                              <td style={{ padding: "2px 6px", borderBottom: "1px solid #fee2e2", fontFamily: "monospace" }}>{ve.speed_number ?? "—"}</td>
+                              <td style={{ padding: "2px 6px", borderBottom: "1px solid #fee2e2", fontFamily: "monospace" }}>{err.field}</td>
+                              <td style={{ padding: "2px 6px", borderBottom: "1px solid #fee2e2", color: "#b91c1c" }}>{err.error}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+        <DialogActions style={{ backgroundColor: "#f8fafc", justifyContent: "center", gap: 16, padding: "12px 24px 16px" }}>
+          <Button variant="contained" onClick={handleImportSubmit}
+            disabled={importLoading || !importFile}
+            startIcon={importLoading && <CircularProgress size={16} color="inherit" />}
+            sx={{ background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)", color: "#fff !important", fontWeight: 600, textTransform: "none", minWidth: 100,
+              "&:hover": { background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)" },
+              "&:disabled": { background: "#94a3b8", color: "#fff" } }}
+          >
+            {importLoading ? "Importing..." : "Import"}
+          </Button>
+          <Button variant="contained"
+            onClick={() => { setShowImportModal(false); setImportFile(null); setImportResult(null); }}
+            disabled={importLoading}
+            sx={{ background: "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)", color: "#3E5475 !important", fontWeight: 600, textTransform: "none", minWidth: 100,
+              "&:hover": { background: "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)" },
+              "&:disabled": { background: "#f1f5f9", color: "#94a3b8" } }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <div className="w-full max-w-full mx-auto">
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+          className="rounded-t-lg h-8 flex items-center justify-between px-3 font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
             background: "linear-gradient(#3E5475 100%)",
             boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
-          Speed Dial
+          <div className="flex-1" />
+          <span>Speed Dial</span>
+          <div className="flex-1 flex justify-end gap-2">
+            <button
+              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
+              style={{ background: "linear-gradient(to bottom, #FFFFFF 0%, #DCE6F2 100%)", color: "#1565c0", border: "1px solid #93c5fd", boxShadow: "0 2px 4px rgba(0,0,0,0.15)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(to bottom, #FFFFFF 0%, #DCE6F2 100%)")}
+              onClick={() => { setShowImportModal(true); setImportFile(null); setImportResult(null); }}
+            >
+              Import
+            </button>
+            <button
+              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
+              style={{ background: "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)", color: "#1565c0", border: "1px solid #93c5fd", boxShadow: "0 2px 4px rgba(0,0,0,0.15)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")}
+              onClick={handleExport}
+            >
+              Export
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto w-full">
@@ -434,7 +606,8 @@ const SpeedDialPage = () => {
                     <input
                       className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
                       value={speedDialNumber}
-                      onChange={(e) => setSpeedDialNumber(e.target.value)}
+                      inputMode="numeric"
+                      onChange={(e) => setSpeedDialNumber(e.target.value.replace(/\D/g, ""))}
                     />
                   </div>
 
@@ -451,7 +624,8 @@ const SpeedDialPage = () => {
                     <input
                       className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
                       value={destination}
-                      onChange={(e) => setDestination(e.target.value)}
+                      inputMode="tel"
+                      onChange={(e) => setDestination(e.target.value.replace(/[^\d+]/g, ""))}
                     />
                   </div>
                 </div>

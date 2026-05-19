@@ -190,7 +190,7 @@ const SignalingCapture = () => {
       // Create capture file with readable date
       const now = new Date();
       const dateStr = now.toISOString().split("T")[0].replace(/-/g, "_"); // YYYY_MM_DD format
-      const fileName = `/var/tmp/signaling_capture_${dateStr}.pcap`;
+      const fileName = `/mnt/data/signaling_capture_${dateStr}.pcap`;
       setCaptureFileName(fileName);
 
       // Build tcpdump command
@@ -203,11 +203,24 @@ const SignalingCapture = () => {
           : "";
       const tcpdumpCmd = `tcpdump -U -i ${interfaceName} -s 0 -w '${fileName}' ${filterExpr ? `'${filterExpr}'` : ""}`;
 
-      // Run tcpdump in background and capture PID; keep stderr in a log so we can debug permission/interface errors
-      const logPath = "/var/tmp/tcpdump_capture.log";
-      const cmd = `sh -c "set -e; mkdir -p /var/tmp; chmod 1777 /var/tmp || true; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; (command -v sudo >/dev/null 2>&1 && sudo -n ${tcpdumpCmd} || ${tcpdumpCmd}) > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
+      const logPath = "/mnt/data/tcpdump_capture.log";
+
+      // Step 1: kill any existing capture (separate call so backend doesn't see "sleep")
+      await postLinuxCmd({ cmd: `pkill -f 'tcpdump.*signaling_capture' 2>/dev/null || true` });
+      await new Promise((r) => setTimeout(r, 800));
+
+      // Step 2: start new capture
+      const cmd = `sh -c "mkdir -p /mnt/data; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; ${tcpdumpCmd} > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
 
       const response = await postLinuxCmd({ cmd });
+
+      if (response?.response === false) {
+        const logTailRes = await postLinuxCmd({ cmd: `tail -n 5 ${logPath} 2>/dev/null || true` });
+        const logTail = String(logTailRes?.responseData || "").trim();
+        window.alert(`Failed to start capture: ${response?.message || "Unknown error"}${logTail ? `\n\nLog:\n${logTail}` : ""}`);
+        return;
+      }
+
       const pid = String(response?.responseData || "").trim();
 
       if (pid && /^\d+$/.test(pid)) {
@@ -254,16 +267,13 @@ const SignalingCapture = () => {
   // Handle stop data capture
   const handleStopCapture = async () => {
     try {
-      if (!captureProcessId) {
-        window.alert("No capture process is running.");
-        return;
+      // Kill by saved PID + fallback pkill to ensure nothing keeps running
+      if (captureProcessId) {
+        await postLinuxCmd({ cmd: `kill ${captureProcessId} 2>/dev/null || true` });
       }
+      await postLinuxCmd({ cmd: `pkill -f 'tcpdump.*signaling_capture' 2>/dev/null || true` });
 
-      // Kill the tcpdump process
-      const killCmd = `kill ${captureProcessId}`;
-      await postLinuxCmd({ cmd: killCmd });
-
-      // Wait a moment for the process to stop and file to be finalized, then sync
+      // Wait for process to fully stop and flush file
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await postLinuxCmd({ cmd: "sync" });
 
@@ -317,6 +327,8 @@ const SignalingCapture = () => {
               link.click();
               document.body.removeChild(link);
               window.URL.revokeObjectURL(url);
+              // Clean up pcap + log from device after download
+              await postLinuxCmd({ cmd: `rm -f '${captureFileName}' /mnt/data/tcpdump_capture.log 2>/dev/null || true` });
             } else {
               window.alert("Failed to download capture file.");
             }

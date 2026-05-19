@@ -55,6 +55,24 @@ export const FEATURE_CODE_SECTIONS = [
       ],
     ],
   },
+
+  {
+    title: 'Self Extension Check',
+    fields: [
+      [
+        { key: 'self_extension_check_code', label: 'Self Extension Check', type: 'text', span: 1 },
+      ],
+    ],
+  },
+  {
+    title: 'Multiparty Conference',
+    fields: [
+      [
+        { key: 'multiparty_conference_code', label: 'Multiparty Conference', type: 'text' },
+        { key: 'multiparty_conference_return_code', label: 'Multiparty Conference Return', type: 'text' },
+      ],
+    ],
+  }
 ];
 
 export const FEATURE_CODE_INITIAL_FORM = {
@@ -70,6 +88,9 @@ export const FEATURE_CODE_INITIAL_FORM = {
   agent_login_logout: '*22',
   agent_status_id: '*23',
   agent_free_busy: '*24',
+  self_extension_check_code: '*22',
+  multiparty_conference_code: '*0',
+  multiparty_conference_return_code: '',
 };
 
 export const FORM_TO_API = {
@@ -85,6 +106,9 @@ export const FORM_TO_API = {
   agent_login_logout:       'agent_login_logout_code',
   agent_status_id:          'agent_status_id_code',
   agent_free_busy:          'agent_free_busy_code',
+  self_extension_check_code:          'self_extension_check_code',
+  multiparty_conference_code:         'multiparty_conference_code',
+  multiparty_conference_return_code:  'multiparty_conference_return_code',
 };
 
 export const API_TO_FORM = Object.fromEntries(

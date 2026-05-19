@@ -45,9 +45,59 @@ import {
   fetchSystemInfo,
 } from "../api/apiService";
 
+// ── Color palette ────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+const Btn = ({ children, onClick, disabled, variant = "default", style: extraStyle }) => {
+  const variants = {
+    default: { background: "#1e293b", color: "#fff", border: "1px solid #9ca3af" },
+    outline: { background: C.cardBg, color: C.labelText, border: `0.5px solid ${C.cardBorder}` },
+    danger: { background: "#fef2f2", color: C.errorRed, border: "0.5px solid #fecaca" },
+    accent: { background: C.cardBg, color: C.accent, border: `0.5px solid ${C.cardBorder}` },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s, fontSize: 11, fontWeight: 600, padding: "5px 14px", borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+        transition: "opacity 0.15s ease", whiteSpace: "nowrap", ...extraStyle,
+      }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.opacity = "0.82"; }}
+      onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.opacity = "1"; }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th style={{
+    background: "#f3f4f6", color: C.labelText, fontWeight: 700, fontSize: 10.5,
+    padding: "9px 8px", textAlign: "center", borderBottom: `1px solid ${C.cardBorder}`,
+    borderRight: "0.5px solid #9ca3af", whiteSpace: "nowrap",
+    textTransform: "uppercase", letterSpacing: "0.04em", ...extra,
+  }}>
+    {children}
+  </th>
+);
+
 const SipRegisterPage = () => {
   // State
   const [trunks, setTrunks] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(SIP_REGISTER_INITIAL_FORM);
@@ -78,6 +128,8 @@ const SipRegisterPage = () => {
     SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),
   );
   const [ethPortLoading, setEthPortLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   // Scroll state for custom horizontal scrollbar
   const tableScrollRef = useRef(null);
@@ -235,14 +287,20 @@ const SipRegisterPage = () => {
     resetDodAddForm();
   };
 
-  // Pagination
+  // Pagination + Search
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(trunks.length / itemsPerPage));
-  const pagedTrunks = trunks.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
+  const filteredRows = searchQuery.trim()
+    ? trunks.filter((r) =>
+        [r.trunk_id, r.username, r.provider, r.registerStatus].some((v) =>
+          String(v || "").toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
+      )
+    : trunks;
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
+  const pagedRows = filteredRows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  // legacy alias kept for modal code that may reference pagedTrunks
+  const pagedTrunks = pagedRows;
 
   // Load trunks on component mount
   useEffect(() => {
@@ -1073,15 +1131,15 @@ const SipRegisterPage = () => {
     const allowCodecsError = validateAllowCodecs(merged.allow_codecs);
     if (allowCodecsError) errors.allow_codecs = allowCodecsError;
 
+    const providerError = validateProvider(merged.provider);
+    if (providerError) errors.provider = providerError;
+
     if (merged.ui_register === "Yes") {
       const usernameError = validateUsername(merged.username);
       if (usernameError) errors.username = usernameError;
 
       const passwordError = validatePassword(merged.password);
       if (passwordError) errors.password = passwordError;
-
-      const providerError = validateProvider(merged.provider);
-      if (providerError) errors.provider = providerError;
 
       const expireInSecError = validateExpireInSec(merged.expire_in_sec);
       if (expireInSecError) errors.expire_in_sec = expireInSecError;
@@ -1285,7 +1343,28 @@ const SipRegisterPage = () => {
       setLoading((prev) => ({ ...prev, save: false }));
     }
   };
-  // Table selection logic
+  // Table selection logic (trunk_id based)
+  const allPageSelected =
+    pagedRows.length > 0 &&
+    pagedRows.map((r) => r.trunk_id).filter(Boolean).every((id) => selectedIds.includes(id));
+  const somePageSelected =
+    pagedRows.some((r) => r.trunk_id && selectedIds.includes(r.trunk_id)) && !allPageSelected;
+
+  const handleToggleRow = (trunk_id) => {
+    if (!trunk_id) return;
+    setSelectedIds((prev) =>
+      prev.includes(trunk_id) ? prev.filter((id) => id !== trunk_id) : [...prev, trunk_id],
+    );
+  };
+  const handleToggleAll = () => {
+    const pageIds = pagedRows.map((r) => r.trunk_id).filter(Boolean);
+    if (!pageIds.length) return;
+    setSelectedIds((prev) =>
+      allPageSelected
+        ? prev.filter((id) => !pageIds.includes(id))
+        : Array.from(new Set([...prev, ...pageIds])),
+    );
+  };
   const handleSelectRow = (idx) => {
     setSelected((sel) =>
       sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
@@ -1293,30 +1372,19 @@ const SipRegisterPage = () => {
   };
   const handleCheckAll = () => setSelected(trunks.map((_, idx) => idx));
   const handleUncheckAll = () => setSelected([]);
-  const handleInverse = () =>
-    setSelected(
-      trunks
-        .map((_, idx) => (selected.includes(idx) ? null : idx))
-        .filter((i) => i !== null),
-    );
+  const handleInverse = () => {
+    const allIds = trunks.map((t) => t.trunk_id).filter(Boolean);
+    setSelectedIds(allIds.filter((id) => !selectedIds.includes(id)));
+  };
   const handleDelete = async () => {
-    if (selected.length === 0) {
+    if (selectedIds.length === 0) {
       showMessage("error", "Please select trunks to delete");
       return;
     }
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      console.log(
-        "Deleting selected trunks:",
-        selected.map((idx) => trunks[idx]?.trunk_id),
-      );
-      const deletePromises = selected.map(async (idx) => {
-        const trunk = trunks[idx];
-        console.log("Deleting trunk:", trunk.trunk_id);
-        return await deleteSipTrunk(trunk.trunk_id);
-      });
-
+      const deletePromises = selectedIds.map(async (id) => await deleteSipTrunk(id));
       const results = await Promise.allSettled(deletePromises);
       const successCount = results.filter(
         (result) => result.status === "fulfilled" && result.value.response,
@@ -1325,31 +1393,19 @@ const SipRegisterPage = () => {
 
       if (successCount > 0) {
         showMessage("success", `${successCount} trunk(s) deleted successfully`);
-
-        // Try to reload data, but don't fail if it doesn't work
         try {
-          await loadTrunks(true); // Reload trunks to get fresh data
-        } catch (reloadError) {
-          console.warn(
-            "Failed to reload after delete, removing from local state:",
-            reloadError,
-          );
-          // Remove deleted items from local state as fallback
-          setTrunks((prev) => prev.filter((_, idx) => !selected.includes(idx)));
+          await loadTrunks(true);
+        } catch {
+          setTrunks((prev) => prev.filter((t) => !selectedIds.includes(t.trunk_id)));
         }
-        setSelected([]); // Clear selection
+        setSelectedIds([]);
       }
 
       if (failCount > 0) {
         showMessage("error", `Failed to delete ${failCount} trunk(s)`);
       }
     } catch (error) {
-      console.error("Error deleting SIP trunks:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", error.message || "Failed to delete trunks");
-      }
+      showMessage("error", error.message || "Failed to delete trunks");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -1402,7 +1458,7 @@ const SipRegisterPage = () => {
           // Clear all items from local state as fallback
           setTrunks([]);
         }
-        setSelected([]);
+        setSelectedIds([]);
         setPage(1);
       }
 
@@ -1410,12 +1466,7 @@ const SipRegisterPage = () => {
         showMessage("error", `Failed to delete ${failCount} trunk(s)`);
       }
     } catch (error) {
-      console.error("Error clearing all SIP trunks:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", error.message || "Failed to clear all trunks");
-      }
+      showMessage("error", error.message || "Failed to clear all trunks");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -1464,608 +1515,207 @@ const SipRegisterPage = () => {
       : 0;
 
   return (
-    <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
-    >
+    <div style={{ backgroundColor: C.pageBg, minHeight: "calc(100vh - 80px)", padding: 16 }}>
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+
+        {/* Alert banner */}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{ position: "fixed", top: 20, right: 20, zIndex: 9999, minWidth: 300, boxShadow: 3 }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* Breadcrumb */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Trunks &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>SIP Register</span>
+          </div>
+        </div>
+
+        {/* Main card */}
+        <div style={{ background: C.cardBg, border: `1px solid ${C.cardBorder}`, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+
+          {/* Toolbar */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: `1px solid ${C.cardBorder}`, background: "#DCE6F2", flexWrap: "wrap", gap: 8 }}>
+            {/* Left: page info + selected count */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ background: "#f1f5f9", border: `0.5px solid ${C.cardBorder}`, color: "#475569", fontSize: 11, fontWeight: 600, padding: "3px 12px", borderRadius: 20 }}>
+                Page {page} · {filteredRows.length} records
+              </span>
+              {selectedIds.length > 0 && (
+                <span style={{ background: "#e0f2fe", color: C.accent, fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, border: `0.5px solid ${C.accent}` }}>
+                  {selectedIds.length} selected
+                </span>
+              )}
+            </div>
+            {/* Right: action buttons */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <Btn onClick={() => { setImportFile(null); setShowImportModal(true); }} variant="outline">⬇ Import</Btn>
+              <Btn onClick={handleExport} variant="outline">⬆ Export</Btn>
+              <Btn onClick={handleInverse} disabled={loading.delete} variant="outline">Inverse</Btn>
+              <Btn onClick={handleClearAll} disabled={loading.delete || trunks.length === 0} variant="danger">Clear All</Btn>
+              <Btn onClick={handleDelete} disabled={loading.delete || selectedIds.length === 0} variant="danger">🗑 Delete</Btn>
+              <Btn onClick={() => handleOpenModal()} disabled={loading.fetch} variant="accent">+ Add New</Btn>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            {loading.fetch ? (
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: 48 }}>
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1200 }}>
+                <thead>
+                  <tr>
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        sx={{ padding: "1px", color: C.accent, "&.Mui-checked": { color: C.accent }, "&.MuiCheckbox-indeterminate": { color: C.accent } }}
+                      />
+                    </TH>
+                    <TH style={{ width: 32 }}>ID</TH>
+                    {sipRegisterFields.filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name)).map((field) => (
+                      <TH key={field.name}>{field.label}</TH>
+                    ))}
+                    <TH>Status</TH>
+                    <TH style={{ width: 60 }}>Modify</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedRows.length === 0 ? (
+                    <tr>
+                      <td colSpan={sipRegisterFields.filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name)).length + 4}
+                        style={{ textAlign: "center", padding: "36px 0", color: C.mutedText, fontSize: 13 }}>
+                        {searchQuery ? `No results for "${searchQuery}"` : "No records found."}
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedRows.map((trunk, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = trunk.trunk_id && selectedIds.includes(trunk.trunk_id);
+                      const rowBg = isSelected ? "#f0f9ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                      return (
+                        <tr
+                          key={trunk.trunk_id || idx}
+                          style={{ background: rowBg, borderBottom: "0.5px solid #9ca3af", transition: "background 0.1s ease" }}
+                          onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "#f0f9ff"; }}
+                          onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = rowBg; }}
+                        >
+                          <td style={{ textAlign: "center", padding: "4px 0", borderRight: "0.5px solid #edf2f7" }}>
+                            <Checkbox
+                              size="small"
+                              disabled={!trunk.trunk_id}
+                              checked={!!trunk.trunk_id && selectedIds.includes(trunk.trunk_id)}
+                              onChange={() => handleToggleRow(trunk.trunk_id)}
+                              sx={{ padding: "1px", color: C.accent, "&.Mui-checked": { color: C.accent } }}
+                            />
+                          </td>
+                          <td style={{ textAlign: "center", padding: "7px 4px", fontSize: 11, color: C.mutedText, borderRight: "0.5px solid #edf2f7" }}>
+                            {(page - 1) * itemsPerPage + idx + 1}
+                          </td>
+                          {sipRegisterFields.filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name)).map((field) => {
+                            const value = trunk[field.name];
+                            const hasValue = value !== undefined && value !== null && value !== "";
+                            const displayValue = hasValue && SIP_PREFIX_FIELDS.includes(field.name)
+                              ? `sip:${value}` : hasValue ? value : "—";
+                            return (
+                              <td key={field.name} style={{ padding: "7px 8px", fontSize: 12, color: C.valueText, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRight: "0.5px solid #edf2f7", fontWeight: field.name === "trunk_id" ? 600 : 400 }}>
+                                {displayValue}
+                              </td>
+                            );
+                          })}
+                          <td style={{ textAlign: "center", padding: "7px 8px", borderRight: "0.5px solid #edf2f7" }}>
+                            <span style={{
+                              padding: "2px 9px", borderRadius: 10, fontSize: 10.5, fontWeight: 600, whiteSpace: "nowrap", display: "inline-block",
+                              background: trunk.registerStatus?.toLowerCase() === "registered" ? "#dcfce7"
+                                : trunk.registerStatus?.toLowerCase() === "unregistered" || trunk.registerStatus?.toLowerCase() === "rejected" ? "#fef2f2"
+                                : trunk.registerStatus?.toLowerCase() === "pending" ? "#fef3c7" : "#f1f5f9",
+                              color: trunk.registerStatus?.toLowerCase() === "registered" ? "#15803d"
+                                : trunk.registerStatus?.toLowerCase() === "unregistered" || trunk.registerStatus?.toLowerCase() === "rejected" ? "#dc2626"
+                                : trunk.registerStatus?.toLowerCase() === "pending" ? "#d97706" : "#475569",
+                            }}>
+                              {trunk.registerStatus || "—"}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: "center", padding: "7px 8px" }}>
+                            <EditDocumentIcon
+                              style={{ fontSize: 18 }}
+                              className={`cursor-pointer text-blue-600 mx-auto ${loading.delete ? "opacity-50" : "opacity-80 hover:opacity-100 transition-opacity"}`}
+                              onClick={() => !loading.delete && handleOpenModal(trunk, realIdx)}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {!loading.fetch && filteredRows.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderTop: `0.5px solid ${C.cardBorder}`, background: "#f8fafc" }}>
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record{pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn onClick={() => handlePageChange(page - 1)} disabled={loading.fetch || page <= 1} variant="outline">← Prev</Btn>
+                <span style={{ fontSize: 11, fontWeight: 600, color: C.accent, background: "#e0f2fe", padding: "5px 14px", borderRadius: 6, border: `0.5px solid ${C.cardBorder}` }}>
+                  Page {page} of {totalPages}
+                </span>
+                <Btn onClick={() => handlePageChange(page + 1)} disabled={loading.fetch || page >= totalPages} variant="outline">Next →</Btn>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Import Modal */}
       <Dialog
         open={showImportModal}
-        onClose={() => {
-          if (!importLoading) {
-            setShowImportModal(false);
-            setImportFile(null);
-          }
-        }}
+        onClose={() => { if (!importLoading) { setShowImportModal(false); setImportFile(null); } }}
         maxWidth={false}
         PaperProps={{ sx: { width: 420, maxWidth: "96vw", mx: "auto", p: 0 } }}
       >
-        <DialogTitle
-          className="h-10 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
+        <DialogTitle style={{ background: "#1e2d42", color: "#fff", fontWeight: 700, fontSize: 15, textAlign: "center", padding: "14px 24px" }}>
           Import SIP Trunks
         </DialogTitle>
-        <DialogContent
-          style={{ backgroundColor: "#dde0e4", padding: "20px 24px 12px" }}
-        >
+        <DialogContent style={{ backgroundColor: C.pageBg, padding: "20px 24px 12px" }}>
           <div className="flex flex-col gap-4 pt-1">
-            <p className="text-[13px] text-gray-600">
-              Select a CSV or JSON file containing SIP trunk data to import.
-            </p>
+            <p className="text-[13px] text-gray-600">Select a CSV or JSON file to import.</p>
             <div
               className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
               onClick={() => importFileRef.current?.click()}
             >
               <div className="text-gray-500 text-[13px] mb-1">
                 {importFile ? (
-                  <span className="text-green-700 font-semibold">
-                    {importFile.name}
-                  </span>
+                  <span className="text-green-700 font-semibold">{importFile.name}</span>
                 ) : (
-                  <span>
-                    Click to choose file{" "}
-                    <span className="text-gray-400">(CSV / JSON)</span>
-                  </span>
+                  <span>Click to choose file <span className="text-gray-400">(CSV / JSON)</span></span>
                 )}
               </div>
-              <input
-                ref={importFileRef}
-                type="file"
-                accept=".csv,.json"
-                className="hidden"
-                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-              />
+              <input ref={importFileRef} type="file" accept=".csv,.json" className="hidden" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
             </div>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            backgroundColor: "#dde0e4",
-            justifyContent: "center",
-            gap: 16,
-            padding: "12px 24px 16px",
-          }}
-        >
-          <Button
-            variant="contained"
-            onClick={handleImportSubmit}
-            disabled={importLoading || !importFile}
-            startIcon={
-              importLoading && <CircularProgress size={16} color="inherit" />
-            }
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff !important",
-              fontWeight: 600,
-              textTransform: "none",
-              minWidth: 100,
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#3E5475",
-                color: "#fff",
-              },
-            }}
-          >
+        <DialogActions style={{ backgroundColor: C.pageBg, justifyContent: "center", gap: 16, padding: "12px 24px 16px" }}>
+          <Btn onClick={handleImportSubmit} disabled={importLoading || !importFile}>
             {importLoading ? "Importing..." : "Import"}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setShowImportModal(false);
-              setImportFile(null);
-            }}
-            disabled={importLoading}
-            sx={{
-              background:
-                "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-              color: "#374151",
-              fontWeight: 600,
-              textTransform: "none",
-              minWidth: 100,
-            }}
-          >
-            Cancel
-          </Button>
+          </Btn>
+          <Btn onClick={() => { setShowImportModal(false); setImportFile(null); }} disabled={importLoading} variant="outline">Cancel</Btn>
         </DialogActions>
       </Dialog>
-
-      {/* Message Display */}
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
-
-      {/* Main Content */}
-      <div className="w-full max-w-full mx-auto md:p-2">
-        {/* Blue header bar - always show */}
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-between px-3 font-semibold text-[18px] text-[#ffffff] shadow-sm"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          <div className="flex-1" />
-          <span>SIP Register</span>
-          <div className="flex-1 flex justify-end gap-2">
-            <button
-              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-              style={{
-                background:
-                  "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)",
-                color: "#1565c0",
-                border: "1px solid #93c5fd",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background =
-                  "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background =
-                  "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")
-              }
-              onClick={() => {
-                setImportFile(null);
-                setShowImportModal(true);
-              }}
-            >
-              Import
-            </button>
-            <button
-              className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-              style={{
-                background:
-                  "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)",
-                color: "#1565c0",
-                border: "1px solid #93c5fd",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background =
-                  "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background =
-                  "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")
-              }
-              onClick={handleExport}
-            >
-              Export
-            </button>
-          </div>
-        </div>
-
-        <div
-          className="w-full max-w-full mx-auto"
-          style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div
-              className="w-full border-b border-gray-300"
-              style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
-              }}
-            >
-              <div
-                ref={tableScrollRef}
-                onScroll={handleTableScroll}
-                className="scrollbar-hide"
-                style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  maxHeight: 360,
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
-                }}
-              >
-                <table
-                  className="w-full min-w-[1400px] border border-gray-300 border-collapse whitespace-nowrap"
-                  style={{ tableLayout: "auto", border: "1px solid #bbb" }}
-                >
-                  <thead>
-                    <tr style={{ minHeight: 32 }}>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Check
-                      </th>
-                      {sipRegisterFields
-                        .filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name))
-                        .map((field) => (
-                          <th
-                            key={field.name}
-                            className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                            style={{
-                              border: "1px solid #bbb",
-                              padding: "6px 8px",
-                              minHeight: 32,
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {field.label}
-                          </th>
-                        ))}
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Status
-                      </th>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Modify
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading.fetch ? (
-                      <tr>
-                        <td
-                          colSpan={visibleFieldsCount + 3}
-                          className="border border-gray-300 px-2 py-4 text-center"
-                        >
-                          <div className="flex items-center justify-center gap-2">
-                            <CircularProgress size={20} />
-                            <span>Loading trunks...</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : trunks.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={visibleFieldsCount + 3}
-                          className="border border-gray-300 px-2 py-1 text-center"
-                        >
-                          No data
-                        </td>
-                      </tr>
-                    ) : (
-                      pagedTrunks.map((trunk, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        return (
-                          <tr key={realIdx} style={{ minHeight: 32 }}>
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selected.includes(realIdx)}
-                                onChange={() => handleSelectRow(realIdx)}
-                                disabled={loading.delete}
-                              />
-                            </td>
-                            {sipRegisterFields
-                              .filter(
-                                (f) => !HIDDEN_TABLE_FIELDS.includes(f.name),
-                              )
-                              .map((field) => {
-                                const value = trunk[field.name];
-                                const hasValue =
-                                  value !== undefined &&
-                                  value !== null &&
-                                  value !== "";
-                                // Add sip: prefix for display in table for these fields
-                                const displayValue =
-                                  hasValue &&
-                                  SIP_PREFIX_FIELDS.includes(field.name)
-                                    ? `sip:${value}`
-                                    : hasValue
-                                      ? value
-                                      : "--";
-                                return (
-                                  <td
-                                    key={field.name}
-                                    className="border border-gray-300 text-center bg-white"
-                                    style={{
-                                      border: "1px solid #bbb",
-                                      padding: "6px 8px",
-                                      minHeight: 32,
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {displayValue}
-                                  </td>
-                                );
-                              })}
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <span
-                                className={`px-2 py-1 rounded text-xs font-medium ${
-                                  trunk.registerStatus?.toLowerCase() ===
-                                  "registered"
-                                    ? "bg-green-100 text-green-800"
-                                    : trunk.registerStatus?.toLowerCase() ===
-                                        "unregistered"
-                                      ? "bg-red-100 text-red-800"
-                                      : trunk.registerStatus?.toLowerCase() ===
-                                          "rejected"
-                                        ? "bg-red-100 text-red-800"
-                                        : trunk.registerStatus?.toLowerCase() ===
-                                            "pending"
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-gray-100 text-gray-600"
-                                }`}
-                              >
-                                {trunk.registerStatus || "--"}
-                              </span>
-                            </td>
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <EditDocumentIcon
-                                className={`cursor-pointer text-blue-600 mx-auto ${loading.delete ? "opacity-50" : ""}`}
-                                onClick={() =>
-                                  !loading.delete &&
-                                  handleOpenModal(trunk, realIdx)
-                                }
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {/* Custom scrollbar row below the table */}
-            {showCustomScrollbar && (
-              <div
-                style={{
-                  width: "100%",
-                  margin: "0 auto",
-                  background: "#f4f6fa",
-                  display: "flex",
-                  alignItems: "center",
-                  height: 24,
-                  borderBottomLeftRadius: 8,
-                  borderBottomRightRadius: 8,
-                  border: "none",
-                  borderTop: "none",
-                  padding: "0 4px",
-                  boxSizing: "border-box",
-                }}
-              >
-                <div
-                  style={{
-                    width: 18,
-                    height: 18,
-                    background: "#e3e7ef",
-                    border: "1px solid #bbb",
-                    borderRadius: 8,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    color: "#888",
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                  onClick={() => handleArrowClick("left")}
-                >
-                  &#9664;
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    height: 12,
-                    background: "#e3e7ef",
-                    borderRadius: 8,
-                    position: "relative",
-                    margin: "0 4px",
-                    overflow: "hidden",
-                  }}
-                  onClick={handleScrollbarDrag}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      height: 12,
-                      background: "#888",
-                      borderRadius: 8,
-                      cursor: "pointer",
-                      top: 0,
-                      width: thumbWidth,
-                      left: thumbLeft,
-                    }}
-                    draggable
-                    onDrag={handleScrollbarDrag}
-                  />
-                </div>
-                <div
-                  style={{
-                    width: 18,
-                    height: 18,
-                    background: "#e3e7ef",
-                    border: "1px solid #bbb",
-                    borderRadius: 8,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    color: "#888",
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                  onClick={() => handleArrowClick("right")}
-                >
-                  &#9654;
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-        <div
-          className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleInverse}
-              disabled={loading.delete}
-            >
-              Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleDelete}
-              disabled={loading.delete}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleClearAll}
-              disabled={loading.delete}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Clear All
-            </button>
-          </div>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={() => handleOpenModal()}
-            disabled={loading.save}
-          >
-            Add New
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-          <span>{trunks.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => handlePageChange(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
-        </div>
-      </div>
 
       {/* Modal */}
       <Dialog
@@ -2173,6 +1823,7 @@ const SipRegisterPage = () => {
                             }
                             error={!!validationErrors.trunk_id}
                             placeholder="Trunk Name"
+                            disabled={editIndex !== null}
                             inputProps={{ style: { fontSize: 14 } }}
                           />
                           {validationErrors.trunk_id && (
@@ -2518,9 +2169,7 @@ const SipRegisterPage = () => {
                           </FormControl>
                         </div>
                       </div>
-                      {form.ui_register === "Yes" && (
-                        <>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
                             <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
                               Trunk IP/Domain{" "}
                               <span className="text-red-500">*</span>
@@ -2545,6 +2194,8 @@ const SipRegisterPage = () => {
                             </div>
                           </div>
 
+                      {form.ui_register === "Yes" && (
+                        <>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
                             <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
                               Password <span className="text-red-500">*</span>

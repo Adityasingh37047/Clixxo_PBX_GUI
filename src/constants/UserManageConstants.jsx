@@ -103,6 +103,17 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: 'featureCodeSettings', label: 'Feature Codes' },
         ],
       },
+      {
+        id: 'sip',
+        label: 'SIP',
+        pages: [
+          { id: 'sipMain',          label: 'SIP' },
+          { id: 'sipTrunk',        label: 'SIP Trunk' },
+          { id: 'sipToSipAccount',  label: 'SIP To SIP Account' },
+          { id: 'sipTrunkGroup',    label: 'SIP Trunk Group' },
+          { id: 'sipMedia',         label: 'Media' },
+        ],
+      },
     ],
   },
 
@@ -220,16 +231,16 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: 'pcmReceptionTimeout',   label: 'Reception Timeout' },
         ],
       },
-      {
-        id: 'sip',
-        label: 'SIP',
-        pages: [
-          { id: 'sipMain',          label: 'SIP' },
-          { id: 'sipToSipAccount',  label: 'SIP To SIP Account' },
-          { id: 'sipTrunkGroup',    label: 'SIP Trunk Group' },
-          { id: 'sipMedia',         label: 'Media' },
-        ],
-      },
+      // {
+      //   id: 'sip',
+      //   label: 'SIP',
+      //   pages: [
+      //     { id: 'sipMain',          label: 'SIP' },
+      //     { id: 'sipToSipAccount',  label: 'SIP To SIP Account' },
+      //     { id: 'sipTrunkGroup',    label: 'SIP Trunk Group' },
+      //     { id: 'sipMedia',         label: 'Media' },
+      //   ],
+      // },
     ],
   },
 
@@ -300,7 +311,9 @@ export const PAGE_PERMISSION_GROUPS = [
         id: 'userPermission',
         label: 'User Permission',
         pages: [
-          { id: 'changePassword', label: 'Change Password' },
+          { id: 'userList',      label: 'User Permission' },
+          { id: 'accountManage', label: 'Account Manage'  },
+          { id: 'changePassword',label: 'Change Password' },
         ],
       },
     ],

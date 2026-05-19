@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
       ip === "localhost" || ip === "127.0.0.1" || ip === "0.0.0.0";
   
     if (isLocalhost) {
-    let testIp='192.168.0.93';
+    let testIp='192.168.0.99';
       // Local development → backend usually runs on 5000
       return `https://${testIp}:443/api`;
     } else {
@@ -79,7 +79,7 @@ useEffect(() => {
       if (response.response === true) {
         const userData = {
           username: response.data?.username || username,
-          role: response.data?.role || 'admin',
+          role: response.data?.role || response.data?.access?.access_type || null,
           id: response.data?.id,
           ...response.data,
           // Capture access from wherever the backend places it

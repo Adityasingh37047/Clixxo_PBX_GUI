@@ -108,6 +108,7 @@ export const SIDEBAR_SECTIONS = [
           { id: 'callControlInboundRoutes', title: 'Inbound Routes', path: '/call-control/inbound-routes' },
           { id: 'callControlOutboundRoutes', title: 'Outbound Routes', path: '/call-control/outbound-routes' },
           { id: 'OutboundRestrictions', title: 'Outbound Restrictions', path: '/call-control/outbound-restrictions'},
+          { id: 'callControlTimeCondition', title: 'Time Condition', path: '/call-control/time-condition' },
         ]
       },
 
@@ -148,6 +149,22 @@ export const SIDEBAR_SECTIONS = [
         ]
 
 
+      },
+      {
+        id: 'sip',
+        title: 'SIP',
+        icon: PhoneIcon,
+        hasSubmenu: true,
+        path: '/sip',
+
+        items: [
+          { id: 'sipMain', title: 'SIP', path: '/sip/sip' },
+          // { id: 'sipHa', title: 'HA', path: '/sip/ha' },
+          { id: 'sipTrunk', title: 'SIP Trunk', path: '/sip/sip-trunk' }, // Hidden from navigation
+          { id: 'sipToSipAccount', title: 'SIP To SIP Account', path: '/sip/sip-to-sip-account' },
+          { id: 'sipTrunkGroup', title: 'SIP Trunk Group', path: '/sip/sip-trunk-group' },
+          { id: 'sipMedia', title: 'Media', path: '/sip/media' },
+        ]
       },
     ]
   },
@@ -296,22 +313,22 @@ export const SIDEBAR_SECTIONS = [
           { id: 'pcmReceptionTimeout', title: 'Reception Timeout', path: '/pcm/reception-timeout' },
         ]
       },
-      {
-        id: 'sip',
-        title: 'SIP',
-        icon: PhoneIcon,
-        hasSubmenu: true,
-        path: '/sip',
+      // {
+      //   id: 'sip',
+      //   title: 'SIP',
+      //   icon: PhoneIcon,
+      //   hasSubmenu: true,
+      //   path: '/sip',
 
-        items: [
-          { id: 'sipMain', title: 'SIP', path: '/sip/sip' },
-          // { id: 'sipHa', title: 'HA', path: '/sip/ha' },
-          // { id: 'sipTrunk', title: 'SIP Trunk', path: '/sip/sip-trunk' }, // Hidden from navigation
-          { id: 'sipToSipAccount', title: 'SIP To SIP Account', path: '/sip/sip-to-sip-account' },
-          { id: 'sipTrunkGroup', title: 'SIP Trunk Group', path: '/sip/sip-trunk-group' },
-          { id: 'sipMedia', title: 'Media', path: '/sip/media' },
-        ]
-      },
+      //   items: [
+      //     { id: 'sipMain', title: 'SIP', path: '/sip/sip' },
+      //     // { id: 'sipHa', title: 'HA', path: '/sip/ha' },
+      //     { id: 'sipTrunk', title: 'SIP Trunk', path: '/sip/sip-trunk' }, // Hidden from navigation
+      //     { id: 'sipToSipAccount', title: 'SIP To SIP Account', path: '/sip/sip-to-sip-account' },
+      //     { id: 'sipTrunkGroup', title: 'SIP Trunk Group', path: '/sip/sip-trunk-group' },
+      //     { id: 'sipMedia', title: 'Media', path: '/sip/media' },
+      //   ]
+      // },
     ]
   },
 

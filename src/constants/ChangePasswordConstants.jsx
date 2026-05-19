@@ -1,26 +1,20 @@
-// Field labels
 export const CHANGE_PASSWORD_FIELDS = [
-  { name: 'currentUsername', label: 'Current Username', type: 'text' },
-  { name: 'currentPassword', label: 'Current Password', type: 'password' },
-  { name: 'newUsername', label: 'New Username', type: 'text' },
-  { name: 'newPassword', label: 'New Password', type: 'password' },
-  { name: 'confirmNewPassword', label: 'Confirm New Password', type: 'password' },
+  { name: 'username',        label: 'Current Username',   type: 'text'     },
+  { name: 'newUsername',     label: 'New Username',        type: 'text'     },
+  { name: 'password',        label: 'New Password',        type: 'password' },
+  { name: 'confirmPassword', label: 'Confirm New Password',type: 'password' },
 ];
 
-// Initial form state
 export const CHANGE_PASSWORD_INITIAL_FORM = {
-  currentUsername: '',
-  currentPassword: '',
-  newUsername: '',
-  newPassword: '',
-  confirmNewPassword: '',
+  username:        '',
+  newUsername:     '',
+  password:        '',
+  confirmPassword: '',
 };
 
-// Button labels
 export const CHANGE_PASSWORD_BUTTONS = {
-  save: 'Save',
+  save:  'Save',
   reset: 'Reset',
 };
 
-// Red note
-export const CHANGE_PASSWORD_NOTE = 'Note1: The username and the password can consist only of numbers, letters or the underline.';
+export const CHANGE_PASSWORD_NOTE = 'Note: After a successful username change you will be logged out automatically.';

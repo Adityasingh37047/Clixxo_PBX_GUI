@@ -201,6 +201,47 @@ const PickupGroup = () => {
     setChosenSelected([]);
   };
 
+  const moveChosenToBottom = () => {
+    if (!chosenSelected.length) return;
+    setMemberExtensions((prev) => {
+      const rest = prev.filter((id) => !chosenSelected.includes(id));
+      const chosen = prev.filter((id) => chosenSelected.includes(id));
+      return [...rest, ...chosen];
+    });
+  };
+  const moveChosenUp = () => {
+    if (!chosenSelected.length) return;
+    setMemberExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = 1; i < arr.length; i++) {
+        if (chosenSelected.includes(arr[i]) && !chosenSelected.includes(arr[i - 1])) {
+          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+        }
+      }
+      return arr;
+    });
+  };
+  const moveChosenDown = () => {
+    if (!chosenSelected.length) return;
+    setMemberExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 2; i >= 0; i--) {
+        if (chosenSelected.includes(arr[i]) && !chosenSelected.includes(arr[i + 1])) {
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        }
+      }
+      return arr;
+    });
+  };
+  const moveChosenToTop = () => {
+    if (!chosenSelected.length) return;
+    setMemberExtensions((prev) => {
+      const chosen = prev.filter((id) => chosenSelected.includes(id));
+      const rest = prev.filter((id) => !chosenSelected.includes(id));
+      return [...chosen, ...rest];
+    });
+  };
+
   const handleCheckAll = () => setSelected(rows.map((_, i) => i));
   const handleUncheckAll = () => setSelected([]);
   const handleSelectRow = (idx) => {
@@ -618,33 +659,51 @@ const PickupGroup = () => {
                       </div>
 
                       <div className="flex flex-col gap-1 pt-7">
+                        {/* Move to bottom */}
                         <button
                           type="button"
-                          className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                          onClick={removeSelectedMembers}
+                          className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                          title="Move to bottom"
+                          onClick={moveChosenToBottom}
                         >
-                          &lt;
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <polyline points="2,3 7,8 12,3" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <line x1="2" y1="11" x2="12" y2="11" stroke="#333" strokeWidth="2" strokeLinecap="round"/>
+                          </svg>
                         </button>
+                        {/* Move up */}
                         <button
                           type="button"
-                          className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                          onClick={addSelectedMembers}
+                          className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                          title="Move up"
+                          onClick={moveChosenUp}
                         >
-                          &gt;
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <polyline points="2,9 7,4 12,9" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
                         </button>
+                        {/* Move down */}
                         <button
                           type="button"
-                          className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                          onClick={removeAllMembers}
+                          className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                          title="Move down"
+                          onClick={moveChosenDown}
                         >
-                          v
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <polyline points="2,5 7,10 12,5" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
                         </button>
+                        {/* Move to top */}
                         <button
                           type="button"
-                          className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                          onClick={addAllMembers}
+                          className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                          title="Move to top"
+                          onClick={moveChosenToTop}
                         >
-                          ^
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <line x1="2" y1="3" x2="12" y2="3" stroke="#333" strokeWidth="2" strokeLinecap="round"/>
+                            <polyline points="2,11 7,6 12,11" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
                         </button>
                       </div>
                     </div>

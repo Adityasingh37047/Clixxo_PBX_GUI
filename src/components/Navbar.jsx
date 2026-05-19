@@ -106,7 +106,7 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
           borderBottom: "1px solid #243347",
         }}
       >
-        {/* LEFT: hamburger + logo + datetime */}
+        {/* LEFT: hamburger + logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {isMobile && (
             <IconButton onClick={() => setSidebarOpen(!sidebarOpen)} sx={{ color: "white", ml: 1, "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}>
@@ -120,17 +120,18 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
             onClick={() => navigate("/")}
             style={{ maxWidth: "180px", objectFit: "contain" }}
           />
-          {/* Datetime — anchored to logo */}
-          <div style={{ color: '#b0b8c8', display: 'flex', flexDirection: 'row', gap: 6, fontSize: 13, fontWeight: 600, marginLeft: 12, borderLeft: '1px solid #2e4060', paddingLeft: 12 }}>
-            {serverDateTime ? (
-              <>
-                <span>{formattedDate}</span>
-                <span>{formattedTime}</span>
-              </>
-            ) : (
-              <span style={{ color: '#5a7a9a' }}>—</span>
-            )}
-          </div>
+        </div>
+
+        {/* CENTER: datetime — absolutely centered in navbar */}
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: '#ffffff', display: 'flex', flexDirection: 'row', gap: 8, fontSize: 13, fontWeight: 600, pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+          {serverDateTime ? (
+            <>
+              <span>{formattedDate}</span>
+              <span>{formattedTime}</span>
+            </>
+          ) : (
+            <span style={{ color: '#5a7a9a' }}>—</span>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           {/* <p className="text-red-500 text-xs hidden sm:block">

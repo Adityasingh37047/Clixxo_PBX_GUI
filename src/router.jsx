@@ -142,6 +142,7 @@ import FxsIPCallInCalleeID from './sections/numManipulate/FxsIPCallInCalleeID';
 import FxsPSTNCallInCallerID from './sections/numManipulate/FxsPSTNCallInCallerID';
 import FxsPSTNCallInCalleeID from './sections/numManipulate/FxsPSTNCallInCalleeID';
 import ActiveCallQueue from './components/ActiveCallQueue';
+import TimeCondition from './components/TimeCondition';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -317,6 +318,7 @@ export const router = createBrowserRouter([
       { path: '/call-features/ring-group', element: <RingGroup /> },
       { path: '/call-features/speed-dial', element: <SpeedDialPage /> },
       { path: '/call-features/disa', element: <DisaPage /> },
+      { path: '/call-control/time-condition', element: <TimeCondition /> },
       {
         path: '/pcm/status',
         element: <PcmStatusPage />,

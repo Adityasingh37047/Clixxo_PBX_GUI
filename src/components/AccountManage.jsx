@@ -14,7 +14,6 @@ import {
 import { useAuth } from "../context/AuthContext";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import Button from "@mui/material/Button";
-import { Checkbox, FormControlLabel } from "@mui/material";
 
 const modalOverlayStyle = {
   position: "fixed",
@@ -371,9 +370,13 @@ const AccountManage = () => {
       const response = await fetchAccountManageDelete(userData);
 
       if (response && response.response === true) {
-        // Refresh the user list after successful delete
         await fetchAllUsers();
-        alert("User(s) deleted successfully!");
+        const skipped = response.data?.skipped ?? [];
+        if (skipped.length > 0) {
+          alert(`Deleted successfully. Skipped: ${skipped.map(u => u.username).join(', ')}`);
+        } else {
+          alert("User(s) deleted successfully!");
+        }
         return true;
       } else {
         throw new Error(response?.message || "Failed to delete user");
@@ -417,12 +420,7 @@ const AccountManage = () => {
       // Send all current users data for deletion (excluding current user)
       const allUsersData = accounts
         .filter((user) => !user.isAdmin)
-        .map((user) => ({
-          id: user.id,
-          username: user.username,
-          password: user.password,
-          permission: user.permission,
-        }));
+        .map((user) => ({ id: user.id, username: user.username }));
 
       const response = await fetchAccountManageDelete({ users: allUsersData });
 
@@ -504,29 +502,20 @@ const AccountManage = () => {
       return;
     }
 
-    // Filter out current user from deletion
     const selectedUsers = selected
       .map((idx) => combinedAccounts[idx])
       .filter((user) => !user.isAdmin)
-      .map((user) => ({
-        id: user.id,
-        username: user.username,
-        password: user.password,
-        permission: user.permission,
-      }));
+      .map((user) => ({ id: user.id, username: user.username }));
 
     if (selectedUsers.length === 0) {
       alert("Admin user cannot be deleted.");
       return;
     }
 
-    // Show browser confirmation dialog
     const confirmed = window.confirm(
       `Are you sure you want to delete ${selectedUsers.length} selected user(s)?`,
     );
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     const success = await deleteUser({ users: selectedUsers });
 
@@ -561,10 +550,8 @@ const AccountManage = () => {
       setFormData({
         index: item.id,
         userName: item.username,
-        password: item.password,
-        authority: Array.isArray(item.permission)
-          ? item.permission
-          : [item.permission],
+        password: '',
+        authority: item.authority ?? 'Read',
       });
       setEditIdx(idx);
     } else {
@@ -586,16 +573,6 @@ const AccountManage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAuthorityChange = (value) => {
-    setFormData((prev) => {
-      const currentAuthority = prev.authority || [];
-      const newAuthority = currentAuthority.includes(value)
-        ? currentAuthority.filter((item) => item !== value)
-        : [...currentAuthority, value];
-
-      return { ...prev, authority: newAuthority };
-    });
-  };
 
   const handleSave = async () => {
     // Validate form data
@@ -605,12 +582,9 @@ const AccountManage = () => {
     }
 
     const userData = {
-      id: editIdx !== null ? combinedAccounts[editIdx].id : null, // Use actual ID for updates, null for new users
       username: formData.userName.trim(),
       password: formData.password,
-      permission: Array.isArray(formData.authority)
-        ? formData.authority.join(", ")
-        : formData.authority,
+      authority: formData.authority,
     };
 
     let success = false;
@@ -821,8 +795,8 @@ const AccountManage = () => {
                         <td style={tdStyle}>{realIdx + 1}</td>
                         {/* Username */}
                         <td style={tdStyle}>{item.username}</td>
-                        {/* Permission */}
-                        <td style={tdStyle}>{item.permission}</td>
+                        {/* Authority */}
+                        <td style={tdStyle}>{item.authority ?? '-'}</td>
                         {/* Modify */}
                         <td style={tdStyle}>
                           <button
@@ -1014,33 +988,6 @@ const AccountManage = () => {
                         </option>
                       ))}
                     </select>
-                  ) : field.type === "multiSelect" ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "4px",
-                      }}
-                    >
-                      {field.options.map((opt) => (
-                        <FormControlLabel
-                          key={opt.value}
-                          control={
-                            <Checkbox
-                              checked={
-                                formData[field.name]?.includes(opt.value) ||
-                                false
-                              }
-                              onChange={() => handleAuthorityChange(opt.value)}
-                              size="small"
-                              sx={{ "& .MuiSvgIcon-root": { fontSize: 18 } }}
-                            />
-                          }
-                          label={opt.label}
-                          style={{ margin: 0, fontSize: "14px" }}
-                        />
-                      ))}
-                    </div>
                   ) : (
                     <input
                       type={field.type}

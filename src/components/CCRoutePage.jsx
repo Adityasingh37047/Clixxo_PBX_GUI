@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
+  Alert,
   Button,
   CircularProgress,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,6 +20,7 @@ import {
   updateCCRoute,
 } from "../api/apiService";
 
+// ── Constants ─────────────────────────────────────────────────────────────────
 const CC_INTERVAL_OPTIONS = [
   { value: "10", label: "10s" },
   { value: "30", label: "30s" },
@@ -56,25 +58,23 @@ const KEEP_MINUTES_TO_LABEL = {
   40320: "4 week",
 };
 
+// ── Normalization Helpers ─────────────────────────────────────────────────────
 function normalizeThroughFromApi(value) {
   const mode = String(value || "").toLowerCase();
   return mode === "from_come_in" || mode === "from come in"
     ? "From Come In"
     : "Auto";
 }
-
 function normalizeEnabledFromApi(value) {
   return value === true || String(value || "").toLowerCase() === "yes"
     ? "Yes"
     : "No";
 }
-
 function normalizeRecordKeepTime(route) {
   if (route?.record_keep_time) return String(route.record_keep_time);
   const minutes = Number(route?.keep_minutes);
   return KEEP_MINUTES_TO_LABEL[minutes] || "8 hours";
 }
-
 function normalizeRoute(item) {
   const rawInterval = Number(item.interval_minutes ?? item.cc_interval_time);
   const normalizedInterval =
@@ -86,7 +86,6 @@ function normalizeRoute(item) {
   const ccIntervalTime = CC_INTERVAL_VALUE_SET.has(String(normalizedInterval))
     ? String(normalizedInterval)
     : "10";
-
   return {
     id: item.id,
     ccIntervalTime,
@@ -99,6 +98,122 @@ function normalizeRoute(item) {
   };
 }
 
+// ── Color Palette ─────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#eef2f7",
+  cardBg: "#ffffff",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
+};
+
+// ── Shared UI Components ──────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f3f4f6",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 10.5,
+      padding: "9px 8px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `0.5px solid #9ca3af`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const FieldRow = ({ label, children }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 170,
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1 }}>{children}</div>
+  </div>
+);
+
+// ── Main Component ────────────────────────────────────────────────────────────
 const CCRoutePage = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -112,7 +227,7 @@ const CCRoutePage = () => {
   const hasLoadedExtensionsRef = useRef(false);
 
   const [editId, setEditId] = useState(null);
-  const [ccIntervalTime, setCcIntervalTime] = useState("1");
+  const [ccIntervalTime, setCcIntervalTime] = useState("10");
   const [through, setThrough] = useState("Auto");
   const [recordKeepTime, setRecordKeepTime] = useState("8 hours");
   const [enabled, setEnabled] = useState("No");
@@ -126,16 +241,25 @@ const CCRoutePage = () => {
   const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
   const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-  useEffect(() => {
-    setPage((current) =>
-      Math.min(
-        Math.max(1, current),
-        Math.max(1, Math.ceil(rows.length / itemsPerPage)),
-      ),
-    );
-  }, [rows]);
+  const [message, setMessage] = useState({ type: "", text: "" });
 
-  const showAlert = (text) => window.alert(text);
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
+
+  const showAlert = (text) => showMessage("error", text);
+
+  const resetForm = () => {
+    setEditId(null);
+    setCcIntervalTime("10");
+    setThrough("Auto");
+    setRecordKeepTime("8 hours");
+    setEnabled("No");
+    setSelectedExtensions([]);
+    setAvailableSelected([]);
+    setChosenSelected([]);
+  };
 
   const loadRows = async () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
@@ -178,7 +302,6 @@ const CCRoutePage = () => {
       hasLoadedExtensionsRef.current = true;
     } catch (err) {
       showAlert(err?.message || "Failed to load extensions.");
-      setAvailableExtensions([]);
     } finally {
       setLoading((prev) => ({ ...prev, extensions: false }));
     }
@@ -190,31 +313,18 @@ const CCRoutePage = () => {
 
   const extensionLabelMap = useMemo(() => {
     const map = new Map();
-    availableExtensions.forEach((item) => {
-      map.set(item.extension, item.label || item.extension);
-    });
+    availableExtensions.forEach((item) =>
+      map.set(item.extension, item.label || item.extension),
+    );
     return map;
   }, [availableExtensions]);
 
   const getExtensionLabel = (ext) => extensionLabelMap.get(ext) || ext;
 
-  const resetForm = () => {
-    setEditId(null);
-    setCcIntervalTime("10");
-    setThrough("Auto");
-    setRecordKeepTime("8 hours");
-    setEnabled("No");
-    setSelectedExtensions([]);
-    setAvailableSelected([]);
-    setChosenSelected([]);
-  };
-
   const handleOpenAddModal = async () => {
     resetForm();
     setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) {
-      await loadExtensions();
-    }
+    if (!hasLoadedExtensionsRef.current) await loadExtensions();
   };
 
   const handleOpenEditModal = async (row) => {
@@ -229,15 +339,11 @@ const CCRoutePage = () => {
     setAvailableSelected([]);
     setChosenSelected([]);
     setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) {
-      await loadExtensions();
-    }
+    if (!hasLoadedExtensionsRef.current) await loadExtensions();
   };
 
   const handleCloseModal = () => {
-    if (loading.save) return;
-    setShowModal(false);
-    resetForm();
+    if (!loading.save) setShowModal(false);
   };
 
   const availableList = useMemo(
@@ -275,26 +381,84 @@ const CCRoutePage = () => {
     setChosenSelected([]);
   };
 
-  const handleCheckAll = () => setSelected(rows.map((_, i) => i));
-  const handleUncheckAll = () => setSelected([]);
+  // ── Sorting Logic ───────────────────────────────────────────────────────────
+  const moveExtensionToBottom = () => {
+    if (!chosenSelected.length) return;
+    setSelectedExtensions((prev) => {
+      const rest = prev.filter((id) => !chosenSelected.includes(id));
+      const chosen = prev.filter((id) => chosenSelected.includes(id));
+      return [...rest, ...chosen];
+    });
+  };
+
+  const moveExtensionUp = () => {
+    if (!chosenSelected.length) return;
+    setSelectedExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = 1; i < arr.length; i++) {
+        if (
+          chosenSelected.includes(arr[i]) &&
+          !chosenSelected.includes(arr[i - 1])
+        ) {
+          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+        }
+      }
+      return arr;
+    });
+  };
+
+  const moveExtensionDown = () => {
+    if (!chosenSelected.length) return;
+    setSelectedExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 2; i >= 0; i--) {
+        if (
+          chosenSelected.includes(arr[i]) &&
+          !chosenSelected.includes(arr[i + 1])
+        ) {
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        }
+      }
+      return arr;
+    });
+  };
+
+  const moveExtensionToTop = () => {
+    if (!chosenSelected.length) return;
+    setSelectedExtensions((prev) => {
+      const chosen = prev.filter((id) => chosenSelected.includes(id));
+      const rest = prev.filter((id) => !chosenSelected.includes(id));
+      return [...chosen, ...rest];
+    });
+  };
+
   const handleSelectRow = (idx) => {
     setSelected((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
     );
   };
 
+  const pageIndices = pagedRows.map((_, i) => (page - 1) * itemsPerPage + i);
+  const allPageSelected =
+    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
+  const somePageSelected =
+    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
+
+  const handleToggleAll = () => {
+    if (allPageSelected)
+      setSelected((prev) => prev.filter((i) => !pageIndices.includes(i)));
+    else setSelected((prev) => Array.from(new Set([...prev, ...pageIndices])));
+  };
+
   const handleDelete = async () => {
-    if (selected.length === 0) {
-      showAlert("Please select at least one row to delete.");
-      return;
-    }
+    if (selected.length === 0) return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       const ids = selected.map((i) => rows[i]?.id).filter(Boolean);
       await Promise.all(ids.map((id) => deleteCCRoute(id)));
       setSelected([]);
       await loadRows();
-      showAlert(`Deleted ${ids.length} item(s).`);
+      showMessage("success", `Deleted ${ids.length} item(s).`);
     } catch (err) {
       showAlert(err?.message || "Failed to delete CC route.");
     } finally {
@@ -307,25 +471,21 @@ const CCRoutePage = () => {
       showAlert("Please select at least one member extension.");
       return;
     }
-
     const apiPayload = {
       cc_interval_time: Number(ccIntervalTime),
       through,
       record_keep_time: recordKeepTime,
       enable: enabled,
-      extensions: [...selectedExtensions].sort(
-        (a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0),
-      ),
+      extensions: selectedExtensions,
     };
-
     setLoading((prev) => ({ ...prev, save: true }));
     try {
       if (editId != null) {
         await updateCCRoute({ id: editId, ...apiPayload });
-        showAlert("CC route updated.");
+        showMessage("success", "CC route updated.");
       } else {
         await createCCRoute(apiPayload);
-        showAlert("CC route created.");
+        showMessage("success", "CC route created.");
       }
       await loadRows();
       handleCloseModal();
@@ -337,541 +497,760 @@ const CCRoutePage = () => {
   };
 
   return (
-    <div className="w-full max-w-full mx-auto p-2">
-      <div className="w-full max-w-full mx-auto">
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
+    >
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* ── Error / Success Floating Banner ── */}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* Breadcrumb */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          CC Route
+          {/* Breadcrumb */}
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Call Control &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>CC Route</span>
+          </div>
         </div>
 
-        <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-[900px] bg-[#f8fafd] border-2 border-t-0 border-gray-400 rounded-b-lg shadow-sm">
-            <thead>
-              <tr>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
-                  #
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  CC Interval Time
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Through
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Record Keep Time
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Enable
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                  Member Extensions
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading.fetch ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="border border-gray-300 px-2 py-4 text-center"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <CircularProgress size={20} />
-                      <span>Loading CC routes...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="border border-gray-300 px-2 py-4 text-center text-gray-500"
-                  >
-                    No CC routes yet. Click &quot;Add New&quot; to create one.
-                  </td>
-                </tr>
-              ) : (
-                pagedRows.map((row, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
-                  return (
-                    <tr key={row.id}>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(realIdx)}
-                          onChange={() => handleSelectRow(realIdx)}
-                          disabled={loading.delete || loading.fetch}
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {realIdx + 1}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {getCcIntervalLabel(row.ccIntervalTime)}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.through}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.recordKeepTime}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.enabled}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {row.memberExtensions.map(getExtensionLabel).join(", ")}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
-                          titleAccess="Edit"
-                          onClick={() => handleOpenEditModal(row)}
-                        />
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
+              >
+                Page {page} · {rows.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="danger"
+              >
+                {loading.delete && (
+                  <CircularProgress size={11} style={{ color: C.errorRed }} />
+                )}{" "}
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.save || loading.fetch}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            {loading.fetch ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  minWidth: 900,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        sx={{
+                          padding: "1px",
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                        }}
+                      />
+                    </TH>
+                    <TH style={{ width: 40 }}>#</TH>
+                    <TH>CC Interval Time</TH>
+                    <TH>Through</TH>
+                    <TH>Record Keep Time</TH>
+                    <TH>Enable</TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Member Extensions
+                    </TH>
+                    <TH style={{ width: 70 }}>Actions</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        style={{
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
+                        }}
+                      >
+                        No CC routes yet.
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ) : (
+                    pagedRows.map((row, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const rowBg = isSelected
+                        ? "#f0f9ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      return (
+                        <tr
+                          key={row.id}
+                          style={{
+                            background: rowBg,
+                            borderBottom: "0.5px solid #9ca3af",
+                          }}
+                        >
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 0",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleSelectRow(realIdx)}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              fontSize: 11,
+                              color: C.mutedText,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {realIdx + 1}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              fontSize: 12,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {getCcIntervalLabel(row.ccIntervalTime)}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              fontSize: 12,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.through}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              fontSize: 12,
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            {row.recordKeepTime}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <span
+                              style={{
+                                background:
+                                  row.enabled === "Yes" ? "#dcfce7" : "#f1f5f9",
+                                color:
+                                  row.enabled === "Yes" ? "#15803d" : "#475569",
+                                padding: "2px 8px",
+                                borderRadius: 10,
+                                fontSize: 10,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {row.enabled}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              padding: "7px 16px",
+                              fontSize: 12,
+                              borderRight: "0.5px solid #edf2f7",
+                              wordBreak: "break-all",
+                            }}
+                          >
+                            {row.memberExtensions?.length > 0 ? (
+                              row.memberExtensions
+                                .map(getExtensionLabel)
+                                .join(", ")
+                            ) : (
+                              <span style={{ color: C.mutedText }}>—</span>
+                            )}
+                          </td>
+                          <td
+                            style={{ textAlign: "center", padding: "4px 8px" }}
+                          >
+                            <Btn
+                              onClick={() => handleOpenEditModal(row)}
+                              variant="outline"
+                              style={{ fontSize: 10, padding: "3px 10px" }}
+                            >
+                              Edit
+                            </Btn>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
 
-        <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete || loading.fetch}
+          {/* Footer Pagination */}
+          {!loading.fetch && rows.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+                gap: 8,
+              }}
             >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleDelete}
-              disabled={loading.delete || loading.fetch}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleOpenAddModal}
-              disabled={loading.save || loading.fetch}
-            >
-              Add New
-            </button>
-          </div>
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} records on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
+                <Btn
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+                <Btn
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
+              </div>
+            </div>
+          )}
         </div>
-
-        {totalPages > 1 && (
-          <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-            <span>{rows.length} items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
-            >
-              First
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => setPage(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
-          </div>
-        )}
       </div>
 
+      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
+        onClose={handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 980, maxWidth: "98vw", mx: "auto", p: 0 },
-        }}
+        PaperProps={{ sx: { width: 980, maxWidth: "98vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base h-14"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            borderBottom: "1px solid #444444",
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            padding: "14px 24px",
           }}
         >
           {editId != null ? "Edit CC Route" : "Add CC Route"}
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-          }}
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
         >
-          <div className="flex flex-col gap-3 w-full pb-2">
-            <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
-              <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Settings Section */}
+            <div
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
                 CC Route Settings
               </div>
-              <div className="p-4 flex flex-col gap-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3">
-                  <div
-                    className="flex items-center gap-2"
-                    style={{ minHeight: 32 }}
-                  >
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                      style={{ width: 170, marginRight: 10 }}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px 32px",
+                }}
+              >
+                <FieldRow label="CC Interval Time *">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={ccIntervalTime}
+                      onChange={(e) => setCcIntervalTime(e.target.value)}
+                      sx={{ fontSize: 13 }}
                     >
-                      CC Interval Time <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex-1">
-                      <FormControl size="small" fullWidth>
-                        <Select
-                          value={ccIntervalTime}
-                          onChange={(e) => setCcIntervalTime(e.target.value)}
+                      {CC_INTERVAL_OPTIONS.map((o) => (
+                        <MenuItem
+                          key={o.value}
+                          value={o.value}
+                          sx={{ fontSize: 13 }}
                         >
-                          {CC_INTERVAL_OPTIONS.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </div>
-                  </div>
+                          {o.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </FieldRow>
+                <FieldRow label="Record Keep Time *">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={recordKeepTime}
+                      onChange={(e) => setRecordKeepTime(e.target.value)}
+                      sx={{ fontSize: 13 }}
+                    >
+                      {RECORD_KEEP_OPTIONS.map((o) => (
+                        <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                          {o}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </FieldRow>
+                <FieldRow label="Through *">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={through}
+                      onChange={(e) => setThrough(e.target.value)}
+                      sx={{ fontSize: 13 }}
+                    >
+                      {THROUGH_OPTIONS.map((o) => (
+                        <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                          {o}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </FieldRow>
+                <FieldRow label="Enable *">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={enabled}
+                      onChange={(e) => setEnabled(e.target.value)}
+                      sx={{ fontSize: 13 }}
+                    >
+                      {ENABLE_OPTIONS.map((o) => (
+                        <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                          {o}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </FieldRow>
+              </div>
+            </div>
 
+            {/* Extensions Selection */}
+            <div
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                Member Extensions
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 48px 1fr 48px",
+                  gap: 12,
+                }}
+              >
+                {/* Available */}
+                <div>
                   <div
-                    className="flex items-center gap-2"
-                    style={{ minHeight: 32 }}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: C.accent,
+                      marginBottom: 6,
+                      textAlign: "center",
+                    }}
                   >
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                      style={{ width: 170, marginRight: 10 }}
-                    >
-                      Record Keep Time <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex-1">
-                      <FormControl size="small" fullWidth>
-                        <Select
-                          value={recordKeepTime}
-                          onChange={(e) => setRecordKeepTime(e.target.value)}
-                        >
-                          {RECORD_KEEP_OPTIONS.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </div>
+                    Available
                   </div>
-
-                  <div
-                    className="flex items-center gap-2"
-                    style={{ minHeight: 32 }}
+                  <select
+                    multiple
+                    value={availableSelected}
+                    onChange={(e) =>
+                      setAvailableSelected(
+                        Array.from(e.target.selectedOptions, (o) => o.value),
+                      )
+                    }
+                    style={{
+                      width: "100%",
+                      height: 180,
+                      border: `1px solid ${C.cardBorder}`,
+                      borderRadius: 4,
+                      padding: 8,
+                      fontSize: 13,
+                      background: "#f8fafc",
+                    }}
                   >
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                      style={{ width: 170, marginRight: 10 }}
-                    >
-                      Through <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex-1">
-                      <FormControl size="small" fullWidth>
-                        <Select
-                          value={through}
-                          onChange={(e) => setThrough(e.target.value)}
-                        >
-                          {THROUGH_OPTIONS.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </div>
-                  </div>
-
-                  <div
-                    className="flex items-center gap-2"
-                    style={{ minHeight: 32 }}
-                  >
-                    <label
-                      className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                      style={{ width: 170, marginRight: 10 }}
-                    >
-                      Enable <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex-1">
-                      <FormControl size="small" fullWidth>
-                        <Select
-                          value={enabled}
-                          onChange={(e) => setEnabled(e.target.value)}
-                        >
-                          {ENABLE_OPTIONS.map((option) => (
-                            <MenuItem key={option} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </div>
-                  </div>
+                    {availableList.map((item) => (
+                      <option key={item.extension} value={item.extension}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-[14px] text-gray-700 font-medium">
-                    Member Extensions
-                  </label>
-
-                  <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
-                    <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
-                        Available
-                      </div>
-                      <select
-                        multiple
-                        value={availableSelected}
-                        onChange={(e) =>
-                          setAvailableSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (option) => option.value,
-                            ),
-                          )
-                        }
-                        className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
-                      >
-                        {loading.extensions ? (
-                          <option>Loading extensions...</option>
-                        ) : availableList.length === 0 ? (
-                          <option disabled>No extensions</option>
-                        ) : (
-                          availableList.map((item) => (
-                            <option key={item.extension} value={item.extension}>
-                              {item.label}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 pt-7">
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                        onClick={addSelectedExtensions}
-                      >
-                        &gt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                        onClick={addAllExtensions}
-                      >
-                        &gt;&gt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                        onClick={removeSelectedExtensions}
-                      >
-                        &lt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                        onClick={removeAllExtensions}
-                      >
-                        &lt;&lt;
-                      </button>
-                    </div>
-
-                    <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
-                        Selected
-                      </div>
-                      <select
-                        multiple
-                        value={chosenSelected}
-                        onChange={(e) =>
-                          setChosenSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (option) => option.value,
-                            ),
-                          )
-                        }
-                        className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
-                      >
-                        {selectedExtensions.length === 0 ? (
-                          <option disabled>No selected extensions</option>
-                        ) : (
-                          selectedExtensions.map((ext) => (
-                            <option key={ext} value={ext}>
-                              {getExtensionLabel(ext)}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 pt-7">
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                        onClick={removeSelectedExtensions}
-                      >
-                        &lt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                        onClick={addSelectedExtensions}
-                      >
-                        &gt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                        onClick={removeAllExtensions}
-                      >
-                        v
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                        onClick={addAllExtensions}
-                      >
-                        ^
-                      </button>
-                    </div>
+                {/* Move Controls */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    justifyContent: "center",
+                    paddingTop: 24,
+                  }}
+                >
+                  <Btn
+                    onClick={addSelectedExtensions}
+                    variant="outline"
+                    style={{ padding: "6px 0" }}
+                  >
+                    &gt;
+                  </Btn>
+                  <Btn
+                    onClick={addAllExtensions}
+                    variant="outline"
+                    style={{ padding: "6px 0" }}
+                  >
+                    &gt;&gt;
+                  </Btn>
+                  <Btn
+                    onClick={removeSelectedExtensions}
+                    variant="outline"
+                    style={{ padding: "6px 0" }}
+                  >
+                    &lt;
+                  </Btn>
+                  <Btn
+                    onClick={removeAllExtensions}
+                    variant="outline"
+                    style={{ padding: "6px 0" }}
+                  >
+                    &lt;&lt;
+                  </Btn>
+                </div>
+                {/* Selected */}
+                <div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: C.accent,
+                      marginBottom: 6,
+                      textAlign: "center",
+                    }}
+                  >
+                    Selected
                   </div>
+                  <select
+                    multiple
+                    value={chosenSelected}
+                    onChange={(e) =>
+                      setChosenSelected(
+                        Array.from(e.target.selectedOptions, (o) => o.value),
+                      )
+                    }
+                    style={{
+                      width: "100%",
+                      height: 180,
+                      border: `1px solid ${C.cardBorder}`,
+                      borderRadius: 4,
+                      padding: 8,
+                      fontSize: 13,
+                    }}
+                  >
+                    {selectedExtensions.map((ext) => (
+                      <option key={ext} value={ext}>
+                        {getExtensionLabel(ext)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* Sort Controls - EXACTLY FROM REFERENCE */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    justifyContent: "center",
+                    paddingTop: 24,
+                  }}
+                >
+                  <Btn
+                    onClick={moveExtensionToBottom}
+                    variant="outline"
+                    style={{ padding: "6px 0" }}
+                    title="Move to bottom"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <polyline
+                        points="2,3 7,8 12,3"
+                        stroke="#333"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <line
+                        x1="2"
+                        y1="11"
+                        x2="12"
+                        y2="11"
+                        stroke="#333"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </Btn>
+                  <Btn
+                    onClick={moveExtensionUp}
+                    variant="outline"
+                    style={{ padding: "6px 0" }}
+                    title="Move up"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <polyline
+                        points="2,9 7,4 12,9"
+                        stroke="#333"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Btn>
+                  <Btn
+                    onClick={moveExtensionDown}
+                    variant="outline"
+                    style={{ padding: "6px 0" }}
+                    title="Move down"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <polyline
+                        points="2,5 7,10 12,5"
+                        stroke="#333"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Btn>
+                  <Btn
+                    onClick={moveExtensionToTop}
+                    variant="outline"
+                    style={{ padding: "6px 0" }}
+                    title="Move to top"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <line
+                        x1="2"
+                        y1="3"
+                        x2="12"
+                        y2="3"
+                        stroke="#333"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                      <polyline
+                        points="2,11 7,6 12,11"
+                        stroke="#333"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Btn>
                 </div>
               </div>
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+        <DialogActions
+          style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
+          }}
+        >
+          <Btn
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
+            style={{ padding: "8px 28px", fontSize: 13 }}
           >
             {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
+            variant="outline"
+            style={{ padding: "8px 28px", fontSize: 13 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

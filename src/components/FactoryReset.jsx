@@ -42,10 +42,13 @@ const FactoryReset = () => {
   const [loading, setLoading] = useState(false);
 
   const handleReset = async () => {
-    const confirmed = window.confirm(
-      "This will reset the 'astdb' MySQL database back to the factory state from /root/clixxo/DB/astdb.sql. Do you want to continue?",
+    const firstConfirm = window.confirm(
+      "If you factory reset the PBX, everything will be erased. Do you want to continue?",
     );
-    if (!confirmed) return;
+    if (!firstConfirm) return;
+
+    const secondConfirm = window.confirm("Are you sure?");
+    if (!secondConfirm) return;
 
     setLoading(true);
     try {

@@ -56,34 +56,9 @@ const SipTrunkPage = () => {
     if (settings.transport_mode) {
       base.transport_mode = String(settings.transport_mode).toUpperCase();
     }
-    if (settings.srtp_mode) {
-      base.srtp_mode = String(settings.srtp_mode).toLowerCase();
-    }
-    if (settings.dtmf_mode) {
-      base.dtmf_mode = String(settings.dtmf_mode).toLowerCase();
-    }
-    if (settings.external_bound_flag) {
-      const flag = String(settings.external_bound_flag).toUpperCase();
-      base.external_bound_flag = flag === 'Y' ? 'Y' : 'N';
-    }
-    if (settings.external_bound_address !== undefined) {
-      base.external_bound_address = String(settings.external_bound_address).trim();
-    }
-    if (settings.external_bound_port !== undefined) {
-      base.external_bound_port = String(settings.external_bound_port);
-    }
-
-    if (base.external_bound_flag !== 'Y') {
-      base.external_bound_flag = 'N';
-      base.external_bound_address = '';
-      base.external_bound_port = '';
-    }
-
     base.local_ip = base.local_ip || SIP_TRUNK_INITIAL_FORM.local_ip;
     base.local_port = base.local_port || SIP_TRUNK_INITIAL_FORM.local_port;
     base.transport_mode = base.transport_mode || SIP_TRUNK_INITIAL_FORM.transport_mode;
-    base.srtp_mode = base.srtp_mode || SIP_TRUNK_INITIAL_FORM.srtp_mode;
-    base.dtmf_mode = base.dtmf_mode || SIP_TRUNK_INITIAL_FORM.dtmf_mode;
 
     return base;
   };
@@ -259,13 +234,6 @@ const SipTrunkPage = () => {
   const handleChange = (key, value) => {
     setForm(prev => {
       const next = { ...prev, [key]: value };
-      if (key === 'external_bound_flag') {
-        if (value !== 'Y') {
-          next.external_bound_flag = 'N';
-          next.external_bound_address = '';
-          next.external_bound_port = '';
-        }
-      }
       return next;
     });
     
@@ -332,25 +300,6 @@ const SipTrunkPage = () => {
       }
     }
 
-    if (form.external_bound_flag === 'Y') {
-      const address = safeTrim(form.external_bound_address);
-      const port = safeTrim(form.external_bound_port);
-      const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-      const portNum = Number(port);
-
-      if (!address || !ipRegex.test(address)) {
-        alert('Please enter a valid Externally Bound Address (example: 192.168.1.10).');
-        setLoading(prev => ({ ...prev, save: false }));
-        return;
-      }
-
-      if (!port || isNaN(portNum) || portNum < 1 || portNum > 65535) {
-        alert('Please enter a valid Externally Bound Port (1-65535).');
-        setLoading(prev => ({ ...prev, save: false }));
-        return;
-      }
-    }
-
     const resolveLocalIp = () => {
       const current = safeTrim(form.local_ip, '0.0.0.0');
       if (current === 'lan1-unavailable' || current === 'lan2-unavailable') {
@@ -362,14 +311,11 @@ const SipTrunkPage = () => {
     };
 
     const settingsPayload = {
+      id: form.index ? Number(form.index) : undefined,
+      description: safeTrim(form.description) || undefined,
       local_ip: resolveLocalIp(),
       local_port: safeTrim(form.local_port, '5060') || '5060',
       transport_mode: safeTrim(form.transport_mode, 'UDP').toUpperCase() || 'UDP',
-      srtp_mode: safeTrim(form.srtp_mode, 'no').toLowerCase() || 'no',
-      dtmf_mode: safeTrim(form.dtmf_mode, 'info').toLowerCase() || 'info',
-      external_bound_flag: form.external_bound_flag === 'Y' ? 'Y' : 'N',
-      external_bound_address: form.external_bound_flag === 'Y' ? safeTrim(form.external_bound_address) : '',
-      external_bound_port: form.external_bound_flag === 'Y' ? safeTrim(form.external_bound_port) : ''
     };
 
     try {
@@ -398,50 +344,50 @@ const SipTrunkPage = () => {
   const handleUncheckAll = () => setSelected([]);
   const handleInverse = () => setSelected(registers.map((_, idx) => selected.includes(idx) ? null : idx).filter(i => i !== null));
   
-  const handleDelete = () => {
-    if (selected.length === 0) {
-      showMessage('error', 'Please select trunks to delete');
-      return;
-    }
+  // const handleDelete = () => {
+  //   if (selected.length === 0) {
+  //     showMessage('error', 'Please select trunks to delete');
+  //     return;
+  //   }
     
-    setLoading(prev => ({ ...prev, delete: true }));
+  //   setLoading(prev => ({ ...prev, delete: true }));
     
-    setTimeout(() => {
-      setRegisters(prev => prev.filter((_, idx) => !selected.includes(idx)));
-      showMessage('success', `${selected.length} row(s) removed locally`);
-      setSelected([]);
-      setTimeout(() => setLoading(prev => ({ ...prev, delete: false })), 300);
-    }, 500);
-  };
+  //   setTimeout(() => {
+  //     setRegisters(prev => prev.filter((_, idx) => !selected.includes(idx)));
+  //     showMessage('success', `${selected.length} row(s) removed locally`);
+  //     setSelected([]);
+  //     setTimeout(() => setLoading(prev => ({ ...prev, delete: false })), 300);
+  //   }, 500);
+  // };
   
-  const handleClearAll = () => {
-    if (registers.length === 0) {
-      showMessage('info', 'No trunks to clear');
-      return;
-    }
+  // const handleClearAll = () => {
+  //   if (registers.length === 0) {
+  //     showMessage('info', 'No trunks to clear');
+  //     return;
+  //   }
     
-    if (!window.confirm('Are you sure you want to delete ALL SIP trunks? This action cannot be undone.')) {
-      return;
-    }
+  //   if (!window.confirm('Are you sure you want to delete ALL SIP trunks? This action cannot be undone.')) {
+  //     return;
+  //   }
     
-    setLoading(prev => ({ ...prev, delete: true }));
+  //   setLoading(prev => ({ ...prev, delete: true }));
     
-    setTimeout(() => {
-      try {
-        const totalCount = registers.length;
-        setRegisters([]);
-        setSelected([]);
-        setPage(1);
-        setForm({ ...SIP_TRUNK_INITIAL_FORM });
-        showMessage('success', `All ${totalCount} trunk(s) deleted successfully`);
-      } catch (error) {
-        console.error('Error clearing all SIP trunks:', error);
-        showMessage('error', 'Failed to clear all trunks');
-      } finally {
-        setLoading(prev => ({ ...prev, delete: false }));
-      }
-    }, 500);
-  };
+  //   setTimeout(() => {
+  //     try {
+  //       const totalCount = registers.length;
+  //       setRegisters([]);
+  //       setSelected([]);
+  //       setPage(1);
+  //       setForm({ ...SIP_TRUNK_INITIAL_FORM });
+  //       showMessage('success', `All ${totalCount} trunk(s) deleted successfully`);
+  //     } catch (error) {
+  //       console.error('Error clearing all SIP trunks:', error);
+  //       showMessage('error', 'Failed to clear all trunks');
+  //     } finally {
+  //       setLoading(prev => ({ ...prev, delete: false }));
+  //     }
+  //   }, 500);
+  // };
   
   const handlePageChange = (newPage) => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
@@ -627,22 +573,22 @@ const SipTrunkPage = () => {
             >
               Inverse
             </button>
-            <button 
+            {/* <button 
               className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? 'opacity-50 cursor-not-allowed' : ''}`} 
               onClick={handleDelete}
               disabled={loading.delete}
             >
               {loading.delete && <CircularProgress size={12} />}
               Delete
-            </button>
-            <button 
+            </button> */}
+            {/* <button 
               className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? 'opacity-50 cursor-not-allowed' : ''}`} 
               onClick={handleClearAll}
               disabled={loading.delete}
             >
               {loading.delete && <CircularProgress size={12} />}
               Clear All
-            </button>
+            </button> */}
           </div>
           <button 
             className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save ? 'opacity-50 cursor-not-allowed' : ''}`} 

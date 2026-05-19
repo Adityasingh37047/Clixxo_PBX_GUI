@@ -564,6 +564,45 @@ const OutboundRoutesPage = () => {
     setChosenExtensionSelected([]);
   };
 
+  const moveExtToBottom = () => {
+    if (!chosenExtensionSelected.length) return;
+    setMemberExtensions((prev) => {
+      const rest = prev.filter((id) => !chosenExtensionSelected.includes(id));
+      const chosen = prev.filter((id) => chosenExtensionSelected.includes(id));
+      return [...rest, ...chosen];
+    });
+  };
+  const moveExtUp = () => {
+    if (!chosenExtensionSelected.length) return;
+    setMemberExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = 1; i < arr.length; i++) {
+        if (chosenExtensionSelected.includes(arr[i]) && !chosenExtensionSelected.includes(arr[i - 1]))
+          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+      }
+      return arr;
+    });
+  };
+  const moveExtDown = () => {
+    if (!chosenExtensionSelected.length) return;
+    setMemberExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 2; i >= 0; i--) {
+        if (chosenExtensionSelected.includes(arr[i]) && !chosenExtensionSelected.includes(arr[i + 1]))
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+      }
+      return arr;
+    });
+  };
+  const moveExtToTop = () => {
+    if (!chosenExtensionSelected.length) return;
+    setMemberExtensions((prev) => {
+      const chosen = prev.filter((id) => chosenExtensionSelected.includes(id));
+      const rest = prev.filter((id) => !chosenExtensionSelected.includes(id));
+      return [...chosen, ...rest];
+    });
+  };
+
   const addSelectedTrunks = () => {
     if (availableTrunkSelected.length === 0) return;
     setMemberTrunks((prev) => [
@@ -586,6 +625,45 @@ const OutboundRoutesPage = () => {
   const removeAllTrunks = () => {
     setMemberTrunks([]);
     setChosenTrunkSelected([]);
+  };
+
+  const moveTrunkToBottom = () => {
+    if (!chosenTrunkSelected.length) return;
+    setMemberTrunks((prev) => {
+      const rest = prev.filter((id) => !chosenTrunkSelected.includes(id));
+      const chosen = prev.filter((id) => chosenTrunkSelected.includes(id));
+      return [...rest, ...chosen];
+    });
+  };
+  const moveTrunkUp = () => {
+    if (!chosenTrunkSelected.length) return;
+    setMemberTrunks((prev) => {
+      const arr = [...prev];
+      for (let i = 1; i < arr.length; i++) {
+        if (chosenTrunkSelected.includes(arr[i]) && !chosenTrunkSelected.includes(arr[i - 1]))
+          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+      }
+      return arr;
+    });
+  };
+  const moveTrunkDown = () => {
+    if (!chosenTrunkSelected.length) return;
+    setMemberTrunks((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 2; i >= 0; i--) {
+        if (chosenTrunkSelected.includes(arr[i]) && !chosenTrunkSelected.includes(arr[i + 1]))
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+      }
+      return arr;
+    });
+  };
+  const moveTrunkToTop = () => {
+    if (!chosenTrunkSelected.length) return;
+    setMemberTrunks((prev) => {
+      const chosen = prev.filter((id) => chosenTrunkSelected.includes(id));
+      const rest = prev.filter((id) => !chosenTrunkSelected.includes(id));
+      return [...chosen, ...rest];
+    });
   };
 
   return (
@@ -1384,33 +1462,17 @@ const OutboundRoutesPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={removeSelectedExtensions}
-                      >
-                        &lt;
+                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to bottom" onClick={moveExtToBottom}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,3 7,8 12,3" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="2" y1="11" x2="12" y2="11" stroke="#333" strokeWidth="2" strokeLinecap="round"/></svg>
                       </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={addSelectedExtensions}
-                      >
-                        &gt;
+                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move up" onClick={moveExtUp}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,9 7,4 12,9" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={removeAllExtensions}
-                      >
-                        v
+                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move down" onClick={moveExtDown}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,5 7,10 12,5" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={addAllExtensions}
-                      >
-                        ^
+                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to top" onClick={moveExtToTop}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="3" x2="12" y2="3" stroke="#333" strokeWidth="2" strokeLinecap="round"/><polyline points="2,11 7,6 12,11" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     </div>
                   </div>
@@ -1513,33 +1575,17 @@ const OutboundRoutesPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={removeSelectedTrunks}
-                      >
-                        &lt;
+                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to bottom" onClick={moveTrunkToBottom}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,3 7,8 12,3" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="2" y1="11" x2="12" y2="11" stroke="#333" strokeWidth="2" strokeLinecap="round"/></svg>
                       </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={addSelectedTrunks}
-                      >
-                        &gt;
+                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move up" onClick={moveTrunkUp}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,9 7,4 12,9" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={removeAllTrunks}
-                      >
-                        v
+                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move down" onClick={moveTrunkDown}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,5 7,10 12,5" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={addAllTrunks}
-                      >
-                        ^
+                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to top" onClick={moveTrunkToTop}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="3" x2="12" y2="3" stroke="#333" strokeWidth="2" strokeLinecap="round"/><polyline points="2,11 7,6 12,11" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     </div>
                   </div>
