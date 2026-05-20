@@ -10,9 +10,9 @@ const POLL_INTERVAL = 5000;
 
 // ── Color palette (matches SystemInfo + PBX Monitor) ─────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
+  cardBorder: "#e2e8f0",
   cardHeader: "#1e2d42",
   labelText: "#64748b",
   valueText: "#1e293b",
@@ -776,7 +776,8 @@ const ActiveCallQueue = () => {
       style={{
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 16,
+        padding: 24,
+        fontFamily: "Inter, sans-serif",
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
@@ -786,10 +787,10 @@ const ActiveCallQueue = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginBottom: 12,
+            marginBottom: 24,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
+          <div style={{ fontSize: 12, color: C.mutedText }}>
             Status &rsaquo; PBX Status &rsaquo;{" "}
             <span style={{ color: C.valueText, fontWeight: 600 }}>
               Active Call Queue
@@ -857,7 +858,25 @@ const ActiveCallQueue = () => {
 
         {/* Main content */}
         {!loading && queueList.length > 0 && (
-          <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 20,
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+              padding: 24,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                gap: 16,
+                alignItems: "flex-start",
+              }}
+            >
             {/* ── LEFT: Queue list ── */}
             <div style={{ width: 190, flexShrink: 0 }}>
               <div
@@ -1157,6 +1176,7 @@ const ActiveCallQueue = () => {
                 </div>
               </div>
             )}
+            </div>
           </div>
         )}
       </div>

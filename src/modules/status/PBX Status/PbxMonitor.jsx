@@ -257,33 +257,34 @@ const PbxMonitor = () => {
     marginBottom: 24,
   }}
 >
-  <div
+  
+    {/* Breadcrumb */}
+<div
+  style={{
+    fontSize: 12,
+    color: "#94a3b8",
+    marginBottom: 14,
+    fontWeight: 400,
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+  }}
+>
+  <span>Status</span>
+  <span>&gt;</span>
+
+  <span>PBX Status</span>
+  <span>&gt;</span>
+
+  <span
     style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
+      color: "#0f172a",
+      fontWeight: 600,
     }}
   >
-    <span>Status</span>
-    <span>&gt;</span>
-
-    <span>PBX Status</span>
-    <span>&gt;</span>
-  
-    <span
-      style={{
-        color: "#0f172a",
-        fontWeight: 600,
-      }}
-    >
-      PBX Monitor
-    </span>
-  </div>
-
+    PBX Monitor
+  </span>
+</div>
 
 </div>
 

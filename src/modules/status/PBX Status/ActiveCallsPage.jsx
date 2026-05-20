@@ -12,6 +12,19 @@ import { fetchAriChannels, ariHangup } from "../../../api/apiService";
 const POLL_MS = 1000;
 const TICK_MS = 1000;
 
+/** Align with PbxMonitor.jsx palette / card chrome */
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  cardBorderSoft: "#f1f5f9",
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#2563eb",
+  errorRed: "#ef4444",
+};
+
 /**
  * Phone often shows 1s less than our timer (we mark Up slightly before phone counts,
  * or phone starts on media). Subtract this many seconds from displayed talking time.
@@ -301,182 +314,305 @@ const ActiveCallsPage = () => {
     loadChannels();
   };
 
-  const panelBg = "#fff";
-  const titleColor = "#c62828";
-  // Light green card like SS (slightly warmer green, soft border)
-  const cardBg = "#f1f8f4";
-  const cardBorder = "#b8d4c0";
-
-  // Always reserve two columns on desktop so one card keeps the same size
-  // as a two-call layout: call2 right of call1, call3 below call1, etc.
+  // Always reserve two columns on desktop so one card keeps same size
   const gridClass = "grid-cols-1 md:grid-cols-2";
 
   return (
-    <div className="min-h-full w-full flex flex-col justify-start px-4 py-4 md:px-6 md:p-2 ">
-      <div
-        className="w-full max-w-full rounded-lg shadow border border-gray-200 overflow-hidden"
-        style={{ backgroundColor: panelBg }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <h1 className="text-xl font-bold m-0" style={{ color: titleColor }}>
+  <div
+    className="min-h-full w-full flex flex-col justify-start"
+    style={{
+      background: C.pageBg,
+      minHeight: "calc(100vh - 80px)",
+      padding: 24,
+      fontFamily: "Inter, sans-serif",
+    }}
+  >
+    {/* Main Container — matches PbxMonitor main white shell */}
+    <div
+      className="w-full max-w-full overflow-hidden"
+      style={{
+        backgroundColor: C.cardBg,
+        borderRadius: 20,
+        border: `1px solid ${C.cardBorder}`,
+        boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 pt-5 pb-4">
+        <div>
+          {/* Breadcrumb */}
+          <div
+            style={{
+              fontSize: 12,
+              color: C.mutedText,
+              marginBottom: 14,
+              fontWeight: 400,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            <span>Status</span>
+            <span>&gt;</span>
+
+            <span>PBX Status</span>
+            <span>&gt;</span>
+
+            <span
+              style={{
+                color: C.valueText,
+                fontWeight: 600,
+              }}
+            >
+              Active Calls
+            </span>
+          </div>
+
+          <h1
+            className="text-2xl font-bold m-0"
+            style={{ color: C.valueText }}
+          >
             Active Calls
           </h1>
-          <Tooltip title="Refresh">
-            <span>
-              <IconButton
-                size="small"
-                onClick={handleRefresh}
-                disabled={loading}
-                aria-label="Refresh"
-              >
-                {loading ? (
-                  <CircularProgress size={20} />
-                ) : (
-                  <RefreshIcon fontSize="small" />
-                )}
-              </IconButton>
-            </span>
-          </Tooltip>
+
+          <div
+            className="text-sm mt-1"
+            style={{ color: C.mutedText }}
+          >
+            Realtime active call monitoring
+          </div>
         </div>
 
-        <div className="px-5 pb-6 pt-2 min-h-[200px]">
-          {error && (
-            <div className="text-center text-red-600 text-sm py-8">{error}</div>
-          )}
+        <Tooltip title="Refresh">
+          <span>
+            <IconButton
+              size="small"
+              onClick={handleRefresh}
+              disabled={loading}
+              aria-label="Refresh"
+              sx={{
+                background: C.pageBg,
+                border: `1px solid ${C.cardBorder}`,
+                "&:hover": {
+                  background: C.cardBorderSoft,
+                },
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={20} sx={{ color: C.accent }} />
+              ) : (
+                <RefreshIcon fontSize="small" />
+              )}
+            </IconButton>
+          </span>
+        </Tooltip>
+      </div>
 
-          {!error && !loading && channels.length === 0 && (
-            <div className="flex items-center justify-center py-16 text-gray-500 text-sm">
+      {/* Body */}
+      <div className="px-6 pb-6 pt-2 min-h-[200px]">
+        {error && (
+          <div className="text-center text-red-600 text-sm py-8">
+            {error}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!error && !loading && channels.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="text-5xl mb-4">📞</div>
+
+            <div className="text-gray-800 text-lg font-semibold">
               No Active Calls
             </div>
-          )}
 
-          {!error && channels.length > 0 && (
-            <div className={`grid gap-3 ${gridClass}`}>
-              {channels.map((ch) => {
-                const callerNum = ch.caller?.number || "";
-                const connectedNum = ch.connected?.number || "";
-                const callerName = ch.caller?.name || "";
-                const connectedName = ch.connected?.name || "";
-                const instanceKey = callInstanceKey(ch);
-                const isUp = String(ch.state || "").toLowerCase() === "up";
-                // Talking: elapsed since we first saw Up (avoids 15s+ offset from creationtime)
-                const talkingStartMs =
-                  isUp && instanceKey
-                    ? talkingStartedAtRef.current.get(instanceKey)
-                    : null;
-                const duration = isUp
-                  ? formatDuration(
-                      talkingStartMs ??
-                        ch._mergedCreationTime ??
-                        parseCreationTime(ch.creationtime),
-                      TALKING_DISPLAY_OFFSET_SEC,
-                    )
-                  : "0:00:00";
-                const hangupIds = ch._mergedChannelIds?.length
-                  ? ch._mergedChannelIds
-                  : ch.id
-                    ? [ch.id]
-                    : [];
-                const hangupKey = hangupIds.join(",");
-                const status = stateLabel(ch.state);
-                const topLine = channelDisplayLine(ch);
+            <div className="text-gray-400 text-sm mt-1">
+              No ongoing calls right now
+            </div>
+          </div>
+        )}
 
-                // SS layout: icon left | external_wan line + number + arrow+ext | Talking→ + duration + icons
-                const mainNumber = callerNum || callerName || "—";
-                const extNumber = connectedNum || connectedName || "";
+        {/* Active Calls */}
+        {!error && channels.length > 0 && (
+          <div className={`grid gap-4 ${gridClass}`}>
+            {channels.map((ch) => {
+              const callerNum = ch.caller?.number || "";
+              const connectedNum = ch.connected?.number || "";
+              const callerName = ch.caller?.name || "";
+              const connectedName = ch.connected?.name || "";
 
-                return (
+              const instanceKey = callInstanceKey(ch);
+
+              const isUp =
+                String(ch.state || "").toLowerCase() === "up";
+
+              const talkingStartMs =
+                isUp && instanceKey
+                  ? talkingStartedAtRef.current.get(instanceKey)
+                  : null;
+
+              const duration = isUp
+                ? formatDuration(
+                    talkingStartMs ??
+                      ch._mergedCreationTime ??
+                      parseCreationTime(ch.creationtime),
+                    TALKING_DISPLAY_OFFSET_SEC
+                  )
+                : "0:00:00";
+
+              const hangupIds = ch._mergedChannelIds?.length
+                ? ch._mergedChannelIds
+                : ch.id
+                ? [ch.id]
+                : [];
+
+              const hangupKey = hangupIds.join(",");
+
+              const status = stateLabel(ch.state);
+
+              const topLine = channelDisplayLine(ch);
+
+              const mainNumber =
+                callerNum || callerName || "—";
+
+              const extNumber =
+                connectedNum || connectedName || "";
+
+              return (
+                <div
+                  key={
+                    hangupKey ||
+                    ch.id ||
+                    ch.protocol_id ||
+                    Math.random()
+                  }
+                  className="flex items-stretch min-w-0 overflow-hidden"
+                  style={{
+                    backgroundColor: C.cardBg,
+                    borderRadius: 16,
+                    border: `1px solid ${C.cardBorderSoft}`,
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  {/* Left Icon */}
+                  <div className="flex items-center pl-4 pr-3 py-4 shrink-0">
+                    <PersonOutlineIcon
+                      sx={{ color: C.mutedText }}
+                      style={{ fontSize: 38 }}
+                    />
+                  </div>
+
+                  {/* Center Content */}
+                  <div className="flex-1 min-w-0 py-4 pr-3 flex flex-col justify-center gap-1">
+                    <div
+                      className="text-sm leading-snug break-all"
+                      style={{ color: C.valueText }}
+                    >
+                      {topLine}
+                    </div>
+
+                    <div
+                      className="text-sm font-semibold truncate"
+                      style={{ color: C.accent }}
+                    >
+                      {mainNumber}
+                    </div>
+
+                    <div className="flex items-center gap-1 mt-1">
+                      <KeyboardArrowDownIcon
+                        sx={{ color: C.labelText }}
+                        className="shrink-0"
+                        style={{ fontSize: 18 }}
+                      />
+
+                      <span className="text-sm" style={{ color: C.valueText }}>
+                        {extNumber || "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right Section */}
                   <div
-                    key={hangupKey || ch.id || ch.protocol_id || Math.random()}
-                    className="rounded-lg border flex items-stretch min-w-0 overflow-hidden"
-                    style={{
-                      backgroundColor: cardBg,
-                      borderColor: cardBorder,
-                      borderWidth: 1,
-                    }}
+                    className="flex flex-col items-end justify-between py-4 pl-3 pr-4 min-w-[110px] shrink-0 border-l"
+                    style={{ borderColor: C.cardBorderSoft }}
                   >
-                    {/* Person icon – left edge like SS */}
-                    <div className="flex items-center pl-3 pr-2 py-3 shrink-0">
-                      <PersonOutlineIcon
-                        className="text-gray-400"
-                        style={{ fontSize: 36 }}
+                    <div
+                      className="flex items-center gap-1 text-sm font-semibold"
+                      style={{ color: C.accent }}
+                    >
+                      <span className="text-sm font-semibold">
+                        {status}
+                      </span>
+
+                      <ArrowForwardIcon
+                        style={{ fontSize: 16 }}
                       />
                     </div>
 
-                    {/* Center: external_wan line, number, arrow + extension */}
-                    <div className="flex-1 min-w-0 py-3 pr-2 flex flex-col justify-center gap-0.5">
-                      <div className="text-gray-900 text-sm leading-snug break-all">
-                        {topLine}
-                      </div>
-                      <div className="text-blue-600 text-sm font-medium truncate">
-                        {mainNumber}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <KeyboardArrowDownIcon
-                          className="text-gray-500 shrink-0"
-                          style={{ fontSize: 18 }}
-                        />
-                        <span className="text-gray-900 text-sm">
-                          {extNumber || "—"}
-                        </span>
-                      </div>
+                    <div
+                      className="text-sm font-mono my-1"
+                      style={{ color: C.valueText }}
+                    >
+                      {duration}
                     </div>
 
-                    {/* Right: Talking + arrow (top), duration, headset + hangup (bottom) */}
-                    <div className="flex flex-col items-end justify-between py-3 pl-2 pr-3 min-w-[100px] shrink-0 border-l border-gray-300/40">
-                      <div className="flex items-center gap-0.5 text-blue-600">
-                        <span className="text-sm font-medium">{status}</span>
-                        <ArrowForwardIcon style={{ fontSize: 16 }} />
-                      </div>
-                      <div className="text-gray-800 text-sm font-mono my-1">
-                        {duration}
-                      </div>
-                      <div className="flex items-center gap-1 mt-auto">
-                        <HeadsetMicIcon
-                          className="text-gray-600"
-                          style={{ fontSize: 20 }}
-                        />
-                        <Tooltip title="Hang up">
-                          <span>
-                            <IconButton
-                              size="small"
-                              aria-label="Hang up"
-                              disabled={
-                                hangupIds.length === 0 ||
-                                hangupChannelId === hangupKey
-                              }
-                              onClick={() => handleHangup(hangupIds)}
-                              sx={{ color: "#c62828", padding: "2px" }}
-                            >
-                              {hangupChannelId === hangupKey ? (
-                                <CircularProgress
-                                  size={18}
-                                  sx={{ color: "#c62828" }}
-                                />
-                              ) : (
-                                <CallEndIcon style={{ fontSize: 20 }} />
-                              )}
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </div>
+                    <div className="flex items-center gap-1 mt-auto">
+                      <HeadsetMicIcon
+                        sx={{ color: C.labelText }}
+                        style={{ fontSize: 20 }}
+                      />
+
+                      <Tooltip title="Hang up">
+                        <span>
+                          <IconButton
+                            size="small"
+                            aria-label="Hang up"
+                            disabled={
+                              hangupIds.length === 0 ||
+                              hangupChannelId === hangupKey
+                            }
+                            onClick={() =>
+                              handleHangup(hangupIds)
+                            }
+                            sx={{
+                              color: C.errorRed,
+                              padding: "2px",
+                            }}
+                          >
+                            {hangupChannelId ===
+                            hangupKey ? (
+                              <CircularProgress
+                                size={18}
+                                sx={{
+                                  color: C.errorRed,
+                                }}
+                              />
+                            ) : (
+                              <CallEndIcon
+                                style={{ fontSize: 20 }}
+                              />
+                            )}
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-          {loading && channels.length === 0 && !error && (
+        {/* Loader */}
+        {loading &&
+          channels.length === 0 &&
+          !error && (
             <div className="flex justify-center py-12">
-              <CircularProgress size={32} />
+              <CircularProgress size={32} sx={{ color: C.accent }} />
             </div>
           )}
-        </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
-
 export default ActiveCallsPage;
