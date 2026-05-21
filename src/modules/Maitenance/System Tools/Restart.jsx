@@ -122,7 +122,7 @@ const blueBarStyle = {
   background: C.cardBg,
   borderTopLeftRadius: 20,
   borderTopRightRadius: 20,
-  marginBottom: 0,
+  marginLeft: 6,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -473,6 +473,7 @@ const Restart = () => {
                 justifyContent: "space-between",
                 padding: "24px 32px",
                 gap: 24,
+                flexWrap: "wrap",
               }}
             >
               <div

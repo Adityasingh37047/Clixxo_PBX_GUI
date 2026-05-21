@@ -5,51 +5,166 @@ import {
   MR_NOTE,
   MR_PLACEHOLDER,
 } from "../../../constants/ModificationRecordConstants";
-import Button from "@mui/material/Button";
+import { Alert, CircularProgress } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
 
-const blueBar = (title) => (
-  <div
-    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-    style={{
-      background: "linear-gradient(#3E5475 100%)",
-      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-    }}
-  >
-    {title}
-  </div>
-);
+// ── Color palette (same as UserManage) ────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
 
-const buttonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 100,
-  minHeight: 42,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  px: 2,
-  py: 0.5,
-  padding: "6px 28px",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
-  },
+// ── Button Component (same as UserManage) ────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "edit":
+        return "#bbf7d0";
+      case "delete":
+        return "#fecaca";
+      case "danger":
+        return "#b91c1c";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+};
+
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginLeft: 6,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "0 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
 const ModificationRecord = () => {
   const [record, setRecord] = useState("");
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
+  };
 
   // Handle check button click - fetch latest 100 lines from /var/log/auth.log
   const handleCheck = async () => {
     try {
       setLoading(true);
-
-      // Get the last 100 lines from /var/log/auth.log
       const fetchCmd = `tail -n 100 /var/log/auth.log 2>/dev/null || echo "Error reading auth.log"`;
       const response = await postLinuxCmd({ cmd: fetchCmd });
       const logData = String(response?.responseData || "").trim();
@@ -71,23 +186,20 @@ const ModificationRecord = () => {
   const handleDownload = async () => {
     try {
       setLoading(true);
-
-      // Get the entire auth.log file
       const fetchCmd = `cat /var/log/auth.log 2>/dev/null || echo "Error reading auth.log"`;
       const response = await postLinuxCmd({ cmd: fetchCmd });
       const logData = String(response?.responseData || "").trim();
 
       if (logData.includes("Error reading auth.log")) {
-        window.alert("Error: Could not read /var/log/auth.log.");
+        showToast("Error: Could not read /var/log/auth.log.", "error");
         return;
       }
 
       if (!logData) {
-        window.alert("auth.log file is empty.");
+        showToast("auth.log file is empty.", "error");
         return;
       }
 
-      // Download the file as auth.log (not creating any new file, just downloading the fetched content)
       const blob = new Blob([logData], { type: "text/plain" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -99,7 +211,10 @@ const ModificationRecord = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading auth.log:", error);
-      window.alert("Error: Failed to download auth.log. Please try again.");
+      showToast(
+        "Error: Failed to download auth.log. Please try again.",
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -107,16 +222,60 @@ const ModificationRecord = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      <div className="w-full max-w-5xl mx-auto py-6 px-4 md:p-2">
-        {blueBar(MR_TITLE)}
-        <div className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col bg-white">
-          <div className="p-6">
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {/* ── Breadcrumb ── */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Modification Record
+          </span>
+        </div>
+
+        {/* Alerts */}
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
+
+        {/* Content Box */}
+        <div style={tableContainerStyle}>
+          <div style={{ ...blueBarStyle, justifyContent: "left" }}>
+            <span>{MR_TITLE}</span>
+          </div>
+          <div style={{ padding: 0 }}>
             <div
-              className="w-full min-h-[400px] max-h-[60vh] bg-white text-sm p-4 font-mono overflow-auto border-0 outline-none"
+              className="w-full min-h-[400px] max-h-[60vh] text-sm p-4 font-mono overflow-auto border-0 outline-none"
               style={{
+                backgroundColor: C.cardBg,
+                color: C.valueText,
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
                 resize: "none",
@@ -126,26 +285,59 @@ const ModificationRecord = () => {
             </div>
           </div>
         </div>
-        <div className="w-full flex flex-row justify-center gap-6 my-6">
-          <Button
-            variant="contained"
-            sx={buttonSx}
+
+        {/* Buttons Row */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 24,
+            marginTop: 24,
+          }}
+        >
+          <Btn
+            variant="primary"
             onClick={handleCheck}
             disabled={loading}
+            style={{ minWidth: 120, height: 36, fontSize: 13 }}
           >
-            {loading ? "Loading..." : MR_BUTTONS.check}
-          </Button>
-          <Button
-            variant="contained"
-            sx={buttonSx}
+            {loading ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <CircularProgress size={16} sx={{ color: "inherit" }} />
+                Loading...
+              </div>
+            ) : (
+              MR_BUTTONS.check
+            )}
+          </Btn>
+          <Btn
+            variant="default"
             onClick={handleDownload}
             disabled={loading}
+            style={{ minWidth: 120, height: 36, fontSize: 13 }}
           >
-            {loading ? "Loading..." : MR_BUTTONS.download}
-          </Button>
+            {loading ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <CircularProgress size={16} sx={{ color: "inherit" }} />
+                Loading...
+              </div>
+            ) : (
+              MR_BUTTONS.download
+            )}
+          </Btn>
         </div>
-        <div className="w-full flex flex-row justify-center mt-2 mb-4">
-          <span className="text-red-600 text-sm font-medium text-center">
+
+        <div
+          style={{ display: "flex", justifyContent: "center", marginTop: 20 }}
+        >
+          <span
+            style={{
+              color: C.errorRed,
+              fontSize: 13,
+              fontWeight: 500,
+              textAlign: "center",
+            }}
+          >
             {MR_NOTE}
           </span>
         </div>

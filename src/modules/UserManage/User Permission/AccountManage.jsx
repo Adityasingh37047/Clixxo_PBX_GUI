@@ -204,6 +204,20 @@ const modalInputStyle = {
   background: C.cardBg,
   color: C.valueText,
   outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
+  },
 };
 const modalFooterStyle = {
   display: "flex",
@@ -223,15 +237,18 @@ const tableContainerStyle = {
 };
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
   borderTopLeftRadius: 20,
   borderTopRightRadius: 20,
-  marginBottom: 0,
   display: "flex",
+  flexWrap: "wrap",
+  gap: 12,
+  marginLeft: 6,
+
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "0 14px",
+  padding: "10px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.strongText,
@@ -252,6 +269,7 @@ const tdStyle = {
   borderBottom: `1px solid ${C.divider}`,
   padding: "16px 18px",
   fontSize: 13,
+  fontWeight: 500,
   background: C.cardBg,
   color: C.valueText,
   textAlign: "center",
@@ -296,8 +314,9 @@ function ConfirmDialog({ msg, onConfirm, onCancel }) {
         backdropFilter: "blur(4px)",
         zIndex: 1000,
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
+        paddingTop: "10vh",
       }}
     >
       <div
@@ -305,7 +324,7 @@ function ConfirmDialog({ msg, onConfirm, onCancel }) {
           background: C.cardBg,
           borderRadius: 12,
           padding: "24px 28px",
-          width: 360,
+          width: "min(90vw, 360px)",
           border: `1px solid ${C.cardBorder}`,
           boxShadow:
             "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
@@ -351,7 +370,6 @@ const AccountManage = () => {
   const [formData, setFormData] = useState(ACCOUNT_MANAGE_INITIAL_FORM);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [editIdx, setEditIdx] = useState(null);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState({ msg: "", type: "success" });
@@ -622,24 +640,14 @@ const AccountManage = () => {
   // Create combined accounts list with current user at the top
   const combinedAccounts = accounts;
 
-  // Pagination logic
-  const totalPages = Math.max(
-    1,
-    Math.ceil(combinedAccounts.length / ITEMS_PER_PAGE),
-  );
-  const pagedAccounts = combinedAccounts.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE,
-  );
-
   // Table row selection logic
   const handleSelectRow = (idx) => {
     setSelected((sel) =>
       sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
     );
   };
-  const pageSelectableIndices = pagedAccounts
-    .map((_, idx) => (page - 1) * ITEMS_PER_PAGE + idx)
+  const pageSelectableIndices = combinedAccounts
+    .map((_, idx) => idx)
     .filter((idx) => !combinedAccounts[idx].isAdmin);
 
   const allPageSelected =
@@ -719,7 +727,7 @@ const AccountManage = () => {
       }
 
       setFormData({
-        index: item.id,
+        index: idx + 1,
         userName: item.username,
         password: "",
         authority: item.authority ?? "Read",
@@ -771,11 +779,6 @@ const AccountManage = () => {
       setError(null);
     }
   };
-
-  // When accounts change, reset page if needed
-  React.useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [accounts, totalPages]);
 
   return (
     <div
@@ -889,18 +892,21 @@ const AccountManage = () => {
         <div
           style={{
             ...tableContainerStyle,
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-            borderBottom: "none",
             background: C.cardBg,
             border: `1px solid ${C.cardBorder}`,
             borderRadius: 20,
-            overflowX: "auto",
           }}
         >
           <div style={blueBarStyle}>
             <span>Info</span>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
                 variant="default"
                 onClick={handleInverse}
@@ -969,7 +975,7 @@ const AccountManage = () => {
                 </tr>
               </thead>
               <tbody>
-                {pagedAccounts.length === 0 ? (
+                {combinedAccounts.length === 0 ? (
                   <tr>
                     <td
                       colSpan={ACCOUNT_MANAGE_TABLE_COLUMNS.length}
@@ -979,8 +985,8 @@ const AccountManage = () => {
                     </td>
                   </tr>
                 ) : (
-                  pagedAccounts.map((item, idx) => {
-                    const realIdx = (page - 1) * ITEMS_PER_PAGE + idx;
+                  combinedAccounts.map((item, idx) => {
+                    const realIdx = idx;
                     return (
                       <tr
                         key={realIdx}
@@ -1050,58 +1056,6 @@ const AccountManage = () => {
         </div>
         {/* Table Buttons (removed as they are now in the top bar) */}
         <div style={{ padding: 0 }} />
-
-        {totalPages > 0 && (
-          <div
-            style={{
-              padding: "16px 20px",
-              background: C.cardBg,
-              border: `1px solid ${C.cardBorder}`,
-              borderTop: "none",
-              borderRadius: "0 0 20px 20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 16,
-              flexWrap: "wrap",
-              boxShadow: C.cardShadow,
-            }}
-          >
-            <span style={{ fontSize: 13, color: C.mutedText, fontWeight: 600 }}>
-              Showing {pagedAccounts.length} record
-              {pagedAccounts.length !== 1 ? "s" : ""} on page {page}
-            </span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <Btn
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={loading || page <= 1}
-                variant="outline"
-              >
-                Prev
-              </Btn>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: C.accent,
-                  background: "#e0f2fe",
-                  padding: "5px 14px",
-                  borderRadius: 6,
-                  border: `0.5px solid ${C.cardBorder}`,
-                }}
-              >
-                Page {page} of {totalPages}
-              </span>
-              <Btn
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={loading || page >= totalPages}
-                variant="outline"
-              >
-                Next
-              </Btn>
-            </div>
-          </div>
-        )}
       </div>
       {/* Modal */}
       {isModalOpen && (
@@ -1117,7 +1071,18 @@ const AccountManage = () => {
                       name={field.name}
                       value={formData[field.name]}
                       onChange={handleInputChange}
-                      style={modalInputStyle}
+                      style={{
+                        ...modalInputStyle,
+                        ...(field.disabled
+                          ? {
+                              backgroundColor: "#f1f5f9",
+                              color: "#94a3b8",
+                              cursor: "not-allowed",
+                            }
+                          : {}),
+                      }}
+                      disabled={field.disabled}
+                      {...(field.disabled ? {} : inputInteraction)}
                     >
                       {field.options.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -1131,8 +1096,18 @@ const AccountManage = () => {
                       name={field.name}
                       value={formData[field.name]}
                       onChange={handleInputChange}
-                      style={modalInputStyle}
+                      style={{
+                        ...modalInputStyle,
+                        ...(field.disabled
+                          ? {
+                              backgroundColor: "#f1f5f9",
+                              color: "#94a3b8",
+                              cursor: "not-allowed",
+                            }
+                          : {}),
+                      }}
                       disabled={field.disabled}
+                      {...(field.disabled ? {} : inputInteraction)}
                     />
                   )}
                 </div>

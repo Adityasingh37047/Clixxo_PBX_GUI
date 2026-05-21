@@ -73,48 +73,58 @@ const Sidebar = ({
     const allowAll =
       !access ||
       access.allow_all === true ||
-      access.access_type === 'superadmin' ||
-      user?.role === 'superadmin';
+      access.access_type === "superadmin" ||
+      user?.role === "superadmin";
     const allowedPages = allowAll ? null : new Set(access?.pages ?? []);
 
-    return SIDEBAR_SECTIONS
-      .map((section) => {
-        // Always filter licence item regardless of permissions
-        const applyLicenceFilter = (submenuItems) =>
-          submenuItems.map((sm) => {
-            if (sm.id === 'systemTools' && Array.isArray(sm.items)) {
-              return { ...sm, items: sm.items.filter((item) => item.id !== 'licence' || canAccessLicence(user)) };
-            }
-            return sm;
-          });
-
-        if (allowAll) {
-          // Admin / superadmin — show everything, just filter licence
-          if (section.id === 'maintenance' && Array.isArray(section.submenuItems)) {
-            return { ...section, submenuItems: applyLicenceFilter(section.submenuItems) };
+    return SIDEBAR_SECTIONS.map((section) => {
+      // Always filter licence item regardless of permissions
+      const applyLicenceFilter = (submenuItems) =>
+        submenuItems.map((sm) => {
+          if (sm.id === "systemTools" && Array.isArray(sm.items)) {
+            return {
+              ...sm,
+              items: sm.items.filter(
+                (item) => item.id !== "licence" || canAccessLicence(user),
+              ),
+            };
           }
-          return section;
+          return sm;
+        });
+
+      if (allowAll) {
+        // Admin / superadmin — show everything, just filter licence
+        if (
+          section.id === "maintenance" &&
+          Array.isArray(section.submenuItems)
+        ) {
+          return {
+            ...section,
+            submenuItems: applyLicenceFilter(section.submenuItems),
+          };
         }
+        return section;
+      }
 
-        // Custom user — filter pages within each submenu item, then drop empty ones
-        const filteredSubmenus = (section.submenuItems || [])
-          .map((sm) => ({
-            ...sm,
-            items: (sm.items || []).filter((item) => allowedPages.has(item.id)),
-          }))
-          .filter((sm) => sm.items.length > 0);
+      // Custom user — filter pages within each submenu item, then drop empty ones
+      const filteredSubmenus = (section.submenuItems || [])
+        .map((sm) => ({
+          ...sm,
+          items: (sm.items || []).filter((item) => allowedPages.has(item.id)),
+        }))
+        .filter((sm) => sm.items.length > 0);
 
-        // Drop the whole section if no pages remain
-        if (filteredSubmenus.length === 0) return null;
+      // Drop the whole section if no pages remain
+      if (filteredSubmenus.length === 0) return null;
 
-        // Apply licence filter on top for maintenance section
-        const finalSubmenus = section.id === 'maintenance'
+      // Apply licence filter on top for maintenance section
+      const finalSubmenus =
+        section.id === "maintenance"
           ? applyLicenceFilter(filteredSubmenus)
           : filteredSubmenus;
 
-        return { ...section, submenuItems: finalSubmenus };
-      })
-      .filter(Boolean);
+      return { ...section, submenuItems: finalSubmenus };
+    }).filter(Boolean);
   }, [user]);
 
   // ─── State ────────────────────────────────────────────────────────────────
@@ -284,7 +294,7 @@ const Sidebar = ({
             cursor: "pointer",
             backgroundColor: "#eaeff5",
             borderBottom: "1px solid #dde4ed",
-            borderTop: "1px solid rgba(255,255,255,0.9)",
+            // borderTop: "1px solid rgba(255,255,255,0.9)",
             minHeight: isMobile ? "26px" : "28px",
             display: "flex",
             alignItems: "center",
@@ -585,7 +595,7 @@ const Sidebar = ({
           style={{
             minWidth: LEFT_W,
             width: LEFT_W,
-            background: "#1e2d42",
+            background: "#162436",
             borderRight: "1px solid #162233",
             overflowY: "auto",
             overflowX: "hidden",

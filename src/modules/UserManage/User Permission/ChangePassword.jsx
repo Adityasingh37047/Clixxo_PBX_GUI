@@ -10,6 +10,7 @@ import {
   TextField,
   Paper,
   Typography,
+  Alert,
 } from "@mui/material";
 
 import {
@@ -129,7 +130,7 @@ const blueBarStyle = {
   background: C.cardBg,
   borderTopLeftRadius: 20,
   borderTopRightRadius: 20,
-  marginBottom: 0,
+  marginLeft: 6,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -324,20 +325,31 @@ const ChangePassword = () => {
 
           <form
             onSubmit={handleSave}
-            style={{ padding: "32px 24px", maxWidth: 500, margin: "0 auto" }}
+            style={{
+              padding: "32px 24px",
+              maxWidth: 500,
+              width: "100%",
+              margin: "0 auto",
+            }}
           >
             <div className="space-y-4">
               {CHANGE_PASSWORD_FIELDS.map((field) => (
-                <div key={field.name} className="flex items-center">
+                <div
+                  key={field.name}
+                  className="flex items-center"
+                  style={{ flexWrap: "wrap" }}
+                >
                   <label
                     style={{
-                      width: 150,
+                      width: "auto",
+                      minWidth: 130,
                       fontSize: 12,
                       fontWeight: 600,
                       color: C.labelText,
                       textAlign: "left",
                       marginRight: 10,
                       whiteSpace: "nowrap",
+                      flexShrink: 0,
                     }}
                   >
                     {field.label}:
@@ -359,20 +371,22 @@ const ChangePassword = () => {
                             height: 36,
                             fontSize: 13,
                             backgroundColor: C.cardBg,
+                            transition: "border-color 0.2s ease",
                             "& fieldset": {
                               borderColor: fieldErrors[field.name]
                                 ? C.errorRed
                                 : C.cardBorder,
+                              transition: "border-color 0.2s ease",
                             },
                             "&:hover fieldset": {
                               borderColor: fieldErrors[field.name]
                                 ? C.errorRed
-                                : "#888",
+                                : "#94a3b8",
                             },
                             "&.Mui-focused fieldset": {
                               borderColor: fieldErrors[field.name]
                                 ? C.errorRed
-                                : C.primary,
+                                : C.accent,
                             },
                           },
                           "& .MuiInputBase-input": {
@@ -435,23 +449,34 @@ const ChangePassword = () => {
                             height: 36,
                             fontSize: 13,
                             backgroundColor:
-                              field.name === "currentUsername" || loading
-                                ? "#f5f5f5"
+                              field.name === "username" || loading
+                                ? "#f1f5f9"
                                 : C.cardBg,
+                            transition: "border-color 0.2s ease",
                             "& fieldset": {
                               borderColor: fieldErrors[field.name]
                                 ? C.errorRed
                                 : C.cardBorder,
+                              transition: "border-color 0.2s ease",
                             },
                             "&:hover fieldset": {
-                              borderColor: fieldErrors[field.name]
-                                ? C.errorRed
-                                : "#888",
+                              borderColor:
+                                field.name === "username" || loading
+                                  ? C.cardBorder
+                                  : fieldErrors[field.name]
+                                    ? C.errorRed
+                                    : "#94a3b8",
                             },
                             "&.Mui-focused fieldset": {
                               borderColor: fieldErrors[field.name]
                                 ? C.errorRed
-                                : C.primary,
+                                : C.accent,
+                            },
+                            "&.Mui-disabled": {
+                              cursor: "not-allowed",
+                            },
+                            "&.Mui-disabled fieldset": {
+                              borderColor: C.cardBorder,
                             },
                           },
                           "& .MuiInputBase-input": {
@@ -459,6 +484,10 @@ const ChangePassword = () => {
                             color: C.valueText,
                             padding: "6px 10px",
                             textAlign: "center",
+                          },
+                          "& .MuiInputBase-input.Mui-disabled": {
+                            color: "#94a3b8",
+                            WebkitTextFillColor: "#94a3b8",
                           },
                         }}
                       />

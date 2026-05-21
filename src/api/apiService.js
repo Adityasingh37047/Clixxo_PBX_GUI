@@ -2,6 +2,7 @@ import axiosInstance from "./axiosInstance";
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import axios from "axios";
+import { data } from "react-router-dom";
 
 // User Permission API
 export const fetchUserPermissionGroups = async () => {
@@ -2376,6 +2377,19 @@ export const listGlobalSipSettings = async () => {
   }
 };
 
+export const createGlobalSipSettings = async (settings) => {
+  try {
+    const response = await axiosInstance.post('/global-sip', {
+      type: 'create',
+      data: { settings },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating global SIP settings:', error.message);
+    throw error;
+  }
+};
+
 export const updateGlobalSipSettings = async (settings) => {
   try {
     const response = await axiosInstance.post('/global-sip', {
@@ -2388,6 +2402,21 @@ export const updateGlobalSipSettings = async (settings) => {
     throw error;
   }
 };
+
+export const deleteGlobalSipSettings = async (id) => {
+  try {
+    const response = await axiosInstance.post('/global-sip', {
+      type: 'delete',
+      data: { id },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting global SIP settings:', error.message);
+    throw error;
+  }
+};
+
+
 
 // Config File API Services
 export const fetchHostsFile = async () => {

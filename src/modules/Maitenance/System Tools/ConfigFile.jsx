@@ -1,65 +1,158 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   CONFIG_FILE_TITLE,
   CONFIG_FILE_OPTIONS,
   CONFIG_FILE_EDIT_BUTTON,
   CONFIG_FILE_SAVE_BUTTON,
-  CONFIG_FILE_CONTENT_MAP
-} from '../../../constants/ConfigFileConstants';
-import { fetchHostsFile, updateHostsFile } from '../../../api/apiService';
-import { Button, Alert, CircularProgress } from '@mui/material';
+  CONFIG_FILE_CONTENT_MAP,
+} from "../../../constants/ConfigFileConstants";
+import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
+import { Alert, CircularProgress } from "@mui/material";
 
-// Standard blue bar styling used across the application
-const blueBarStyle = {
-  width: '100%',
-  height: 34  ,
-  background: 'linear-gradient(#3E5475 100%)',
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-  marginBottom: 0,
-  display: 'flex',
-  alignItems: 'center',
-  fontWeight: 600,
-  fontSize: 18,
-  color: '#ffffff',
-  justifyContent: 'center',
-  boxShadow: '0 2px 8px 0 rgba(80,160,255,0.10)',
+// ── Color palette (same as AccountManage) ────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
 };
 
-// Standard button styling used across the application
-const buttonSx = {
-  background: 'linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)',
-  color: '#fff',
-  fontWeight: 600,
-  fontSize: '16px',
-  borderRadius: 1.5,
-  minWidth: 120,
-  px: 2,
-  py: 0.5,
-  boxShadow: '0 2px 8px #b3e0ff',
-  textTransform: 'none',
-  '&:hover': {
-    background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
-    color: '#fff',
-  },
+// ── Button Component (same as AccountManage) ─────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 36,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
+      {children}
+    </button>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+};
+
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginBottom: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "0 20px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
 const ConfigFile = () => {
-  const [selectedFile, setSelectedFile] = useState(CONFIG_FILE_OPTIONS[0].value);
-  const [content, setContent] = useState(CONFIG_FILE_CONTENT_MAP[CONFIG_FILE_OPTIONS[0].value]);
+  const [selectedFile, setSelectedFile] = useState(
+    CONFIG_FILE_OPTIONS[0].value,
+  );
+  const [content, setContent] = useState(
+    CONFIG_FILE_CONTENT_MAP[CONFIG_FILE_OPTIONS[0].value],
+  );
   const [isEditing, setIsEditing] = useState(true);
   const [loading, setLoading] = useState({
     fetch: false,
-    save: false
+    save: false,
   });
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [message, setMessage] = useState({ type: "", text: "" });
   const textareaRef = useRef(null);
   const hasInitialLoadRef = useRef(false);
 
   // Message handling
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
   // Load hosts file from API
@@ -67,28 +160,24 @@ const ConfigFile = () => {
     if (loading.fetch) {
       return;
     }
-    
-    setLoading(prev => ({ ...prev, fetch: true }));
+
+    setLoading((prev) => ({ ...prev, fetch: true }));
     try {
-      console.log('Attempting to load hosts file...');
       const response = await fetchHostsFile();
-      console.log('Hosts file response:', response);
       if (response.response && response.responseData) {
         setContent(response.responseData);
-        showMessage('success', 'Hosts file loaded successfully');
+        showMessage("success", "Hosts file loaded successfully");
       } else {
-        console.log('Invalid response format:', response);
-        showMessage('error', 'Failed to load hosts file');
+        showMessage("error", "Failed to load hosts file");
       }
     } catch (error) {
-      console.error('Error loading hosts file:', error);
-      if (error.message === 'Network Error') {
-        showMessage('error', 'Network error. Please check your connection.');
+      if (error.message === "Network Error") {
+        showMessage("error", "Network error. Please check your connection.");
       } else {
-        showMessage('error', error.message || 'Failed to load hosts file');
+        showMessage("error", error.message || "Failed to load hosts file");
       }
     } finally {
-      setLoading(prev => ({ ...prev, fetch: false }));
+      setLoading((prev) => ({ ...prev, fetch: false }));
     }
   };
 
@@ -97,33 +186,33 @@ const ConfigFile = () => {
     if (loading.save) {
       return;
     }
-    
-    setLoading(prev => ({ ...prev, save: true }));
+
+    setLoading((prev) => ({ ...prev, save: true }));
     try {
-      console.log('Attempting to save hosts file...');
       const response = await updateHostsFile(content);
-      console.log('Save hosts file response:', response);
       if (response.message) {
-        showMessage('success', response.message || 'Hosts file saved successfully');
+        showMessage(
+          "success",
+          response.message || "Hosts file saved successfully",
+        );
         setIsEditing(true);
       } else {
-        showMessage('error', 'Failed to save hosts file');
+        showMessage("error", "Failed to save hosts file");
       }
     } catch (error) {
-      console.error('Error saving hosts file:', error);
-      if (error.message === 'Network Error') {
-        showMessage('error', 'Network error. Please check your connection.');
+      if (error.message === "Network Error") {
+        showMessage("error", "Network error. Please check your connection.");
       } else {
-        showMessage('error', error.message || 'Failed to save hosts file');
+        showMessage("error", error.message || "Failed to save hosts file");
       }
     } finally {
-      setLoading(prev => ({ ...prev, save: false }));
+      setLoading((prev) => ({ ...prev, save: false }));
     }
   };
 
   // Load hosts file on component mount when hosts is selected
   useEffect(() => {
-    if (selectedFile === 'hosts' && !hasInitialLoadRef.current) {
+    if (selectedFile === "hosts" && !hasInitialLoadRef.current) {
       hasInitialLoadRef.current = true;
       loadHostsFile();
     }
@@ -132,179 +221,181 @@ const ConfigFile = () => {
   const handleFileChange = (e) => {
     const value = e.target.value;
     setSelectedFile(value);
-    
-    // If hosts file is selected, load from API, otherwise use static content
-    if (value === 'hosts') {
+
+    if (value === "hosts") {
       loadHostsFile();
     } else {
-      setContent(CONFIG_FILE_CONTENT_MAP[value] || '');
+      setContent(CONFIG_FILE_CONTENT_MAP[value] || "");
     }
     setIsEditing(true);
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        const len = textareaRef.current.value.length;
-        textareaRef.current.setSelectionRange(len, len);
-      }
-    }, 0);
-  };
-
-  // Auto-enable editing when textarea is clicked
   const handleTextareaClick = () => {
     if (!isEditing && !loading.fetch) {
       setIsEditing(true);
     }
   };
+
   const handleSave = () => {
-    // If hosts file is selected, save to API, otherwise just keep editing enabled
-    if (selectedFile === 'hosts') {
+    if (selectedFile === "hosts") {
       saveHostsFile();
     } else {
       setIsEditing(true);
     }
   };
 
+  const handleReset = () => {
+    if (selectedFile === "hosts") {
+      loadHostsFile();
+    } else {
+      setContent(CONFIG_FILE_CONTENT_MAP[selectedFile] || "");
+    }
+  };
+
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-200px)] py-0.5 flex flex-col items-center" style={{backgroundColor: "#dde0e4"}}>
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
       {/* Message Display */}
       {message.text && (
-        <Alert 
-          severity={message.type} 
-          onClose={() => setMessage({ type: '', text: '' })}
+        <Alert
+          severity={message.type}
+          onClose={() => setMessage({ type: "", text: "" })}
           sx={{
-            position: 'fixed', 
-            top: 20, 
-            right: 20, 
+            position: "fixed",
+            top: 20,
+            right: 20,
             zIndex: 9999,
             minWidth: 300,
-            boxShadow: 3
+            boxShadow: 3,
           }}
         >
           {message.text}
         </Alert>
       )}
-      
-      <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-        {/* File selector above the blue bar */}
-        <div className="w-full flex justify-end mb-2">
-          <select
-            className="px-3 py-1 border border-gray-400 rounded text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            value={selectedFile}
-            onChange={handleFileChange}
-            disabled={loading.fetch}
-            style={{ minWidth: '150px' }}
-          >
-            {CONFIG_FILE_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
+
+      {/* ── Breadcrumb ── */}
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Config File
+          </span>
         </div>
-        
-        {/* Standard blue bar */}
-        <div style={blueBarStyle}>{CONFIG_FILE_TITLE}</div>
-        
-        {/* Main content container with standard border */}
-        <div style={{ border: '1px solid #444444', borderTop: 'none', backgroundColor: '#dde0e4' }}>
-          <div className="relative">
-            {loading.fetch && selectedFile === 'hosts' && (
-              <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
-                <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-lg shadow-lg">
-                  <CircularProgress size={24} />
-                  <span className="text-gray-700 font-medium">Loading hosts file...</span>
-                </div>
-              </div>
-            )}
-            <textarea
-              ref={textareaRef}
-              className="w-full min-h-[400px] h-[400px] resize-vertical text-base bg-white p-3 box-border outline-none cursor-text"
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              onClick={handleTextareaClick}
-              readOnly={loading.fetch}
-              spellCheck={false}
-              style={{ 
-                border: 'none',
-                margin: '0',
-                fontFamily: 'monospace'
-              }}
-              placeholder="Click to edit configuration content..."
-            />
+
+        <div style={tableContainerStyle}>
+          {/* Top Blue Bar */}
+          <div style={{ ...blueBarStyle, flexWrap: "wrap", height: "auto", minHeight: 44, padding: "8px 20px" }}>
+            <span style={{ flex: 1, textAlign: "left" }}>
+              {CONFIG_FILE_TITLE}
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <select
+                className="px-3 py-1 border rounded text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={selectedFile}
+                onChange={handleFileChange}
+                disabled={loading.fetch}
+                style={{
+                  minWidth: "180px",
+                  borderColor: C.cardBorder,
+                  height: 30,
+                  fontSize: 13,
+                  fontWeight: 500,
+                }}
+              >
+                {CONFIG_FILE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
-        
-        {/* Action buttons with DHCP page styling */}
-        <div className="flex justify-center gap-4 pt-6">
-          <Button
-            type="submit"
-            variant="contained"
-            onClick={handleSave}
-            sx={{
-              background: 'linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)',
-              color: '#fff',
-              fontWeight: 600,
-              fontSize: '16px',
-              minWidth: 110,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px #3E5475",
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)',
-                color: '#fff',
-              },
-              '&:disabled': {
-                background: '#f5f5f5',
-                color: '#666',
-              },
-            }}
-            disabled={loading.fetch || loading.save}
-            startIcon={loading.save && <CircularProgress size={20} color="inherit" />}
-          >
-            {loading.save ? 'Saving...' : 'Save Changes'}
-          </Button>
-          <Button
-            type="button"
-            variant="contained"
-            onClick={() => {
-              if (selectedFile === 'hosts') {
-                loadHostsFile();
-              } else {
-                setContent(CONFIG_FILE_CONTENT_MAP[selectedFile] || '');
-              }
-            }}
-            sx={{
-              background: 'linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)',
-              color: '#ffffff',
-              fontWeight: 600,
-              fontSize: '16px',
-              minWidth: 110,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px #3E5475",
-              textTransform: 'none',
-              '&:hover': {
-                background: 'linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)',
-                color: '#ffffff',
-              },
-              '&:disabled': {
-                background: '#f5f5f5',
-                color: '#666',
-              },
-            }}
-            disabled={loading.fetch || loading.save}
-          >
-            Reset
-          </Button>
+
+          {/* Main content container */}
+          <div style={{ backgroundColor: C.pageBg }}>
+            <div className="relative">
+              {loading.fetch && selectedFile === "hosts" && (
+                <div
+                  className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10"
+                  style={{ backdropFilter: "blur(2px)" }}
+                >
+                  <div
+                    className="flex items-center gap-3 bg-white px-6 py-4 rounded-lg shadow-lg"
+                    style={{ border: `1px solid ${C.cardBorder}` }}
+                  >
+                    <CircularProgress size={24} style={{ color: C.primary }} />
+                    <span className="text-gray-700 font-medium">
+                      Loading config file...
+                    </span>
+                  </div>
+                </div>
+              )}
+              <textarea
+                ref={textareaRef}
+                className="w-full min-h-[450px] resize-vertical text-sm box-border outline-none cursor-text"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onClick={handleTextareaClick}
+                readOnly={loading.fetch}
+                spellCheck={false}
+                style={{
+                  border: "none",
+                  margin: "0",
+                  padding: "24px",
+                  fontFamily: "monospace",
+                  backgroundColor: C.cardBg,
+                  color: C.valueText,
+                  lineHeight: "1.6",
+                }}
+                placeholder="Click to edit configuration content..."
+              />
+            </div>
+
+            {/* Action buttons */}
+            <div
+              className="flex justify-center gap-4 py-5 flex-wrap"
+              style={{ borderTop: `1px solid ${C.divider}` }}
+            >
+              <Btn
+                variant="primary"
+                onClick={handleSave}
+                disabled={loading.fetch || loading.save}
+                startIcon={
+                  loading.save && <CircularProgress size={16} color="inherit" />
+                }
+                style={{ minWidth: 120, height: 38 }}
+              >
+                {loading.save ? "Saving..." : "Save Changes"}
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleReset}
+                disabled={loading.fetch || loading.save}
+                style={{ minWidth: 120, height: 38 }}
+              >
+                Reset
+              </Btn>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default ConfigFile; 
+export default ConfigFile;

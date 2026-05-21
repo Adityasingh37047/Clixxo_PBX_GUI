@@ -4,52 +4,239 @@ import {
   FR_INSTRUCTION,
   FR_BUTTON,
 } from "../../../constants/FactoryResetConstants";
-import Button from "@mui/material/Button";
+import { Alert, CircularProgress } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
 
-const blueBar = (title) => (
-  <div
-    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-    style={{
-      background: "linear-gradient(#3E5475 100%)",
-      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-    }}
-  >
-    {title}
-  </div>
-);
+// ── Color palette (same as UserManage) ────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
 
-const buttonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
-  },
+// ── Button Component (same as UserManage) ────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "edit":
+        return "#bbf7d0";
+      case "delete":
+        return "#fecaca";
+      case "danger":
+        return "#b91c1c";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ── Confirm Dialog ───────────────────────────────────────────────────────────
+function ConfirmDialog({ msg, onConfirm, onCancel }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.3)",
+        backdropFilter: "blur(4px)",
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        paddingTop: "10vh",
+      }}
+    >
+      <div
+        style={{
+          background: C.cardBg,
+          borderRadius: 12,
+          padding: "24px 28px",
+          width: "min(90vw, 360px)",
+          border: `1px solid ${C.cardBorder}`,
+          boxShadow:
+            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        }}
+      >
+        <p
+          style={{
+            margin: "0 0 20px",
+            fontSize: 14,
+            fontWeight: 600,
+            color: C.valueText,
+            lineHeight: 1.5,
+          }}
+        >
+          {msg}
+        </p>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <Btn
+            variant="danger"
+            onClick={onConfirm}
+            style={{ height: 32, padding: "0 16px" }}
+          >
+            Confirm
+          </Btn>
+          <Btn
+            variant="default"
+            onClick={onCancel}
+            style={{ height: 32, padding: "0 16px" }}
+          >
+            Cancel
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+};
+
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginLeft: 6,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "0 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
 const FactoryReset = () => {
   const [loading, setLoading] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(null);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
+  };
 
   const handleReset = async () => {
-    const firstConfirm = window.confirm(
-      "If you factory reset the PBX, everything will be erased. Do you want to continue?",
-    );
-    if (!firstConfirm) return;
+    setConfirmDialog({
+      msg: "If you factory reset the PBX, everything will be erased. Do you want to continue?",
+      onConfirm: () => {
+        setConfirmDialog({
+          msg: "Are you absolutely sure?",
+          onConfirm: async () => {
+            setConfirmDialog(null);
+            await performReset();
+          },
+          onCancel: () => setConfirmDialog(null),
+        });
+      },
+      onCancel: () => setConfirmDialog(null),
+    });
+  };
 
-    const secondConfirm = window.confirm("Are you sure?");
-    if (!secondConfirm) return;
-
+  const performReset = async () => {
     setLoading(true);
     try {
       // Restore astdb from the factory SQL file
@@ -57,20 +244,23 @@ const FactoryReset = () => {
       const apiResponse = await postLinuxCmd({ cmd });
 
       if (apiResponse?.response) {
-        window.alert(
+        showToast(
           "Factory reset completed. Database astdb has been restored from astdb.sql.",
+          "success",
         );
       } else {
         const output = String(apiResponse?.responseData || "").trim();
-        window.alert(
+        showToast(
           output || "Factory reset command did not complete successfully.",
+          "error",
         );
       }
     } catch (error) {
       console.error("Factory reset error:", error);
-      window.alert(
+      showToast(
         error.message ||
           "Failed to run factory reset. Please check logs on the device.",
+        "error",
       );
     } finally {
       setLoading(false);
@@ -78,64 +268,105 @@ const FactoryReset = () => {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-80px)] bg-gray-50 flex flex-col items-center py-6 px-2 md:p-2">
-      <div className="w-full max-w-4xl">
-        {blueBar(FR_TITLE)}
-        <div className="rounded-b-lg border border-gray-400 bg-white p-4 flex flex-col items-center justify-center text-center">
-          <span className="text-[17px] text-gray-700">{FR_INSTRUCTION}</span>
-        </div>
-        <div className="w-full flex flex-row justify-center mt-8">
-          <Button
-            variant="contained"
-            sx={buttonSx}
-            onClick={handleReset}
-            disabled={loading}
-          >
-            {loading ? "Resetting..." : FR_BUTTON}
-          </Button>
-        </div>
-      </div>
-
-      {loading && (
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {/* ── Breadcrumb ── */}
         <div
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(255,255,255,0.85)",
-            zIndex: 9999,
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
+            gap: 4,
           }}
         >
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: "#0e8fd6",
-              marginBottom: 16,
-              textAlign: "center",
-              maxWidth: 360,
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Factory Reset
+          </span>
+        </div>
+
+        {/* Alerts */}
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
             }}
           >
-            Resetting database to factory settings...
+            {toast.msg}
+          </Alert>
+        )}
+
+        {/* Content Box */}
+        <div style={tableContainerStyle}>
+          <div style={{ ...blueBarStyle, justifyContent: "left" }}>
+            <span>{FR_TITLE}</span>
           </div>
           <div
             style={{
-              width: 48,
-              height: 48,
-              border: "6px solid #b3e0ff",
-              borderTop: "6px solid #0e8fd6",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
+              padding: "32px 20px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
             }}
-          />
-          <style>{`@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }`}</style>
+          >
+            <span
+              style={{
+                fontSize: 14,
+                color: C.valueText,
+                marginBottom: 24,
+                fontWeight: 500,
+              }}
+            >
+              {FR_INSTRUCTION}
+            </span>
+            <Btn
+              variant="danger"
+              onClick={handleReset}
+              disabled={loading}
+              style={{ minWidth: 140, height: 38, fontSize: 13 }}
+            >
+              {loading ? "Resetting..." : FR_BUTTON}
+            </Btn>
+          </div>
         </div>
+      </div>
+
+      {/* Loading overlay */}
+      {loading && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-md shadow-xl px-10 py-6 flex flex-col items-center gap-4 max-w-sm text-center">
+            <CircularProgress />
+            <div className="text-gray-700 text-sm whitespace-pre-line font-medium">
+              Resetting database to factory settings...
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dialogs */}
+      {confirmDialog && (
+        <ConfirmDialog
+          msg={confirmDialog.msg}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={confirmDialog.onCancel}
+        />
       )}
     </div>
   );

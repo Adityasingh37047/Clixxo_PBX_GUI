@@ -114,7 +114,7 @@ const blueBarStyle = {
   background: C.cardBg,
   borderTopLeftRadius: 20,
   borderTopRightRadius: 20,
-  marginBottom: 0,
+  marginLeft: 6,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -239,7 +239,12 @@ const DeviceLock = () => {
 
           <form
             onSubmit={handleLock}
-            style={{ padding: "32px 24px", maxWidth: 600, margin: "0 auto" }}
+            style={{
+              padding: "32px 24px",
+              maxWidth: 600,
+              width: "100%",
+              margin: "0 auto",
+            }}
           >
             <div className="space-y-6">
               <div
@@ -293,16 +298,18 @@ const DeviceLock = () => {
 
               {/* Password Fields */}
               <div className="space-y-4">
-                <div className="flex items-center">
+                <div className="flex items-center" style={{ flexWrap: "wrap" }}>
                   <label
                     style={{
-                      width: 180,
+                      width: "auto",
+                      minWidth: 160,
                       fontSize: 12,
                       fontWeight: 600,
                       color: C.labelText,
                       textAlign: "right",
                       marginRight: 16,
                       whiteSpace: "nowrap",
+                      flexShrink: 0,
                     }}
                   >
                     {DEVICE_LOCK_LABELS.password}:
@@ -315,13 +322,18 @@ const DeviceLock = () => {
                     size="small"
                     sx={{
                       width: "100%",
+                      maxWidth: 280,
                       "& .MuiOutlinedInput-root": {
                         height: 36,
                         fontSize: 13,
                         backgroundColor: C.cardBg,
-                        "& fieldset": { borderColor: C.cardBorder },
-                        "&:hover fieldset": { borderColor: "#888" },
-                        "&.Mui-focused fieldset": { borderColor: C.primary },
+                        transition: "border-color 0.2s ease",
+                        "& fieldset": {
+                          borderColor: C.cardBorder,
+                          transition: "border-color 0.2s ease",
+                        },
+                        "&:hover fieldset": { borderColor: "#94a3b8" },
+                        "&.Mui-focused fieldset": { borderColor: C.accent },
                       },
                       "& .MuiInputBase-input": {
                         fontSize: 13,
@@ -333,16 +345,18 @@ const DeviceLock = () => {
                   />
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center" style={{ flexWrap: "wrap" }}>
                   <label
                     style={{
-                      width: 180,
+                      width: "auto",
+                      minWidth: 160,
                       fontSize: 12,
                       fontWeight: 600,
                       color: C.labelText,
                       textAlign: "right",
                       marginRight: 16,
                       whiteSpace: "nowrap",
+                      flexShrink: 0,
                     }}
                   >
                     {DEVICE_LOCK_LABELS.confirmPassword}:
@@ -355,13 +369,18 @@ const DeviceLock = () => {
                     size="small"
                     sx={{
                       width: "100%",
+                      maxWidth: 280,
                       "& .MuiOutlinedInput-root": {
                         height: 36,
                         fontSize: 13,
                         backgroundColor: C.cardBg,
-                        "& fieldset": { borderColor: C.cardBorder },
-                        "&:hover fieldset": { borderColor: "#888" },
-                        "&.Mui-focused fieldset": { borderColor: C.primary },
+                        transition: "border-color 0.2s ease",
+                        "& fieldset": {
+                          borderColor: C.cardBorder,
+                          transition: "border-color 0.2s ease",
+                        },
+                        "&:hover fieldset": { borderColor: "#94a3b8" },
+                        "&.Mui-focused fieldset": { borderColor: C.accent },
                       },
                       "& .MuiInputBase-input": {
                         fontSize: 13,

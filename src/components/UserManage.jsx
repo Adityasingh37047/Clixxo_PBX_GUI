@@ -157,7 +157,7 @@ const cbSx = {
 const inputStyle = {
   height: 30,
   padding: "0 10px",
-  border: `0.5px solid ${C.cardBorder}`,
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: 6,
   fontSize: 13,
   outline: "none",
@@ -165,7 +165,20 @@ const inputStyle = {
   boxSizing: "border-box",
   color: C.valueText,
   background: C.cardBg,
-  transition: "border-color 0.15s ease",
+  transition: "border-color 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
+  },
 };
 
 function allChecked(pages, perms) {
@@ -217,8 +230,9 @@ function ConfirmDialog({ msg, onConfirm, onCancel }) {
         backdropFilter: "blur(4px)",
         zIndex: 1000,
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
+        paddingTop: "10vh",
       }}
     >
       <div
@@ -276,8 +290,9 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
         backdropFilter: "blur(4px)",
         zIndex: 1000,
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
+        paddingTop: "10vh",
       }}
     >
       <div
@@ -312,6 +327,7 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
             setPw(e.target.value);
             setErr("");
           }}
+          {...inputInteraction}
         />
         {err && (
           <p
@@ -729,11 +745,13 @@ export default function UserManage() {
           {/* Card Toolbar */}
           <div
             style={{
-              height: 44,
+              minHeight: 44,
               display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "0 14px",
+              padding: "10px 14px",
               borderBottom: `1px solid ${C.divider}`,
             }}
           >
@@ -743,6 +761,7 @@ export default function UserManage() {
                 fontWeight: 700,
                 color: C.strongText,
                 letterSpacing: "0.02em",
+                marginLeft: 6,
               }}
             >
               User List
@@ -817,187 +836,192 @@ export default function UserManage() {
               No users found.
             </p>
           ) : (
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: 13,
-              }}
-            >
-              <thead>
-                <tr>
-                  <TH style={{ width: 50, textAlign: "center" }}>#</TH>
-                  <TH style={{ width: 180 }}>Username</TH>
-                  <TH style={{ width: 140, textAlign: "center" }}>
-                    Access Type
-                  </TH>
-                  <TH style={{ width: 160, textAlign: "center" }}>
-                    Role Permission
-                  </TH>
-                  <TH>Sections</TH>
-                  <TH style={{ width: 160, textAlign: "center" }}>Actions</TH>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, i) => {
-                  const access = user.access || user || {};
-                  const accessType =
-                    access.access_type ?? user.access_type ?? user.role ?? "";
-                  const isSuperAdmin =
-                    accessType === "superadmin" || accessType === "admin";
-                  return (
-                    <tr
-                      key={user.id}
-                      style={{
-                        background: C.cardBg,
-                        borderBottom: `1px solid ${C.divider}`,
-                        transition: "background 0.15s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = C.pageBg;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = C.cardBg;
-                      }}
-                    >
-                      <td
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <table
+                style={{
+                  width: "100%",
+                  minWidth: 600,
+                  borderCollapse: "collapse",
+                  fontSize: 13,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 50, textAlign: "center" }}>#</TH>
+                    <TH style={{ width: 180 }}>Username</TH>
+                    <TH style={{ width: 140, textAlign: "center" }}>
+                      Access Type
+                    </TH>
+                    <TH style={{ width: 160, textAlign: "center" }}>
+                      Role Permission
+                    </TH>
+                    <TH>Sections</TH>
+                    <TH style={{ width: 160, textAlign: "center" }}>Actions</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user, i) => {
+                    const access = user.access || user || {};
+                    const accessType =
+                      access.access_type ?? user.access_type ?? user.role ?? "";
+                    const isSuperAdmin =
+                      accessType === "superadmin" || accessType === "admin";
+                    return (
+                      <tr
+                        key={user.id}
                         style={{
-                          padding: "16px 18px",
-                          color: C.mutedText,
-                          textAlign: "center",
-                          fontSize: 13,
-                          fontWeight: 500,
+                          background: C.cardBg,
                           borderBottom: `1px solid ${C.divider}`,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = C.pageBg;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = C.cardBg;
                         }}
                       >
-                        {i + 1}
-                      </td>
-                      <td
-                        style={{
-                          padding: "16px 18px",
-                          fontWeight: 500,
-                          color: C.valueText,
-                          fontSize: 13,
-                          borderBottom: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        {user.username}
-                      </td>
-                      <td
-                        style={{
-                          padding: "16px 18px",
-                          textAlign: "center",
-                          borderBottom: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        <span
+                        <td
                           style={{
-                            fontSize: 11,
-                            fontWeight: 600,
-                            padding: "2px 8px",
-                            borderRadius: 10,
-                            color: isSuperAdmin ? "#1d4ed8" : "#15803d",
+                            padding: "16px 18px",
+                            color: C.mutedText,
+                            textAlign: "center",
+                            fontSize: 13,
+                            fontWeight: 500,
+                            borderBottom: `1px solid ${C.divider}`,
                           }}
                         >
-                          {isSuperAdmin ? "Super Admin" : "Custom"}
-                        </span>
-                      </td>
-                      <td
-                        style={{
-                          padding: "16px 18px",
-                          color: C.valueText,
-                          fontSize: 13,
-                          textAlign: "center",
-                          fontWeight: 500,
-                          borderBottom: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        {access.role_permission ?? user.role_permission ?? "-"}
-                      </td>
-                      <td
-                        style={{
-                          padding: "16px 18px",
-                          color: C.valueText,
-                          fontSize: 13,
-                          fontWeight: 500,
-                          maxWidth: 220,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          borderBottom: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        {isSuperAdmin ? (
+                          {i + 1}
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            fontWeight: 500,
+                            color: C.valueText,
+                            fontSize: 13,
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          {user.username}
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            textAlign: "center",
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
                           <span
                             style={{
-                              color: C.mutedText,
-                              fontStyle: "italic",
-                              fontSize: 13,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              padding: "2px 8px",
+                              borderRadius: 10,
+                              color: isSuperAdmin ? "#1d4ed8" : "#15803d",
                             }}
                           >
-                            All
+                            {isSuperAdmin ? "Super Admin" : "Custom"}
                           </span>
-                        ) : (
-                          <span>
-                            {(access.sections ?? user.sections ?? []).join(
-                              ", ",
-                            ) || "-"}
-                          </span>
-                        )}
-                      </td>
-                      <td
-                        style={{
-                          padding: "16px 18px",
-                          textAlign: "center",
-                          borderBottom: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        <div
+                        </td>
+                        <td
                           style={{
-                            display: "flex",
-                            gap: 6,
-                            justifyContent: "center",
+                            padding: "16px 18px",
+                            color: C.valueText,
+                            fontSize: 13,
+                            textAlign: "center",
+                            fontWeight: 500,
+                            borderBottom: `1px solid ${C.divider}`,
                           }}
                         >
-                          {!isSuperAdmin && (
-                            <Btn
-                              variant="edit"
+                          {access.role_permission ??
+                            user.role_permission ??
+                            "-"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            color: C.valueText,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            maxWidth: 220,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          {isSuperAdmin ? (
+                            <span
                               style={{
-                                padding: "2px 10px",
-                                fontSize: 11,
-                                height: 24,
-                                minWidth: 74,
+                                color: C.mutedText,
+                                fontStyle: "italic",
+                                fontSize: 13,
                               }}
-                              onClick={() => openEdit(user)}
                             >
-                              <EditOutlinedIcon sx={{ fontSize: 14 }} />
-                              Edit
-                            </Btn>
+                              All
+                            </span>
+                          ) : (
+                            <span>
+                              {(access.sections ?? user.sections ?? []).join(
+                                ", ",
+                              ) || "-"}
+                            </span>
                           )}
-                          {!isSuperAdmin && (
-                            <Btn
-                              variant="delete"
-                              style={{
-                                padding: "2px 10px",
-                                fontSize: 11,
-                                height: 24,
-                                minWidth: 74,
-                              }}
-                              onClick={() => setConfirmDelete(user)}
-                            >
-                              <DeleteOutlineOutlinedIcon
-                                sx={{ fontSize: 14 }}
-                              />
-                              Delete
-                            </Btn>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            textAlign: "center",
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              justifyContent: "center",
+                            }}
+                          >
+                            {!isSuperAdmin && (
+                              <Btn
+                                variant="edit"
+                                style={{
+                                  padding: "2px 10px",
+                                  fontSize: 11,
+                                  height: 24,
+                                  minWidth: 74,
+                                }}
+                                onClick={() => openEdit(user)}
+                              >
+                                <EditOutlinedIcon sx={{ fontSize: 14 }} />
+                                Edit
+                              </Btn>
+                            )}
+                            {!isSuperAdmin && (
+                              <Btn
+                                variant="delete"
+                                style={{
+                                  padding: "2px 10px",
+                                  fontSize: 11,
+                                  height: 24,
+                                  minWidth: 74,
+                                }}
+                                onClick={() => setConfirmDelete(user)}
+                              >
+                                <DeleteOutlineOutlinedIcon
+                                  sx={{ fontSize: 14 }}
+                                />
+                                Delete
+                              </Btn>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
@@ -1061,6 +1085,7 @@ export default function UserManage() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Min 5 characters"
+                        {...inputInteraction}
                       />
                     </div>
                   )}
@@ -1083,6 +1108,7 @@ export default function UserManage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Min 8 characters"
+                        {...inputInteraction}
                       />
                     </div>
                   )}
@@ -1102,6 +1128,7 @@ export default function UserManage() {
                       style={inputStyle}
                       value={accessType}
                       onChange={(e) => setAccessType(e.target.value)}
+                      {...inputInteraction}
                     >
                       <option value="custom">Custom</option>
                       <option value="superadmin">Super Admin</option>
@@ -1123,6 +1150,7 @@ export default function UserManage() {
                       style={inputStyle}
                       value={rolePermission}
                       onChange={(e) => setRolePermission(e.target.value)}
+                      {...inputInteraction}
                     >
                       <option value="Read, Write">Read, Write</option>
                       <option value="Read">Read</option>

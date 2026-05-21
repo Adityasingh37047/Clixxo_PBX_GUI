@@ -112,7 +112,7 @@ const blueBarStyle = {
   background: C.cardBg,
   borderTopLeftRadius: 20,
   borderTopRightRadius: 20,
-  marginBottom: 0,
+  marginLeft: 6,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -246,6 +246,7 @@ const SystemToolsSqlUpload = () => {
             style={{
               padding: "32px 24px",
               maxWidth: 500,
+              width: "100%",
               margin: "0 auto",
             }}
           >

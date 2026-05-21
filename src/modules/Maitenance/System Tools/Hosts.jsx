@@ -8,9 +8,314 @@ import {
   TextField,
   Alert,
   CircularProgress,
+  Checkbox,
 } from "@mui/material";
 import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+
+// ── Color palette (same as UserManage) ────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+// ── Button Component (same as UserManage) ────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "edit":
+        return "#bbf7d0";
+      case "delete":
+        return "#fecaca";
+      case "danger":
+        return "#b91c1c";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
+      {children}
+    </button>
+  );
+};
+
+function ConfirmDialog({ msg, onConfirm, onCancel }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(15, 23, 42, 0.3)",
+        backdropFilter: "blur(4px)",
+        zIndex: 10000,
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        paddingTop: "10vh",
+      }}
+    >
+      <div
+        style={{
+          background: C.cardBg,
+          borderRadius: 12,
+          padding: "24px 28px",
+          width: "min(90vw, 360px)",
+          border: `1px solid ${C.cardBorder}`,
+          boxShadow:
+            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        }}
+      >
+        <p
+          style={{
+            margin: "0 0 20px",
+            fontSize: 14,
+            fontWeight: 600,
+            color: C.valueText,
+            lineHeight: 1.5,
+          }}
+        >
+          {msg}
+        </p>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <Btn
+            variant="danger"
+            onClick={onConfirm}
+            style={{ height: 32, padding: "0 16px" }}
+          >
+            Confirm
+          </Btn>
+          <Btn
+            variant="default"
+            onClick={onCancel}
+            style={{ height: 32, padding: "0 16px" }}
+          >
+            Cancel
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const modalOverlayStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(15, 23, 42, 0.3)",
+  backdropFilter: "blur(4px)",
+  zIndex: 1000,
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "center",
+  paddingTop: "10vh",
+};
+const modalStyle = {
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 12,
+  width: "min(90vw, 380px)",
+  maxWidth: "95vw",
+  maxHeight: "calc(100vh - 120px)",
+  overflowY: "auto",
+  boxShadow:
+    "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+  display: "flex",
+  flexDirection: "column",
+};
+const modalHeaderStyle = {
+  background: C.cardBg,
+  color: C.strongText,
+  fontWeight: 700,
+  fontSize: 13,
+  padding: "12px 18px",
+  textAlign: "center",
+  borderTopLeftRadius: 12,
+  borderTopRightRadius: 12,
+  borderBottom: `1px solid ${C.divider}`,
+};
+const modalBodyStyle = {
+  padding: "16px 18px 0 18px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+};
+const modalRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 10,
+  padding: "8px 10px",
+  marginBottom: 2,
+  minHeight: 32,
+  gap: 16,
+};
+const modalLabelStyle = {
+  width: 110,
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+  marginRight: 10,
+  whiteSpace: "nowrap",
+};
+const modalInputStyle = {
+  width: "100%",
+  fontSize: 13,
+  padding: "6px 10px",
+  borderRadius: 10,
+  border: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  color: C.valueText,
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const getInputInteraction = (hasError) => ({
+  onFocus: (e) => (e.target.style.borderColor = hasError ? C.errorRed : C.accent),
+  onBlur: (e) => (e.target.style.borderColor = hasError ? C.errorRed : C.cardBorder),
+  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : "#94a3b8" },
+  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : C.cardBorder },
+});
+const modalFooterStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 24,
+  padding: "16px 0 18px",
+};
+
+const thStyle = {
+  background: C.pageBg,
+  color: C.labelText,
+  fontWeight: 700,
+  fontSize: 11,
+  padding: "14px 18px",
+  textAlign: "center",
+  borderBottom: `1px solid ${C.divider}`,
+  whiteSpace: "nowrap",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+};
+
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginBottom: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "0 20px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
+};
 
 const Hosts = () => {
   const [hosts, setHosts] = useState([]);
@@ -23,6 +328,7 @@ const Hosts = () => {
   const [showModal, setShowModal] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [confirmDialog, setConfirmDialog] = useState(null);
   const hasInitialLoadRef = useRef(false);
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -31,15 +337,6 @@ const Hosts = () => {
     proxyIp: "",
     domain: "",
   });
-
-  // Pagination
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(hosts.length / itemsPerPage));
-  const pagedHosts = hosts.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
 
   // Show message helper
   const showMessage = (type, text) => {
@@ -60,14 +357,13 @@ const Hosts = () => {
         return;
       }
 
-      // Split by whitespace (can be spaces or tabs)
+      // Split by whitespace
       const parts = trimmedLine.split(/\s+/);
-      // Allow entries with just IP (parts.length >= 1) or IP with domain (parts.length >= 2)
       if (parts.length >= 1 && parts[0]) {
         parsedHosts.push({
           index: index.toString(),
           proxyIp: parts[0],
-          domain: parts.length >= 2 ? parts.slice(1).join(" ") : "", // Domain is optional
+          domain: parts.length >= 2 ? parts.slice(1).join(" ") : "",
         });
         index++;
       }
@@ -83,7 +379,6 @@ const Hosts = () => {
 
     hostsList.forEach((host) => {
       if (host.proxyIp) {
-        // Domain is optional, add entry even if domain is empty
         const domainPart = host.domain ? `  ${host.domain}` : "";
         content += `${host.proxyIp}${domainPart}\n`;
       }
@@ -142,7 +437,6 @@ const Hosts = () => {
   };
 
   const validateDomain = (domain) => {
-    // Domain is optional, no validation needed
     return null;
   };
 
@@ -161,7 +455,6 @@ const Hosts = () => {
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
 
-    // Clear validation error for this field
     if (validationErrors[key]) {
       setValidationErrors((prev) => {
         const newErrors = { ...prev };
@@ -170,7 +463,6 @@ const Hosts = () => {
       });
     }
 
-    // Real-time validation
     let error = null;
     switch (key) {
       case "proxyIp":
@@ -212,7 +504,6 @@ const Hosts = () => {
 
   // Save or update host entry
   const handleSave = async () => {
-    // Validation
     const errors = validateForm();
 
     if (Object.keys(errors).length > 0) {
@@ -227,7 +518,6 @@ const Hosts = () => {
       let updatedHosts;
 
       if (editIndex !== null) {
-        // Update existing host
         updatedHosts = [...hosts];
         updatedHosts[editIndex] = {
           index: form.index,
@@ -235,7 +525,6 @@ const Hosts = () => {
           domain: form.domain,
         };
       } else {
-        // Add new host
         updatedHosts = [
           ...hosts,
           {
@@ -259,7 +548,6 @@ const Hosts = () => {
         );
         setShowModal(false);
         setEditIndex(null);
-        // Reload to sync with server
         await new Promise((resolve) => setTimeout(resolve, 300));
         await loadHosts();
       } else {
@@ -279,16 +567,22 @@ const Hosts = () => {
 
   // Table selection logic
   const handleSelectRow = (idx) => {
-    const realIdx = (page - 1) * itemsPerPage + idx;
     setSelected((sel) =>
-      sel.includes(realIdx)
-        ? sel.filter((i) => i !== realIdx)
-        : [...sel, realIdx],
+      sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
     );
   };
 
-  const handleCheckAll = () => setSelected(hosts.map((_, idx) => idx));
-  const handleUncheckAll = () => setSelected([]);
+  const allSelected = hosts.length > 0 && selected.length === hosts.length;
+  const someSelected = selected.length > 0 && selected.length < hosts.length;
+
+  const handleToggleAll = () => {
+    if (allSelected) {
+      setSelected([]);
+    } else {
+      setSelected(hosts.map((_, idx) => idx));
+    }
+  };
+
   const handleInverse = () =>
     setSelected(
       hosts
@@ -297,521 +591,392 @@ const Hosts = () => {
     );
 
   // Delete selected hosts
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (selected.length === 0) {
       showMessage("error", "Please select hosts to delete");
       return;
     }
-    if (
-      !window.confirm("Are you sure you want to delete the selected host(s)?")
-    ) {
-      return;
-    }
+    setConfirmDialog({
+      msg: "Are you sure you want to delete the selected host(s)?",
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setLoading((prev) => ({ ...prev, delete: true }));
+        try {
+          const updatedHosts = hosts.filter(
+            (_, idx) => !selected.includes(idx),
+          );
 
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const updatedHosts = hosts.filter((_, idx) => !selected.includes(idx));
+          const reindexedHosts = updatedHosts.map((host, i) => ({
+            ...host,
+            index: i.toString(),
+          }));
 
-      // Reindex the hosts
-      const reindexedHosts = updatedHosts.map((host, i) => ({
-        ...host,
-        index: i.toString(),
-      }));
+          const fileContent = generateHostsFileContent(reindexedHosts);
+          const response = await updateHostsFile(fileContent);
 
-      const fileContent = generateHostsFileContent(reindexedHosts);
-      const response = await updateHostsFile(fileContent);
-
-      if (response.message) {
-        setHosts(reindexedHosts);
-        setSelected([]);
-        showMessage(
-          "success",
-          `${selected.length} host(s) deleted successfully`,
-        );
-        // Reset to page 1 if current page is empty
-        if (
-          reindexedHosts.length > 0 &&
-          Math.ceil(reindexedHosts.length / itemsPerPage) < page
-        ) {
-          setPage(1);
+          if (response.message) {
+            setHosts(reindexedHosts);
+            setSelected([]);
+            showMessage(
+              "success",
+              `${selected.length} host(s) deleted successfully`,
+            );
+          } else {
+            showMessage("error", "Failed to delete hosts");
+          }
+        } catch (error) {
+          console.error("Error deleting hosts:", error);
+          if (error.message === "Network Error") {
+            showMessage(
+              "error",
+              "Network error. Please check your connection.",
+            );
+          } else {
+            showMessage("error", error.message || "Failed to delete hosts");
+          }
+        } finally {
+          setLoading((prev) => ({ ...prev, delete: false }));
         }
-      } else {
-        showMessage("error", "Failed to delete hosts");
-      }
-    } catch (error) {
-      console.error("Error deleting hosts:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", error.message || "Failed to delete hosts");
-      }
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
+      },
+      onCancel: () => setConfirmDialog(null),
+    });
   };
 
   // Clear all hosts
-  const handleClearAll = async () => {
+  const handleClearAll = () => {
     if (hosts.length === 0) {
       showMessage("info", "No hosts to clear");
       return;
     }
-    if (
-      !window.confirm(
-        "Are you sure you want to delete ALL hosts? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
+    setConfirmDialog({
+      msg: "Are you sure you want to delete ALL hosts? This action cannot be undone.",
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setLoading((prev) => ({ ...prev, delete: true }));
+        try {
+          const fileContent =
+            "# Hosts file - Managed by Clixxo UI\n# Format: <Proxy IP>  <Domain>\n\n";
+          const response = await updateHostsFile(fileContent);
 
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const fileContent =
-        "# Hosts file - Managed by Clixxo UI\n# Format: <Proxy IP>  <Domain>\n\n";
-      const response = await updateHostsFile(fileContent);
-
-      if (response.message) {
-        setHosts([]);
-        setSelected([]);
-        setPage(1);
-        showMessage("success", "All hosts deleted successfully");
-      } else {
-        showMessage("error", "Failed to clear all hosts");
-      }
-    } catch (error) {
-      console.error("Error clearing all hosts:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", error.message || "Failed to clear all hosts");
-      }
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-
-  const handlePageChange = (newPage) => {
-    setPage(Math.max(1, Math.min(totalPages, newPage)));
+          if (response.message) {
+            setHosts([]);
+            setSelected([]);
+            showMessage("success", "All hosts deleted successfully");
+          } else {
+            showMessage("error", "Failed to clear all hosts");
+          }
+        } catch (error) {
+          console.error("Error clearing all hosts:", error);
+          if (error.message === "Network Error") {
+            showMessage(
+              "error",
+              "Network error. Please check your connection.",
+            );
+          } else {
+            showMessage("error", error.message || "Failed to clear all hosts");
+          }
+        } finally {
+          setLoading((prev) => ({ ...prev, delete: false }));
+        }
+      },
+      onCancel: () => setConfirmDialog(null),
+    });
   };
 
   return (
     <div
-      className="bg-gray-50 flex flex-col items-center box-border w-full md:p-2"
-      style={{ backgroundColor: "#dde0e4", minHeight: "calc(100vh - 200px)" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      {/* Modal */}
-      <Dialog
-        open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
-        maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 600, maxWidth: "95vw", mx: "auto", p: 0 },
-        }}
-      >
-        <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          {editIndex !== null ? "Edit Host" : "Add Host"}
-        </DialogTitle>
-        <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-          }}
-        >
-          <div className="flex flex-col gap-2 w-full">
-            {/* Index Field */}
-            <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 180, marginRight: 10 }}
-              >
-                Index:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  value={form.index || ""}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  disabled
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "#f3f4f6",
-                    },
-                  }}
-                />
-              </div>
-            </div>
+      {confirmDialog && <ConfirmDialog {...confirmDialog} />}
 
-            {/* Proxy IP Field */}
-            <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 180, marginRight: 10 }}
-              >
-                Proxy IP:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  value={form.proxyIp || ""}
-                  onChange={(e) => handleChange("proxyIp", e.target.value)}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  error={!!validationErrors.proxyIp}
-                  placeholder="e.g., 192.168.1.1"
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                />
-                {validationErrors.proxyIp && (
-                  <div className="text-red-500 text-xs mt-1">
-                    {validationErrors.proxyIp}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Domain Field */}
-            <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 180, marginRight: 10 }}
-              >
-                Domain:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  value={form.domain || ""}
-                  onChange={(e) => handleChange("domain", e.target.value)}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  error={!!validationErrors.domain}
-                  placeholder="e.g., example.com"
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                />
-                {validationErrors.domain && (
-                  <div className="text-red-500 text-xs mt-1">
-                    {validationErrors.domain}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
-            onClick={handleSave}
-            disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
-          >
-            {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
-            onClick={handleCloseModal}
-            disabled={loading.save}
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Message Display */}
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
-
-      {/* Main Content */}
-      <div className="w-full mx-auto" style={{ maxWidth: "95%" }}>
-        {/* Blue header bar */}
+      {/* ── Breadcrumb ── */}
+      <div className="w-full" style={{ maxWidth: 1000 }}>
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
           }}
         >
-          Hosts
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>Hosts</span>
         </div>
 
-        <div
-          className="overflow-x-auto w-full"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          <table
-            className="w-full bg-[#f8fafd] border-2 border-t-0 border-gray-400 shadow-sm"
-            style={{ minWidth: "600px" }}
+        {/* Alerts */}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
           >
-            <thead>
-              <tr>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                  Select
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                  Index
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                  Proxy IP
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                  Domain
-                </th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                  Edit
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading.fetch ? (
+            {message.text}
+          </Alert>
+        )}
+
+        <div style={tableContainerStyle}>
+          <div style={{ ...blueBarStyle, justifyContent: "space-between" }}>
+            <span>Hosts</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Btn
+                onClick={handleInverse}
+                disabled={loading.delete || loading.fetch}
+                variant="default"
+                style={{ height: 30 }}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                onClick={handleClearAll}
+                disabled={loading.delete || loading.fetch || hosts.length === 0}
+                variant="delete"
+                style={{ height: 30 }}
+              >
+                Clear All
+              </Btn>
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="delete"
+                startIcon={<DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />}
+                style={{ height: 30 }}
+              >
+                Delete
+              </Btn>
+              <Btn
+                onClick={() => handleOpenModal()}
+                disabled={loading.fetch || loading.save}
+                variant="primary"
+                style={{ height: 30, minWidth: 110 }}
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
                 <tr>
-                  <td
-                    colSpan="5"
-                    className="border border-gray-300 px-2 py-4 text-center"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <CircularProgress size={20} />
-                      <span>Loading hosts...</span>
-                    </div>
-                  </td>
+                  <th style={thStyle}>
+                    <Checkbox
+                      size="small"
+                      checked={allSelected}
+                      indeterminate={someSelected}
+                      onChange={handleToggleAll}
+                      disabled={hosts.length === 0}
+                      sx={{
+                        padding: "1px",
+                        color: C.accent,
+                        "&.Mui-checked": { color: C.accent },
+                        "&.MuiCheckbox-indeterminate": { color: C.accent },
+                      }}
+                    />
+                  </th>
+                  <th style={thStyle}>Index</th>
+                  <th style={thStyle}>Proxy IP</th>
+                  <th style={thStyle}>Domain</th>
+                  <th style={thStyle}>Edit</th>
                 </tr>
-              ) : hosts.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="border border-gray-300 px-2 py-1 text-center"
-                  >
-                    No data
-                  </td>
-                </tr>
-              ) : (
-                pagedHosts.map((item, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
-                  return (
-                    <tr key={realIdx}>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(realIdx)}
+              </thead>
+              <tbody>
+                {loading.fetch ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="py-8 text-center text-sm text-gray-500"
+                    >
+                      <div className="flex items-center justify-center gap-3">
+                        <CircularProgress
+                          size={24}
+                          style={{ color: C.primary }}
+                        />
+                        <span>Loading hosts...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : hosts.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="py-8 text-center text-sm text-gray-500"
+                      style={{ borderBottom: `1px solid ${C.divider}` }}
+                    >
+                      No data available
+                    </td>
+                  </tr>
+                ) : (
+                  hosts.map((item, idx) => (
+                    <tr
+                      key={idx}
+                      style={{
+                        borderBottom: `1px solid ${C.divider}`,
+                        transition: "background-color 0.2s",
+                      }}
+                      className="hover:bg-gray-50"
+                    >
+                      <td className="py-3 px-4 text-center">
+                        <Checkbox
+                          size="small"
+                          checked={selected.includes(idx)}
                           onChange={() => handleSelectRow(idx)}
                           disabled={loading.delete}
+                          sx={{
+                            padding: "1px",
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                          }}
                         />
                       </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {realIdx}
+                      <td className="py-3 px-4 text-center text-[14px] text-gray-800">
+                        {idx}
                       </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center whitespace-nowrap">
+                      <td className="py-3 px-4 text-center text-[14px] text-gray-800 font-medium">
                         {item.proxyIp || "--"}
                       </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center whitespace-nowrap">
+                      <td className="py-3 px-4 text-center text-[14px] text-gray-800">
                         {item.domain || "--"}
                       </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <EditDocumentIcon
-                          className={`cursor-pointer text-blue-600 mx-auto ${loading.delete ? "opacity-50" : ""}`}
+                      <td className="py-3 px-4 text-center">
+                        <Btn
+                          variant="edit"
                           onClick={() =>
-                            !loading.delete && handleOpenModal(item, realIdx)
+                            !loading.delete && handleOpenModal(item, idx)
                           }
-                        />
+                          disabled={loading.delete}
+                          style={{
+                            height: 28,
+                            minWidth: 74,
+                            padding: "2px 10px",
+                          }}
+                        >
+                          <EditOutlinedIcon sx={{ fontSize: 14 }} />
+                          Edit
+                        </Btn>
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Table controls */}
-        <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] border border-t-0 border-gray-300 px-2 py-2 gap-2">
-          <div className="flex flex-wrap gap-2" style={{ flex: "1 1 auto" }}>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleInverse}
-              disabled={loading.delete || loading.fetch}
-            >
-              Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleDelete}
-              disabled={loading.delete || loading.fetch}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleClearAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Clear All
-            </button>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-          <button
-            className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.fetch || loading.save ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={() => handleOpenModal()}
-            disabled={loading.fetch || loading.save}
-          >
-            Add New
-          </button>
-        </div>
-
-        {/* Pagination */}
-        <div
-          className="flex flex-wrap items-center gap-1 sm:gap-2 w-full bg-gray-200 border border-gray-300 mt-1 p-1 text-xs text-gray-700"
-          style={{ borderRadius: "0 0 8px 8px", borderTop: "none" }}
-        >
-          <span>{hosts.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => handlePageChange(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
         </div>
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div style={modalOverlayStyle}>
+          <div style={modalStyle}>
+            <div style={modalHeaderStyle}>
+              {editIndex !== null ? "Edit Host" : "Add Host"}
+            </div>
+            <div style={modalBodyStyle}>
+              <div style={modalRowStyle}>
+                <label style={modalLabelStyle}>Index:</label>
+                <div
+                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                >
+                  <input
+                    type="text"
+                    value={form.index}
+                    style={{ ...modalInputStyle, backgroundColor: "#f1f5f9", color: "#94a3b8", cursor: "not-allowed" }}
+                    disabled
+                  />
+                </div>
+              </div>
+              <div style={modalRowStyle}>
+                <label style={modalLabelStyle}>Proxy IP:</label>
+                <div
+                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                >
+                  <input
+                    type="text"
+                    value={form.proxyIp}
+                    onChange={(e) => handleChange("proxyIp", e.target.value)}
+                    style={{
+                      ...modalInputStyle,
+                      borderColor: validationErrors.proxyIp
+                        ? C.errorRed
+                        : C.cardBorder,
+                    }}
+                    placeholder="e.g., 192.168.1.1"
+                    {...getInputInteraction(!!validationErrors.proxyIp)}
+                  />
+                  {validationErrors.proxyIp && (
+                    <span
+                      style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}
+                    >
+                      {validationErrors.proxyIp}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div style={modalRowStyle}>
+                <label style={modalLabelStyle}>Domain:</label>
+                <div
+                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
+                >
+                  <input
+                    type="text"
+                    value={form.domain}
+                    onChange={(e) => handleChange("domain", e.target.value)}
+                    style={{
+                      ...modalInputStyle,
+                      borderColor: validationErrors.domain
+                        ? C.errorRed
+                        : C.cardBorder,
+                    }}
+                    placeholder="e.g., example.com (Optional)"
+                    {...getInputInteraction(!!validationErrors.domain)}
+                  />
+                  {validationErrors.domain && (
+                    <span
+                      style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}
+                    >
+                      {validationErrors.domain}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div style={modalFooterStyle}>
+              <Btn
+                variant="primary"
+                onClick={handleSave}
+                disabled={loading.save}
+                style={{ minWidth: 110, height: 34 }}
+              >
+                {loading.save ? "Saving..." : "Save"}
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleCloseModal}
+                disabled={loading.save}
+                style={{ minWidth: 110, height: 34 }}
+              >
+                Close
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

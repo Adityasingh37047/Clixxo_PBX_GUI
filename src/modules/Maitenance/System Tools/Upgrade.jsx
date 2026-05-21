@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { UPGRADE_LABELS, UPGRADE_BUTTONS } from "../../../constants/UpgradeConstants";
-import Button from "@mui/material/Button";
+import {
+  UPGRADE_LABELS,
+  UPGRADE_BUTTONS,
+} from "../../../constants/UpgradeConstants";
 import { Alert, CircularProgress } from "@mui/material";
 import {
   uploadSoftwareUpdate,
@@ -9,42 +11,175 @@ import {
 } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
 
-const blueButtonSx = {
-  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 110,
-  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-
-    color: "#fff",
-  },
+// ── Color palette (same as UserManage) ────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
 };
 
-const grayButtonSx = {
-  background: "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-  color: "#444",
-  fontWeight: 600,
-  fontSize: 15,
-  borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
+// ── Button Component (same as UserManage) ────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
 
-    color: "#444",
-  },
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "edit":
+        return "#bbf7d0";
+      case "delete":
+        return "#fecaca";
+      case "danger":
+        return "#b91c1c"; // darker than C.errorRed
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+};
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginLeft: 6,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "0 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
+};
+const thStyle = {
+  background: C.pageBg,
+  color: C.labelText,
+  fontWeight: 700,
+  fontSize: 11,
+  borderBottom: `1px solid ${C.divider}`,
+  padding: "14px 18px",
+  whiteSpace: "nowrap",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+};
+const tdStyle = {
+  borderBottom: `1px solid ${C.divider}`,
+  padding: "16px 18px",
+  fontSize: 13,
+  background: C.cardBg,
+  color: C.valueText,
+  textAlign: "center",
+  whiteSpace: "nowrap",
+};
+const tdLeftStyle = {
+  borderBottom: `1px solid ${C.divider}`,
+  padding: "16px 18px",
+  fontSize: 13,
+  background: C.cardBg,
+  color: C.valueText,
+  textAlign: "left",
+  whiteSpace: "nowrap",
 };
 
 const VERSION_FIELDS = [
@@ -114,6 +249,21 @@ const Upgrade = () => {
     loadVersionInfo();
   }, []);
 
+  // Auto-hide alerts after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
   const handleFileChange = (e) => {
     const f = e.target.files[0];
     setSelectedFile(f || null);
@@ -171,7 +321,7 @@ const Upgrade = () => {
     } catch (err) {
       console.error("Failed to load version info:", err);
       setVersionRows(createInitialRows("Unavailable"));
-      setError((prev) => prev || "Failed to load current version details.");
+      setError("Failed to load current version details.");
     } finally {
       setVersionLoading(false);
     }
@@ -280,7 +430,10 @@ const Upgrade = () => {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-200px)] bg-gray-50 flex flex-col items-center py-10 px-2 relative md:p-2">
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
       {(uploading || rebooting) && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-md shadow-xl px-10 py-6 flex flex-col items-center gap-4 max-w-sm text-center">
@@ -294,12 +447,40 @@ const Upgrade = () => {
           </div>
         </div>
       )}
-      <div className="w-full max-w-xl flex flex-col items-center gap-6">
+
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {/* ── Breadcrumb ── */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>Upgrade</span>
+        </div>
+
+        {/* Alerts */}
         {error && (
           <Alert
             severity="error"
             onClose={() => setError("")}
-            sx={{ width: "100%" }}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
           >
             {error}
           </Alert>
@@ -308,58 +489,112 @@ const Upgrade = () => {
           <Alert
             severity="success"
             onClose={() => setSuccess("")}
-            sx={{ width: "100%" }}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
           >
             {success}
           </Alert>
         )}
-        {/* Version Table */}
-        <div className="w-full border border-gray-400 bg-white rounded-lg overflow-x-auto">
-          <div
-            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-            style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            }}
-          >
+
+        {/* Table */}
+        <div style={tableContainerStyle}>
+          <div style={blueBarStyle}>
             <span>{UPGRADE_LABELS.currentVersion}</span>
             {versionLoading && (
-              <span className="absolute right-4 top-1/2 -translate-y-1/2">
-                <CircularProgress size={18} />
-              </span>
+              <CircularProgress size={16} sx={{ color: C.strongText }} />
             )}
           </div>
-          <table className="w-full border-collapse text-center">
-            <tbody>
-              {versionRows.map((row) => (
-                <tr key={row.key} className="border-b border-gray-300">
-                  <td className="px-3 py-1 text-[16px] text-gray-700 text-center border-r border-gray-300 min-w-[140px]">
-                    {row.label}
-                  </td>
-                  <td className="px-3 py-1 text-[15px] text-left break-all text-gray-800">
-                    <div
-                      className={
-                        row.key === "SERIAL" ? "text-gray-800" : "text-blue-700"
-                      }
+          <div style={{ overflowX: "auto", width: "100%" }}>
+            <table
+              style={{
+                width: "100%",
+                minWidth: 600,
+                borderCollapse: "collapse",
+              }}
+            >
+              <tbody>
+                {versionRows.map((row) => (
+                  <tr
+                    key={row.key}
+                    style={{
+                      background: C.cardBg,
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = C.pageBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = C.cardBg;
+                    }}
+                  >
+                    <td
+                      style={{
+                        ...tdStyle,
+                        width: "30%",
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
                     >
-                      {row.version || "Unavailable"}
-                    </div>
-                    {row.timestamp && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        Last updated: {row.timestamp}
+                      {row.label}
+                    </td>
+                    <td style={tdLeftStyle}>
+                      <div
+                        style={{
+                          color:
+                            row.key === "serial_no" ? C.valueText : C.accent,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {row.version || "Unavailable"}
                       </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      {row.timestamp && (
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: C.mutedText,
+                            marginTop: 4,
+                          }}
+                        >
+                          Last updated: {row.timestamp}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-        {/* File Input Row */}
-        <div className="w-full h-14 flex flex-col md:flex-row md:items-center gap-2 border border-gray-400 rounded-lg bg-[#3E5475] px-2 py-3">
-          <label className="text-[16px] text-white min-w-[160px]">
+
+        {/* File Input Row - Styled to match AccountManage */}
+        <div
+          style={{
+            ...tableContainerStyle,
+            marginTop: 20,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            padding: "16px 20px",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <span
+            style={{
+              fontWeight: 600,
+              color: C.labelText,
+              minWidth: 140,
+              fontSize: 13,
+            }}
+          >
             {UPGRADE_LABELS.selectFile}
-          </label>
+          </span>
           <input
             ref={fileInputRef}
             type="file"
@@ -367,52 +602,58 @@ const Upgrade = () => {
             onChange={handleFileChange}
             disabled={uploading || rebooting}
           />
-          <Button
-            variant="outlined"
-            component="span"
-            sx={{
-              background: "#f5f5f5",
-              border: "1px solid #b0b0b0",
-              color: "#333",
-              fontWeight: 500,
-              fontSize: "15px",
-              textTransform: "none",
-              minWidth: "120px",
-              mr: 1,
-            }}
+          <Btn
+            variant="default"
             onClick={() =>
               !uploading && !rebooting && fileInputRef.current?.click()
             }
             disabled={uploading || rebooting}
+            style={{ minWidth: 120, height: 32 }}
           >
             {UPGRADE_LABELS.chooseFile}
-          </Button>
-          <span className="text-white text-[15px] whitespace-nowrap">
+          </Btn>
+          <span
+            style={{
+              fontSize: 13,
+              color:
+                fileName === UPGRADE_LABELS.noFile ? C.mutedText : C.valueText,
+              flex: 1,
+            }}
+          >
             {fileName}
           </span>
         </div>
+
         {/* Buttons Row */}
-        <div className="w-full flex flex-row justify-center gap-12 mt-2">
-          <Button
-            variant="contained"
-            sx={blueButtonSx}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: 24,
+            marginTop: 24,
+          }}
+        >
+          <Btn
+            variant="primary"
             onClick={handleUpdate}
             disabled={uploading || rebooting}
+            style={{ minWidth: 120, height: 36, fontSize: 13 }}
           >
             {uploading
               ? "Uploading..."
               : rebooting
                 ? "Rebooting..."
                 : UPGRADE_BUTTONS.update}
-          </Button>
-          <Button
-            variant="contained"
-            sx={grayButtonSx}
+          </Btn>
+          <Btn
+            variant="cancel"
             onClick={handleReset}
             disabled={uploading || rebooting}
+            style={{ minWidth: 120, height: 36, fontSize: 13 }}
           >
             {UPGRADE_BUTTONS.reset}
-          </Button>
+          </Btn>
         </div>
       </div>
     </div>
