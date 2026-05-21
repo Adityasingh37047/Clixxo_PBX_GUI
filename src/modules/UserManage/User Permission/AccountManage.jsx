@@ -13,166 +13,247 @@ import {
 } from "../../../api/apiService";
 import { useAuth } from "../../../context/AuthContext";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import Button from "@mui/material/Button";
+import Alert from "@mui/material/Alert";
+import Checkbox from "@mui/material/Checkbox";
+
+// ── Color palette (same as UserManage) ────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+// ── Button Component (same as UserManage) ────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "edit":
+        return "#bbf7d0";
+      case "delete":
+        return "#fecaca";
+      case "danger":
+        return "#b91c1c"; // darker than C.errorRed
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
 
 const modalOverlayStyle = {
   position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100vw",
-  height: "100vh",
+  inset: 0,
+  background: "rgba(15, 23, 42, 0.3)",
+  backdropFilter: "blur(4px)",
   zIndex: 1000,
   display: "flex",
-  alignItems: "center",
+  alignItems: "flex-start",
   justifyContent: "center",
+  paddingTop: "10vh",
 };
 const modalStyle = {
-  background: "#f8fafd",
-  border: "2px solid #bbb",
-  borderRadius: 6,
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 12,
   width: 340,
   maxWidth: "95vw",
   maxHeight: "calc(100vh - 120px)",
-  marginTop: 80,
   overflowY: "auto",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+  boxShadow:
+    "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
   display: "flex",
   flexDirection: "column",
 };
 const modalHeaderStyle = {
-  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 19,
-  padding: "10px 0",
+  background: C.cardBg,
+  color: C.strongText,
+  fontWeight: 700,
+  fontSize: 13,
+  padding: "12px 18px",
   textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
+  borderTopLeftRadius: 12,
+  borderTopRightRadius: 12,
+  borderBottom: `1px solid ${C.divider}`,
 };
 const modalBodyStyle = {
-  padding: "12px 8px 0 8px",
+  padding: "16px 18px 0 18px",
   display: "flex",
   flexDirection: "column",
-  gap: 8,
+  gap: 10,
 };
 const modalRowStyle = {
   display: "flex",
   alignItems: "center",
-  background: "#fff",
-  border: "1px solid #c0c6cc",
-  borderRadius: 4,
-  padding: "6px 8px",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 10,
+  padding: "8px 10px",
   marginBottom: 2,
   minHeight: 32,
   gap: 16,
 };
 const modalLabelStyle = {
   width: 110,
-  fontSize: 14,
-  color: "#222",
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
   textAlign: "left",
   marginRight: 10,
   whiteSpace: "nowrap",
 };
 const modalInputStyle = {
   width: "100%",
-  fontSize: 14,
-  padding: "3px 6px",
-  borderRadius: 3,
-  border: "1px solid #bbb",
-  background: "#fff",
+  fontSize: 13,
+  padding: "6px 10px",
+  borderRadius: 10,
+  border: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  color: C.valueText,
+  outline: "none",
 };
 const modalFooterStyle = {
   display: "flex",
   justifyContent: "center",
   gap: 24,
-  padding: "18px 0",
-};
-const modalButtonStyle = {
-  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: "16px",
-  borderRadius: 6,
-  minWidth: 120,
-  minHeight: 40,
-  px: 2,
-  py: 0.5,
-  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-  textTransform: "none",
-
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-    color: "#fff",
-  },
-
-  "&:disabled": {
-    background: "#cbd5e1",
-    color: "#64748b",
-  },
-};
-const modalButtonGrayStyle = {
-  ...modalButtonStyle,
-  background: "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-  color: "#3E5475 ",
-  fontWeight: 600,
-  fontSize: "16px",
-  borderRadius: 6,
-  minWidth: 120,
-  minHeight: 40,
-  px: 2,
-  py: 0.5,
-  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-  textTransform: "none",
-
-  "&:hover": {
-    background: "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-    color: "#2f405c",
-  },
-
-  "&:disabled": {
-    background: "#f1f5f9",
-    color: "#94a3b8",
-  },
+  padding: "16px 0 18px",
 };
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
-  background: "#f8fafd",
-  border: "1px solid #ccc",
-  borderRadius: 8,
-  boxShadow: "none",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
 };
 const blueBarStyle = {
   width: "100%",
-  height: 32,
-  background: "linear-gradient(#3E5475 100%)",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
-  fontWeight: 600,
-  fontSize: 18,
-  color: "#ffffff",
-  justifyContent: "center",
-  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+  justifyContent: "space-between",
+  padding: "0 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
 };
 const thStyle = {
-  background: "#fff",
-  color: "#222",
-  fontWeight: 600,
-  fontSize: 15,
-  border: "1px solid #bbb",
-  padding: "6px 8px",
+  background: C.pageBg,
+  color: C.labelText,
+  fontWeight: 700,
+  fontSize: 11,
+  borderBottom: `1px solid ${C.divider}`,
+  padding: "14px 18px",
   whiteSpace: "nowrap",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
 };
 const tdStyle = {
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  fontSize: 14,
-  background: "#fff",
+  borderBottom: `1px solid ${C.divider}`,
+  padding: "16px 18px",
+  fontSize: 13,
+  background: C.cardBg,
+  color: C.valueText,
   textAlign: "center",
   whiteSpace: "nowrap",
 };
@@ -204,16 +285,89 @@ const tdStyle = {
 // };
 const ITEMS_PER_PAGE = 20;
 
+// ── Confirm Dialog ───────────────────────────────────────────────────────────
+function ConfirmDialog({ msg, onConfirm, onCancel }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.3)",
+        backdropFilter: "blur(4px)",
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          background: C.cardBg,
+          borderRadius: 12,
+          padding: "24px 28px",
+          width: 360,
+          border: `1px solid ${C.cardBorder}`,
+          boxShadow:
+            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        }}
+      >
+        <p
+          style={{
+            margin: "0 0 20px",
+            fontSize: 14,
+            fontWeight: 600,
+            color: C.valueText,
+            lineHeight: 1.5,
+          }}
+        >
+          {msg}
+        </p>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <Btn
+            variant="danger"
+            onClick={onConfirm}
+            style={{ height: 32, padding: "0 16px" }}
+          >
+            Confirm
+          </Btn>
+          <Btn
+            variant="default"
+            onClick={onCancel}
+            style={{ height: 32, padding: "0 16px" }}
+          >
+            Cancel
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const AccountManage = () => {
   const { user: currentUser } = useAuth();
   const [accounts, setAccounts] = useState([]);
   const [selected, setSelected] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(ACCOUNT_MANAGE_INITIAL_FORM);
+  const [confirmDialog, setConfirmDialog] = useState(null);
   const [editIdx, setEditIdx] = useState(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  // Auto-hide error after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   // Fetch all users on component mount
   useEffect(() => {
@@ -280,7 +434,7 @@ const AccountManage = () => {
       if (response && response.response === true) {
         // Refresh the user list after successful save
         await fetchAllUsers();
-        alert("User saved successfully!");
+        showToast("User saved successfully!");
         return true;
       } else {
         throw new Error(response?.message || "Failed to save user");
@@ -326,7 +480,7 @@ const AccountManage = () => {
       if (response && response.response === true) {
         // Refresh the user list after successful update
         await fetchAllUsers();
-        alert("User updated successfully!");
+        showToast("User updated successfully!");
         return true;
       } else {
         throw new Error(response?.message || "Failed to update user");
@@ -373,9 +527,12 @@ const AccountManage = () => {
         await fetchAllUsers();
         const skipped = response.data?.skipped ?? [];
         if (skipped.length > 0) {
-          alert(`Deleted successfully. Skipped: ${skipped.map(u => u.username).join(', ')}`);
+          showToast(
+            `Deleted successfully. Skipped: ${skipped.map((u) => u.username).join(", ")}`,
+            "warning",
+          );
         } else {
-          alert("User(s) deleted successfully!");
+          showToast("User(s) deleted successfully!");
         }
         return true;
       } else {
@@ -427,7 +584,7 @@ const AccountManage = () => {
       if (response && response.response === true) {
         setAccounts([]);
         setSelected([]);
-        alert("All users cleared successfully!");
+        showToast("All users cleared successfully!");
         return true;
       } else {
         throw new Error(response?.message || "Failed to clear all users");
@@ -481,18 +638,31 @@ const AccountManage = () => {
       sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
     );
   };
-  const handleCheckAllRows = () => {
-    // Only select non-current users
-    const selectableIndices = combinedAccounts
-      .map((_, idx) => idx)
-      .filter((idx) => !combinedAccounts[idx].isCurrentUser);
-    setSelected(selectableIndices);
+  const pageSelectableIndices = pagedAccounts
+    .map((_, idx) => (page - 1) * ITEMS_PER_PAGE + idx)
+    .filter((idx) => !combinedAccounts[idx].isAdmin);
+
+  const allPageSelected =
+    pageSelectableIndices.length > 0 &&
+    pageSelectableIndices.every((idx) => selected.includes(idx));
+
+  const somePageSelected =
+    pageSelectableIndices.some((idx) => selected.includes(idx)) &&
+    !allPageSelected;
+
+  const handleToggleAll = () => {
+    if (!pageSelectableIndices.length) return;
+    setSelected((prev) =>
+      allPageSelected
+        ? prev.filter((id) => !pageSelectableIndices.includes(id))
+        : Array.from(new Set([...prev, ...pageSelectableIndices])),
+    );
   };
-  const handleUncheckAllRows = () => setSelected([]);
+
   const handleInverse = () => {
     const selectableIndices = combinedAccounts
       .map((_, idx) => idx)
-      .filter((idx) => !combinedAccounts[idx].isCurrentUser);
+      .filter((idx) => !combinedAccounts[idx].isAdmin);
     setSelected(selectableIndices.filter((i) => !selected.includes(i)));
   };
 
@@ -508,20 +678,20 @@ const AccountManage = () => {
       .map((user) => ({ id: user.id, username: user.username }));
 
     if (selectedUsers.length === 0) {
-      alert("Admin user cannot be deleted.");
+      showToast("Admin user cannot be deleted.", "error");
       return;
     }
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${selectedUsers.length} selected user(s)?`,
-    );
-    if (!confirmed) return;
-
-    const success = await deleteUser({ users: selectedUsers });
-
-    if (success) {
-      setSelected([]);
-    }
+    setConfirmDialog({
+      msg: `Are you sure you want to delete ${selectedUsers.length} selected user(s)?`,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        const success = await deleteUser({ users: selectedUsers });
+        if (success) {
+          setSelected([]);
+        }
+      },
+    });
   };
 
   const handleClearAll = async () => {
@@ -530,12 +700,13 @@ const AccountManage = () => {
       return;
     }
 
-    const confirmed = window.confirm(
-      "Are you sure you want to delete all users? This action cannot be undone. (Current user will not be deleted)",
-    );
-    if (confirmed) {
-      await deleteAllUsers();
-    }
+    setConfirmDialog({
+      msg: "Are you sure you want to delete all users? This action cannot be undone. (Current user will not be deleted)",
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        await deleteAllUsers();
+      },
+    });
   };
 
   // Modal logic
@@ -550,8 +721,8 @@ const AccountManage = () => {
       setFormData({
         index: item.id,
         userName: item.username,
-        password: '',
-        authority: item.authority ?? 'Read',
+        password: "",
+        authority: item.authority ?? "Read",
       });
       setEditIdx(idx);
     } else {
@@ -572,7 +743,6 @@ const AccountManage = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
 
   const handleSave = async () => {
     // Validate form data
@@ -608,83 +778,65 @@ const AccountManage = () => {
   }, [accounts, totalPages]);
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-200px)] py-0 flex flex-col items-center md:p-2">
-      <div style={{ width: "100%", maxWidth: 1200 }}>
-        {/* Error Message */}
-        {error && (
-          <div
-            style={{
-              background: "#fef2f2",
-              color: "#dc2626",
-              padding: "16px",
-              marginBottom: "16px",
-              borderRadius: "8px",
-              border: "1px solid #fecaca",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              fontSize: "16px",
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {/* ── Breadcrumb ── */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>User Manage</span>
+          <span>&gt;</span>
+          <span>User Permission</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Account Manage
+          </span>
+        </div>
+
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <svg
-                style={{
-                  width: "24px",
-                  height: "24px",
-                  marginRight: "12px",
-                  color: "#dc2626",
-                }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-              <span style={{ fontWeight: "500" }}>{error}</span>
-            </div>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                onClick={() => window.location.reload()}
-                style={{
-                  background: "#dc2626",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "8px 16px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s",
-                }}
-                onMouseOver={(e) => (e.target.style.background = "#b91c1c")}
-                onMouseOut={(e) => (e.target.style.background = "#dc2626")}
-              >
-                Retry
-              </button>
-              <button
-                onClick={() => setError(null)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#dc2626",
-                  cursor: "pointer",
-                  fontSize: "20px",
-                  padding: "4px",
-                  borderRadius: "4px",
-                  transition: "background-color 0.2s",
-                }}
-                onMouseOver={(e) => (e.target.style.background = "#fecaca")}
-                onMouseOut={(e) => (e.target.style.background = "transparent")}
-              >
-                ×
-              </button>
-            </div>
-          </div>
+            {toast.msg}
+          </Alert>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError(null)}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {error}
+          </Alert>
         )}
 
         {/* Loading Indicator */}
@@ -740,14 +892,49 @@ const AccountManage = () => {
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
             borderBottom: "none",
-            background: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: 8,
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 20,
             overflowX: "auto",
           }}
         >
-          <div style={{ ...blueBarStyle, borderBottom: "2px solid #888" }}>
-            Info
+          <div style={blueBarStyle}>
+            <span>Info</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Btn
+                variant="default"
+                onClick={handleInverse}
+                disabled={loading}
+                style={{ height: 30 }}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                variant="delete"
+                onClick={handleClearAll}
+                disabled={loading || accounts.length === 0}
+                style={{ height: 30 }}
+              >
+                Clear All
+              </Btn>
+              <Btn
+                variant="delete"
+                onClick={handleDelete}
+                disabled={loading || selected.length === 0}
+                style={{ height: 30 }}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                disabled={loading}
+                style={{ height: 30, minWidth: 110 }}
+              >
+                + {ACCOUNT_MANAGE_BUTTONS.addNew}
+              </Btn>
+            </div>
           </div>
           <div style={{ overflowX: "auto", width: "100%" }}>
             <table
@@ -761,7 +948,22 @@ const AccountManage = () => {
                 <tr>
                   {ACCOUNT_MANAGE_TABLE_COLUMNS.map((col) => (
                     <th key={col.key} style={thStyle}>
-                      {col.label}
+                      {col.key === "choose" ? (
+                        <Checkbox
+                          size="small"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={handleToggleAll}
+                          sx={{
+                            padding: "1px",
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                            "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          }}
+                        />
+                      ) : (
+                        col.label
+                      )}
                     </th>
                   ))}
                 </tr>
@@ -780,14 +982,31 @@ const AccountManage = () => {
                   pagedAccounts.map((item, idx) => {
                     const realIdx = (page - 1) * ITEMS_PER_PAGE + idx;
                     return (
-                      <tr key={realIdx}>
+                      <tr
+                        key={realIdx}
+                        style={{
+                          background: C.cardBg,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = C.pageBg;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = C.cardBg;
+                        }}
+                      >
                         {/* Choose */}
                         <td style={tdStyle}>
                           {!item.isAdmin && (
-                            <input
-                              type="checkbox"
+                            <Checkbox
+                              size="small"
                               checked={selected.includes(realIdx)}
                               onChange={() => handleSelectRow(realIdx)}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
                             />
                           )}
                         </td>
@@ -796,25 +1015,30 @@ const AccountManage = () => {
                         {/* Username */}
                         <td style={tdStyle}>{item.username}</td>
                         {/* Authority */}
-                        <td style={tdStyle}>{item.authority ?? '-'}</td>
+                        <td style={tdStyle}>{item.authority ?? "-"}</td>
                         {/* Modify */}
                         <td style={tdStyle}>
-                          <button
+                          <Btn
+                            variant="edit"
                             onClick={() => {
                               if (item.isAdmin) {
-                                alert("Admin user cannot be modified.");
+                                showToast(
+                                  "Admin user cannot be modified.",
+                                  "error",
+                                );
                                 return;
                               }
                               handleOpenModal(item, realIdx);
                             }}
                             style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
+                              height: 28,
+                              minWidth: 74,
+                              padding: "2px 10px",
                             }}
                           >
-                            <EditDocumentIcon style={{ fontSize: 20 }} />
-                          </button>
+                            <EditOutlinedIcon sx={{ fontSize: 14 }} />
+                            Edit
+                          </Btn>
                         </td>
                       </tr>
                     );
@@ -824,132 +1048,60 @@ const AccountManage = () => {
             </table>
           </div>
         </div>
-        {/* Table Buttons */}
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "100%",
-            margin: "0 auto",
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "center",
-            background: "#e3e7ef",
-            border: "1px solid #ccc",
-            borderTop: "none",
-            marginTop: 0,
-            padding: "0px 8px 0px 0px",
-            overflowX: "auto",
-          }}
-        >
-          <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] border-gray-300 px-2 py-2 gap-2">
-            <div className="flex flex-wrap gap-2" style={{ flex: "1 1 auto" }}>
-              <button
-                className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={handleCheckAllRows}
-                disabled={loading}
-              >
-                {ACCOUNT_MANAGE_BUTTONS.checkAll}
-              </button>
+        {/* Table Buttons (removed as they are now in the top bar) */}
+        <div style={{ padding: 0 }} />
 
-              <button
-                className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={handleUncheckAllRows}
-                disabled={loading}
+        {totalPages > 0 && (
+          <div
+            style={{
+              padding: "16px 20px",
+              background: C.cardBg,
+              border: `1px solid ${C.cardBorder}`,
+              borderTop: "none",
+              borderRadius: "0 0 20px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+              flexWrap: "wrap",
+              boxShadow: C.cardShadow,
+            }}
+          >
+            <span style={{ fontSize: 13, color: C.mutedText, fontWeight: 600 }}>
+              Showing {pagedAccounts.length} record
+              {pagedAccounts.length !== 1 ? "s" : ""} on page {page}
+            </span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Btn
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={loading || page <= 1}
+                variant="outline"
               >
-                {ACCOUNT_MANAGE_BUTTONS.uncheckAll}
-              </button>
-
-              <button
-                className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={handleInverse}
-                disabled={loading}
+                Prev
+              </Btn>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: C.accent,
+                  background: "#e0f2fe",
+                  padding: "5px 14px",
+                  borderRadius: 6,
+                  border: `0.5px solid ${C.cardBorder}`,
+                }}
               >
-                {ACCOUNT_MANAGE_BUTTONS.inverse}
-              </button>
-
-              <button
-                className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={handleDelete}
-                disabled={loading || selected.length === 0}
+                Page {page} of {totalPages}
+              </span>
+              <Btn
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={loading || page >= totalPages}
+                variant="outline"
               >
-                {ACCOUNT_MANAGE_BUTTONS.delete}
-              </button>
+                Next
+              </Btn>
             </div>
           </div>
-
-          <button
-            className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.fetch || loading.save ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={() => handleOpenModal()}
-            disabled={loading}
-          >
-            {ACCOUNT_MANAGE_BUTTONS.addNew}
-          </button>
-        </div>
-
-        {/* Pagination (working, legacy style, left-aligned) */}
-        <div
-          className="flex flex-wrap items-center gap-1 sm:gap-2 w-full bg-gray-200 border border-gray-300 mt-1 p-1 text-xs text-gray-700"
-          style={{ borderRadius: "0 0 8px 8px", borderTop: "none" }}
-        >
-          <span>{combinedAccounts.length} Items Total</span>
-          <span>20 Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-
-          {/* First */}
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => setPage(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-
-          {/* Previous */}
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => setPage(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-
-          {/* Next */}
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => setPage(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-
-          {/* Last */}
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => setPage(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-
-          <span>Go to Page</span>
-
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => setPage(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-
-          <span>{totalPages} Pages Total</span>
-        </div>
+        )}
       </div>
       {/* Modal */}
       {isModalOpen && (
@@ -957,21 +1109,6 @@ const AccountManage = () => {
           <div style={modalStyle}>
             <div style={modalHeaderStyle}>User Information</div>
             <div style={modalBodyStyle}>
-              {error && (
-                <div
-                  style={{
-                    background: "#ffebee",
-                    color: "#c62828",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ffcdd2",
-                    fontSize: "12px",
-                    marginBottom: "8px",
-                  }}
-                >
-                  {error}
-                </div>
-              )}
               {ACCOUNT_MANAGE_MODAL_FIELDS.map((field) => (
                 <div key={field.name} style={modalRowStyle}>
                   <label style={modalLabelStyle}>{field.label}:</label>
@@ -1002,23 +1139,33 @@ const AccountManage = () => {
               ))}
             </div>
             <div style={modalFooterStyle}>
-              <button
-                style={modalButtonStyle}
+              <Btn
+                variant="primary"
                 onClick={handleSave}
                 disabled={loading}
+                style={{ minWidth: 110, height: 34 }}
               >
                 {loading ? "Saving..." : ACCOUNT_MANAGE_BUTTONS.save}
-              </button>
-              <button
-                style={modalButtonGrayStyle}
+              </Btn>
+              <Btn
+                variant="cancel"
                 onClick={handleCloseModal}
                 disabled={loading}
+                style={{ minWidth: 110, height: 34 }}
               >
                 {ACCOUNT_MANAGE_BUTTONS.close}
-              </button>
+              </Btn>
             </div>
           </div>
         </div>
+      )}
+      {/* Dialogs */}
+      {confirmDialog && (
+        <ConfirmDialog
+          msg={confirmDialog.msg}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(null)}
+        />
       )}
     </div>
   );

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
+import { Alert } from "@mui/material";
 import {
   RESTART_SECTIONS,
   RESTART_BUTTON_LABEL,
@@ -11,73 +12,146 @@ import {
   fetchSystemInfo,
 } from "../../../api/apiService";
 
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "danger":
+        return "#b91c1c";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  paddingBottom: "16px",
+  marginBottom: "24px",
+};
+
 const blueBarStyle = {
   width: "100%",
-  height: 32,
-  background: "linear-gradient(#3E5475 100%)",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
-  fontWeight: 600,
-  fontSize: 18,
-  color: "#ffffff",
-  justifyContent: "center",
-  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-};
-const sectionContainerStyle = {
-  width: "100%",
-  maxWidth: 1400,
-  background: "#fff",
-  border: "1px solid #888",
-  borderRadius: 8,
-  margin: "32px auto",
-  marginTop: "-32px",
-  padding: 0,
-  boxSizing: "border-box",
-  overflow: "hidden",
-};
-const contentRowStyle = {
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "center",
   justifyContent: "space-between",
-  padding: "48px 48px",
-  gap: 24,
-};
-const instructionStyle = {
-  fontSize: 20,
-  color: "#666",
-  textAlign: "center",
-  flex: 1,
-};
-const buttonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: "18px",
-  borderRadius: 2,
-  minWidth: 140,
-  minHeight: 48,
-  px: 2,
-  py: 0.5,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
-  },
+  padding: "0 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
 const Restart = () => {
   const [loading, setLoading] = useState(false);
-  const [serviceSuccess, setServiceSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [showServiceModal, setShowServiceModal] = useState(false);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
   const [loadingType, setLoadingType] = useState(""); // 'system' or 'service'
   const [progressMessage, setProgressMessage] = useState("");
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  // Auto-hide error after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   // Helper function to extract IP addresses from system info
   const getDeviceIPs = async () => {
@@ -144,16 +218,12 @@ const Restart = () => {
     }
   };
 
-  // Build list of all IPs to ping: lan1, lan2, and current host (so we always try the IP user is connected to).
   const getPingTargets = (lan1Ip, lan2Ip) => {
     const currentHost = (window.location.hostname || "").trim();
     const set = new Set([lan1Ip, lan2Ip, currentHost].filter(Boolean));
     return Array.from(set);
   };
 
-  // Ping device at given IP (service-ping API). Returns true if device responds.
-  // Treat 200 OK and also 401/403 as success (after reboot, device may return 401 until re-login).
-  // When pinging a different host (device IP), use default port 80/443; same host uses current port.
   const pingDeviceAt = async (ip) => {
     const protocol = window.location.protocol;
     const isSameHost = (ip || "").trim() === window.location.hostname;
@@ -177,7 +247,7 @@ const Restart = () => {
       });
       clearTimeout(timeoutId);
       if (res.ok) return true;
-      if (res.status === 401 || res.status === 403) return true; // device is back, needs login
+      if (res.status === 401 || res.status === 403) return true;
       return false;
     } catch (err) {
       clearTimeout(timeoutId);
@@ -185,7 +255,6 @@ const Restart = () => {
     }
   };
 
-  // Ping all target IPs (lan1, lan2, current host); returns { success, respondedIp } for redirect
   const pingAllTargets = async (targetIps) => {
     for (const ip of targetIps) {
       const ok = await pingDeviceAt(ip);
@@ -232,7 +301,7 @@ const Restart = () => {
             msg.includes("Failed to fetch") ||
             msg.includes("timeout");
           if (is500 || isConnectionError) {
-            // Server often returns 500 or drops connection when reboot runs; assume reboot was initiated
+            // Assume reboot was initiated
           } else {
             console.error("System restart API error:", apiError);
             let errorMessage = "Failed to initiate system restart.";
@@ -241,7 +310,7 @@ const Restart = () => {
             else if (status === 404)
               errorMessage = "Restart endpoint not found.";
             else if (apiError.message) errorMessage = apiError.message;
-            alert(errorMessage);
+            setError(errorMessage);
             setLoading(false);
             setLoadingType("");
             setProgressMessage("");
@@ -282,14 +351,16 @@ const Restart = () => {
             setLoading(false);
             setLoadingType("");
             setProgressMessage("");
-            alert(
+            setError(
               "Device did not come back online. Please check your network or try again later.",
             );
           }
         }, 5000);
       } catch (error) {
         console.error("System restart error:", error);
-        alert("Failed to get device info or start restart. Please try again.");
+        setError(
+          "Failed to get device info or start restart. Please try again.",
+        );
         setLoading(false);
         setLoadingType("");
         setProgressMessage("");
@@ -303,8 +374,7 @@ const Restart = () => {
         setLoading(false);
         setLoadingType("");
         setProgressMessage("");
-        setServiceSuccess(true);
-        setShowServiceModal(true);
+        showToast("Service restart successful");
       } catch (error) {
         console.error("Service restart error:", error);
         let errorMessage = "Failed to restart service.";
@@ -325,7 +395,7 @@ const Restart = () => {
         } else if (error.message) {
           errorMessage = error.message;
         }
-        alert(errorMessage);
+        setError(errorMessage);
         setLoading(false);
         setLoadingType("");
         setProgressMessage("");
@@ -335,140 +405,144 @@ const Restart = () => {
 
   return (
     <div
-      style={{
-        width: "100%",
-        minHeight: "calc(100vh - 80px)",
-        background: "gray-50",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "40px 40px",
-      }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      {RESTART_SECTIONS.map((section) => (
-        <div key={section.key} style={sectionContainerStyle}>
-          <div style={blueBarStyle}>{section.title}</div>
-          <div
-            style={{
-              ...contentRowStyle,
-              flexDirection: "row",
-              padding: "48px 48px",
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {/* Breadcrumb */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>Restart</span>
+        </div>
+
+        {/* Global Toast */}
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 16,
+              right: 16,
+              zIndex: 9999,
+              boxShadow: C.cardShadow,
             }}
           >
-            <div style={instructionStyle}>{section.instruction}</div>
-            <Button
-              sx={buttonSx}
-              onClick={() => handleRestart(section.key)}
-              disabled={loading && loadingType === section.key}
+            {toast.msg}
+          </Alert>
+        )}
+
+        {/* Global Error Alert */}
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError("")}
+            sx={{
+              position: "fixed",
+              top: 16,
+              right: 16,
+              zIndex: 9999,
+              boxShadow: C.cardShadow,
+            }}
+          >
+            {error}
+          </Alert>
+        )}
+
+        {RESTART_SECTIONS.map((section) => (
+          <div key={section.key} style={tableContainerStyle}>
+            <div style={blueBarStyle}>{section.title}</div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "24px 32px",
+                gap: 24,
+              }}
             >
-              {RESTART_BUTTON_LABEL}
-            </Button>
+              <div
+                style={{
+                  fontSize: 14,
+                  color: C.valueText,
+                  flex: 1,
+                  fontWeight: 500,
+                }}
+              >
+                {section.instruction}
+              </div>
+              <Btn
+                variant="primary"
+                onClick={() => handleRestart(section.key)}
+                disabled={loading && loadingType === section.key}
+                style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+              >
+                {RESTART_BUTTON_LABEL}
+              </Btn>
+            </div>
           </div>
-        </div>
-      ))}
-      {error && (
-        <div
-          style={{ color: "red", fontWeight: 600, fontSize: 18, marginTop: 24 }}
-        >
-          {error}
-        </div>
-      )}
-      {loading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(255,255,255,0.85)",
-            zIndex: 9999,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        ))}
+
+        {loading && (
           <div
             style={{
-              fontSize: 22,
-              fontWeight: 600,
-              color: "#0e8fd6",
-              marginBottom: 16,
-              textAlign: "center",
-              maxWidth: 360,
-            }}
-          >
-            {progressMessage ||
-              (loadingType === "system"
-                ? "System is restarting..."
-                : "Service is restarting...")}
-          </div>
-          <div
-            className="loader"
-            style={{
-              width: 48,
-              height: 48,
-              border: "6px solid #b3e0ff",
-              borderTop: "6px solid #0e8fd6",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}
-          ></div>
-          <style>{`@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }`}</style>
-        </div>
-      )}
-      {showServiceModal && serviceSuccess && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.3)",
-            zIndex: 10000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: 12,
-              padding: 40,
-              minWidth: 320,
-              textAlign: "center",
-              boxShadow: "0 2px 16px rgba(0,0,0,0.15)",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "rgba(255,255,255,0.85)",
+              zIndex: 9999,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <div
               style={{
                 fontSize: 22,
-                fontWeight: 700,
-                marginBottom: 24,
-                color: "#0e8fd6",
+                fontWeight: 600,
+                color: C.primary,
+                marginBottom: 16,
+                textAlign: "center",
+                maxWidth: 360,
               }}
             >
-              Service restart successful
+              {progressMessage ||
+                (loadingType === "system"
+                  ? "System is restarting..."
+                  : "Service is restarting...")}
             </div>
-            <div style={{ fontSize: 18, marginBottom: 32 }}>
-              The service has been restarted successfully.
-            </div>
-            <Button
-              variant="contained"
-              sx={{ ...buttonSx, minWidth: 100, fontSize: 18 }}
-              onClick={() => {
-                setShowServiceModal(false);
-                setServiceSuccess(false);
+            <div
+              className="loader"
+              style={{
+                width: 48,
+                height: 48,
+                border: "6px solid #e2e8f0",
+                borderTop: `6px solid ${C.primary}`,
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
               }}
-            >
-              OK
-            </Button>
+            ></div>
+            <style>{`@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }`}</style>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -1,45 +1,177 @@
-import React, { useState } from "react";
-import { Button, CircularProgress } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { CircularProgress, Alert } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { uploadSqlPatch } from "../../../api/apiService";
+
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "danger":
+        return "#b91c1c";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  paddingBottom: "24px",
+};
+
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginBottom: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "0 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
+};
 
 const SystemToolsSqlUpload = () => {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [message, setMessage] = useState(null);
   const [fileName, setFileName] = useState("No file chosen");
+  const [error, setError] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  // Auto-hide error after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const handleFileChange = (e) => {
     const f = e.target.files && e.target.files[0];
     setFile(f || null);
-    setMessage(null);
+    setError("");
     setFileName(f ? f.name : "No file chosen");
   };
 
   const handleUpload = async () => {
     if (!file) {
-      setMessage({ type: "error", text: "Please choose a .sql file." });
+      setError("Please choose a .sql file.");
       return;
     }
     if (!file.name.toLowerCase().endsWith(".sql")) {
-      setMessage({ type: "error", text: "Only .sql files are allowed." });
+      setError("Only .sql files are allowed.");
       return;
     }
     setIsUploading(true);
-    setMessage(null);
+    setError("");
     try {
       const res = await uploadSqlPatch(file);
       if (res?.success) {
-        setMessage({
-          type: "success",
-          text: res.message || "Database restored successfully",
-        });
+        showToast(res.message || "Database restored successfully");
         setFile(null);
+        setFileName("No file chosen");
       } else {
-        setMessage({ type: "error", text: res?.message || "Upload failed" });
+        setError(res?.message || "Upload failed");
       }
     } catch (err) {
-      setMessage({ type: "error", text: err?.message || "Upload failed" });
+      setError(err?.message || "Upload failed");
     } finally {
       setIsUploading(false);
     }
@@ -47,100 +179,161 @@ const SystemToolsSqlUpload = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      <div className="w-full mx-auto" style={{ maxWidth: 900 }}>
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {/* Breadcrumb */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
           }}
         >
-          SQL Upload
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            SQL Upload
+          </span>
         </div>
 
-        <div
-          style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-            background: "#f8fafd",
-          }}
-          className="w-full flex flex-col items-center py-10"
-        >
-          <div
-            className="flex flex-col items-center gap-4"
-            style={{ width: "100%", maxWidth: 520 }}
+        {/* Global Toast */}
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 16,
+              right: 16,
+              zIndex: 9999,
+              boxShadow: C.cardShadow,
+            }}
           >
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="sql-file-input"
-                className="cursor-pointer select-none"
+            {toast.msg}
+          </Alert>
+        )}
+
+        {/* Global Error Alert */}
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError("")}
+            sx={{
+              position: "fixed",
+              top: 16,
+              right: 16,
+              zIndex: 9999,
+              boxShadow: C.cardShadow,
+            }}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <div style={tableContainerStyle}>
+          {/* Header */}
+          <div style={blueBarStyle}>SQL Upload</div>
+
+          <div
+            style={{
+              padding: "32px 24px",
+              maxWidth: 500,
+              margin: "0 auto",
+            }}
+          >
+            <div className="flex flex-col items-center gap-6">
+              <div
+                className="flex items-center gap-4 w-full"
                 style={{
-                  padding: "8px 16px",
-                  background: "#f3f4f6",
-                  border: "1px solid #c7c9cf",
-                  borderRadius: 6,
-                  boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.06)",
-                  color: "#111827",
-                  fontWeight: 600,
-                  transition: "all .15s ease-in-out",
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = "#e5e7eb";
-                  e.currentTarget.style.borderColor = "#b6bac3";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = "#f3f4f6";
-                  e.currentTarget.style.borderColor = "#c7c9cf";
+                  background: C.pageBg,
+                  padding: "16px",
+                  borderRadius: "12px",
+                  border: `1px dashed ${C.cardBorder}`,
                 }}
               >
-                Choose File
-              </label>
-              <input
-                id="sql-file-input"
-                type="file"
-                accept=".sql"
-                onChange={handleFileChange}
-                style={{ display: "none" }}
-              />
-              <span style={{ color: "#374151" }}>{fileName}</span>
-              <Button
-                variant="contained"
-                startIcon={
-                  isUploading ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : (
-                    <CloudUploadIcon />
-                  )
-                }
+                <label
+                  htmlFor="sql-file-input"
+                  className="cursor-pointer select-none"
+                  style={{
+                    padding: "8px 16px",
+                    background: C.cardBg,
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 6,
+                    color: C.valueText,
+                    fontWeight: 600,
+                    fontSize: 13,
+                    transition: "all .15s ease-in-out",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = "#f3f4f6";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = C.cardBg;
+                  }}
+                >
+                  Choose File
+                </label>
+                <input
+                  id="sql-file-input"
+                  type="file"
+                  accept=".sql"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+                <span
+                  style={{
+                    color: C.mutedText,
+                    fontSize: 13,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    maxWidth: "200px",
+                  }}
+                  title={fileName}
+                >
+                  {fileName}
+                </span>
+              </div>
+
+              <Btn
+                variant="primary"
                 onClick={handleUpload}
                 disabled={isUploading}
-                sx={{
-                  background:
-                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-                  color: "#fff",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  minWidth: 160,
+                style={{
+                  height: 36,
+                  padding: "0 24px",
+                  fontSize: 13,
+                  width: "100%",
                 }}
               >
-                {isUploading ? "Uploading..." : "Upload SQL"}
-              </Button>
-            </div>
-            {message && (
+                {isUploading ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : (
+                  <CloudUploadIcon fontSize="small" />
+                )}
+                <span style={{ marginLeft: "8px" }}>
+                  {isUploading ? "Uploading..." : "Upload SQL"}
+                </span>
+              </Btn>
+
               <div
-                className={`text-sm ${message.type === "success" ? "text-green-700" : "text-red-700"}`}
+                style={{
+                  fontSize: 12,
+                  color: C.mutedText,
+                  textAlign: "center",
+                }}
               >
-                {message.text}
+                Upload a verified .sql update file. Only use files from trusted
+                sources.
               </div>
-            )}
-            <div className="text-xs text-gray-600 mt-2">
-              Upload a verified .sql update file. Only use files from trusted
-              sources.
             </div>
           </div>
         </div>
