@@ -41,15 +41,17 @@ import {
 
 // ── Color palette (matches CDR / CallCount page) ──────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  cardBorderSoft: "#f1f5f9",
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
+  accent: "#2563eb",
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+  purple: "#8b5cf6",
   amber: "#d97706",
 };
 
@@ -121,12 +123,16 @@ const Pill = ({ text, bg, color }) => (
     style={{
       background: bg,
       color,
-      padding: "2px 9px",
-      borderRadius: 10,
-      fontSize: 10.5,
-      fontWeight: 600,
+      padding: "4px 11px",
+      borderRadius: 999,
+      fontSize: 11,
+      fontWeight: 700,
+      letterSpacing: "0.01em",
       whiteSpace: "nowrap",
-      display: "inline-block",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      minWidth: 72,
     }}
   >
     {text}
@@ -137,17 +143,17 @@ const Pill = ({ text, bg, color }) => (
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -158,9 +164,10 @@ const TH = ({ children, style: extra }) => (
 // ── Status style helper ───────────────────────────────────────────────────────
 const statusStyle = (s) => {
   const v = String(s || "").toLowerCase();
-  if (v === "online") return { bg: "#dcfce7", color: "#15803d" };
-  if (v === "offline") return { bg: "#fef2f2", color: "#dc2626" };
-  if (v === "pending") return { bg: "#fefce8", color: "#92400e" };
+  if (v === "online") return { bg: "#e0f2fe", color: "#0369a1" };
+  if (v === "offline") return { bg: "#fee2e2", color: "#b91c1c" };
+  if (v === "expired") return { bg: "#fef3c7", color: "#92400e" };
+  if (v === "pending") return { bg: "#f8fafc", color: "#475569" };
   return { bg: "#f1f5f9", color: "#475569" };
 };
 
@@ -1100,7 +1107,7 @@ const SipAccountPage = () => {
       style={{
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 16,
+        padding: 24,
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
@@ -1142,25 +1149,25 @@ const SipAccountPage = () => {
 
         {/* ── Main card ── */}
         <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
+  style={{
+    background: "#ffffff",
+    borderRadius: 22,
+    overflow: "hidden",
+    border: `1px solid ${C.cardBorder}`,
+    boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  }}
+>
           {/* ── Toolbar ── */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              padding: "14px 18px",
+              borderBottom: "1px solid #e2e8f0",
+              background: "#f8fafc",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 10,
             }}
           >
             {/* Left: page info + selection count */}
@@ -1168,12 +1175,12 @@ const SipAccountPage = () => {
               <span
                 style={{
                   background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
+                  border: `1px solid #e2e8f0`,
+                  color: C.labelText,
                   fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
                 }}
               >
                 Page {page} · {filteredAccounts.length} records
@@ -1181,13 +1188,13 @@ const SipAccountPage = () => {
               {selected.length > 0 && (
                 <span
                   style={{
-                    background: "#e0f2fe",
+                    background:  "#eff6ff",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
@@ -1209,12 +1216,13 @@ const SipAccountPage = () => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
+                  gap: 8,
                   background: "#ffffff",
-                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: "5px 10px",
-                  transition: "border-color 0.15s ease",
+                  border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
+                  borderRadius: 999,
+                  padding: "7px 14px",
+                  transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+                  boxShadow: searchFocused ? "0 0 0 4px rgba(37,99,235,0.08)" : "none",
                 }}
               >
                 <span
@@ -1238,10 +1246,11 @@ const SipAccountPage = () => {
                   style={{
                     border: "none",
                     background: "transparent",
-                    fontSize: 11,
+                    fontSize: 12,
                     color: C.valueText,
                     outline: "none",
-                    width: 150,
+                    width: 240,
+                    minWidth: 180,
                   }}
                 />
                 {searchQuery && (
@@ -1290,6 +1299,7 @@ const SipAccountPage = () => {
                 onClick={handleDelete}
                 disabled={loading.delete || !selected.length}
                 variant="danger"
+                style={{ minWidth: 84 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={11} style={{ color: C.errorRed }} />
@@ -1409,7 +1419,7 @@ const SipAccountPage = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBg = isSelected
-                        ? "#f0f9ff"
+                        ? "#e0f2fe"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -1420,12 +1430,12 @@ const SipAccountPage = () => {
                           key={realIdx}
                           style={{
                             background: rowBg,
-                            borderBottom: "0.5px solid #9ca3af",
-                            transition: "background 0.1s ease",
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f0f9ff";
+                              e.currentTarget.style.background = "#eef4ff";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -1436,8 +1446,8 @@ const SipAccountPage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
+                              padding: "10px 0",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <Checkbox
@@ -1457,10 +1467,10 @@ const SipAccountPage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 4px",
+                              padding: "10px 6px",
                               fontSize: 11,
                               color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {realIdx + 1}
@@ -1469,12 +1479,12 @@ const SipAccountPage = () => {
                           {/* Extension */}
                           <td
                             style={{
-                              padding: "7px 12px",
+                              padding: "10px 14px",
                               fontSize: 13,
-                              fontWeight: 600,
+                              fontWeight: 700,
                               color: C.valueText,
                               textAlign: "center",
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {item.extension || (
@@ -1485,12 +1495,12 @@ const SipAccountPage = () => {
                           {/* Context */}
                           <td
                             style={{
-                              padding: "7px 12px",
+                              padding: "10px 14px",
                               fontSize: 13,
                               color: C.accent,
                               fontFamily: "monospace",
                               textAlign: "center",
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {item.context || (
@@ -1501,11 +1511,11 @@ const SipAccountPage = () => {
                           {/* Codecs */}
                           <td
                             style={{
-                              padding: "7px 12px",
+                              padding: "10px 14px",
                               fontSize: 13,
                               color: C.labelText,
                               textAlign: "center",
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                               whiteSpace: "nowrap",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
@@ -1520,12 +1530,12 @@ const SipAccountPage = () => {
                           {/* Password (masked) */}
                           <td
                             style={{
-                              padding: "7px 12px",
+                              padding: "10px 14px",
                               fontSize: 12,
                               fontFamily: "monospace",
                               textAlign: "center",
                               color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {"•".repeat(
@@ -1536,9 +1546,9 @@ const SipAccountPage = () => {
                           {/* Status pill */}
                           <td
                             style={{
-                              padding: "7px 12px",
+                              padding: "10px 14px",
                               textAlign: "center",
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {item.status ? (
@@ -1587,9 +1597,9 @@ const SipAccountPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
@@ -1815,7 +1825,7 @@ const SipAccountPage = () => {
             {/* Tab header */}
             <div
               style={{
-                borderBottom: "1px solid #9ca3af",
+                borderBottom: "1px solid #f1f5f9",
                 marginBottom: 8,
                 background: "#f1f3f6",
                 borderRadius: "4px 4px 0 0",

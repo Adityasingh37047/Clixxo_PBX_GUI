@@ -6,7 +6,141 @@ import {
   SIP_ACCOUNT_DOWNLOAD,
   SIP_ACCOUNT_SAVE_BUTTON,
 } from "../../../constants/SIPAccountGeneratorConstants";
-import Button from "@mui/material/Button";
+import { Alert } from "@mui/material";
+
+// ── Color palette (same as AccountManage) ────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+// ── Button Component (same as AccountManage) ─────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+  component,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  const Component = component || "button";
+
+  return (
+    <Component
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 36,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
+      {children}
+    </Component>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  marginBottom: 24,
+};
+
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginBottom: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "0 20px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "#94a3b8" },
+  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = C.cardBorder },
+};
 
 const SIPAccountGenerator = () => {
   const [form, setForm] = useState({
@@ -18,6 +152,12 @@ const SIPAccountGenerator = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState(SIP_ACCOUNT_UPLOAD.noFile);
   const fileInputRef = useRef();
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
 
   const handleInputChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -31,244 +171,339 @@ const SIPAccountGenerator = () => {
 
   const handleSave = (e) => {
     e.preventDefault();
+    showToast("SIP Account saved successfully", "success");
     // Save logic here
   };
 
   const handleUpload = () => {
+    if (!file) {
+      showToast("Please select a file to upload", "error");
+      return;
+    }
+    showToast("File uploaded successfully", "success");
     // Upload logic here
   };
 
   const handleDownload = () => {
+    showToast("Download started", "success");
     // Download logic here
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-80px)] bg-gray-50 flex flex-col items-center py-6 px-2">
-      <form
-        onSubmit={handleSave}
-        className="w-full max-w-5xl bg-transparent flex flex-col items-center"
-        autoComplete="off"
-      >
-        <div className="w-full flex flex-wrap md:flex-nowrap items-center justify-between gap-x-8 gap-y-3 mb-0 px-2 md:px-0">
-          {/* SIP Trunk No. */}
-          <div className="flex flex-col md:flex-row md:items-center min-w-[220px] md:gap-2">
-            <label
-              htmlFor="sipTrunkNo"
-              className="text-[15px] text-gray-800 whitespace-nowrap mb-1 md:mb-0"
-            >
-              SIP Trunk No.
-            </label>
-            <input
-              id="sipTrunkNo"
-              name="sipTrunkNo"
-              type="text"
-              value={form.sipTrunkNo}
-              onChange={handleInputChange}
-              placeholder="0"
-              className="border border-gray-400 rounded-sm px-2 py-1 w-full max-w-[130px] bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-          </div>
-          {/* Registration Validity Period(s): on two lines, left-aligned, small font */}
-          <div className="flex flex-col md:flex-row md:items-end h-10 min-w-[180px] md:gap-2">
-            <label
-              htmlFor="registrationPeriod"
-              className="text-[15px] text-gray-800 leading-tight mb-1 md:mb-0"
-            >
-              <span className="block">Registration Validity</span>
-              <span className="block">Period(s):</span>
-            </label>
-            <input
-              id="registrationPeriod"
-              name="registrationPeriod"
-              type="text"
-              value={form.registrationPeriod}
-              onChange={handleInputChange}
-              placeholder="1800"
-              className="border border-gray-400 rounded-sm px-2 py-1 w-full max-w-[130px] bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200 md:ml-2"
-            />
-          </div>
-          {/* Registration Address: on two lines, wider input */}
-          <div className="flex flex-col md:flex-row md:items-end min-w-[240px] md:gap-2">
-            <label
-              htmlFor="registrationAddress"
-              className="text-[15px] text-gray-800 leading-tight mb-1 md:mb-0"
-            >
-              <span className="block">Registration</span>
-              <span className="block">Address:</span>
-            </label>
-            <input
-              id="registrationAddress"
-              name="registrationAddress"
-              type="text"
-              value={form.registrationAddress}
-              onChange={handleInputChange}
-              className="border border-gray-400 rounded-sm px-2 py-1 w-full max-w-[260px] bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200 md:ml-2"
-            />
-          </div>
-          {/* Description: */}
-          <div className="flex flex-col md:flex-row md:items-center min-w-[220px] md:gap-2">
-            <label
-              htmlFor="description"
-              className="text-[15px] text-gray-800 whitespace-nowrap mb-1 md:mb-0"
-            >
-              Description:
-            </label>
-            <input
-              id="description"
-              name="description"
-              type="text"
-              value={form.description}
-              onChange={handleInputChange}
-              placeholder="default"
-              className="border border-gray-400 rounded-sm px-2 py-1 w-full max-w-[130px] bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-          </div>
-          {/* Save Button */}
-          <div className="flex items-center justify-end min-w-[10 0px] mt-2 md:mt-0">
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                background:
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                color: "#fff",
-                boxShadow: "0 2px 4px 0 rgba(0,0,0,0.10)",
-                borderRadius: "4px",
-                minWidth: "90px",
-                fontWeight: 500,
-                fontSize: "16px",
-                textTransform: "none",
-                "&:hover": {
-                  background:
-                    "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-                },
-              }}
-            >
-              {SIP_ACCOUNT_SAVE_BUTTON}
-            </Button>
-          </div>
-        </div>
-        <div className="w-full text-center mt-[8px] mb-2">
-          <span className="text-[15px] text-red-600 font-medium">
-            {SIP_ACCOUNT_NOTE}
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
+      {/* ── Alerts ── */}
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+
+      {/* ── Breadcrumb ── */}
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Sip Account Generator
           </span>
         </div>
-        {/* Upload Section */}
-        <div className="w-full max-w-5xl border border-gray-400 rounded-lg bg-white mb-6">
-          <div
-            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-            style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            }}
-          >
-            {SIP_ACCOUNT_UPLOAD.title}
-          </div>
-          <div className="flex flex-col md:flex-row items-center justify-between px-4 py-6 gap-4">
-            <div className="flex-1 text-gray-700 text-[16px] text-left mb-2 md:mb-0">
-              <div>{SIP_ACCOUNT_UPLOAD.instruction}</div>
-              <div>{SIP_ACCOUNT_UPLOAD.prompt}</div>
+
+        <form onSubmit={handleSave} autoComplete="off">
+          {/* SIP Account Generator Section */}
+          <div style={tableContainerStyle}>
+            <div style={blueBarStyle}>
+              <span>SIP Account Generator</span>
             </div>
-            <div className="flex items-center gap-2 flex-1 md:justify-center">
+            <div className="p-6">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                {/* Inputs Row */}
+                <div className="flex flex-col md:flex-row flex-wrap gap-6 flex-1">
+                  {/* SIP Trunk No. */}
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor="sipTrunkNo"
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
+                    >
+                      SIP Trunk No.
+                    </label>
+                    <input
+                      id="sipTrunkNo"
+                      name="sipTrunkNo"
+                      type="text"
+                      value={form.sipTrunkNo}
+                      onChange={handleInputChange}
+                      placeholder="0"
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 6,
+                        border: `1px solid ${C.cardBorder}`,
+                        fontSize: 14,
+                        width: "100%",
+                        minWidth: 80,
+                        backgroundColor: "#f8fafc",
+                        outline: "none",
+                        transition: "border-color 0.2s ease",
+                      }}
+                      {...inputInteraction}
+                    />
+                  </div>
+
+                  {/* Registration Validity Period(s) */}
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor="registrationPeriod"
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
+                    >
+                      Registration Validity Period(s)
+                    </label>
+                    <input
+                      id="registrationPeriod"
+                      name="registrationPeriod"
+                      type="text"
+                      value={form.registrationPeriod}
+                      onChange={handleInputChange}
+                      placeholder="1800"
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 6,
+                        border: `1px solid ${C.cardBorder}`,
+                        fontSize: 14,
+                        width: "100%",
+                        minWidth: 120,
+                        backgroundColor: "#f8fafc",
+                        outline: "none",
+                        transition: "border-color 0.2s ease",
+                      }}
+                      {...inputInteraction}
+                    />
+                  </div>
+
+                  {/* Registration Address */}
+                  <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+                    <label
+                      htmlFor="registrationAddress"
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
+                    >
+                      Registration Address
+                    </label>
+                    <input
+                      id="registrationAddress"
+                      name="registrationAddress"
+                      type="text"
+                      value={form.registrationAddress}
+                      onChange={handleInputChange}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 6,
+                        border: `1px solid ${C.cardBorder}`,
+                        fontSize: 14,
+                        width: "100%",
+                        backgroundColor: "#f8fafc",
+                        outline: "none",
+                        transition: "border-color 0.2s ease",
+                      }}
+                      {...inputInteraction}
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor="description"
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
+                    >
+                      Description
+                    </label>
+                    <input
+                      id="description"
+                      name="description"
+                      type="text"
+                      value={form.description}
+                      onChange={handleInputChange}
+                      placeholder="default"
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 6,
+                        border: `1px solid ${C.cardBorder}`,
+                        fontSize: 14,
+                        width: "100%",
+                        minWidth: 100,
+                        backgroundColor: "#f8fafc",
+                        outline: "none",
+                        transition: "border-color 0.2s ease",
+                      }}
+                      {...inputInteraction}
+                    />
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <div className="mt-2 lg:mt-5">
+                  <Btn
+                    type="submit"
+                    variant="primary"
+                    style={{ minWidth: 100, height: 36 }}
+                  >
+                    {SIP_ACCOUNT_SAVE_BUTTON}
+                  </Btn>
+                </div>
+              </div>
+
+              {/* Note */}
+              <div
+                className="mt-4"
+                style={{
+                  fontSize: 13,
+                  color: C.errorRed,
+                  fontWeight: 500,
+                  textAlign: "center",
+                }}
+              >
+                {SIP_ACCOUNT_NOTE}
+              </div>
+            </div>
+          </div>
+        </form>
+
+        {/* Upload Section */}
+        <div style={tableContainerStyle}>
+          <div style={blueBarStyle}>
+            <span>{SIP_ACCOUNT_UPLOAD.title}</span>
+          </div>
+          <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div style={{ flex: 1, color: C.valueText, fontSize: 14 }}>
+              <div style={{ fontWeight: 500 }}>
+                {SIP_ACCOUNT_UPLOAD.instruction}
+              </div>
+              <div style={{ color: C.mutedText, marginTop: 4 }}>
+                {SIP_ACCOUNT_UPLOAD.prompt}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 flex-1 justify-center">
               <input
                 ref={fileInputRef}
                 type="file"
                 className="hidden"
                 onChange={handleFileChange}
               />
-              <Button
-                variant="outlined"
-                component="span"
-                sx={{
-                  background: "#f5f5f5",
-                  border: "1px solid #b0b0b0",
-                  color: "#333",
-                  fontWeight: 500,
-                  fontSize: "15px",
-                  textTransform: "none",
-                  minWidth: "120px",
-                  mr: 1,
-                }}
+              <Btn
+                variant="default"
                 onClick={() => fileInputRef.current.click()}
+                style={{ height: 36, minWidth: 120 }}
               >
                 {SIP_ACCOUNT_UPLOAD.chooseFile}
-              </Button>
-              <span className="text-gray-600 text-[15px] whitespace-nowrap">
+              </Btn>
+              <span
+                style={{
+                  color: C.labelText,
+                  fontSize: 13,
+                  maxWidth: 150,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {fileName}
               </span>
             </div>
-            <div className="flex-1 flex md:justify-end w-full md:w-auto mt-4 md:mt-0">
-              <Button
-                variant="contained"
-                sx={{
-                  background:
-                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                  color: "#fff",
-                  borderRadius: "6px",
-                  minWidth: "90px",
-                  fontWeight: 500,
-                  fontSize: "16px",
-                  textTransform: "none",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-                  },
-                }}
+
+            <div className="flex md:justify-end flex-1">
+              <Btn
+                variant="primary"
                 onClick={handleUpload}
+                style={{ minWidth: 110, height: 36 }}
               >
                 {SIP_ACCOUNT_UPLOAD.button}
-              </Button>
+              </Btn>
             </div>
           </div>
         </div>
+
         {/* Download Section */}
-        <div className="w-full max-w-5xl border border-gray-400 rounded-lg bg-white mb-6">
-          <div
-            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-            style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            }}
-          >
-            {SIP_ACCOUNT_DOWNLOAD.title}
+        <div style={tableContainerStyle}>
+          <div style={blueBarStyle}>
+            <span>{SIP_ACCOUNT_DOWNLOAD.title}</span>
           </div>
-          <div className="flex flex-col md:flex-row items-center justify-between px-4 py-6 gap-4">
-            <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
-              <span className="text-gray-700 text-[16px]">
+          <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex-1 flex flex-col gap-1">
+              <span
+                style={{ color: C.labelText, fontSize: 13, fontWeight: 600 }}
+              >
                 {SIP_ACCOUNT_DOWNLOAD.fileLabel}
               </span>
-              <span className="text-red-600 text-[16px] font-medium">
+              <span
+                style={{ color: C.errorRed, fontSize: 14, fontWeight: 500 }}
+              >
                 {SIP_ACCOUNT_DOWNLOAD.fileName}
               </span>
             </div>
-            <div className="flex-1 text-gray-700 text-[16px] text-left md:text-center">
+
+            <div
+              style={{
+                flex: 1,
+                color: C.valueText,
+                fontSize: 14,
+                textAlign: "center",
+              }}
+            >
               {SIP_ACCOUNT_DOWNLOAD.instruction}
             </div>
-            <div className="flex-1 flex md:justify-end w-full md:w-auto mt-4 md:mt-0">
-              <Button
-                variant="contained"
-                sx={{
-                  background:
-                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                  color: "#fff",
-                  borderRadius: "6px",
-                  minWidth: "110px",
-                  fontWeight: 500,
-                  fontSize: "16px",
-                  textTransform: "none",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-                  },
-                }}
+
+            <div className="flex md:justify-end flex-1">
+              <Btn
+                variant="primary"
                 onClick={handleDownload}
+                style={{ minWidth: 110, height: 36 }}
               >
                 {SIP_ACCOUNT_DOWNLOAD.button}
-              </Button>
+              </Btn>
             </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

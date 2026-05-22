@@ -35,7 +35,7 @@ const Layout = () => {
   const contentWidth = isMobile ? "100%" : `calc(100% - ${sidebarWidth}px)`;
  
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#eef2f7" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#eef2f7", overflow: "hidden" }}>
       <Navbar
         isMobile={isMobile}
         sidebarOpen={sidebarOpen}
@@ -54,8 +54,9 @@ const Layout = () => {
       <main
         style={{
           marginLeft: contentMarginLeft,
-          paddingTop: NAVBAR_HEIGHT,
-          minHeight: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
+          marginTop: NAVBAR_HEIGHT,
+          height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
+          overflowY: "auto",
           backgroundColor: "#eef2f7",
           width: contentWidth,
           boxSizing: "border-box",

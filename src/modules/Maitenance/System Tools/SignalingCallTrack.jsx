@@ -5,37 +5,163 @@ import {
   SCTRACK_LABELS,
   SCTRACK_BUTTONS,
 } from "../../../constants/SignalingCallTrackConstants";
-import Button from "@mui/material/Button";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 
-const blueBar = (title) => (
-  <div
-    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-    style={{
-      background: "linear-gradient(#3E5475 100%)",
-      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-    }}
-  >
-    {title}
-  </div>
-);
+// ── Color palette (same as UserManage) ────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
 
-const buttonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: "16px",
-  borderRadius: 1.5,
-  minWidth: 90,
-  px: 2,
-  py: 0.5,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+// ── Button Component (same as UserManage) ────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "edit":
+        return "#bbf7d0";
+      case "delete":
+        return "#fecaca";
+      case "danger":
+        return "#b91c1c";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+};
+
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginLeft: 6,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "0 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
   },
 };
 
@@ -45,71 +171,175 @@ const SignalingCallTrack = () => {
   const [trackMessage, setTrackMessage] = useState("");
 
   return (
-    <div className="w-full min-h-[calc(100vh-80px)] bg-gray-50 flex flex-col items-center py-6 px-2 md:p-2">
-      <div className="w-full max-w-4xl">
-        {blueBar(SCTRACK_TITLE)}
-        <div className="border border-gray-400 rounded-b-lg bg-white p-8 flex flex-col items-center">
-          {/* Filter Row */}
-          <div className="w-full flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
-            <div className="flex flex-col gap-2 md:gap-4">
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {/* ── Breadcrumb ── */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Signaling Call Track
+          </span>
+        </div>
+
+        <div style={tableContainerStyle}>
+          <div style={{ ...blueBarStyle, justifyContent: "left" }}>
+            <span>{SCTRACK_TITLE}</span>
+          </div>
+
+          <div style={{ padding: "24px 20px" }}>
+            {/* Filter Row */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 32,
+                marginBottom: 24,
+                flexWrap: "wrap",
+              }}
+            >
               <RadioGroup
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
                 name="filterType"
+                row
+                style={{ gap: 16 }}
               >
                 {SCTRACK_RADIO_OPTIONS.map((opt) => (
                   <FormControlLabel
                     key={opt.value}
                     value={opt.value}
-                    control={<Radio size="small" sx={{ p: 0.5 }} />}
+                    control={
+                      <Radio
+                        size="small"
+                        sx={{
+                          p: 0.5,
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.primary },
+                        }}
+                      />
+                    }
                     label={
-                      <span className="text-[16px] text-gray-700">
+                      <span
+                        style={{
+                          fontSize: 14,
+                          color: C.valueText,
+                          fontWeight: 500,
+                        }}
+                      >
                         {opt.label}
                       </span>
                     }
-                    sx={{ mb: 0.5 }}
+                    sx={{ margin: 0 }}
                   />
                 ))}
               </RadioGroup>
-            </div>
-            <div className="flex flex-row items-center gap-2 md:mt-2">
               <input
                 type="text"
                 value={filterValue}
                 onChange={(e) => setFilterValue(e.target.value)}
-                className="border border-gray-400 rounded px-2 py-1 text-base text-gray-800 bg-white min-w-[120px] max-w-[180px]"
+                style={{
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 8,
+                  padding: "6px 12px",
+                  fontSize: 14,
+                  color: C.valueText,
+                  minWidth: 120,
+                  maxWidth: 180,
+                  outline: "none",
+                  transition: "border-color 0.2s ease",
+                }}
+                {...inputInteraction}
               />
             </div>
-          </div>
-          {/* Buttons Row */}
-          <div className="w-full flex flex-row flex-wrap justify-center gap-4 mb-8">
-            <Button variant="contained" sx={buttonSx}>
-              {SCTRACK_BUTTONS.start}
-            </Button>
-            <Button variant="contained" sx={buttonSx}>
-              {SCTRACK_BUTTONS.stop}
-            </Button>
-            <Button variant="contained" sx={buttonSx}>
-              {SCTRACK_BUTTONS.filter}
-            </Button>
-            <Button variant="contained" sx={buttonSx}>
-              {SCTRACK_BUTTONS.clear}
-            </Button>
-            <Button variant="contained" sx={buttonSx}>
-              {SCTRACK_BUTTONS.download}
-            </Button>
-          </div>
-          {/* Track Message */}
-          <div className="w-full flex flex-col md:flex-row md:items-start gap-4">
-            <label className="text-[17px] text-gray-700 min-w-[140px] md:pt-2">
-              {SCTRACK_LABELS.trackMessage}
-            </label>
-            <textarea
-              className="w-full min-h-[220px] max-h-[320px] border border-gray-400 rounded bg-white text-[16px] p-2 font-mono resize-y"
-              value={trackMessage}
-              onChange={(e) => setTrackMessage(e.target.value)}
-              placeholder=""
-            />
+
+            {/* Buttons Row - Justify left as requested */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                flexWrap: "wrap",
+                justifyContent: "flex-start",
+                gap: 16,
+                marginBottom: 32,
+              }}
+            >
+              <Btn
+                variant="primary"
+                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+              >
+                {SCTRACK_BUTTONS.start}
+              </Btn>
+              <Btn
+                variant="cancel"
+                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+              >
+                {SCTRACK_BUTTONS.stop}
+              </Btn>
+              <Btn
+                variant="cancel"
+                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+              >
+                {SCTRACK_BUTTONS.filter}
+              </Btn>
+              <Btn
+                variant="cancel"
+                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+              >
+                {SCTRACK_BUTTONS.clear}
+              </Btn>
+              <Btn
+                variant="cancel"
+                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+              >
+                {SCTRACK_BUTTONS.download}
+              </Btn>
+            </div>
+
+            {/* Track Message Textarea */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <label
+                style={{ fontSize: 14, color: C.labelText, fontWeight: 600 }}
+              >
+                {SCTRACK_LABELS.trackMessage}
+              </label>
+              <textarea
+                value={trackMessage}
+                onChange={(e) => setTrackMessage(e.target.value)}
+                style={{
+                  width: "100%",
+                  minHeight: 220,
+                  maxHeight: 400,
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 10,
+                  backgroundColor: C.pageBg,
+                  color: C.valueText,
+                  fontSize: 14,
+                  padding: "12px",
+                  fontFamily: "monospace",
+                  resize: "vertical",
+                  outline: "none",
+                  transition: "border-color 0.2s ease",
+                }}
+                {...inputInteraction}
+              />
+            </div>
           </div>
         </div>
       </div>

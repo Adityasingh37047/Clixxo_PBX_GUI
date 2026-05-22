@@ -1,56 +1,203 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Checkbox } from '@mui/material';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { Checkbox, Alert } from "@mui/material";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   PAGE_PERMISSION_GROUPS,
   INITIAL_PERMISSIONS,
-} from '../constants/UserManageConstants';
+} from "../constants/UserManageConstants";
 import {
   fetchUserList,
   createUser,
   updateUserAccess,
   deleteUser,
-} from '../api/apiService';
+} from "../api/apiService";
 
-// ── helpers ─────────────────────────────────────────────────────────────────
-const cbSx = { p: 0, '& .MuiSvgIcon-root': { fontSize: 16 } };
-
-const blueBar = {
-  height: 32,
-  background: 'linear-gradient(to bottom, #b3e0ff, #6ec1f7, #3b8fd6)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  fontWeight: 600, fontSize: 14, color: '#374151',
+// ── Color palette (matches CallCount) ────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
 };
 
-const actionBtnStyle = (color = '#3E5475') => ({
-  background: `linear-gradient(to bottom, #5A6F8F, ${color})`,
-  color: '#fff', border: '1px solid #4a6080',
-  borderRadius: 4, padding: '3px 14px',
-  fontSize: 12, fontWeight: 600, cursor: 'pointer',
-  letterSpacing: '0.03em',
-});
+// ── Button Component ──────────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    outline: {
+      background: "transparent",
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    accent: {
+      background: C.accent,
+      color: C.cardBg,
+      border: `0.5px solid ${C.accent}`,
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "edit":
+        return "#bbf7d0";
+      case "delete":
+        return "#fecaca";
+      case "accent":
+        return "#0369a1"; // darker than C.accent
+      case "danger":
+        return "#b91c1c"; // darker than C.errorRed
+      case "outline":
+        return "rgba(2, 132, 199, 0.10)";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "5px 14px",
+        borderRadius: 6,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 5,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.backgroundColor = hoverBg;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.backgroundColor = s.background;
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: C.pageBg,
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "14px 18px",
+      textAlign: "left",
+      borderBottom: `1px solid ${C.divider}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const cbSx = {
+  p: 0,
+  color: C.accent,
+  "&.Mui-checked": { color: C.accent },
+  "&.MuiCheckbox-indeterminate": { color: C.accent },
+  "& .MuiSvgIcon-root": { fontSize: 16 },
+};
 
 const inputStyle = {
-  height: 30, padding: '0 10px',
-  border: '1px solid #bbb', borderRadius: 4,
-  fontSize: 13, outline: 'none', width: '100%',
-  boxSizing: 'border-box',
+  height: 30,
+  padding: "0 10px",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 6,
+  fontSize: 13,
+  outline: "none",
+  width: "100%",
+  boxSizing: "border-box",
+  color: C.valueText,
+  background: C.cardBg,
+  transition: "border-color 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
+  },
 };
 
 function allChecked(pages, perms) {
-  return pages.length > 0 && pages.every(p => perms[p.id]);
+  return pages.length > 0 && pages.every((p) => perms[p.id]);
 }
 function someChecked(pages, perms) {
-  const n = pages.filter(p => perms[p.id]).length;
+  const n = pages.filter((p) => perms[p.id]).length;
   return n > 0 && n < pages.length;
 }
 function sectionPages(section) {
-  return section.subGroups.flatMap(sg => sg.pages);
+  return section.subGroups.flatMap((sg) => sg.pages);
 }
 
 // Build permissions map from saved pages array
 function buildPermsFromPages(pages = []) {
   const perms = { ...INITIAL_PERMISSIONS };
-  pages.forEach(id => { if (id in perms) perms[id] = true; });
+  pages.forEach((id) => {
+    if (id in perms) perms[id] = true;
+  });
   return perms;
 }
 
@@ -58,9 +205,9 @@ function buildPermsFromPages(pages = []) {
 function collectSectionsAndPages(perms) {
   const sections = [];
   const pages = [];
-  PAGE_PERMISSION_GROUPS.forEach(section => {
+  PAGE_PERMISSION_GROUPS.forEach((section) => {
     const secPages = sectionPages(section);
-    const checkedPages = secPages.filter(p => perms[p.id]).map(p => p.id);
+    const checkedPages = secPages.filter((p) => perms[p.id]).map((p) => p.id);
     if (checkedPages.length > 0) {
       sections.push(section.id);
       pages.push(...checkedPages);
@@ -70,28 +217,53 @@ function collectSectionsAndPages(perms) {
 }
 
 // ── Toast ────────────────────────────────────────────────────────────────────
-function Toast({ msg, type, onClose }) {
-  if (!msg) return null;
-  const bg = type === 'success' ? '#f0fdf4' : '#fef2f2';
-  const border = type === 'success' ? '#86efac' : '#fca5a5';
-  const color = type === 'success' ? '#15803d' : '#b91c1c';
-  return (
-    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 6, padding: '8px 14px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ color, fontSize: 13, fontWeight: 600 }}>{msg}</span>
-      <span style={{ color, cursor: 'pointer', fontSize: 17, opacity: 0.7 }} onClick={onClose}>&times;</span>
-    </div>
-  );
-}
+// Removed custom Toast, using MUI Alert instead
 
 // ── Confirm Dialog ───────────────────────────────────────────────────────────
 function ConfirmDialog({ msg, onConfirm, onCancel }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: '#fff', borderRadius: 8, padding: '24px 28px', width: 340, boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
-        <p style={{ margin: '0 0 20px', fontSize: 14, color: '#374151' }}>{msg}</p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button style={actionBtnStyle('#b91c1c')} onClick={onConfirm}>Confirm</button>
-          <button style={{ ...actionBtnStyle(), background: '#f1f5f9', color: '#374151', border: '1px solid #d1d5db' }} onClick={onCancel}>Cancel</button>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.3)",
+        backdropFilter: "blur(4px)",
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        paddingTop: "10vh",
+      }}
+    >
+      <div
+        style={{
+          background: C.cardBg,
+          borderRadius: 12,
+          padding: "24px 28px",
+          width: 360,
+          border: `1px solid ${C.cardBorder}`,
+          boxShadow:
+            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        }}
+      >
+        <p
+          style={{
+            margin: "0 0 20px",
+            fontSize: 14,
+            fontWeight: 600,
+            color: C.valueText,
+            lineHeight: 1.5,
+          }}
+        >
+          {msg}
+        </p>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <Btn variant="danger" onClick={onConfirm}>
+            Confirm
+          </Btn>
+          <Btn variant="default" onClick={onCancel}>
+            Cancel
+          </Btn>
         </div>
       </div>
     </div>
@@ -100,21 +272,89 @@ function ConfirmDialog({ msg, onConfirm, onCancel }) {
 
 // ── Reset Password Dialog ────────────────────────────────────────────────────
 function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
-  const [pw, setPw] = useState('');
-  const [err, setErr] = useState('');
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
   const handle = () => {
-    if (pw.length < 8) { setErr('Password must be at least 8 characters.'); return; }
+    if (pw.length < 8) {
+      setErr("Password must be at least 8 characters.");
+      return;
+    }
     onSave(pw);
   };
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: '#fff', borderRadius: 8, padding: '24px 28px', width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.25)' }}>
-        <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 600, color: '#374151' }}>Reset Password — {user.username}</p>
-        <input style={{ ...inputStyle, marginBottom: 6 }} type="password" placeholder="New password (min 8 chars)" value={pw} onChange={e => { setPw(e.target.value); setErr(''); }} />
-        {err && <p style={{ color: '#b91c1c', fontSize: 12, margin: '0 0 8px' }}>{err}</p>}
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 14 }}>
-          <button style={actionBtnStyle()} onClick={handle} disabled={loading}>{loading ? 'Saving...' : 'Save'}</button>
-          <button style={{ ...actionBtnStyle(), background: '#f1f5f9', color: '#374151', border: '1px solid #d1d5db' }} onClick={onCancel}>Cancel</button>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.3)",
+        backdropFilter: "blur(4px)",
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        paddingTop: "10vh",
+      }}
+    >
+      <div
+        style={{
+          background: C.cardBg,
+          borderRadius: 12,
+          padding: "24px 28px",
+          width: 380,
+          border: `1px solid ${C.cardBorder}`,
+          boxShadow:
+            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+        }}
+      >
+        <p
+          style={{
+            margin: "0 0 14px",
+            fontSize: 14,
+            fontWeight: 700,
+            color: C.accent,
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Reset Password — {user.username}
+        </p>
+        <input
+          style={{ ...inputStyle, marginBottom: 6, height: 36 }}
+          type="password"
+          placeholder="New password (min 8 chars)"
+          value={pw}
+          onChange={(e) => {
+            setPw(e.target.value);
+            setErr("");
+          }}
+          {...inputInteraction}
+        />
+        {err && (
+          <p
+            style={{
+              color: C.errorRed,
+              fontSize: 12,
+              margin: "0 0 8px",
+              fontWeight: 600,
+            }}
+          >
+            {err}
+          </p>
+        )}
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "flex-end",
+            marginTop: 14,
+          }}
+        >
+          <Btn variant="accent" onClick={handle} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </Btn>
+          <Btn variant="default" onClick={onCancel}>
+            Cancel
+          </Btn>
         </div>
       </div>
     </div>
@@ -123,40 +363,120 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
 
 // ── Permission Checkboxes ────────────────────────────────────────────────────
 function PermissionTree({ permissions, setPermissions }) {
-  const L1 = 12, L2 = 36, L3 = 60;
+  const L1 = 12,
+    L2 = 36,
+    L3 = 60;
 
   const toggleSection = (section) => {
     const pages = sectionPages(section);
     const next = !allChecked(pages, permissions);
-    setPermissions(prev => { const u = { ...prev }; pages.forEach(p => { u[p.id] = next; }); return u; });
+    setPermissions((prev) => {
+      const u = { ...prev };
+      pages.forEach((p) => {
+        u[p.id] = next;
+      });
+      return u;
+    });
   };
   const toggleSub = (sub) => {
     const next = !allChecked(sub.pages, permissions);
-    setPermissions(prev => { const u = { ...prev }; sub.pages.forEach(p => { u[p.id] = next; }); return u; });
+    setPermissions((prev) => {
+      const u = { ...prev };
+      sub.pages.forEach((p) => {
+        u[p.id] = next;
+      });
+      return u;
+    });
   };
-  const togglePage = (id) => setPermissions(prev => ({ ...prev, [id]: !prev[id] }));
+  const togglePage = (id) =>
+    setPermissions((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
-    <div className="border-2 border-gray-400 border-t-0 bg-white mb-4">
+    <div
+      style={{
+        background: "#ffffff",
+        overflow: "hidden",
+      }}
+    >
       {PAGE_PERMISSION_GROUPS.map((section, si) => {
         const secPages = sectionPages(section);
         return (
-          <div key={section.id} className={si > 0 ? 'border-t-2 border-gray-300' : ''}>
-            <div className="flex items-center py-1.5 pr-3" style={{ backgroundColor: '#dce8f4', paddingLeft: L1 }}>
-              <Checkbox size="small" checked={allChecked(secPages, permissions)} indeterminate={someChecked(secPages, permissions)} onChange={() => toggleSection(section)} sx={cbSx} />
-              <span className="ml-2 text-[12.5px] font-bold" style={{ color: '#1a3a5c' }}>{section.label}</span>
+          <div key={section.id}>
+            <div
+              className="flex items-center py-1.5 pr-3"
+              style={{
+                backgroundColor: "#f8fafc",
+                paddingLeft: L1,
+              }}
+            >
+              <Checkbox
+                size="small"
+                checked={allChecked(secPages, permissions)}
+                indeterminate={someChecked(secPages, permissions)}
+                onChange={() => toggleSection(section)}
+                sx={cbSx}
+              />
+              <span
+                className="ml-2 text-[12.5px] font-bold"
+                style={{
+                  color: C.accent,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                {section.label}
+              </span>
             </div>
-            {section.subGroups.map(sub => (
-              <div key={sub.id} className="border-t border-gray-200">
-                <div className="flex items-center py-1 pr-3" style={{ backgroundColor: '#eef2f6', paddingLeft: L2 }}>
-                  <Checkbox size="small" checked={allChecked(sub.pages, permissions)} indeterminate={someChecked(sub.pages, permissions)} onChange={() => toggleSub(sub)} sx={cbSx} />
-                  <span className="ml-2 text-[12px] font-semibold" style={{ color: '#334155' }}>{sub.label}</span>
+            {section.subGroups.map((sub) => (
+              <div key={sub.id}>
+                <div
+                  className="flex items-center py-1 pr-3"
+                  style={{
+                    backgroundColor: "#ffffff",
+                    paddingLeft: L2,
+                  }}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={allChecked(sub.pages, permissions)}
+                    indeterminate={someChecked(sub.pages, permissions)}
+                    onChange={() => toggleSub(sub)}
+                    sx={cbSx}
+                  />
+                  <span
+                    className="ml-2 text-[12px] font-semibold"
+                    style={{ color: C.valueText }}
+                  >
+                    {sub.label}
+                  </span>
                 </div>
-                <div className="pr-4 py-1 border-t border-gray-100" style={{ paddingLeft: L3, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', rowGap: 1 }}>
-                  {sub.pages.map(page => (
-                    <label key={page.id} className="flex items-center gap-1 cursor-pointer select-none">
-                      <Checkbox size="small" checked={!!permissions[page.id]} onChange={() => togglePage(page.id)} sx={cbSx} />
-                      <span className="text-[11.5px]" style={{ color: '#475569' }}>{page.label}</span>
+                <div
+                  className="pr-4 py-1.5"
+                  style={{
+                    paddingLeft: L3,
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(135px, 1fr))",
+                    gap: "6px 8px",
+                  }}
+                >
+                  {sub.pages.map((page) => (
+                    <label
+                      key={page.id}
+                      className="flex items-center gap-1 cursor-pointer select-none"
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={!!permissions[page.id]}
+                        onChange={() => togglePage(page.id)}
+                        sx={cbSx}
+                      />
+                      <span
+                        className="text-[11.5px]"
+                        style={{ color: C.labelText }}
+                      >
+                        {page.label}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -173,270 +493,790 @@ function PermissionTree({ permissions, setPermissions }) {
 export default function UserManage() {
   const [users, setUsers] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
-  const [listError, setListError] = useState('');
+  const [listError, setListError] = useState("");
 
   // Form state
   const [mode, setMode] = useState(null); // null | 'add' | 'edit'
   const [editUser, setEditUser] = useState(null);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [accessType, setAccessType] = useState('custom');
-  const [rolePermission, setRolePermission] = useState('Read, Write');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [accessType, setAccessType] = useState("custom");
+  const [rolePermission, setRolePermission] = useState("Read, Write");
   const [permissions, setPermissions] = useState({ ...INITIAL_PERMISSIONS });
   const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState('');
+  const [formError, setFormError] = useState("");
+  const formErrorTimerRef = useRef(null);
 
   // Dialogs
   const [confirmDelete, setConfirmDelete] = useState(null); // user object
 
   // Toast
-  const [toast, setToast] = useState({ msg: '', type: 'success' });
-  const showToast = (msg, type = 'success') => { setToast({ msg, type }); setTimeout(() => setToast({ msg: '', type: 'success' }), 3500); };
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const toastTimerRef = useRef(null);
+
+  const clearFormError = () => {
+    if (formErrorTimerRef.current) clearTimeout(formErrorTimerRef.current);
+    formErrorTimerRef.current = null;
+    setFormError("");
+  };
+
+  const showFormError = (msg) => {
+    setFormError(msg);
+    if (formErrorTimerRef.current) clearTimeout(formErrorTimerRef.current);
+    formErrorTimerRef.current = setTimeout(() => {
+      setFormError("");
+      formErrorTimerRef.current = null;
+    }, 5000);
+  };
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
+      setToast({ msg: "", type: "success" });
+      toastTimerRef.current = null;
+    }, 5000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (formErrorTimerRef.current) clearTimeout(formErrorTimerRef.current);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   const loadUsers = useCallback(async () => {
     setLoadingList(true);
-    setListError('');
+    setListError("");
     try {
       const data = await fetchUserList();
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.message || '';
-      if (msg.toLowerCase().includes('only superadmin')) {
-        showToast(msg, 'error');
+      const msg = err?.response?.data?.message || err?.message || "";
+      if (msg.toLowerCase().includes("only superadmin")) {
+        showToast(msg, "error");
       } else {
-        setListError('Failed to load users.');
+        setListError("Failed to load users.");
       }
     } finally {
       setLoadingList(false);
     }
   }, []);
 
-  useEffect(() => { loadUsers(); }, [loadUsers]);
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const openAdd = () => {
-    setMode('add'); setEditUser(null);
-    setUsername(''); setPassword('');
-    setAccessType('custom');
-    setRolePermission('Read, Write');
+    setMode("add");
+    setEditUser(null);
+    setUsername("");
+    setPassword("");
+    setAccessType("custom");
+    setRolePermission("Read, Write");
     setPermissions({ ...INITIAL_PERMISSIONS });
-    setFormError('');
+    clearFormError();
   };
 
   const openEdit = (user) => {
-    setMode('edit'); setEditUser(user);
-    setUsername(user.username || '');
-    setPassword('');
-    const at = user.access?.access_type ?? user.access_type ?? 'custom';
-    const rp = user.access?.role_permission ?? user.role_permission ?? 'Read, Write';
+    setMode("edit");
+    setEditUser(user);
+    setUsername(user.username || "");
+    setPassword("");
+    const at = user.access?.access_type ?? user.access_type ?? "custom";
+    const rp =
+      user.access?.role_permission ?? user.role_permission ?? "Read, Write";
     setAccessType(at);
     setRolePermission(rp);
     const pages = user.access?.pages ?? user.pages ?? user.access_pages ?? [];
     setPermissions(buildPermsFromPages(pages));
-    setFormError('');
+    clearFormError();
   };
 
-  const closeForm = () => { setMode(null); setEditUser(null); setFormError(''); };
+  const closeForm = () => {
+    setMode(null);
+    setEditUser(null);
+    clearFormError();
+  };
 
   const handleSave = async () => {
-    setFormError('');
+    clearFormError();
     const { sections, pages } = collectSectionsAndPages(permissions);
 
-    if (mode === 'add') {
-      if (username.trim().length < 5) { setFormError('Username must be at least 5 characters.'); return; }
-      if (password.length < 8) { setFormError('Password must be at least 8 characters.'); return; }
+    if (mode === "add") {
+      if (username.trim().length < 5) {
+        showFormError("Username must be at least 5 characters.");
+        return;
+      }
+      if (password.length < 8) {
+        showFormError("Password must be at least 8 characters.");
+        return;
+      }
       setSaving(true);
       try {
-        const res = await createUser({ username: username.trim(), password, access_type: accessType, role_permission: rolePermission, sections, pages });
+        const res = await createUser({
+          username: username.trim(),
+          password,
+          access_type: accessType,
+          role_permission: rolePermission,
+          sections,
+          pages,
+        });
         if (res?.response === false) {
-          setFormError(res?.message || 'Failed to create user.');
+          showFormError(res?.message || "Failed to create user.");
           return;
         }
-        showToast('User created successfully.');
+        showToast("User created successfully.");
         closeForm();
         loadUsers();
       } catch (err) {
-        const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || 'Failed to create user.';
-        setFormError(typeof msg === 'string' ? msg : JSON.stringify(msg));
-      } finally { setSaving(false); }
-
-    } else if (mode === 'edit') {
+        const msg =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Failed to create user.";
+        showFormError(typeof msg === "string" ? msg : JSON.stringify(msg));
+      } finally {
+        setSaving(false);
+      }
+    } else if (mode === "edit") {
       setSaving(true);
       try {
-        const res = await updateUserAccess({ id: editUser.id, access_type: accessType, role_permission: rolePermission, sections, pages });
+        const res = await updateUserAccess({
+          id: editUser.id,
+          access_type: accessType,
+          role_permission: rolePermission,
+          sections,
+          pages,
+        });
         if (res?.response === false) {
-          setFormError(res?.message || 'Failed to update user access.');
+          showFormError(res?.message || "Failed to update user access.");
           return;
         }
-        showToast('User access updated successfully.');
+        showToast("User access updated successfully.");
         closeForm();
         loadUsers();
       } catch (err) {
-        const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || 'Failed to update user access.';
-        setFormError(typeof msg === 'string' ? msg : JSON.stringify(msg));
-      } finally { setSaving(false); }
+        const msg =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Failed to update user access.";
+        showFormError(typeof msg === "string" ? msg : JSON.stringify(msg));
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
   const handleDelete = async () => {
     try {
       await deleteUser(confirmDelete.id);
-      showToast('User deleted successfully.');
+      showToast("User deleted successfully.");
       loadUsers();
     } catch {
-      showToast('Failed to delete user.', 'error');
-    } finally { setConfirmDelete(null); }
+      showToast("Failed to delete user.", "error");
+    } finally {
+      setConfirmDelete(null);
+    }
   };
 
-
   return (
-    <div className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center" style={{ backgroundColor: '#dde0e4' }}>
-      <div className="w-full" style={{ maxWidth: 960 }}>
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-        <Toast msg={toast.msg} type={toast.type} onClose={() => setToast({ msg: '', type: 'success' })} />
+        {/* ── Breadcrumb ── */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>User Manage</span>
+          <span>&gt;</span>
 
-        {/* ── User List ── */}
-        <div style={{ ...blueBar, justifyContent: 'space-between', paddingLeft: 14, paddingRight: 12 }}>
-          <span>User List</span>
-          <button
-            style={actionBtnStyle()}
-            onClick={openAdd}
-            onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #3E5475, #2f405c)'}
-            onMouseLeave={e => e.currentTarget.style.background = actionBtnStyle().background}
-          >+ Add User</button>
+          <span>User Permission</span>
+          <span>&gt;</span>
+
+          <span
+            style={{
+              color: C.strongText,
+              fontWeight: 600,
+            }}
+          >
+            User Manage
+          </span>
         </div>
-        <div className="border-2 border-gray-400 border-t-0 bg-white mb-4 overflow-x-auto">
+
+        {/* ── User List Card ── */}
+        <div
+          style={{
+            background: C.cardBg,
+            borderRadius: 20,
+            overflow: "hidden",
+            boxShadow: C.cardShadow,
+            marginBottom: 24,
+          }}
+        >
+          {/* Card Toolbar */}
+          <div
+            style={{
+              minHeight: 44,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.divider}`,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: C.strongText,
+                letterSpacing: "0.02em",
+                marginLeft: 6,
+              }}
+            >
+              User List
+            </span>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {mode !== null && (
+                <Btn
+                  variant="default"
+                  onClick={closeForm}
+                  style={{ height: 30, padding: "0 14px", borderRadius: 10 }}
+                >
+                  Cancel
+                </Btn>
+              )}
+              {mode === null && (
+                <button
+                  onClick={openAdd}
+                  style={{
+                    background: C.primary,
+                    color: C.cardBg,
+                    border: "none",
+                    borderRadius: 10,
+                    padding: "6px 14px",
+                    height: 30,
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: 12,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = C.primaryHover;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = C.primary;
+                  }}
+                >
+                  + Add User
+                </button>
+              )}
+            </div>
+          </div>
           {loadingList ? (
-            <p style={{ textAlign: 'center', padding: 20, color: '#9ca3af', fontSize: 13 }}>Loading users...</p>
+            <p
+              style={{
+                textAlign: "center",
+                padding: 20,
+                color: C.mutedText,
+                fontSize: 13,
+              }}
+            >
+              Loading users...
+            </p>
           ) : listError ? (
-            <p style={{ textAlign: 'center', padding: 20, color: '#b91c1c', fontSize: 13 }}>{listError}</p>
+            <p
+              style={{
+                textAlign: "center",
+                padding: 20,
+                color: C.errorRed,
+                fontSize: 13,
+              }}
+            >
+              {listError}
+            </p>
           ) : users.length === 0 ? (
-            <p style={{ textAlign: 'center', padding: 20, color: '#9ca3af', fontSize: 13 }}>No users found.</p>
+            <p
+              style={{
+                textAlign: "center",
+                padding: 20,
+                color: C.mutedText,
+                fontSize: 13,
+              }}
+            >
+              No users found.
+            </p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
-                  {['#', 'Username', 'Access Type', 'Role Permission', 'Sections', 'Actions'].map(h => (
-                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, i) => {
-                  // access may be nested under user.access or directly on user
-                  const access = user.access || user || {};
-                  const accessType = access.access_type ?? user.access_type ?? user.role ?? '';
-                  const isSuperAdmin = accessType === 'superadmin' || accessType === 'admin';
-                  return (
-                    <tr key={user.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '7px 12px', color: '#6b7280' }}>{i + 1}</td>
-                      <td style={{ padding: '7px 12px', fontWeight: 600, color: '#1e293b' }}>{user.username}</td>
-                      <td style={{ padding: '7px 12px' }}>
-                        <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10, background: isSuperAdmin ? '#dbeafe' : '#dcfce7', color: isSuperAdmin ? '#1d4ed8' : '#15803d' }}>
-                          {isSuperAdmin ? 'Super Admin' : 'Custom'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '7px 12px', color: '#374151' }}>{access.role_permission ?? user.role_permission ?? '-'}</td>
-                      <td style={{ padding: '7px 12px', color: '#374151', maxWidth: 220 }}>
-                        {isSuperAdmin ? (
-                          <span style={{ color: '#6b7280', fontStyle: 'italic', fontSize: 12 }}>All</span>
-                        ) : (
-                          <span style={{ fontSize: 12 }}>{(access.sections ?? user.sections ?? []).join(', ') || '-'}</span>
-                        )}
-                      </td>
-                      <td style={{ padding: '7px 12px' }}>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {!isSuperAdmin && (
-                            <button
-                              style={{ ...actionBtnStyle(), padding: '2px 10px', fontSize: 11 }}
-                              onClick={() => openEdit(user)}
-                              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #3E5475, #2f405c)'}
-                              onMouseLeave={e => e.currentTarget.style.background = actionBtnStyle().background}
-                            >Edit</button>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <table
+                style={{
+                  width: "100%",
+                  minWidth: 600,
+                  borderCollapse: "collapse",
+                  fontSize: 13,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 50, textAlign: "center" }}>#</TH>
+                    <TH style={{ width: 180 }}>Username</TH>
+                    <TH style={{ width: 140, textAlign: "center" }}>
+                      Access Type
+                    </TH>
+                    <TH style={{ width: 160, textAlign: "center" }}>
+                      Role Permission
+                    </TH>
+                    <TH>Sections</TH>
+                    <TH style={{ width: 160, textAlign: "center" }}>Actions</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user, i) => {
+                    const access = user.access || user || {};
+                    const accessType =
+                      access.access_type ?? user.access_type ?? user.role ?? "";
+                    const isSuperAdmin =
+                      accessType === "superadmin" || accessType === "admin";
+                    return (
+                      <tr
+                        key={user.id}
+                        style={{
+                          background: C.cardBg,
+                          borderBottom: `1px solid ${C.divider}`,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = C.pageBg;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = C.cardBg;
+                        }}
+                      >
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            color: C.mutedText,
+                            textAlign: "center",
+                            fontSize: 13,
+                            fontWeight: 500,
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          {i + 1}
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            fontWeight: 500,
+                            color: C.valueText,
+                            fontSize: 13,
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          {user.username}
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            textAlign: "center",
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 600,
+                              padding: "2px 8px",
+                              borderRadius: 10,
+                              color: isSuperAdmin ? "#1d4ed8" : "#15803d",
+                            }}
+                          >
+                            {isSuperAdmin ? "Super Admin" : "Custom"}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            color: C.valueText,
+                            fontSize: 13,
+                            textAlign: "center",
+                            fontWeight: 500,
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          {access.role_permission ??
+                            user.role_permission ??
+                            "-"}
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            color: C.valueText,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            maxWidth: 220,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          {isSuperAdmin ? (
+                            <span
+                              style={{
+                                color: C.mutedText,
+                                fontStyle: "italic",
+                                fontSize: 13,
+                              }}
+                            >
+                              All
+                            </span>
+                          ) : (
+                            <span>
+                              {(access.sections ?? user.sections ?? []).join(
+                                ", ",
+                              ) || "-"}
+                            </span>
                           )}
-                          {!isSuperAdmin && (
-                            <button
-                              style={{ ...actionBtnStyle('#b91c1c'), padding: '2px 10px', fontSize: 11, background: 'linear-gradient(to bottom, #ef4444, #b91c1c)' }}
-                              onClick={() => setConfirmDelete(user)}
-                              onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #b91c1c, #7f1d1d)'}
-                              onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #ef4444, #b91c1c)'}
-                            >Delete</button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td
+                          style={{
+                            padding: "16px 18px",
+                            textAlign: "center",
+                            borderBottom: `1px solid ${C.divider}`,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              justifyContent: "center",
+                            }}
+                          >
+                            {!isSuperAdmin && (
+                              <Btn
+                                variant="edit"
+                                style={{
+                                  padding: "2px 10px",
+                                  fontSize: 11,
+                                  height: 24,
+                                  minWidth: 74,
+                                }}
+                                onClick={() => openEdit(user)}
+                              >
+                                <EditOutlinedIcon sx={{ fontSize: 14 }} />
+                                Edit
+                              </Btn>
+                            )}
+                            {!isSuperAdmin && (
+                              <Btn
+                                variant="delete"
+                                style={{
+                                  padding: "2px 10px",
+                                  fontSize: 11,
+                                  height: 24,
+                                  minWidth: 74,
+                                }}
+                                onClick={() => setConfirmDelete(user)}
+                              >
+                                <DeleteOutlineOutlinedIcon
+                                  sx={{ fontSize: 14 }}
+                                />
+                                Delete
+                              </Btn>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
         {/* ── Add / Edit Form ── */}
         {mode && (
           <>
-            {/* User Info */}
-            <div style={blueBar}>{mode === 'add' ? 'Add User' : `Edit User — ${editUser?.username}`}</div>
-            <div className="border-2 border-gray-400 border-t-0 bg-white mb-4 py-4 flex flex-col items-center">
-              <div style={{ width: 480 }} className="flex flex-col gap-3">
-                {mode === 'add' && (
+            <div
+              style={{
+                background: C.cardBg,
+                borderRadius: 20,
+                overflow: "hidden",
+                boxShadow: C.cardShadow,
+                marginTop: 24,
+                marginBottom: 24,
+              }}
+            >
+              {/* Card Header */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "12px 18px",
+                  borderBottom: `1px solid ${C.divider}`,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: C.strongText,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {mode === "add"
+                    ? "Add User"
+                    : `Edit User — ${editUser?.username}`}
+                </span>
+              </div>
+              {/* Card Body */}
+              <div
+                style={{ padding: "20px 24px" }}
+                className="flex flex-col items-center"
+              >
+                <div style={{ width: 480 }} className="flex flex-col gap-3">
+                  {mode === "add" && (
+                    <div className="flex items-center gap-4">
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 120,
+                          shrink: 0,
+                        }}
+                      >
+                        Username
+                      </span>
+                      <input
+                        style={inputStyle}
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Min 5 characters"
+                        {...inputInteraction}
+                      />
+                    </div>
+                  )}
+                  {mode === "add" && (
+                    <div className="flex items-center gap-4">
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 120,
+                          shrink: 0,
+                        }}
+                      >
+                        Password
+                      </span>
+                      <input
+                        style={inputStyle}
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Min 8 characters"
+                        {...inputInteraction}
+                      />
+                    </div>
+                  )}
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-[#333] w-32 shrink-0">Username</span>
-                    <input style={inputStyle} type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Min 5 characters" />
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 120,
+                        shrink: 0,
+                      }}
+                    >
+                      Access Type
+                    </span>
+                    <select
+                      style={inputStyle}
+                      value={accessType}
+                      onChange={(e) => setAccessType(e.target.value)}
+                      {...inputInteraction}
+                    >
+                      <option value="custom">Custom</option>
+                      <option value="superadmin">Super Admin</option>
+                    </select>
                   </div>
-                )}
-                {mode === 'add' && (
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-[#333] w-32 shrink-0">Password</span>
-                    <input style={inputStyle} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 8 characters" />
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 120,
+                        shrink: 0,
+                      }}
+                    >
+                      Role Permission
+                    </span>
+                    <select
+                      style={inputStyle}
+                      value={rolePermission}
+                      onChange={(e) => setRolePermission(e.target.value)}
+                      {...inputInteraction}
+                    >
+                      <option value="Read, Write">Read, Write</option>
+                      <option value="Read">Read</option>
+                    </select>
                   </div>
-                )}
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-[#333] w-32 shrink-0">Access Type</span>
-                  <select style={inputStyle} value={accessType} onChange={e => setAccessType(e.target.value)}>
-                    <option value="custom">Custom</option>
-                    <option value="superadmin">Super Admin</option>
-                  </select>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-[#333] w-32 shrink-0">Role Permission</span>
-                  <select style={inputStyle} value={rolePermission} onChange={e => setRolePermission(e.target.value)}>
-                    <option value="Read, Write">Read, Write</option>
-                    <option value="Read">Read</option>
-                  </select>
                 </div>
               </div>
             </div>
-
             {/* Page Permissions */}
-            <div style={blueBar}>Page Permissions</div>
-            <PermissionTree permissions={permissions} setPermissions={setPermissions} />
+            <div
+              style={{
+                background: C.cardBg,
+                borderRadius: 20,
+                overflow: "hidden",
+                boxShadow: C.cardShadow,
+                marginTop: 24,
+                marginBottom: 0,
+              }}
+            >
+              {/* Card Header */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "12px 18px",
+                  borderBottom: `1px solid ${C.divider}`,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: C.strongText,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  Page Permissions
+                </span>
+              </div>
+              <PermissionTree
+                permissions={permissions}
+                setPermissions={setPermissions}
+              />
+            </div>
 
             {/* Form error */}
             {formError && (
-              <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 6, padding: '8px 14px', marginBottom: 10 }}>
-                <span style={{ color: '#b91c1c', fontSize: 13, fontWeight: 600 }}>{formError}</span>
-              </div>
+              <Alert
+                severity="error"
+                onClose={clearFormError}
+                sx={{
+                  position: "fixed",
+                  top: 20,
+                  right: 20,
+                  zIndex: 9999,
+                  minWidth: 300,
+                  boxShadow: 3,
+                }}
+              >
+                {formError}
+              </Alert>
             )}
 
             {/* Form buttons */}
-            <div className="flex gap-3 justify-center py-2">
+            <div
+              className="flex gap-3 justify-center py-2"
+              style={{ marginTop: 20, marginBottom: 24 }}
+            >
               <button
-                style={{ ...actionBtnStyle(), padding: '6px 28px', fontSize: 13 }}
                 onClick={handleSave}
                 disabled={saving}
-                onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(to bottom, #3E5475, #2f405c)'}
-                onMouseLeave={e => e.currentTarget.style.background = actionBtnStyle().background}
-              >{saving ? 'Saving...' : 'Save'}</button>
+                style={{
+                  background: C.primary,
+                  color: C.cardBg,
+                  border: "none",
+                  borderRadius: 12,
+                  padding: "10px 28px",
+                  minWidth: 110,
+                  cursor: saving ? "not-allowed" : "pointer",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  opacity: saving ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!saving)
+                    e.currentTarget.style.backgroundColor = C.primaryHover;
+                }}
+                onMouseLeave={(e) => {
+                  if (!saving)
+                    e.currentTarget.style.backgroundColor = C.primary;
+                }}
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
               <button
-                style={{ ...actionBtnStyle(), padding: '6px 28px', fontSize: 13, background: '#f1f5f9', color: '#374151', border: '1px solid #d1d5db' }}
                 onClick={closeForm}
-                onMouseEnter={e => { e.currentTarget.style.background = '#e2e8f0'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#f1f5f9'; }}
-              >Cancel</button>
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "none",
+                  borderRadius: 12,
+                  padding: "10px 28px",
+                  minWidth: 110,
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                  transition:
+                    "background-color 0.15s ease, box-shadow 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#b6c2d3";
+                  // e.currentTarget.style.boxShadow =
+                  //   "0 4px 10px rgba(15, 23, 42, 0.10)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#cbd5e1";
+                  e.currentTarget.style.boxShadow =
+                    "0 1px 2px rgba(15, 23, 42, 0.08)";
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </>
         )}
-
       </div>
 
       {/* Dialogs */}

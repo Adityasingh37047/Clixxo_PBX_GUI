@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Button, TextField, CircularProgress, Alert, Box } from "@mui/material";
+import { CircularProgress, Alert } from "@mui/material";
 import {
   DEFAULT_SERIAL,
   DEFAULT_STATUS,
@@ -11,43 +11,138 @@ import {
   postLinuxCmd,
 } from "../../../api/apiService";
 
-const blueButtonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
-  },
+// ── Color palette (same as AccountManage) ────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
 };
 
-const cellLabelSx = { fontSize: "14px", fontWeight: 500, color: "#374151" };
+// ── Button Component (same as AccountManage) ─────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+  component,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
 
-/** Read-only fields: centered text; compact vertical rhythm */
-const readOnlyFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    fontSize: "14px",
-    fontWeight: 400,
-    backgroundColor: "#f9fafb",
-    minHeight: 38,
-    borderRadius: "6px",
-    "& .MuiOutlinedInput-input": {
-      padding: "8px 12px",
-      textAlign: "center",
-    },
-    "& fieldset": {
-      borderColor: "#d1d5db",
-    },
-  },
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  const Component = component || "button";
+
+  return (
+    <Component
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 36,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
+      {children}
+    </Component>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  marginBottom: 24,
+};
+
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  marginBottom: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "0 20px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "#94a3b8" },
+  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = C.cardBorder },
 };
 
 const DEFAULT_DEVICE_TYPE = "IPPBX";
@@ -330,97 +425,123 @@ const Authorization = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] py-0.5 flex flex-col items-center md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 relative">
-        {error && (
-          <Alert
-            severity="error"
-            onClose={() => setError("")}
-            sx={{ position: "absolute", top: -60, left: 0, right: 0 }}
-          >
-            {error}
-          </Alert>
-        )}
-        <div className="w-full h-[34px] px-4 flex items-center justify-center font-semibold text-[1.10rem] tracking-wide text-white bg-[#3E5475] rounded-t-lg shadow">
-          Authorization Information
+      {/* ── Alerts ── */}
+      {error && (
+        <Alert
+          severity="error"
+          onClose={() => setError("")}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {error}
+        </Alert>
+      )}
+
+      {/* ── Breadcrumb ── */}
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Authorization
+          </span>
         </div>
 
-        <div className="bg-white border-2 border-gray-400 border-t-0 rounded-b-lg">
-          <div className="w-full bg-white flex flex-col gap-0 px-4 py-3 rounded-b-lg">
-            <div className="w-full">
-              <table
-                className="w-full border border-gray-400 bg-white"
-                style={{ borderCollapse: "collapse" }}
-              >
-                <tbody>
-                  {rows.map((row) => (
-                    <tr key={row.label}>
-                      <td
-                        className="border border-gray-400 py-1.5 px-3 text-left align-middle"
-                        style={{ width: "38%", ...cellLabelSx }}
-                      >
-                        {row.label}
-                      </td>
-                      <td
-                        className="border border-gray-400 py-1.5 px-3 align-middle text-center"
-                        style={{ width: "62%" }}
-                      >
-                        {row.isStatus ? (
-                          <Box className="flex items-center justify-center gap-2 w-full min-h-[38px]">
-                            <span style={statusStyle}>{row.value}</span>
-                            {row.loading && <CircularProgress size={18} />}
-                          </Box>
-                        ) : (
-                          <div className="flex items-center justify-center gap-2 w-full">
-                            <div className="w-full max-w-lg mx-auto">
-                              <TextField
-                                type="text"
-                                value={row.value}
-                                size="medium"
-                                fullWidth
-                                variant="outlined"
-                                sx={readOnlyFieldSx}
-                                disabled={!!row.loading}
-                                InputProps={{ readOnly: true }}
-                              />
-                            </div>
-                            {row.loading && (
-                              <CircularProgress
-                                size={16}
-                                sx={{ flexShrink: 0 }}
-                              />
-                            )}
-                          </div>
+        {/* ── Content ── */}
+        <div style={{ ...tableContainerStyle, marginBottom: 12 }}>
+          <div style={blueBarStyle}>
+            <span>Authorization Information</span>
+          </div>
+
+          <div className="w-full flex flex-col gap-0 px-5 py-4 rounded-b-lg">
+            <div className="w-full max-w-3xl mx-auto">
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                {rows.map((row) => (
+                  <React.Fragment key={row.label}>
+                    <div className="flex items-center text-[13px] font-semibold text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
+                      <span style={{ color: C.labelText }}>{row.label}</span>
+                    </div>
+                    <div className="flex items-center min-h-[34px]">
+                      <div className="flex items-center gap-2 w-full">
+                        <input
+                          type="text"
+                          value={row.value}
+                          readOnly
+                          style={{
+                            padding: "6px 12px",
+                            borderRadius: 6,
+                            border: `1px solid ${C.cardBorder}`,
+                            fontSize: 12,
+                            width: "100%",
+                            maxWidth: 300,
+                            backgroundColor: "#f8fafc",
+                            outline: "none",
+                            color: row.isStatus
+                              ? statusStyle.color
+                              : C.valueText,
+                            fontWeight: row.isStatus ? 700 : 500,
+                            textAlign: "center",
+                            cursor: "text",
+                            transition: "border-color 0.2s ease",
+                          }}
+                          {...inputInteraction}
+                        />
+                        {row.loading && (
+                          <CircularProgress size={16} sx={{ flexShrink: 0 }} />
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              <div
+                className="flex flex-col sm:flex-row justify-center mt-6 pt-4"
+                style={{ borderTop: `1px solid ${C.divider}` }}
+              >
+                <Btn
+                  type="button"
+                  variant="primary"
+                  onClick={refreshAll}
+                  disabled={busy}
+                  style={{ minWidth: 120, height: 34 }}
+                >
+                  {busy ? "Loading…" : "Refresh"}
+                </Btn>
+              </div>
+
+              <div className="text-center mt-3 pt-1">
+                <span
+                  style={{ color: C.errorRed, fontSize: 12, fontWeight: 500 }}
+                >
+                  Note - The information above is a summary of your license. For
+                  any change, contact your vendor or authorized supplier.
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 w-full">
-          <Button
-            type="button"
-            variant="contained"
-            sx={blueButtonSx}
-            onClick={refreshAll}
-            disabled={busy}
-            className="sm:w-auto"
-            startIcon={
-              busy ? <CircularProgress size={18} color="inherit" /> : null
-            }
-          >
-            {busy ? "Loading…" : "Refresh"}
-          </Button>
-        </div>
-        <div className="text-red-600 text-center text-sm mt-4 mb-0">
-          Note - The information above is a summary of your license. For any
-          change, contact your vendor or authorized supplier.
         </div>
       </div>
     </div>
