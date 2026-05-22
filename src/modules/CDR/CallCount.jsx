@@ -33,8 +33,218 @@ const C = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const getDirection = (row) =>
-  row.call_direction || row.direction || row.dcontext || "";
+const normalizeValue = (value) => String(value || "").toLowerCase().trim();
+
+const includesAny = (value, needles) => {
+  const text = normalizeValue(value);
+  return needles.some((needle) => text.includes(needle));
+};
+
+const getCanonicalDirectionFromValue = (value) => {
+  const raw = normalizeValue(value);
+  if (!raw) return "";
+
+  if (
+    raw === "from-external" ||
+    raw.startsWith("from-external") ||
+    raw.includes("from-trunk") ||
+    raw.includes("from-pstn") ||
+    raw === "inbound" ||
+    raw.includes("inbound")
+  ) {
+    return "inbound";
+  }
+
+  if (
+    raw === "from-internal" ||
+    raw.startsWith("from-internal") ||
+    raw === "local" ||
+    raw === "internal" ||
+    raw.includes("local") ||
+    raw.includes("internal")
+  ) {
+    return "local";
+  }
+
+  if (
+    raw === "outbound" ||
+    raw.includes("outbound") ||
+    raw.includes("outgoing")
+  ) {
+    return "outbound";
+  }
+
+  if (
+    raw.includes("voicemail") ||
+    raw.includes("ivr") ||
+    raw.includes("queue") ||
+    raw.includes("conference") ||
+    raw.includes("conf")
+  ) {
+    return "local";
+  }
+
+  return raw;
+};
+
+const getCanonicalDirections = (row) => {
+  const directions = [
+    row.call_direction,
+    row.direction,
+    row.dcontext,
+  ]
+    .map(getCanonicalDirectionFromValue)
+    .filter(Boolean);
+
+  return Array.from(new Set(directions));
+};
+
+const getCanonicalDirection = (row) => getCanonicalDirections(row)[0] || "";
+
+const getCanonicalStatusesFromValue = (value) => {
+  const raw = normalizeValue(value);
+  const compact = raw.replace(/[\s_-]+/g, "");
+  const statuses = [];
+
+  if (!raw) return statuses;
+
+  if (includesAny(raw, ["conference", "confbridge", "conf"])) {
+    statuses.push("conference");
+  }
+  if (includesAny(raw, ["call queue", "queue"])) {
+    statuses.push("call queue");
+  }
+  if (includesAny(raw, ["voicemail", "voice mail", "vm"])) {
+    statuses.push("voicemail");
+  }
+  if (includesAny(raw, ["ivr"])) {
+    statuses.push("ivr");
+  }
+
+  if (
+    raw === "no answer" ||
+    raw === "no-answer" ||
+    raw === "no_answer" ||
+    compact === "noanswer" ||
+    raw === "no answer" ||
+    raw === "busy" ||
+    includesAny(raw, ["miss", "unanswered"])
+  ) {
+    statuses.push("noanswer");
+  }
+
+  if (
+    raw === "answered" ||
+    raw === "answer" ||
+    raw === "completed"
+  ) {
+    statuses.push("answered");
+  }
+
+  if (
+    raw === "cancelled" ||
+    raw === "canceled" ||
+    includesAny(raw, ["cancel"])
+  ) {
+    statuses.push("cancelled");
+  }
+
+  if (
+    raw === "failed" ||
+    raw === "failure" ||
+    raw === "congestion" ||
+    raw === "chanunavail" ||
+    raw === "channel unavailable" ||
+    includesAny(raw, ["fail"])
+  ) {
+    statuses.push("failed");
+  }
+
+  if (!statuses.length) {
+    statuses.push(raw);
+  }
+
+  return statuses;
+};
+
+const getDispositionStatus = (row) => {
+  const raw = normalizeValue(row.disposition);
+  const compact = raw.replace(/[\s_-]+/g, "");
+
+  if (!raw) return "";
+  if (
+    raw === "answered" ||
+    raw === "answer" ||
+    raw === "completed"
+  ) {
+    return "answered";
+  }
+  if (
+    raw === "no answer" ||
+    raw === "no-answer" ||
+    raw === "no_answer" ||
+    compact === "noanswer" ||
+    compact === "noanswered" ||
+    raw === "busy" ||
+    includesAny(raw, ["miss", "unanswered"])
+  ) {
+    return "noanswer";
+  }
+  if (
+    raw === "cancelled" ||
+    raw === "canceled" ||
+    includesAny(raw, ["cancel"])
+  ) {
+    return "cancelled";
+  }
+  if (
+    raw === "failed" ||
+    raw === "failure" ||
+    raw === "congestion" ||
+    raw === "chanunavail" ||
+    raw === "channel unavailable" ||
+    includesAny(raw, ["fail"])
+  ) {
+    return "failed";
+  }
+
+  return raw;
+};
+
+const getFallbackStatus = (row) =>
+  getDispositionStatus({ disposition: row.call_status || row.status });
+
+const getCanonicalCallStatuses = (row) => {
+  const dispositionStatus = getDispositionStatus(row) || getFallbackStatus(row);
+  const contextStatuses = [
+    row.dcontext,
+    row.hangup_cause,
+  ].reduce(
+    (statuses, value) => [
+      ...statuses,
+      ...getCanonicalStatusesFromValue(value).filter((status) =>
+        ["voicemail", "ivr", "call queue", "conference"].includes(status),
+      ),
+    ],
+    [],
+  );
+
+  return Array.from(
+    new Set(
+      [dispositionStatus, ...contextStatuses].filter(Boolean),
+    ),
+  );
+};
+
+const getDirection = (row) => {
+  const direction = getCanonicalDirection(row);
+  if (!direction) return "";
+  if (direction === "inbound") return "Inbound";
+  if (direction === "outbound") return "Outbound";
+  if (direction === "local") return "Local";
+
+  return direction.charAt(0).toUpperCase() + direction.slice(1);
+};
 
 const directionStyle = (d) => {
   const v = String(d).toLowerCase();
@@ -84,7 +294,7 @@ const DEFAULT_FILTERS = {
 const CALL_STATUS_OPTIONS = [
   { value: "all", label: "All" },
   { value: "answered", label: "Answered" },
-  { value: "missed", label: "Missed" },
+  { value: "noanswer", label: "No Answer" },
   { value: "voicemail", label: "Voicemail" },
   { value: "cancelled", label: "Cancelled" },
   { value: "failed", label: "Failed" },
@@ -101,50 +311,22 @@ const DIRECTION_OPTIONS = [
 ];
 
 const matchesCallStatus = (row, status) => {
-  if (!status || status === "all") return true;
-  const disp = String(row.disposition || "").toLowerCase();
-  const ctx = String(row.dcontext || "").toLowerCase();
-  const cause = String(row.hangup_cause || "").toLowerCase();
+  const selectedStatus = normalizeValue(status);
+  if (!selectedStatus || selectedStatus === "all") return true;
 
-  switch (status) {
-    case "answered":
-      return disp === "answered";
-    case "missed":
-      return (
-        disp === "no answer" ||
-        disp === "busy" ||
-        disp.includes("miss") ||
-        disp.includes("unanswered")
-      );
-    case "voicemail":
-      return (
-        ctx.includes("voicemail") ||
-        ctx.includes("vm") ||
-        cause.includes("voicemail") ||
-        disp.includes("voicemail")
-      );
-    case "cancelled":
-      return disp === "cancelled" || disp.includes("cancel");
-    case "failed":
-      return disp === "failed" || disp.includes("fail");
-    case "ivr":
-      return ctx.includes("ivr");
-    case "call queue":
-      return ctx.includes("queue");
-    case "conference":
-      return ctx.includes("conf") || ctx.includes("conference");
-    default:
-      return true;
+  if (["answered", "noanswer", "cancelled", "failed"].includes(selectedStatus)) {
+    const visibleStatus = getDispositionStatus(row) || getFallbackStatus(row);
+    return visibleStatus === selectedStatus;
   }
+
+  return getCanonicalCallStatuses(row).includes(selectedStatus);
 };
 
 const matchesDirectionFilter = (row, direction) => {
-  if (!direction || direction === "all") return true;
-  const d = String(getDirection(row)).toLowerCase();
-  if (direction === "inbound") return d === "inbound" || d.includes("inbound");
-  if (direction === "outbound") return d === "outbound" || d.includes("outbound");
-  if (direction === "local") return d === "local" || d.includes("local");
-  return true;
+  const selectedDirection = normalizeValue(direction);
+  if (!selectedDirection || selectedDirection === "all") return true;
+
+  return getCanonicalDirection(row) === selectedDirection;
 };
 
 const matchesSearch = (row, query) => {
@@ -165,6 +347,19 @@ const matchesSearch = (row, query) => {
     .join(" ");
   return haystack.includes(q);
 };
+
+const getRowKey = (row, idx) =>
+  [
+    row.uniqueid,
+    row.calldate,
+    row.src,
+    row.dst,
+    row.disposition,
+    row.billsec,
+    idx,
+  ]
+    .map((value) => normalizeValue(value))
+    .join("|");
 
 // ── Shared: action button ────────────────────────────────────────────────────
 const Btn = ({
@@ -278,7 +473,7 @@ const FilterLabel = ({ children }) => (
 );
 
 const FilterField = ({ label, children, minWidth = 140 }) => (
-  <div style={{ minWidth, flex: "1 1 140px" }}>{label && <FilterLabel>{label}</FilterLabel>}{children}</div>
+  <div style={{ minWidth, flex: "0 0 auto" }}>{label && <FilterLabel>{label}</FilterLabel>}{children}</div>
 );
 
 const FilterSelect = ({ value, onChange, options, "aria-label": ariaLabel }) => (
@@ -326,37 +521,6 @@ const FilterSearch = ({ value, onChange, onFocus, onBlur, focused }) => (
       boxShadow: focused ? `0 0 0 3px ${C.accent}18` : "none",
     }}
   />
-);
-
-const PrimaryBtn = ({ children, onClick, disabled, type = "button" }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    style={{
-      height: 38,
-      padding: "0 18px",
-      fontSize: 13,
-      fontWeight: 600,
-      borderRadius: 10,
-      border: "none",
-      cursor: disabled ? "not-allowed" : "pointer",
-      opacity: disabled ? 0.55 : 1,
-      background: C.accent,
-      color: "#ffffff",
-      boxShadow: "0 1px 2px rgba(37,99,235,0.2)",
-      transition: "opacity 0.15s ease, background 0.15s ease",
-      whiteSpace: "nowrap",
-    }}
-    onMouseEnter={(e) => {
-      if (!disabled) e.currentTarget.style.background = "#1d4ed8";
-    }}
-    onMouseLeave={(e) => {
-      if (!disabled) e.currentTarget.style.background = C.accent;
-    }}
-  >
-    {children}
-  </button>
 );
 
 const GhostBtn = ({ children, onClick, disabled }) => (
@@ -488,13 +652,13 @@ const CallCount = () => {
     );
   }, [appliedFilters]);
 
-  const handleApplyFilters = useCallback(() => {
-    setAppliedFilters({ ...filterDraft });
-  }, [filterDraft]);
-
   const handleResetFilters = useCallback(() => {
-    setFilterDraft({ ...DEFAULT_FILTERS });
-    setAppliedFilters({ ...DEFAULT_FILTERS });
+    const resetFilters = { ...DEFAULT_FILTERS };
+    setFilterDraft(resetFilters);
+    setAppliedFilters(resetFilters);
+    setSelectedIds([]);
+    setSearchFocused(false);
+    setPage(1);
   }, []);
 
   const handleToggleAll = () => {
@@ -606,60 +770,51 @@ const CallCount = () => {
           </div>
         )}
 
-        {/* Breadcrumb + last updated (PbxMonitor-style header) */}
-        <div style={{ marginBottom: 24 }}>
-          <div
-            style={{
-              fontSize: 12,
-              color: C.mutedText,
-              marginBottom: 14,
-              fontWeight: 400,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            <span>CDR</span>
-            <span>&gt;</span>
-            <span>Call Detail Records</span>
-            <span>&gt;</span>
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              Call Count
-            </span>
-          </div>
+     {/* Breadcrumb + last updated (PbxMonitor-style header) */}
+<div style={{ marginBottom: 24 }}>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      flexWrap: "wrap",
+      gap: 12,
+    }}
+  >
+    {/* Breadcrumb */}
+    <div
+      style={{
+        fontSize: 12,
+        color: C.mutedText,
+        fontWeight: 400,
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      <span>CDR</span>
+      <span>&gt;</span>
+      <span>Call Detail Records</span>
+      <span>&gt;</span>
+      <span style={{ color: C.valueText, fontWeight: 600 }}>
+        Call Count
+      </span>
+    </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 12,
-            }}
-          >
-            <div />
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              {lastUpdated && (
-                <span style={{ fontSize: 12, color: C.mutedText }}>
-                  Last updated: {lastUpdated.toLocaleTimeString()}
-                </span>
-              )}
-              <span
-                style={{
-                  fontSize: 12,
-                  color: C.errorRed,
-                  fontWeight: 600,
-                  background: "#fef2f2",
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  border: "1px solid #fecaca",
-                }}
-              >
-                Only latest 500 records shown
-              </span>
-            </div>
-          </div>
-        </div>
+    {/* Last Updated */}
+    {lastUpdated && (
+      <span
+        style={{
+          fontSize: 12,
+          color: C.mutedText,
+          whiteSpace: "nowrap",
+        }}
+      >
+        Last updated: {lastUpdated.toLocaleTimeString()}
+      </span>
+    )}
+  </div>
+</div>
 
         {/* Filter toolbar — SaaS / telecom admin panel */}
         <div
@@ -680,34 +835,44 @@ const CallCount = () => {
               gap: 14,
             }}
           >
-            <FilterField label="Call Status" minWidth={150}>
+            
+            <FilterField label="Call Status" minWidth={200}>
               <FilterSelect
                 aria-label="Call Status"
                 value={filterDraft.callStatus}
-                onChange={(e) =>
-                  setFilterDraft((f) => ({ ...f, callStatus: e.target.value }))
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFilterDraft((f) => ({ ...f, callStatus: value }));
+                  setAppliedFilters((f) => ({ ...f, callStatus: value }));
+                  setPage(1);
+                }}
                 options={CALL_STATUS_OPTIONS}
               />
             </FilterField>
 
-            <FilterField label="Direction" minWidth={130}>
+            <FilterField label="Direction" minWidth={200}>
               <FilterSelect
                 aria-label="Direction"
                 value={filterDraft.direction}
-                onChange={(e) =>
-                  setFilterDraft((f) => ({ ...f, direction: e.target.value }))
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFilterDraft((f) => ({ ...f, direction: value }));
+                  setAppliedFilters((f) => ({ ...f, direction: value }));
+                  setPage(1);
+                }}
                 options={DIRECTION_OPTIONS}
               />
             </FilterField>
 
-            <FilterField label="Search" minWidth={220}>
+            <FilterField label="Search" minWidth={230}>
               <FilterSearch
                 value={filterDraft.search}
-                onChange={(e) =>
-                  setFilterDraft((f) => ({ ...f, search: e.target.value }))
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFilterDraft((f) => ({ ...f, search: value }));
+                  setAppliedFilters((f) => ({ ...f, search: value }));
+                  setPage(1);
+                }}
                 focused={searchFocused}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
@@ -723,9 +888,6 @@ const CallCount = () => {
                 paddingBottom: 0,
               }}
             >
-              <PrimaryBtn onClick={handleApplyFilters} disabled={loading}>
-                Search
-              </PrimaryBtn>
               <GhostBtn onClick={handleResetFilters} disabled={loading}>
                 Reset
               </GhostBtn>
@@ -892,7 +1054,6 @@ const CallCount = () => {
                         sx={{
                           padding: "1px",
                           color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
                           "&.MuiCheckbox-indeterminate": { color: C.accent },
                         }}
                       />
@@ -903,7 +1064,9 @@ const CallCount = () => {
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody
+                  key={`${appliedFilters.callStatus}-${appliedFilters.direction}-${appliedFilters.search}`}
+                >
                   {filteredData.length === 0 ? (
                     <tr>
                       <td
@@ -933,7 +1096,7 @@ const CallCount = () => {
 
                       return (
                         <tr
-                          key={row.uniqueid || idx}
+                          key={getRowKey(row, idx)}
                           style={{
                             background: rowBg,
                             borderBottom: "1px solid #f1f5f9",
@@ -1172,7 +1335,7 @@ const CallCount = () => {
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
+                justifyContent: "flex-start",
                 padding: "14px 18px",
                 borderTop: "1px solid #f1f5f9",
                 background: "#ffffff",
@@ -1183,7 +1346,7 @@ const CallCount = () => {
                 {filteredData.length !== 1 ? "s" : ""} on page {page}
                 {hasActiveFilters ? ` (filtered from ${rows.length})` : ""}
               </span>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
                 <Btn
                   onClick={handlePrev}
                   disabled={loading || page <= 1}
@@ -1216,6 +1379,22 @@ const CallCount = () => {
           )}
         </div>
       </div>
+      <div
+  style={{
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    marginTop: 20,
+    marginBottom: 10,
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#dc2626"
+  }}
+>
+  <span>
+    Only latest 500 records shown
+  </span>
+</div>
     </div>
   );
 };

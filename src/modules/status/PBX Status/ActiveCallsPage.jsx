@@ -372,14 +372,14 @@ const ActiveCallsPage = () => {
             className="text-2xl font-bold m-0"
             style={{ color: C.valueText }}
           >
-            Active Calls
+            
           </h1>
 
           <div
             className="text-sm mt-1"
             style={{ color: C.mutedText }}
           >
-            Realtime active call monitoring
+           
           </div>
         </div>
 
