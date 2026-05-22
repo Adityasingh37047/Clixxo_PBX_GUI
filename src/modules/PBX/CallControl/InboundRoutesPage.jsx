@@ -132,6 +132,18 @@ const C = {
   errorRed: "#dc2626",
 };
 
+const TABLE_C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  cardBorderSoft: "#f1f5f9",
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#2563eb",
+  errorRed: "#ef4444",
+};
+
 const Btn = ({ children, onClick, disabled, variant = "default", style: extraStyle }) => {
   const variants = {
     default: { background: "#1e293b", color: "#fff", border: "1px solid #9ca3af" },
@@ -151,8 +163,27 @@ const Btn = ({ children, onClick, disabled, variant = "default", style: extraSty
   );
 };
 
+const TableBtn = ({ children, onClick, disabled, variant = "default", style: extraStyle }) => {
+  const variants = {
+    default: { background: "#1e293b", color: "#fff", border: "1px solid #9ca3af" },
+    outline: { background: TABLE_C.cardBg, color: TABLE_C.labelText, border: `0.5px solid ${TABLE_C.cardBorder}` },
+    danger: { background: "#fef2f2", color: TABLE_C.errorRed, border: "0.5px solid #fecaca" },
+    accent: { background: TABLE_C.cardBg, color: TABLE_C.accent, border: `0.5px solid ${TABLE_C.cardBorder}` },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button onClick={onClick} disabled={disabled}
+      style={{ ...s, fontSize: 11, fontWeight: 600, padding: "5px 14px", borderRadius: 6, cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1, display: "flex", alignItems: "center", gap: 5, transition: "opacity 0.15s ease", whiteSpace: "nowrap", ...extraStyle }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.opacity = "0.82"; }}
+      onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.opacity = "1"; }}
+    >
+      {children}
+    </button>
+  );
+};
+
 const TH = ({ children, style: extra }) => (
-  <th style={{ background: "#f3f4f6", color: "#1e293b", fontWeight: 700, fontSize: 10.5, padding: "9px 8px", textAlign: "center", borderBottom: "1px solid #9ca3af", borderRight: "0.5px solid #9ca3af", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.04em", ...extra }}>
+  <th style={{ background: "#f8fafc", color: TABLE_C.labelText, fontWeight: 700, fontSize: 11, padding: "12px 14px", textAlign: "center", borderBottom: `1px solid ${TABLE_C.cardBorder}`, borderRight: "1px solid #f1f5f9", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.14em", ...extra }}>
     {children}
   </th>
 );
@@ -660,7 +691,7 @@ const InboundRoutesPage = () => {
   };
 
   return (
-    <div style={{ backgroundColor: C.pageBg, minHeight: "calc(100vh - 80px)", padding: 16 }}>
+    <div style={{ backgroundColor: TABLE_C.pageBg, minHeight: "calc(100vh - 80px)", padding: 24 }}>
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
         {/* Alert */}
         {message.text && (
@@ -679,28 +710,28 @@ const InboundRoutesPage = () => {
         </div>
 
         {/* Main Card */}
-        <div style={{ background: C.cardBg, border: `1px solid ${C.cardBorder}`, borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div style={{ background: "#ffffff", border: `1px solid ${TABLE_C.cardBorder}`, borderRadius: 22, overflow: "hidden", boxShadow: "0 10px 30px rgba(15,23,42,0.06)" }}>
 
           {/* Toolbar */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: `1px solid ${C.cardBorder}`, background: "#DCE6F2", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid #e2e8f0", background: "#ffffff", flexWrap: "wrap", gap: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ background: "#f1f5f9", border: `0.5px solid ${C.cardBorder}`, color: "#475569", fontSize: 11, fontWeight: 600, padding: "3px 12px", borderRadius: 20 }}>
+              <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: TABLE_C.labelText, fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 999 }}>
                 Page {page} · {rows.length} records
               </span>
               {selected.length > 0 && (
-                <span style={{ background: "#e0f2fe", color: C.accent, fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, border: `0.5px solid ${C.accent}` }}>
+                <span style={{ background: "#eff6ff", color: TABLE_C.accent, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 999, border: `1px solid ${TABLE_C.accent}` }}>
                   {selected.length} selected
                 </span>
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <Btn onClick={() => { setImportFile(null); setShowImportModal(true); }} variant="outline">⬇ Import</Btn>
-              <Btn onClick={handleExport} variant="outline">⬆ Export</Btn>
-              <Btn onClick={handleDelete} disabled={loading.delete || loading.list || selected.length === 0} variant="danger">
-                {loading.delete && <CircularProgress size={11} style={{ color: C.errorRed }} />}
+              <TableBtn onClick={() => { setImportFile(null); setShowImportModal(true); }} variant="outline">⬇ Import</TableBtn>
+              <TableBtn onClick={handleExport} variant="outline">⬆ Export</TableBtn>
+              <TableBtn onClick={handleDelete} disabled={loading.delete || loading.list || selected.length === 0} variant="danger">
+                {loading.delete && <CircularProgress size={11} style={{ color: TABLE_C.errorRed }} />}
                 🗑 Delete
-              </Btn>
-              <Btn onClick={handleOpenAddModal} disabled={loading.save} variant="accent">+ Add New</Btn>
+              </TableBtn>
+              <TableBtn onClick={handleOpenAddModal} disabled={loading.save} variant="accent">+ Add New</TableBtn>
             </div>
           </div>
 
@@ -708,7 +739,7 @@ const InboundRoutesPage = () => {
           <div style={{ overflowX: "auto" }}>
             {loading.list ? (
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: 48 }}>
-                <CircularProgress size={28} style={{ color: C.accent }} />
+                <CircularProgress size={28} style={{ color: TABLE_C.accent }} />
               </div>
             ) : (
               <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto", minWidth: 900 }}>
@@ -716,7 +747,7 @@ const InboundRoutesPage = () => {
                   <tr>
                     <TH style={{ width: 36 }}>
                       <Checkbox size="small" checked={allPageSelected} indeterminate={somePageSelected} onChange={handleToggleAll} disabled={loading.delete}
-                        sx={{ padding: "1px", color: C.accent, "&.Mui-checked": { color: C.accent }, "&.MuiCheckbox-indeterminate": { color: C.accent } }} />
+                        sx={{ padding: "1px", color: TABLE_C.accent, "&.Mui-checked": { color: TABLE_C.accent }, "&.MuiCheckbox-indeterminate": { color: TABLE_C.accent } }} />
                     </TH>
                     <TH style={{ width: 40 }}>#</TH>
                     <TH style={{ textAlign: "left", paddingLeft: 16 }}>Name</TH>
@@ -731,7 +762,7 @@ const InboundRoutesPage = () => {
                 <tbody>
                   {rows.length === 0 ? (
                     <tr>
-                      <td colSpan={9} style={{ textAlign: "center", padding: "36px 0", color: C.mutedText, fontSize: 13 }}>
+                      <td colSpan={9} style={{ textAlign: "center", padding: "36px 0", color: TABLE_C.mutedText, fontSize: 13 }}>
                         No inbound routes yet. Click &quot;+ Add New&quot; to create one.
                       </td>
                     </tr>
@@ -739,34 +770,34 @@ const InboundRoutesPage = () => {
                     pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
-                      const rowBg = isSelected ? "#f0f9ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                      const rowBg = isSelected ? "#e0f2fe" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
                       const destinationStr = row.destination === "Extension_Range"
                         ? `${row.destination}: ${row.extensionRange || ""}`
                         : row.destinationTarget ? `${row.destination}: ${row.destinationTarget}` : row.destination;
                       return (
-                        <tr key={row.id} style={{ background: rowBg, borderBottom: "0.5px solid #9ca3af", transition: "background 0.1s ease" }}
-                          onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "#f0f9ff"; }}
+                        <tr key={row.id} style={{ background: rowBg, borderBottom: "1px solid #f1f5f9", transition: "background 0.15s ease" }}
+                          onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "#f8fafc"; }}
                           onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = rowBg; }}
                         >
-                          <td style={{ textAlign: "center", padding: "4px 0", borderRight: "0.5px solid #edf2f7" }}>
+                          <td style={{ textAlign: "center", padding: "10px 0", borderRight: "1px solid #f1f5f9" }}>
                             <Checkbox size="small" checked={isSelected} onChange={() => handleSelectRow(realIdx)} disabled={loading.delete}
-                              sx={{ padding: "1px", color: C.accent, "&.Mui-checked": { color: C.accent } }} />
+                              sx={{ padding: "1px", color: TABLE_C.accent, "&.Mui-checked": { color: TABLE_C.accent } }} />
                           </td>
-                          <td style={{ textAlign: "center", padding: "7px 4px", fontSize: 11, color: C.mutedText, borderRight: "0.5px solid #edf2f7" }}>{realIdx + 1}</td>
-                          <td style={{ padding: "7px 16px", fontSize: 12, fontWeight: 600, color: C.valueText, borderRight: "0.5px solid #edf2f7" }}>{row.name}</td>
-                          <td style={{ textAlign: "center", padding: "7px 8px", fontSize: 12, color: C.valueText, borderRight: "0.5px solid #edf2f7" }}>{row.didPattern || "—"}</td>
-                          <td style={{ textAlign: "center", padding: "7px 8px", fontSize: 12, color: C.valueText, borderRight: "0.5px solid #edf2f7" }}>{row.callerIdPattern || "—"}</td>
-                          <td style={{ textAlign: "center", padding: "7px 8px", fontSize: 12, color: C.valueText, borderRight: "0.5px solid #edf2f7" }}>{destinationStr || "—"}</td>
-                          <td style={{ textAlign: "center", padding: "7px 8px", borderRight: "0.5px solid #edf2f7" }}>
-                            <span style={{ background: row.enabled === "Yes" ? "#dcfce7" : "#f1f5f9", color: row.enabled === "Yes" ? "#15803d" : "#475569", padding: "2px 8px", borderRadius: 10, fontSize: 10, fontWeight: 600 }}>
+                          <td style={{ textAlign: "center", padding: "10px 6px", fontSize: 11, color: TABLE_C.mutedText, borderRight: "1px solid #f1f5f9" }}>{realIdx + 1}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: TABLE_C.valueText, borderRight: "1px solid #f1f5f9" }}>{row.name}</td>
+                          <td style={{ textAlign: "center", padding: "10px 14px", fontSize: 13, color: TABLE_C.valueText, borderRight: "1px solid #f1f5f9" }}>{row.didPattern || "—"}</td>
+                          <td style={{ textAlign: "center", padding: "10px 14px", fontSize: 13, color: TABLE_C.valueText, borderRight: "1px solid #f1f5f9" }}>{row.callerIdPattern || "—"}</td>
+                          <td style={{ textAlign: "center", padding: "10px 14px", fontSize: 13, color: TABLE_C.valueText, borderRight: "1px solid #f1f5f9" }}>{destinationStr || "—"}</td>
+                          <td style={{ textAlign: "center", padding: "10px 14px", borderRight: "1px solid #f1f5f9" }}>
+                            <span style={{ background: row.enabled === "#f1f5f9", color: row.enabled === "Yes" ? "#166534" : "#475569", padding: "4px 11px", borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: "0.01em", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 72 }}>
                               {row.enabled}
                             </span>
                           </td>
-                          <td style={{ padding: "7px 16px", fontSize: 12, color: C.labelText, borderRight: "0.5px solid #edf2f7", whiteSpace: "normal", wordBreak: "break-all" }}>
-                            {row.memberTrunks?.length > 0 ? row.memberTrunks.map(getTrunkLabel).join(", ") : <span style={{ color: C.mutedText }}>—</span>}
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: TABLE_C.labelText, borderRight: "1px solid #f1f5f9", whiteSpace: "normal", wordBreak: "break-all" }}>
+                            {row.memberTrunks?.length > 0 ? row.memberTrunks.map(getTrunkLabel).join(", ") : <span style={{ color: TABLE_C.mutedText }}>—</span>}
                           </td>
-                          <td style={{ textAlign: "center", padding: "4px 8px" }}>
-                            <Btn onClick={() => handleOpenEditModal(row)} variant="outline" style={{ fontSize: 10, padding: "3px 10px", margin: "0 auto" }}>Edit</Btn>
+                          <td style={{ textAlign: "center", padding: "7px 8px" }}>
+                            <TableBtn onClick={() => handleOpenEditModal(row)} variant="outline" style={{ fontSize: 10, padding: "3px 10px", margin: "0 auto" }}>Edit</TableBtn>
                           </td>
                         </tr>
                       );
@@ -779,23 +810,23 @@ const InboundRoutesPage = () => {
 
           {/* Pagination */}
           {!loading.list && rows.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderTop: `0.5px solid ${C.cardBorder}`, background: "#f8fafc", flexWrap: "wrap", gap: 8 }}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>Showing {pagedRows.length} record{pagedRows.length !== 1 ? "s" : ""} on page {page}</span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px", borderTop: `1px solid ${TABLE_C.cardBorder}`, background: "#ffffff", flexWrap: "wrap", gap: 8 }}>
+              <span style={{ fontSize: 11, color: TABLE_C.mutedText }}>Showing {pagedRows.length} of {rows.length} record{rows.length !== 1 ? "s" : ""} · Page {page} of {totalPages}</span>
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <Btn onClick={() => setPage(1)} disabled={page === 1} variant="outline">First</Btn>
-                <Btn onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} variant="outline">← Prev</Btn>
-                <span style={{ fontSize: 11, fontWeight: 600, color: C.accent, background: "#e0f2fe", padding: "5px 14px", borderRadius: 6, border: `0.5px solid ${C.cardBorder}` }}>
-                  Page {page} of {totalPages}
+                <TableBtn onClick={() => setPage(1)} disabled={page === 1} variant="outline">First</TableBtn>
+                <TableBtn onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} variant="outline">← Prev</TableBtn>
+                <span style={{ fontSize: 11, fontWeight: 600, color: TABLE_C.accent, background: "#e0f2fe", padding: "5px 14px", borderRadius: 6, border: `0.5px solid ${TABLE_C.cardBorder}` }}>
+                  Page {page}
                 </span>
-                <Btn onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} variant="outline">Next →</Btn>
-                <Btn onClick={() => setPage(totalPages)} disabled={page === totalPages} variant="outline">Last</Btn>
+                <TableBtn onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} variant="outline">Next →</TableBtn>
+                <TableBtn onClick={() => setPage(totalPages)} disabled={page === totalPages} variant="outline">Last</TableBtn>
                 <select value={page} onChange={(e) => setPage(Number(e.target.value))}
-                  style={{ fontSize: 11, borderRadius: 4, border: `0.5px solid ${C.cardBorder}`, padding: "3px 6px", color: C.labelText, background: "#fff" }}>
+                  style={{ fontSize: 11, borderRadius: 4, border: `0.5px solid ${TABLE_C.cardBorder}`, padding: "3px 6px", color: TABLE_C.labelText, background: "#fff" }}>
                   {Array.from({ length: totalPages }, (_, i) => (
                     <option key={i + 1} value={i + 1}>{i + 1}</option>
                   ))}
                 </select>
-                <span style={{ fontSize: 11, color: C.mutedText }}>{rows.length} total</span>
+                <span style={{ fontSize: 11, color: TABLE_C.mutedText }}>{rows.length} total</span>
               </div>
             </div>
           )}
