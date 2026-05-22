@@ -35,7 +35,6 @@ const C = {
   amber: "#d97706",
 };
 
-
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -103,17 +102,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -382,10 +381,10 @@ const ExtensionGroupsPage = () => {
         <div
           style={{
             background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            borderRadius: 22,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            border: `1px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
@@ -394,11 +393,11 @@ const ExtensionGroupsPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              padding: "14px 18px",
+              borderBottom: "1px solid #e2e8f0",
+              background: "#ffffff",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 10,
             }}
           >
             {/* Left Toolbar Info */}
@@ -406,12 +405,12 @@ const ExtensionGroupsPage = () => {
               <span
                 style={{
                   background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
+                  border: `1px solid ${C.cardBorder}`,
+                  color: C.labelText,
                   fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
                 }}
               >
                 Page {page} · {filteredGroups.length} records
@@ -422,10 +421,10 @@ const ExtensionGroupsPage = () => {
                     background: "#e0f2fe",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selectedIds.length} selected
@@ -560,7 +559,7 @@ const ExtensionGroupsPage = () => {
                   width: "100%",
                   borderCollapse: "collapse",
                   tableLayout: "auto",
-                  minWidth: 800,
+                  minWidth: 900,
                 }}
               >
                 <thead>
@@ -579,13 +578,9 @@ const ExtensionGroupsPage = () => {
                         }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
-                      Group Name
-                    </TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
-                      Extensions
-                    </TH>
+                    <TH style={{ width: 36 }}>#</TH>
+                    <TH>Group Name</TH>
+                    <TH>Extensions</TH>
                     <TH style={{ width: 80 }}>Actions</TH>
                   </tr>
                 </thead>
@@ -610,7 +605,7 @@ const ExtensionGroupsPage = () => {
                     pagedGroups.map((row, idx) => {
                       const isSelected = selectedIds.includes(row.id);
                       const rowBg = isSelected
-                        ? "#f0f9ff"
+                        ? "#e0f2fe"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -621,12 +616,12 @@ const ExtensionGroupsPage = () => {
                           key={row.id}
                           style={{
                             background: rowBg,
-                            borderBottom: "0.5px solid #9ca3af",
-                            transition: "background 0.1s ease",
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f0f9ff";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -636,8 +631,8 @@ const ExtensionGroupsPage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
+                              padding: "10px 0",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <Checkbox
@@ -654,31 +649,36 @@ const ExtensionGroupsPage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 4px",
+                              padding: "10px 6px",
                               fontSize: 11,
                               color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {realIndex}
                           </td>
                           <td
                             style={{
-                              padding: "7px 16px",
-                              fontSize: 12,
-                              fontWeight: 600,
+                              padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              textAlign: "center",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              padding: "7px 16px",
-                              fontSize: 12,
+                              padding: "10px 14px",
+                              fontSize: 13,
                               color: C.labelText,
-                              borderRight: "0.5px solid #edf2f7",
+                              textAlign: "center",
+                              borderRight: "1px solid #f1f5f9",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
                             }}
                           >
                             {row.extensions?.length > 0 ? (
@@ -688,7 +688,7 @@ const ExtensionGroupsPage = () => {
                             )}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "4px 8px" }}
+                            style={{ padding: "7px 8px", textAlign: "center" }}
                           >
                             <Btn
                               onClick={() => handleOpenEditModal(row)}
@@ -718,12 +718,12 @@ const ExtensionGroupsPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
+                padding: "14px 18px",
+                borderTop: "1px solid #f1f5f9",
+                background: "#ffffff",
               }}
             >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
+              <span style={{ fontSize: 12, color: C.mutedText }}>
                 Showing {pagedGroups.length} record
                 {pagedGroups.length !== 1 ? "s" : ""} on page {page}
               </span>

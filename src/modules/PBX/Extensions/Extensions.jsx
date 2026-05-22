@@ -164,13 +164,25 @@ const TH = ({ children, style: extra }) => (
 // ── Status style helper ───────────────────────────────────────────────────────
 const statusStyle = (s) => {
   const v = String(s || "").toLowerCase();
-  if (v === "online") return { bg: "#e0f2fe", color: "#0369a1" };
-  if (v === "offline") return { bg: "#fee2e2", color: "#b91c1c" };
-  if (v === "expired") return { bg: "#fef3c7", color: "#92400e" };
-  if (v === "pending") return { bg: "#f8fafc", color: "#475569" };
+
+  if (v === "online") {
+    return { color: "#16a34a" };
+  }
+
+  if (v === "offline") {
+    return { color: "#dc2626" };
+  }
+
+  if (v === "expired") {
+    return { color: "#f59e0b" };
+  }
+
+  if (v === "pending") {
+    return { color: "#2563eb" };
+  }
+
   return { bg: "#f1f5f9", color: "#475569" };
 };
-
 // ── Constants ─────────────────────────────────────────────────────────────────
 const FOLLOW_ME_TIMEOUT_OPTIONS = [
   0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95,
@@ -1165,7 +1177,7 @@ const SipAccountPage = () => {
               justifyContent: "space-between",
               padding: "14px 18px",
               borderBottom: "1px solid #e2e8f0",
-              background: "#f8fafc",
+              background: "#ffffff",
               flexWrap: "wrap",
               gap: 10,
             }}
@@ -1435,7 +1447,7 @@ const SipAccountPage = () => {
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#eef4ff";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -1481,7 +1493,7 @@ const SipAccountPage = () => {
                             style={{
                               padding: "10px 14px",
                               fontSize: 13,
-                              fontWeight: 700,
+                              fontWeight: 400,
                               color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",

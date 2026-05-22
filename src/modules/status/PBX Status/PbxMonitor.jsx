@@ -64,19 +64,19 @@ const StatCard = ({ label, value, accent, loading }) => (
 const StatusBadge = ({ tone, text }) => {
   const colors = {
     ok: {
-      bg: "#dcfce7",
+      
       color: "#166534",
       dot: "#22c55e",
     },
 
     bad: {
-      bg: "#fee2e2",
+      
       color: "#991b1b",
       dot: "#ef4444",
     },
 
     neutral: {
-      bg: "#f1f5f9",
+      
       color: "#64748b",
       dot: "#94a3b8",
     },
@@ -89,13 +89,17 @@ const StatusBadge = ({ tone, text }) => {
       style={{
         display: "inline-flex",
         alignItems: "center",
+        justifyContent: "center",
         gap: 6,
-        background: "transparent",
+        background: s.bg,
         color: s.color,
-        padding: "5px 12px",
+        padding: "4px 11px",
         borderRadius: 999,
-        fontSize: 12,
-        fontWeight: 600,
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: "0.01em",
+        whiteSpace: "nowrap",
+        minWidth: 72,
       }}
     >
       <span
@@ -115,17 +119,34 @@ const StatusBadge = ({ tone, text }) => {
 const TypePill = ({ text }) => (
   <span
     style={{
-      background: "#eff6ff",
+     
       color: "#2563eb",
-      padding: "4px 10px",
+      padding: "4px 11px",
       borderRadius: 999,
-      fontWeight: 600,
+      fontWeight: 700,
       fontSize: 11,
+      letterSpacing: "0.01em",
+      whiteSpace: "nowrap",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      minWidth: 72,
     }}
   >
     {text}
   </span>
 );
+
+const tableWrapStyle = {
+  overflowX: "auto",
+};
+
+const tableStyle = {
+  width: "100%",
+  minWidth: 900,
+  borderCollapse: "collapse",
+  tableLayout: "auto",
+};
 
 const TH = ({ children, width, align = "left" }) => (
   <th
@@ -134,12 +155,13 @@ const TH = ({ children, width, align = "left" }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "14px 18px",
+      padding: "12px 14px",
       textAlign: align,
-      borderBottom: "1px solid #f1f5f9",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       width: width || "auto",
-      letterSpacing: "0.08em",
+      letterSpacing: "0.14em",
       textTransform: "uppercase",
     }}
   >
@@ -150,13 +172,16 @@ const TH = ({ children, width, align = "left" }) => (
 const TD = ({ children, align = "left", mono }) => (
   <td
     style={{
-      padding: "16px 18px",
+      padding: "10px 14px",
       fontSize: 13,
       color: C.valueText,
       textAlign: align,
       fontFamily: mono ? "monospace" : "Inter, sans-serif",
       fontWeight: 500,
-      borderBottom: "1px solid #f1f5f9",
+      borderRight: "1px solid #f1f5f9",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
     }}
   >
     {children || <span style={{ color: C.mutedText }}>—</span>}
@@ -170,6 +195,7 @@ const PbxMonitor = () => {
   const [trunkRows, setTrunkRows] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const normalizeStatus = (v) =>
     (v == null ? "" : String(v)).toLowerCase().trim();
@@ -335,9 +361,10 @@ const PbxMonitor = () => {
       <div
         style={{
           background: "#ffffff",
-          borderRadius: 20,
+          borderRadius: 22,
           overflow: "hidden",
-          boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+          border: `1px solid ${C.cardBorder}`,
+          boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
         }}
       >
         {/* Tabs */}
@@ -345,60 +372,78 @@ const PbxMonitor = () => {
           style={{
             display: "flex",
             alignItems: "center",
-            padding: 12,
-            borderBottom: "1px solid #f1f5f9",
+            justifyContent: "space-between",
+            padding: "14px 18px",
+            borderBottom: "1px solid #e2e8f0",
+            background: "#ffffff",
+            flexWrap: "wrap",
+            gap: 10,
           }}
         >
-          {["extension", "trunk"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: "12px 22px",
-                fontSize: 13,
-                fontWeight: 600,
-                color:
-                  activeTab === tab
-                    ? "#2563eb"
-                    : "#64748b",
-                background:
-                  activeTab === tab
-                    ? "#eff6ff"
-                    : "transparent",
-                border: "none",
-                borderRadius: 10,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                marginRight: 10,
-              }}
-            >
-              {tab === "extension"
-                ? "Extensions"
-                : "Trunks"}
-            </button>
-          ))}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {["extension", "trunk"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: "5px 14px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color:
+                    activeTab === tab
+                      ? C.accent
+                      : C.labelText,
+                  background:
+                    activeTab === tab
+                      ? "#eff6ff"
+                      : "#f1f5f9",
+                  border:
+                    activeTab === tab
+                      ? `1px solid ${C.accent}`
+                      : "1px solid #e2e8f0",
+                  borderRadius: 999,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {tab === "extension"
+                  ? "Extensions"
+                  : "Trunks"}
+              </button>
+            ))}
+          </div>
 
           <div
             style={{
-              marginLeft: "auto",
               display: "flex",
               alignItems: "center",
-              gap: 12,
+              gap: 8,
+              flexWrap: "wrap",
             }}
           >
             {/* Search */}
             <div
               style={{
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-                borderRadius: 12,
-                padding: "8px 14px",
                 display: "flex",
                 alignItems: "center",
-                minWidth: 240,
+                gap: 8,
+                background: "#ffffff",
+                border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
+                borderRadius: 999,
+                padding: "7px 14px",
+                transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+                boxShadow: searchFocused ? "0 0 0 4px rgba(37,99,235,0.08)" : "none",
               }}
             >
-              <span style={{ marginRight: 8 }}>🔍</span>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: searchFocused ? C.accent : C.mutedText,
+                }}
+              >
+                🔍
+              </span>
 
               <input
                 type="text"
@@ -406,29 +451,50 @@ const PbxMonitor = () => {
                 onChange={(e) =>
                   setSearchQuery(e.target.value)
                 }
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
                 placeholder="Search..."
                 style={{
                   border: "none",
                   background: "transparent",
                   outline: "none",
-                  width: "100%",
-                  fontSize: 13,
+                  width: 240,
+                  minWidth: 180,
+                  fontSize: 12,
+                  color: C.valueText,
                 }}
               />
+              {searchQuery && (
+                <span
+                  onClick={() => setSearchQuery("")}
+                  style={{
+                    fontSize: 11,
+                    color: C.mutedText,
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </span>
+              )}
             </div>
 
             {/* Refresh */}
             <button
               onClick={loadData}
               style={{
-                background: "#2563eb",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: 12,
-                padding: "10px 16px",
+                background: C.cardBg,
+                color: C.accent,
+                border: `0.5px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: "5px 14px",
                 cursor: "pointer",
                 fontWeight: 600,
-                fontSize: 13,
+                fontSize: 11,
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                transition: "opacity 0.15s ease",
+                whiteSpace: "nowrap",
               }}
             >
               Refresh
@@ -437,7 +503,7 @@ const PbxMonitor = () => {
         </div>
 
         {/* Table */}
-        <div style={{ overflowX: "auto" }}>
+        <div style={tableWrapStyle}>
           {loading ? (
             <div
               style={{
@@ -450,10 +516,7 @@ const PbxMonitor = () => {
             </div>
           ) : activeTab === "extension" ? (
             <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-              }}
+              style={tableStyle}
             >
               <thead>
                 <tr>
@@ -466,15 +529,17 @@ const PbxMonitor = () => {
               </thead>
 
               <tbody>
-                {filteredExtensions.map((row) => {
+                {filteredExtensions.map((row, idx) => {
                   const status = getStatus(row.status);
+                  const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
                   return (
                     <tr
                       key={row.extension}
                       style={{
-                        background: "#ffffff",
-                        transition: "0.2s",
+                        background: rowBg,
+                        borderBottom: "1px solid #f1f5f9",
+                        transition: "background 0.15s ease",
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background =
@@ -482,10 +547,10 @@ const PbxMonitor = () => {
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background =
-                          "#ffffff";
+                          rowBg;
                       }}
                     >
-                      <TD>
+                      <TD align="center">
                         <StatusBadge
                           tone={status.tone}
                           text={status.text}
@@ -510,10 +575,7 @@ const PbxMonitor = () => {
             </table>
           ) : (
             <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-              }}
+              style={tableStyle}
             >
               <thead>
                 <tr>
@@ -525,15 +587,17 @@ const PbxMonitor = () => {
               </thead>
 
               <tbody>
-                {filteredTrunks.map((row) => {
+                {filteredTrunks.map((row, idx) => {
                   const status = getStatus(row.status);
+                  const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
                   return (
                     <tr
                       key={row.id}
                       style={{
-                        background: "#ffffff",
-                        transition: "0.2s",
+                        background: rowBg,
+                        borderBottom: "1px solid #f1f5f9",
+                        transition: "background 0.15s ease",
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background =
@@ -541,10 +605,10 @@ const PbxMonitor = () => {
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background =
-                          "#ffffff";
+                          rowBg;
                       }}
                     >
-                      <TD>
+                      <TD align="center">
                         <StatusBadge
                           tone={status.tone}
                           text={status.text}

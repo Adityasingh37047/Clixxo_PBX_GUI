@@ -248,20 +248,26 @@ const getDirection = (row) => {
 
 const directionStyle = (d) => {
   const v = String(d).toLowerCase();
-  if (v === "outbound") return { bg: "#eff6ff", color: "#2563eb" };
-  if (v === "inbound") return { bg: "#dcfce7", color: "#166534" };
-  if (v === "local") return { bg: "#f1f5f9", color: "#64748b" };
-  return { bg: "#f1f5f9", color: "#64748b" };
+
+  if (v === "outbound") return { color: "#2563eb" };
+  if (v === "inbound") return { color: "#166534" };
+  if (v === "local") return { color: "#64748b" };
+
+  return { color: "#64748b" };
 };
 
 const statusStyle = (s) => {
   const v = String(s || "").toLowerCase();
-  if (v === "answered") return { bg: "#dcfce7", color: "#166534" };
-  if (v === "failed") return { bg: "#fee2e2", color: "#991b1b" };
-  if (v === "busy") return { bg: "#fef3c7", color: "#92400e" };
-  if (v === "no answer" || v === "cancelled")
-    return { bg: "#ffedd5", color: "#c2410c" };
-  return { bg: "#f1f5f9", color: "#64748b" };
+
+  if (v === "answered") return { color: "#166534" };
+  if (v === "failed") return { color: "#991b1b" };
+  if (v === "busy") return { color: "#92400e" };
+
+  if (v === "no answer" || v === "cancelled") {
+    return { color: "#c2410c" };
+  }
+
+  return { color: "#64748b" };
 };
 
 const formatDuration = (secs) => {
@@ -1330,56 +1336,61 @@ const CallCount = () => {
             )}
           </div>
 
-          {!loading && filteredData.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                padding: "14px 18px",
-                borderTop: "1px solid #f1f5f9",
-                background: "#ffffff",
-              }}
-            >
-              <span style={{ fontSize: 12, color: C.mutedText }}>
-                Showing {filteredData.length} record
-                {filteredData.length !== 1 ? "s" : ""} on page {page}
-                {hasActiveFilters ? ` (filtered from ${rows.length})` : ""}
-              </span>
-              <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading || page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#eff6ff",
-                    padding: "6px 14px",
-                    borderRadius: 10,
-                    border: `1px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading || !rows || rows.length < limit}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      <div
+        {!loading && filteredData.length > 0 && (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "14px 18px",
+      borderTop: "1px solid #f1f5f9",
+      background: "#ffffff",
+    }}
+  >
+    <span style={{ fontSize: 12, color: C.mutedText }}>
+      Showing {filteredData.length} record
+      {filteredData.length !== 1 ? "s" : ""} on page {page}
+      {hasActiveFilters ? ` (filtered from ${rows.length})` : ""}
+    </span>
+
+    <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+      <Btn
+        onClick={handlePrev}
+        disabled={loading || page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+
+      <span
+        style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color: C.accent,
+          background: "#eff6ff",
+          padding: "6px 14px",
+          borderRadius: 10,
+          border: `1px solid ${C.cardBorder}`,
+        }}
+      >
+        Page {page}
+      </span>
+
+      <Btn
+        onClick={handleNext}
+        disabled={loading || !rows || rows.length < limit}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+)}
+
+</div>
+</div>
+
+<div
   style={{
     width: "100%",
     display: "flex",
@@ -1388,15 +1399,14 @@ const CallCount = () => {
     marginBottom: 10,
     fontSize: 15,
     fontWeight: 700,
-    color: "#dc2626"
+    color: "#dc2626",
   }}
 >
-  <span>
-    Only latest 500 records shown
-  </span>
+  <span>Only latest 500 records shown</span>
 </div>
-    </div>
-  );
+
+</div>
+);
 };
 
 export default CallCount;
