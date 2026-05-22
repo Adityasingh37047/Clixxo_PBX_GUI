@@ -1,38 +1,127 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { postAsteriskCLI } from "../../../api/apiService";
+import { Alert } from "@mui/material";
 import {
   ASTERISK_CLI_TITLE,
   ASTERISK_CLI_LABELS,
   ASTERISK_CLI_BUTTONS,
   ASTERISK_CLI_PLACEHOLDERS,
 } from "../../../constants/AsteriskCLIConstants";
-import { Button, Alert } from "@mui/material";
 
-const blueBar = (title) => (
-  <div
-    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-    style={{
-      background: "linear-gradient(#3E5475 100%)",
-      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-    }}
-  >
-    {title}
-  </div>
-);
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
 
-const buttonSx = {
-  background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: "16px",
-  borderRadius: 1.5,
-  minWidth: 90,
-  px: 2,
-  py: 0.5,
-  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-  textTransform: "none",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const inputStyle = {
+  width: "100%",
+  fontSize: 13,
+  padding: "6px 10px",
+  borderRadius: 10,
+  border: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  color: C.valueText,
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
   },
 };
 
@@ -43,7 +132,6 @@ const AsteriskCLI = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [commandError, setCommandError] = useState("");
 
-  // Message handling - same pattern as SIP Register
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
@@ -78,16 +166,29 @@ const AsteriskCLI = () => {
       console.log("Asterisk CLI Response:", apiResponse);
 
       if (apiResponse.response && apiResponse.responseData) {
-        const timestamp = new Date().toLocaleString();
-        const logEntry = `[${timestamp}] $ ${command.trim()}\n${apiResponse.responseData}\n${"=".repeat(80)}\n`;
-        setLogs((prev) => prev + logEntry);
-        showMessage("success", "Command executed successfully!");
+        const responseDataStr = String(apiResponse.responseData).trim();
+        const isError =
+          responseDataStr.toLowerCase().includes("no such command") ||
+          responseDataStr.toLowerCase().includes("invalid");
+
+        if (isError) {
+          const timestamp = new Date().toLocaleString();
+          const cmdName = command.trim();
+          const logEntry = `[${timestamp}] $ ${cmdName}\n${responseDataStr}\n${"=".repeat(80)}\n`;
+          setLogs((prev) => prev + logEntry);
+          showMessage("error", "Invalid or wrong command.");
+        } else {
+          const timestamp = new Date().toLocaleString();
+          const logEntry = `[${timestamp}] $ ${command.trim()}\n${responseDataStr}\n${"=".repeat(80)}\n`;
+          setLogs((prev) => prev + logEntry);
+          showMessage("success", "Command executed successfully!");
+        }
       } else {
-        console.log("Invalid response format:", apiResponse);
-        showMessage(
-          "error",
-          apiResponse.message || "Failed to execute command",
-        );
+        const timestamp = new Date().toLocaleString();
+        const cmdName = command.trim();
+        const logEntry = `[${timestamp}] $ ${cmdName}\nNo such command '${cmdName}' (type 'core show help' for other commands)\n${"=".repeat(80)}\n`;
+        setLogs((prev) => prev + logEntry);
+        showMessage("error", "Invalid or wrong command.");
       }
     } catch (error) {
       console.error("Error executing Asterisk CLI command:", error);
@@ -120,90 +221,192 @@ const AsteriskCLI = () => {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-80px)] bg-gray-50 flex flex-col items-center py-6 px-2 md:p-2">
-      {/* Message Display - same pattern as SIP Register */}
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* ── Breadcrumb ── */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
           }}
         >
-          {message.text}
-        </Alert>
-      )}
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {ASTERISK_CLI_TITLE}
+          </span>
+        </div>
 
-      <div className="w-full max-w-4xl">
-        {blueBar(ASTERISK_CLI_TITLE)}
-        <div className="border border-gray-400 rounded-b-lg bg-white p-8 flex flex-col items-center">
-          {/* Command Input Section */}
-          <div className="w-full max-w-2xl mb-8">
-            <div className="flex flex-col gap-4">
-              <label className="text-[17px] text-gray-700 text-left">
-                {ASTERISK_CLI_LABELS.command}
-              </label>
-              <div className="flex flex-col w-full">
-                <input
-                  type="text"
-                  className="border border-gray-400 rounded px-3 py-2 text-base text-gray-800 bg-white w-full h-12"
-                  value={command}
-                  onChange={(e) => {
-                    setCommand(e.target.value);
-                    setCommandError("");
+        {/* ── Main Card ── */}
+        <div
+          style={{
+            background: C.cardBg,
+            borderRadius: 20,
+            overflow: "hidden",
+            boxShadow: C.cardShadow,
+            marginBottom: 24,
+            border: `1px solid ${C.cardBorder}`,
+          }}
+        >
+          {/* Card Header (Left Aligned Title) */}
+          <div
+            style={{
+              minHeight: 44,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
+              alignItems: "center",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.divider}`,
+              background: C.cardBg,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: C.strongText,
+                letterSpacing: "0.02em",
+              }}
+            >
+              Asterisk CLI
+            </span>
+          </div>
+
+          {/* Card Body */}
+          <div style={{ padding: "24px 32px" }}>
+            <div className="flex flex-col gap-6">
+              {/* Command Row */}
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    width: 120,
+                    flexShrink: 0,
                   }}
-                  onKeyPress={handleKeyPress}
-                  placeholder={ASTERISK_CLI_PLACEHOLDERS.command}
-                  disabled={loading}
-                />
-                <div className="min-h-[20px]">
-                  {commandError && (
-                    <span className="text-red-600 text-sm">{commandError}</span>
-                  )}
+                >
+                  {ASTERISK_CLI_LABELS.command}
+                </span>
+                <div className="flex flex-col w-full max-w-md">
+                  <input
+                    type="text"
+                    style={inputStyle}
+                    value={command}
+                    onChange={(e) => {
+                      setCommand(e.target.value);
+                      setCommandError("");
+                    }}
+                    onKeyPress={handleKeyPress}
+                    placeholder={ASTERISK_CLI_PLACEHOLDERS.command}
+                    disabled={loading}
+                    {...inputInteraction}
+                  />
+                  <div style={{ minHeight: 0, marginTop: 0 }}>
+                    {commandError && (
+                      <span
+                        style={{
+                          color: C.errorRed,
+                          fontSize: 11,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {commandError}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {/* Buttons inline on desktop, wrapped on mobile */}
+                <div className="flex flex-wrap gap-2 mt-2 sm:mt-0 sm:ml-4">
+                  <Btn
+                    variant="primary"
+                    onClick={executeCommand}
+                    disabled={loading || !command.trim()}
+                    style={{ minWidth: 90 }}
+                  >
+                    {loading
+                      ? ASTERISK_CLI_BUTTONS.loading
+                      : ASTERISK_CLI_BUTTONS.submit}
+                  </Btn>
+                  <Btn variant="cancel" onClick={clearLogs} disabled={loading}>
+                    {ASTERISK_CLI_BUTTONS.clear}
+                  </Btn>
                 </div>
               </div>
+
+              {/* Logs Row */}
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    width: 120,
+                    flexShrink: 0,
+                    paddingTop: 8,
+                  }}
+                >
+                  {ASTERISK_CLI_LABELS.logs}
+                </span>
+                <textarea
+                  style={{
+                    ...inputStyle,
+                    height: "auto",
+                    minHeight: 300,
+                    maxHeight: 500,
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                    resize: "vertical",
+                    whiteSpace: "pre-wrap",
+                    backgroundColor: "#f8fafc",
+                    borderColor: C.cardBorder,
+                  }}
+                  value={logs}
+                  onChange={(e) => setLogs(e.target.value)}
+                  placeholder={ASTERISK_CLI_PLACEHOLDERS.logs}
+                  readOnly
+                  onFocus={(e) => (e.target.style.borderColor = C.accent)}
+                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
+                  onMouseEnter={(e) => {
+                    if (document.activeElement !== e.target)
+                      e.target.style.borderColor = "#94a3b8";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (document.activeElement !== e.target)
+                      e.target.style.borderColor = C.cardBorder;
+                  }}
+                />
+              </div>
             </div>
-          </div>
-
-          {/* Buttons Row */}
-          <div className="w-full flex flex-row justify-center gap-12 mb-8">
-            <Button
-              variant="contained"
-              sx={buttonSx}
-              onClick={executeCommand}
-              disabled={loading || !command.trim()}
-            >
-              {loading
-                ? ASTERISK_CLI_BUTTONS.loading
-                : ASTERISK_CLI_BUTTONS.submit}
-            </Button>
-            <Button
-              variant="contained"
-              sx={buttonSx}
-              onClick={clearLogs}
-              disabled={loading}
-            >
-              {ASTERISK_CLI_BUTTONS.clear}
-            </Button>
-          </div>
-
-          {/* Logs Section */}
-          <div className="w-full flex flex-col md:flex-row md:items-start gap-4">
-            <label className="text-[17px] text-gray-700 min-w-[80px] md:pt-2">
-              {ASTERISK_CLI_LABELS.logs}
-            </label>
-            <textarea
-              className="w-full min-h-[300px] max-h-[500px] border border-gray-400 rounded bg-white text-[14px] p-3 font-mono resize-y"
-              value={logs}
-              onChange={(e) => setLogs(e.target.value)}
-              placeholder={ASTERISK_CLI_PLACEHOLDERS.logs}
-              readOnly
-            />
           </div>
         </div>
       </div>

@@ -538,30 +538,53 @@ const SignalingCapture = () => {
           <div style={blueBarStyle}>
             <span>{SC_SECTIONS[0]}</span>
           </div>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-6 gap-6">
-            <div className="flex flex-col gap-4 flex-1">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label className="text-[14px] font-semibold text-gray-700 sm:w-[280px] whitespace-nowrap">
-                  {SC_LABELS.networkInterface}
-                </label>
-                <select
-                  style={{ ...inputStyle, width: "100%", maxWidth: 220 }}
-                  value={network}
-                  onChange={(e) => setNetwork(e.target.value)}
-                  disabled={loading || isCapturing}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                >
-                  {loading ? (
-                    <option value="">Loading...</option>
-                  ) : (
-                    networkOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))
-                  )}
-                </select>
+          <div className="flex flex-col p-6 gap-6">
+            <div className="flex flex-col gap-6">
+              {/* Network Interface Row exactly like TS Recording rows */}
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                  <label className="text-[14px] font-semibold text-gray-700 sm:w-[280px] whitespace-nowrap">
+                    {SC_LABELS.networkInterface}
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <select
+                      style={{ ...inputStyle, width: "100%", minWidth: 220 }}
+                      value={network}
+                      onChange={(e) => setNetwork(e.target.value)}
+                      disabled={loading || isCapturing}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                    >
+                      {loading ? (
+                        <option value="">Loading...</option>
+                      ) : (
+                        networkOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
+                  <Btn
+                    variant="primary"
+                    onClick={handleStartCapture}
+                    disabled={isCapturing}
+                    style={{ minWidth: 100, height: 36, fontSize: 13 }}
+                  >
+                    {SC_BUTTONS.start}
+                  </Btn>
+                  <Btn
+                    variant="cancel"
+                    onClick={handleStopCapture}
+                    disabled={!isCapturing}
+                    style={{ minWidth: 100, height: 36, fontSize: 13 }}
+                  >
+                    {SC_BUTTONS.stop}
+                  </Btn>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -617,32 +640,18 @@ const SignalingCapture = () => {
                 />
               </div>
 
-              <div className="mt-2">
+              <div className="mt-2 text-center">
                 <span
-                  style={{ fontSize: 13, color: C.errorRed, fontWeight: 500 }}
+                  style={{
+                    fontSize: 13,
+                    color: C.errorRed,
+                    fontWeight: 500,
+                  }}
                 >
                   {SC_NOTE}
                 </span>
               </div>
-            </div>
 
-            <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-4 lg:mt-0">
-              <Btn
-                variant="primary"
-                onClick={handleStartCapture}
-                disabled={isCapturing}
-                style={{ minWidth: 100, height: 36, fontSize: 13 }}
-              >
-                {SC_BUTTONS.start}
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleStopCapture}
-                disabled={!isCapturing}
-                style={{ minWidth: 100, height: 36, fontSize: 13 }}
-              >
-                {SC_BUTTONS.stop}
-              </Btn>
             </div>
           </div>
         </div>

@@ -136,8 +136,14 @@ const blueBarStyle = {
 const inputInteraction = {
   onFocus: (e) => (e.target.style.borderColor = C.accent),
   onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "#94a3b8" },
-  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = C.cardBorder },
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
+  },
 };
 
 const CertificateManage = () => {
@@ -211,7 +217,7 @@ const CertificateManage = () => {
           <div className="p-6">
             <div className="w-full max-w-4xl mx-auto">
               {/* Form Fields Grid */}
-              <form className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+              <form className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                 {CERTIFICATE_FIELDS.map((field) => (
                   <React.Fragment key={field.name}>
                     <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">

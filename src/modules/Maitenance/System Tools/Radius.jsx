@@ -143,8 +143,14 @@ const blueBarStyle = {
 const inputInteraction = {
   onFocus: (e) => (e.target.style.borderColor = C.accent),
   onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "#94a3b8" },
-  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = C.cardBorder },
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
+  },
 };
 
 const RADIUS_INITIAL_FORM = {
@@ -252,9 +258,9 @@ const Radius = () => {
             </div>
 
             <div className="p-6">
-              <div className="w-full max-w-4xl mx-auto">
+              <div className="w-full max-w-[640px] mx-auto">
                 {/* Form Fields Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                   {RADIUS_FIELDS.map((field) =>
                     field.type === "checkboxGroup" ? (
                       <React.Fragment key={field.name || "callTypeGroup"}>
@@ -263,7 +269,7 @@ const Radius = () => {
                             {field.label}
                           </span>
                         </div>
-                        <div className="flex flex-col min-h-[36px] pl-2 sm:pl-0 gap-1 pt-1">
+                        <div className="flex flex-col min-h-[36px] pl-2 sm:pl-0 gap-0 pt-1">
                           {CALL_TYPE_OPTIONS.map((opt) => (
                             <FormControlLabel
                               key={opt.value}
@@ -281,7 +287,9 @@ const Radius = () => {
                                 />
                               }
                               label={
-                                <span style={{ fontSize: 14, color: C.valueText }}>
+                                <span
+                                  style={{ fontSize: 14, color: C.valueText }}
+                                >
                                   {opt.label}
                                 </span>
                               }
@@ -311,11 +319,11 @@ const Radius = () => {
                                 }}
                               />
                               <span
-                                style={{
-                                  marginLeft: 4,
-                                  fontSize: 14,
-                                  color: C.valueText,
-                                }}
+                              // style={{
+                              //   marginLeft: 4,
+                              //   fontSize: 14,
+                              //   color: C.valueText,
+                              // }}
                               >
                                 {field.enableLabel}
                               </span>
@@ -339,9 +347,10 @@ const Radius = () => {
                                 "&:hover .MuiOutlinedInput-notchedOutline": {
                                   borderColor: "#94a3b8",
                                 },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: `${C.accent} !important`,
-                                },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                  {
+                                    borderColor: `${C.accent} !important`,
+                                  },
                               }}
                             >
                               <MenuItem value="">

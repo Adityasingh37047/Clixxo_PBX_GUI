@@ -164,22 +164,24 @@ const thStyle = {
   letterSpacing: "0.08em",
 };
 const tdStyle = {
-  borderBottom: `1px solid ${C.divider}`,
-  padding: "16px 18px",
+  borderBottom: "none",
+  padding: "10px 18px",
   fontSize: 13,
   background: C.cardBg,
   color: C.valueText,
-  textAlign: "center",
+  textAlign: "right",
   whiteSpace: "nowrap",
+  width: "50%",
 };
 const tdLeftStyle = {
-  borderBottom: `1px solid ${C.divider}`,
-  padding: "16px 18px",
+  borderBottom: "none",
+  padding: "10px 18px",
   fontSize: 13,
   background: C.cardBg,
   color: C.valueText,
   textAlign: "left",
   whiteSpace: "nowrap",
+  width: "50%",
 };
 
 const VERSION_FIELDS = [
@@ -510,65 +512,62 @@ const Upgrade = () => {
               <CircularProgress size={16} sx={{ color: C.strongText }} />
             )}
           </div>
-          <div style={{ overflowX: "auto", width: "100%" }}>
-            <table
-              style={{
-                width: "100%",
-                minWidth: 600,
-                borderCollapse: "collapse",
-              }}
-            >
-              <tbody>
-                {versionRows.map((row) => (
-                  <tr
-                    key={row.key}
+          <div
+            style={{
+              padding: "32px 24px",
+              maxWidth: 500,
+              width: "100%",
+              margin: "0 auto",
+            }}
+          >
+            <div className="space-y-4">
+              {versionRows.map((row) => (
+                <div
+                  key={row.key}
+                  className="flex items-center"
+                  style={{ flexWrap: "wrap" }}
+                >
+                  <label
                     style={{
-                      background: C.cardBg,
-                      transition: "background 0.15s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = C.pageBg;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = C.cardBg;
+                      width: "auto",
+                      minWidth: 130,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      textAlign: "left",
+                      marginRight: 10,
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
                     }}
                   >
-                    <td
+                    {row.label}:
+                  </label>
+                  <div className="flex-1 flex flex-col text-center">
+                    <div
                       style={{
-                        ...tdStyle,
-                        width: "30%",
-                        fontWeight: 600,
-                        color: C.labelText,
+                        fontSize: 13,
+                        color: row.key === "serial_no" ? C.valueText : C.accent,
+                        fontWeight: 500,
+                        padding: "6px 10px",
                       }}
                     >
-                      {row.label}
-                    </td>
-                    <td style={tdLeftStyle}>
+                      {row.version || "Unavailable"}
+                    </div>
+                    {row.timestamp && (
                       <div
                         style={{
-                          color:
-                            row.key === "serial_no" ? C.valueText : C.accent,
-                          fontWeight: 500,
+                          fontSize: 11,
+                          color: C.mutedText,
+                          marginTop: 4,
                         }}
                       >
-                        {row.version || "Unavailable"}
+                        Last updated: {row.timestamp}
                       </div>
-                      {row.timestamp && (
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: C.mutedText,
-                            marginTop: 4,
-                          }}
-                        >
-                          Last updated: {row.timestamp}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

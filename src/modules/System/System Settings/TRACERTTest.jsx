@@ -10,36 +10,122 @@ import {
   TRACERT_SOURCE_OPTIONS,
   TRACERT_BUTTONS,
 } from "../../../constants/TRACERTTestConstants";
-import Button from "@mui/material/Button";
+import { Alert } from "@mui/material";
 
-const blueBar = (title) => (
-  <div
-    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-    style={{
-      background: "linear-gradient(#3E5475 100%)",
-      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-    }}
-  >
-    {title}
-  </div>
-);
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
 
-const buttonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const inputStyle = {
+  width: "100%",
+  fontSize: 13,
+  padding: "6px 10px",
+  borderRadius: 10,
+  border: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  color: C.valueText,
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
   },
 };
 
@@ -48,6 +134,7 @@ function isValidIp(ip) {
     ip,
   );
 }
+
 function isValidJumps(val) {
   const num = Number(val);
   return Number.isInteger(num) && num >= 1 && num <= 255;
@@ -58,9 +145,8 @@ const TRACERTTest = () => {
   const [destIp, setDestIp] = useState("");
   const [maxJumps, setMaxJumps] = useState("");
   const [info, setInfo] = useState("");
-  const [error, setError] = useState(false);
   const [loadind, setLoading] = useState(false);
-  const [alertMsg, setAlertMsg] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
   const intervalRef = useRef(null);
   const [sourceIpError, setSourceIpError] = useState("");
   const [destIpError, setDestIpError] = useState("");
@@ -68,14 +154,11 @@ const TRACERTTest = () => {
   const [sourceOptions, setSourceOptions] = useState([]);
   const [loadingSource, setLoadingSource] = useState(true);
 
-  useEffect(() => {
-    if (alertMsg) {
-      const timer = setTimeout(() => setAlertMsg(""), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [alertMsg]);
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
 
-  // Fetch system info to get LAN IP addresses
   useEffect(() => {
     const fetchSystemData = async () => {
       try {
@@ -87,11 +170,9 @@ const TRACERTTest = () => {
           const lanInterfaces =
             details.LAN_INTERFACES || details.lan_interfaces || null;
 
-          // Debug: Log system info to see VPN data structure
           console.log("SystemInfo for VPN detection:", sysInfo);
           console.log("LAN Interfaces:", lanInterfaces);
 
-          // Extract IP addresses from LAN interfaces
           const getIpFromInterfaceObject = (obj) => {
             if (!obj || typeof obj !== "object") return null;
             if (Array.isArray(obj["IP Address"]) && obj["IP Address"][0])
@@ -100,7 +181,6 @@ const TRACERTTest = () => {
               return obj["Ip Address"][0];
             if (Array.isArray(obj["ip_address"]) && obj["ip_address"][0])
               return obj["ip_address"][0];
-            // Also check for direct IP string
             if (typeof obj["IP Address"] === "string") return obj["IP Address"];
             if (typeof obj["Ip Address"] === "string") return obj["Ip Address"];
             if (typeof obj["ip_address"] === "string") return obj["ip_address"];
@@ -139,7 +219,6 @@ const TRACERTTest = () => {
             ) {
               lan2Ip = lan2Ip || getIpFromInterfaceObject(iface.data || iface);
             }
-            // Check for VPN interfaces (OpenVPN/SoftEther use tap0, tun0, vpn_vpn)
             if (
               name.includes("tap0") ||
               name === "tap0" ||
@@ -155,7 +234,6 @@ const TRACERTTest = () => {
             }
           });
 
-          // Fallback to direct network object access
           if (!lan1Ip)
             lan1Ip =
               getIpFromInterfaceObject(sysInfo?.network?.eth0) ||
@@ -165,7 +243,6 @@ const TRACERTTest = () => {
               getIpFromInterfaceObject(sysInfo?.network?.eth1) ||
               getIpFromInterfaceObject(sysInfo?.eth1);
 
-          // Check multiple possible locations for VPN interfaces (tap0, tun0, vpn_vpn)
           if (!vpnOpenVpnIp) {
             vpnOpenVpnIp =
               getIpFromInterfaceObject(sysInfo?.network?.tap0) ||
@@ -185,7 +262,6 @@ const TRACERTTest = () => {
               getIpFromInterfaceObject(details?.vpn_vpn);
           }
 
-          // Detect VLAN IP from /etc/network/interfaces.d/vlan.cfg (address line)
           try {
             const vlanIdCmd = `grep -E '^auto[[:space:]]+eth0\\.[0-9]+' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}' | cut -d'.' -f2`;
             const vlanIdRes = await postLinuxCmd({ cmd: vlanIdCmd });
@@ -206,7 +282,6 @@ const TRACERTTest = () => {
             );
           }
 
-          // Debug log what we found
           console.log(
             "Detected IPs - LAN1:",
             lan1Ip,
@@ -218,7 +293,6 @@ const TRACERTTest = () => {
             vpnSoftEtherIp,
           );
 
-          // Build source options array
           const options = [];
           if (lan1Ip) {
             options.push({ value: lan1Ip, label: `LAN 1:${lan1Ip}` });
@@ -245,7 +319,6 @@ const TRACERTTest = () => {
             });
           }
 
-          // Fallback to default if no IPs found
           if (options.length === 0) {
             options.push({ value: "lan1", label: "LAN 1:192.168.1.101" });
           }
@@ -253,13 +326,11 @@ const TRACERTTest = () => {
           setSourceOptions(options);
           setSourceIp(options[0].value);
         } else {
-          // Fallback to default options
           setSourceOptions(TRACERT_SOURCE_OPTIONS);
           setSourceIp(TRACERT_SOURCE_OPTIONS[0].value);
         }
       } catch (error) {
         console.error("Error fetching system info:", error);
-        // Fallback to default options
         setSourceOptions(TRACERT_SOURCE_OPTIONS);
         setSourceIp(TRACERT_SOURCE_OPTIONS[0].value);
       } finally {
@@ -290,9 +361,7 @@ const TRACERTTest = () => {
     if (!valid) return;
     setLoading(true);
     if (!maxJumps) {
-      // Interval mode: run every 2 seconds
       if (!intervalRef.current) {
-        // Call once immediately and check if it succeeds before starting interval
         const success = await handleTracert();
         if (success) {
           intervalRef.current = setInterval(() => {
@@ -303,7 +372,6 @@ const TRACERTTest = () => {
         }
       }
     } else {
-      // Single run mode
       await handleTracert();
       setLoading(false);
     }
@@ -315,7 +383,7 @@ const TRACERTTest = () => {
       intervalRef.current = null;
     }
     setLoading(false);
-    setAlertMsg("Tracert stopped!");
+    showMessage("info", "Tracert stopped!");
   };
 
   const stopTracertOnError = () => {
@@ -324,11 +392,9 @@ const TRACERTTest = () => {
       intervalRef.current = null;
     }
     setLoading(false);
-    // Don't show "Tracert stopped!" message for errors
   };
 
   const handleTracert = async () => {
-    setError(false);
     try {
       const Apiresponse = await postTracerttest({
         destIp,
@@ -337,13 +403,10 @@ const TRACERTTest = () => {
       });
       console.log("Tracert API Response:", Apiresponse);
 
-      // Check if response is successful
       if (Apiresponse.response) {
         if (maxJumps) {
-          // Single run mode: replace info
           setInfo(Apiresponse.responseData);
         } else {
-          // Interval mode: append result
           setInfo((prev) =>
             prev
               ? prev + "\n" + Apiresponse.responseData
@@ -351,183 +414,296 @@ const TRACERTTest = () => {
           );
           console.log("Tracert result:", Apiresponse.responseData);
         }
-        return true; // Success
+        return true;
       } else {
         setInfo((prev) =>
           prev
             ? prev + "\n" + (Apiresponse.message || "No response data")
             : Apiresponse.message || "No response data",
         );
-        alert(Apiresponse.message || "Server error occurred");
+        showMessage("error", Apiresponse.message || "Server error occurred");
         stopTracertOnError();
-        return false; // Failed
+        return false;
       }
     } catch (err) {
       console.error("Tracert API Error:", err);
-      alert("Server is not connected. Please check your connection.");
-      setError(true);
+      showMessage(
+        "error",
+        "Server is not connected. Please check your connection.",
+      );
       stopTracertOnError();
-      return false; // Failed
+      return false;
     }
   };
 
   return (
     <div
-      className="w-full min-h-[calc(100vh-200px)] bg-gray-50 flex flex-col items-center py-0 px-2 md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      <div className="w-full max-w-4xl">
-        {blueBar(TRACERT_TITLE)}
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* ── Breadcrumb ── */}
         <div
-          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
         >
-          <div className="w-full flex flex-col overflow-hidden">
-            <div className="p-6 flex flex-col items-center">
-              {/* Form Row */}
-              <form className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-center mb-6">
-                <label className="text-[14px] text-gray-700 text-left">
-                  {TRACERT_LABELS.sourceIp}
-                </label>
-                <select
-                  className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
-                  value={sourceIp}
-                  onChange={(e) => {
-                    setSourceIp(e.target.value);
-                    setInfo("");
-                    setSourceIpError("");
-                  }}
-                  disabled={loadingSource}
-                >
-                  {loadingSource ? (
-                    <option value="">Loading...</option>
-                  ) : (
-                    sourceOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))
-                  )}
-                </select>
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {TRACERT_TITLE}
+          </span>
+        </div>
 
-                <label className="text-[14px] text-gray-700 text-left">
-                  {TRACERT_LABELS.destIp}
-                </label>
-                <div className="flex flex-col w-full">
-                  <input
-                    type="text"
-                    className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
-                    value={destIp}
-                    onChange={(e) => {
-                      setDestIp(e.target.value);
-                      setInfo("");
-                      setDestIpError("");
+        {/* ── Main Card ── */}
+        <div
+          style={{
+            background: C.cardBg,
+            borderRadius: 20,
+            overflow: "hidden",
+            boxShadow: C.cardShadow,
+            marginBottom: 24,
+            border: `1px solid ${C.cardBorder}`,
+          }}
+        >
+          {/* Card Header */}
+          <div
+            style={{
+              minHeight: 44,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
+              alignItems: "center",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.divider}`,
+              background: C.cardBg,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: C.strongText,
+                letterSpacing: "0.02em",
+              }}
+            >
+              Tracert Test
+            </span>
+          </div>
+
+          {/* Card Body */}
+          <div style={{ padding: "24px 32px" }}>
+            <div className="flex flex-col gap-6">
+              {/* Form Rows */}
+              {/* Form Rows */}
+              <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 460, margin: "0 auto" }}>
+                
+                {/* Source IP */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
+                  <label
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 160,
+                      flexShrink: 0,
                     }}
-                  />
-                  <div className="min-h-[20px]">
+                  >
+                    {TRACERT_LABELS.sourceIp}
+                  </label>
+                  <div style={{ width: 280 }}>
+                    <select
+                      style={inputStyle}
+                      value={sourceIp}
+                      onChange={(e) => {
+                        setSourceIp(e.target.value);
+                        setInfo("");
+                        setSourceIpError("");
+                      }}
+                      disabled={loadingSource}
+                      {...inputInteraction}
+                    >
+                      {loadingSource ? (
+                        <option value="">Loading...</option>
+                      ) : (
+                        sourceOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    {sourceIpError && (
+                      <div style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}>
+                        {sourceIpError}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Dest IP */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
+                  <label
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 160,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {TRACERT_LABELS.destIp}
+                  </label>
+                  <div style={{ width: 280 }}>
+                    <input
+                      type="text"
+                      style={{
+                        ...inputStyle,
+                        borderColor: destIpError ? C.errorRed : C.cardBorder
+                      }}
+                      value={destIp}
+                      onChange={(e) => {
+                        setDestIp(e.target.value);
+                        setInfo("");
+                        setDestIpError("");
+                      }}
+                      {...inputInteraction}
+                    />
                     {destIpError && (
-                      <span className="text-red-600 text-sm">
+                      <div style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}>
                         {destIpError}
-                      </span>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                <label className="text-[14px] text-gray-700 text-left">
-                  {TRACERT_LABELS.maxJumps}
-                </label>
-                <div className="flex flex-col w-full">
-                  <input
-                    type="number"
-                    className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
-                    value={maxJumps}
-                    onChange={(e) => {
-                      setMaxJumps(e.target.value);
-                      setInfo("");
-                      setJumpsError("");
+                {/* Max Jumps */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
+                  <label
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 160,
+                      flexShrink: 0,
                     }}
-                  />
-                  <div className="min-h-[20px]">
+                  >
+                    {TRACERT_LABELS.maxJumps}
+                  </label>
+                  <div style={{ width: 280 }}>
+                    <input
+                      type="number"
+                      style={{
+                        ...inputStyle,
+                        borderColor: jumpsError ? C.errorRed : C.cardBorder
+                      }}
+                      value={maxJumps}
+                      onChange={(e) => {
+                        setMaxJumps(e.target.value);
+                        setInfo("");
+                        setJumpsError("");
+                      }}
+                      {...inputInteraction}
+                    />
                     {jumpsError && (
-                      <span className="text-red-600 text-sm">{jumpsError}</span>
+                      <div style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}>
+                        {jumpsError}
+                      </div>
                     )}
                   </div>
                 </div>
-              </form>
+              </div>
+
               {/* Buttons Row */}
-              <div className="w-full flex flex-row justify-center gap-8 mb-6">
-                <Button
-                  variant="contained"
-                  sx={buttonSx}
+              <div className="flex flex-wrap gap-4 mt-2 mb-2 justify-start sm:justify-center">
+                <Btn
+                  variant="primary"
                   onClick={startTracert}
                   disabled={loadind}
+                  style={{ minWidth: 100 }}
                 >
                   {loadind
                     ? TRACERT_BUTTONS.loading || "Loading..."
                     : TRACERT_BUTTONS.start || "Start"}
-                </Button>
-                <Button
-                  variant="contained"
-                  sx={buttonSx}
+                </Btn>
+                <Btn
+                  variant="cancel"
                   onClick={stopTracertInterval}
+                  style={{ minWidth: 100 }}
                 >
                   {TRACERT_BUTTONS.end}
-                </Button>
+                </Btn>
               </div>
-              {/* Info Section */}
-              <div className="w-full flex flex-col md:flex-row md:items-start gap-4">
-                <label className="text-[14px] text-gray-700 min-w-[80px] md:pt-2">
+
+              {/* Logs Row */}
+              <div className="flex flex-col gap-2">
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                  }}
+                >
                   {TRACERT_LABELS.info}
                 </label>
                 <textarea
-                  className="w-full min-h-[180px] max-h-[320px] border border-gray-400 rounded bg-white text-[12px] p-3 font-mono resize-y"
+                  style={{
+                    ...inputStyle,
+                    height: "auto",
+                    minHeight: 180,
+                    maxHeight: 320,
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                    resize: "vertical",
+                    whiteSpace: "pre-wrap",
+                    backgroundColor: "#f8fafc",
+                    borderColor: C.cardBorder,
+                  }}
                   value={info}
                   onChange={(e) => setInfo(e.target.value)}
-                  placeholder=""
-                  style={{ fontSize: "12px" }}
+                  readOnly
+                  onFocus={(e) => (e.target.style.borderColor = C.accent)}
+                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
+                  onMouseEnter={(e) => {
+                    if (document.activeElement !== e.target)
+                      e.target.style.borderColor = "#94a3b8";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (document.activeElement !== e.target)
+                      e.target.style.borderColor = C.cardBorder;
+                  }}
                 />
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* Bottom Alert Message (add fade-in animation to your CSS) */}
-      {alertMsg && (
-        <div className="fixed bottom-35 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="flex items-center px-6 py-3 rounded shadow-lg text-white text-lg bg-green-500 animate-fade-in-up">
-            <svg
-              className="w-6 h-6 mr-2"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            {alertMsg}
-          </div>
-        </div>
-      )}
-      {/*
-      Add this to your global CSS (e.g., index.css):
-      @keyframes fade-in-up {
-        from {
-          opacity: 0;
-          transform: translateY(40px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .animate-fade-in-up {
-        animation: fade-in-up 0.4s cubic-bezier(0.4,0,0.2,1);
-      }
-      */}
     </div>
   );
 };
