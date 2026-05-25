@@ -522,21 +522,36 @@ const ExtensionGroupsPage = () => {
                 )}
               </Btn> */}
               <Btn
-                onClick={handleDelete}
-                disabled={
-                  loading.delete || loading.fetch || selectedIds.length === 0
-                }
-                variant="danger"
-              >
-                🗑 Delete
-              </Btn>
-              <Btn
-                onClick={handleOpenAddModal}
-                disabled={loading.fetch}
-                variant="accent"
-              >
-                + Add New
-              </Btn>
+  onClick={handleDelete}
+  disabled={
+    loading.delete ||
+    loading.fetch ||
+    selectedIds.length === 0
+  }
+  variant="danger"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  🗑 Delete
+</Btn>
+            <Btn
+  onClick={handleOpenAddModal}
+  disabled={loading.fetch}
+  variant="accent"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  + Add New
+</Btn>
             </div>
           </div>
 
@@ -926,28 +941,44 @@ const ExtensionGroupsPage = () => {
             gap: 12,
           }}
         >
-          <Btn
-            onClick={handleSaveGroup}
-            disabled={loading.save}
-            variant="default"
-            style={{ padding: "8px 24px", fontSize: 13 }}
-          >
-            {loading.save ? (
-              <CircularProgress
-                size={14}
-                style={{ color: "#fff", marginRight: 8 }}
-              />
-            ) : null}
-            {loading.save ? "Saving..." : "Save Group"}
-          </Btn>
-          <Btn
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            variant="outline"
-            style={{ padding: "8px 24px", fontSize: 13 }}
-          >
-            Cancel
-          </Btn>
+         <Btn
+  onClick={handleSaveGroup}
+  disabled={loading.save}
+  variant="default"
+  style={{
+    padding: "8px 24px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  {loading.save ? (
+    <CircularProgress
+      size={14}
+      style={{ color: "#fff", marginRight: 8 }}
+    />
+  ) : null}
+
+  {loading.save ? "Saving..." : "Save Group"}
+</Btn>
+       <Btn
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="outline"
+  style={{
+    padding: "8px 24px",
+    fontSize: 13,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Cancel
+</Btn>
         </DialogActions>
       </Dialog>
     </div>

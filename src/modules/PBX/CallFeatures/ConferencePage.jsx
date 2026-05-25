@@ -33,17 +33,22 @@ const YES_NO_OPTIONS = ["Yes", "No"];
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
+
 
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
@@ -55,9 +60,9 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e2d42",
+      background: "#1e293b",
       color: "#fff",
-      border: "1px solid #162233",
+      border: "1px solid #9ca3af",
     },
     outline: {
       background: C.cardBg,
@@ -112,17 +117,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -777,11 +782,11 @@ const ConferencePage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
+            background: "#ffffff",
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            borderRadius: 22,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
@@ -790,23 +795,30 @@ const ConferencePage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              padding: "14px 18px",
+              borderBottom: "1px solid #e2e8f0",
+              background: "#ffffff",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 10,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <span
                 style={{
                   background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
+                  border: "1px solid #e2e8f0",
+                  color: C.labelText,
                   fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
                 }}
               >
                 Page {page} · {filteredRows.length} records
@@ -817,10 +829,10 @@ const ConferencePage = () => {
                     background: "#e0f2fe",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
@@ -921,6 +933,13 @@ const ConferencePage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 🗑 Delete
               </Btn>
@@ -928,6 +947,13 @@ const ConferencePage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="accent"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 + Add New
               </Btn>
@@ -973,13 +999,11 @@ const ConferencePage = () => {
                       />
                     </TH>
                     <TH style={{ width: 40 }}>#</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
-                      Room Name
-                    </TH>
+                    <TH>Room Name</TH>
                     <TH>Conference Number</TH>
                     <TH>Enabled</TH>
                     <TH>Max Members</TH>
-                    <TH style={{ width: 60 }}>Modify</TH>
+                    <TH style={{ width: 70 }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1003,8 +1027,8 @@ const ConferencePage = () => {
                     pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
-                      const rowBgColor = isSelected
-                        ? "#f0f9ff"
+                      const rowBg = isSelected
+                        ? "#e0f2fe"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -1013,24 +1037,24 @@ const ConferencePage = () => {
                         <tr
                           key={row.id || realIdx}
                           style={{
-                            background: rowBgColor,
-                            borderBottom: "0.5px solid #9ca3af",
-                            transition: "background 0.1s ease",
+                            background: rowBg,
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f0f9ff";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = rowBgColor;
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
+                              padding: "10px 0",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <Checkbox
@@ -1047,21 +1071,22 @@ const ConferencePage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 4px",
+                              padding: "10px 6px",
                               fontSize: 11,
                               color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              padding: "7px 16px",
-                              fontSize: 12,
+                              padding: "10px 14px",
+                              textAlign: "center",
+                              fontSize: 13,
                               fontWeight: 600,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.roomName}
@@ -1069,11 +1094,11 @@ const ConferencePage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
+                              padding: "10px 14px",
+                              fontSize: 13,
                               fontFamily: "monospace",
                               color: C.labelText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.conferenceNumber}
@@ -1081,20 +1106,24 @@ const ConferencePage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 8px",
-                              borderRight: "0.5px solid #edf2f7",
+                              padding: "10px 14px",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <span
                               style={{
-                                background:
-                                  row.enabled === "Yes" ? "#dcfce7" : "#fef2f2",
                                 color:
-                                  row.enabled === "Yes" ? "#15803d" : "#dc2626",
-                                padding: "2px 8px",
-                                borderRadius: 10,
-                                fontSize: 10,
-                                fontWeight: 600,
+                                  row.enabled === "Yes" ? "#166534" : "#475569",
+                                padding: "4px 11px",
+                                borderRadius: 999,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                letterSpacing: "0.01em",
+                                whiteSpace: "nowrap",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                minWidth: 72,
                               }}
                             >
                               {row.enabled}
@@ -1103,16 +1132,16 @@ const ConferencePage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
+                              padding: "10px 14px",
+                              fontSize: 13,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.maxMembers}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "4px 8px" }}
+                            style={{ textAlign: "center", padding: "7px 8px" }}
                           >
                             <Btn
                               onClick={() => handleOpenEditModal(row)}
@@ -1142,16 +1171,17 @@ const ConferencePage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
               </span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <Btn
                   onClick={handlePrev}
                   disabled={loading.list || page <= 1}
@@ -1679,7 +1709,15 @@ const ConferencePage = () => {
             onClick={handleSave}
             disabled={loading.save}
             variant="default"
-            style={{ padding: "8px 24px", fontSize: 13 }}
+           style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
           >
             {loading.save ? (
               <CircularProgress
@@ -1697,7 +1735,13 @@ const ConferencePage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="outline"
-            style={{ padding: "8px 24px", fontSize: 13 }}
+         style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
           >
             Cancel
           </Btn>

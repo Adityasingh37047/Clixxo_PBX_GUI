@@ -36,16 +36,20 @@ function buildCallerId(name, number) {
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -181,7 +185,7 @@ const OriginateCallPage = () => {
         >
           <div style={{ fontSize: 11, color: C.mutedText }}>
             PBX &rsaquo; Call Features &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+            <span style={{ color: "#01060c", fontWeight: 600 }}>
               Originate Call
             </span>
           </div>
@@ -202,7 +206,7 @@ const OriginateCallPage = () => {
             style={{
               padding: "12px 16px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              background: "#ffffff",
             }}
           >
             <h2
@@ -210,7 +214,7 @@ const OriginateCallPage = () => {
                 margin: 0,
                 fontSize: 14,
                 fontWeight: 700,
-                color: C.accent,
+                color: "#475569",
               }}
             >
               AMI Originate
@@ -398,8 +402,8 @@ const OriginateCallPage = () => {
                 {/* Conditional Fields based on Mode */}
                 <div
                   style={{
-                    background: "#f8fafc",
-                    border: `1px solid ${C.cardBorder}`,
+                  
+                  
                     borderRadius: 6,
                     padding: 12,
                     display: "flex",
@@ -636,34 +640,46 @@ const OriginateCallPage = () => {
           <div
             style={{
               padding: "16px 24px",
-              background: "#f8fafc",
+              background: "#f",
               borderTop: `1px solid ${C.cardBorder}`,
               display: "flex",
               justifyContent: "center",
             }}
           >
-            <Button
-              variant="contained"
-              disabled={loading}
-              onClick={handleOriginate}
-              startIcon={
-                loading && <CircularProgress size={16} color="inherit" />
-              }
-              sx={{
-                background: "#1e2d42",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                minWidth: 160,
-                padding: "8px 24px",
-                borderRadius: 1.5,
-                "&:hover": { background: "#0f172a" },
-                "&:disabled": { background: "#cbd5e1", color: "#64748b" },
-              }}
-            >
-              {loading ? "Sending…" : "Originate Call"}
-            </Button>
+           <Button
+  variant="contained"
+  disabled={loading}
+  onClick={handleOriginate}
+  startIcon={
+    loading && <CircularProgress size={16} color="inherit" />
+  }
+  sx={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    fontWeight: 600,
+    textTransform: "none",
+    minWidth: 160,
+    borderRadius: 1.5,
+
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
+    },
+
+    "&:disabled": {
+      background: "#cbd5e1",
+      color: "#64748b",
+      border: "1px solid #cbd5e1",
+    },
+  }}
+>
+  {loading ? "Sending…" : "Originate Call"}
+</Button>
           </div>
         </div>
       </div>
