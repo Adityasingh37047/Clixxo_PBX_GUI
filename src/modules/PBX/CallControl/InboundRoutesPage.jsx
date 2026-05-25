@@ -145,6 +145,18 @@ const C = {
   errorRed: "#dc2626",
 };
 
+const TABLE_C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  cardBorderSoft: "#f1f5f9",
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#2563eb",
+  errorRed: "#ef4444",
+};
+
 const Btn = ({
   children,
   onClick,
@@ -190,6 +202,67 @@ const Btn = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TableBtn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: TABLE_C.cardBg,
+      color: TABLE_C.labelText,
+      border: `0.5px solid ${TABLE_C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: TABLE_C.errorRed,
+      border: "0.5px solid #fecaca",
+    },
+    accent: {
+      background: TABLE_C.cardBg,
+      color: TABLE_C.accent,
+      border: `0.5px solid ${TABLE_C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
         gap: 5,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",

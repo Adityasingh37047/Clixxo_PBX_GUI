@@ -327,6 +327,41 @@ const ActiveCallsPage = () => {
       fontFamily: "Inter, sans-serif",
     }}
   >
+    {/* Header */}
+    <div
+      style={{
+        marginBottom: 24,
+      }}
+    >
+      {/* Breadcrumb */}
+      <div
+        style={{
+          fontSize: 12,
+          color: C.mutedText,
+          marginBottom: 14,
+          fontWeight: 400,
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <span>Status</span>
+        <span>&gt;</span>
+
+        <span>PBX Status</span>
+        <span>&gt;</span>
+
+        <span
+          style={{
+            color: C.valueText,
+            fontWeight: 600,
+          }}
+        >
+          Active Calls
+        </span>
+      </div>
+    </div>
+
     {/* Main Container — matches PbxMonitor main white shell */}
     <div
       className="w-full max-w-full overflow-hidden"
@@ -340,34 +375,6 @@ const ActiveCallsPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between px-6 pt-5 pb-4">
         <div>
-          {/* Breadcrumb */}
-          <div
-            style={{
-              fontSize: 12,
-              color: C.mutedText,
-              marginBottom: 14,
-              fontWeight: 400,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            <span>Status</span>
-            <span>&gt;</span>
-
-            <span>PBX Status</span>
-            <span>&gt;</span>
-
-            <span
-              style={{
-                color: C.valueText,
-                fontWeight: 600,
-              }}
-            >
-              Active Calls
-            </span>
-          </div>
-
           <h1
             className="text-2xl font-bold m-0"
             style={{ color: C.valueText }}

@@ -100,16 +100,21 @@ function normalizeRoute(item) {
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
-  mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
-};
+  cardBorder: "#e2e8f0",
 
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
+};
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -178,17 +183,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -501,7 +506,7 @@ const CCRoutePage = () => {
       style={{
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 16,
+        padding: 24,
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
@@ -542,11 +547,11 @@ const CCRoutePage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
+            background: "#ffffff",
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            borderRadius: 22,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
@@ -555,23 +560,30 @@ const CCRoutePage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              padding: "14px 18px",
+              borderBottom: "1px solid #e2e8f0",
+              background: "#ffffff",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 10,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <span
                 style={{
                   background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
+                  border: "1px solid #e2e8f0",
+                  color: C.labelText,
                   fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
                 }}
               >
                 Page {page} · {rows.length} records
@@ -582,10 +594,10 @@ const CCRoutePage = () => {
                     background: "#e0f2fe",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
@@ -633,6 +645,7 @@ const CCRoutePage = () => {
                 style={{
                   width: "100%",
                   borderCollapse: "collapse",
+                  tableLayout: "auto",
                   minWidth: 900,
                 }}
               >
@@ -682,7 +695,7 @@ const CCRoutePage = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBg = isSelected
-                        ? "#f0f9ff"
+                        ? "#e0f2fe"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -691,14 +704,23 @@ const CCRoutePage = () => {
                           key={row.id}
                           style={{
                             background: rowBg,
-                            borderBottom: "0.5px solid #9ca3af",
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
+                              padding: "10px 0",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <Checkbox
@@ -715,56 +737,69 @@ const CCRoutePage = () => {
                           <td
                             style={{
                               textAlign: "center",
+                              padding: "10px 6px",
                               fontSize: 11,
                               color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
+                              padding: "10px 14px",
                               textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
+                              fontSize: 13,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {getCcIntervalLabel(row.ccIntervalTime)}
                           </td>
                           <td
                             style={{
+                              padding: "10px 14px",
                               textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
+                              fontSize: 13,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.through}
                           </td>
                           <td
                             style={{
+                              padding: "10px 14px",
                               textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
+                              fontSize: 13,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.recordKeepTime}
                           </td>
                           <td
                             style={{
+                              padding: "10px 14px",
                               textAlign: "center",
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <span
                               style={{
-                                background:
-                                  row.enabled === "Yes" ? "#dcfce7" : "#f1f5f9",
+                          
                                 color:
-                                  row.enabled === "Yes" ? "#15803d" : "#475569",
-                                padding: "2px 8px",
-                                borderRadius: 10,
-                                fontSize: 10,
-                                fontWeight: 600,
+                                  row.enabled === "Yes" ? "#166534" : "#475569",
+                                padding: "4px 11px",
+                                borderRadius: 999,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                letterSpacing: "0.01em",
+                                whiteSpace: "nowrap",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                minWidth: 72,
                               }}
                             >
                               {row.enabled}
@@ -772,9 +807,10 @@ const CCRoutePage = () => {
                           </td>
                           <td
                             style={{
-                              padding: "7px 16px",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
+                              padding: "10px 14px",
+                              fontSize: 13,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
                               wordBreak: "break-all",
                             }}
                           >
@@ -787,7 +823,7 @@ const CCRoutePage = () => {
                             )}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "4px 8px" }}
+                            style={{ textAlign: "center", padding: "7px 8px" }}
                           >
                             <Btn
                               onClick={() => handleOpenEditModal(row)}
@@ -813,15 +849,22 @@ const CCRoutePage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
                 gap: 8,
               }}
             >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} records on page {page}
-              </span>
+             <span
+  style={{
+    fontSize: 11,
+    color: C.mutedText,
+  }}
+>
+  Showing {rows.length} record
+  {rows.length !== 1 ? "s" : ""} on
+  page {page}
+</span>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <Btn
                   onClick={() => setPage(1)}
@@ -848,7 +891,7 @@ const CCRoutePage = () => {
                     border: `0.5px solid ${C.cardBorder}`,
                   }}
                 >
-                  Page {page} of {totalPages}
+                  Page {page}
                 </span>
                 <Btn
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
