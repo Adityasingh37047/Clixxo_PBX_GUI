@@ -8,49 +8,131 @@ import {
   fetchSaveDhcpSettings,
   fetchResetDhcpSettings,
 } from "../api/apiService";
-import {
-  Checkbox,
-  TextField,
-  Button,
-  Alert,
-  CircularProgress,
-} from "@mui/material";
+import { Alert } from "@mui/material";
 
-const grayButtonSx = {
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#444",
-  fontWeight: 600,
-  fontSize: 15,
-  borderRadius: 1.5,
-  minWidth: 110,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-  textTransform: "none",
-  px: 2.25,
-  py: 1,
-  padding: "4px 18px",
-  border: "1px solid #bbb",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)",
-    color: "#444",
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const inputStyle = {
+  width: "100%",
+  fontSize: 13,
+  padding: "6px 10px",
+  borderRadius: 10,
+  border: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  color: C.valueText,
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
   },
 };
-const blueButtonSx = {
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: "0 2px 6px #0002",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  border: "1px solid #0e8fd6",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
-    color: "#fff",
-  },
+
+const disabledInputStyle = {
+  ...inputStyle,
+  background: "#f1f5f9",
+  color: "#94a3b8",
+  cursor: "not-allowed",
+  borderColor: "#e2e8f0",
 };
 
 const DhcpServerSettings = () => {
@@ -59,10 +141,19 @@ const DhcpServerSettings = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // Fetch DHCP settings on component mount
   useEffect(() => {
     fetchDhcpData();
   }, []);
+
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        setError(null);
+        setSuccess(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, success]);
 
   const fetchDhcpData = async () => {
     try {
@@ -71,7 +162,6 @@ const DhcpServerSettings = () => {
 
       const response = await fetchDhcpSettings();
 
-      // Map the server data to our form structure
       if (
         response &&
         response.success &&
@@ -99,8 +189,6 @@ const DhcpServerSettings = () => {
       }
     } catch (error) {
       console.error("Error fetching DHCP settings:", error);
-
-      // Handle different types of errors
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
         setError(
           "Request timeout. Please check your connection and try again.",
@@ -145,16 +233,13 @@ const DhcpServerSettings = () => {
 
       if (response && response.success) {
         setSuccess("DHCP settings reset successfully!");
-        // Optionally refresh the data after successful reset
         await fetchDhcpData();
       } else {
         throw new Error(response?.message || "Failed to reset DHCP settings");
       }
     } catch (error) {
       console.error("Error resetting DHCP settings:", error);
-
       let errorMessage = "Failed to reset DHCP settings.";
-
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
         errorMessage =
           "Reset operation timed out. Please check your connection and try again.";
@@ -170,7 +255,6 @@ const DhcpServerSettings = () => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -184,21 +268,16 @@ const DhcpServerSettings = () => {
       setSuccess(null);
       setLoading(true);
 
-      // Send the form data to the server
       const response = await fetchSaveDhcpSettings(form);
 
       if (response && response.success) {
         setSuccess("DHCP settings saved successfully!");
-        // Optionally refresh the data after successful save
-        // await fetchDhcpData();
       } else {
         throw new Error(response?.message || "Failed to save DHCP settings");
       }
     } catch (error) {
       console.error("Error saving DHCP settings:", error);
-
       let errorMessage = "Failed to save DHCP settings.";
-
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
         errorMessage =
           "Save operation timed out. Please check your connection and try again.";
@@ -217,7 +296,6 @@ const DhcpServerSettings = () => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -226,227 +304,237 @@ const DhcpServerSettings = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      {/* Error Display */}
-      {error && (
-        <Alert
-          severity="error"
-          onClose={() => setError(null)}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {error}
-        </Alert>
-      )}
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError(null)}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {error}
+          </Alert>
+        )}
 
-      {/* Success Display */}
-      {success && (
-        <Alert
-          severity="success"
-          onClose={() => setSuccess(null)}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {success}
-        </Alert>
-      )}
+        {success && (
+          <Alert
+            severity="success"
+            onClose={() => setSuccess(null)}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {success}
+          </Alert>
+        )}
 
-      <div className="w-full max-w-5xl mx-auto md:p-2">
-        {/* Blue header bar */}
+        {/* ── Breadcrumb ── */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
           }}
         >
-          DHCP Server
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            DHCP Server
+          </span>
         </div>
 
+        {/* ── Main Card ── */}
         <div
-          className="rounded-b-lg w-full max-w-5xl mx-auto border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
+          style={{
+            background: C.cardBg,
+            borderRadius: 20,
+            overflow: "hidden",
+            boxShadow: C.cardShadow,
+            marginBottom: 24,
+            border: `1px solid ${C.cardBorder}`,
+          }}
         >
-          <div className="w-full flex flex-col overflow-hidden">
-            <div className="p-6">
-              <form onSubmit={handleSave} className="space-y-10">
-                {DHCP_SERVER_SETTINGS_FIELDS.map((lanGroup, lanIndex) => (
-                  <div key={lanGroup.lan} className="space-y-4">
-                    <h3 className="text-lg text-gray-600 font-medium mb-4">
-                      {lanGroup.lan}
-                    </h3>
+          {/* Card Header */}
+          <div
+            style={{
+              minHeight: 44,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
+              alignItems: "center",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.divider}`,
+              background: C.cardBg,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: C.strongText,
+                letterSpacing: "0.02em",
+              }}
+            >
+              DHCP Server
+            </span>
+          </div>
 
-                    {/* DHCP Server Enable Row */}
+          {/* Card Body */}
+          <div style={{ padding: "24px 32px" }}>
+            <form onSubmit={handleSave} className="flex flex-col gap-10">
+              {DHCP_SERVER_SETTINGS_FIELDS.map((lanGroup) => {
+                const isEnabled = form[lanGroup.fields[0].name];
+                return (
+                  <div key={lanGroup.lan} className="flex flex-col gap-4">
+                    {/* Section Label */}
                     <div
-                      className="flex items-center justify-center"
-                      style={{ minHeight: 32 }}
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: C.strongText,
+                        marginBottom: 8,
+                        paddingBottom: 8,
+                        borderBottom: `1px solid ${C.divider}`,
+                      }}
                     >
-                      <div
-                        className="flex items-center"
-                        style={{ width: "460px" }}
+                      {lanGroup.lan}
+                    </div>
+
+                    <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 640, margin: "0 auto" }}>
+                      {/* Enable DHCP Checkbox */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
+                          <label
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: C.labelText,
+                              width: "100%",
+                              maxWidth: 220,
+                              flexShrink: 0,
+                            }}
                       >
-                        <label
-                          className="text-[14px] text-gray-600 font-medium whitespace-nowrap text-left"
-                          style={{ width: 160, marginRight: 40 }}
-                        >
-                          DHCP Server:
-                        </label>
-                        <div className="flex items-center">
+                        DHCP Server:
+                      </label>
+                      <div className="flex flex-col w-full max-w-[400px]">
+                        <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             name={lanGroup.fields[0].name}
-                            checked={form[lanGroup.fields[0].name] || false}
+                            checked={isEnabled || false}
                             onChange={handleChange}
-                            className="w-4 h-4 mr-2 accent-blue-600"
+                            style={{
+                              width: 16,
+                              height: 16,
+                              cursor: "pointer",
+                              accentColor: C.primary,
+                            }}
                           />
-                          <span className="text-[14px] text-gray-600 ml-1">
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: C.valueText,
+                            }}
+                          >
                             Enable
                           </span>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Other fields */}
-                    {lanGroup.fields.slice(1).map((field) => (
-                      <div
-                        key={field.name}
-                        className="flex items-center justify-center"
-                        style={{ minHeight: 32 }}
-                      >
-                        <div
-                          className="flex items-center"
-                          style={{ width: "460px" }}
-                        >
-                          <label
-                            className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                            style={{ width: 160, marginRight: 40 }}
-                          >
-                            {field.label}:
-                          </label>
-                          <div style={{ width: 300 }}>
-                            <TextField
-                              name={field.name}
-                              value={form[field.name] || ""}
-                              onChange={handleChange}
-                              variant="outlined"
-                              size="small"
-                              fullWidth
-                              disabled={!form[lanGroup.fields[0].name]} // Disable if DHCP not enabled
-                              sx={{
-                                "& .MuiOutlinedInput-root": {
-                                  backgroundColor: "#fff",
-                                  height: "32px",
-                                  "& fieldset": {
-                                    borderColor: "#bbb",
-                                    borderWidth: "1px",
-                                  },
-                                  "&:hover fieldset": {
-                                    borderColor: "#999",
-                                  },
-                                  "&.Mui-focused fieldset": {
-                                    borderColor: "#666",
-                                  },
-                                  "&.Mui-disabled": {
-                                    backgroundColor: "#f9fafb",
-                                    "& fieldset": {
-                                      borderColor: "#e5e7eb",
-                                    },
-                                  },
-                                },
-                                "& .MuiInputBase-input": {
-                                  fontSize: "14px",
-                                  padding: "6px 8px",
-                                  height: "20px",
-                                },
-                              }}
-                            />
-                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ))}
-              </form>
-            </div>
-          </div>
-        </div>
 
-        {/* Action Buttons - Outside the border */}
-        <div className="flex justify-center gap-4 pt-6">
-          <Button
-            type="submit"
-            variant="contained"
-            onClick={handleSave}
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px #3E5475",
-              textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-                color: "#fff",
-              },
-              "&:disabled": {
-                background: "#f5f5f5",
-                color: "#666",
-              },
-            }}
-            disabled={loading}
-          >
-            {loading ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            type="button"
-            variant="contained"
-            onClick={handleReset}
-            sx={{
-              background:
-                "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-              color: "#374151",
-              fontWeight: 600,
-              fontSize: "16px",
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-                color: "#374151",
-              },
-              "&:disabled": {
-                background: "#f5f5f5",
-                color: "#666",
-              },
-            }}
-            disabled={loading}
-          >
-            {loading ? "Resetting..." : "Reset"}
-          </Button>
+                      {/* Other fields */}
+                      {lanGroup.fields.slice(1).map((field) => (
+                        <div
+                          key={field.name}
+                          className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4"
+                        >
+                          <label
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: C.labelText,
+                              width: "100%",
+                              maxWidth: 220,
+                              flexShrink: 0,
+                              opacity: isEnabled ? 1 : 0.6,
+                            }}
+                        >
+                          {field.label}:
+                        </label>
+                        <div className="flex flex-col w-full max-w-[400px]">
+                          <input
+                            type="text"
+                            name={field.name}
+                            value={form[field.name] || ""}
+                            onChange={handleChange}
+                            disabled={!isEnabled}
+                            style={isEnabled ? inputStyle : disabledInputStyle}
+                            onFocus={
+                              isEnabled ? inputInteraction.onFocus : undefined
+                            }
+                            onBlur={
+                              isEnabled ? inputInteraction.onBlur : undefined
+                            }
+                            onMouseEnter={
+                              isEnabled
+                                ? inputInteraction.onMouseEnter
+                                : undefined
+                            }
+                            onMouseLeave={
+                              isEnabled
+                                ? inputInteraction.onMouseLeave
+                                : undefined
+                            }
+                          />
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Action Buttons Row */}
+              <div className="flex flex-wrap gap-4 mt-6 justify-start sm:justify-center">
+                <Btn
+                  variant="primary"
+                  type="submit"
+                  disabled={loading}
+                  style={{ minWidth: 100 }}
+                >
+                  {loading ? "Saving..." : "Save"}
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  type="button"
+                  onClick={handleReset}
+                  disabled={loading}
+                  style={{ minWidth: 100 }}
+                >
+                  {loading ? "Resetting..." : "Reset"}
+                </Btn>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

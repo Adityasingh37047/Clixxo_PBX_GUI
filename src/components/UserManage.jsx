@@ -219,56 +219,7 @@ function collectSectionsAndPages(perms) {
 // ── Toast ────────────────────────────────────────────────────────────────────
 // Removed custom Toast, using MUI Alert instead
 
-// ── Confirm Dialog ───────────────────────────────────────────────────────────
-function ConfirmDialog({ msg, onConfirm, onCancel }) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(15, 23, 42, 0.3)",
-        backdropFilter: "blur(4px)",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        paddingTop: "10vh",
-      }}
-    >
-      <div
-        style={{
-          background: C.cardBg,
-          borderRadius: 12,
-          padding: "24px 28px",
-          width: 360,
-          border: `1px solid ${C.cardBorder}`,
-          boxShadow:
-            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-        }}
-      >
-        <p
-          style={{
-            margin: "0 0 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            color: C.valueText,
-            lineHeight: 1.5,
-          }}
-        >
-          {msg}
-        </p>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <Btn variant="danger" onClick={onConfirm}>
-            Confirm
-          </Btn>
-          <Btn variant="default" onClick={onCancel}>
-            Cancel
-          </Btn>
-        </div>
-      </div>
-    </div>
-  );
-}
+// ConfirmDialog removed
 
 // ── Reset Password Dialog ────────────────────────────────────────────────────
 function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
@@ -507,9 +458,6 @@ export default function UserManage() {
   const [formError, setFormError] = useState("");
   const formErrorTimerRef = useRef(null);
 
-  // Dialogs
-  const [confirmDelete, setConfirmDelete] = useState(null); // user object
-
   // Toast
   const [toast, setToast] = useState({ msg: "", type: "success" });
   const toastTimerRef = useRef(null);
@@ -669,15 +617,15 @@ export default function UserManage() {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (user) => {
+    const isConfirmed = window.confirm(`Are you sure you want to delete user "${user.username}"?`);
+    if (!isConfirmed) return;
     try {
-      await deleteUser(confirmDelete.id);
+      await deleteUser(user.id);
       showToast("User deleted successfully.");
       loadUsers();
     } catch {
       showToast("Failed to delete user.", "error");
-    } finally {
-      setConfirmDelete(null);
     }
   };
 
@@ -1006,7 +954,7 @@ export default function UserManage() {
                                   height: 24,
                                   minWidth: 74,
                                 }}
-                                onClick={() => setConfirmDelete(user)}
+                                onClick={() => handleDelete(user)}
                               >
                                 <DeleteOutlineOutlinedIcon
                                   sx={{ fontSize: 14 }}
@@ -1279,14 +1227,6 @@ export default function UserManage() {
         )}
       </div>
 
-      {/* Dialogs */}
-      {confirmDelete && (
-        <ConfirmDialog
-          msg={`Are you sure you want to delete user "${confirmDelete.username}"?`}
-          onConfirm={handleDelete}
-          onCancel={() => setConfirmDelete(null)}
-        />
-      )}
     </div>
   );
 }

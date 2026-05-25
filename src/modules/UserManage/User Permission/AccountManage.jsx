@@ -303,64 +303,7 @@ const tdStyle = {
 // };
 const ITEMS_PER_PAGE = 20;
 
-// ── Confirm Dialog ───────────────────────────────────────────────────────────
-function ConfirmDialog({ msg, onConfirm, onCancel }) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(15, 23, 42, 0.3)",
-        backdropFilter: "blur(4px)",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        paddingTop: "10vh",
-      }}
-    >
-      <div
-        style={{
-          background: C.cardBg,
-          borderRadius: 12,
-          padding: "24px 28px",
-          width: "min(90vw, 360px)",
-          border: `1px solid ${C.cardBorder}`,
-          boxShadow:
-            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-        }}
-      >
-        <p
-          style={{
-            margin: "0 0 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            color: C.valueText,
-            lineHeight: 1.5,
-          }}
-        >
-          {msg}
-        </p>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <Btn
-            variant="danger"
-            onClick={onConfirm}
-            style={{ height: 32, padding: "0 16px" }}
-          >
-            Confirm
-          </Btn>
-          <Btn
-            variant="default"
-            onClick={onCancel}
-            style={{ height: 32, padding: "0 16px" }}
-          >
-            Cancel
-          </Btn>
-        </div>
-      </div>
-    </div>
-  );
-}
+// ConfirmDialog removed in favor of window.confirm
 
 const AccountManage = () => {
   const { user: currentUser } = useAuth();
@@ -368,7 +311,6 @@ const AccountManage = () => {
   const [selected, setSelected] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(ACCOUNT_MANAGE_INITIAL_FORM);
-  const [confirmDialog, setConfirmDialog] = useState(null);
   const [editIdx, setEditIdx] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -690,16 +632,13 @@ const AccountManage = () => {
       return;
     }
 
-    setConfirmDialog({
-      msg: `Are you sure you want to delete ${selectedUsers.length} selected user(s)?`,
-      onConfirm: async () => {
-        setConfirmDialog(null);
-        const success = await deleteUser({ users: selectedUsers });
-        if (success) {
-          setSelected([]);
-        }
-      },
-    });
+    const isConfirmed = window.confirm(`Are you sure you want to delete ${selectedUsers.length} selected user(s)?`);
+    if (isConfirmed) {
+      const success = await deleteUser({ users: selectedUsers });
+      if (success) {
+        setSelected([]);
+      }
+    }
   };
 
   const handleClearAll = async () => {
@@ -708,13 +647,10 @@ const AccountManage = () => {
       return;
     }
 
-    setConfirmDialog({
-      msg: "Are you sure you want to delete all users? This action cannot be undone. (Current user will not be deleted)",
-      onConfirm: async () => {
-        setConfirmDialog(null);
-        await deleteAllUsers();
-      },
-    });
+    const isConfirmed = window.confirm("Are you sure you want to delete all users? This action cannot be undone. (Current user will not be deleted)");
+    if (isConfirmed) {
+      await deleteAllUsers();
+    }
   };
 
   // Modal logic
@@ -1133,14 +1069,6 @@ const AccountManage = () => {
             </div>
           </div>
         </div>
-      )}
-      {/* Dialogs */}
-      {confirmDialog && (
-        <ConfirmDialog
-          msg={confirmDialog.msg}
-          onConfirm={confirmDialog.onConfirm}
-          onCancel={() => setConfirmDialog(null)}
-        />
       )}
     </div>
   );

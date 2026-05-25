@@ -4,7 +4,7 @@ import {
   IP_ROUTING_TABLE_MODAL_FIELDS,
   IP_ROUTING_TABLE_INITIAL_ROW,
 } from "../../../constants/IPRoutingTableConstants";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import {
   Button,
   Dialog,
@@ -14,8 +14,131 @@ import {
   TextField,
   Select,
   MenuItem,
+  Alert,
+  Checkbox,
 } from "@mui/material";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
+
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  gridHeaderBg: "#f8fafc",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    error: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `1px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "error":
+        return "#b91c1c";
+      case "delete":
+        return "#fecaca";
+      case "edit":
+        return "#bbf7d0";
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {startIcon && (
+        <span style={{ display: "flex", alignItems: "center" }}>
+          {startIcon}
+        </span>
+      )}
+      {children}
+    </button>
+  );
+};
 
 const MIN_ROWS = 10;
 
@@ -39,7 +162,12 @@ const IPRoutingTable = () => {
     scrollHeight: 0,
   });
   const [savingRoute, setSavingRoute] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
 
   // Local storage helpers
   const saveRowsLocal = (data) => {
@@ -189,14 +317,6 @@ ${routeCommands.join("\n")}
 
       // Save to file
       const saveCmd = `cat > ${ROUTES_CONFIG_FILE} << 'EOF'\n${fileContent}EOF\nchmod 644 ${ROUTES_CONFIG_FILE}`;
-      await postLinuxCmd({ cmd: saveCmd });
-
-      // Immediately (re)apply all current routes so kernel table always matches UI table
-      if (routeCommands.length > 0) {
-        const applyCmd = routeCommands.join("\n");
-        await postLinuxCmd({ cmd: applyCmd });
-      }
-
       // Helper: run route commands from config file (used by both if-up.d and systemd loader)
       const runRoutesFromFile = `
 run_routes() {
@@ -216,7 +336,6 @@ ${runRoutesFromFile}
 if [ -f "$ROUTES_FILE" ]; then sleep 2; run_routes "$ROUTES_FILE"; fi
 `;
       const createIfUpCmd = `cat > ${ROUTES_SCRIPT_FILE} << 'IFUPEOF'\n${ifUpScriptContent}IFUPEOF\nchmod 755 ${ROUTES_SCRIPT_FILE}`;
-      await postLinuxCmd({ cmd: createIfUpCmd });
 
       // 2) systemd loader script - runs at boot, waits for LAN/VLAN then VPN (tap0, vpn_vpn)
       const loaderScriptContent = `#!/bin/bash
@@ -234,7 +353,6 @@ run_routes "$ROUTES_FILE"
 exit 0
 `;
       const createLoaderCmd = `cat > ${ROUTES_LOADER_SCRIPT} << 'LOADEREOF'\n${loaderScriptContent}LOADEREOF\nchmod 755 ${ROUTES_LOADER_SCRIPT}`;
-      await postLinuxCmd({ cmd: createLoaderCmd });
 
       // 3) systemd service - runs after network is up so routes apply on every boot
       const systemdContent = `[Unit]
@@ -251,13 +369,18 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 `;
       const createSystemdCmd = `cat > /etc/systemd/system/${ROUTES_SYSTEMD_SERVICE} << 'SVCEOF'\n${systemdContent}SVCEOF`;
-      await postLinuxCmd({ cmd: createSystemdCmd });
-      await postLinuxCmd({
-        cmd:
-          "systemctl daemon-reload 2>/dev/null; systemctl enable " +
-          ROUTES_SYSTEMD_SERVICE +
-          " 2>/dev/null; true",
-      });
+
+      // Combine all commands into a single batch execution to drastically reduce network latency
+      const batchCmds = [
+        saveCmd,
+        ...(routeCommands.length > 0 ? [routeCommands.join("\n")] : []),
+        createIfUpCmd,
+        createLoaderCmd,
+        createSystemdCmd,
+        "systemctl daemon-reload 2>/dev/null; systemctl enable " + ROUTES_SYSTEMD_SERVICE + " 2>/dev/null; true"
+      ].join("\n");
+
+      await postLinuxCmd({ cmd: batchCmds });
 
       console.log(
         "Routes saved to persistent config file:",
@@ -341,7 +464,10 @@ WantedBy=multi-user.target
     const mask = String(form.subnetMask || "").trim();
     const portLabel = String(form.networkPort || "").trim();
     if (!dest || !mask || !portLabel) {
-      alert("Please fill Destination, Subnet Mask and Network Port");
+      showToast(
+        "Please fill Destination, Subnet Mask and Network Port",
+        "error",
+      );
       return;
     }
 
@@ -356,7 +482,7 @@ WantedBy=multi-user.target
     };
     const prefix = maskToPrefix(mask);
     if (prefix == null) {
-      alert("Invalid subnet mask");
+      showToast("Invalid subnet mask", "error");
       return;
     }
 
@@ -417,9 +543,9 @@ WantedBy=multi-user.target
     // 1. The selected interface (can't route to directly connected network through same interface)
     // 2. Any unselected interface (can't route to directly connected network through different interface)
     if (!networkOptions || networkOptions.length === 0) {
-      // If network options aren't loaded yet, try to load them first
-      alert(
+      showToast(
         "Network interfaces are still loading. Please wait a moment and try again.",
+        "error",
       );
       return;
     }
@@ -449,10 +575,9 @@ WantedBy=multi-user.target
     }
 
     if (conflict) {
-      alert(
-        [
-          "Destination network segment and the unselected WAN cannot be in the same segment!",
-        ].join("\n"),
+      showToast(
+        "Destination network segment and the unselected WAN cannot be in the same segment!",
+        "error",
       );
       return;
     }
@@ -461,7 +586,7 @@ WantedBy=multi-user.target
     // If destination is a host IP, convert it to network address
     const destNum = ipToNumber(dest);
     if (destNum === null) {
-      alert("Invalid destination IP address");
+      showToast("Invalid destination IP address", "error");
       return;
     }
     const networkMask =
@@ -527,10 +652,10 @@ WantedBy=multi-user.target
       }
     }
 
-    // Validate gateway format if provided manually
     if (gateway && !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(gateway)) {
-      alert(
+      showToast(
         "Invalid gateway IP address format. Please enter a valid IP address (e.g., 172.23.0.1)",
+        "error",
       );
       return;
     }
@@ -558,51 +683,39 @@ WantedBy=multi-user.target
     const deleteCmd = `ip route delete ${routeTarget} 2>/dev/null || true`;
     const addCmd = `ip route add ${routeTarget}`;
 
-    setSavingRoute(true);
-    // First try to delete existing route (ignore errors), then add new one
-    postLinuxCmd({ cmd: deleteCmd })
-      .then(() => postLinuxCmd({ cmd: addCmd }))
+    // OPTIMISTIC UI: Immediately update the table and close the modal
+    let updatedRows;
+    if (editIndex !== null) {
+      const newRows = [...rows];
+      newRows[editIndex] = {
+        ...form,
+        checked: false,
+        gateway: gateway || form.gateway || "",
+      };
+      updatedRows = normalizeRows(newRows);
+    } else {
+      const newRows = [
+        ...rows,
+        { ...form, checked: false, gateway: gateway || form.gateway || "" },
+      ];
+      updatedRows = normalizeRows(newRows);
+    }
+    setRows(updatedRows);
+    saveRowsLocal(updatedRows);
+    closeModal();
+    showToast("Route saved instantly. Applying in background...", "success");
+
+    // Perform backend operations silently in the background
+    postLinuxCmd({ cmd: `${deleteCmd}; ${addCmd}` })
       .then(() => {
-        // Persist to UI table (include gateway in saved row) and normalize numbering
-        let updatedRows;
-        if (editIndex !== null) {
-          const newRows = [...rows];
-          newRows[editIndex] = {
-            ...form,
-            checked: false,
-            gateway: gateway || form.gateway || "",
-          };
-          updatedRows = normalizeRows(newRows);
-        } else {
-          const newRows = [
-            ...rows,
-            { ...form, checked: false, gateway: gateway || form.gateway || "" },
-          ];
-          updatedRows = normalizeRows(newRows);
-        }
-        setRows(updatedRows);
-
         // Save routes to persistent config file
-        saveRoutesToFile(updatedRows, networkOptions).then((saved) => {
-          if (saved) {
-            setSaveMessage(
-              "Route added and saved to persistent configuration.",
-            );
-            setTimeout(() => setSaveMessage(""), 3000);
-          } else {
-            setSaveMessage(
-              "Route added but failed to save to persistent configuration. It may be lost on reboot.",
-            );
-            setTimeout(() => setSaveMessage(""), 4000);
-          }
+        saveRoutesToFile(updatedRows, networkOptions).catch((err) => {
+          console.error("Failed to save routes to persistent file:", err);
         });
-
-        closeModal();
       })
       .catch((err) => {
-        alert(err?.message || "Failed to apply route");
-      })
-      .finally(() => setSavingRoute(false));
+        showToast(err?.message || "Warning: Failed to apply route to Linux kernel", "error");
+      });
   };
 
   const handleCheck = (idx) => {
@@ -613,11 +726,22 @@ WantedBy=multi-user.target
     );
   };
 
+  const handleSelectAll = (e) => {
+    const checked = e.target.checked;
+    setRows((prev) => prev.map((row) => ({ ...row, checked })));
+  };
+
   const handleDelete = () => {
     const itemsToDelete = rows
       .map((row, idx) => ({ row, idx }))
       .filter((item) => item.row.checked);
     if (itemsToDelete.length === 0 || savingRoute) return;
+
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete ${itemsToDelete.length} selected route(s)?`,
+    );
+    if (!isConfirmed) return;
+
     setSavingRoute(true);
 
     const maskToPrefix = (m) => {
@@ -759,10 +883,10 @@ WantedBy=multi-user.target
 
         // Update persistent config file with remaining routes
         await saveRoutesToFile(remainingRows, networkOptions);
-        setSaveMessage(
+        showToast(
           `${itemsToDelete.length} route(s) deleted and configuration updated.`,
+          "success",
         );
-        setTimeout(() => setSaveMessage(""), 3000);
       })
       .finally(() => {
         setSavingRoute(false);
@@ -771,6 +895,12 @@ WantedBy=multi-user.target
 
   const handleClearAll = () => {
     if (rows.length === 0 || savingRoute) return;
+
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete all routes? This action cannot be undone.",
+    );
+    if (!isConfirmed) return;
+
     setSavingRoute(true);
     const maskToPrefix = (m) => {
       const parts = String(m || "")
@@ -907,8 +1037,7 @@ WantedBy=multi-user.target
         setRows(cleared);
         // Update persistent config file (empty)
         await saveRoutesToFile(cleared, networkOptions);
-        setSaveMessage("All routes deleted and configuration cleared.");
-        setTimeout(() => setSaveMessage(""), 3000);
+        showToast("All routes deleted and configuration cleared.", "success");
       })
       .finally(() => {
         setSavingRoute(false);
@@ -1170,42 +1299,134 @@ WantedBy=multi-user.target
   ];
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-200px)] p-2 md:p-0 md:p-2">
-      <div className="w-full max-w-7xl mx-auto">
-        {/* Show spinner only while saving from the modal (add/edit), not on delete/clear */}
-        {savingRoute && modalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div
-              className="bg-white rounded-lg shadow-xl p-4 flex flex-col items-center gap-2 pointer-events-auto"
-              style={{ minWidth: "260px" }}
-            >
-              <div className="animate-spin h-8 w-8 border-4 border-[#0e8fd6] border-t-transparent rounded-full" />
-              <div className="text-sm font-medium text-gray-700">
-                Applying routing changes...
-              </div>
-              <div className="text-xs text-gray-500">
-                Updating kernel routes and persistent config
-              </div>
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
+      {/* ── Alerts ── */}
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+
+      {/* Show spinner only while saving from the modal (add/edit), not on delete/clear */}
+      {savingRoute && modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div
+            className="bg-white rounded-lg shadow-xl p-4 flex flex-col items-center gap-2 pointer-events-auto"
+            style={{ minWidth: "260px" }}
+          >
+            <div className="animate-spin h-8 w-8 border-4 border-[#0e8fd6] border-t-transparent rounded-full" />
+            <div className="text-sm font-medium text-gray-700">
+              Applying routing changes...
+            </div>
+            <div className="text-xs text-gray-500">
+              Updating kernel routes and persistent config
             </div>
           </div>
-        )}
-        {saveMessage && !savingRoute && (
-          <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-800 px-3 py-2 rounded shadow z-50 text-sm">
-            {saveMessage}
-          </div>
-        )}
-        <div className="bg-gray-200 w-full min-h-[400px] flex flex-col">
+        </div>
+      )}
+
+      {/* ── Breadcrumb ── */}
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            IP Route Table
+          </span>
+        </div>
+
+        {/* ── Main Container ── */}
+        <div
+          style={{
+            background: C.cardBg,
+            borderRadius: 20,
+            overflow: "hidden",
+            boxShadow: C.cardShadow,
+            marginBottom: 24,
+            border: `1px solid ${C.cardBorder}`,
+          }}
+        >
+          {/* Header */}
           <div
-            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
             style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+              minHeight: 44,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              fontWeight: 700,
+              fontSize: 13,
+              color: C.strongText,
+              borderBottom: `1px solid ${C.divider}`,
             }}
           >
-            IP Routing Table
+            <span>IP Routing Table</span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                variant="delete"
+                onClick={handleDelete}
+                disabled={!rows.some((r) => r.checked) || savingRoute}
+                style={{ height: 30 }}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                {savingRoute ? "Working..." : "Delete"}
+              </Btn>
+              <Btn
+                variant="delete"
+                onClick={handleClearAll}
+                disabled={rows.length === 0 || savingRoute}
+                style={{ height: 30 }}
+              >
+                {savingRoute ? "Working..." : "Clear All"}
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => openModal(null)}
+                disabled={savingRoute}
+                style={{ height: 30, minWidth: 110 }}
+              >
+                + Add New
+              </Btn>
+            </div>
           </div>
+
           <div
-            className="overflow-x-auto w-full border-l-2 border-r-2 border-b-2 border-gray-400"
+            className="overflow-x-auto w-full"
             style={{
               height: 400,
               maxHeight: 400,
@@ -1216,15 +1437,51 @@ WantedBy=multi-user.target
             onScroll={handleTableScroll}
           >
             <table className="w-full md:min-w-[700px] border-collapse table-auto">
-              <thead>
+              <thead
+                style={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 10,
+                  backgroundColor: C.gridHeaderBg,
+                }}
+              >
                 <tr>
                   {IP_ROUTING_TABLE_COLUMNS.map((col) => (
                     <th
                       key={col.key}
-                      className="bg-white text-gray-800 font-semibold text-xs border border-gray-400 whitespace-nowrap text-center"
-                      style={{ padding: "6px 8px", height: 32 }}
+                      className="whitespace-nowrap text-center"
+                      style={{
+                        padding: "8px 12px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.strongText,
+                        borderBottom: `1px solid ${C.divider}`,
+                        borderRight: `1px solid ${C.divider}`,
+                      }}
                     >
-                      {col.label}
+                      {col.key === "checked" ||
+                      col.label === "Check" ||
+                      col.label === "" ? (
+                        <Checkbox
+                          size="small"
+                          checked={
+                            rows.length > 0 && rows.every((r) => r.checked)
+                          }
+                          indeterminate={
+                            rows.some((r) => r.checked) &&
+                            !rows.every((r) => r.checked)
+                          }
+                          onChange={handleSelectAll}
+                          sx={{
+                            padding: "1px",
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                            "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          }}
+                        />
+                      ) : (
+                        col.label
+                      )}
                     </th>
                   ))}
                 </tr>
@@ -1234,73 +1491,114 @@ WantedBy=multi-user.target
                   row ? (
                     <tr
                       key={idx}
-                      style={{ borderBottom: "1px solid #bbb", height: 32 }}
+                      style={{ borderBottom: `1px solid ${C.divider}` }}
+                      className="hover:bg-[#f8fafc] transition-colors"
                     >
                       <td
-                        className="border border-gray-400 text-center bg-white"
-                        style={{ padding: "6px 8px", height: 32 }}
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
                       >
-                        <input
-                          type="checkbox"
+                        <Checkbox
+                          size="small"
                           checked={row.checked || false}
                           onChange={() => handleCheck(idx)}
+                          sx={{
+                            padding: "1px",
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                          }}
                         />
                       </td>
                       <td
-                        className="border border-gray-400 text-center bg-white text-xs"
-                        style={{ padding: "6px 8px", height: 32 }}
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
                       >
                         {row.no}
                       </td>
                       <td
-                        className="border border-gray-400 text-center bg-white text-xs"
-                        style={{ padding: "6px 8px", height: 32 }}
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
                       >
                         {row.destination}
                       </td>
                       <td
-                        className="border border-gray-400 text-center bg-white text-xs"
-                        style={{ padding: "6px 8px", height: 32 }}
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
                       >
                         {row.subnetMask}
                       </td>
                       <td
-                        className="border border-gray-400 text-center bg-white text-xs"
-                        style={{ padding: "6px 8px", height: 32 }}
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
                       >
                         {row.networkPort}
                       </td>
                       <td
-                        className="border border-gray-400 text-center bg-white"
-                        style={{ padding: "6px 8px", height: 32 }}
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
                       >
-                        <EditDocumentIcon
+                        <Btn
+                          variant="edit"
+                          onClick={() => openModal(idx)}
                           style={{
-                            color: "#0e8fd6",
-                            cursor: "pointer",
+                            height: 28,
+                            minWidth: 74,
+                            padding: "2px 10px",
                             margin: "0 auto",
                           }}
-                          onClick={() => openModal(idx)}
-                        />
+                        >
+                          <EditOutlinedIcon sx={{ fontSize: 14, marginRight: "4px" }} />
+                          Edit
+                        </Btn>
                       </td>
                     </tr>
                   ) : (
                     <tr
                       key={idx}
                       style={{
-                        borderBottom: "1px solid #bbb",
+                        borderBottom: `1px solid ${C.divider}`,
                         background: "#fff",
-                        height: 32,
                       }}
                     >
                       {IP_ROUTING_TABLE_COLUMNS.map((col) => (
                         <td
                           key={col.key}
-                          className="border border-gray-400 text-center bg-white"
+                          className="text-center bg-white"
                           style={{
-                            color: "#aaa",
-                            padding: "6px 8px",
-                            height: 32,
+                            padding: "10px 12px",
+                            fontSize: 13,
+                            color: C.valueText,
+                            borderRight: `1px solid ${C.divider}`,
                           }}
                         >
                           &nbsp;
@@ -1313,112 +1611,142 @@ WantedBy=multi-user.target
             </table>
           </div>
         </div>
-        <div className="flex justify-between items-center bg-gray-300 rounded-b-lg px-1 py-0.5 mt-1 border-l-2 border-r-2 border-b-2 border-gray-400">
-          <div className="flex gap-1">
-            {(() => {
-              const hasSelection = rows.some((r) => r.checked);
-              return (
-                <button
-                  className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
-                  onClick={handleDelete}
-                  disabled={!hasSelection || savingRoute}
-                >
-                  {savingRoute ? "Working..." : "Delete"}
-                </button>
-              );
-            })()}
-            <button
-              className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
-              onClick={handleClearAll}
-              disabled={rows.length === 0 || savingRoute}
-            >
-              {savingRoute ? "Working..." : "Clear All"}
-            </button>
-          </div>
-          <button
-            className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
-            onClick={() => openModal(null)}
-            disabled={savingRoute}
-          >
-            Add New
-          </button>
-        </div>
       </div>
       {/* Modal */}
       <Dialog
         open={modalOpen}
-        onClose={closeModal}
+        onClose={(event, reason) => {
+          if (reason === "backdropClick") return;
+          closeModal();
+        }}
         maxWidth={false}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start" } }}
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(4px)",
+              backgroundColor: "rgba(15, 23, 42, 0.3)",
+            },
+          },
+        }}
         PaperProps={{
           sx: {
+            mt: "10vh",
             maxWidth: "95vw",
-            width: 380,
-            background: "#f4f6fa",
-            borderRadius: 2,
-            border: "1.5px solid #888",
+            width: 440,
+            borderRadius: "12px",
+            p: 0,
+            overflow: "hidden",
+            backgroundColor: C.cardBg,
           },
         }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            marginBottom: 12,
+          sx={{
+            fontWeight: 600,
+            fontSize: "16px",
+            color: C.strongText,
+            borderBottom: `1px solid ${C.divider}`,
+            px: 3,
+            py: 2,
+            backgroundColor: C.cardBg,
           }}
         >
           IP Routing Table
         </DialogTitle>
-        <DialogContent className="bg-gray-200 flex flex-col gap-3 py-4">
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
+            p: 3,
+            pt: "24px !important",
+            backgroundColor: C.cardBg,
+          }}
+        >
           {IP_ROUTING_TABLE_MODAL_FIELDS.map((field) => (
             <div
               key={field.key}
-              className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white mb-1"
+              className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2 sm:gap-4"
             >
-              <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
+              <label
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: C.labelText,
+                  width: "100%",
+                  maxWidth: 140,
+                  flexShrink: 0,
+                }}
+              >
                 {field.label}:
               </label>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 w-full max-w-[280px]">
                 {field.type === "text" || field.type === "number" ? (
-                  <TextField
+                  <input
                     name={field.key}
                     type={field.key === "gateway" ? "text" : field.type}
                     value={form[field.key] || ""}
                     onChange={handleFormChange}
-                    size="small"
-                    fullWidth
                     placeholder={field.placeholder || ""}
-                    helperText={
-                      field.key === "gateway" &&
-                      form.networkPort?.toLowerCase().startsWith("vpn")
-                        ? "Gateway is recommended for VPN routes"
-                        : field.key === "gateway"
-                          ? "Leave empty to use interface default"
-                          : ""
-                    }
-                    FormHelperTextProps={{
-                      sx: { fontSize: "10px", marginTop: "2px" },
+                    style={{
+                      width: "100%",
+                      fontSize: 13,
+                      padding: "6px 10px",
+                      borderRadius: 10,
+                      border: `1px solid ${C.cardBorder}`,
+                      background: C.cardBg,
+                      color: C.valueText,
+                      outline: "none",
+                      transition: "border-color 0.2s ease",
+                      height: 32,
                     }}
-                    sx={{ "& .MuiInputBase-input": { fontSize: "12px" } }}
+                    onFocus={(e) => (e.target.style.borderColor = C.accent)}
+                    onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
+                    onMouseEnter={(e) => {
+                      if (document.activeElement !== e.target)
+                        e.target.style.borderColor = "#94a3b8";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (document.activeElement !== e.target)
+                        e.target.style.borderColor = C.cardBorder;
+                    }}
                   />
                 ) : null}
                 {field.type === "select" ? (
                   <Select
                     name={field.key}
-                    value={form[field.key] || ""}
+                    value={
+                      field.key === "networkPort" && form[field.key]
+                        ? networkOptions.some(
+                            (o) => o.value === form[field.key],
+                          )
+                          ? form[field.key]
+                          : ""
+                        : form[field.key] || ""
+                    }
                     onChange={handleFormChange}
-                    size="small"
                     fullWidth
                     sx={{
-                      fontSize: "14px",
+                      height: 32,
+                      borderRadius: "10px",
+                      fontSize: 13,
+                      backgroundColor: C.cardBg,
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: C.cardBorder,
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#94a3b8",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: `${C.accent} !important`,
+                      },
                       "& .MuiSelect-select": {
-                        fontSize: 14,
-                        padding: "6px 8px",
+                        padding: "6px 10px !important",
+                        display: "flex",
+                        alignItems: "center",
                       },
                     }}
-                    disabled={
-                      field.key === "networkPort" ? networkLoading : false
-                    }
                     MenuProps={{
                       PaperProps: {
                         style: { maxHeight: 200, overflow: "auto" },
@@ -1448,20 +1776,30 @@ WantedBy=multi-user.target
             </div>
           ))}
         </DialogContent>
-        <DialogActions className="flex justify-center gap-6 pb-4">
-          <button
-            className="bg-gradient-to-b from-[#9ca3af] to-[#6b7280] text-white font-semibold text-xs rounded px-3 py-1 min-w-[100px] shadow hover:from-[#6b7280] hover:to-[#9ca3af] disabled:opacity-60"
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+            gap: 2,
+            p: 3,
+            borderTop: `1px solid ${C.divider}`,
+            backgroundColor: C.cardBg,
+          }}
+        >
+          <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={savingRoute}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
           >
             {savingRoute ? "Applying..." : "Save"}
-          </button>
-          <button
-            className="bg-gradient-to-b from-[#d1d5db] to-[#9ca3af] text-[#111827] font-semibold text-xs rounded px-3 py-1 min-w-[100px] shadow hover:from-[#9ca3af] hover:to-[#d1d5db]"
+          </Btn>
+          <Btn
+            variant="cancel"
             onClick={closeModal}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
           >
             Close
-          </button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

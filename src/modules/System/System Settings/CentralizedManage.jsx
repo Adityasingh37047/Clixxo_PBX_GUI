@@ -6,34 +6,133 @@ import {
   CENTRALIZED_PROTOCOL_OPTIONS,
   SNMP_VERSION_OPTIONS,
 } from "../../../constants/CentralizedManageConstants";
-import {
-  Button,
-  Select,
-  MenuItem,
-  TextField,
-  CircularProgress,
-} from "@mui/material";
+import { Alert, CircularProgress } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
 
-const blueButtonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 15,
-  borderRadius: 1.5,
-  minWidth: 110,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  border: "1px solid #5A6F8F",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const inputStyle = {
+  width: "100%",
+  fontSize: 13,
+  padding: "6px 10px",
+  borderRadius: 10,
+  border: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  color: C.valueText,
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
   },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
+  },
+};
+
+const disabledInputStyle = {
+  ...inputStyle,
+  background: "#f1f5f9",
+  color: "#94a3b8",
+  cursor: "not-allowed",
+  borderColor: "#e2e8f0",
 };
 
 const initialForm = {
@@ -63,11 +162,15 @@ const CentralizedManage = () => {
   const [form, setForm] = useState(initialForm);
   const [isApplying, setIsApplying] = useState(false);
   const [applyStatus, setApplyStatus] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
 
-  // Persisted state key
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
+
   const STORAGE_KEY = "centralizedManageFormV1";
 
-  // Restore saved form on mount
   React.useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -101,7 +204,6 @@ const CentralizedManage = () => {
         newForm.lowConnRate = "20";
       }
 
-      // Persist after every change
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newForm));
       } catch {}
@@ -130,7 +232,6 @@ const CentralizedManage = () => {
       form.monitoringPort && form.monitoringPortValue
         ? String(form.monitoringPortValue)
         : "161";
-    // Use snmpServerAddress (the field user enters) for trap destination
     const trapServer = (form.snmpServerAddress || "127.0.0.1").trim();
 
     const allowAllCheck = ["all", "*", "0.0.0.0/0"].includes(
@@ -149,15 +250,12 @@ SCRIPT="/usr/local/bin/clixxo-device-info.sh"
 
 echo "Starting SNMP configuration..."
 
-# Create /etc/snmp directory if it doesn't exist
 mkdir -p /etc/snmp 2>/dev/null || true
 
-# Backup existing config
 if [ -f "$CONF" ]; then
     cp "$CONF" "$CONF.bak.$(date +%s)" 2>/dev/null || true
 fi
 
-# Derive source selector
 SRC="${safeAllow}"
 if [ "$SRC" = "default" ] || [ -z "$SRC" ]; then
   SRC="default"
@@ -172,82 +270,50 @@ else
   fi
 fi
 
-# Write SNMP configuration
 echo "Writing SNMP configuration..."
 cat > "$CONF" <<CONFEOF
-# Auto-generated by Centralized Manage
 agentAddress udp:${listenPort}
 master agentx
 sysLocation CLIXXO
 sysContact admin@clixxo
 
-# Define view that includes ALL OIDs
 view all included .1
 
-# Security: com2sec maps community to security name
 com2sec readonly $SRC ${safeCommunity}
 com2sec readwrite $SRC private
 
-# Group: maps security name to group
 group MyROGroup ${proto} readonly
 group MyRWGroup ${proto} readwrite
 
-# Access: defines what the group can access
 access MyROGroup "" any noauth exact all none none
 access MyRWGroup "" any noauth exact all all all
 
-# Also provide rocommunity for maximum compatibility
 rocommunity ${safeCommunity} $SRC -V all
 rwcommunity private $SRC -V all
 
-# Remote management OIDs
 pass .1.3.6.1.4.1.39871.3 /usr/local/bin/snmp_remote_management.sh
-
-# Device Info OIDs from web_version.json
-# .1.3.6.1.4.1.39871.1.1.2.0 = serial_no
-# .1.3.6.1.4.1.39871.1.1.3.0 = web_version
-# .1.3.6.1.4.1.39871.1.1.4.0 = service
-# .1.3.6.1.4.1.39871.1.1.5.0 = uboot
-# .1.3.6.1.4.1.39871.1.1.6.0 = kernel
-# .1.3.6.1.4.1.39871.1.1.7.0 = firmware
-# .1.3.6.1.4.1.39871.1.1.8.0 = SIP registration status
-# .1.3.6.1.4.1.39871.1.1.9.0 = PRI/E1 status
 pass_persist .1.3.6.1.4.1.39871 $SCRIPT
 CONFEOF
 
 echo "SNMP configuration written to $CONF"
 
-# Update monitoring scripts with trap server and community
 echo "Updating monitoring scripts..."
-echo "Using TRAP_HOST: ${safeTrapServer}"
-echo "Using COMMUNITY: ${safeCommunity}"
 
-# Update clixxo-alarm-monitor.sh
 if [ -f /usr/local/bin/clixxo-alarm-monitor.sh ]; then
     sed -i 's|^TRAP_HOST=.*|TRAP_HOST=\\"${safeTrapServer}\\"|' /usr/local/bin/clixxo-alarm-monitor.sh
     sed -i 's|^COMMUNITY=.*|COMMUNITY=\\"${safeCommunity}\\"|' /usr/local/bin/clixxo-alarm-monitor.sh
-    echo "Updated clixxo-alarm-monitor.sh to TRAP_HOST=${safeTrapServer} COMMUNITY=${safeCommunity}"
-    grep "^TRAP_HOST=" /usr/local/bin/clixxo-alarm-monitor.sh || echo "TRAP_HOST not found"
-    grep "^COMMUNITY=" /usr/local/bin/clixxo-alarm-monitor.sh || echo "COMMUNITY not found"
 fi
 
-# Update snmp_remote_management.sh
 if [ -f /usr/local/bin/snmp_remote_management.sh ]; then
     sed -i 's|^TRAP_HOST=.*|TRAP_HOST=\\"${safeTrapServer}\\"|' /usr/local/bin/snmp_remote_management.sh
     sed -i 's|^COMMUNITY=.*|COMMUNITY=\\"${safeCommunity}\\"|' /usr/local/bin/snmp_remote_management.sh
-    echo "Updated snmp_remote_management.sh to TRAP_HOST=${safeTrapServer} COMMUNITY=${safeCommunity}"
-    grep "^TRAP_HOST=" /usr/local/bin/snmp_remote_management.sh || echo "TRAP_HOST not found"
-    grep "^COMMUNITY=" /usr/local/bin/snmp_remote_management.sh || echo "COMMUNITY not found"
 fi
 
-# Update clixxo-realtime-monitor.sh if exists
 if [ -f /usr/local/bin/clixxo-realtime-monitor.sh ]; then
     sed -i 's|^TRAP_HOST=.*|TRAP_HOST=\\"${safeTrapServer}\\"|' /usr/local/bin/clixxo-realtime-monitor.sh
     sed -i 's|^COMMUNITY=.*|COMMUNITY=\\"${safeCommunity}\\"|' /usr/local/bin/clixxo-realtime-monitor.sh
-    echo "Updated clixxo-realtime-monitor.sh to TRAP_HOST=${safeTrapServer} COMMUNITY=${safeCommunity}"
 fi
 
-# Restart SNMP service
 echo "Restarting SNMP service..."
 if systemctl restart snmpd 2>/dev/null; then
     echo "SNMP service restarted via systemctl"
@@ -260,10 +326,6 @@ else
 fi
 
 echo "Configuration complete!"
-echo "SNMP listening on udp:${listenPort}"
-echo "Community: ${safeCommunity}"
-echo "Trap Server: ${safeTrapServer}"
-echo "Custom OIDs: .1.3.6.1.4.1.39871.1.1.2.0 to .1.3.6.1.4.1.39871.1.1.9.0"
 exit 0`;
   };
 
@@ -289,12 +351,9 @@ echo "DCMS configuration saved"`;
   };
 
   const validateIPAddress = (ip) => {
-    // Allow 'all', '*', or '0.0.0.0/0' for wildcard access
     if (["all", "*", "0.0.0.0/0"].includes(ip.toLowerCase())) {
       return true;
     }
-
-    // Validate IPv4 address format
     const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
     const match = ip.match(ipv4Regex);
 
@@ -302,7 +361,6 @@ echo "DCMS configuration saved"`;
       return false;
     }
 
-    // Check each octet is between 0-255
     for (let i = 1; i <= 4; i++) {
       const octet = parseInt(match[i], 10);
       if (octet < 0 || octet > 255) {
@@ -314,7 +372,7 @@ echo "DCMS configuration saved"`;
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     try {
       setIsApplying(true);
@@ -328,17 +386,18 @@ echo "DCMS configuration saved"`;
           !form.snmpServer ||
           !form.authCode
         ) {
-          alert(
+          showMessage(
+            "error",
             "Please fill Company Name, Gateway Description, SNMP Server Address and Authorization Code.",
           );
           setIsApplying(false);
           return;
         }
 
-        // Validate SNMP Server IP
         if (!validateIPAddress(form.snmpServer)) {
-          alert(
-            'Please enter a valid IP address (e.g., 192.168.0.50) for SNMP Server. Partial IPs like "192" are not allowed.',
+          showMessage(
+            "error",
+            "Please enter a valid IP address for SNMP Server.",
           );
           setIsApplying(false);
           return;
@@ -356,29 +415,25 @@ echo "DCMS configuration saved"`;
         form.managementPlatform === "Others"
       ) {
         if (!form.snmpServerAddress) {
-          alert('Please provide SNMP Server Address (client IP or "all").');
+          showMessage("error", "Please provide SNMP Server Address.");
           setIsApplying(false);
           return;
         }
 
-        // Validate SNMP Server IP
         if (!validateIPAddress(form.snmpServerAddress)) {
-          alert(
-            'Please enter a valid IP address (e.g., 192.168.0.50). Partial IPs like "192" are not allowed.',
-          );
+          showMessage("error", "Please enter a valid IP address.");
           setIsApplying(false);
           return;
         }
 
         commands.push(buildSnmpCommand());
       } else {
-        alert("Unsupported Management Platform selection.");
+        showMessage("error", "Unsupported Management Platform selection.");
         setIsApplying(false);
         return;
       }
 
       for (const cmd of commands) {
-        // Use longer timeout for SNMP configuration (service restart can take time)
         let res;
         if (cmd.includes("snmpd")) {
           try {
@@ -386,7 +441,7 @@ echo "DCMS configuration saved"`;
               "/linuxcmd",
               { cmd },
               { timeout: 60000 },
-            ); // 60 seconds for SNMP
+            );
             res = response.data;
           } catch (error) {
             console.error("SNMP command error:", error);
@@ -400,15 +455,17 @@ echo "DCMS configuration saved"`;
         }
       }
 
-      alert("Settings saved and commands executed successfully.");
+      showMessage(
+        "success",
+        "Settings saved and commands executed successfully.",
+      );
       setApplyStatus("");
-      // Persist current form so it remains after navigation
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
       } catch {}
     } catch (err) {
       console.error(err);
-      alert(`Failed to apply settings: ${err.message || err}`);
+      showMessage("error", `Failed to apply settings: ${err.message || err}`);
       setApplyStatus("");
     } finally {
       setIsApplying(false);
@@ -423,7 +480,6 @@ rm -f "$OUT" 2>/dev/null || true
 
 FOUND=0
 
-# 1) Direct known vendor paths first (handles files without extensions)
 for p in \
   /usr/share/snmp/mibs/ASTERISK-MIB \
   /usr/share/snmp/mibs/DIGIUM-MIB \
@@ -442,31 +498,28 @@ for p in \
   /etc/snmp/mibs/CLIXXO-GENERATED-MIB\
 do
   if [ -f "$p" ]; then
-    echo "-- BEGIN $(basename \"$p\") --" >> "$OUT"; cat "$p" >> "$OUT"; echo "\n-- END $(basename \"$p\") --\n" >> "$OUT"; FOUND=1
+    echo "-- BEGIN $(basename \"$p\") --" >> "$OUT"; cat "$p" >> "$OUT"; echo "\\n-- END $(basename \"$p\") --\\n" >> "$OUT"; FOUND=1
   elif [ -d "$p" ]; then
-    for f in "$p"/*; do [ -f "$f" ] && { echo "-- BEGIN $(basename \"$f\") --" >> "$OUT"; cat "$f" >> "$OUT"; echo "\n-- END $(basename \"$f\") --\n" >> "$OUT"; FOUND=1; }; done
+    for f in "$p"/*; do [ -f "$f" ] && { echo "-- BEGIN $(basename \"$f\") --" >> "$OUT"; cat "$f" >> "$OUT"; echo "\\n-- END $(basename \"$f\") --\\n" >> "$OUT"; FOUND=1; }; done
   fi
 done
 
-# 2) If still not found, fallback to search (busybox-safe)
 if [ $FOUND -eq 0 ]; then
   for d in /usr/share/snmp/mibs /usr/local/share/snmp/mibs /etc/snmp/mibs /var/lib/snmp/mibs /etc/clixxo/mibs /opt; do
     [ -d "$d" ] || continue
     for name in ASTERISK-MIB DIGIUM-MIB CLIXXO-GW-MIB RFC1213-MIB CLIXXO-GENERATED-MIB; do
-      # try exact, then glob
       if [ -f "$d/$name" ]; then
-        echo "-- BEGIN $name --" >> "$OUT"; cat "$d/$name" >> "$OUT"; echo "\n-- END $name --\n" >> "$OUT"; FOUND=1
+        echo "-- BEGIN $name --" >> "$OUT"; cat "$d/$name" >> "$OUT"; echo "\\n-- END $name --\\n" >> "$OUT"; FOUND=1
       else
-        for f in "$d"/${name}*; do
+        for f in "$d"/\${name}*; do
           [ -f "$f" ] || continue
-          echo "-- BEGIN $(basename \"$f\") --" >> "$OUT"; cat "$f" >> "$OUT"; echo "\n-- END $(basename \"$f\") --\n" >> "$OUT"; FOUND=1
+          echo "-- BEGIN $(basename \"$f\") --" >> "$OUT"; cat "$f" >> "$OUT"; echo "\\n-- END $(basename \"$f\") --\\n" >> "$OUT"; FOUND=1
         done
       fi
     done
   done
 fi
 
-# 3) Generate and append CLIXXO Device Info MIB
 cat >> "$OUT" <<'MIBEOF'
 
 -- BEGIN CLIXXO-DEVICE-INFO-MIB --
@@ -480,7 +533,6 @@ clixxoDeviceInfo OBJECT IDENTIFIER ::= { enterprises 39871 }
 
 clixxoDeviceInfoTable OBJECT IDENTIFIER ::= { clixxoDeviceInfo 1 }
 
--- Device Information from web_version.json
 clixxoSerialNumber OBJECT-TYPE
     SYNTAX      DisplayString
     MAX-ACCESS   read-only
@@ -548,7 +600,6 @@ else
   echo "ERROR=NOT_FOUND"
 fi`;
 
-      // Use longer timeout a bit for file read/concat but keep under 20s to avoid cancel
       const response = await axiosInstance.post(
         "/linuxcmd",
         { cmd },
@@ -556,7 +607,8 @@ fi`;
       );
       const out = String(response?.data?.responseData || "").trim();
       if (out.includes("ERROR=NOT_FOUND") || out.length === 0) {
-        alert(
+        showMessage(
+          "error",
           "No CLIXXO/ASTERISK/DIGIUM MIBs found. Ensure CLIXXO-GW-MIB, ASTERISK-MIB, DIGIUM-MIB, RFC1213-MIB or CLIXXO-GENERATED-MIB exist under /usr/share/snmp/mibs.",
         );
         return;
@@ -588,161 +640,311 @@ fi`;
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-150px)] py-0 flex flex-col items-center md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      <div className="w-full max-w-4xl mx-auto">
-        <div className="rounded-t-lg w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
-          Centralized Manage
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              maxWidth: 500, // Added to prevent long errors from going off-screen
+              wordBreak: "break-word", // Ensures long text wraps to the next line
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        {/* ── Breadcrumb ── */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Centralized Manage
+          </span>
         </div>
 
+        {/* ── Main Card ── */}
         <div
-          className="rounded-b-lg border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
+          style={{
+            background: C.cardBg,
+            borderRadius: 20,
+            overflow: "hidden",
+            boxShadow: C.cardShadow,
+            marginBottom: 24,
+            border: `1px solid ${C.cardBorder}`,
+          }}
         >
-          <div className="w-full max-w-3xl mx-auto">
-            <form
-              onSubmit={handleSave}
-              className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-4 px-2 md:px-8 py-6"
+          {/* Card Header */}
+          <div
+            style={{
+              minHeight: 44,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
+              alignItems: "center",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.divider}`,
+              background: C.cardBg,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: C.strongText,
+                letterSpacing: "0.02em",
+              }}
             >
-              {CENTRALIZED_MANAGE_FIELDS.map((field) => {
-                if (field.name === "monitoringPortValue") return null;
-                if (field.name === "workingStatus") return null;
-                if (
-                  !form.notificationSetting &&
-                  [
-                    "trapServerPort",
-                    "cpuUsage",
-                    "memoryUsage",
-                    "highCps",
-                    "lowConnRate",
-                  ].includes(field.name)
-                )
-                  return null;
-                if (field.conditional && form.managementPlatform === "DCMS")
-                  return null;
-                if (field.dcmsOnly && form.managementPlatform !== "DCMS")
-                  return null;
+              Info
+            </span>
+          </div>
 
-                const isEditable =
-                  form.centralizedManage || field.name === "authCode";
+          {/* Card Body */}
+          <div style={{ padding: "24px 32px" }}>
+            <form onSubmit={handleSave} className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4 items-center w-full">
+                {CENTRALIZED_MANAGE_FIELDS.map((field) => {
+                  if (field.name === "monitoringPortValue") return null;
+                  if (field.name === "workingStatus") return null;
+                  if (
+                    !form.notificationSetting &&
+                    [
+                      "trapServerPort",
+                      "cpuUsage",
+                      "memoryUsage",
+                      "highCps",
+                      "lowConnRate",
+                    ].includes(field.name)
+                  )
+                    return null;
+                  if (field.conditional && form.managementPlatform === "DCMS")
+                    return null;
+                  if (field.dcmsOnly && form.managementPlatform !== "DCMS")
+                    return null;
 
-                return (
-                  <React.Fragment key={field.name}>
+                  const isEditable =
+                    form.centralizedManage || field.name === "authCode";
+
+                  return (
                     <div
-                      className="flex items-center text-gray-800 text-left pl-4 whitespace-nowrap min-h-[36px]"
-                      style={{ fontSize: "14px" }}
+                      key={field.name}
+                      className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full justify-center"
                     >
-                      {field.label}
-                    </div>
-                    <div className="flex items-center min-h-[36px]">
-                      {field.name === "monitoringPort" ? (
-                        <div className="flex items-center w-full">
-                          <input
-                            type="checkbox"
-                            checked={!!form.monitoringPort}
-                            onChange={handleChange}
-                            name="monitoringPort"
-                            disabled={!isEditable}
-                            className="w-4 h-4 accent-blue-600"
-                          />
-                          <TextField
-                            variant="outlined"
-                            size="small"
-                            type="text"
-                            name="monitoringPortValue"
-                            value={form.monitoringPortValue || "161"}
-                            onChange={handleChange}
-                            className="bg-white flex-1 ml-2"
-                            disabled={!isEditable || !form.monitoringPort}
-                          />
-                        </div>
-                      ) : field.type === "checkbox" ? (
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={!!form[field.name]}
-                            onChange={handleChange}
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 220, // slightly wider for longer labels
+                          flexShrink: 0,
+                          opacity:
+                            isEditable || field.name === "centralizedManage"
+                              ? 1
+                              : 0.6,
+                        }}
+                      >
+                        {field.label}
+                      </label>
+                      <div className="flex flex-col w-full max-w-[280px]">
+                        {field.name === "monitoringPort" ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={!!form.monitoringPort}
+                              onChange={handleChange}
+                              name="monitoringPort"
+                              disabled={!isEditable}
+                              style={{
+                                width: 16,
+                                height: 16,
+                                cursor: "pointer",
+                                accentColor: C.primary,
+                              }}
+                            />
+                            <input
+                              type="text"
+                              name="monitoringPortValue"
+                              value={form.monitoringPortValue || "161"}
+                              onChange={handleChange}
+                              disabled={!isEditable || !form.monitoringPort}
+                              style={
+                                isEditable && form.monitoringPort
+                                  ? inputStyle
+                                  : disabledInputStyle
+                              }
+                              onFocus={
+                                isEditable && form.monitoringPort
+                                  ? inputInteraction.onFocus
+                                  : undefined
+                              }
+                              onBlur={
+                                isEditable && form.monitoringPort
+                                  ? inputInteraction.onBlur
+                                  : undefined
+                              }
+                              onMouseEnter={
+                                isEditable && form.monitoringPort
+                                  ? inputInteraction.onMouseEnter
+                                  : undefined
+                              }
+                              onMouseLeave={
+                                isEditable && form.monitoringPort
+                                  ? inputInteraction.onMouseLeave
+                                  : undefined
+                              }
+                            />
+                          </div>
+                        ) : field.type === "checkbox" ? (
+                          <div className="flex items-center gap-2 h-[32px]">
+                            <input
+                              type="checkbox"
+                              checked={!!form[field.name]}
+                              onChange={handleChange}
+                              name={field.name}
+                              disabled={
+                                !form.centralizedManage &&
+                                field.name !== "centralizedManage"
+                              }
+                              style={{
+                                width: 16,
+                                height: 16,
+                                cursor: "pointer",
+                                accentColor: C.primary,
+                              }}
+                            />
+                            <span style={{ fontSize: 12, color: C.valueText }}>
+                              Enable
+                            </span>
+                          </div>
+                        ) : field.type === "select" ? (
+                          <select
                             name={field.name}
-                            disabled={
-                              !form.centralizedManage &&
-                              field.name !== "centralizedManage"
+                            value={form[field.name]}
+                            onChange={handleChange}
+                            disabled={!isEditable}
+                            style={isEditable ? inputStyle : disabledInputStyle}
+                            onFocus={
+                              isEditable ? inputInteraction.onFocus : undefined
                             }
-                            className="w-4 h-4 accent-blue-600"
-                          />
-                          <span
-                            className="ml-1 text-gray-700"
-                            style={{ fontSize: "14px" }}
+                            onBlur={
+                              isEditable ? inputInteraction.onBlur : undefined
+                            }
+                            onMouseEnter={
+                              isEditable
+                                ? inputInteraction.onMouseEnter
+                                : undefined
+                            }
+                            onMouseLeave={
+                              isEditable
+                                ? inputInteraction.onMouseLeave
+                                : undefined
+                            }
                           >
-                            Enable
-                          </span>
-                        </div>
-                      ) : field.type === "select" ? (
-                        <Select
-                          value={form[field.name]}
-                          onChange={handleChange}
-                          name={field.name}
-                          size="small"
-                          variant="outlined"
-                          className="w-full"
-                          disabled={!isEditable}
-                        >
-                          {(field.name === "centralizedProtocol"
-                            ? CENTRALIZED_PROTOCOL_OPTIONS
-                            : field.name === "snmpVersion"
-                              ? SNMP_VERSION_OPTIONS
-                              : MANAGEMENT_PLATFORM_OPTIONS
-                          ).map((opt) => (
-                            <MenuItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      ) : (
-                        <TextField
-                          variant="outlined"
-                          size="small"
-                          type="text"
-                          name={field.name}
-                          value={form[field.name] || ""}
-                          onChange={handleChange}
-                          disabled={!isEditable}
-                        />
-                      )}
+                            {(field.name === "centralizedProtocol"
+                              ? CENTRALIZED_PROTOCOL_OPTIONS
+                              : field.name === "snmpVersion"
+                                ? SNMP_VERSION_OPTIONS
+                                : MANAGEMENT_PLATFORM_OPTIONS
+                            ).map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            name={field.name}
+                            value={form[field.name] || ""}
+                            onChange={handleChange}
+                            disabled={!isEditable}
+                            style={isEditable ? inputStyle : disabledInputStyle}
+                            onFocus={
+                              isEditable ? inputInteraction.onFocus : undefined
+                            }
+                            onBlur={
+                              isEditable ? inputInteraction.onBlur : undefined
+                            }
+                            onMouseEnter={
+                              isEditable
+                                ? inputInteraction.onMouseEnter
+                                : undefined
+                            }
+                            onMouseLeave={
+                              isEditable
+                                ? inputInteraction.onMouseLeave
+                                : undefined
+                            }
+                          />
+                        )}
+                      </div>
                     </div>
-                  </React.Fragment>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              {/* Action Buttons Row */}
+              <div className="flex flex-wrap gap-4 mt-6 justify-start sm:justify-center">
+                <Btn
+                  variant="primary"
+                  type="submit"
+                  disabled={isApplying}
+                  style={{ minWidth: 100 }}
+                >
+                  {isApplying ? "Connecting…" : "Save"}
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  type="button"
+                  onClick={handleReset}
+                  disabled={isApplying}
+                  style={{ minWidth: 100 }}
+                >
+                  Reset
+                </Btn>
+                <Btn
+                  variant="primary"
+                  type="button"
+                  onClick={handleDownloadMib}
+                  disabled={isApplying}
+                  style={{ minWidth: 100 }}
+                >
+                  {CENTRALIZED_MANAGE_BUTTONS[2].label}
+                </Btn>
+              </div>
+
+              {isApplying && (
+                <div className="flex justify-center items-center gap-3 mt-4 text-gray-700">
+                  <CircularProgress size={18} />
+                  <span style={{ fontSize: 14 }}>
+                    {applyStatus || "Applying…"}
+                  </span>
+                </div>
+              )}
             </form>
           </div>
         </div>
-
-        <div className="flex flex-col sm:flex-row justify-center gap-8 mt-8 w-full max-w-3xl mx-auto">
-          <Button
-            variant="contained"
-            sx={blueButtonSx}
-            onClick={handleSave}
-            disabled={isApplying}
-          >
-            {isApplying ? "Connecting…" : "Save"}
-          </Button>
-          <Button variant="contained" sx={blueButtonSx} onClick={handleReset}>
-            Reset
-          </Button>
-          <Button
-            variant="contained"
-            sx={blueButtonSx}
-            onClick={handleDownloadMib}
-          >
-            {CENTRALIZED_MANAGE_BUTTONS[2].label}
-          </Button>
-        </div>
-        {isApplying && (
-          <div className="flex justify-center items-center gap-3 mt-4 text-gray-700">
-            <CircularProgress size={18} />
-            <span style={{ fontSize: 14 }}>{applyStatus || "Applying…"}</span>
-          </div>
-        )}
       </div>
     </div>
   );

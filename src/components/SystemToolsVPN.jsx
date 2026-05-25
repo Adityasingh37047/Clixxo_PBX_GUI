@@ -43,43 +43,142 @@ import {
   seVpnState,
 } from "../api/apiService";
 
-const blueButtonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 110,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "5px 8px",
-  border: "1px solid #5A6F8F",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    error: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `1px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "error":
+        return "#b91c1c";
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {startIcon && (
+        <span style={{ display: "flex", alignItems: "center" }}>
+          {startIcon}
+        </span>
+      )}
+      {children}
+    </button>
+  );
+};
+
+const inputStyle = {
+  width: "100%",
+  fontSize: 13,
+  padding: "6px 10px",
+  borderRadius: 10,
+  border: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  color: C.valueText,
+  outline: "none",
+  transition: "border-color 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#94a3b8";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
   },
 };
 
-const grayButtonSx = {
-  background: "linear-gradient(to bottom, #e0e0e0 0%, #bdbdbd 100%)",
-  color: "#222",
-  fontSize: 15,
-  borderRadius: 3,
-  minWidth: 110,
-  minHeight: 36,
-  boxShadow: "none",
-  border: "1px solid #888",
-  fontWeight: 400,
-  textTransform: "none",
-  px: 2,
-  "&:hover": {
-    background: "linear-gradient(to bottom, #bdbdbd 0%, #e0e0e0 100%)",
-    boxShadow: "none",
-    border: "1px solid #888",
-  },
+const disabledInputStyle = {
+  ...inputStyle,
+  background: "#f1f5f9",
+  color: "#94a3b8",
+  cursor: "not-allowed",
+  borderColor: "#e2e8f0",
 };
 
 const SystemToolsVPN = () => {
@@ -1278,716 +1377,1018 @@ const SystemToolsVPN = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-80px)] flex flex-col items-center">
-      <div className="w-full max-w-6xl mx-auto">
-        {/* VPN Type dropdown above the blue bar */}
-        <div
-          className="w-full flex justify-end items-center"
-          style={{ padding: "10px 4px 6px 4px" }}
-        >
-          <Select
-            value={form.vpnType}
-            onChange={handleTypeChange}
-            size="small"
-            variant="outlined"
+    <div
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
+    >
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {/* Alerts */}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
             sx={{
-              minWidth: 220,
-              backgroundColor: "#fff",
-              "& .MuiOutlinedInput-root": {
-                fontSize: "16px",
-                height: "40px",
-                borderRadius: "8px",
-              },
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              maxWidth: 500,
+              wordBreak: "break-word",
+              boxShadow: 3,
             }}
           >
-            {VPN_TYPES.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </Select>
+            {message.text}
+          </Alert>
+        )}
+
+        {/* Breadcrumb & Dropdown Row */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+          <div
+            style={{
+              fontSize: 12,
+              color: C.mutedText,
+              fontWeight: 400,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            <span>System</span>
+            <span>&gt;</span>
+            <span>System Settings</span>
+            <span>&gt;</span>
+            <span style={{ color: C.strongText, fontWeight: 600 }}>VPN</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}>
+              VPN Type:
+            </span>
+            <select
+              value={form.vpnType}
+              onChange={handleTypeChange}
+              style={{ ...inputStyle, width: 220 }}
+              onFocus={inputInteraction.onFocus}
+              onBlur={inputInteraction.onBlur}
+              onMouseEnter={inputInteraction.onMouseEnter}
+              onMouseLeave={inputInteraction.onMouseLeave}
+            >
+              {VPN_TYPES.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {/* Header */}
+        {/* Main Card */}
         <div
           style={{
-            width: "100%",
-            height: 32,
-            background: "linear-gradient(#3E5475 100%)",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-            marginBottom: 0,
-            display: "flex",
-            alignItems: "center",
-            fontWeight: 600,
-            fontSize: 19,
-            color: "#ffffff",
-            justifyContent: "center",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: C.cardBg,
+            borderRadius: 20,
+            overflow: "hidden",
+            boxShadow: C.cardShadow,
+            marginBottom: 24,
+            border: `1px solid ${C.cardBorder}`,
           }}
         >
-          VPN Settings
-        </div>
-
-        {/* Content */}
-        <Paper
-          elevation={3}
-          className="p-6 bg-white rounded-b-lg shadow-lg"
-          style={{ borderTop: "none" }}
-        >
-          {/* Alert Messages */}
-          {message.text && (
-            <Alert
-              severity={message.type}
-              className="mb-4"
-              onClose={() => setMessage({ type: "", text: "" })}
+          {/* Card Header */}
+          <div
+            style={{
+              minHeight: 44,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
+              alignItems: "center",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.divider}`,
+              background: C.cardBg,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: C.strongText,
+                letterSpacing: "0.02em",
+              }}
             >
-              {message.text}
-            </Alert>
-          )}
+              VPN Settings
+            </span>
+          </div>
 
-          <div className="space-y-6">
-            {/* AutoStart OPENVPN toggle directly below blue bar (visible only for OpenVPN) */}
-            {form.vpnType === "openvpn" && (
-              <div className="bg-[#e5e8ed] p-6 rounded border border-gray-300">
-                <div className="grid grid-cols-1 md:grid-cols-3 items-center">
-                  <div className="text-[18px] text-gray-700 font-medium md:text-right md:pr-6 mb-2 md:mb-0">
-                    AutoStart OPENVPN
-                  </div>
-                  <div className="flex items-center gap-6 justify-start md:justify-start">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="enableOpenVpn"
-                        checked={enableChoice === "yes"}
-                        onChange={() => setEnableChoice("yes")}
-                      />
-                      <span className="text-gray-700 text-[18px]">Yes</span>
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="enableOpenVpn"
-                        checked={enableChoice === "no"}
-                        onChange={() => setEnableChoice("no")}
-                      />
-                      <span className="text-gray-700 text-[18px]">No</span>
-                    </label>
-                  </div>
-                  <div className="flex md:justify-end mt-3 md:mt-0">
-                    <Button
-                      variant="contained"
-                      onClick={handleSaveEnable}
-                      sx={{
-                        background:
-                          "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                        color: "#fff",
-                        fontWeight: 600,
-                        fontSize: "16px",
-                        borderRadius: 1.5,
-                        minWidth: 110,
-                        boxShadow: "0 2px 8px #3E5475",
-                        textTransform: "none",
-                        px: 0,
-                        py: 1,
-                        "&:hover": {
-                          background:
-                            "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-                        },
-                      }}
-                      disabled={loading.toggle}
-                    >
-                      {loading.toggle ? "Saving..." : "Save"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* AutoStart SoftEtherVPN toggle directly below blue bar (visible only for SoftEtherVPN) */}
-            {form.vpnType === "softethervpn" && (
-              <div className="bg-[#e5e8ed] p-6 rounded border border-gray-300">
-                <div className="grid grid-cols-1 md:grid-cols-3 items-center">
-                  <div className="text-[18px] text-gray-700 font-medium md:text-right md:pr-6 mb-2 md:mb-0">
-                    AutoStart SoftEtherVPN
-                  </div>
-                  <div className="flex items-center gap-6 justify-start md:justify-start">
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="enableSeTop"
-                        checked={enableSeChoice === "yes"}
-                        onChange={() => setEnableSeChoice("yes")}
-                      />
-                      <span className="text-gray-700 text-[18px]">Yes</span>
-                    </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="enableSeTop"
-                        checked={enableSeChoice === "no"}
-                        onChange={() => setEnableSeChoice("no")}
-                      />
-                      <span className="text-gray-700 text-[18px]">No</span>
-                    </label>
-                  </div>
-                  <div className="flex md:justify-end mt-3 md:mt-0">
-                    <Button
-                      variant="contained"
-                      onClick={handleSaveSeEnable}
-                      sx={{
-                        background:
-                          "linear-gradient(to bottom, #5db6e8 0%, #298fcf 100%)",
-                        color: "#fff",
-                        fontWeight: 600,
-                        fontSize: "18px",
-                        borderRadius: 1.5,
-                        minWidth: 120,
-                        boxShadow: "0 2px 6px #0002",
-                        textTransform: "none",
-                        px: 3,
-                        py: 1.5,
-                        "&:hover": {
-                          background:
-                            "linear-gradient(to bottom, #298fcf 0%, #5db6e8 100%)",
-                        },
-                      }}
-                      disabled={loading.toggle}
-                    >
-                      {loading.toggle ? "Saving..." : "Save"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* OpenVPN Operations Section */}
-            {showAdvanced && form.vpnType === "openvpn" && (
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                {/* File Upload */}
-                <div className="mb-4">
-                  <Typography
-                    variant="subtitle1"
-                    className="mb-2 text-gray-700 font-medium"
-                  >
-                    Upload Configuration File
-                  </Typography>
-                  <div className="flex items-center gap-4">
-                    <input
-                      id="vpn-file-upload"
-                      type="file"
-                      accept=".ovpn,.conf"
-                      onChange={handleCertChange}
-                      style={{ display: "none" }}
-                    />
+          {/* Card Body */}
+          <div style={{ padding: "24px 32px" }}>
+            <div className="flex flex-col gap-8">
+              {/* OPENVPN AutoStart */}
+              {form.vpnType === "openvpn" && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
                     <label
-                      htmlFor="vpn-file-upload"
-                      className="cursor-pointer select-none"
                       style={{
-                        padding: "8px 16px",
-                        background: "#f3f4f6",
-                        border: "1px solid #c7c9cf",
-                        borderRadius: 6,
-                        boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.06)",
-                        color: "#111827",
+                        fontSize: 12,
                         fontWeight: 600,
-                        transition: "all .15s ease-in-out",
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.background = "#e5e7eb";
-                        e.currentTarget.style.borderColor = "#b6bac3";
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.background = "#f3f4f6";
-                        e.currentTarget.style.borderColor = "#c7c9cf";
+                        color: C.labelText,
+                        width: 200,
+                        flexShrink: 0,
                       }}
                     >
-                      Choose File
+                      AutoStart OPENVPN:
                     </label>
-                    <span style={{ color: "#374151" }}>
-                      {selectedFile ? selectedFile.name : "No file chosen"}
-                    </span>
-                    <Button
-                      variant="contained"
-                      startIcon={
-                        loading.upload ? (
-                          <CircularProgress size={16} />
-                        ) : (
-                          <UploadIcon />
-                        )
-                      }
-                      onClick={handleFileUpload}
-                      disabled={loading.upload || !selectedFile}
-                      sx={{
-                        background:
-                          "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                        color: "#fff",
-                        fontWeight: 600,
-                        textTransform: "none",
-                        minWidth: 160,
-                      }}
-                    >
-                      {loading.upload ? "Uploading..." : "Upload File"}
-                    </Button>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="enableOpenVpn"
+                          checked={enableChoice === "yes"}
+                          onChange={() => setEnableChoice("yes")}
+                          style={{ accentColor: C.primary }}
+                        />
+                        <span style={{ fontSize: 13, color: C.valueText }}>
+                          Yes
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="enableOpenVpn"
+                          checked={enableChoice === "no"}
+                          onChange={() => setEnableChoice("no")}
+                          style={{ accentColor: C.primary }}
+                        />
+                        <span style={{ fontSize: 13, color: C.valueText }}>
+                          No
+                        </span>
+                      </label>
+                    </div>
+                    <div className="sm:ml-auto">
+                      <Btn
+                        variant="primary"
+                        onClick={handleSaveEnable}
+                        disabled={loading.toggle}
+                        style={{ minWidth: 100 }}
+                      >
+                        {loading.toggle ? "Saving..." : "Save"}
+                      </Btn>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                {/* VPN Controls */}
-                <div className="mb-4">
-                  <Typography
-                    variant="subtitle1"
-                    className="mb-2 text-gray-700 font-medium"
-                  >
-                    VPN Controls
-                  </Typography>
-                  <div className="flex flex-wrap gap-4">
-                    <Button
-                      variant="contained"
-                      startIcon={
-                        loading.start ? (
-                          <CircularProgress size={16} />
-                        ) : (
-                          <StartIcon />
-                        )
-                      }
+              {/* SoftEther AutoStart */}
+              {form.vpnType === "softethervpn" && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                    <label
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 200,
+                        flexShrink: 0,
+                      }}
+                    >
+                      AutoStart SoftEtherVPN:
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="enableSeTop"
+                          checked={enableSeChoice === "yes"}
+                          onChange={() => setEnableSeChoice("yes")}
+                          style={{ accentColor: C.primary }}
+                        />
+                        <span style={{ fontSize: 13, color: C.valueText }}>
+                          Yes
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="enableSeTop"
+                          checked={enableSeChoice === "no"}
+                          onChange={() => setEnableSeChoice("no")}
+                          style={{ accentColor: C.primary }}
+                        />
+                        <span style={{ fontSize: 13, color: C.valueText }}>
+                          No
+                        </span>
+                      </label>
+                    </div>
+                    <div className="sm:ml-auto">
+                      <Btn
+                        variant="primary"
+                        onClick={handleSaveSeEnable}
+                        disabled={loading.toggle}
+                        style={{ minWidth: 100 }}
+                      >
+                        {loading.toggle ? "Saving..." : "Save"}
+                      </Btn>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* OpenVPN Section */}
+              {showAdvanced && form.vpnType === "openvpn" && (
+                <>
+                  <div
+                    style={{
+                      height: 1,
+                      background: C.divider,
+                      margin: "10px 0",
+                    }}
+                  />
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                    <label
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 200,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Configuration File:
+                    </label>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full max-w-[400px]">
+                      <input
+                        id="vpn-file-upload"
+                        type="file"
+                        accept=".ovpn,.conf"
+                        onChange={handleCertChange}
+                        style={{ display: "none" }}
+                      />
+                      <label
+                        htmlFor="vpn-file-upload"
+                        className="cursor-pointer select-none"
+                        style={{
+                          padding: "6px 14px",
+                          background: "#f8fafc",
+                          border: `1px solid ${C.cardBorder}`,
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.valueText,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Choose File
+                      </label>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          color: C.mutedText,
+                          textOverflow: "ellipsis",
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                          flex: 1,
+                        }}
+                      >
+                        {selectedFile ? selectedFile.name : "No file chosen"}
+                      </span>
+                      <Btn
+                        variant="primary"
+                        onClick={handleFileUpload}
+                        disabled={loading.upload || !selectedFile}
+                        startIcon={
+                          loading.upload ? (
+                            <CircularProgress size={14} color="inherit" />
+                          ) : (
+                            <UploadIcon sx={{ fontSize: 14 }} />
+                          )
+                        }
+                      >
+                        {loading.upload ? "Uploading..." : "Upload File"}
+                      </Btn>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                    <label
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 200,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Current Status:
+                    </label>
+                    <div className="flex items-center gap-4 w-full">
+                      <Chip
+                        label={vpnStatus}
+                        size="small"
+                        sx={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          borderRadius: 2,
+                          color: "#fff",
+                          backgroundColor:
+                            vpnStatus === "Running"
+                              ? "#16a34a"
+                              : vpnStatus === "Stopped"
+                                ? C.errorRed
+                                : "#ea580c",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-4 mt-2 justify-start">
+                    <Btn
+                      variant="primary"
                       onClick={handleStartVpn}
                       disabled={loading.start}
-                      sx={blueButtonSx}
+                      startIcon={
+                        loading.start ? (
+                          <CircularProgress size={14} color="inherit" />
+                        ) : (
+                          <StartIcon sx={{ fontSize: 14 }} />
+                        )
+                      }
                     >
                       {loading.start ? "Starting..." : "Start VPN"}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      startIcon={
-                        loading.stop ? (
-                          <CircularProgress size={16} />
-                        ) : (
-                          <StopIcon />
-                        )
-                      }
+                    </Btn>
+                    <Btn
+                      variant="error"
                       onClick={handleStopVpn}
                       disabled={loading.stop}
-                      sx={blueButtonSx}
-                    >
-                      {loading.stop ? "Stopping..." : "Stop VPN"}
-                    </Button>
-                    <Button
-                      variant="contained"
                       startIcon={
-                        loading.status ? (
-                          <CircularProgress size={16} />
+                        loading.stop ? (
+                          <CircularProgress size={14} color="inherit" />
                         ) : (
-                          <CheckCircleIcon />
+                          <StopIcon sx={{ fontSize: 14 }} />
                         )
                       }
+                    >
+                      {loading.stop ? "Stopping..." : "Stop VPN"}
+                    </Btn>
+                    <Btn
+                      variant="default"
                       onClick={handleCheckStatus}
                       disabled={loading.status}
-                      sx={blueButtonSx}
+                      startIcon={
+                        loading.status ? (
+                          <CircularProgress size={14} color="inherit" />
+                        ) : (
+                          <CheckCircleIcon sx={{ fontSize: 14 }} />
+                        )
+                      }
                     >
                       {loading.status ? "Checking..." : "Check Status"}
-                    </Button>
+                    </Btn>
                   </div>
-                </div>
 
-                {/* VPN Status */}
-                <div className="mb-4">
-                  <Typography
-                    variant="subtitle1"
-                    className="mb-2 text-gray-700 font-medium"
-                  >
-                    Current Status
-                  </Typography>
-                  <div className="flex items-center gap-2">
-                    <Chip
-                      label={vpnStatus}
-                      variant="filled"
-                      sx={{
-                        fontSize: 18,
-                        height: 40,
-                        borderRadius: 9999,
-                        px: 2.5,
-                        color: "#fff",
-                        backgroundColor:
-                          vpnStatus === "Running"
-                            ? "#2e7d32"
-                            : vpnStatus === "Stopped"
-                              ? "#c62828"
-                              : "#ef6c00",
+                  <div className="flex flex-col gap-2 mt-4">
+                    <div className="flex items-center justify-between">
+                      <span
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: C.strongText,
+                        }}
+                      >
+                        VPN Logs
+                      </span>
+                      <Btn
+                        variant="default"
+                        onClick={handleRefreshLogs}
+                        disabled={loading.logs}
+                        startIcon={
+                          loading.logs ? (
+                            <CircularProgress size={14} color="inherit" />
+                          ) : (
+                            <RefreshIcon sx={{ fontSize: 14 }} />
+                          )
+                        }
+                      >
+                        {loading.logs ? "Refreshing..." : "Refresh Logs"}
+                      </Btn>
+                    </div>
+                    <textarea
+                      value={vpnLogs || "No logs available"}
+                      readOnly
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        fontSize: 12,
+                        fontFamily: "monospace",
+                        backgroundColor: "#f8fafc",
+                        color: C.valueText,
+                        padding: 12,
+                        borderRadius: 8,
+                        border: `1px solid ${C.cardBorder}`,
+                        outline: "none",
+                        resize: "vertical",
                       }}
                     />
                   </div>
-                </div>
-              </div>
-            )}
+                </>
+              )}
 
-            {/* VPN Logs Section */}
-            {showAdvanced && form.vpnType === "openvpn" && (
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between mb-3">
-                  <Typography
-                    variant="h6"
-                    className="text-gray-800 font-semibold"
-                  >
-                    VPN Logs
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={
-                      loading.logs ? (
-                        <CircularProgress size={16} />
-                      ) : (
-                        <RefreshIcon />
-                      )
-                    }
-                    onClick={handleRefreshLogs}
-                    disabled={loading.logs}
-                    sx={blueButtonSx}
-                  >
-                    {loading.logs ? "Refreshing..." : "Refresh Logs"}
-                  </Button>
-                </div>
-                <TextField
-                  multiline
-                  rows={8}
-                  value={vpnLogs || "No logs available"}
-                  variant="outlined"
-                  fullWidth
-                  InputProps={{ readOnly: true }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      fontSize: "12px",
-                      fontFamily: "monospace",
-                      backgroundColor: "#f8f9fa",
-                    },
-                  }}
-                />
-              </div>
-            )}
+              {/* SoftEther Section */}
+              {showSeAdvanced && form.vpnType === "softethervpn" && (
+                <>
+                  <div
+                    style={{
+                      height: 1,
+                      background: C.divider,
+                      margin: "10px 0",
+                    }}
+                  />
 
-            {/* SoftEtherVPN Form */}
-            {showSeAdvanced && form.vpnType === "softethervpn" && (
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <Typography
-                  variant="h6"
-                  className="mb-3 text-gray-800 font-semibold"
-                >
-                  SoftEtherVPN Configuration
-                </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <TextField
-                    label="Connection Name"
-                    value={seForm.connectionName}
-                    onChange={handleSeChange("connectionName")}
-                    variant="outlined"
-                    size="small"
-                    disabled={isProfileCreated}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: isProfileCreated ? "#f5f5f5" : "#fff",
-                      },
+                  <div
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color: C.strongText,
+                      marginBottom: "16px",
                     }}
-                  />
-                  <TextField
-                    label="Server Address"
-                    value={seForm.server}
-                    onChange={handleSeChange("server")}
-                    variant="outlined"
-                    size="small"
-                    disabled={isProfileCreated}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: isProfileCreated ? "#f5f5f5" : "#fff",
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="Port"
-                    value={seForm.port}
-                    onChange={handleSeChange("port")}
-                    variant="outlined"
-                    size="small"
-                    disabled={isProfileCreated}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: isProfileCreated ? "#f5f5f5" : "#fff",
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="HUB Name"
-                    value={seForm.hub}
-                    onChange={handleSeChange("hub")}
-                    variant="outlined"
-                    size="small"
-                    disabled={isProfileCreated}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: isProfileCreated ? "#f5f5f5" : "#fff",
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="Username"
-                    value={seForm.username}
-                    onChange={handleSeChange("username")}
-                    variant="outlined"
-                    size="small"
-                    disabled={isProfileCreated}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: isProfileCreated ? "#f5f5f5" : "#fff",
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="Password"
-                    type="password"
-                    value={seForm.password}
-                    onChange={handleSeChange("password")}
-                    variant="outlined"
-                    size="small"
-                    disabled={isProfileCreated}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: isProfileCreated ? "#f5f5f5" : "#fff",
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="Client IP"
-                    value={seForm.clientIp}
-                    onChange={handleSeChange("clientIp")}
-                    variant="outlined"
-                    size="small"
-                    disabled={isProfileCreated}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: isProfileCreated ? "#f5f5f5" : "#fff",
-                      },
-                    }}
-                  />
-                  <TextField
-                    label="Netmask"
-                    value={seForm.netmask}
-                    onChange={handleSeChange("netmask")}
-                    variant="outlined"
-                    size="small"
-                    disabled={isProfileCreated}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        backgroundColor: isProfileCreated ? "#f5f5f5" : "#fff",
-                      },
-                    }}
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                  <div className="flex items-center gap-3">
-                    <label className="text-gray-700 text-sm md:text-base font-medium">
-                      Auth Method
+                  >
+                    SoftEtherVPN Configuration
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 w-full">
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 140,
+                          flexShrink: 0,
+                          opacity: isProfileCreated ? 0.6 : 1,
+                        }}
+                      >
+                        Connection Name:
+                      </label>
+                      <input
+                        type="text"
+                        value={seForm.connectionName}
+                        onChange={handleSeChange("connectionName")}
+                        disabled={isProfileCreated}
+                        style={
+                          isProfileCreated ? disabledInputStyle : inputStyle
+                        }
+                        onFocus={
+                          !isProfileCreated
+                            ? inputInteraction.onFocus
+                            : undefined
+                        }
+                        onBlur={
+                          !isProfileCreated
+                            ? inputInteraction.onBlur
+                            : undefined
+                        }
+                        onMouseEnter={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseEnter
+                            : undefined
+                        }
+                        onMouseLeave={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseLeave
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 140,
+                          flexShrink: 0,
+                          opacity: isProfileCreated ? 0.6 : 1,
+                        }}
+                      >
+                        Server Address:
+                      </label>
+                      <input
+                        type="text"
+                        value={seForm.server}
+                        onChange={handleSeChange("server")}
+                        disabled={isProfileCreated}
+                        style={
+                          isProfileCreated ? disabledInputStyle : inputStyle
+                        }
+                        onFocus={
+                          !isProfileCreated
+                            ? inputInteraction.onFocus
+                            : undefined
+                        }
+                        onBlur={
+                          !isProfileCreated
+                            ? inputInteraction.onBlur
+                            : undefined
+                        }
+                        onMouseEnter={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseEnter
+                            : undefined
+                        }
+                        onMouseLeave={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseLeave
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 140,
+                          flexShrink: 0,
+                          opacity: isProfileCreated ? 0.6 : 1,
+                        }}
+                      >
+                        Port:
+                      </label>
+                      <input
+                        type="text"
+                        value={seForm.port}
+                        onChange={handleSeChange("port")}
+                        disabled={isProfileCreated}
+                        style={
+                          isProfileCreated ? disabledInputStyle : inputStyle
+                        }
+                        onFocus={
+                          !isProfileCreated
+                            ? inputInteraction.onFocus
+                            : undefined
+                        }
+                        onBlur={
+                          !isProfileCreated
+                            ? inputInteraction.onBlur
+                            : undefined
+                        }
+                        onMouseEnter={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseEnter
+                            : undefined
+                        }
+                        onMouseLeave={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseLeave
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 140,
+                          flexShrink: 0,
+                          opacity: isProfileCreated ? 0.6 : 1,
+                        }}
+                      >
+                        HUB Name:
+                      </label>
+                      <input
+                        type="text"
+                        value={seForm.hub}
+                        onChange={handleSeChange("hub")}
+                        disabled={isProfileCreated}
+                        style={
+                          isProfileCreated ? disabledInputStyle : inputStyle
+                        }
+                        onFocus={
+                          !isProfileCreated
+                            ? inputInteraction.onFocus
+                            : undefined
+                        }
+                        onBlur={
+                          !isProfileCreated
+                            ? inputInteraction.onBlur
+                            : undefined
+                        }
+                        onMouseEnter={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseEnter
+                            : undefined
+                        }
+                        onMouseLeave={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseLeave
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 140,
+                          flexShrink: 0,
+                          opacity: isProfileCreated ? 0.6 : 1,
+                        }}
+                      >
+                        Username:
+                      </label>
+                      <input
+                        type="text"
+                        value={seForm.username}
+                        onChange={handleSeChange("username")}
+                        disabled={isProfileCreated}
+                        style={
+                          isProfileCreated ? disabledInputStyle : inputStyle
+                        }
+                        onFocus={
+                          !isProfileCreated
+                            ? inputInteraction.onFocus
+                            : undefined
+                        }
+                        onBlur={
+                          !isProfileCreated
+                            ? inputInteraction.onBlur
+                            : undefined
+                        }
+                        onMouseEnter={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseEnter
+                            : undefined
+                        }
+                        onMouseLeave={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseLeave
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 140,
+                          flexShrink: 0,
+                          opacity: isProfileCreated ? 0.6 : 1,
+                        }}
+                      >
+                        Password:
+                      </label>
+                      <input
+                        type="password"
+                        value={seForm.password}
+                        onChange={handleSeChange("password")}
+                        disabled={isProfileCreated}
+                        style={
+                          isProfileCreated ? disabledInputStyle : inputStyle
+                        }
+                        onFocus={
+                          !isProfileCreated
+                            ? inputInteraction.onFocus
+                            : undefined
+                        }
+                        onBlur={
+                          !isProfileCreated
+                            ? inputInteraction.onBlur
+                            : undefined
+                        }
+                        onMouseEnter={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseEnter
+                            : undefined
+                        }
+                        onMouseLeave={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseLeave
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 140,
+                          flexShrink: 0,
+                          opacity: isProfileCreated ? 0.6 : 1,
+                        }}
+                      >
+                        Client IP:
+                      </label>
+                      <input
+                        type="text"
+                        value={seForm.clientIp}
+                        onChange={handleSeChange("clientIp")}
+                        disabled={isProfileCreated}
+                        style={
+                          isProfileCreated ? disabledInputStyle : inputStyle
+                        }
+                        onFocus={
+                          !isProfileCreated
+                            ? inputInteraction.onFocus
+                            : undefined
+                        }
+                        onBlur={
+                          !isProfileCreated
+                            ? inputInteraction.onBlur
+                            : undefined
+                        }
+                        onMouseEnter={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseEnter
+                            : undefined
+                        }
+                        onMouseLeave={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseLeave
+                            : undefined
+                        }
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 140,
+                          flexShrink: 0,
+                          opacity: isProfileCreated ? 0.6 : 1,
+                        }}
+                      >
+                        Netmask:
+                      </label>
+                      <input
+                        type="text"
+                        value={seForm.netmask}
+                        onChange={handleSeChange("netmask")}
+                        disabled={isProfileCreated}
+                        style={
+                          isProfileCreated ? disabledInputStyle : inputStyle
+                        }
+                        onFocus={
+                          !isProfileCreated
+                            ? inputInteraction.onFocus
+                            : undefined
+                        }
+                        onBlur={
+                          !isProfileCreated
+                            ? inputInteraction.onBlur
+                            : undefined
+                        }
+                        onMouseEnter={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseEnter
+                            : undefined
+                        }
+                        onMouseLeave={
+                          !isProfileCreated
+                            ? inputInteraction.onMouseLeave
+                            : undefined
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full mt-4">
+                    <label
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 140,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Auth Method:
                     </label>
                     <select
                       value={authMethod}
                       onChange={(e) => setAuthMethod(e.target.value)}
-                      className="border rounded px-2 py-1 bg-white"
+                      style={{ ...inputStyle, maxWidth: 280 }}
+                      onFocus={inputInteraction.onFocus}
+                      onBlur={inputInteraction.onBlur}
+                      onMouseEnter={inputInteraction.onMouseEnter}
+                      onMouseLeave={inputInteraction.onMouseLeave}
                     >
                       <option value="password">Password</option>
                       <option value="certificate">Certificate</option>
                     </select>
                   </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+
                   {authMethod === "certificate" && (
-                    <div className="flex items-center gap-3">
-                      <input
-                        id="se-cert"
-                        type="file"
-                        accept=".cer,.crt"
-                        style={{ display: "none" }}
-                        onChange={handleSeCert}
-                      />
-                      <label
-                        htmlFor="se-cert"
-                        className="cursor-pointer select-none"
-                        style={{
-                          padding: "8px 16px",
-                          background: "#f3f4f6",
-                          border: "1px solid #c7c9cf",
-                          borderRadius: 6,
-                          boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.06)",
-                          color: "#111827",
-                          fontWeight: 600,
-                        }}
-                      >
-                        Upload Cert (.cer)
-                      </label>
-                      <span style={{ color: "#374151" }}>
-                        {seCertFile ? seCertFile.name : "No file chosen"}
-                      </span>
+                    <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center w-full mt-4">
+                      <div className="flex items-center gap-3">
+                        <input
+                          id="se-cert"
+                          type="file"
+                          accept=".cer,.crt"
+                          style={{ display: "none" }}
+                          onChange={handleSeCert}
+                        />
+                        <label
+                          htmlFor="se-cert"
+                          className="cursor-pointer select-none"
+                          style={{
+                            padding: "6px 14px",
+                            background: "#f8fafc",
+                            border: `1px solid ${C.cardBorder}`,
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.valueText,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Upload Cert (.cer)
+                        </label>
+                        <span style={{ fontSize: 12, color: C.mutedText }}>
+                          {seCertFile ? seCertFile.name : "No file"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <input
+                          id="se-key"
+                          type="file"
+                          accept=".key"
+                          style={{ display: "none" }}
+                          onChange={handleSeKey}
+                        />
+                        <label
+                          htmlFor="se-key"
+                          className="cursor-pointer select-none"
+                          style={{
+                            padding: "6px 14px",
+                            background: "#f8fafc",
+                            border: `1px solid ${C.cardBorder}`,
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.valueText,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Upload Key (.key)
+                        </label>
+                        <span style={{ fontSize: 12, color: C.mutedText }}>
+                          {seKeyFile ? seKeyFile.name : "No file"}
+                        </span>
+                      </div>
                     </div>
                   )}
-                  {authMethod === "certificate" && (
-                    <div className="flex items-center gap-3">
-                      <input
-                        id="se-key"
-                        type="file"
-                        accept=".key"
-                        style={{ display: "none" }}
-                        onChange={handleSeKey}
-                      />
-                      <label
-                        htmlFor="se-key"
-                        className="cursor-pointer select-none"
-                        style={{
-                          padding: "8px 16px",
-                          background: "#f3f4f6",
-                          border: "1px solid #c7c9cf",
-                          borderRadius: 6,
-                          boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.06)",
-                          color: "#111827",
+
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full mt-4">
+                    <label
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 140,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Current Status:
+                    </label>
+                    <div className="flex items-center gap-4 w-full">
+                      <Chip
+                        label={seStatus}
+                        size="small"
+                        sx={{
+                          fontSize: 12,
                           fontWeight: 600,
+                          borderRadius: 2,
+                          color: "#fff",
+                          backgroundColor:
+                            seStatus === "Running"
+                              ? "#16a34a"
+                              : seStatus === "Stopped"
+                                ? C.errorRed
+                                : seStatus === "Connecting"
+                                  ? C.primary
+                                  : "#ea580c",
                         }}
-                      >
-                        Upload Key (.key)
-                      </label>
-                      <span style={{ color: "#374151" }}>
-                        {seKeyFile ? seKeyFile.name : "No file chosen"}
-                      </span>
+                      />
                     </div>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-4 mt-4">
-                  {!isProfileCreated ? (
-                    <Button
-                      variant="contained"
-                      onClick={handleSeCreateFlow}
-                      disabled={loading.seCreate || !areSeFieldsFilled()}
-                      sx={blueButtonSx}
-                    >
-                      {loading.seCreate ? "Processing..." : "Create & Connect"}
-                    </Button>
-                  ) : (
-                    <>
-                      {seStatus === "Running" || seStatus === "Connecting" ? (
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={handleSeDisconnect}
-                          disabled={
-                            loading.seDisconnect ||
-                            !seForm.connectionName.trim()
-                          }
-                          sx={blueButtonSx}
-                        >
-                          {loading.seDisconnect
-                            ? "Disconnecting..."
-                            : "Disconnect"}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="contained"
-                          onClick={handleSeConnect}
-                          disabled={
-                            loading.seConnect || !seForm.connectionName.trim()
-                          }
-                          sx={blueButtonSx}
-                        >
-                          {loading.seConnect ? "Connecting..." : "Connect"}
-                        </Button>
-                      )}
-                      <Button
-                        variant="contained"
-                        onClick={() => handleSeStatus(false)}
-                        disabled={loading.seStatus}
-                        sx={blueButtonSx}
-                      >
-                        {loading.seStatus ? "Checking..." : "Check Status"}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        onClick={handleSeState}
-                        disabled={loading.seState}
-                        sx={blueButtonSx}
-                      >
-                        {loading.seState ? "Checking..." : "VPN State"}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleSeDelete(seForm.connectionName)}
-                        disabled={loading.seDelete}
-                        sx={blueButtonSx}
-                      >
-                        {loading.seDelete ? "Deleting..." : "Delete Profile"}
-                      </Button>
-                    </>
-                  )}
-                </div>
-
-                <div className="mt-4">
-                  <Typography
-                    variant="subtitle1"
-                    className="mb-1 text-gray-700 font-medium"
-                  >
-                    SoftEther Status
-                  </Typography>
-                  <Chip
-                    label={seStatus}
-                    variant="filled"
-                    sx={{
-                      fontSize: 16,
-                      height: 36,
-                      borderRadius: 9999,
-                      px: 2,
-                      color: "#fff",
-                      backgroundColor:
-                        seStatus === "Running"
-                          ? "#2e7d32"
-                          : seStatus === "Stopped"
-                            ? "#c62828"
-                            : seStatus === "Connecting"
-                              ? "#1976d2"
-                              : "#ef6c00",
-                    }}
-                  />
-                </div>
-
-                {/* SoftEther Logs */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <Typography
-                      variant="h6"
-                      className="text-gray-800 font-semibold"
-                    >
-                      SoftEther Logs
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      onClick={() => setSeLogs("")}
-                      sx={blueButtonSx}
-                    >
-                      Clear Logs
-                    </Button>
                   </div>
-                  <TextField
-                    multiline
-                    rows={8}
-                    value={seLogs || "No logs yet"}
-                    variant="outlined"
-                    fullWidth
-                    InputProps={{ readOnly: true }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        fontSize: "12px",
+
+                  <div className="flex flex-wrap gap-4 mt-6">
+                    {!isProfileCreated ? (
+                      <Btn
+                        variant="primary"
+                        onClick={handleSeCreateFlow}
+                        disabled={loading.seCreate || !areSeFieldsFilled()}
+                      >
+                        {loading.seCreate
+                          ? "Processing..."
+                          : "Create & Connect"}
+                      </Btn>
+                    ) : (
+                      <>
+                        {seStatus === "Running" || seStatus === "Connecting" ? (
+                          <Btn
+                            variant="error"
+                            onClick={handleSeDisconnect}
+                            disabled={
+                              loading.seDisconnect ||
+                              !seForm.connectionName.trim()
+                            }
+                          >
+                            {loading.seDisconnect
+                              ? "Disconnecting..."
+                              : "Disconnect"}
+                          </Btn>
+                        ) : (
+                          <Btn
+                            variant="primary"
+                            onClick={handleSeConnect}
+                            disabled={
+                              loading.seConnect || !seForm.connectionName.trim()
+                            }
+                          >
+                            {loading.seConnect ? "Connecting..." : "Connect"}
+                          </Btn>
+                        )}
+                        <Btn
+                          variant="default"
+                          onClick={() => handleSeStatus(false)}
+                          disabled={loading.seStatus}
+                        >
+                          {loading.seStatus ? "Checking..." : "Check Status"}
+                        </Btn>
+                        <Btn
+                          variant="default"
+                          onClick={handleSeState}
+                          disabled={loading.seState}
+                        >
+                          {loading.seState ? "Checking..." : "VPN State"}
+                        </Btn>
+                        <Btn
+                          variant="cancel"
+                          onClick={() => handleSeDelete(seForm.connectionName)}
+                          disabled={loading.seDelete}
+                        >
+                          {loading.seDelete ? "Deleting..." : "Delete Profile"}
+                        </Btn>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2 mt-6">
+                    <div className="flex items-center justify-between">
+                      <span
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: C.strongText,
+                        }}
+                      >
+                        SoftEther Logs
+                      </span>
+                      <Btn variant="default" onClick={() => setSeLogs("")}>
+                        Clear Logs
+                      </Btn>
+                    </div>
+                    <textarea
+                      value={seLogs || "No logs yet"}
+                      readOnly
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        fontSize: 12,
                         fontFamily: "monospace",
-                        backgroundColor: "#f8f9fa",
-                      },
-                    }}
-                  />
-                </div>
-              </div>
-            )}
+                        backgroundColor: "#f8fafc",
+                        color: C.valueText,
+                        padding: 12,
+                        borderRadius: 8,
+                        border: `1px solid ${C.cardBorder}`,
+                        outline: "none",
+                        resize: "vertical",
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </Paper>
+        </div>
       </div>
     </div>
   );

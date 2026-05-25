@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import {
   Button,
   Dialog,
@@ -9,9 +9,133 @@ import {
   TextField,
   Alert,
   CircularProgress,
+  Checkbox,
 } from "@mui/material";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { postLinuxCmd } from "../../../api/apiService";
 import { IPTABLES_INFO } from "../../../constants/AccessControlConstants";
+
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  gridHeaderBg: "#f8fafc",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+  footerBg: "#e3e7ef",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background: C.primary,
+      color: C.cardBg,
+      border: `1px solid ${C.primary}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    error: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `1px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return C.primaryHover;
+      case "error":
+        return "#b91c1c";
+      case "delete":
+        return "#fecaca";
+      case "edit":
+        return "#bbf7d0";
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+      }}
+    >
+      {startIcon && (
+        <span style={{ display: "flex", alignItems: "center" }}>
+          {startIcon}
+        </span>
+      )}
+      {children}
+    </button>
+  );
+};
 
 const AccessControl = () => {
   // State
@@ -25,7 +149,7 @@ const AccessControl = () => {
     delete: false,
     apply: false,
   });
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [toast, setToast] = useState({ msg: "", type: "success" });
   const [executionLogs, setExecutionLogs] = useState(IPTABLES_INFO);
   const [iptablesInfo, setIptablesInfo] = useState(IPTABLES_INFO);
 
@@ -37,15 +161,6 @@ const AccessControl = () => {
     scrollWidth: 0,
   });
   const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
-
-  // Pagination
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(commands.length / itemsPerPage));
-  const pagedCommands = commands.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
 
   // Update scroll state when data changes
   useEffect(() => {
@@ -63,12 +178,12 @@ const AccessControl = () => {
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, [commands, page]);
+  }, [commands]);
 
-  // Message handling
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  // Toast handling
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
   // Load iptables info on mount
@@ -188,7 +303,7 @@ const AccessControl = () => {
     const validation = validateCommand(form.command);
 
     if (!validation.valid) {
-      window.alert(validation.error);
+      showToast(validation.error, "error");
       return;
     }
 
@@ -203,19 +318,19 @@ const AccessControl = () => {
               : cmd,
           ),
         );
-        showMessage("success", "Command updated successfully");
+        showToast("Command updated successfully", "success");
       } else {
         // Add new command
         setCommands((prev) => [
           ...prev,
           { index: form.index, command: form.command.trim() },
         ]);
-        showMessage("success", "Command added successfully");
+        showToast("Command added successfully", "success");
       }
       handleCloseModal();
     } catch (error) {
       console.error("Error saving command:", error);
-      showMessage("error", "Failed to save command");
+      showToast("Failed to save command", "error");
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
@@ -229,26 +344,30 @@ const AccessControl = () => {
   };
   const handleCheckAll = () => setSelected(commands.map((_, idx) => idx));
   const handleUncheckAll = () => setSelected([]);
-  const handleInverse = () =>
-    setSelected(
-      commands
-        .map((_, idx) => (selected.includes(idx) ? null : idx))
-        .filter((i) => i !== null),
-    );
+
+  const handleInverse = () => {
+    const allIndices = commands.map((_, idx) => idx);
+    setSelected(allIndices.filter((i) => !selected.includes(i)));
+  };
 
   const handleDelete = () => {
     if (selected.length === 0) {
-      showMessage("error", "Please select commands to delete");
+      showToast("Please select commands to delete", "error");
       return;
     }
+
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete ${selected.length} selected command(s)?`,
+    );
+    if (!isConfirmed) return;
 
     setLoading((prev) => ({ ...prev, delete: true }));
     setTimeout(() => {
       setCommands((prev) => prev.filter((_, idx) => !selected.includes(idx)));
       setSelected([]);
-      showMessage(
-        "success",
+      showToast(
         `${selected.length} command(s) deleted successfully`,
+        "success",
       );
       setLoading((prev) => ({ ...prev, delete: false }));
     }, 500);
@@ -256,7 +375,7 @@ const AccessControl = () => {
 
   const handleClearAll = () => {
     if (commands.length === 0) {
-      showMessage("info", "No commands to clear");
+      showToast("No commands to clear", "info");
       return;
     }
 
@@ -272,24 +391,21 @@ const AccessControl = () => {
     setTimeout(() => {
       setCommands([]);
       setSelected([]);
-      setPage(1);
-      showMessage(
-        "success",
+
+      showToast(
         `All ${commands.length} command(s) deleted successfully`,
+        "success",
       );
       setLoading((prev) => ({ ...prev, delete: false }));
     }, 500);
   };
 
-  const handlePageChange = (newPage) => {
-    setPage(Math.max(1, Math.min(totalPages, newPage)));
-  };
-
   // Apply all commands
   const handleApply = async () => {
     if (commands.length === 0) {
-      window.alert(
+      showToast(
         "No commands to apply. Please add commands to the table first.",
+        "warning",
       );
       return;
     }
@@ -330,26 +446,25 @@ const AccessControl = () => {
         }
         alertMessage += `Failed command(s) at index: ${failedIndices}`;
 
-        window.alert(alertMessage);
+        showToast(alertMessage, "error");
 
         if (successCount > 0) {
-          showMessage(
-            "warning",
+          showToast(
             `${successCount} succeeded, ${failedCount} failed`,
+            "warning",
           );
         } else {
-          showMessage("error", `All ${failedCount} command(s) failed`);
+          showToast(`All ${failedCount} command(s) failed`, "error");
         }
       } else {
-        showMessage(
-          "success",
+        showToast(
           `All ${commands.length} command(s) executed successfully`,
+          "success",
         );
       }
     } catch (error) {
       console.error("Error applying commands:", error);
-      showMessage("error", "Failed to apply commands.");
-      window.alert("An error occurred while applying commands.");
+      showToast("Failed to apply commands.", "error");
     } finally {
       setLoading((prev) => ({ ...prev, apply: false }));
     }
@@ -396,14 +511,14 @@ const AccessControl = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      {/* Message Display */}
-      {message.text && (
+      {/* ── Alerts ── */}
+      {toast.msg && (
         <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
           sx={{
             position: "fixed",
             top: 20,
@@ -413,426 +528,378 @@ const AccessControl = () => {
             boxShadow: 3,
           }}
         >
-          {message.text}
+          {toast.msg}
         </Alert>
       )}
 
+      {/* ── Breadcrumbs ── */}
+      <div className="w-full" style={{ maxWidth: 1000, margin: "0 auto" }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Access Control{" "}
+          </span>
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div className="w-full max-w-7xl mx-auto">
-        {/* Blue header bar */}
+      <div
+        className="w-full mx-auto"
+        style={{
+          maxWidth: 1000,
+          background: C.cardBg,
+          borderRadius: 20,
+          overflow: "hidden",
+          boxShadow: C.cardShadow,
+          marginBottom: 24,
+          border: `1px solid ${C.cardBorder}`,
+        }}
+      >
+        {/* ── Header ── */}
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            minHeight: 44,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 12,
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 14px",
+            fontWeight: 700,
+            fontSize: 13,
+            color: C.strongText,
+            borderBottom: `1px solid ${C.divider}`,
           }}
         >
-          Access Control List
-        </div>
-
-        <div
-          className="w-full max-w-full mx-auto"
-          style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div
-              className="w-full border-b border-gray-300"
-              style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
-              }}
-            >
-              <div
-                ref={tableScrollRef}
-                onScroll={handleTableScroll}
-                className="scrollbar-hide"
-                style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  maxHeight: 360,
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
-                }}
-              >
-                <table
-                  className="w-full min-w-[1200px] border border-gray-300 border-collapse whitespace-nowrap"
-                  style={{ tableLayout: "auto", border: "1px solid #bbb" }}
-                >
-                  <thead>
-                    <tr style={{ minHeight: 32 }}>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                          width: "60px",
-                        }}
-                      >
-                        Check
-                      </th>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                          width: "80px",
-                        }}
-                      >
-                        Index
-                      </th>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                          width: "80px",
-                        }}
-                      >
-                        Command
-                      </th>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                          width: "80px",
-                        }}
-                      >
-                        Modify
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commands.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={4}
-                          className="border border-gray-300 px-2 py-1 text-center"
-                        >
-                          No data
-                        </td>
-                      </tr>
-                    ) : (
-                      pagedCommands.map((cmd, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        return (
-                          <tr key={realIdx} style={{ minHeight: 32 }}>
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selected.includes(realIdx)}
-                                onChange={() => handleSelectRow(realIdx)}
-                                disabled={loading.delete}
-                              />
-                            </td>
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {cmd.index}
-                            </td>
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {cmd.command}
-                            </td>
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <EditDocumentIcon
-                                className={`cursor-pointer text-blue-600 mx-auto ${loading.delete ? "opacity-50" : ""}`}
-                                onClick={() =>
-                                  !loading.delete &&
-                                  handleOpenModal(cmd, realIdx)
-                                }
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {/* Custom scrollbar row below the table */}
-            {showCustomScrollbar && (
-              <div
-                style={{
-                  width: "100%",
-                  margin: "0 auto",
-                  background: "#f4f6fa",
-                  display: "flex",
-                  alignItems: "center",
-                  height: 24,
-                  borderBottomLeftRadius: 8,
-                  borderBottomRightRadius: 8,
-                  border: "none",
-                  borderTop: "none",
-                  padding: "0 4px",
-                  boxSizing: "border-box",
-                }}
-              >
-                <div
-                  style={{
-                    width: 18,
-                    height: 18,
-                    background: "#e3e7ef",
-                    border: "1px solid #bbb",
-                    borderRadius: 8,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    color: "#888",
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                  onClick={() => handleArrowClick("left")}
-                >
-                  &#9664;
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    height: 12,
-                    background: "#e3e7ef",
-                    borderRadius: 8,
-                    position: "relative",
-                    margin: "0 4px",
-                    overflow: "hidden",
-                  }}
-                  onClick={handleScrollbarDrag}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      height: 12,
-                      background: "#888",
-                      borderRadius: 8,
-                      cursor: "pointer",
-                      top: 0,
-                      width: thumbWidth,
-                      left: thumbLeft,
-                    }}
-                    draggable
-                    onDrag={handleScrollbarDrag}
-                  />
-                </div>
-                <div
-                  style={{
-                    width: 18,
-                    height: 18,
-                    background: "#e3e7ef",
-                    border: "1px solid #bbb",
-                    borderRadius: 8,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    color: "#888",
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                  onClick={() => handleArrowClick("right")}
-                >
-                  &#9654;
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-        <div
-          className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
+          <span>Access Control List</span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <Btn
+              variant="default"
               onClick={handleInverse}
-              disabled={loading.delete}
+              disabled={loading.delete || commands.length === 0}
+              style={{ height: 30 }}
             >
               Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
+            </Btn>
+            <Btn
+              variant="delete"
               onClick={handleDelete}
-              disabled={loading.delete}
+              disabled={selected.length === 0 || loading.delete}
+              style={{ height: 30 }}
             >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
+              <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+              {loading.delete ? "Deleting..." : "Delete"}
+            </Btn>
+            <Btn
+              variant="delete"
               onClick={handleClearAll}
-              disabled={loading.delete}
+              disabled={commands.length === 0 || loading.delete}
+              style={{ height: 30 }}
             >
-              {loading.delete && <CircularProgress size={12} />}
-              Clear All
-            </button>
+              {loading.delete ? "Clearing..." : "Clear All"}
+            </Btn>
+            <Btn
+              variant="primary"
+              onClick={() => handleOpenModal()}
+              disabled={loading.save}
+              style={{ height: 30, minWidth: 110 }}
+            >
+              + Add New
+            </Btn>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.apply ? "opacity-50 cursor-not-allowed" : ""}`}
+        </div>
+
+        <div
+          className="scrollbar-hide w-full overflow-x-auto"
+          style={{
+            maxHeight: 400,
+            overflowY: "auto",
+            scrollbarWidth: "auto",
+          }}
+        >
+          <table className="w-full md:min-w-[700px] border-collapse table-auto">
+            <thead
+              style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 10,
+                backgroundColor: C.gridHeaderBg,
+              }}
+            >
+              <tr>
+                <th
+                  className="whitespace-nowrap text-center"
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: C.strongText,
+                    borderBottom: `1px solid ${C.divider}`,
+                    borderRight: `1px solid ${C.divider}`,
+                  }}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={
+                      commands.length > 0 && selected.length === commands.length
+                    }
+                    indeterminate={
+                      selected.length > 0 && selected.length < commands.length
+                    }
+                    onChange={(e) =>
+                      e.target.checked ? handleCheckAll() : handleUncheckAll()
+                    }
+                    sx={{
+                      padding: "1px",
+                      color: C.accent,
+                      "&.Mui-checked": { color: C.accent },
+                      "&.MuiCheckbox-indeterminate": { color: C.accent },
+                    }}
+                  />
+                </th>
+                <th
+                  className="whitespace-nowrap text-center"
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: C.strongText,
+                    borderBottom: `1px solid ${C.divider}`,
+                    borderRight: `1px solid ${C.divider}`,
+                  }}
+                >
+                  Index
+                </th>
+                <th
+                  className="whitespace-nowrap text-center"
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: C.strongText,
+                    borderBottom: `1px solid ${C.divider}`,
+                    borderRight: `1px solid ${C.divider}`,
+                  }}
+                >
+                  Command
+                </th>
+                <th
+                  className="whitespace-nowrap text-center"
+                  style={{
+                    padding: "8px 12px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: C.strongText,
+                    borderBottom: `1px solid ${C.divider}`,
+                    borderRight: `1px solid ${C.divider}`,
+                  }}
+                >
+                  Modify
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {commands.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="text-center py-8 text-gray-500 text-[13px]"
+                  >
+                    No data
+                  </td>
+                </tr>
+              ) : (
+                commands.map((cmd, idx) => {
+                  return (
+                    <tr
+                      key={idx}
+                      style={{ borderBottom: `1px solid ${C.divider}` }}
+                      className="hover:bg-[#f8fafc] transition-colors"
+                    >
+                      <td
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={selected.includes(idx)}
+                          onChange={() => handleSelectRow(idx)}
+                          disabled={loading.delete}
+                          sx={{
+                            padding: "1px",
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                          }}
+                        />
+                      </td>
+                      <td
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
+                      >
+                        {cmd.index}
+                      </td>
+                      <td
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
+                      >
+                        {cmd.command}
+                      </td>
+                      <td
+                        className="text-center bg-white"
+                        style={{
+                          padding: "10px 12px",
+                          fontSize: 13,
+                          color: C.valueText,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
+                      >
+                        <Btn
+                          variant="edit"
+                          onClick={() =>
+                            !loading.delete && handleOpenModal(cmd, idx)
+                          }
+                          disabled={loading.delete}
+                          style={{
+                            height: 28,
+                            minWidth: 74,
+                            padding: "2px 10px",
+                            margin: "0 auto",
+                          }}
+                        >
+                          <EditOutlinedIcon
+                            sx={{ fontSize: 14, marginRight: "4px" }}
+                          />
+                          Edit
+                        </Btn>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ── Footer ── */}
+        <div
+          style={{
+            minHeight: 44,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 12,
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 14px",
+            fontWeight: 700,
+            fontSize: 13,
+            color: C.strongText,
+            borderTop: `1px solid ${C.divider}`,
+          }}
+        >
+          <div
+            className="flex items-center gap-2 text-[13px]"
+            style={{ color: C.labelText, fontWeight: 400 }}
+          >
+            <span>{commands.length} items Total</span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <Btn
+              variant="primary"
               onClick={handleApply}
               disabled={loading.apply}
+              style={{ height: 30 }}
             >
-              {loading.apply && <CircularProgress size={12} />}
+              {loading.apply && (
+                <CircularProgress size={12} color="inherit" sx={{ mr: 0.5 }} />
+              )}{" "}
               Apply
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.apply ? "opacity-50 cursor-not-allowed" : ""}`}
+            </Btn>
+            <Btn
+              variant="cancel"
               onClick={async () => {
                 const latestInfo = await loadIptablesInfo();
                 setExecutionLogs(latestInfo || iptablesInfo);
-                showMessage(
-                  "info",
+                showToast(
                   "Log view reset to current iptables configuration",
+                  "info",
                 );
               }}
               disabled={loading.apply}
+              style={{ height: 30 }}
             >
               Cancel
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={() => handleOpenModal()}
-              disabled={loading.save}
-            >
-              Add New
-            </button>
+            </Btn>
           </div>
         </div>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-          <span>{commands.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => handlePageChange(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
+      {/* Iptables Info Log Field */}
+      <div className="w-full max-w-[900px] mx-auto mt-4 flex flex-col items-center">
+        <div className="text-gray-600 text-sm font-semibold mb-2 text-center">
+          Iptables Info
         </div>
-
-        {/* Iptables Info Log Field */}
-        <div className="w-full max-w-[900px] mx-auto mt-4 flex flex-col items-center">
-          <div className="text-gray-600 text-sm font-semibold mb-2 text-center">
-            Iptables Info
-          </div>
-          <div
-            className="w-full bg-white border-2 border-gray-400 rounded-md shadow-sm overflow-y-auto p-3 resize-y"
-            style={{ minHeight: 140, maxHeight: 320 }}
+        <div
+          className="w-full bg-white border-2 border-gray-400 rounded-md shadow-sm overflow-y-auto p-3 resize-y"
+          style={{ minHeight: 140, maxHeight: 320 }}
+        >
+          <pre
+            className="w-full h-full bg-white text-gray-800 text-xs font-mono whitespace-pre-wrap m-0 p-0"
+            style={{ minHeight: 120, maxHeight: 260, fontSize: "11px" }}
           >
-            <pre
-              className="w-full h-full bg-white text-gray-800 text-xs font-mono whitespace-pre-wrap m-0 p-0"
-              style={{ minHeight: 120, maxHeight: 260, fontSize: "11px" }}
-            >
-              {executionLogs}
-            </pre>
+            {executionLogs}
+          </pre>
+        </div>
+        <div className="mt-2 text-[11px] text-red-600 text-center">
+          <div>
+            Note: Please don't enable "SIP" =&gt; "Calls from SIP Trunk Address
+            only".
           </div>
-          <div className="mt-2 text-[11px] text-red-600 text-center">
-            <div>
-              Note: Please don't enable "SIP" =&gt; "Calls from SIP Trunk
-              Address only".
-            </div>
-            <div>
-              Note: Application and cancel application buttons are for all
-              current set rules, not direct at a certain rule.
-            </div>
+          <div>
+            Note: Application and cancel application buttons are for all current
+            set rules, not direct at a certain rule.
           </div>
         </div>
       </div>
@@ -840,162 +907,192 @@ const AccessControl = () => {
       {/* Modal for Add/Edit Command */}
       <Dialog
         open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
+        onClose={(event, reason) => {
+          if (reason === "backdropClick") return;
+          if (!loading.save) handleCloseModal();
+        }}
         maxWidth={false}
         className="z-50"
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start" } }}
+        slotProps={{
+          backdrop: {
+            sx: {
+              backdropFilter: "blur(4px)",
+              backgroundColor: "rgba(15, 23, 42, 0.3)",
+            },
+          },
+        }}
         PaperProps={{
-          sx: { width: 600, maxWidth: "95vw", mx: "auto", p: 0 },
+          sx: {
+            width: 440,
+            maxWidth: "95vw",
+            mx: "auto",
+            borderRadius: "16px",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+            mt: "10vh",
+            verticalAlign: "top",
+          },
         }}
         disableRestoreFocus
         disableEnforceFocus
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          sx={{
+            fontWeight: 600,
+            fontSize: "16px",
+            color: C.strongText,
+            borderBottom: `1px solid ${C.divider}`,
+            px: 3,
+            py: 2,
+            backgroundColor: C.cardBg,
           }}
         >
           Access Control Command
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
+            p: 3,
+            pt: "24px !important",
+            backgroundColor: C.cardBg,
           }}
         >
-          <div className="flex flex-col gap-2 w-full">
-            <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
+          <div className="flex flex-col gap-3 w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2 sm:gap-4">
               <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 180, marginRight: 10 }}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: C.labelText,
+                  width: "100%",
+                  maxWidth: 100,
+                  flexShrink: 0,
+                }}
               >
                 Index:
               </label>
-              <div className="flex-1">
-                <TextField
+              <div className="flex-1 w-full">
+                <input
                   type="text"
                   value={form.index || ""}
                   onChange={(e) => handleChange("index", e.target.value)}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
                   disabled={editIndex !== null}
                   placeholder="Auto-generated"
-                  inputProps={{
-                    style: {
-                      fontSize: 14,
-                      padding: "3px 6px",
-                      textAlign: "center",
-                    },
+                  style={{
+                    width: "100%",
+                    fontSize: 13,
+                    padding: "6px 10px",
+                    borderRadius: 10,
+                    border: `1px solid ${C.cardBorder}`,
+                    background: editIndex !== null ? "#f1f5f9" : C.cardBg,
+                    color: C.valueText,
+                    outline: "none",
+                    transition: "border-color 0.2s ease",
+                    height: 32,
+                    cursor: editIndex !== null ? "not-allowed" : "text",
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-input": {
-                      textAlign: "center",
-                    },
+                  onFocus={(e) => {
+                    if (editIndex === null)
+                      e.target.style.borderColor = C.accent;
+                  }}
+                  onBlur={(e) => {
+                    if (editIndex === null)
+                      e.target.style.borderColor = C.cardBorder;
+                  }}
+                  onMouseEnter={(e) => {
+                    if (
+                      editIndex === null &&
+                      document.activeElement !== e.target
+                    )
+                      e.target.style.borderColor = "#94a3b8";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (
+                      editIndex === null &&
+                      document.activeElement !== e.target
+                    )
+                      e.target.style.borderColor = C.cardBorder;
                   }}
                 />
               </div>
             </div>
-            <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2 sm:gap-4">
               <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 180, marginRight: 10 }}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: C.labelText,
+                  width: "100%",
+                  maxWidth: 100,
+                  flexShrink: 0,
+                }}
               >
                 Command:
               </label>
-              <div className="flex-1">
-                <TextField
+              <div className="flex-1 w-full">
+                <input
                   type="text"
                   value={form.command || ""}
                   onChange={(e) => handleChange("command", e.target.value)}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
                   placeholder="e.g., iptables -P OUTPUT ACCEPT"
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
+                  style={{
+                    width: "100%",
+                    fontSize: 13,
+                    padding: "6px 10px",
+                    borderRadius: 10,
+                    border: `1px solid ${C.cardBorder}`,
+                    background: C.cardBg,
+                    color: C.valueText,
+                    outline: "none",
+                    transition: "border-color 0.2s ease",
+                    height: 32,
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = C.accent)}
+                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
+                  onMouseEnter={(e) => {
+                    if (document.activeElement !== e.target)
+                      e.target.style.borderColor = "#94a3b8";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (document.activeElement !== e.target)
+                      e.target.style.borderColor = C.cardBorder;
+                  }}
                 />
               </div>
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="p-4 justify-center gap-5">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+            gap: 2,
+            p: 3,
+            borderTop: `1px solid ${C.divider}`,
+            backgroundColor: C.cardBg,
+          }}
+        >
+          <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
             startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
+              loading.save && <CircularProgress size={16} color="inherit" />
             }
           >
             {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+          </Btn>
+          <Btn
+            variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>
