@@ -984,119 +984,65 @@ const InboundRoutesPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <Btn
+              <TableBtn
                 onClick={() => {
                   setImportFile(null);
                   setShowImportModal(true);
                 }}
                 variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 ⬇ Import
-              </Btn>
-              <Btn onClick={handleExport} variant="outline">
+              </TableBtn>
+              <TableBtn
+                onClick={handleExport}
+                variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
                 ⬆ Export
-              </Btn>
-              <Btn
+              </TableBtn>
+              <TableBtn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 {loading.delete && (
-                  <CircularProgress size={11} style={{ color: C.errorRed }} />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 )}
                 🗑 Delete
-              </Btn>
-              <Btn
+              </TableBtn>
+              <TableBtn
                 onClick={handleOpenAddModal}
                 disabled={loading.save}
                 variant="accent"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 + Add New
-              </Btn>
+              </TableBtn>
             </div>
-          <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-  }}
->
-  <TableBtn
-    onClick={() => {
-      setImportFile(null);
-      setShowImportModal(true);
-    }}
-    variant="outline"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    ⬇ Import
-  </TableBtn>
-
-  <TableBtn
-    onClick={handleExport}
-    variant="outline"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    ⬆ Export
-  </TableBtn>
-
-  <TableBtn
-    onClick={handleDelete}
-    disabled={
-      loading.delete ||
-      loading.list ||
-      selected.length === 0
-    }
-    variant="danger"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    {loading.delete && (
-      <CircularProgress
-        size={11}
-        style={{ color: "#374151" }}
-      />
-    )}
-
-    🗑 Delete
-  </TableBtn>
-
-  <TableBtn
-    onClick={handleOpenAddModal}
-    disabled={loading.save}
-    variant="accent"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    + Add New
-  </TableBtn>
-</div>
->>>>>>> 13ac3d4 (Improved UI styling and table consistency across PBX modules)
           </div>
 
           {/* Table */}
@@ -2016,14 +1962,22 @@ const InboundRoutesPage = () => {
             </div>
           </div>
         </DialogContent>
-<<<<<<< HEAD
         <DialogActions
           style={{ padding: "16px 24px", justifyContent: "center", gap: 16 }}
         >
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 110, padding: "8px 24px", fontSize: 13 }}
+            style={{
+              minWidth: 110,
+              padding: "8px 24px",
+              fontSize: 13,
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+              color: "#fff",
+              border: "1px solid #5A6F8F",
+              boxShadow: "0 2px 8px #3E5475",
+            }}
           >
             {loading.save ? (
               <>
@@ -2038,46 +1992,16 @@ const InboundRoutesPage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="outline"
-            style={{ minWidth: 110, padding: "8px 24px", fontSize: 13 }}
+            style={{
+              minWidth: 110,
+              padding: "8px 24px",
+              fontSize: 13,
+              background: "#cbd5e1",
+              color: "#374151",
+              border: "1px solid #cbd5e1",
+              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+            }}
           >
-=======
-        <DialogActions style={{ padding: "16px 24px", justifyContent: "center", gap: 16 }}>
-          <Btn
-  onClick={handleSave}
-  disabled={loading.save}
-  style={{
-    minWidth: 110,
-    padding: "8px 24px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  {loading.save ? (
-    <>
-      <CircularProgress
-        size={14}
-        style={{ color: "#fff" }}
-      />{" "}
-      Saving...
-    </>
-  ) : (
-    "Save"
-  )}
-</Btn>
-          <Btn onClick={handleCloseModal} disabled={loading.save} variant="outline" style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}>
->>>>>>> 13ac3d4 (Improved UI styling and table consistency across PBX modules)
             Close
           </Btn>
         </DialogActions>
