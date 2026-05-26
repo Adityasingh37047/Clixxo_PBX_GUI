@@ -162,8 +162,8 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: C.accent,
-  "&.Mui-checked": { color: C.accent },
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
 };
 
 const PRIMARY_CHANNEL = "1-15,17-31";
@@ -430,9 +430,6 @@ const PcmPstnPage = () => {
     await loadPstnData(true);
   };
 
-  const handleCheckAll = () =>
-    setSelectedItems(pagedData.map((item) => item.span_id || item.span?.id));
-  const handleUncheckAll = () => setSelectedItems([]);
   const handleInverse = () => {
     const ids = pagedData.map((item) => item.span_id || item.span?.id);
     setSelectedItems(ids.filter((id) => !selectedItems.includes(id)));
@@ -1072,22 +1069,6 @@ const PcmPstnPage = () => {
             >
               <Btn
                 variant="cancel"
-                onClick={handleCheckAll}
-                disabled={loading.delete || loading.fetch}
-                style={{ height: 30 }}
-              >
-                Check All
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleUncheckAll}
-                disabled={loading.delete || loading.fetch}
-                style={{ height: 30 }}
-              >
-                Uncheck All
-              </Btn>
-              <Btn
-                variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete || loading.fetch}
                 style={{ height: 30 }}
@@ -1201,9 +1182,9 @@ const PcmPstnPage = () => {
                         }}
                         sx={{
                           padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          color: "#64748b",
+                          "&.Mui-checked": { color: "#0284c7" },
+                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
                         }}
                       />
                     </TH>

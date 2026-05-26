@@ -153,15 +153,15 @@ const blueBarStyle = {
 };
 
 const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
+  onBlur: (e) => (e.target.style.borderColor = "#cbd5e1"),
   onMouseEnter: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#94a3b8";
+      e.target.style.borderColor = "#64748b";
   },
   onMouseLeave: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
+      e.target.style.borderColor = "#cbd5e1";
   },
 };
 
@@ -230,8 +230,8 @@ const SignalingCallTrack = () => {
                         size="small"
                         sx={{
                           p: 0.5,
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.primary },
+                          color: "#64748b",
+                          "&.Mui-checked": { color: C.accent },
                         }}
                       />
                     }

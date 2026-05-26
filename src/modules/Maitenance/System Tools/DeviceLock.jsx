@@ -3,7 +3,7 @@ import {
   DEVICE_LOCK_OPTIONS,
   DEVICE_LOCK_LABELS,
 } from "../../../constants/DeviceLockConstants";
-import { Alert, TextField } from "@mui/material";
+import { Alert, TextField, Checkbox } from "@mui/material";
 
 const C = {
   pageBg: "#f8fafc",
@@ -287,16 +287,15 @@ const DeviceLock = () => {
                       (e.currentTarget.style.color = C.labelText)
                     }
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
+                      size="small"
                       checked={!!selectedOptions[opt.value]}
                       onChange={() => handleOptionChange(opt.value)}
-                      style={{
-                        marginRight: "8px",
-                        width: "16px",
-                        height: "16px",
-                        accentColor: C.primary,
-                        cursor: "pointer",
+                      sx={{
+                        padding: "4px",
+                        marginRight: "4px",
+                        color: "#64748b",
+                        "&.Mui-checked": { color: C.accent },
                       }}
                     />
                     {opt.label}
@@ -340,8 +339,8 @@ const DeviceLock = () => {
                           borderColor: C.cardBorder,
                           transition: "border-color 0.2s ease",
                         },
-                        "&:hover fieldset": { borderColor: "#94a3b8" },
-                        "&.Mui-focused fieldset": { borderColor: C.accent },
+                        "&:hover fieldset": { borderColor: "#64748b" },
+                        "&.Mui-focused fieldset": { borderColor: "#0284c7", borderWidth: 1 },
                       },
                       "& .MuiInputBase-input": {
                         fontSize: 13,
@@ -387,8 +386,8 @@ const DeviceLock = () => {
                           borderColor: C.cardBorder,
                           transition: "border-color 0.2s ease",
                         },
-                        "&:hover fieldset": { borderColor: "#94a3b8" },
-                        "&.Mui-focused fieldset": { borderColor: C.accent },
+                        "&:hover fieldset": { borderColor: "#64748b" },
+                        "&.Mui-focused fieldset": { borderColor: "#0284c7", borderWidth: 1 },
                       },
                       "& .MuiInputBase-input": {
                         fontSize: 13,

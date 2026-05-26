@@ -4,7 +4,7 @@ import {
   DDOS_INITIAL_FORM,
   DDOS_INFO_LOG,
 } from "../../../constants/DDOSSettingsConstants";
-import { Select, MenuItem, Alert } from "@mui/material";
+import { Select, MenuItem, Alert, Checkbox } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
@@ -578,8 +578,8 @@ const DDOSSettings = () => {
                     </div>
                     <div className="flex items-center min-h-[34px]">
                       <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
+                        <Checkbox
+                          size="small"
                           checked={!!form.webPortAttack}
                           onChange={() =>
                             handleChange(
@@ -588,10 +588,11 @@ const DDOSSettings = () => {
                               "checkbox",
                             )
                           }
-                          style={{
-                            accentColor: C.accent,
-                            width: 16,
-                            height: 16,
+                          sx={{
+                            padding: "4px",
+                            marginRight: "4px",
+                            color: "#64748b",
+                            "&.Mui-checked": { color: C.accent },
                           }}
                         />
                         <span style={{ fontSize: 14, color: C.valueText }}>
@@ -645,8 +646,8 @@ const DDOSSettings = () => {
                     </div>
                     <div className="flex items-center min-h-[34px]">
                       <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
+                        <Checkbox
+                          size="small"
                           checked={!!form.ftpPortAttack}
                           onChange={() =>
                             handleChange(
@@ -655,10 +656,11 @@ const DDOSSettings = () => {
                               "checkbox",
                             )
                           }
-                          style={{
-                            accentColor: C.accent,
-                            width: 16,
-                            height: 16,
+                          sx={{
+                            padding: "4px",
+                            marginRight: "4px",
+                            color: "#64748b",
+                            "&.Mui-checked": { color: C.accent },
                           }}
                         />
                         <span style={{ fontSize: 14, color: C.valueText }}>
@@ -712,8 +714,8 @@ const DDOSSettings = () => {
                     </div>
                     <div className="flex items-center min-h-[34px]">
                       <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
+                        <Checkbox
+                          size="small"
                           checked={!!form.sshPortAttack}
                           onChange={() =>
                             handleChange(
@@ -722,10 +724,11 @@ const DDOSSettings = () => {
                               "checkbox",
                             )
                           }
-                          style={{
-                            accentColor: C.accent,
-                            width: 16,
-                            height: 16,
+                          sx={{
+                            padding: "4px",
+                            marginRight: "4px",
+                            color: "#64748b",
+                            "&.Mui-checked": { color: C.accent },
                           }}
                         />
                         <span style={{ fontSize: 14, color: C.valueText }}>
@@ -779,8 +782,8 @@ const DDOSSettings = () => {
                     </div>
                     <div className="flex items-center min-h-[34px]">
                       <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
+                        <Checkbox
+                          size="small"
                           checked={!!form.telnetPortAttack}
                           onChange={() =>
                             handleChange(
@@ -789,10 +792,11 @@ const DDOSSettings = () => {
                               "checkbox",
                             )
                           }
-                          style={{
-                            accentColor: C.accent,
-                            width: 16,
-                            height: 16,
+                          sx={{
+                            padding: "4px",
+                            marginRight: "4px",
+                            color: "#64748b",
+                            "&.Mui-checked": { color: C.accent },
                           }}
                         />
                         <span style={{ fontSize: 14, color: C.valueText }}>

@@ -1474,7 +1474,7 @@ WantedBy=multi-user.target
                           onChange={handleSelectAll}
                           sx={{
                             padding: "1px",
-                            color: C.accent,
+                            color: "#64748b",
                             "&.Mui-checked": { color: C.accent },
                             "&.MuiCheckbox-indeterminate": { color: C.accent },
                           }}
@@ -1509,7 +1509,7 @@ WantedBy=multi-user.target
                           onChange={() => handleCheck(idx)}
                           sx={{
                             padding: "1px",
-                            color: C.accent,
+                            color: "#64748b",
                             "&.Mui-checked": { color: C.accent },
                           }}
                         />
@@ -1705,11 +1705,11 @@ WantedBy=multi-user.target
                       transition: "border-color 0.2s ease",
                       height: 32,
                     }}
-                    onFocus={(e) => (e.target.style.borderColor = "#1e2d42")}
+                    onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
                     onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
                     onMouseEnter={(e) => {
                       if (document.activeElement !== e.target)
-                        e.target.style.borderColor = "#94a3b8";
+                        e.target.style.borderColor = "#64748b";
                     }}
                     onMouseLeave={(e) => {
                       if (document.activeElement !== e.target)
@@ -1740,10 +1740,11 @@ WantedBy=multi-user.target
                         borderColor: "#cbd5e1",
                       },
                       "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#94a3b8",
+                        borderColor: "#64748b",
                       },
                       "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#1e2d42 !important",
+                        borderColor: "#0284c7 !important",
+                        borderWidth: "1px !important",
                       },
                       "& .MuiSelect-select": {
                         padding: "6px 8px !important",

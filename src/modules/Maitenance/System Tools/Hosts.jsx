@@ -206,9 +206,9 @@ const modalInputStyle = {
 };
 
 const getInputInteraction = (hasError) => ({
-  onFocus: (e) => (e.target.style.borderColor = hasError ? C.errorRed : "#1e2d42"),
+  onFocus: (e) => (e.target.style.borderColor = hasError ? C.errorRed : "#0284c7"),
   onBlur: (e) => (e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1"),
-  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : "#94a3b8" },
+  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : "#64748b" },
   onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1" },
 });
 const modalFooterStyle = {
@@ -727,7 +727,7 @@ const Hosts = () => {
                       disabled={hosts.length === 0}
                       sx={{
                         padding: "1px",
-                        color: C.accent,
+                        color: "#64748b",
                         "&.Mui-checked": { color: C.accent },
                         "&.MuiCheckbox-indeterminate": { color: C.accent },
                       }}
@@ -783,7 +783,7 @@ const Hosts = () => {
                           disabled={loading.delete}
                           sx={{
                             padding: "1px",
-                            color: C.accent,
+                            color: "#64748b",
                             "&.Mui-checked": { color: C.accent },
                           }}
                         />
