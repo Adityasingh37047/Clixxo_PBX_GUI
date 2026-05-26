@@ -996,25 +996,42 @@ const CallCount = () => {
                 flexWrap: "wrap",
               }}
             >
-              <Btn
-                onClick={() => loadCdr(page)}
-                disabled={loading}
-                variant="default"
-              >
-                {loading ? (
-                  <CircularProgress size={16} sx={{ color: C.accent }} />
-                ) : (
-                  "Refresh"
-                )}
-              </Btn>
+            <Btn
+  onClick={() => loadCdr(page)}
+  disabled={loading}
+  variant="default"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  {loading ? (
+    <CircularProgress size={16} sx={{ color: "#374151" }} />
+  ) : (
+    "Refresh"
+  )}
+</Btn>
               <Btn
                 onClick={handleDelete}
                 disabled={loading || selectedIds.length === 0}
                 variant="danger"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 🗑 Delete
               </Btn>
-              <Btn onClick={handleDownload} disabled={loading} variant="accent">
+              <Btn onClick={handleDownload} disabled={loading} variant="accent" style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}>
                 ⬇ Download CDR
               </Btn>
             </div>

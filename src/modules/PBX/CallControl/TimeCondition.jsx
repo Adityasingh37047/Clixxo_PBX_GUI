@@ -11,14 +11,14 @@ import {
   TC_DAYS_OF_MONTH,
   TC_TABLE_COLUMNS,
   TC_INITIAL_FORM,
-} from "../constants/TimeComditionConstants";
+} from "../../../constants/TimeComditionConstants";
 import {
   fetchTimeConditions,
   createTimeCondition,
   updateTimeCondition,
   deleteTimeCondition,
   deleteAllTimeConditions,
-} from "../api/apiService";
+} from "../../../api/apiService";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const pad = (n) => String(n ?? 0).padStart(2, "0");
