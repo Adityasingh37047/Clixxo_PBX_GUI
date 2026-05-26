@@ -1737,7 +1737,12 @@ const SipRegisterPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                          sx={{ padding: "1px", color: TABLE_C.accent, "&.Mui-checked": { color: TABLE_C.accent }, "&.MuiCheckbox-indeterminate": { color: TABLE_C.accent } }}
+                         sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+}}
                       />
                     </TH>
                     <TH style={{ width: 36 }}>ID</TH>
@@ -1784,7 +1789,11 @@ const SipRegisterPage = () => {
                               disabled={!trunk.trunk_id}
                               checked={!!trunk.trunk_id && selectedIds.includes(trunk.trunk_id)}
                               onChange={() => handleToggleRow(trunk.trunk_id)}
-                              sx={{ padding: "1px", color: TABLE_C.accent, "&.Mui-checked": { color: TABLE_C.accent } }}
+                             sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+}}
                             />
                           </td>
                           <td style={{ textAlign: "center", padding: "10px 6px", fontSize: 11, color: TABLE_C.mutedText, borderRight: "1px solid #f1f5f9" }}>

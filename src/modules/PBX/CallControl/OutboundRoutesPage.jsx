@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  Button,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -58,56 +58,103 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   title,
+  type,
+  hoverBehavior = "background",
 }) => {
   const variants = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
+      background: C.cardBg,
+      color: C.valueText,
       border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+    cancel: {
+      background: "#f1f5f9",
+      color: "#64748b",
+      border: "1px solid #cbd5e1",
     },
     outline: {
       background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: "0.5px solid #fecaca",
+      color: C.valueText,
+      border: "1px solid #9ca3af",
     },
     accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
   };
+
   const s = variants[variant] || variants.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+      case "accent":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "danger":
+        return "#b91c1c";
+      case "cancel":
+        return "#e2e8f0";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = extraStyle?.background || s.background;
+
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "0.82";
+          } else {
+            e.currentTarget.style.background = hoverBg;
+          }
+        }
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "1";
+          } else {
+            e.currentTarget.style.background = baseBg;
+          }
+        }
       }}
     >
       {children}
@@ -844,64 +891,26 @@ const OutboundRoutesPage = () => {
             padding: "12px 24px 16px",
           }}
         >
-          <Button
-            variant="contained"
+          <Btn
+            variant="primary"
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
-            startIcon={
-              importLoading && <CircularProgress size={16} color="inherit" />
-            }
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff !important",
-              fontWeight: 600,
-              textTransform: "none",
-              minWidth: 100,
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#3E5475",
-                color: "#fff",
-              },
-            }}
+            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
           >
+            {importLoading && <CircularProgress size={16} color="inherit" />}
             {importLoading ? "Importing..." : "Import"}
-          </Button>
-          <Button
-            variant="contained"
+          </Btn>
+          <Btn
+            variant="cancel"
             onClick={() => {
               setShowImportModal(false);
               setImportFile(null);
             }}
             disabled={importLoading}
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 !important",
-              fontWeight: 600,
-              textTransform: "none",
-              minWidth: 100,
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
           >
             Cancel
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
 
@@ -989,9 +998,24 @@ const OutboundRoutesPage = () => {
               }}
             >
               <Btn
+                onClick={handleDelete}
+                disabled={loading.delete || selected.length === 0}
+                variant="outline"
+                hoverBehavior="opacity"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                Delete
+              </Btn>
+              <Btn
                 onClick={handleCheckAll}
                 disabled={loading.delete || rows.length === 0}
                 variant="outline"
+                hoverBehavior="opacity"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -1005,6 +1029,7 @@ const OutboundRoutesPage = () => {
                 onClick={handleUncheckAll}
                 disabled={loading.delete || selected.length === 0}
                 variant="outline"
+                hoverBehavior="opacity"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -1021,6 +1046,7 @@ const OutboundRoutesPage = () => {
                 }}
                 disabled={importLoading}
                 variant="outline"
+                hoverBehavior="opacity"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -1033,6 +1059,7 @@ const OutboundRoutesPage = () => {
               <Btn
                 onClick={handleExport}
                 variant="outline"
+                hoverBehavior="opacity"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -1045,7 +1072,8 @@ const OutboundRoutesPage = () => {
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.save || loading.list}
-                variant="accent"
+                variant="outline"
+                hoverBehavior="opacity"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -1089,11 +1117,12 @@ const OutboundRoutesPage = () => {
                         onChange={() =>
                           allRowsSelected ? handleUncheckAll() : handleCheckAll()
                         }
-                        sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                        }}
+                       sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+}}
                       />
                     </TH>
                     <TH style={{ width: 40 }}>#</TH>
@@ -1163,11 +1192,11 @@ const OutboundRoutesPage = () => {
                               checked={isSelected}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={loading.delete}
-                              sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+                             sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+}}
                             />
                           </td>
                           <td
@@ -1278,13 +1307,13 @@ const OutboundRoutesPage = () => {
                           <td
                             style={{ textAlign: "center", padding: "7px 8px" }}
                           >
-                            <Btn
-                              onClick={() => handleOpenEditModal(row)}
-                              variant="outline"
-                              style={{ fontSize: 10, padding: "3px 10px" }}
-                            >
-                              Edit
-                            </Btn>
+                           
+                              <EditDocumentIcon
+  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+  titleAccess="Edit"
+  onClick={() => handleOpenEditModal(row)}
+/>
+                            
                           </td>
                         </tr>
                       );
@@ -1839,16 +1868,16 @@ const OutboundRoutesPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to bottom" onClick={moveExtToBottom}>
+                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to bottom" onClick={moveExtToBottom}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,3 7,8 12,3" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="2" y1="11" x2="12" y2="11" stroke="#333" strokeWidth="2" strokeLinecap="round"/></svg>
                       </button>
-                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move up" onClick={moveExtUp}>
+                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move up" onClick={moveExtUp}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,9 7,4 12,9" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move down" onClick={moveExtDown}>
+                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move down" onClick={moveExtDown}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,5 7,10 12,5" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to top" onClick={moveExtToTop}>
+                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to top" onClick={moveExtToTop}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="3" x2="12" y2="3" stroke="#333" strokeWidth="2" strokeLinecap="round"/><polyline points="2,11 7,6 12,11" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     </div>
@@ -1952,16 +1981,16 @@ const OutboundRoutesPage = () => {
                     </div>
 
                     <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to bottom" onClick={moveTrunkToBottom}>
+                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to bottom" onClick={moveTrunkToBottom}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,3 7,8 12,3" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="2" y1="11" x2="12" y2="11" stroke="#333" strokeWidth="2" strokeLinecap="round"/></svg>
                       </button>
-                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move up" onClick={moveTrunkUp}>
+                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move up" onClick={moveTrunkUp}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,9 7,4 12,9" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move down" onClick={moveTrunkDown}>
+                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move down" onClick={moveTrunkDown}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,5 7,10 12,5" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
-                      <button type="button" className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to top" onClick={moveTrunkToTop}>
+                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to top" onClick={moveTrunkToTop}>
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="3" x2="12" y2="3" stroke="#333" strokeWidth="2" strokeLinecap="round"/><polyline points="2,11 7,6 12,11" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       </button>
                     </div>
@@ -1971,74 +2000,30 @@ const OutboundRoutesPage = () => {
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="p-4 justify-center gap-6">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+        <DialogActions
+          style={{
+            justifyContent: "center",
+            gap: 12,
+            padding: 16,
+          }}
+        >
+          <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
+            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
           >
+            {loading.save && <CircularProgress size={20} color="inherit" />}
             {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+          </Btn>
+          <Btn
+            variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
+            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

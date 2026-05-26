@@ -37,14 +37,20 @@ import {
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
 
 const Btn = ({
@@ -634,7 +640,7 @@ const SipToSipAccountPage = () => {
             border: `1px solid ${C.cardBorder}`,
             borderRadius: 8,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 1px 3px rgba(238, 231, 231, 0.04)",
           }}
         >
           {/* Toolbar */}
@@ -685,6 +691,13 @@ const SipToSipAccountPage = () => {
                 onClick={() => setSelected(accounts.map((_, i) => i))}
                 disabled={loading.delete}
                 variant="outline"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 Check All
               </Btn>
@@ -692,6 +705,13 @@ const SipToSipAccountPage = () => {
                 onClick={() => setSelected([])}
                 disabled={loading.delete}
                 variant="outline"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 Uncheck All
               </Btn>
@@ -705,6 +725,13 @@ const SipToSipAccountPage = () => {
                 }
                 disabled={loading.delete}
                 variant="outline"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 Inverse
               </Btn>
@@ -712,6 +739,13 @@ const SipToSipAccountPage = () => {
                 onClick={() => handleDelete(selected)}
                 disabled={loading.delete || selected.length === 0}
                 variant="danger"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#dc2626" }} />
@@ -722,6 +756,13 @@ const SipToSipAccountPage = () => {
                 onClick={handleClearAll}
                 disabled={loading.delete}
                 variant="outline"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 Clear All
               </Btn>
@@ -729,6 +770,13 @@ const SipToSipAccountPage = () => {
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
                 variant="accent"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 + Add New
               </Btn>

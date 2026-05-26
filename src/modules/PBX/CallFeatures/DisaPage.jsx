@@ -46,77 +46,129 @@ const INITIAL_FORM = {
   enabled: true,
 };
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+// Color palette aligned with OutboundRoutesPage design system
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
 
-// ── Shared UI Components ──────────────────────────────────────────────────────
+// Shared Btn component copied/adapted from OutboundRoutesPage for visual parity
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
+  title,
+  type,
+  hoverBehavior = "background",
 }) => {
   const variants = {
     default: {
-      background: "#1e2d42",
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
-      border: "1px solid #162233",
+      border: "1px solid #5A6F8F",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+    cancel: {
+      background: "#f1f5f9",
+      color: "#64748b",
+      border: "1px solid #cbd5e1",
     },
     outline: {
       background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
     },
     accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
   };
+
   const s = variants[variant] || variants.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+      case "accent":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "danger":
+        return "#b91c1c";
+      case "cancel":
+        return "#e2e8f0";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = extraStyle?.background || s.background;
+
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
       disabled={disabled}
+      title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "0.82";
+          } else {
+            e.currentTarget.style.background = hoverBg;
+          }
+        }
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "1";
+          } else {
+            e.currentTarget.style.background = baseBg;
+          }
+        }
       }}
     >
       {children}
@@ -127,17 +179,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -619,11 +671,11 @@ const DisaPage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
+            background: "#ffffff",
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            borderRadius: 22,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
@@ -632,9 +684,9 @@ const DisaPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              padding: "14px 18px",
+              borderBottom: "1px solid #e2e8f0",
+              background: "#ffffff",
               flexWrap: "wrap",
               gap: 8,
             }}
@@ -643,12 +695,12 @@ const DisaPage = () => {
               <span
                 style={{
                   background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
+                  border: "1px solid #e2e8f0",
+                  color: C.labelText,
                   fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
                 }}
               >
                 Page {page} · {filteredRows.length} records
@@ -683,14 +735,28 @@ const DisaPage = () => {
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
-                variant="danger"
+                variant="outline"
+                hoverBehavior="opacity"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
-                🗑 Delete
+                Delete
               </Btn>
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
-                variant="accent"
+                variant="outline"
+                hoverBehavior="opacity"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 + Add New
               </Btn>
@@ -727,12 +793,12 @@ const DisaPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
-                        }}
+                       sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+}}
                       />
                     </TH>
                     <TH style={{ width: 40 }}>#</TH>
@@ -785,7 +851,7 @@ const DisaPage = () => {
                           key={row.id || realIdx}
                           style={{
                             background: rowBgColor,
-                            borderBottom: "0.5px solid #9ca3af",
+                                borderBottom: "1px solid #f1f5f9",
                             transition: "background 0.1s ease",
                           }}
                           onMouseEnter={(e) => {
@@ -800,19 +866,19 @@ const DisaPage = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
+                                  padding: "4px 0",
+                                  borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <Checkbox
                               size="small"
                               checked={isSelected}
                               onChange={() => handleToggleRow(realIdx)}
-                              sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+                                 sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+}}
                             />
                           </td>
                           <td
@@ -821,7 +887,7 @@ const DisaPage = () => {
                               padding: "7px 4px",
                               fontSize: 11,
                               color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {realIdx + 1}
@@ -832,7 +898,7 @@ const DisaPage = () => {
                               fontSize: 12,
                               fontWeight: 600,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.name}
@@ -843,7 +909,7 @@ const DisaPage = () => {
                               padding: "7px 8px",
                               fontSize: 12,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.responseTimeout}
@@ -854,7 +920,7 @@ const DisaPage = () => {
                               padding: "7px 8px",
                               fontSize: 12,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.digitTimeout}
@@ -863,7 +929,7 @@ const DisaPage = () => {
                             style={{
                               textAlign: "center",
                               padding: "7px 8px",
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <span
@@ -889,7 +955,7 @@ const DisaPage = () => {
                             style={{
                               textAlign: "center",
                               padding: "7px 8px",
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <span
@@ -917,7 +983,7 @@ const DisaPage = () => {
                               padding: "7px 8px",
                               fontSize: 12,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <span
@@ -937,7 +1003,7 @@ const DisaPage = () => {
                               padding: "7px 16px",
                               fontSize: 12,
                               color: C.labelText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                               whiteSpace: "normal",
                               wordBreak: "break-all",
                             }}
@@ -950,17 +1016,11 @@ const DisaPage = () => {
                           <td
                             style={{ textAlign: "center", padding: "4px 8px" }}
                           >
-                            <Btn
-                              onClick={() => handleOpenEditModal(row)}
-                              variant="outline"
-                              style={{
-                                fontSize: 10,
-                                padding: "3px 10px",
-                                margin: "0 auto",
-                              }}
-                            >
-                              Edit
-                            </Btn>
+                                  <EditDocumentIcon
+  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+  titleAccess="Edit"
+  onClick={() => handleOpenEditModal(row)}
+/>
                           </td>
                         </tr>
                       );
@@ -978,9 +1038,10 @@ const DisaPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
@@ -1003,7 +1064,7 @@ const DisaPage = () => {
                     background: "#e0f2fe",
                     padding: "5px 14px",
                     borderRadius: 6,
-                    border: `0.5px solid ${C.accent}`,
+                    border: `0.5px solid ${C.cardBorder}`,
                   }}
                 >
                   Page {page} of {totalPages}
@@ -1026,23 +1087,30 @@ const DisaPage = () => {
         open={showModal}
         onClose={loading.save || loading.get ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 900, maxWidth: "96vw", borderRadius: 2 } }}
+        PaperProps={{ sx: { width: 1000, maxWidth: "98vw", mx: "auto", p: 0 } }}
       >
         <DialogTitle
           style={{
-            background: "#1e2d42",
+            background: "rgb(30, 45, 62)",
             color: "#fff",
             fontWeight: 700,
             fontSize: 16,
             textAlign: "center",
             padding: "14px 24px",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
           {editId != null ? "Edit DISA" : "Add DISA"}
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          className="pt-3 pb-0 px-2"
+          style={{
+            padding: "12px 8px 0 8px",
+            backgroundColor: "#dde0e4",
+            border: "1px solid #444444",
+            borderTop: "none",
+          }}
         >
           {loading.get ? (
             <div
@@ -1514,54 +1582,28 @@ const DisaPage = () => {
         </DialogContent>
         <DialogActions
           style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
             justifyContent: "center",
             gap: 12,
+            padding: 16,
           }}
         >
-          <Button
+          <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save || loading.get}
-            variant="contained"
-            sx={{
-              background: "#1e2d42",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 120,
-              "&:hover": { background: "#0f172a" },
-            }}
+            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
           >
-            {loading.save ? (
-              <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
-            ) : null}
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update DISA"
-                : "Create DISA"}
-          </Button>
-          <Button
+            {loading.save && <CircularProgress size={20} color="inherit" />}
+            {loading.save ? "Saving..." : editId != null ? "Update DISA" : "Create DISA"}
+          </Btn>
+          <Btn
+            variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save || loading.get}
-            variant="outlined"
-            sx={{
-              color: "#1e293b",
-              borderColor: "#9ca3af",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 100,
-              "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
-            }}
+            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
           >
             Cancel
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

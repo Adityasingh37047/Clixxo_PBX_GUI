@@ -7,9 +7,6 @@ import {
 } from "../../../constants/SipAccountConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import IndeterminateCheckBoxIcon from "@mui/icons-material/IndeterminateCheckBox";
 import {
   Button,
   Dialog,
@@ -1340,7 +1337,8 @@ const SipAccountPage = () => {
               >
                 Clear Allkk
               </Btn> */}
-             
+          
+
 
 <Btn
   onClick={() => {
@@ -1385,7 +1383,8 @@ const SipAccountPage = () => {
 >
   + Bulk Add
 </Btn>
-<Btn
+
+ <Btn
   onClick={() => handleOpenModal()}
   disabled={loading.fetch || loading.save}
   variant="outline"
@@ -1425,33 +1424,21 @@ const SipAccountPage = () => {
               >
                 <thead>
                   <tr>
-                   {/* Select-all checkbox */}
-  <TH style={{ width: 36 }}>
-    <Checkbox
-      size="small"
-      checked={allPageSelected}
-      indeterminate={somePageSelected}
-      onChange={handleToggleAll}
-      icon={
-        <CheckBoxOutlineBlankIcon
-          style={{ color: "#94a3b8", fontSize: 20 }}
-        />
-      }
-      checkedIcon={
-        <CheckBoxIcon
-          style={{ color: "#94a3b8", fontSize: 20 }}
-        />
-      }
-      indeterminateIcon={
-        <IndeterminateCheckBoxIcon
-          style={{ color: "#94a3b8", fontSize: 20 }}
-        />
-      }
-      sx={{
-        padding: "1px",
-      }}
-    />
-  </TH>
+                    {/* Select-all checkbox */}
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        sx={{
+                          padding: "1px",
+                          color: "#64748b",
+                          "&.Mui-checked": { color: "#0284c7" },
+                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+                        }}
+                      />
+                    </TH>
                     <TH style={{ width: 36 }}>#</TH>
                     <TH>Extension</TH>
                     <TH>Context</TH>
@@ -1506,34 +1493,26 @@ const SipAccountPage = () => {
                               e.currentTarget.style.background = rowBg;
                           }}
                         >
-                       {/* Checkbox */}
-<td
-  style={{
-    textAlign: "center",
-    padding: "10px 0",
-    borderRight: "1px solid #f1f5f9",
-  }}
->
-  <Checkbox
-    size="small"
-    checked={isSelected}
-    onChange={() => handleToggleRow(realIdx)}
-    disabled={loading.delete}
-    icon={
-      <CheckBoxOutlineBlankIcon
-        style={{ color: "#94a3b8", fontSize: 20 }}
-      />
-    }
-    checkedIcon={
-      <CheckBoxIcon
-        style={{ color: "#94a3b8", fontSize: 20 }}
-      />
-    }
-    sx={{
-      padding: "1px",
-    }}
-  />
-</td>
+                          {/* Checkbox */}
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "10px 0",
+                              borderRight: "1px solid #f1f5f9",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleToggleRow(realIdx)}
+                              disabled={loading.delete}
+                              sx={{
+                                padding: "1px",
+                                color: "#64748b",
+                                "&.Mui-checked": { color: "#0284c7" },
+                              }}
+                            />
+                          </td>
 
                           {/* Row number */}
                           <td
@@ -1638,20 +1617,14 @@ const SipAccountPage = () => {
                           <td
                             style={{ padding: "7px 8px", textAlign: "center" }}
                           >
-                            <IconButton
-                              size="small"
-                              disabled={loading.delete}
-                              onClick={() =>
-                                !loading.delete &&
-                                handleOpenModal(item, realIdx)
-                              }
-                              sx={{
-                                color: "#1e40af",
-                                "&:hover": { background: "#eff6ff" },
+                            <EditDocumentIcon
+                              className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                              titleAccess="Edit"
+                              onClick={() => {
+                                if (!loading.delete)
+                                  handleOpenModal(item, realIdx);
                               }}
-                            >
-                              <EditDocumentIcon fontSize="small" />
-                            </IconButton>
+                            />
                           </td>
                         </tr>
                       );

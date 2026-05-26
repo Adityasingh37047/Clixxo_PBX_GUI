@@ -38,16 +38,20 @@ import {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
@@ -659,7 +663,7 @@ const VoicePromptsPage = () => {
             style={{
               display: "flex",
               gap: 4,
-              background: "#DCE6F2",
+              
               borderBottom: `1px solid ${C.cardBorder}`,
               padding: "10px 14px 0 14px",
             }}
@@ -678,7 +682,7 @@ const VoicePromptsPage = () => {
                 }}
                 style={{
                   background: activeTab === t.id ? C.cardBg : "transparent",
-                  color: activeTab === t.id ? C.accent : "#64748b",
+                  color: activeTab === t.id ? C.accent : "#17181a",
                   border:
                     activeTab === t.id
                       ? `1px solid ${C.cardBorder}`
@@ -760,19 +764,20 @@ const VoicePromptsPage = () => {
                         gap: 4,
                       }}
                     >
-                      <Checkbox
-                        checked={playCallForwardingPrompt}
-                        onChange={(e) =>
-                          setPlayCallForwardingPrompt(e.target.checked)
-                        }
-                        size="small"
-                        sx={{
-                          p: 0,
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          alignSelf: "flex-start",
-                        }}
-                      />
+                     <Checkbox
+  checked={playCallForwardingPrompt}
+  onChange={(e) =>
+    setPlayCallForwardingPrompt(e.target.checked)
+  }
+  size="small"
+  sx={{
+    padding: "1px",
+    color: "#64748b",
+    "&.Mui-checked": { color: "#0284c7" },
+    "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+    alignSelf: "flex-start",
+  }}
+/>
                       <span style={{ fontSize: 11, color: C.mutedText }}>
                         If enabled, the system plays default forwarding prompt
                         before transfer.
@@ -781,14 +786,22 @@ const VoicePromptsPage = () => {
                   </FieldRow>
                 </div>
                 <div style={{ marginTop: 24, display: "flex" }}>
-                  <Btn
-                    onClick={handleSavePreferences}
-                    disabled={savingPrefs}
-                    variant="default"
-                    style={{ padding: "8px 32px" }}
-                  >
-                    {savingPrefs ? "Saving..." : "SAVE"}
-                  </Btn>
+             <Btn
+  onClick={handleSavePreferences}
+  disabled={savingPrefs}
+  variant="default"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  {savingPrefs ? "Saving..." : "SAVE"}
+</Btn>
                 </div>
               </div>
             )}
@@ -877,12 +890,21 @@ const VoicePromptsPage = () => {
                   </div>
 
                   <Btn
-                    onClick={handleUploadMoh}
-                    variant="default"
-                    style={{ marginLeft: "auto" }}
-                  >
-                    UPLOAD
-                  </Btn>
+  onClick={handleUploadMoh}
+  variant="default"
+  style={{
+    marginLeft: "auto",
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  UPLOAD
+</Btn>
                 </div>
                 <div
                   style={{ fontSize: 11, color: C.mutedText, marginBottom: 5 }}
@@ -1172,9 +1194,21 @@ const VoicePromptsPage = () => {
                     marginBottom: 16,
                   }}
                 >
-                  <Btn onClick={openRecordModal} variant="accent">
-                    + RECORD NEW
-                  </Btn>
+                  <Btn
+  onClick={openRecordModal}
+  variant="accent"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + RECORD NEW
+</Btn>
                 </div>
 
                 <SectionHeading title="Upload Custom Prompt" />
@@ -1230,13 +1264,22 @@ const VoicePromptsPage = () => {
                       {customFile?.name || "No file chosen"}
                     </span>
                   </div>
-                  <Btn
-                    onClick={handleUploadCustomPrompt}
-                    variant="default"
-                    style={{ marginLeft: "auto" }}
-                  >
-                    UPLOAD
-                  </Btn>
+                 <Btn
+  onClick={handleUploadCustomPrompt}
+  variant="default"
+  style={{
+    marginLeft: "auto",
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  UPLOAD
+</Btn>
                 </div>
                 <div
                   style={{ fontSize: 11, color: C.mutedText, marginBottom: 5 }}

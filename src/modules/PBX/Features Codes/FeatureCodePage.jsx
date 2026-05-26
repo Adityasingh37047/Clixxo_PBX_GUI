@@ -10,6 +10,23 @@ import {
 } from "../../../constants/FeatureCodeConstants";
 
 const LABEL_W = 220;
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
+};
+
 
 const SectionHeader = ({ title }) => (
   <div className="px-4 py-1 text-[15px] font-semibold border-b border-gray-300 text-[#333]">
@@ -111,7 +128,7 @@ const FeatureCodePage = () => {
   return (
     <div
       className="min-h-[calc(100vh-80px)] flex flex-col items-center"
-      style={{ backgroundColor: "#F1F5F9" }}
+      style={{ backgroundColor: C.pageBg }}
     >
       <div className="w-full max-w-5xl mx-auto">
         <div className="rounded-t-lg w-full h-8 bg-linear-to-b from-[#3E5475] via-[#3E5475] to-[#3E5475] flex items-center justify-center font-semibold text-lg text-white shadow">

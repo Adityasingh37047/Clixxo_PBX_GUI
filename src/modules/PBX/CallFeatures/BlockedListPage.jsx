@@ -600,7 +600,21 @@ const BlockedListPage = () => {
               >
                 Next →
               </Btn> */}
-
+   <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="danger"
+                    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+              >
+                🗑 Delete
+              </Btn>
               <Btn
                 onClick={() => {
                   setImportFile(null);
@@ -635,21 +649,7 @@ const BlockedListPage = () => {
                   "Refresh"
                 )}
               </Btn> */}
-              <Btn
-                onClick={handleDelete}
-                disabled={
-                  loading.delete || loading.fetch || selected.length === 0
-                }
-                variant="danger"
-                    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-              >
-                🗑 Delete
-              </Btn>
+           
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.fetch}
@@ -697,11 +697,11 @@ const BlockedListPage = () => {
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
                         sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
-                        }}
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+}}
                       />
                     </TH>
                     <TH style={{ width: 40 }}>#</TH>
@@ -770,11 +770,11 @@ const BlockedListPage = () => {
                               size="small"
                               checked={isSelected}
                               onChange={() => handleToggleRow(realIdx)}
-                              sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+                             sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+}}
                             />
                           </td>
                           <td
@@ -896,17 +896,11 @@ const BlockedListPage = () => {
                           <td
                             style={{ textAlign: "center", padding: "7px 8px" }}
                           >
-                            <Btn
-                              onClick={() => handleOpenEditModal(row)}
-                              variant="outline"
-                              style={{
-                                fontSize: 10,
-                                padding: "3px 10px",
-                                margin: "0 auto",
-                              }}
-                            >
-                              Edit
-                            </Btn>
+                            <EditDocumentIcon
+  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+  titleAccess="Edit"
+  onClick={() => handleOpenEditModal(row)}
+/>
                           </td>
                         </tr>
                       );

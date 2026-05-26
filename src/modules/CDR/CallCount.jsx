@@ -1074,11 +1074,12 @@ const CallCount = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
-                        }}
+                     sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+}}
                       />
                     </TH>
                     <TH style={{ width: 32 }}>#</TH>
@@ -1150,10 +1151,10 @@ const CallCount = () => {
                               }
                               onChange={() => handleToggleRow(row.uniqueid)}
                               sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+}}
                             />
                           </td>
 
