@@ -40,9 +40,9 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
     cancel: {
       background: "#cbd5e1",
@@ -71,7 +71,7 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "cancel":
         return "#b6c2d3";
       case "edit":
@@ -111,10 +111,10 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -122,64 +122,7 @@ const Btn = ({
   );
 };
 
-// ── Confirm Dialog ───────────────────────────────────────────────────────────
-function ConfirmDialog({ msg, onConfirm, onCancel }) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(15, 23, 42, 0.3)",
-        backdropFilter: "blur(4px)",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        paddingTop: "10vh",
-      }}
-    >
-      <div
-        style={{
-          background: C.cardBg,
-          borderRadius: 12,
-          padding: "24px 28px",
-          width: "min(90vw, 360px)",
-          border: `1px solid ${C.cardBorder}`,
-          boxShadow:
-            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-        }}
-      >
-        <p
-          style={{
-            margin: "0 0 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            color: C.valueText,
-            lineHeight: 1.5,
-          }}
-        >
-          {msg}
-        </p>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <Btn
-            variant="danger"
-            onClick={onConfirm}
-            style={{ height: 32, padding: "0 16px" }}
-          >
-            Confirm
-          </Btn>
-          <Btn
-            variant="default"
-            onClick={onCancel}
-            style={{ height: 32, padding: "0 16px" }}
-          >
-            Cancel
-          </Btn>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 const tableContainerStyle = {
   width: "100%",
@@ -211,7 +154,6 @@ const blueBarStyle = {
 
 const FactoryReset = () => {
   const [loading, setLoading] = useState(false);
-  const [confirmDialog, setConfirmDialog] = useState(null);
   const [toast, setToast] = useState({ msg: "", type: "success" });
 
   const showToast = (msg, type = "success") => {
@@ -220,20 +162,11 @@ const FactoryReset = () => {
   };
 
   const handleReset = async () => {
-    setConfirmDialog({
-      msg: "If you factory reset the PBX, everything will be erased. Do you want to continue?",
-      onConfirm: () => {
-        setConfirmDialog({
-          msg: "Are you absolutely sure?",
-          onConfirm: async () => {
-            setConfirmDialog(null);
-            await performReset();
-          },
-          onCancel: () => setConfirmDialog(null),
-        });
-      },
-      onCancel: () => setConfirmDialog(null),
-    });
+    if (window.confirm("If you factory reset the PBX, everything will be erased. Do you want to continue?")) {
+      if (window.confirm("Are you absolutely sure?")) {
+        await performReset();
+      }
+    }
   };
 
   const performReset = async () => {
@@ -337,7 +270,7 @@ const FactoryReset = () => {
               {FR_INSTRUCTION}
             </span>
             <Btn
-              variant="danger"
+              variant="primary"
               onClick={handleReset}
               disabled={loading}
               style={{ minWidth: 140, height: 38, fontSize: 13 }}
@@ -360,14 +293,6 @@ const FactoryReset = () => {
         </div>
       )}
 
-      {/* Dialogs */}
-      {confirmDialog && (
-        <ConfirmDialog
-          msg={confirmDialog.msg}
-          onConfirm={confirmDialog.onConfirm}
-          onCancel={confirmDialog.onCancel}
-        />
-      )}
     </div>
   );
 };

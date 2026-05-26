@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Checkbox, Alert } from "@mui/material";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/Delete";
 import {
   PAGE_PERMISSION_GROUPS,
   INITIAL_PERMISSIONS,
@@ -70,6 +70,12 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg = (() => {
@@ -84,6 +90,8 @@ const Btn = ({
         return "#b91c1c"; // darker than C.errorRed
       case "outline":
         return "rgba(2, 132, 199, 0.10)";
+      case "cancel":
+        return "#b6c2d3";
       case "default":
       default:
         return "#e2e8f0";
@@ -618,7 +626,9 @@ export default function UserManage() {
   };
 
   const handleDelete = async (user) => {
-    const isConfirmed = window.confirm(`Are you sure you want to delete user "${user.username}"?`);
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete user "${user.username}"?`,
+    );
     if (!isConfirmed) return;
     try {
       await deleteUser(user.id);
@@ -717,7 +727,7 @@ export default function UserManage() {
             <div style={{ display: "flex", gap: "8px" }}>
               {mode !== null && (
                 <Btn
-                  variant="default"
+                  variant="cancel"
                   onClick={closeForm}
                   style={{ height: 30, padding: "0 14px", borderRadius: 10 }}
                 >
@@ -728,9 +738,10 @@ export default function UserManage() {
                 <button
                   onClick={openAdd}
                   style={{
-                    background: C.primary,
-                    color: C.cardBg,
-                    border: "none",
+                    background:
+                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+                    color: "#fff",
+                    border: "1px solid #5A6F8F",
                     borderRadius: 10,
                     padding: "6px 14px",
                     height: 30,
@@ -739,10 +750,12 @@ export default function UserManage() {
                     fontSize: 12,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = C.primaryHover;
+                    e.currentTarget.style.background =
+                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = C.primary;
+                    e.currentTarget.style.background =
+                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
                   }}
                 >
                   + Add User
@@ -831,7 +844,7 @@ export default function UserManage() {
                       >
                         <td
                           style={{
-                            padding: "16px 18px",
+                            padding: "8px 18px",
                             color: C.mutedText,
                             textAlign: "center",
                             fontSize: 13,
@@ -843,7 +856,7 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
+                            padding: "8px 18px",
                             fontWeight: 500,
                             color: C.valueText,
                             fontSize: 13,
@@ -854,7 +867,7 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
+                            padding: "8px 18px",
                             textAlign: "center",
                             borderBottom: `1px solid ${C.divider}`,
                           }}
@@ -873,7 +886,7 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
+                            padding: "8px 18px",
                             color: C.valueText,
                             fontSize: 13,
                             textAlign: "center",
@@ -887,7 +900,7 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
+                            padding: "8px 18px",
                             color: C.valueText,
                             fontSize: 13,
                             fontWeight: 500,
@@ -918,7 +931,7 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
+                            padding: "8px 18px",
                             textAlign: "center",
                             borderBottom: `1px solid ${C.divider}`,
                           }}
@@ -931,36 +944,18 @@ export default function UserManage() {
                             }}
                           >
                             {!isSuperAdmin && (
-                              <Btn
-                                variant="edit"
-                                style={{
-                                  padding: "2px 10px",
-                                  fontSize: 11,
-                                  height: 24,
-                                  minWidth: 74,
-                                }}
+                              <EditDocumentIcon
+                                className="cursor-pointer text-blue-600 opacity-70 hover:opacity-100 transition-opacity"
+                                titleAccess="Edit"
                                 onClick={() => openEdit(user)}
-                              >
-                                <EditOutlinedIcon sx={{ fontSize: 14 }} />
-                                Edit
-                              </Btn>
+                              />
                             )}
                             {!isSuperAdmin && (
-                              <Btn
-                                variant="delete"
-                                style={{
-                                  padding: "2px 10px",
-                                  fontSize: 11,
-                                  height: 24,
-                                  minWidth: 74,
-                                }}
+                              <DeleteOutlineOutlinedIcon
+                                className="cursor-pointer text-red-600 opacity-70 hover:opacity-100 transition-opacity"
+                                titleAccess="Delete"
                                 onClick={() => handleDelete(user)}
-                              >
-                                <DeleteOutlineOutlinedIcon
-                                  sx={{ fontSize: 14 }}
-                                />
-                                Delete
-                              </Btn>
+                              />
                             )}
                           </div>
                         </td>
@@ -1171,9 +1166,10 @@ export default function UserManage() {
                 onClick={handleSave}
                 disabled={saving}
                 style={{
-                  background: C.primary,
-                  color: C.cardBg,
-                  border: "none",
+                  background:
+                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+                  color: "#fff",
+                  border: "1px solid #5A6F8F",
                   borderRadius: 12,
                   padding: "10px 28px",
                   minWidth: 110,
@@ -1184,11 +1180,13 @@ export default function UserManage() {
                 }}
                 onMouseEnter={(e) => {
                   if (!saving)
-                    e.currentTarget.style.backgroundColor = C.primaryHover;
+                    e.currentTarget.style.background =
+                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
                 }}
                 onMouseLeave={(e) => {
                   if (!saving)
-                    e.currentTarget.style.backgroundColor = C.primary;
+                    e.currentTarget.style.background =
+                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
                 }}
               >
                 {saving ? "Saving..." : "Save"}
@@ -1226,7 +1224,6 @@ export default function UserManage() {
           </>
         )}
       </div>
-
     </div>
   );
 }

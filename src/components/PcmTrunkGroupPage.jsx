@@ -5,15 +5,19 @@ import {
   PCM_TRUNK_GROUP_TABLE_COLUMNS,
 } from "../constants/PcmTrunkGroupConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import EditIcon from "@mui/icons-material/Edit";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Select,
+  MenuItem,
+  TextField,
+  Alert,
+  CircularProgress,
+  Checkbox,
+} from "@mui/material";
 import {
   listPstn,
   listPstnGroups,
@@ -22,19 +26,21 @@ import {
   listIpPstnRoutes,
   listNumberManipulations,
 } from "../api/apiService";
-import { CircularProgress, Alert, Checkbox, IconButton } from "@mui/material";
 
+// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  cardBorderSoft: "#f1f5f9",
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+  accent: "#3E5475",
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+  purple: "#8b5cf6",
+  amber: "#dc2626",
 };
 
 const Btn = ({
@@ -43,55 +49,81 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
+  type,
 }) => {
-  const variants = {
+  const styles = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
+      background: C.cardBg,
+      color: C.valueText,
       border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
       border: `0.5px solid ${C.cardBorder}`,
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
   };
-  const s = variants[variant] || variants.default;
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -102,17 +134,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -894,10 +926,9 @@ const PcmTrunkGroupPage = () => {
   return (
     <div
       style={{
-        background: C.pageBg,
-        minHeight: "calc(100vh - 120px)",
-        padding: "24px 20px",
-        boxSizing: "border-box",
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
       }}
     >
       {/* Message Display */}
@@ -919,48 +950,47 @@ const PcmTrunkGroupPage = () => {
       )}
 
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb Path */}
-        <div style={{ fontSize: 11, color: C.mutedText }}>
+        {/* Breadcrumb */}
+        <div style={{ fontSize: 12, color: C.mutedText, marginBottom: 16, display: "flex", gap: 4 }}>
           E1-PRI &rsaquo; PCM &rsaquo;{" "}
-          <span style={{ color: C.valueText, fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             PCM Trunk Group
           </span>
         </div>
 
-        {/* Card wrapper */}
+        {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            background: "#ffffff",
+            borderRadius: 22,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            border: `1px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
-          {/* Action Toolbar */}
+          {/* Toolbar */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              padding: "14px 18px",
+              borderBottom: "1px solid #e2e8f0",
+              background: "#ffffff",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 10,
             }}
           >
-            {/* Left side: Page info badge & selection counts */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span
                 style={{
                   background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
+                  border: `1px solid #e2e8f0`,
+                  color: C.labelText,
                   fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
                 }}
               >
                 Page {page} · {groups.length} records
@@ -968,13 +998,13 @@ const PcmTrunkGroupPage = () => {
               {selected.length > 0 && (
                 <span
                   style={{
-                    background: "#e0f2fe",
-                    border: "0.5px solid #bae6fd",
-                    color: "#0369a1",
-                    fontSize: 10.5,
-                    fontWeight: 600,
-                    padding: "2px 10px",
-                    borderRadius: 12,
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
@@ -982,246 +1012,269 @@ const PcmTrunkGroupPage = () => {
               )}
             </div>
 
-            {/* Right side: action buttons */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
+                variant="cancel"
                 onClick={handleInverse}
                 disabled={isLoadingData}
-                variant="outline"
+                style={{ height: 30 }}
               >
                 Inverse
               </Btn>
               <Btn
+                variant="cancel"
                 onClick={handleClearAll}
                 disabled={isLoadingData || groups.length === 0}
-                variant="danger"
+                style={{ height: 30 }}
               >
-                Clear All
+                {isLoadingData ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Clear All"
+                )}
               </Btn>
               <Btn
+                variant="cancel"
                 onClick={handleDeleteSelected}
                 disabled={isLoadingData || selected.length === 0}
-                variant="danger"
+                style={{ height: 30 }}
               >
-                🗑 Delete
+                {isLoadingData ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
+                )}
               </Btn>
               <Btn
+                variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={isLoadingSpans}
-                variant="accent"
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table Container */}
+          {/* Table */}
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <TH style={{ width: 50 }}>
-                    <Checkbox
-                      size="small"
-                      checked={allPageSelected}
-                      indeterminate={somePageSelected}
-                      onChange={handleToggleAll}
-                      sx={{
-                        padding: "1px",
-                        color: C.accent,
-                        "&.Mui-checked": { color: C.accent },
-                        "&.MuiCheckbox-indeterminate": { color: C.accent },
-                      }}
-                    />
-                  </TH>
-                  {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                    (c) => c.key !== "check",
-                  ).map((c) => (
-                    <TH key={c.key}>{c.label}</TH>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {isLoadingData ? (
+            {isLoadingData ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  tableLayout: "auto",
+                  minWidth: 900,
+                }}
+              >
+                <thead>
                   <tr>
-                    <td
-                      colSpan={PCM_TRUNK_GROUP_TABLE_COLUMNS.length}
-                      style={{
-                        padding: "24px",
-                        textAlign: "center",
-                        borderBottom: `1px solid ${C.cardBorder}`,
-                        fontSize: 13,
-                        color: C.labelText,
-                      }}
-                    >
-                      <div
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        sx={{
+                          padding: "1px",
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                        }}
+                      />
+                    </TH>
+                    {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                      (c) => c.key !== "check",
+                    ).map((c) => (
+                      <TH key={c.key}>{c.label}</TH>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {groups.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={PCM_TRUNK_GROUP_TABLE_COLUMNS.length}
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 8,
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
                         }}
                       >
-                        <CircularProgress size={20} sx={{ color: C.accent }} />
-                        <span>Loading PCM Trunk Group data...</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : groups.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={PCM_TRUNK_GROUP_TABLE_COLUMNS.length}
-                      style={{
-                        padding: "16px",
-                        textAlign: "center",
-                        borderBottom: `1px solid ${C.cardBorder}`,
-                        fontSize: 13,
-                        color: C.mutedText,
-                      }}
-                    >
-                      No data
-                    </td>
-                  </tr>
-                ) : (
-                  pagedGroups.map((item, idx) => {
-                    const realIdx = (page - 1) * itemsPerPage + idx;
-                    const isRowChecked = selected.includes(realIdx);
-                    const rowBg = isRowChecked
-                      ? "#f0f9ff"
-                      : idx % 2 === 0
-                        ? "#ffffff"
-                        : "#f8fafc";
+                        No PCM Trunk Groups found.
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedGroups.map((item, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isRowChecked = selected.includes(realIdx);
+                      const rowBg = isRowChecked
+                        ? "#e0f2fe"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
 
-                    return (
-                      <tr
-                        key={realIdx}
-                        style={{
-                          background: rowBg,
-                          transition: "background-color 0.15s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isRowChecked)
-                            e.currentTarget.style.backgroundColor = "#f1f5f9";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isRowChecked)
-                            e.currentTarget.style.backgroundColor = rowBg;
-                        }}
-                      >
-                        {/* Checkbox column */}
-                        <td
+                      return (
+                        <tr
+                          key={realIdx}
                           style={{
-                            padding: "6px 8px",
-                            textAlign: "center",
-                            borderBottom: "1px solid #e2e8f0",
-                            borderRight: "0.5px solid #e2e8f0",
-                            width: 50,
+                            background: rowBg,
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isRowChecked)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isRowChecked)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          <Checkbox
-                            size="small"
-                            checked={isRowChecked}
-                            onChange={() => handleSelectRow(realIdx)}
-                            sx={{
-                              padding: "1px",
-                              color: C.accent,
-                              "&.Mui-checked": { color: C.accent },
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "10px 0",
+                              borderRight: "1px solid #f1f5f9",
                             }}
-                          />
-                        </td>
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isRowChecked}
+                              onChange={() => handleSelectRow(realIdx)}
+                              disabled={isLoadingData}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                          </td>
 
-                        {/* Other columns */}
-                        {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                          (col) => col.key !== "check",
-                        ).map((col) => {
-                          if (col.key === "modify") {
-                            return (
-                              <td
-                                key={col.key}
-                                style={{
-                                  padding: "6px 8px",
-                                  textAlign: "center",
-                                  borderBottom: "1px solid #e2e8f0",
-                                  borderRight: "0.5px solid #e2e8f0",
-                                  width: 80,
-                                }}
-                              >
-                                <IconButton
-                                  onClick={() => handleOpenModal(item, realIdx)}
-                                  sx={{
-                                    padding: "4px",
-                                    color: C.accent,
-                                    "&:hover": { backgroundColor: "#e2e8f0" },
+                          {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                            (col) => col.key !== "check",
+                          ).map((col) => {
+                            if (col.key === "modify") {
+                              return (
+                                <td
+                                  key={col.key}
+                                  style={{
+                                    padding: "7px 8px",
+                                    textAlign: "center",
                                   }}
                                 >
-                                  <EditIcon sx={{ fontSize: 18 }} />
-                                </IconButton>
-                              </td>
-                            );
-                          }
-                          if (col.key === "pstnIds") {
+                                  <EditDocumentIcon
+                                    className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                    titleAccess="Edit"
+                                    onClick={() => {
+                                      if (!isLoadingData) {
+                                        handleOpenModal(item, realIdx);
+                                      }
+                                    }}
+                                    style={{
+                                      fontSize: 22,
+                                      opacity: isLoadingData ? 0.4 : undefined,
+                                      pointerEvents: isLoadingData
+                                        ? "none"
+                                        : "auto",
+                                    }}
+                                  />
+                                </td>
+                              );
+                            }
+                            if (col.key === "pstnIds") {
+                              return (
+                                <td
+                                  key={col.key}
+                                  style={{
+                                    padding: "10px 14px",
+                                    fontSize: 13,
+                                    color: C.valueText,
+                                    textAlign: "center",
+                                    borderRight: "1px solid #f1f5f9",
+                                  }}
+                                >
+                                  {item.pstnIds && item.pstnIds.length > 0 ? (
+                                    item.pstnIds.join(", ")
+                                  ) : (
+                                    <span style={{ color: C.mutedText }}>
+                                      —
+                                    </span>
+                                  )}
+                                </td>
+                              );
+                            }
                             return (
                               <td
                                 key={col.key}
                                 style={{
-                                  padding: "9px 8px",
-                                  textAlign: "center",
+                                  padding: "10px 14px",
                                   fontSize: 13,
                                   color: C.valueText,
-                                  borderBottom: "1px solid #e2e8f0",
-                                  borderRight: "0.5px solid #e2e8f0",
+                                  textAlign: "center",
+                                  borderRight: "1px solid #f1f5f9",
                                 }}
                               >
-                                {item.pstnIds && item.pstnIds.length > 0
-                                  ? item.pstnIds.join(", ")
-                                  : "--"}
+                                {item[col.key] !== undefined &&
+                                item[col.key] !== "" ? (
+                                  item[col.key]
+                                ) : (
+                                  <span style={{ color: C.mutedText }}>—</span>
+                                )}
                               </td>
                             );
-                          }
-                          return (
-                            <td
-                              key={col.key}
-                              style={{
-                                padding: "9px 8px",
-                                textAlign: "center",
-                                fontSize: 13,
-                                color: C.valueText,
-                                borderBottom: "1px solid #e2e8f0",
-                                borderRight: "0.5px solid #e2e8f0",
-                              }}
-                            >
-                              {item[col.key] !== undefined &&
-                              item[col.key] !== ""
-                                ? item[col.key]
-                                : "--"}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                          })}
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
 
-          {/* Bottom Pagination Control Section */}
-          {groups.length > 0 && (
+          {/* Pagination footer */}
+          {!isLoadingData && groups.length > 0 && (
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
-                flexWrap: "wrap",
-                gap: 12,
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedGroups.length} record
-                {pagedGroups.length !== 1 ? "s" : ""} on page {page}
+                Showing {pagedGroups.length} of {groups.length} group
+                {groups.length !== 1 ? "s" : ""} · Page {page} of {totalPages}
               </span>
               <div
                 style={{
@@ -1256,7 +1309,7 @@ const PcmTrunkGroupPage = () => {
                     border: `0.5px solid ${C.cardBorder}`,
                   }}
                 >
-                  Page {page} of {totalPages}
+                  Page {page}
                 </span>
                 <Btn
                   onClick={() => setPage(page + 1)}
@@ -1272,24 +1325,17 @@ const PcmTrunkGroupPage = () => {
                 >
                   Last
                 </Btn>
-                <span
-                  style={{ fontSize: 11, color: C.mutedText, marginLeft: 8 }}
-                >
-                  Go to Page:
-                </span>
+                <span style={{ fontSize: 11, color: C.mutedText }}>Go to</span>
                 <select
                   value={page}
                   onChange={(e) => setPage(Number(e.target.value))}
                   style={{
                     fontSize: 11,
-                    fontWeight: 600,
-                    borderRadius: 6,
+                    borderRadius: 4,
                     border: `0.5px solid ${C.cardBorder}`,
-                    background: C.cardBg,
+                    padding: "3px 6px",
                     color: C.labelText,
-                    padding: "4px 8px",
-                    outline: "none",
-                    cursor: "pointer",
+                    background: "#fff",
                   }}
                 >
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(
@@ -1309,8 +1355,7 @@ const PcmTrunkGroupPage = () => {
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
-        maxWidth="xs"
-        fullWidth
+        maxWidth={false}
         PaperProps={{
           sx: {
             width: 500,
@@ -1329,8 +1374,10 @@ const PcmTrunkGroupPage = () => {
             color: "#ffffff",
             fontWeight: 600,
             fontSize: 16,
-            textAlign: "center",
             padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           {formData.originalIndex !== undefined
@@ -1703,21 +1750,23 @@ const PcmTrunkGroupPage = () => {
             padding: "16px 24px",
             background: "#f8fafc",
             borderTop: "1px solid #e2e8f0",
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={isSaving}
-            variant="accent"
-            style={{ padding: "8px 24px", fontSize: 13, minWidth: 100 }}
+            style={{ minWidth: 110, height: 34 }}
           >
             {isSaving ? "Saving..." : "Save"}
           </Btn>
           <Btn
+            variant="cancel"
             onClick={handleCloseModal}
             disabled={isSaving}
-            variant="outline"
-            style={{ padding: "8px 24px", fontSize: 13, minWidth: 100 }}
+            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
           >
             Close
           </Btn>

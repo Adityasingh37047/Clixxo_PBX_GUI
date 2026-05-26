@@ -36,14 +36,20 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
     danger: {
       background: C.errorRed,
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
+    },
+    cancel: {
+      background: "#f1f5f9",
+      color: "#64748b",
+      border: "1px solid #cbd5e1",
     },
   };
 
@@ -51,9 +57,11 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "danger":
         return "#b91c1c";
+      case "cancel":
+        return "#e2e8f0";
       case "default":
       default:
         return "#e2e8f0";
@@ -85,10 +93,10 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -404,7 +412,7 @@ const DeviceLock = () => {
                   {DEVICE_LOCK_LABELS.lock}
                 </Btn>
                 <Btn
-                  variant="default"
+                  variant="cancel"
                   onClick={handleReset}
                   type="button"
                   style={{ height: 36, padding: "0 24px", fontSize: 13 }}

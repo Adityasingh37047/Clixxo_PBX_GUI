@@ -52,9 +52,15 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -83,7 +89,7 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "cancel":
         return "#b6c2d3";
       case "edit":
@@ -123,10 +129,10 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -137,93 +143,96 @@ const Btn = ({
 const modalOverlayStyle = {
   position: "fixed",
   inset: 0,
-  background: "rgba(15, 23, 42, 0.3)",
-  backdropFilter: "blur(4px)",
+  background: "rgba(0, 0, 0, 0.5)",
   zIndex: 1000,
   display: "flex",
-  alignItems: "flex-start",
+  alignItems: "center",
   justifyContent: "center",
-  paddingTop: "10vh",
 };
 const modalStyle = {
-  background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 12,
-  width: 340,
+  background: "#f8fafc",
+  border: `none`,
+  borderRadius: 8,
+  width: 500,
   maxWidth: "95vw",
   maxHeight: "calc(100vh - 120px)",
   overflowY: "auto",
   boxShadow:
-    "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
   display: "flex",
   flexDirection: "column",
 };
 const modalHeaderStyle = {
-  background: C.cardBg,
-  color: C.strongText,
-  fontWeight: 700,
-  fontSize: 13,
-  padding: "12px 18px",
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 12,
-  borderTopRightRadius: 12,
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
   borderBottom: `1px solid ${C.divider}`,
 };
 const modalBodyStyle = {
-  padding: "16px 18px 0 18px",
+  padding: "20px 24px",
   display: "flex",
   flexDirection: "column",
-  gap: 10,
+  gap: 12,
+  backgroundColor: "#f8fafc",
 };
 const modalRowStyle = {
   display: "flex",
   alignItems: "center",
-  background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 10,
-  padding: "8px 10px",
-  marginBottom: 2,
-  minHeight: 32,
-  gap: 16,
+  background: "#ffffff",
+  border: `1px solid #cbd5e1`,
+  borderRadius: 6,
+  padding: "6px 12px",
+  marginBottom: 0,
+  minHeight: 40,
+  gap: 12,
 };
 const modalLabelStyle = {
-  width: 110,
-  fontSize: 12,
+  width: 160,
+  fontSize: 13,
   fontWeight: 600,
-  color: C.labelText,
+  color: "#1e293b",
   textAlign: "left",
-  marginRight: 10,
+  marginRight: 0,
   whiteSpace: "nowrap",
 };
 const modalInputStyle = {
-  width: "100%",
+  flex: 1,
+  maxWidth: 280,
   fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
+  padding: "6px 8px",
+  border: "1px solid #cbd5e1",
+  borderRadius: 4,
   outline: "none",
-  transition: "border-color 0.2s ease",
+  color: "#1e293b",
+  background: "#ffffff",
 };
 
 const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onFocus: (e) => (e.target.style.borderColor = "#1e2d42"),
+  onBlur: (e) => (e.target.style.borderColor = "#cbd5e1"),
   onMouseEnter: (e) => {
     if (document.activeElement !== e.target)
       e.target.style.borderColor = "#94a3b8";
   },
   onMouseLeave: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
+      e.target.style.borderColor = "#cbd5e1";
   },
 };
 const modalFooterStyle = {
   display: "flex",
   justifyContent: "center",
-  gap: 24,
-  padding: "16px 0 18px",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: "1px solid #e2e8f0",
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
 };
 const tableContainerStyle = {
   width: "100%",
@@ -260,14 +269,14 @@ const thStyle = {
   fontWeight: 700,
   fontSize: 11,
   borderBottom: `1px solid ${C.divider}`,
-  padding: "14px 18px",
+  padding: "10px 18px",
   whiteSpace: "nowrap",
   textTransform: "uppercase",
   letterSpacing: "0.08em",
 };
 const tdStyle = {
   borderBottom: `1px solid ${C.divider}`,
-  padding: "16px 18px",
+  padding: "8px 18px",
   fontSize: 13,
   fontWeight: 500,
   background: C.cardBg,
@@ -632,7 +641,9 @@ const AccountManage = () => {
       return;
     }
 
-    const isConfirmed = window.confirm(`Are you sure you want to delete ${selectedUsers.length} selected user(s)?`);
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete ${selectedUsers.length} selected user(s)?`,
+    );
     if (isConfirmed) {
       const success = await deleteUser({ users: selectedUsers });
       if (success) {
@@ -647,7 +658,9 @@ const AccountManage = () => {
       return;
     }
 
-    const isConfirmed = window.confirm("Are you sure you want to delete all users? This action cannot be undone. (Current user will not be deleted)");
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete all users? This action cannot be undone. (Current user will not be deleted)",
+    );
     if (isConfirmed) {
       await deleteAllUsers();
     }
@@ -844,7 +857,7 @@ const AccountManage = () => {
               }}
             >
               <Btn
-                variant="default"
+                variant="cancel"
                 onClick={handleInverse}
                 disabled={loading}
                 style={{ height: 30 }}
@@ -852,7 +865,7 @@ const AccountManage = () => {
                 Inverse
               </Btn>
               <Btn
-                variant="delete"
+                variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading || accounts.length === 0}
                 style={{ height: 30 }}
@@ -860,7 +873,7 @@ const AccountManage = () => {
                 Clear All
               </Btn>
               <Btn
-                variant="delete"
+                variant="cancel"
                 onClick={handleDelete}
                 disabled={loading || selected.length === 0}
                 style={{ height: 30 }}
@@ -872,7 +885,12 @@ const AccountManage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading}
-                style={{ height: 30, minWidth: 110 }}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
               >
                 + {ACCOUNT_MANAGE_BUTTONS.addNew}
               </Btn>
@@ -960,8 +978,9 @@ const AccountManage = () => {
                         <td style={tdStyle}>{item.authority ?? "-"}</td>
                         {/* Modify */}
                         <td style={tdStyle}>
-                          <Btn
-                            variant="edit"
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
                             onClick={() => {
                               if (item.isAdmin) {
                                 showToast(
@@ -972,15 +991,7 @@ const AccountManage = () => {
                               }
                               handleOpenModal(item, realIdx);
                             }}
-                            style={{
-                              height: 28,
-                              minWidth: 74,
-                              padding: "2px 10px",
-                            }}
-                          >
-                            <EditOutlinedIcon sx={{ fontSize: 14 }} />
-                            Edit
-                          </Btn>
+                          />
                         </td>
                       </tr>
                     );
@@ -1062,7 +1073,7 @@ const AccountManage = () => {
                 variant="cancel"
                 onClick={handleCloseModal}
                 disabled={loading}
-                style={{ minWidth: 110, height: 34 }}
+                style={{ minWidth: 110, height: 34, borderRadius: 6 }}
               >
                 {ACCOUNT_MANAGE_BUTTONS.close}
               </Btn>

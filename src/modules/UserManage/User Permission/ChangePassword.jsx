@@ -52,9 +52,16 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      boxShadow: "0 2px 8px #3E5475",
+      textTransform: "none",
+      padding: "6px 28px",
     },
     danger: {
       background: C.errorRed,
@@ -67,7 +74,7 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "danger":
         return "#b91c1c";
       case "default":
@@ -101,10 +108,10 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -515,7 +522,7 @@ const ChangePassword = () => {
                 onClick={handleSave}
                 disabled={loading}
                 type="submit"
-                style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+                style={{ minWidth: 110, height: 36, fontSize: 13, letterSpacing: "0.2px" }}
               >
                 {loading ? "Changing Password..." : "Save"}
               </Btn>

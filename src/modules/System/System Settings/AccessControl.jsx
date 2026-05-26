@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   Button,
   Dialog,
@@ -50,9 +50,10 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
     cancel: {
       background: "#cbd5e1",
@@ -81,7 +82,7 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "error":
         return "#b91c1c";
       case "delete":
@@ -121,10 +122,10 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {startIcon && (
@@ -594,7 +595,7 @@ const AccessControl = () => {
             }}
           >
             <Btn
-              variant="default"
+              variant="cancel"
               onClick={handleInverse}
               disabled={loading.delete || commands.length === 0}
               style={{ height: 30 }}
@@ -602,7 +603,7 @@ const AccessControl = () => {
               Inverse
             </Btn>
             <Btn
-              variant="delete"
+              variant="cancel"
               onClick={handleDelete}
               disabled={selected.length === 0 || loading.delete}
               style={{ height: 30 }}
@@ -611,7 +612,7 @@ const AccessControl = () => {
               {loading.delete ? "Deleting..." : "Delete"}
             </Btn>
             <Btn
-              variant="delete"
+              variant="cancel"
               onClick={handleClearAll}
               disabled={commands.length === 0 || loading.delete}
               style={{ height: 30 }}
@@ -788,24 +789,13 @@ const AccessControl = () => {
                           borderRight: `1px solid ${C.divider}`,
                         }}
                       >
-                        <Btn
-                          variant="edit"
-                          onClick={() =>
-                            !loading.delete && handleOpenModal(cmd, idx)
-                          }
-                          disabled={loading.delete}
-                          style={{
-                            height: 28,
-                            minWidth: 74,
-                            padding: "2px 10px",
-                            margin: "0 auto",
+                        <EditDocumentIcon
+                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                          titleAccess="Edit"
+                          onClick={() => {
+                            if (!loading.delete) handleOpenModal(cmd, idx);
                           }}
-                        >
-                          <EditOutlinedIcon
-                            sx={{ fontSize: 14, marginRight: "4px" }}
-                          />
-                          Edit
-                        </Btn>
+                        />
                       </td>
                     </tr>
                   );
@@ -913,24 +903,22 @@ const AccessControl = () => {
         }}
         maxWidth={false}
         className="z-50"
-        sx={{ "& .MuiDialog-container": { alignItems: "flex-start" } }}
         slotProps={{
           backdrop: {
             sx: {
-              backdropFilter: "blur(4px)",
-              backgroundColor: "rgba(15, 23, 42, 0.3)",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
             },
           },
         }}
         PaperProps={{
           sx: {
-            width: 440,
+            width: 500,
             maxWidth: "95vw",
             mx: "auto",
-            borderRadius: "16px",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
-            mt: "10vh",
-            verticalAlign: "top",
+            borderRadius: "8px",
+            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            backgroundColor: "#f8fafc",
+            backgroundImage: "none",
           },
         }}
         disableRestoreFocus
@@ -940,11 +928,14 @@ const AccessControl = () => {
           sx={{
             fontWeight: 600,
             fontSize: "16px",
-            color: C.strongText,
+            color: "#ffffff",
+            backgroundColor: "#1e2d42",
             borderBottom: `1px solid ${C.divider}`,
             px: 3,
             py: 2,
-            backgroundColor: C.cardBg,
+            textAlign: "center",
+            borderTopLeftRadius: "8px",
+            borderTopRightRadius: "8px",
           }}
         >
           Access Control Command
@@ -956,112 +947,102 @@ const AccessControl = () => {
             gap: 3,
             p: 3,
             pt: "24px !important",
-            backgroundColor: C.cardBg,
+            backgroundColor: "#f8fafc",
           }}
         >
-          <div className="flex flex-col gap-3 w-full">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2 sm:gap-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", background: editIndex !== null ? "#f1f5f9" : "#ffffff", border: "1px solid #cbd5e1", borderRadius: 6, padding: "6px 12px" }}>
               <label
                 style={{
+                  width: 110,
                   fontSize: 12,
                   fontWeight: 600,
                   color: C.labelText,
-                  width: "100%",
-                  maxWidth: 100,
-                  flexShrink: 0,
+                  textAlign: "left",
+                  marginRight: 10,
+                  whiteSpace: "nowrap",
                 }}
               >
                 Index:
               </label>
-              <div className="flex-1 w-full">
-                <input
-                  type="text"
-                  value={form.index || ""}
-                  onChange={(e) => handleChange("index", e.target.value)}
-                  disabled={editIndex !== null}
-                  placeholder="Auto-generated"
-                  style={{
-                    width: "100%",
-                    fontSize: 13,
-                    padding: "6px 10px",
-                    borderRadius: 10,
-                    border: `1px solid ${C.cardBorder}`,
-                    background: editIndex !== null ? "#f1f5f9" : C.cardBg,
-                    color: C.valueText,
-                    outline: "none",
-                    transition: "border-color 0.2s ease",
-                    height: 32,
-                    cursor: editIndex !== null ? "not-allowed" : "text",
-                  }}
-                  onFocus={(e) => {
-                    if (editIndex === null)
-                      e.target.style.borderColor = C.accent;
-                  }}
-                  onBlur={(e) => {
-                    if (editIndex === null)
-                      e.target.style.borderColor = C.cardBorder;
-                  }}
-                  onMouseEnter={(e) => {
-                    if (
-                      editIndex === null &&
-                      document.activeElement !== e.target
-                    )
-                      e.target.style.borderColor = "#94a3b8";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (
-                      editIndex === null &&
-                      document.activeElement !== e.target
-                    )
-                      e.target.style.borderColor = C.cardBorder;
-                  }}
-                />
-              </div>
+              <input
+                type="text"
+                value={form.index || ""}
+                onChange={(e) => handleChange("index", e.target.value)}
+                disabled={editIndex !== null}
+                placeholder="Auto-generated"
+                style={{
+                  flex: 1,
+                  fontSize: 13,
+                  padding: "6px 8px",
+                  borderRadius: 4,
+                  border: "1px solid #cbd5e1",
+                  background: editIndex !== null ? "#f1f5f9" : "#ffffff",
+                  color: editIndex !== null ? "#94a3b8" : "#1e293b",
+                  outline: "none",
+                  width: "100%",
+                  cursor: editIndex !== null ? "not-allowed" : "text",
+                  transition: "border-color 0.2s ease",
+                }}
+                onFocus={(e) => {
+                  if (editIndex === null) e.target.style.borderColor = "#1e2d42";
+                }}
+                onBlur={(e) => {
+                  if (editIndex === null) e.target.style.borderColor = "#cbd5e1";
+                }}
+                onMouseEnter={(e) => {
+                  if (editIndex === null && document.activeElement !== e.target)
+                    e.target.style.borderColor = "#94a3b8";
+                }}
+                onMouseLeave={(e) => {
+                  if (editIndex === null && document.activeElement !== e.target)
+                    e.target.style.borderColor = "#cbd5e1";
+                }}
+              />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2 sm:gap-4">
+            <div style={{ display: "flex", alignItems: "center", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 6, padding: "6px 12px" }}>
               <label
                 style={{
+                  width: 110,
                   fontSize: 12,
                   fontWeight: 600,
                   color: C.labelText,
-                  width: "100%",
-                  maxWidth: 100,
-                  flexShrink: 0,
+                  textAlign: "left",
+                  marginRight: 10,
+                  whiteSpace: "nowrap",
                 }}
               >
                 Command:
               </label>
-              <div className="flex-1 w-full">
-                <input
-                  type="text"
-                  value={form.command || ""}
-                  onChange={(e) => handleChange("command", e.target.value)}
-                  placeholder="e.g., iptables -P OUTPUT ACCEPT"
-                  style={{
-                    width: "100%",
-                    fontSize: 13,
-                    padding: "6px 10px",
-                    borderRadius: 10,
-                    border: `1px solid ${C.cardBorder}`,
-                    background: C.cardBg,
-                    color: C.valueText,
-                    outline: "none",
-                    transition: "border-color 0.2s ease",
-                    height: 32,
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = C.accent)}
-                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
-                  onMouseEnter={(e) => {
-                    if (document.activeElement !== e.target)
-                      e.target.style.borderColor = "#94a3b8";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (document.activeElement !== e.target)
-                      e.target.style.borderColor = C.cardBorder;
-                  }}
-                />
-              </div>
+              <input
+                type="text"
+                value={form.command || ""}
+                onChange={(e) => handleChange("command", e.target.value)}
+                placeholder="e.g., iptables -P OUTPUT ACCEPT"
+                style={{
+                  flex: 1,
+                  fontSize: 13,
+                  padding: "6px 8px",
+                  borderRadius: 4,
+                  border: "1px solid #cbd5e1",
+                  background: "#ffffff",
+                  color: "#1e293b",
+                  outline: "none",
+                  width: "100%",
+                  transition: "border-color 0.2s ease",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#1e2d42")}
+                onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
+                onMouseEnter={(e) => {
+                  if (document.activeElement !== e.target)
+                    e.target.style.borderColor = "#94a3b8";
+                }}
+                onMouseLeave={(e) => {
+                  if (document.activeElement !== e.target)
+                    e.target.style.borderColor = "#cbd5e1";
+                }}
+              />
             </div>
           </div>
         </DialogContent>
@@ -1071,7 +1052,7 @@ const AccessControl = () => {
             gap: 2,
             p: 3,
             borderTop: `1px solid ${C.divider}`,
-            backgroundColor: C.cardBg,
+            backgroundColor: "#f8fafc",
           }}
         >
           <Btn
