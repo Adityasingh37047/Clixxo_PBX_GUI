@@ -299,7 +299,7 @@ const TimeCondition = () => {
 
       {/* Breadcrumb */}
       <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
-        PBX &rsaquo; Call Features &rsaquo; <span style={{ color: '#1e293b', fontWeight: 600 }}>{TC_TITLE}</span>
+        PBX &rsaquo; Call Control &rsaquo; <span style={{ color: '#1e293b', fontWeight: 600 }}>{TC_TITLE}</span>
       </div>
 
       <div className="w-full max-w-full mx-auto">
