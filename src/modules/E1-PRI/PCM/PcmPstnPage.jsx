@@ -431,10 +431,10 @@ const PcmPstnPage = () => {
   };
 
   const handleCheckAll = () =>
-    setSelectedItems(pagedData.map((item) => item.spanNo));
+    setSelectedItems(pagedData.map((item) => item.span_id || item.span?.id));
   const handleUncheckAll = () => setSelectedItems([]);
   const handleInverse = () => {
-    const ids = pagedData.map((i) => i.spanNo);
+    const ids = pagedData.map((item) => item.span_id || item.span?.id);
     setSelectedItems(ids.filter((id) => !selectedItems.includes(id)));
   };
   const handleDelete = async () => {
@@ -1162,7 +1162,51 @@ const PcmPstnPage = () => {
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>Check</TH>
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={
+                          pagedData.length > 0 &&
+                          pagedData.every((row) =>
+                            selectedItems.includes(row.span_id || row.span?.id),
+                          )
+                        }
+                        indeterminate={
+                          pagedData.some((row) =>
+                            selectedItems.includes(row.span_id || row.span?.id),
+                          ) &&
+                          !pagedData.every((row) =>
+                            selectedItems.includes(row.span_id || row.span?.id),
+                          )
+                        }
+                        onChange={() => {
+                          const allSelected = pagedData.every((row) =>
+                            selectedItems.includes(row.span_id || row.span?.id),
+                          );
+                          if (allSelected) {
+                            const pagedIds = pagedData.map(r => r.span_id || r.span?.id);
+                            setSelectedItems(prev => prev.filter(id => !pagedIds.includes(id)));
+                          } else {
+                            setSelectedItems((prev) => {
+                              const newSelections = [...prev];
+                              pagedData.forEach((row) => {
+                                const id = row.span_id || row.span?.id;
+                                if (!newSelections.includes(id)) {
+                                  newSelections.push(id);
+                                }
+                              });
+                              return newSelections;
+                            });
+                          }
+                        }}
+                        sx={{
+                          padding: "1px",
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                        }}
+                      />
+                    </TH>
                     {PCM_PSTN_TABLE_COLUMNS.map((col) => (
                       <TH key={col.key}>{col.label}</TH>
                     ))}
