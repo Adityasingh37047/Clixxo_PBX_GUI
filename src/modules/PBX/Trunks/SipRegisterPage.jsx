@@ -1613,14 +1613,110 @@ const SipRegisterPage = () => {
               )}
             </div>
             {/* Right: action buttons */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <TableBtn onClick={() => { setImportFile(null); setShowImportModal(true); }} variant="outline">⬇ Import</TableBtn>
-              <TableBtn onClick={handleExport} variant="outline">⬆ Export</TableBtn>
-              <TableBtn onClick={handleInverse} disabled={loading.delete} variant="outline">Inverse</TableBtn>
-              <TableBtn onClick={handleClearAll} disabled={loading.delete || trunks.length === 0} variant="danger">Clear All</TableBtn>
-              <TableBtn onClick={handleDelete} disabled={loading.delete || selectedIds.length === 0} variant="danger">🗑 Delete</TableBtn>
-              <TableBtn onClick={() => handleOpenModal()} disabled={loading.fetch} variant="accent">+ Add New</TableBtn>
-            </div>
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  }}
+>
+  <TableBtn
+    onClick={() => {
+      setImportFile(null);
+      setShowImportModal(true);
+    }}
+    variant="outline"
+    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow:
+        "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    ⬇ Import
+  </TableBtn>
+
+  <TableBtn
+    onClick={handleExport}
+    variant="outline"
+    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow:
+        "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    ⬆ Export
+  </TableBtn>
+
+  <TableBtn
+    onClick={handleInverse}
+    disabled={loading.delete}
+    variant="outline"
+    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow:
+        "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    Inverse
+  </TableBtn>
+
+  <TableBtn
+    onClick={handleClearAll}
+    disabled={
+      loading.delete || trunks.length === 0
+    }
+    variant="danger"
+    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow:
+        "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    Clear All
+  </TableBtn>
+
+  <TableBtn
+    onClick={handleDelete}
+    disabled={
+      loading.delete ||
+      selectedIds.length === 0
+    }
+    variant="danger"
+    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow:
+        "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    🗑 Delete
+  </TableBtn>
+
+  <TableBtn
+    onClick={() => handleOpenModal()}
+    disabled={loading.fetch}
+    variant="accent"
+    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow:
+        "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    + Add New
+  </TableBtn>
+</div>
           </div>
 
           {/* Table */}
@@ -1831,7 +1927,7 @@ const SipRegisterPage = () => {
         <DialogTitle
           className="text-white text-center font-semibold p-0 text-base h-22"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
+             background: "rgb(30, 45, 62)",
             borderBottom: "1px solid #444444",
           }}
         >

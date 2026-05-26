@@ -478,27 +478,28 @@ const PbxMonitor = () => {
               )}
             </div>
 
-            {/* Refresh */}
-            <button
-              onClick={loadData}
-              style={{
-                background: C.cardBg,
-                color: C.accent,
-                border: `0.5px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "5px 14px",
-                cursor: "pointer",
-                fontWeight: 600,
-                fontSize: 11,
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                transition: "opacity 0.15s ease",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Refresh
-            </button>
+           {/* Refresh */}
+<button
+  onClick={loadData}
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    borderRadius: 6,
+    padding: "5px 14px",
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: 11,
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    transition: "opacity 0.15s ease",
+    whiteSpace: "nowrap",
+  }}
+>
+  Refresh
+</button>
           </div>
         </div>
 

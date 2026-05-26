@@ -1307,19 +1307,29 @@ const SipAccountPage = () => {
                   "Refresh"
                 )}
               </Btn> */}
-              <Btn
-                onClick={handleDelete}
-                disabled={loading.delete || !selected.length}
-                variant="danger"
-                style={{ minWidth: 84 }}
-              >
-                {loading.delete ? (
-                  <CircularProgress size={11} style={{ color: C.errorRed }} />
-                ) : (
-                  "🗑"
-                )}
-                Delete
-              </Btn>
+            <Btn
+  onClick={handleDelete}
+  disabled={loading.delete || !selected.length}
+  variant="danger"
+  style={{
+    minWidth: 84,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  {loading.delete ? (
+    <CircularProgress
+      size={11}
+      style={{ color: "#374151" }}
+    />
+  ) : (
+    "🗑"
+  )}
+
+  Delete
+</Btn>
               {/* <Btn
                 onClick={handleClearAll}
                 disabled={loading.delete || !accounts.length}
@@ -1327,37 +1337,64 @@ const SipAccountPage = () => {
               >
                 Clear Allkk
               </Btn> */}
-              <Btn
-                onClick={() => handleOpenModal()}
-                disabled={loading.fetch || loading.save}
-                variant="outline"
-              >
-                + Add New
-              </Btn>
-              <Btn
-                onClick={openBulkModal}
-                disabled={loading.fetch || loading.save}
-                variant="outline"
-              >
-                + Bulk Add
-              </Btn>
-              <Btn
-                onClick={() => {
-                  setShowImportModal(true);
-                  setImportFile(null);
-                }}
-                disabled={loading.fetch}
-                variant="outline"
-              >
-                ⬇ Import
-              </Btn>
-              <Btn
-                onClick={handleExport}
-                disabled={loading.fetch}
-                variant="accent"
-              >
-                ⬆ Export
-              </Btn>
+             <Btn
+  onClick={() => handleOpenModal()}
+  disabled={loading.fetch || loading.save}
+  variant="outline"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  + Add New
+</Btn>
+
+<Btn
+  onClick={openBulkModal}
+  disabled={loading.fetch || loading.save}
+  variant="outline"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  + Bulk Add
+</Btn>
+
+<Btn
+  onClick={() => {
+    setShowImportModal(true);
+    setImportFile(null);
+  }}
+  disabled={loading.fetch}
+  variant="outline"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  ⬇ Import
+</Btn>
+
+<Btn
+  onClick={handleExport}
+  disabled={loading.fetch}
+  variant="accent"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  ⬆ Export
+</Btn>
             </div>
           </div>
 
@@ -1775,26 +1812,43 @@ const SipAccountPage = () => {
             padding: "12px 24px 16px",
           }}
         >
+        <Btn
+  onClick={handleImportSubmit}
+  disabled={importLoading || !importFile}
+  variant="default"
+  style={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  {importLoading && (
+    <CircularProgress
+      size={11}
+      style={{ color: "#fff" }}
+    />
+  )}
+
+  Import
+</Btn>
           <Btn
-            onClick={handleImportSubmit}
-            disabled={importLoading || !importFile}
-            variant="default"
-          >
-            {importLoading && (
-              <CircularProgress size={11} style={{ color: "#fff" }} />
-            )}
-            Import
-          </Btn>
-          <Btn
-            onClick={() => {
-              setShowImportModal(false);
-              setImportFile(null);
-            }}
-            disabled={importLoading}
-            variant="outline"
-          >
-            Cancel
-          </Btn>
+  onClick={() => {
+    setShowImportModal(false);
+    setImportFile(null);
+  }}
+  disabled={importLoading}
+  variant="outline"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Cancel
+</Btn>
         </DialogActions>
       </Dialog>
 
@@ -3406,24 +3460,47 @@ const SipAccountPage = () => {
           }}
         >
           <Btn
-            onClick={formMode === "single" ? handleSave : handleBulkSave}
-            disabled={loading.save}
-            variant="default"
-            style={{ padding: "8px 28px", fontSize: 13 }}
-          >
-            {loading.save && (
-              <CircularProgress size={13} style={{ color: "#fff" }} />
-            )}
-            {loading.save ? "Saving..." : "Save"}
-          </Btn>
-          <Btn
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            variant="outline"
-            style={{ padding: "8px 28px", fontSize: 13 }}
-          >
-            Close
-          </Btn>
+  onClick={
+    formMode === "single"
+      ? handleSave
+      : handleBulkSave
+  }
+  disabled={loading.save}
+  variant="default"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  {loading.save && (
+    <CircularProgress
+      size={13}
+      style={{ color: "#fff" }}
+    />
+  )}
+
+  {loading.save ? "Saving..." : "Save"}
+</Btn>
+         <Btn
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="outline"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Close
+</Btn>
         </DialogActions>
       </Dialog>
     </div>

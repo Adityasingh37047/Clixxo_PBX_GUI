@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   Button,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -33,6 +33,108 @@ const DEFAULT_DIAL_PATTERN = {
   delay: "",
 };
 const DEFAULT_CALLER_CONVERSION = { strip: "", front: "", suffix: "" };
+
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+}) => {
+  const variants = {
+    default: {
+      background: "#1e293b",
+      color: "#fff",
+      border: "1px solid #9ca3af",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: "0.5px solid #fecaca",
+    },
+    accent: {
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = variants[variant] || variants.default;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5,
+        transition: "opacity 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.opacity = "1";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#f8fafc",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "12px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: "1px solid #f1f5f9",
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 
 const OutboundRoutesPage = () => {
   const [rows, setRows] = useState([]);
@@ -666,8 +768,19 @@ const OutboundRoutesPage = () => {
     });
   };
 
+  const allRowsSelected =
+    rows.length > 0 && rows.every((_, index) => selected.includes(index));
+  const someRowsSelected =
+    rows.some((_, index) => selected.includes(index)) && !allRowsSelected;
+
   return (
-    <div className="w-full max-w-full mx-auto p-2">
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 24,
+      }}
+    >
       {/* Import Modal */}
       <Dialog
         open={showImportModal}
@@ -792,198 +905,403 @@ const OutboundRoutesPage = () => {
         </DialogActions>
       </Dialog>
 
-      <div
-        className="rounded-t-lg h-8 flex items-center justify-between px-3 font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-        style={{
-          background: "linear-gradient(#3E5475 100%)",
-          boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-        }}
-      >
-        <div className="flex-1" />
-        <span>Outbound Routes</span>
-        <div className="flex-1 flex justify-end gap-2">
-          <button
-            className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-            style={{
-              background:
-                "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)",
-              color: "#1565c0",
-              border: "1px solid #93c5fd",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background =
-                "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background =
-                "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")
-            }
-            onClick={() => {
-              setImportFile(null);
-              setShowImportModal(true);
-            }}
-          >
-            Import
-          </button>
-          <button
-            className="cursor-pointer font-semibold text-xs rounded px-4 py-1 transition-all active:scale-95"
-            style={{
-              background:
-                "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)",
-              color: "#1565c0",
-              border: "1px solid #93c5fd",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background =
-                "linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 100%)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background =
-                "linear-gradient(to bottom, #ffffff 0%, #dbeafe 100%)")
-            }
-            onClick={handleExport}
-          >
-            Export
-          </button>
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Call Control &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+              Outbound Routes
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div className="overflow-x-auto w-full">
-        <table className="w-full min-w-[900px] bg-[#f8fafd] border-2 border-t-0 border-gray-400 rounded-b-lg shadow-sm">
-          <thead>
-            <tr>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
-                #
-              </th>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                Name
-              </th>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                Priority
-              </th>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                Enabled
-              </th>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                Password
-              </th>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                Member Extensions
-              </th>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                Member Trunks
-              </th>
-              <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={9}
-                  className="border border-gray-300 px-2 py-4 text-center text-gray-500"
+        <div
+          style={{
+            background: "#ffffff",
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 22,
+            overflow: "hidden",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 18px",
+              borderBottom: "1px solid #e2e8f0",
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: "1px solid #e2e8f0",
+                  color: C.labelText,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
+                }}
+              >
+                Page {page} · {rows.length} records
+              </span>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
                 >
-                  No outbound routes yet. Click &quot;Add New&quot; to create
-                  one.
-                </td>
-              </tr>
-            ) : (
-              pagedRows.map((row, idx) => {
-                const realIdx = (page - 1) * itemsPerPage + idx;
-                return (
-                  <tr key={row.id}>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <input
-                        type="checkbox"
-                        checked={selected.includes(realIdx)}
-                        onChange={() => handleSelectRow(realIdx)}
-                        disabled={loading.delete}
-                      />
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {realIdx + 1}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center font-medium">
-                      {row.name}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {row.priority}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {row.enabled}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {row.passwordType === "Single Pin"
-                        ? `Single Pin (${row.singlePin || ""})`
-                        : row.passwordType}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {row.memberExtensions?.map(getExtensionLabel).join(", ")}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {row.memberTrunks?.map(getTrunkLabel).join(", ")}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <EditDocumentIcon
-                        className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
-                        titleAccess="Edit"
-                        onClick={() => handleOpenEditModal(row)}
-                      />
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                onClick={() => {
+                  setImportFile(null);
+                  setShowImportModal(true);
+                }}
+                disabled={importLoading}
+                variant="outline"
+                style={{  background: "#cbd5e1", color: "#374151", border: "1px solid #cbd5e1", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)" }}
+              >
+                ⬇ Import
+              </Btn>
+              <Btn onClick={handleExport} variant="outline" style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}>
+                ⬆ Export
+              </Btn>
+            </div>
+          </div>
 
-      <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
-        <div className="flex flex-wrap gap-2">
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-              loading.delete ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            onClick={handleCheckAll}
-            disabled={loading.delete}
+          <div style={{ overflowX: "auto" }}>
+            {loading.list ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  tableLayout: "auto",
+                  minWidth: 900,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 36 }}>
+                      <Checkbox
+                        size="small"
+                        checked={allRowsSelected}
+                        indeterminate={someRowsSelected}
+                        onChange={() =>
+                          allRowsSelected ? handleUncheckAll() : handleCheckAll()
+                        }
+                        sx={{
+                          padding: "1px",
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                        }}
+                      />
+                    </TH>
+                    <TH style={{ width: 40 }}>#</TH>
+                    <TH>Name</TH>
+                    <TH>Priority</TH>
+                    <TH>Enabled</TH>
+                    <TH>Password</TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Member Extensions
+                    </TH>
+                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                      Member Trunks
+                    </TH>
+                    <TH style={{ width: 70 }}>Actions</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={9}
+                        style={{
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
+                        }}
+                      >
+                        No outbound routes yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedRows.map((row, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const rowBg = isSelected
+                        ? "#e0f2fe"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      return (
+                        <tr
+                          key={row.id}
+                          style={{
+                            background: rowBg,
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
+                          }}
+                        >
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "10px 0",
+                              borderRight: "1px solid #f1f5f9",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleSelectRow(realIdx)}
+                              disabled={loading.delete}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "10px 6px",
+                              fontSize: 11,
+                              color: C.mutedText,
+                              borderRight: "1px solid #f1f5f9",
+                            }}
+                          >
+                            {realIdx + 1}
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px 14px",
+                              textAlign: "center",
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
+                            }}
+                          >
+                            {row.name}
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px 14px",
+                              textAlign: "center",
+                              fontSize: 13,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
+                            }}
+                          >
+                            {row.priority}
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px 14px",
+                              textAlign: "center",
+                              borderRight: "1px solid #f1f5f9",
+                            }}
+                          >
+                            <span
+                              style={{
+                                color:
+                                  row.enabled === "Yes" ? "#166534" : "#475569",
+                                padding: "4px 11px",
+                                borderRadius: 999,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                letterSpacing: "0.01em",
+                                whiteSpace: "nowrap",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                minWidth: 72,
+                              }}
+                            >
+                              {row.enabled}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px 14px",
+                              textAlign: "center",
+                              fontSize: 13,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
+                            }}
+                          >
+                            {row.passwordType === "Single Pin"
+                              ? `Single Pin (${row.singlePin || ""})`
+                              : row.passwordType}
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px 14px",
+                              fontSize: 13,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
+                              wordBreak: "break-all",
+                            }}
+                          >
+                            {row.memberExtensions?.length > 0 ? (
+                              row.memberExtensions
+                                .map(getExtensionLabel)
+                                .join(", ")
+                            ) : (
+                              <span style={{ color: C.mutedText }}>—</span>
+                            )}
+                          </td>
+                          <td
+                            style={{
+                              padding: "10px 14px",
+                              fontSize: 13,
+                              color: C.valueText,
+                              borderRight: "1px solid #f1f5f9",
+                              wordBreak: "break-all",
+                            }}
+                          >
+                            {row.memberTrunks?.length > 0 ? (
+                              row.memberTrunks.map(getTrunkLabel).join(", ")
+                            ) : (
+                              <span style={{ color: C.mutedText }}>—</span>
+                            )}
+                          </td>
+                          <td
+                            style={{ textAlign: "center", padding: "7px 8px" }}
+                          >
+                            <Btn
+                              onClick={() => handleOpenEditModal(row)}
+                              variant="outline"
+                              style={{ fontSize: 10, padding: "3px 10px" }}
+                            >
+                              Edit
+                            </Btn>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "12px 18px",
+              borderTop: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
           >
-            Check All
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-              loading.delete ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            onClick={handleUncheckAll}
-            disabled={loading.delete}
-          >
-            Uncheck All
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${
-              loading.delete ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            onClick={handleDelete}
-            disabled={loading.delete}
-          >
-            {loading.delete && <CircularProgress size={12} />}
-            Delete
-          </button>
-        </div>
-        <div className="flex gap-2">
-          <button
-            className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${
-              loading.save ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            onClick={handleOpenAddModal}
-            disabled={loading.save}
-          >
-            Add New
-          </button>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <Btn
+                onClick={handleCheckAll}
+                disabled={loading.delete || rows.length === 0}
+                variant="outline"
+                style={{  background: "#cbd5e1", color: "#374151", border: "1px solid #cbd5e1", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)" }}
+              >
+                Check All
+              </Btn>
+              <Btn
+                onClick={handleUncheckAll}
+                disabled={loading.delete || selected.length === 0}
+                variant="outline"
+                style={{  background: "#cbd5e1", color: "#374151", border: "1px solid #cbd5e1", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)" }}
+              >
+                Uncheck All
+              </Btn>
+              <Btn
+                onClick={handleDelete}
+                disabled={loading.delete || selected.length === 0}
+                variant="danger"
+                style={{  background: "#cbd5e1", color: "#374151", border: "1px solid #cbd5e1", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)" }}
+              >
+                {loading.delete && (
+                  <CircularProgress size={11} style={{ color: C.errorRed }} />
+                )}
+                Delete
+              </Btn>
+            </div>
+            <Btn
+              onClick={handleOpenAddModal}
+              disabled={loading.save || loading.list}
+              variant="accent"
+              style={{
+                background: "#cbd5e1",
+                color: "#374151",
+                border: "1px solid #cbd5e1",
+                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+              }}
+            >
+              + Add New
+            </Btn>
+          </div>
         </div>
       </div>
 
@@ -999,7 +1317,7 @@ const OutboundRoutesPage = () => {
         <DialogTitle
           className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
+            background: "rgb(30, 45, 62)",
             boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >

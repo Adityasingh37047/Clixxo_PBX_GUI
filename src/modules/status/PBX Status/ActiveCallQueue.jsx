@@ -347,7 +347,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
               alignItems: "center",
               justifyContent: "space-between",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#f3f4f6",
+              background: "#ffffff",
               padding: "0 14px 0 0",
             }}
           >
@@ -385,15 +385,21 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
             {/* Action buttons */}
             <div style={{ display: "flex", gap: 8 }}>
               {/* <ActionBtn variant="dark">⬇ Download</ActionBtn> */}
-              <ActionBtn
-                variant="outline"
-                onClick={() => {
-                  setAgentData([]);
-                  setQueueData([]);
-                }}
-              >
-                Clear
-              </ActionBtn>
+             <ActionBtn
+  variant="outline"
+  onClick={() => {
+    setAgentData([]);
+    setQueueData([]);
+  }}
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Clear
+</ActionBtn>
               <ActionBtn variant="accent" onClick={onBack}>
                 ← Back
               </ActionBtn>

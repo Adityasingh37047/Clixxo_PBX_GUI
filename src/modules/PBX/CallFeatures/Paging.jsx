@@ -32,16 +32,20 @@ const PAGING_TYPE_OPTIONS = ["one-way", "two-way"];
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
@@ -54,9 +58,9 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e2d42",
+      background: "#1e293b",
       color: "#fff",
-      border: "1px solid #162233",
+      border: "1px solid #9ca3af",
     },
     outline: {
       background: C.cardBg,
@@ -111,17 +115,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -130,7 +134,14 @@ const TH = ({ children, style: extra }) => (
 );
 
 const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+  <div
+    style={{
+      display: "flex",
+      alignItems: align,
+      gap: 12,
+      minHeight: 32,
+    }}
+  >
     <label
       style={{
         fontSize: 13,
@@ -592,7 +603,7 @@ const Paging = () => {
           <div style={{ fontSize: 11, color: C.mutedText }}>
             PBX &rsaquo; Call Features &rsaquo;{" "}
             <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              Paging Group
+              Paging
             </span>
           </div>
         </div>
@@ -615,7 +626,7 @@ const Paging = () => {
               justifyContent: "space-between",
               padding: "10px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              background: "#ffffff",
               flexWrap: "wrap",
               gap: 8,
             }}
@@ -665,6 +676,13 @@ const Paging = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 🗑 Delete
               </Btn>
@@ -672,6 +690,13 @@ const Paging = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="accent"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 + Add New
               </Btn>
@@ -717,9 +742,7 @@ const Paging = () => {
                       />
                     </TH>
                     <TH style={{ width: 40 }}>#</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
-                      Name
-                    </TH>
+                    <TH> Name </TH>
                     <TH>Number</TH>
                     <TH>Type</TH>
                     <TH>CallerID Name Prefix</TH>
@@ -749,7 +772,7 @@ const Paging = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBgColor = isSelected
-                        ? "#f0f9ff"
+                        ? "#e0f2fe"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -759,12 +782,12 @@ const Paging = () => {
                           key={row.id || realIdx}
                           style={{
                             background: rowBgColor,
-                            borderBottom: "0.5px solid #9ca3af",
-                            transition: "background 0.1s ease",
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f0f9ff";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -774,8 +797,8 @@ const Paging = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
+                              padding: "10px 0",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <Checkbox
@@ -792,21 +815,22 @@ const Paging = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 4px",
+                              padding: "10px 6px",
                               fontSize: 11,
                               color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              padding: "7px 16px",
-                              fontSize: 12,
+                              padding: "10px 14px",
+                              textAlign: "center",
+                              fontSize: 13,
                               fontWeight: 600,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.name}
@@ -814,20 +838,24 @@ const Paging = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
-                              fontFamily: "monospace",
+                              padding: "10px 14px",
+                              fontSize: 13,
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <span
                               style={{
-                                background: "#f1f5f9",
-                                padding: "2px 8px",
-                                borderRadius: 10,
-                                fontSize: 10,
-                                fontWeight: 600,
+                                color: C.valueText,
+                                padding: "4px 11px",
+                                borderRadius: 999,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                letterSpacing: "0.01em",
+                                whiteSpace: "nowrap",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
                               }}
                             >
                               {row.number}
@@ -836,10 +864,9 @@ const Paging = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
+                              padding: "10px 14px",
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.type}
@@ -847,10 +874,9 @@ const Paging = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
+                              padding: "10px 14px",
                               color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {row.callerIdNamePrefix || "—"}
@@ -858,10 +884,10 @@ const Paging = () => {
                           <td
                             style={{
                               textAlign: "center",
-                              padding: "7px 8px",
+                              padding: "10px 14px",
                               fontSize: 12,
                               color: C.labelText,
-                              borderRight: "0.5px solid #edf2f7",
+                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {(row.members || [])
@@ -873,7 +899,7 @@ const Paging = () => {
                               : ""}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "4px 8px" }}
+                            style={{ textAlign: "center", padding: "10px 8px" }}
                           >
                             <Btn
                               onClick={() => handleOpenEditModal(row)}
@@ -1243,30 +1269,45 @@ const Paging = () => {
             gap: 12,
           }}
         >
-          <Button
-            onClick={handleSave}
-            disabled={loading.save}
-            variant="contained"
-            sx={{
-              background: "#1e2d42",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 120,
-              "&:hover": { background: "#0f172a" },
-            }}
-          >
-            {loading.save ? (
-              <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
-            ) : null}
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update Group"
-                : "Create Group"}
-          </Button>
+         <Button
+  onClick={handleSave}
+  disabled={loading.save}
+  variant="contained"
+  sx={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+
+    fontWeight: 600,
+    textTransform: "none",
+    minWidth: 120,
+
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
+    },
+
+    "&:disabled": {
+      background: "#94a3b8",
+      color: "#e2e8f0",
+      border: "1px solid #94a3b8",
+    },
+  }}
+>
+  {loading.save ? (
+    <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
+  ) : null}
+
+  {loading.save
+    ? "Saving..."
+    : editId != null
+      ? "Update Group"
+      : "Create Group"}
+</Button>
           <Button
             onClick={handleCloseModal}
             disabled={loading.save}
@@ -1281,6 +1322,13 @@ const Paging = () => {
               minWidth: 100,
               "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
             }}
+            style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
           >
             Cancel
           </Button>

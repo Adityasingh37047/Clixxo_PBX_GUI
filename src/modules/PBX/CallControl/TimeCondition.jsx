@@ -4,11 +4,11 @@ import { CircularProgress } from '@mui/material';
 import {
   TC_TITLE, TC_TYPES, TC_DAYS_OF_WEEK, TC_MONTHS,
   TC_HOURS, TC_MINUTES, TC_DAYS_OF_MONTH, TC_TABLE_COLUMNS, TC_INITIAL_FORM,
-} from '../constants/TimeComditionConstants';
+} from '../../../constants/TimeComditionConstants.jsx';
 import {
   fetchTimeConditions, createTimeCondition, updateTimeCondition,
   deleteTimeCondition, deleteAllTimeConditions,
-} from '../api/apiService';
+} from '../../../api/apiService';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const pad = (n) => String(n ?? 0).padStart(2, '0');

@@ -22,16 +22,20 @@ import {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
@@ -44,9 +48,9 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e2d42",
+      background: "#1e293b",
       color: "#fff",
-      border: "1px solid #162233",
+      border: "1px solid #9ca3af",
     },
     outline: {
       background: C.cardBg,
@@ -101,17 +105,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -501,7 +505,7 @@ const SpeedDialPage = () => {
               justifyContent: "space-between",
               padding: "10px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              background: "#ffffff",
               flexWrap: "wrap",
               gap: 8,
             }}
@@ -552,10 +556,25 @@ const SpeedDialPage = () => {
                   setImportResult(null);
                 }}
                 variant="outline"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 ⬇ Import
               </Btn>
-              <Btn onClick={handleExport} variant="outline">
+              <Btn onClick={handleExport} variant="outline"
+              style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+              >
                 ⬆ Export
               </Btn>
 
@@ -576,6 +595,13 @@ const SpeedDialPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 🗑 Delete
               </Btn>
@@ -583,6 +609,13 @@ const SpeedDialPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="accent"
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >
                 + Add New
               </Btn>
@@ -608,7 +641,7 @@ const SpeedDialPage = () => {
                   width: "100%",
                   borderCollapse: "collapse",
                   tableLayout: "auto",
-                  minWidth: 700,
+                  minWidth: 900,
                 }}
               >
                 <thead>
@@ -628,7 +661,7 @@ const SpeedDialPage = () => {
                       />
                     </TH>
                     <TH style={{ width: 40 }}>#</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH>
                       Name
                     </TH>
                     <TH>Speed Dial Number</TH>
@@ -658,7 +691,7 @@ const SpeedDialPage = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBgColor = isSelected
-                        ? "#f0f9ff"
+                        ? "#e0f2fe"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -668,12 +701,12 @@ const SpeedDialPage = () => {
                           key={row.id || realIdx}
                           style={{
                             background: rowBgColor,
-                            borderBottom: "0.5px solid #9ca3af",
-                            transition: "background 0.1s ease",
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f0f9ff";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -832,7 +865,7 @@ const SpeedDialPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 700, maxWidth: "95vw", borderRadius: 2 } }}
+        PaperProps={{ sx: { width: 760, maxWidth: "96vw", borderRadius: 2 } }}
       >
         <DialogTitle
           style={{
@@ -931,6 +964,15 @@ const SpeedDialPage = () => {
             onClick={handleSave}
             disabled={loading.save}
             variant="contained"
+            style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
             sx={{
               background: "#1e2d42",
               color: "#fff",
@@ -955,6 +997,13 @@ const SpeedDialPage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="outlined"
+            style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
             sx={{
               color: "#1e293b",
               borderColor: "#9ca3af",

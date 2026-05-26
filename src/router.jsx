@@ -139,7 +139,7 @@ import FxsIPCallInCalleeID from './modules/FXS/Num Manipulate/FxsIPCallInCalleeI
 import FxsPSTNCallInCallerID from './modules/FXS/Num Manipulate/FxsPSTNCallInCallerID';
 import FxsPSTNCallInCalleeID from './modules/FXS/Num Manipulate/FxsPSTNCallInCalleeID';
 import ActiveCallQueue from './modules/status/PBX Status/ActiveCallQueue';
-import TimeCondition from './components/TimeCondition';
+import TimeCondition from './modules/PBX/CallControl/TimeCondition';
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
