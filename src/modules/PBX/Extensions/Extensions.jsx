@@ -7,6 +7,9 @@ import {
 } from "../../../constants/SipAccountConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import IndeterminateCheckBoxIcon from "@mui/icons-material/IndeterminateCheckBox";
 import {
   Button,
   Dialog,
@@ -1337,33 +1340,7 @@ const SipAccountPage = () => {
               >
                 Clear Allkk
               </Btn> */}
-             <Btn
-  onClick={() => handleOpenModal()}
-  disabled={loading.fetch || loading.save}
-  variant="outline"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  + Add New
-</Btn>
-
-<Btn
-  onClick={openBulkModal}
-  disabled={loading.fetch || loading.save}
-  variant="outline"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  + Bulk Add
-</Btn>
+             
 
 <Btn
   onClick={() => {
@@ -1395,6 +1372,32 @@ const SipAccountPage = () => {
 >
   ⬆ Export
 </Btn>
+<Btn
+  onClick={openBulkModal}
+  disabled={loading.fetch || loading.save}
+  variant="outline"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  + Bulk Add
+</Btn>
+<Btn
+  onClick={() => handleOpenModal()}
+  disabled={loading.fetch || loading.save}
+  variant="outline"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  + Add New
+</Btn>
             </div>
           </div>
 
@@ -1422,21 +1425,33 @@ const SipAccountPage = () => {
               >
                 <thead>
                   <tr>
-                    {/* Select-all checkbox */}
-                    <TH style={{ width: 36 }}>
-                      <Checkbox
-                        size="small"
-                        checked={allPageSelected}
-                        indeterminate={somePageSelected}
-                        onChange={handleToggleAll}
-                        sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
-                        }}
-                      />
-                    </TH>
+                   {/* Select-all checkbox */}
+  <TH style={{ width: 36 }}>
+    <Checkbox
+      size="small"
+      checked={allPageSelected}
+      indeterminate={somePageSelected}
+      onChange={handleToggleAll}
+      icon={
+        <CheckBoxOutlineBlankIcon
+          style={{ color: "#94a3b8", fontSize: 20 }}
+        />
+      }
+      checkedIcon={
+        <CheckBoxIcon
+          style={{ color: "#94a3b8", fontSize: 20 }}
+        />
+      }
+      indeterminateIcon={
+        <IndeterminateCheckBoxIcon
+          style={{ color: "#94a3b8", fontSize: 20 }}
+        />
+      }
+      sx={{
+        padding: "1px",
+      }}
+    />
+  </TH>
                     <TH style={{ width: 36 }}>#</TH>
                     <TH>Extension</TH>
                     <TH>Context</TH>
@@ -1491,26 +1506,34 @@ const SipAccountPage = () => {
                               e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          {/* Checkbox */}
-                          <td
-                            style={{
-                              textAlign: "center",
-                              padding: "10px 0",
-                              borderRight: "1px solid #f1f5f9",
-                            }}
-                          >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                              disabled={loading.delete}
-                              sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
-                            />
-                          </td>
+                       {/* Checkbox */}
+<td
+  style={{
+    textAlign: "center",
+    padding: "10px 0",
+    borderRight: "1px solid #f1f5f9",
+  }}
+>
+  <Checkbox
+    size="small"
+    checked={isSelected}
+    onChange={() => handleToggleRow(realIdx)}
+    disabled={loading.delete}
+    icon={
+      <CheckBoxOutlineBlankIcon
+        style={{ color: "#94a3b8", fontSize: 20 }}
+      />
+    }
+    checkedIcon={
+      <CheckBoxIcon
+        style={{ color: "#94a3b8", fontSize: 20 }}
+      />
+    }
+    sx={{
+      padding: "1px",
+    }}
+  />
+</td>
 
                           {/* Row number */}
                           <td

@@ -1621,36 +1621,9 @@ const SipRegisterPage = () => {
     flexWrap: "wrap",
   }}
 >
-  <TableBtn
-    onClick={() => {
-      setImportFile(null);
-      setShowImportModal(true);
-    }}
-    variant="outline"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    ⬇ Import
-  </TableBtn>
 
-  <TableBtn
-    onClick={handleExport}
-    variant="outline"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    ⬆ Export
-  </TableBtn>
+
+
 
   <TableBtn
     onClick={handleInverse}
@@ -1700,6 +1673,35 @@ const SipRegisterPage = () => {
     }}
   >
     🗑 Delete
+  </TableBtn>
+    <TableBtn
+    onClick={() => {
+      setImportFile(null);
+      setShowImportModal(true);
+    }}
+    variant="outline"
+    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow:
+        "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    ⬇ Import
+  </TableBtn>
+    <TableBtn
+    onClick={handleExport}
+    variant="outline"
+    style={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow:
+        "0 1px 2px rgba(15, 23, 42, 0.08)",
+    }}
+  >
+    ⬆ Export
   </TableBtn>
 
   <TableBtn

@@ -989,23 +989,71 @@ const OutboundRoutesPage = () => {
               }}
             >
               <Btn
+                onClick={handleCheckAll}
+                disabled={loading.delete || rows.length === 0}
+                variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                Check All
+              </Btn>
+              <Btn
+                onClick={handleUncheckAll}
+                disabled={loading.delete || selected.length === 0}
+                variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                Uncheck All
+              </Btn>
+              <Btn
                 onClick={() => {
                   setImportFile(null);
                   setShowImportModal(true);
                 }}
                 disabled={importLoading}
                 variant="outline"
-                style={{  background: "#cbd5e1", color: "#374151", border: "1px solid #cbd5e1", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)" }}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 ⬇ Import
               </Btn>
-              <Btn onClick={handleExport} variant="outline" style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}>
+              <Btn
+                onClick={handleExport}
+                variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
                 ⬆ Export
+              </Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.save || loading.list}
+                variant="accent"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                + Add New
               </Btn>
             </div>
           </div>
@@ -1247,61 +1295,72 @@ const OutboundRoutesPage = () => {
             )}
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "12px 18px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              gap: 8,
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <Btn
-                onClick={handleCheckAll}
-                disabled={loading.delete || rows.length === 0}
-                variant="outline"
-                style={{  background: "#cbd5e1", color: "#374151", border: "1px solid #cbd5e1", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)" }}
-              >
-                Check All
-              </Btn>
-              <Btn
-                onClick={handleUncheckAll}
-                disabled={loading.delete || selected.length === 0}
-                variant="outline"
-                style={{  background: "#cbd5e1", color: "#374151", border: "1px solid #cbd5e1", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)" }}
-              >
-                Uncheck All
-              </Btn>
-              <Btn
-                onClick={handleDelete}
-                disabled={loading.delete || selected.length === 0}
-                variant="danger"
-                style={{  background: "#cbd5e1", color: "#374151", border: "1px solid #cbd5e1", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)" }}
-              >
-                {loading.delete && (
-                  <CircularProgress size={11} style={{ color: C.errorRed }} />
-                )}
-                Delete
-              </Btn>
-            </div>
-            <Btn
-              onClick={handleOpenAddModal}
-              disabled={loading.save || loading.list}
-              variant="accent"
+          {!loading.list && rows.length > 0 && (
+            <div
               style={{
-                background: "#cbd5e1",
-                color: "#374151",
-                border: "1px solid #cbd5e1",
-                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
               }}
             >
-              + Add New
-            </Btn>
-          </div>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: C.mutedText,
+                }}
+              >
+                Showing {rows.length} record{rows.length !== 1 ? "s" : ""} on
+                page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
+                <Btn
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page}
+                </span>
+                <Btn
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+                <Btn
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
