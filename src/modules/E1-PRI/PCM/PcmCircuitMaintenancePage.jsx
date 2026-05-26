@@ -9,9 +9,7 @@ import {
   PCM_LOOPBACK_BUTTONS,
   PCM0_BUTTONS,
 } from "../../../constants/PcmCircuitMaintenanceConstants";
-import Checkbox from "@mui/material/Checkbox";
-import Button from "@mui/material/Button";
-import Tooltip from "@mui/material/Tooltip";
+import { Checkbox, Tooltip } from "@mui/material";
 import { listPstn, listChannelState } from "../../../api/apiService";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import RingVolumeIcon from "@mui/icons-material/RingVolume";
@@ -81,150 +79,168 @@ const ICONS = [
   </div>, // Unusable (dark red phone locked)
 ];
 
-const blueBarStyle = {
-  width: "100%",
-  height: 32,
-  background: "linear-gradient(#3E5475 100%)",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-  marginBottom: 0,
+// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#2563eb",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "cancel",
+  style: extraStyle,
+}) => {
+  const styles = {
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.cancel;
+  const hoverBg =
+    variant === "primary"
+      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
+      : "#b6c2d3";
+  const baseBg = s.background;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const cardStyle = {
+  background: "#ffffff",
+  borderRadius: 22,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  marginBottom: 24,
+};
+
+const sectionHeaderStyle = {
   display: "flex",
   alignItems: "center",
-  fontWeight: 600,
-  fontSize: 18,
-  color: "#444",
   justifyContent: "center",
-  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-};
-const tableStyle = {
-  width: "100%",
-  minWidth: "100%",
-  maxWidth: "100%",
-  borderCollapse: "collapse",
-  margin: "0 auto",
-  background: "#fff",
-  border: "1px solid #bbb",
-};
-const thStyle = {
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  background: "#fff",
-  fontWeight: 600,
-  fontSize: 15,
+  padding: "14px 18px",
+  borderBottom: "1px solid #e2e8f0",
+  background: "#ffffff",
+  fontWeight: 700,
+  fontSize: 13,
+  color: "#1e293b",
   textAlign: "center",
-  height: 32,
+  width: "100%",
 };
-const tdStyle = {
-  height: 32,
-  border: "1px solid #bbb",
-  padding: "6px 8px",
-  background: "#fff",
-};
-const centerCellStyle = {
-  ...tdStyle,
+
+const actionBarStyle = {
   display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
+  flexWrap: "wrap",
+  gap: 8,
+  padding: "14px 18px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
 };
+
+const tableCellStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: "1px solid #f1f5f9",
+  borderRight: "1px solid #f1f5f9",
+};
+
 const labelCellStyle = {
-  ...tdStyle,
-  width: 260,
+  ...tableCellStyle,
   fontWeight: 600,
-  textAlign: "center",
-  background: "#fff",
-};
-const buttonCellStyle = {
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: 32,
-  border: "none",
-  padding: 0,
-  background: "transparent",
-};
-const buttonStyle = {
-  border: "1px solid #bbb",
-  borderRadius: 4,
-  background: "#f3f4f6",
-  color: "#374151",
-  cursor: "pointer",
-  fontSize: "12px",
-  padding: "4px 12px",
-  width: "110px",
-  height: "28px",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  margin: 0,
-  fontWeight: 600,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-};
-const buttonBlueStyle = {
-  ...buttonStyle,
-  background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  color: "#fff",
-};
-const buttonContainerStyle = {
-  display: "flex",
-  gap: 4,
-  justifyContent: "center",
-  width: "100%",
-  padding: "4px 0",
-  background: "linear-gradient(to bottom, #fff 0%, #f5f5f5 100%)",
+  width: "50%",
 };
 
-// For wider buttons (Physical Connect/Disconnect)
-const wideButtonStyle = {
-  ...buttonStyle,
-  width: "220px",
-  minWidth: "220px",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
+const valueCellStyle = {
+  ...tableCellStyle,
+  width: "50%",
 };
 
-// PCM0 table cell styles for compact view
-const pcm0LabelCellStyle = {
-  ...tdStyle,
-  width: 90,
-  minWidth: 90,
-  maxWidth: 90,
+const channelThStyle = {
+  background: "#ffffff",
+  color: C.labelText,
+  fontWeight: 700,
+  fontSize: 11,
+  padding: "10px 6px",
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: "1px solid #f1f5f9",
+  whiteSpace: "nowrap",
+};
+
+const channelTdStyle = {
+  padding: "8px 4px",
+  textAlign: "center",
+  borderBottom: "1px solid #f1f5f9",
+  borderRight: "1px solid #f1f5f9",
+  fontSize: 13,
+  color: C.valueText,
+  background: "#ffffff",
+};
+
+const channelRowLabelStyle = {
+  ...channelTdStyle,
   fontWeight: 600,
-  textAlign: "center",
-  fontSize: 15,
-  background: "#ffffff",
-  padding: 0,
+  color: C.labelText,
 };
-const pcm0ChannelCellStyle = {
-  ...tdStyle,
-  width: 32,
-  minWidth: 32,
-  maxWidth: 32,
-  textAlign: "center",
-  padding: 0,
-  background: "#ffffff",
-};
-const pcm0HeaderCellStyle = {
-  ...thStyle,
-  width: 32,
-  minWidth: 32,
-  maxWidth: 32,
-  textAlign: "center",
-  fontSize: 15,
-  padding: 0,
-};
-const pcm0HeaderLabelCellStyle = {
-  ...thStyle,
-  width: 90,
-  minWidth: 90,
-  maxWidth: 90,
-  textAlign: "center",
-  fontSize: 15,
-  background: "#fff",
-  padding: "6px 8px",
+
+const checkboxSx = {
+  padding: "1px",
+  color: C.accent,
+  "&.Mui-checked": { color: C.accent },
 };
 
 const PcmCircuitMaintenancePage = () => {
@@ -436,264 +452,123 @@ const PcmCircuitMaintenancePage = () => {
 
   // PCM Maintenance section
   const renderPcmMaintenance = () => (
-    <div className="mb-3 w-full max-w-full mx-auto md:p-2">
-      <div
-        className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-        style={{
-          background: "linear-gradient(#3E5475 100%)",
-          boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-        }}
-      >
-        PCM Maintenance
+    <div style={cardStyle}>
+      <div style={sectionHeaderStyle}>PCM Maintenance</div>
+      <div style={{ overflowX: "auto" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            tableLayout: "fixed",
+          }}
+        >
+          <tbody>
+            <tr>
+              <td style={labelCellStyle}>PCM No.</td>
+              <td style={valueCellStyle}>0</td>
+            </tr>
+            <tr>
+              <td style={labelCellStyle}>PCM Status</td>
+              <td style={valueCellStyle}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    minHeight: 24,
+                  }}
+                >
+                  {colorBlock("#0070a8")}
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style={labelCellStyle}>Check</td>
+              <td style={valueCellStyle}>
+                <Checkbox
+                  size="small"
+                  checked={maintenanceChecked}
+                  onChange={() => setMaintenanceChecked((v) => !v)}
+                  sx={checkboxSx}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div
-        className="w-full max-w-full mx-auto overflow-hidden"
-        style={{
-          border: "2px solid #bbb",
-          borderBottomLeftRadius: 8,
-          borderBottomRightRadius: 8,
-        }}
-      >
-        <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-          <div className="overflow-x-auto w-full">
-            <table
-              className="w-full bg-white border-collapse shadow-sm text-xs sm:text-sm md:text-base lg:text-lg"
-              style={{ tableLayout: "fixed" }}
-            >
-              <tbody>
-                <tr>
-                  <td
-                    className="border border-gray-400 bg-white font-medium py-1 px-2 whitespace-nowrap text-xs text-center align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    PCM No.
-                  </td>
-                  <td
-                    className="border border-gray-400 text-center py-1 px-2 w-10 align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    0
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    className="border border-gray-400 bg-white font-medium py-1 px-2 whitespace-nowrap text-xs text-center align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    PCM Status
-                  </td>
-                  <td
-                    className="border border-gray-400 text-center py-1 px-2 align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    <div
-                      className="flex items-center justify-center w-full h-full"
-                      style={{ minHeight: 24 }}
-                    >
-                      {colorBlock("#0070a8")}
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    className="border border-gray-400 bg-white font-medium py-1 px-2 whitespace-nowrap text-xs text-center align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    Check
-                  </td>
-                  <td
-                    className="border border-gray-400 text-center py-1 px-2 align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={maintenanceChecked}
-                      onChange={() => setMaintenanceChecked((v) => !v)}
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div
-        className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-        style={{ background: "#e3e7ef", marginTop: 12 }}
-      >
-        <div className="flex flex-wrap gap-2">
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => setMaintenanceChecked(true)}
-          >
-            Check All
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => setMaintenanceChecked(false)}
-          >
-            Uncheck All
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded cursor-pointer px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => setMaintenanceChecked((v) => !v)}
-          >
-            Inverse
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400${!maintenanceChecked ? " opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!maintenanceChecked}
-          >
-            Block
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400${!maintenanceChecked ? " opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!maintenanceChecked}
-          >
-            Unblock
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[220px] shadow hover:bg-gray-400${!maintenanceChecked ? " opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!maintenanceChecked}
-          >
-            Physical Connect
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[220px] shadow hover:bg-gray-400${!maintenanceChecked ? " opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!maintenanceChecked}
-          >
-            Physical Disconnect
-          </button>
-        </div>
+      <div style={actionBarStyle}>
+        <Btn onClick={() => setMaintenanceChecked(true)}>Check All</Btn>
+        <Btn onClick={() => setMaintenanceChecked(false)}>Uncheck All</Btn>
+        <Btn onClick={() => setMaintenanceChecked((v) => !v)}>Inverse</Btn>
+        <Btn disabled={!maintenanceChecked}>Block</Btn>
+        <Btn disabled={!maintenanceChecked}>Unblock</Btn>
+        <Btn disabled={!maintenanceChecked} style={{ minWidth: 180 }}>
+          Physical Connect
+        </Btn>
+        <Btn disabled={!maintenanceChecked} style={{ minWidth: 180 }}>
+          Physical Disconnect
+        </Btn>
       </div>
     </div>
   );
 
   // PCM LoopBack Config section
   const renderPcmLoopback = () => (
-    <div className="mb-3 w-full max-w-full mx-auto md:p-2">
-      <div
-        className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-        style={{
-          background: "linear-gradient(#3E5475 100%)",
-          boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-        }}
-      >
-        PCM LoopBack Config
+    <div style={cardStyle}>
+      <div style={sectionHeaderStyle}>PCM LoopBack Config</div>
+      <div style={{ overflowX: "auto" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            tableLayout: "fixed",
+          }}
+        >
+          <tbody>
+            <tr>
+              <td style={labelCellStyle}>PCM No.</td>
+              <td style={valueCellStyle}>0</td>
+            </tr>
+            <tr>
+              <td style={labelCellStyle}>PCM LoopBack Status</td>
+              <td style={valueCellStyle}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    minHeight: 24,
+                  }}
+                >
+                  {colorBlock("#ccc")}
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style={labelCellStyle}>Check</td>
+              <td style={valueCellStyle}>
+                <Checkbox
+                  size="small"
+                  checked={loopbackChecked}
+                  onChange={() => setLoopbackChecked((v) => !v)}
+                  sx={checkboxSx}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div
-        className="w-full max-w-full mx-auto overflow-hidden"
-        style={{
-          border: "2px solid #bbb",
-          borderBottomLeftRadius: 8,
-          borderBottomRightRadius: 8,
-        }}
-      >
-        <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-          <div className="overflow-x-auto w-full">
-            <table
-              className="w-full bg-white border-collapse shadow-sm text-xs sm:text-sm md:text-base lg:text-lg"
-              style={{ tableLayout: "fixed" }}
-            >
-              <tbody>
-                <tr>
-                  <td
-                    className="border border-gray-400 bg-white font-medium py-1 px-2 whitespace-nowrap text-xs text-center align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    PCM No.
-                  </td>
-                  <td
-                    className="border border-gray-400 text-center py-1 px-2 w-10 align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    0
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    className="border border-gray-400 bg-white font-medium py-1 px-2 whitespace-nowrap text-xs text-center align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    PCM LoopBack Status
-                  </td>
-                  <td
-                    className="border border-gray-400 text-center py-1 px-2 align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    <div
-                      className="flex items-center justify-center w-full h-full"
-                      style={{ minHeight: 24 }}
-                    >
-                      {colorBlock("#ccc")}
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td
-                    className="border border-gray-400 bg-white font-medium py-1 px-2 whitespace-nowrap text-xs text-center align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    Check
-                  </td>
-                  <td
-                    className="border border-gray-400 text-center py-1 px-2 align-middle"
-                    style={{ width: "50%" }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={loopbackChecked}
-                      onChange={() => setLoopbackChecked((v) => !v)}
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div
-        className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-        style={{ background: "#e3e7ef", marginTop: 12 }}
-      >
-        <div className="flex flex-wrap gap-2">
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => setLoopbackChecked(true)}
-          >
-            Check All
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => setLoopbackChecked(false)}
-          >
-            Uncheck All
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 font-semibold text-xs rounded cursor-pointer px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-            onClick={() => setLoopbackChecked((v) => !v)}
-          >
-            Inverse
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[220px] shadow hover:bg-gray-400${!loopbackChecked ? " opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!loopbackChecked}
-          >
-            Local LoopBack
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[220px] shadow hover:bg-gray-400${!loopbackChecked ? " opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!loopbackChecked}
-          >
-            Remote LoopBack
-          </button>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[220px] shadow hover:bg-gray-400${!loopbackChecked ? " opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!loopbackChecked}
-          >
-            UnLoopBack
-          </button>
-        </div>
+      <div style={actionBarStyle}>
+        <Btn onClick={() => setLoopbackChecked(true)}>Check All</Btn>
+        <Btn onClick={() => setLoopbackChecked(false)}>Uncheck All</Btn>
+        <Btn onClick={() => setLoopbackChecked((v) => !v)}>Inverse</Btn>
+        <Btn disabled={!loopbackChecked} style={{ minWidth: 160 }}>
+          Local LoopBack
+        </Btn>
+        <Btn disabled={!loopbackChecked} style={{ minWidth: 160 }}>
+          Remote LoopBack
+        </Btn>
+        <Btn disabled={!loopbackChecked} style={{ minWidth: 120 }}>
+          UnLoopBack
+        </Btn>
       </div>
     </div>
   );
@@ -732,211 +607,158 @@ const PcmCircuitMaintenancePage = () => {
 
   const renderPcm0 = () => {
     return (
-      <div className="mb-4 w-full max-w-full mx-auto">
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm mt-0"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          PCM 0
-        </div>
-        <div
-          className="w-full max-w-full mx-auto"
-          style={{
-            border: "2px solid #bbb",
-            borderTop: "none",
-            borderRadius: 0,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div className="bg-white rounded-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div className="overflow-x-auto w-full">
-              <table className="w-full bg-white border-collapse shadow-sm text-xs sm:text-sm md:text-base lg:text-lg">
-                <thead>
-                  <tr>
-                    <th className="border border-gray-400 bg-white font-medium py-2 px-0.5 whitespace-nowrap text-xs w-24">
-                      Channel No.
-                    </th>
-                    {Array.from({ length: 32 }, (_, i) => (
-                      <th
-                        key={i}
-                        className="border border-gray-400 bg-white text-gray-700 font-medium py-1 px-0.5 whitespace-nowrap text-xs w-10"
-                      >
-                        {i}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-400 bg-white font-medium py-1 px-0.5 whitespace-nowrap text-xs w-24 text-center align-middle">
-                      Status
-                    </td>
-                    {pcm0Values.map((v, i) => {
-                      const ch =
-                        channels.find((c) => Number(c.channelid) === i) || {};
+      <div style={cardStyle}>
+        <div style={sectionHeaderStyle}>PCM 0</div>
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              minWidth: 900,
+            }}
+          >
+            <thead>
+              <tr>
+                <th style={{ ...channelThStyle, minWidth: 90 }}>Channel No.</th>
+                {Array.from({ length: 32 }, (_, i) => (
+                  <th
+                    key={i}
+                    style={{ ...channelThStyle, width: 36, minWidth: 36 }}
+                  >
+                    {i}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={channelRowLabelStyle}>Status</td>
+                {pcm0Values.map((v, i) => {
+                  const ch =
+                    channels.find((c) => Number(c.channelid) === i) || {};
 
-                      // Extract caller from channel field (e.g., "DAHDI/i1/1202210116-1" -> "1202210116")
-                      let caller = "";
-                      if (ch.channel) {
-                        const channelMatch =
-                          ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
-                        if (channelMatch) {
-                          caller = channelMatch[1];
-                        }
-                      }
+                  // Extract caller from channel field (e.g., "DAHDI/i1/1202210116-1" -> "1202210116")
+                  let caller = "";
+                  if (ch.channel) {
+                    const channelMatch =
+                      ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
+                    if (channelMatch) {
+                      caller = channelMatch[1];
+                    }
+                  }
 
-                      // Extract called from appdata field (e.g., "Dial(PJSIP/07309377930@..." -> "07309377930")
-                      let called = "";
-                      if (ch.appdata) {
-                        const appdataMatch =
-                          ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
-                        if (appdataMatch) {
-                          called = appdataMatch[1];
-                        }
-                      }
+                  // Extract called from appdata field (e.g., "Dial(PJSIP/07309377930@..." -> "07309377930")
+                  let called = "";
+                  if (ch.appdata) {
+                    const appdataMatch =
+                      ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
+                    if (appdataMatch) {
+                      called = appdataMatch[1];
+                    }
+                  }
 
-                      const info = {
-                        channel: ch.channel || `DAHDI/${i}`,
-                        state:
-                          ch.state ||
-                          (v === "unusable"
-                            ? "Unusable"
-                            : v === "red"
-                              ? "Reserved"
-                              : "Idle"),
-                        inService:
-                          ch?.dahdi_status?.in_service ||
-                          (v === "unusable" ? "No" : "Yes"),
-                        caller: caller,
-                        called: called,
-                      };
-                      const tooltipContent = (
-                        <div style={{ whiteSpace: "pre-line" }}>
-                          <div>
-                            <strong>Channel:</strong> {info.channel}
-                          </div>
-                          <div>
-                            <strong>State:</strong> {info.state}
-                          </div>
-                          <div>
-                            <strong>In Service:</strong> {info.inService}
-                          </div>
-                          {info.caller ? (
-                            <div>
-                              <strong>Caller:</strong> {info.caller}
-                            </div>
-                          ) : null}
-                          {info.called ? (
-                            <div>
-                              <strong>Called:</strong> {info.called}
-                            </div>
-                          ) : null}
+                  const info = {
+                    channel: ch.channel || `DAHDI/${i}`,
+                    state:
+                      ch.state ||
+                      (v === "unusable"
+                        ? "Unusable"
+                        : v === "red"
+                          ? "Reserved"
+                          : "Idle"),
+                    inService:
+                      ch?.dahdi_status?.in_service ||
+                      (v === "unusable" ? "No" : "Yes"),
+                    caller: caller,
+                    called: called,
+                  };
+                  const tooltipContent = (
+                    <div style={{ whiteSpace: "pre-line" }}>
+                      <div>
+                        <strong>Channel:</strong> {info.channel}
+                      </div>
+                      <div>
+                        <strong>State:</strong> {info.state}
+                      </div>
+                      <div>
+                        <strong>In Service:</strong> {info.inService}
+                      </div>
+                      {info.caller ? (
+                        <div>
+                          <strong>Caller:</strong> {info.caller}
                         </div>
-                      );
-                      return (
-                        <td
-                          key={i}
-                          className="border border-gray-400 text-center py-1 px-0.5 w-10 align-middle"
-                        >
-                          <Tooltip
-                            title={tooltipContent}
-                            arrow
-                            placement="top"
-                            enterDelay={0}
-                            enterNextDelay={0}
-                            leaveDelay={100}
-                            componentsProps={{
-                              tooltip: {
-                                sx: {
-                                  bgcolor: "#fff",
-                                  color: "#111",
-                                  border: "1px solid #bbb",
-                                  boxShadow: 2,
-                                  fontSize: 12,
-                                },
-                              },
-                              arrow: { sx: { color: "#fff" } },
-                            }}
-                          >
-                            <div
-                              className="flex items-center justify-center w-full h-full"
-                              style={{ minHeight: 24 }}
-                            >
-                              {v === "frame"
-                                ? colorBlock("#222") // Black for Frame Sync (channel 0)
-                                : v === "signaling"
-                                  ? colorBlock("#0070a8") // Blue for Signaling (channel 16)
-                                  : v === "red"
-                                    ? colorBlock("#e53935") // Red when span is down
-                                    : ICONS[Number(v) || 0]}{" "}
-                              {/* Material UI icons when span is up */}
-                            </div>
-                          </Tooltip>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 bg-white font-medium py-1 px-0.5 whitespace-nowrap text-xs w-24 text-center align-middle">
-                      Check
-                    </td>
-                    {Array.from({ length: 32 }, (_, i) => (
-                      <td
-                        key={i}
-                        className="border border-gray-400 text-center py-1 px-0.5 w-10 align-middle"
+                      ) : null}
+                      {info.called ? (
+                        <div>
+                          <strong>Called:</strong> {info.called}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                  return (
+                    <td key={i} style={channelTdStyle}>
+                      <Tooltip
+                        title={tooltipContent}
+                        arrow
+                        placement="top"
+                        enterDelay={0}
+                        enterNextDelay={0}
+                        leaveDelay={100}
+                        componentsProps={{
+                          tooltip: {
+                            sx: {
+                              bgcolor: "#fff",
+                              color: "#111",
+                              border: "1px solid #bbb",
+                              boxShadow: 2,
+                              fontSize: 12,
+                            },
+                          },
+                          arrow: { sx: { color: "#fff" } },
+                        }}
                       >
-                        <input
-                          type="checkbox"
-                          checked={pcm0Checked[i] || false}
-                          onChange={() => handlePcm0Check(i)}
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+                        <div
+                          className="flex items-center justify-center w-full h-full"
+                          style={{ minHeight: 24 }}
+                        >
+                          {v === "frame"
+                            ? colorBlock("#222") // Black for Frame Sync (channel 0)
+                            : v === "signaling"
+                              ? colorBlock("#0070a8") // Blue for Signaling (channel 16)
+                              : v === "red"
+                                ? colorBlock("#e53935") // Red when span is down
+                                : ICONS[Number(v) || 0]}{" "}
+                          {/* Material UI icons when span is up */}
+                        </div>
+                      </Tooltip>
+                    </td>
+                  );
+                })}
+              </tr>
+              <tr>
+                <td style={channelRowLabelStyle}>Check</td>
+                {Array.from({ length: 32 }, (_, i) => (
+                  <td key={i} style={channelTdStyle}>
+                    <Checkbox
+                      size="small"
+                      checked={pcm0Checked[i] || false}
+                      onChange={() => handlePcm0Check(i)}
+                      sx={checkboxSx}
+                    />
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div
-          className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleCheckAll}
-            >
-              Check All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleUncheckAll}
-            >
-              Uncheck All
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded cursor-pointer px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={handleInverse}
-            >
-              Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400${!(allChecked || pcm0Checked.some(Boolean)) ? " opacity-50 cursor-not-allowed" : ""}`}
-              disabled={!(allChecked || pcm0Checked.some(Boolean))}
-            >
-              Block
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400${!(allChecked || pcm0Checked.some(Boolean)) ? " opacity-50 cursor-not-allowed" : ""}`}
-              disabled={!(allChecked || pcm0Checked.some(Boolean))}
-            >
-              Unblock
-            </button>
-          </div>
+        <div style={actionBarStyle}>
+          <Btn onClick={handleCheckAll}>Check All</Btn>
+          <Btn onClick={handleUncheckAll}>Uncheck All</Btn>
+          <Btn onClick={handleInverse}>Inverse</Btn>
+          <Btn disabled={!(allChecked || pcm0Checked.some(Boolean))}>Block</Btn>
+          <Btn disabled={!(allChecked || pcm0Checked.some(Boolean))}>
+            Unblock
+          </Btn>
         </div>
       </div>
     );
@@ -955,142 +777,122 @@ const PcmCircuitMaintenancePage = () => {
     });
 
     return (
-      <div key={span.spanId} className="mb-4 w-full max-w-full mx-auto md:p-2">
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-          style={{ background: "linear-gradient(#3E5475 100%)" }}
-        >
+      <div key={span.spanId} style={cardStyle}>
+        <div style={sectionHeaderStyle}>
           {span.name} · {span.ip}
         </div>
-        <div
-          className="w-full max-w-full mx-auto"
-          style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
-            <div className="overflow-x-auto w-full">
-              <table className="w-full bg-white border-collapse shadow-sm text-xs sm:text-sm md:text-base lg:text-lg">
-                <thead>
-                  <tr>
-                    <th className="border border-gray-400 bg-white font-medium py-2 px-0.5 whitespace-nowrap text-xs w-24">
-                      Channel No.
-                    </th>
-                    {span.channelRanges.map((chId, i) => (
-                      <th
-                        key={i}
-                        className="border border-gray-400 bg-white text-gray-700 font-medium py-1 px-0.5 whitespace-nowrap text-xs w-10"
-                      >
-                        {chId}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-400 bg-white font-medium py-1 px-0.5 whitespace-nowrap text-xs w-24 text-center align-middle">
-                      Status
-                    </td>
-                    {span.channelRanges.map((channelId, i) => {
-                      const v = pcmValues[i];
-                      const ch =
-                        channels.find(
-                          (c) => Number(c.channelid) === channelId,
-                        ) || {};
-                      let caller = "";
-                      if (ch.channel) {
-                        const m = ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
-                        if (m) caller = m[1];
-                      }
-                      let called = "";
-                      if (ch.appdata) {
-                        const m = ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
-                        if (m) called = m[1];
-                      }
-                      const info = {
-                        channel: ch.channel || `DAHDI/${channelId}`,
-                        state:
-                          ch.state ||
-                          (v === "unusable"
-                            ? "Unusable"
-                            : v === "red"
-                              ? "Reserved"
-                              : "Idle"),
-                        inService:
-                          ch?.dahdi_status?.in_service ||
-                          (v === "unusable" ? "No" : "Yes"),
-                        caller,
-                        called,
-                      };
-                      const tooltipContent = (
-                        <div style={{ whiteSpace: "pre-line" }}>
-                          <div>
-                            <strong>Channel:</strong> {info.channel}
-                          </div>
-                          <div>
-                            <strong>State:</strong> {info.state}
-                          </div>
-                          <div>
-                            <strong>In Service:</strong> {info.inService}
-                          </div>
-                          {info.caller ? (
-                            <div>
-                              <strong>Caller:</strong> {info.caller}
-                            </div>
-                          ) : null}
-                          {info.called ? (
-                            <div>
-                              <strong>Called:</strong> {info.called}
-                            </div>
-                          ) : null}
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              minWidth: 900,
+            }}
+          >
+            <thead>
+              <tr>
+                <th style={{ ...channelThStyle, minWidth: 90 }}>Channel No.</th>
+                {span.channelRanges.map((chId, i) => (
+                  <th
+                    key={i}
+                    style={{ ...channelThStyle, width: 36, minWidth: 36 }}
+                  >
+                    {chId}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={channelRowLabelStyle}>Status</td>
+                {span.channelRanges.map((channelId, i) => {
+                  const v = pcmValues[i];
+                  const ch =
+                    channels.find((c) => Number(c.channelid) === channelId) ||
+                    {};
+                  let caller = "";
+                  if (ch.channel) {
+                    const m = ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
+                    if (m) caller = m[1];
+                  }
+                  let called = "";
+                  if (ch.appdata) {
+                    const m = ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
+                    if (m) called = m[1];
+                  }
+                  const info = {
+                    channel: ch.channel || `DAHDI/${channelId}`,
+                    state:
+                      ch.state ||
+                      (v === "unusable"
+                        ? "Unusable"
+                        : v === "red"
+                          ? "Reserved"
+                          : "Idle"),
+                    inService:
+                      ch?.dahdi_status?.in_service ||
+                      (v === "unusable" ? "No" : "Yes"),
+                    caller,
+                    called,
+                  };
+                  const tooltipContent = (
+                    <div style={{ whiteSpace: "pre-line" }}>
+                      <div>
+                        <strong>Channel:</strong> {info.channel}
+                      </div>
+                      <div>
+                        <strong>State:</strong> {info.state}
+                      </div>
+                      <div>
+                        <strong>In Service:</strong> {info.inService}
+                      </div>
+                      {info.caller ? (
+                        <div>
+                          <strong>Caller:</strong> {info.caller}
                         </div>
-                      );
-                      return (
-                        <td
-                          key={i}
-                          className="border border-gray-400 text-center py-1 px-0.5 w-10 align-middle"
+                      ) : null}
+                      {info.called ? (
+                        <div>
+                          <strong>Called:</strong> {info.called}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                  return (
+                    <td key={i} style={channelTdStyle}>
+                      <Tooltip title={tooltipContent} arrow placement="top">
+                        <div
+                          className="flex items-center justify-center w-full h-full"
+                          style={{ minHeight: 24 }}
                         >
-                          <Tooltip title={tooltipContent} arrow placement="top">
-                            <div
-                              className="flex items-center justify-center w-full h-full"
-                              style={{ minHeight: 24 }}
-                            >
-                              {v === "frame"
-                                ? colorBlock("#222")
-                                : v === "signaling"
-                                  ? colorBlock("#0070a8")
-                                  : v === "red"
-                                    ? colorBlock("#e53935")
-                                    : ICONS[Number(v) || 0]}
-                            </div>
-                          </Tooltip>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-400 bg-white font-medium py-1 px-0.5 whitespace-nowrap text-xs w-24 text-center align-middle">
-                      Check
+                          {v === "frame"
+                            ? colorBlock("#222")
+                            : v === "signaling"
+                              ? colorBlock("#0070a8")
+                              : v === "red"
+                                ? colorBlock("#e53935")
+                                : ICONS[Number(v) || 0]}
+                        </div>
+                      </Tooltip>
                     </td>
-                    {span.channelRanges.map((_, i) => (
-                      <td
-                        key={i}
-                        className="border border-gray-400 text-center py-1 px-0.5 w-10 align-middle"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={pcm0Checked[i] || false}
-                          onChange={() => handlePcm0Check(i)}
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  );
+                })}
+              </tr>
+              <tr>
+                <td style={channelRowLabelStyle}>Check</td>
+                {span.channelRanges.map((_, i) => (
+                  <td key={i} style={channelTdStyle}>
+                    <Checkbox
+                      size="small"
+                      checked={pcm0Checked[i] || false}
+                      onChange={() => handlePcm0Check(i)}
+                      sx={checkboxSx}
+                    />
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     );
@@ -1098,15 +900,23 @@ const PcmCircuitMaintenancePage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] w-full m-0 p-0 py-0"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="w-full max-w-full mx-auto">
-        {/* Always show single Maintenance and LoopBack config at the top */}
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        <div style={{ fontSize: 12, color: C.mutedText, marginBottom: 16, display: "flex", gap: 4 }}>
+          E1-PRI &rsaquo; PCM &rsaquo;{" "}
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+            Circuit Maintenance
+          </span>
+        </div>
+
         {renderPcmMaintenance()}
         {renderPcmLoopback()}
 
-        {/* Then render per-span channel tables (one block per span). If no spans, show PCM0 fallback */}
         {spansData.length > 0 ? spansData.map(renderSpanBlock) : renderPcm0()}
       </div>
     </div>

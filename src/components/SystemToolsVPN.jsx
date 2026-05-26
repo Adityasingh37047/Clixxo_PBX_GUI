@@ -75,9 +75,9 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
     cancel: {
       background: "#cbd5e1",
@@ -96,7 +96,7 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "error":
         return "#b91c1c";
       case "cancel":
@@ -132,10 +132,10 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {startIcon && (
@@ -1627,13 +1627,21 @@ const SystemToolsVPN = () => {
                         className="cursor-pointer select-none"
                         style={{
                           padding: "6px 14px",
-                          background: "#f8fafc",
-                          border: `1px solid ${C.cardBorder}`,
-                          borderRadius: 8,
+                          background: "#cbd5e1",
+                          border: `1px solid #cbd5e1`,
+                          borderRadius: 10,
                           fontSize: 12,
                           fontWeight: 600,
-                          color: C.valueText,
+                          color: "#374151",
                           whiteSpace: "nowrap",
+                          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                          transition: "all 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#b6c2d3";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#cbd5e1";
                         }}
                       >
                         Choose File
@@ -1715,7 +1723,7 @@ const SystemToolsVPN = () => {
                       {loading.start ? "Starting..." : "Start VPN"}
                     </Btn>
                     <Btn
-                      variant="error"
+                      variant="primary"
                       onClick={handleStopVpn}
                       disabled={loading.stop}
                       startIcon={
@@ -1729,7 +1737,7 @@ const SystemToolsVPN = () => {
                       {loading.stop ? "Stopping..." : "Stop VPN"}
                     </Btn>
                     <Btn
-                      variant="default"
+                      variant="cancel"
                       onClick={handleCheckStatus}
                       disabled={loading.status}
                       startIcon={
@@ -1756,7 +1764,7 @@ const SystemToolsVPN = () => {
                         VPN Logs
                       </span>
                       <Btn
-                        variant="default"
+                        variant="cancel"
                         onClick={handleRefreshLogs}
                         disabled={loading.logs}
                         startIcon={
@@ -2327,7 +2335,7 @@ const SystemToolsVPN = () => {
                           </Btn>
                         )}
                         <Btn
-                          variant="default"
+                          variant="cancel"
                           onClick={() => handleSeStatus(false)}
                           disabled={loading.seStatus}
                         >
@@ -2362,7 +2370,7 @@ const SystemToolsVPN = () => {
                       >
                         SoftEther Logs
                       </span>
-                      <Btn variant="default" onClick={() => setSeLogs("")}>
+                      <Btn variant="cancel" onClick={() => setSeLogs("")}>
                         Clear Logs
                       </Btn>
                     </div>

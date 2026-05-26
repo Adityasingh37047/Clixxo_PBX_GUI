@@ -8,12 +8,12 @@ import {
 } from "../../../constants/PcmPstnConstants";
 import { listPstn, createPstn, deletePstn } from "../../../api/apiService";
 
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   TextField,
   Select,
   MenuItem,
-  Button,
-  FormControl,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,76 +23,147 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  IconButton,
   CircularProgress,
   Alert,
+  Checkbox,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
 
-// Reusable styles
-const styles = {
-  blueGradient: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-  blueGradientHover: "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
-  headerGradient: "linear-gradient(#3E5475 100%)",
-  grayGradient: "linear-gradient(to bottom, #dfe3e8 0%, #c0c7d1 100%)",
-  grayGradientHover: "linear-gradient(to bottom, #c0c7d1 0%, #dfe3e8 100%)",
+// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
+  amber: "#dc2626",
+};
 
-  button: {
-    background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-    color: "#fff",
-    fontWeight: 600,
-    fontSize: "14px",
-    borderRadius: "6px",
-    minWidth: "110px",
-    height: "32px",
-    textTransform: "none",
-    padding: "4px 12px",
-    boxShadow: "0 2px 8px #b3e0ff",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
-      boxShadow: "0 3px 10px rgba(0,0,0,0.2)",
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
     },
-  },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+  };
 
-  grayButton: {
-    background: "linear-gradient(to bottom, #dfe3e8 0%, #c0c7d1 100%)",
-    color: "#222",
-    fontWeight: 600,
-    fontSize: "14px",
-    borderRadius: "6px",
-    minWidth: "110px",
-    height: "32px",
-    textTransform: "none",
-    padding: "4px 12px",
-    boxShadow: "0 2px 8px #ccc",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #c0c7d1 0%, #dfe3e8 100%)",
-      boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
-    },
-  },
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
 
-  inputField: {
-    "& .MuiOutlinedInput-root": {
-      fontSize: "14px",
-      "& fieldset": { borderColor: "#d1d5db" },
-      "&:hover fieldset": { borderColor: "#3bb6f5" },
-      "&.Mui-focused fieldset": { borderColor: "#3bb6f5" },
-    },
-  },
+  const baseBg = s.background;
 
-  selectField: {
-    fontSize: "14px",
-    "& .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#d1d5db",
-    },
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#3bb6f5",
-    },
-    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#3bb6f5",
-    },
-  },
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "12px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: "1px solid #f1f5f9",
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: "1px solid #f1f5f9",
+  borderRight: "1px solid #f1f5f9",
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: C.accent,
+  "&.Mui-checked": { color: C.accent },
 };
 
 const PRIMARY_CHANNEL = "1-15,17-31";
@@ -704,20 +775,32 @@ const PcmPstnPage = () => {
   const renderTableRow = (row, idx) => {
     const realIndex = (page - 1) * itemsPerPage + idx;
     const spanId = row.span_id || row.span?.id;
+    const isRowChecked = selectedItems.includes(spanId);
+    const rowBg = isRowChecked
+      ? "#e0f2fe"
+      : idx % 2 === 1
+        ? "#f8fafc"
+        : "#ffffff";
+
     return (
-      <tr key={spanId} style={{ minHeight: 32 }}>
-        <td
-          className="border border-gray-300 text-center bg-white"
-          style={{
-            border: "1px solid #bbb",
-            padding: "6px 8px",
-            minHeight: 32,
-            whiteSpace: "nowrap",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={selectedItems.includes(spanId)}
+      <tr
+        key={spanId}
+        style={{
+          background: rowBg,
+          borderBottom: "1px solid #f1f5f9",
+          transition: "background 0.15s ease",
+        }}
+        onMouseEnter={(e) => {
+          if (!isRowChecked) e.currentTarget.style.background = "#f8fafc";
+        }}
+        onMouseLeave={(e) => {
+          if (!isRowChecked) e.currentTarget.style.background = rowBg;
+        }}
+      >
+        <td style={{ ...tdStyle, width: 36 }}>
+          <Checkbox
+            size="small"
+            checked={isRowChecked}
             onChange={() => {
               setSelectedItems((prev) =>
                 selectedItems.includes(spanId)
@@ -726,50 +809,33 @@ const PcmPstnPage = () => {
               );
             }}
             disabled={loading.delete}
+            sx={checkboxSx}
           />
         </td>
         {PCM_PSTN_TABLE_COLUMNS.map((col) => {
           if (col.key === "modify") {
             return (
-              <td
-                key={col.key}
-                className="border border-gray-300 text-center bg-white"
-                style={{
-                  border: "1px solid #bbb",
-                  padding: "6px 8px",
-                  minHeight: 32,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <IconButton
+              <td key={col.key} style={{ ...tdStyle, padding: "7px 8px" }}>
+                <EditDocumentIcon
+                  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                  titleAccess="Edit"
                   onClick={() => handleEditItem(row, realIndex)}
-                  sx={{ p: 0.5 }}
-                >
-                  <EditIcon sx={{ fontSize: 22, color: "#0e8fd6" }} />
-                </IconButton>
+                  style={{ fontSize: 22 }}
+                />
               </td>
             );
           }
           if (col.key === "span_status") {
             return (
-              <td
-                key={col.key}
-                className="border border-gray-300 text-center bg-white"
-                style={{
-                  border: "1px solid #bbb",
-                  padding: "6px 8px",
-                  minHeight: 32,
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <td key={col.key} style={tdStyle}>
                 <span
-                  className={`px-1 py-0.5 rounded text-xs font-semibold ${
+                  className={`text-[13px] font-semibold ${
                     row.span_status?.includes("Up")
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
+                      ? "text-green-600"
+                      : "text-red-600"
                   }`}
                 >
-                  {row.span_status || "--"}
+                  {row.span_status || "—"}
                 </span>
               </td>
             );
@@ -785,7 +851,7 @@ const PcmPstnPage = () => {
           // Special handling for specific fields
           const displayValue = (key, value) => {
             if (value === undefined || value === null || value === "")
-              return "--";
+              return "—";
 
             // Handle timing field specifically
             if (key === "timing") {
@@ -812,16 +878,7 @@ const PcmPstnPage = () => {
           };
 
           return (
-            <td
-              key={col.key}
-              className="border border-gray-300 text-center bg-white"
-              style={{
-                border: "1px solid #bbb",
-                padding: "6px 8px",
-                minHeight: 32,
-                whiteSpace: "nowrap",
-              }}
-            >
+            <td key={col.key} style={tdStyle}>
               {displayValue(col.key, getValue(col.key))}
             </td>
           );
@@ -915,10 +972,12 @@ const PcmPstnPage = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      {/* Message Display */}
       {message.text && (
         <Alert
           severity={message.type}
@@ -936,66 +995,176 @@ const PcmPstnPage = () => {
         </Alert>
       )}
 
-      <div className="w-full max-w-full mx-auto md:p-2">
-        {/* Header */}
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
         <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm"
           style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            display: "flex",
+            gap: 4,
           }}
         >
-          PSTN Settings
+          E1-PRI &rsaquo; PCM &rsaquo;{" "}
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+            PSTN Settings
+          </span>
         </div>
 
         <div
-          className="w-full max-w-full mx-auto"
           style={{
-            border: "2px solid #bbb",
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            background: "#ffffff",
+            borderRadius: 22,
+            overflow: "hidden",
+            border: `1px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
-          <div className="bg-white rounded-b-lg shadow-sm w-full flex flex-col overflow-hidden">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 18px",
+              borderBottom: "1px solid #e2e8f0",
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 10,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `1px solid #e2e8f0`,
+                  color: C.labelText,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
+                }}
+              >
+                Page {page} · {data.length} records
+              </span>
+              {selectedItems.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selectedItems.length} selected
+                </span>
+              )}
+            </div>
             <div
-              className="overflow-x-auto w-full border-b border-gray-300"
               style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
               }}
             >
+              <Btn
+                variant="cancel"
+                onClick={handleCheckAll}
+                disabled={loading.delete || loading.fetch}
+                style={{ height: 30 }}
+              >
+                Check All
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleUncheckAll}
+                disabled={loading.delete || loading.fetch}
+                style={{ height: 30 }}
+              >
+                Uncheck All
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete || loading.fetch}
+                style={{ height: 30 }}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selectedItems.length === 0
+                }
+                style={{ height: 30 }}
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
+                )}
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={loading.delete || loading.fetch || data.length === 0}
+                style={{ height: 30 }}
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Clear All"
+                )}
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={handleAddNew}
+                disabled={loading.save || loading.fetch}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          <div style={{ overflowX: "auto" }}>
+            {loading.fetch ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : (
               <table
-                className="w-full min-w-[1200px] border border-gray-300 border-collapse whitespace-nowrap"
-                style={{ tableLayout: "auto", border: "1px solid #bbb" }}
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  tableLayout: "auto",
+                  minWidth: 1200,
+                }}
               >
                 <thead>
-                  <tr style={{ minHeight: 32 }}>
-                    <th
-                      className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                      style={{
-                        border: "1px solid #bbb",
-                        padding: "6px 8px",
-                        minHeight: 32,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Check
-                    </th>
+                  <tr>
+                    <TH style={{ width: 36 }}>Check</TH>
                     {PCM_PSTN_TABLE_COLUMNS.map((col) => (
-                      <th
-                        key={col.key}
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {col.label}
-                      </th>
+                      <TH key={col.key}>{col.label}</TH>
                     ))}
                   </tr>
                 </thead>
@@ -1004,9 +1173,14 @@ const PcmPstnPage = () => {
                     <tr>
                       <td
                         colSpan={PCM_PSTN_TABLE_COLUMNS.length + 1}
-                        className="border border-gray-300 px-2 py-1 text-center"
+                        style={{
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
+                        }}
                       >
-                        No data
+                        No PSTN settings found.
                       </td>
                     </tr>
                   ) : (
@@ -1014,272 +1188,227 @@ const PcmPstnPage = () => {
                   )}
                 </tbody>
               </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-        <div
-          className="rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleInverse}
-              disabled={loading.delete}
-            >
-              Inverse
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleDelete}
-              disabled={loading.delete}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleClearAll}
-              disabled={loading.delete}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Clear All
-            </button>
-          </div>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={handleAddNew}
-            disabled={loading.save}
-          >
-            Add New
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-          <span>{data.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => handlePageChange(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
-        </div>
-
-        {/* Modal */}
-        <Dialog
-          open={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-          }}
-          maxWidth={false}
-          className="z-50"
-          PaperProps={{
-            sx: { width: 600, maxWidth: "95vw", mx: "auto", p: 0 },
-          }}
-        >
-          <DialogTitle
-            className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
-            style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-            }}
-          >
-            {editIndex >= 0
-              ? "Edit PCM PSTN Settings"
-              : "Add PCM PSTN Settings"}
-          </DialogTitle>
-
-          <div style={{ borderBottom: "1px solid #e5e7eb" }}>
-            <Tabs
-              value={tab}
-              onChange={(_, v) => setTab(v)}
-              variant="fullWidth"
-            >
-              <Tab
-                label="Span"
-                sx={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                }}
-              />
-              <Tab
-                label="Channels"
-                sx={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                }}
-              />
-              <Tab
-                label="Voice"
-                sx={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                }}
-              />
-            </Tabs>
+            )}
           </div>
 
-          <DialogContent
-            className="pt-3 pb-0 px-2"
-            style={{
-              padding: "12px 8px 0 8px",
-              backgroundColor: "#dde0e4",
-              border: "1px solid #444444",
-              borderTop: "none",
-            }}
-          >
-            <div className="flex flex-col gap-2 w-full">
-              {(tab === 0
-                ? SPAN_FIELDS
-                : tab === 1
-                  ? CHANNELS_FIELDS
-                  : VOICE_FIELDS
-              ).map(renderFormField)}
-            </div>
-          </DialogContent>
-
-          <DialogActions className="p-4 justify-center gap-6">
-            {[
-              {
-                label: editIndex >= 0 ? "Update" : "Save",
-                handler: handleSave,
-                disabled: loading.save,
-                loading: loading.save,
-              },
-              {
-                label: "Close",
-                handler: () => setIsModalOpen(false),
-                disabled: loading.save,
-              },
-            ].map(({ label, handler, disabled, loading }) => (
-              <Button
-                key={label}
-                variant="contained"
-                sx={
-                  label === "Close"
-                    ? {
-                        background:
-                          "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-                        color: "#3E5475 ",
-                        fontWeight: 600,
-                        fontSize: "16px",
-                        borderRadius: 1.5,
-                        minWidth: 120,
-                        minHeight: 40,
-                        px: 2,
-                        py: 0.5,
-                        boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                        textTransform: "none",
-
-                        "&:hover": {
-                          background:
-                            "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                          color: "#2f405c",
-                        },
-
-                        "&:disabled": {
-                          background: "#f1f5f9",
-                          color: "#94a3b8",
-                        },
-                      }
-                    : {
-                        background:
-                          "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-                        color: "#fff",
-                        fontWeight: 600,
-                        fontSize: "16px",
-                        borderRadius: 1.5,
-                        minWidth: 120,
-                        minHeight: 40,
-                        px: 2,
-                        py: 0.5,
-                        boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                        textTransform: "none",
-
-                        "&:hover": {
-                          background:
-                            "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                          color: "#fff",
-                        },
-
-                        "&:disabled": {
-                          background: "#cbd5e1",
-                          color: "#64748b",
-                        },
-                      }
-                }
-                onClick={handler}
-                disabled={disabled}
-                startIcon={
-                  loading ? (
-                    <CircularProgress size={16} color="inherit" />
-                  ) : null
-                }
+          {!loading.fetch && data.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                flexWrap: "wrap",
+                gap: 12,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedData.length} of {data.length} record
+                {data.length !== 1 ? "s" : ""} · {itemsPerPage} per page · Page{" "}
+                {page} of {totalPages}
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
               >
-                {loading ? "Saving..." : label}
-              </Button>
-            ))}
-          </DialogActions>
-        </Dialog>
+                <Btn
+                  onClick={() => handlePageChange(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
+                <Btn
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page}
+                </span>
+                <Btn
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+                <Btn
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
+                <span style={{ fontSize: 11, color: C.mutedText }}>Go to</span>
+                <select
+                  value={page}
+                  onChange={(e) => handlePageChange(Number(e.target.value))}
+                  style={{
+                    fontSize: 11,
+                    borderRadius: 4,
+                    border: `0.5px solid ${C.cardBorder}`,
+                    padding: "3px 6px",
+                    color: C.labelText,
+                    background: "#fff",
+                  }}
+                >
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
+      <Dialog
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        maxWidth={false}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
+        PaperProps={{
+          sx: {
+            width: 600,
+            maxWidth: "95vw",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
+          }}
+        >
+          {editIndex >= 0 ? "Edit PCM PSTN Settings" : "Add PCM PSTN Settings"}
+        </DialogTitle>
+
+        <div
+          style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}
+        >
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            variant="fullWidth"
+            TabIndicatorProps={{ style: { backgroundColor: "#3E5475" } }}
+            sx={{
+              "& .MuiTab-root.Mui-selected": {
+                color: "#3E5475",
+              },
+            }}
+          >
+            <Tab
+              label="Span"
+              sx={{
+                color: "#374151",
+                fontWeight: 600,
+                textTransform: "none",
+              }}
+            />
+            <Tab
+              label="Channels"
+              sx={{
+                color: "#374151",
+                fontWeight: 600,
+                textTransform: "none",
+              }}
+            />
+            <Tab
+              label="Voice"
+              sx={{
+                color: "#374151",
+                fontWeight: 600,
+                textTransform: "none",
+              }}
+            />
+          </Tabs>
+        </div>
+
+        <DialogContent
+          style={{
+            padding: "12px 8px 0 8px",
+            backgroundColor: "#f8fafc",
+          }}
+        >
+          <div className="flex flex-col gap-2 w-full">
+            {(tab === 0
+              ? SPAN_FIELDS
+              : tab === 1
+                ? CHANNELS_FIELDS
+                : VOICE_FIELDS
+            ).map(renderFormField)}
+          </div>
+        </DialogContent>
+
+        <DialogActions
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
+          }}
+        >
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading.save}
+            style={{ minWidth: 110, height: 34 }}
+          >
+            {loading.save ? "Saving..." : editIndex >= 0 ? "Update" : "Save"}
+          </Btn>
+          <Btn
+            variant="cancel"
+            onClick={() => setIsModalOpen(false)}
+            disabled={loading.save}
+            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
+          >
+            Close
+          </Btn>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

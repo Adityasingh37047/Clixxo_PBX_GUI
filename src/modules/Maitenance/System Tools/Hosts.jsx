@@ -49,9 +49,9 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
     cancel: {
       background: "#cbd5e1",
@@ -80,7 +80,7 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "cancel":
         return "#b6c2d3";
       case "edit":
@@ -120,10 +120,10 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
@@ -132,115 +132,56 @@ const Btn = ({
   );
 };
 
-function ConfirmDialog({ msg, onConfirm, onCancel }) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(15, 23, 42, 0.3)",
-        backdropFilter: "blur(4px)",
-        zIndex: 10000,
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        paddingTop: "10vh",
-      }}
-    >
-      <div
-        style={{
-          background: C.cardBg,
-          borderRadius: 12,
-          padding: "24px 28px",
-          width: "min(90vw, 360px)",
-          border: `1px solid ${C.cardBorder}`,
-          boxShadow:
-            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-        }}
-      >
-        <p
-          style={{
-            margin: "0 0 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            color: C.valueText,
-            lineHeight: 1.5,
-          }}
-        >
-          {msg}
-        </p>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <Btn
-            variant="danger"
-            onClick={onConfirm}
-            style={{ height: 32, padding: "0 16px" }}
-          >
-            Confirm
-          </Btn>
-          <Btn
-            variant="default"
-            onClick={onCancel}
-            style={{ height: 32, padding: "0 16px" }}
-          >
-            Cancel
-          </Btn>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 const modalOverlayStyle = {
   position: "fixed",
   inset: 0,
-  background: "rgba(15, 23, 42, 0.3)",
-  backdropFilter: "blur(4px)",
+  background: "rgba(0, 0, 0, 0.5)",
   zIndex: 1000,
   display: "flex",
-  alignItems: "flex-start",
+  alignItems: "center",
   justifyContent: "center",
-  paddingTop: "10vh",
 };
 const modalStyle = {
-  background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 12,
-  width: "min(90vw, 380px)",
+  background: "#f8fafc",
+  border: `none`,
+  borderRadius: 8,
+  width: 500,
   maxWidth: "95vw",
   maxHeight: "calc(100vh - 120px)",
   overflowY: "auto",
   boxShadow:
-    "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
   display: "flex",
   flexDirection: "column",
 };
 const modalHeaderStyle = {
-  background: C.cardBg,
-  color: C.strongText,
-  fontWeight: 700,
-  fontSize: 13,
-  padding: "12px 18px",
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 12,
-  borderTopRightRadius: 12,
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
   borderBottom: `1px solid ${C.divider}`,
 };
 const modalBodyStyle = {
-  padding: "16px 18px 0 18px",
+  padding: "20px 24px",
   display: "flex",
   flexDirection: "column",
-  gap: 10,
+  gap: 12,
+  backgroundColor: "#f8fafc",
 };
 const modalRowStyle = {
   display: "flex",
   alignItems: "center",
-  background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 10,
-  padding: "8px 10px",
-  marginBottom: 2,
-  minHeight: 32,
-  gap: 16,
+  background: "#ffffff",
+  border: `1px solid #cbd5e1`,
+  borderRadius: 6,
+  padding: "6px 12px",
+  marginBottom: 0,
 };
 const modalLabelStyle = {
   width: 110,
@@ -252,22 +193,23 @@ const modalLabelStyle = {
   whiteSpace: "nowrap",
 };
 const modalInputStyle = {
-  width: "100%",
+  flex: 1,
   fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
+  padding: "6px 8px",
+  borderRadius: 4,
+  border: "1px solid #cbd5e1",
+  background: "#ffffff",
+  color: "#1e293b",
   outline: "none",
+  width: "100%",
   transition: "border-color 0.2s ease",
 };
 
 const getInputInteraction = (hasError) => ({
-  onFocus: (e) => (e.target.style.borderColor = hasError ? C.errorRed : C.accent),
-  onBlur: (e) => (e.target.style.borderColor = hasError ? C.errorRed : C.cardBorder),
+  onFocus: (e) => (e.target.style.borderColor = hasError ? C.errorRed : "#1e2d42"),
+  onBlur: (e) => (e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1"),
   onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : "#94a3b8" },
-  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : C.cardBorder },
+  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1" },
 });
 const modalFooterStyle = {
   display: "flex",
@@ -287,6 +229,17 @@ const thStyle = {
   whiteSpace: "nowrap",
   textTransform: "uppercase",
   letterSpacing: "0.08em",
+};
+
+const tdStyle = {
+  borderBottom: `1px solid ${C.divider}`,
+  padding: "8px 18px",
+  fontSize: 13,
+  fontWeight: 500,
+  background: C.cardBg,
+  color: C.valueText,
+  textAlign: "center",
+  whiteSpace: "nowrap",
 };
 
 const tableContainerStyle = {
@@ -328,7 +281,7 @@ const Hosts = () => {
   const [showModal, setShowModal] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [confirmDialog, setConfirmDialog] = useState(null);
+
   const hasInitialLoadRef = useRef(false);
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -591,96 +544,86 @@ const Hosts = () => {
     );
 
   // Delete selected hosts
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selected.length === 0) {
       showMessage("error", "Please select hosts to delete");
       return;
     }
-    setConfirmDialog({
-      msg: "Are you sure you want to delete the selected host(s)?",
-      onConfirm: async () => {
-        setConfirmDialog(null);
-        setLoading((prev) => ({ ...prev, delete: true }));
-        try {
-          const updatedHosts = hosts.filter(
-            (_, idx) => !selected.includes(idx),
-          );
+    const confirmed = window.confirm("Are you sure you want to delete the selected host(s)?");
+    if (!confirmed) return;
+    setLoading((prev) => ({ ...prev, delete: true }));
+    try {
+      const updatedHosts = hosts.filter(
+        (_, idx) => !selected.includes(idx),
+      );
 
-          const reindexedHosts = updatedHosts.map((host, i) => ({
-            ...host,
-            index: i.toString(),
-          }));
+      const reindexedHosts = updatedHosts.map((host, i) => ({
+        ...host,
+        index: i.toString(),
+      }));
 
-          const fileContent = generateHostsFileContent(reindexedHosts);
-          const response = await updateHostsFile(fileContent);
+      const fileContent = generateHostsFileContent(reindexedHosts);
+      const response = await updateHostsFile(fileContent);
 
-          if (response.message) {
-            setHosts(reindexedHosts);
-            setSelected([]);
-            showMessage(
-              "success",
-              `${selected.length} host(s) deleted successfully`,
-            );
-          } else {
-            showMessage("error", "Failed to delete hosts");
-          }
-        } catch (error) {
-          console.error("Error deleting hosts:", error);
-          if (error.message === "Network Error") {
-            showMessage(
-              "error",
-              "Network error. Please check your connection.",
-            );
-          } else {
-            showMessage("error", error.message || "Failed to delete hosts");
-          }
-        } finally {
-          setLoading((prev) => ({ ...prev, delete: false }));
-        }
-      },
-      onCancel: () => setConfirmDialog(null),
-    });
+      if (response.message) {
+        setHosts(reindexedHosts);
+        setSelected([]);
+        showMessage(
+          "success",
+          `${selected.length} host(s) deleted successfully`,
+        );
+      } else {
+        showMessage("error", "Failed to delete hosts");
+      }
+    } catch (error) {
+      console.error("Error deleting hosts:", error);
+      if (error.message === "Network Error") {
+        showMessage(
+          "error",
+          "Network error. Please check your connection.",
+        );
+      } else {
+        showMessage("error", error.message || "Failed to delete hosts");
+      }
+    } finally {
+      setLoading((prev) => ({ ...prev, delete: false }));
+    }
   };
 
   // Clear all hosts
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (hosts.length === 0) {
       showMessage("info", "No hosts to clear");
       return;
     }
-    setConfirmDialog({
-      msg: "Are you sure you want to delete ALL hosts? This action cannot be undone.",
-      onConfirm: async () => {
-        setConfirmDialog(null);
-        setLoading((prev) => ({ ...prev, delete: true }));
-        try {
-          const fileContent =
-            "# Hosts file - Managed by Clixxo UI\n# Format: <Proxy IP>  <Domain>\n\n";
-          const response = await updateHostsFile(fileContent);
+    const confirmed = window.confirm("Are you sure you want to delete ALL hosts? This action cannot be undone.");
+    if (!confirmed) return;
+    setLoading((prev) => ({ ...prev, delete: true }));
+    try {
+      const fileContent =
+        "# Hosts file - Managed by Clixxo UI\n# Format: <Proxy IP>  <Domain>\n\n";
+      const response = await updateHostsFile(fileContent);
 
-          if (response.message) {
-            setHosts([]);
-            setSelected([]);
-            showMessage("success", "All hosts deleted successfully");
-          } else {
-            showMessage("error", "Failed to clear all hosts");
-          }
-        } catch (error) {
-          console.error("Error clearing all hosts:", error);
-          if (error.message === "Network Error") {
-            showMessage(
-              "error",
-              "Network error. Please check your connection.",
-            );
-          } else {
-            showMessage("error", error.message || "Failed to clear all hosts");
-          }
-        } finally {
-          setLoading((prev) => ({ ...prev, delete: false }));
-        }
-      },
-      onCancel: () => setConfirmDialog(null),
-    });
+      if (response.message) {
+        setHosts([]);
+        setSelected([]);
+        showMessage("success", "All hosts deleted successfully");
+      } else {
+        showMessage("error", "Failed to clear all hosts");
+      }
+    } catch (error) {
+      console.error("Error clearing all hosts:", error);
+      if (error.message === "Network Error") {
+        showMessage(
+          "error",
+          "Network error. Please check your connection.",
+        );
+      } else {
+        showMessage("error", error.message || "Failed to clear all hosts");
+      }
+    } finally {
+      setLoading((prev) => ({ ...prev, delete: false }));
+    }
   };
 
   return (
@@ -688,7 +631,7 @@ const Hosts = () => {
       className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
-      {confirmDialog && <ConfirmDialog {...confirmDialog} />}
+
 
       {/* ── Breadcrumb ── */}
       <div className="w-full" style={{ maxWidth: 1000 }}>
@@ -735,7 +678,7 @@ const Hosts = () => {
               <Btn
                 onClick={handleInverse}
                 disabled={loading.delete || loading.fetch}
-                variant="default"
+                variant="cancel"
                 style={{ height: 30 }}
               >
                 Inverse
@@ -743,7 +686,7 @@ const Hosts = () => {
               <Btn
                 onClick={handleClearAll}
                 disabled={loading.delete || loading.fetch || hosts.length === 0}
-                variant="delete"
+                variant="cancel"
                 style={{ height: 30 }}
               >
                 Clear All
@@ -753,7 +696,7 @@ const Hosts = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                variant="delete"
+                variant="cancel"
                 startIcon={<DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />}
                 style={{ height: 30 }}
               >
@@ -832,7 +775,7 @@ const Hosts = () => {
                       }}
                       className="hover:bg-gray-50"
                     >
-                      <td className="py-3 px-4 text-center">
+                      <td style={tdStyle}>
                         <Checkbox
                           size="small"
                           checked={selected.includes(idx)}
@@ -845,31 +788,23 @@ const Hosts = () => {
                           }}
                         />
                       </td>
-                      <td className="py-3 px-4 text-center text-[14px] text-gray-800">
+                      <td style={tdStyle}>
                         {idx}
                       </td>
-                      <td className="py-3 px-4 text-center text-[14px] text-gray-800 font-medium">
+                      <td style={tdStyle}>
                         {item.proxyIp || "--"}
                       </td>
-                      <td className="py-3 px-4 text-center text-[14px] text-gray-800">
+                      <td style={tdStyle}>
                         {item.domain || "--"}
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <Btn
-                          variant="edit"
-                          onClick={() =>
-                            !loading.delete && handleOpenModal(item, idx)
-                          }
-                          disabled={loading.delete}
-                          style={{
-                            height: 28,
-                            minWidth: 74,
-                            padding: "2px 10px",
+                      <td style={tdStyle}>
+                        <EditDocumentIcon
+                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                          titleAccess="Edit"
+                          onClick={() => {
+                            if (!loading.delete) handleOpenModal(item, idx);
                           }}
-                        >
-                          <EditOutlinedIcon sx={{ fontSize: 14 }} />
-                          Edit
-                        </Btn>
+                        />
                       </td>
                     </tr>
                   ))
@@ -914,7 +849,7 @@ const Hosts = () => {
                       ...modalInputStyle,
                       borderColor: validationErrors.proxyIp
                         ? C.errorRed
-                        : C.cardBorder,
+                        : "#cbd5e1",
                     }}
                     placeholder="e.g., 192.168.1.1"
                     {...getInputInteraction(!!validationErrors.proxyIp)}
@@ -941,7 +876,7 @@ const Hosts = () => {
                       ...modalInputStyle,
                       borderColor: validationErrors.domain
                         ? C.errorRed
-                        : C.cardBorder,
+                        : "#cbd5e1",
                     }}
                     placeholder="e.g., example.com (Optional)"
                     {...getInputInteraction(!!validationErrors.domain)}

@@ -4,7 +4,7 @@ import {
   IP_ROUTING_TABLE_MODAL_FIELDS,
   IP_ROUTING_TABLE_INITIAL_ROW,
 } from "../../../constants/IPRoutingTableConstants";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   Button,
   Dialog,
@@ -53,9 +53,9 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
     cancel: {
       background: "#cbd5e1",
@@ -84,7 +84,7 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "error":
         return "#b91c1c";
       case "delete":
@@ -124,10 +124,10 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {startIcon && (
@@ -1398,7 +1398,7 @@ WantedBy=multi-user.target
               }}
             >
               <Btn
-                variant="delete"
+                variant="cancel"
                 onClick={handleDelete}
                 disabled={!rows.some((r) => r.checked) || savingRoute}
                 style={{ height: 30 }}
@@ -1407,7 +1407,7 @@ WantedBy=multi-user.target
                 {savingRoute ? "Working..." : "Delete"}
               </Btn>
               <Btn
-                variant="delete"
+                variant="cancel"
                 onClick={handleClearAll}
                 disabled={rows.length === 0 || savingRoute}
                 style={{ height: 30 }}
@@ -1567,19 +1567,11 @@ WantedBy=multi-user.target
                           borderRight: `1px solid ${C.divider}`,
                         }}
                       >
-                        <Btn
-                          variant="edit"
+                        <EditDocumentIcon
+                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                          titleAccess="Edit"
                           onClick={() => openModal(idx)}
-                          style={{
-                            height: 28,
-                            minWidth: 74,
-                            padding: "2px 10px",
-                            margin: "0 auto",
-                          }}
-                        >
-                          <EditOutlinedIcon sx={{ fontSize: 14, marginRight: "4px" }} />
-                          Edit
-                        </Btn>
+                        />
                       </td>
                     </tr>
                   ) : (
@@ -1620,24 +1612,23 @@ WantedBy=multi-user.target
           closeModal();
         }}
         maxWidth={false}
-        sx={{ "& .MuiDialog-container": { alignItems: "flex-start" } }}
+        className="z-50"
         slotProps={{
           backdrop: {
             sx: {
-              backdropFilter: "blur(4px)",
-              backgroundColor: "rgba(15, 23, 42, 0.3)",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
             },
           },
         }}
         PaperProps={{
           sx: {
-            mt: "10vh",
+            width: 500,
             maxWidth: "95vw",
-            width: 440,
-            borderRadius: "12px",
-            p: 0,
-            overflow: "hidden",
-            backgroundColor: C.cardBg,
+            mx: "auto",
+            borderRadius: "8px",
+            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            backgroundColor: "#f8fafc",
+            backgroundImage: "none",
           },
         }}
       >
@@ -1645,11 +1636,14 @@ WantedBy=multi-user.target
           sx={{
             fontWeight: 600,
             fontSize: "16px",
-            color: C.strongText,
+            color: "#ffffff",
+            backgroundColor: "#1e2d42",
             borderBottom: `1px solid ${C.divider}`,
             px: 3,
             py: 2,
-            backgroundColor: C.cardBg,
+            textAlign: "center",
+            borderTopLeftRadius: "8px",
+            borderTopRightRadius: "8px",
           }}
         >
           IP Routing Table
@@ -1658,30 +1652,39 @@ WantedBy=multi-user.target
           sx={{
             display: "flex",
             flexDirection: "column",
-            gap: 3,
-            p: 3,
+            gap: "12px",
+            p: "20px 24px",
             pt: "24px !important",
-            backgroundColor: C.cardBg,
+            backgroundColor: "#f8fafc",
           }}
         >
           {IP_ROUTING_TABLE_MODAL_FIELDS.map((field) => (
             <div
               key={field.key}
-              className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2 sm:gap-4"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                background: "#ffffff",
+                border: "1px solid #cbd5e1",
+                borderRadius: 6,
+                padding: "6px 12px",
+              }}
             >
               <label
                 style={{
                   fontSize: 12,
                   fontWeight: 600,
                   color: C.labelText,
-                  width: "100%",
-                  maxWidth: 140,
+                  width: 140,
                   flexShrink: 0,
+                  textAlign: "left",
+                  marginRight: 10,
+                  whiteSpace: "nowrap",
                 }}
               >
                 {field.label}:
               </label>
-              <div className="flex-1 w-full max-w-[280px]">
+              <div style={{ flex: 1, display: "flex" }}>
                 {field.type === "text" || field.type === "number" ? (
                   <input
                     name={field.key}
@@ -1690,26 +1693,27 @@ WantedBy=multi-user.target
                     onChange={handleFormChange}
                     placeholder={field.placeholder || ""}
                     style={{
-                      width: "100%",
+                      flex: 1,
                       fontSize: 13,
-                      padding: "6px 10px",
-                      borderRadius: 10,
-                      border: `1px solid ${C.cardBorder}`,
-                      background: C.cardBg,
-                      color: C.valueText,
+                      padding: "6px 8px",
+                      borderRadius: 4,
+                      border: "1px solid #cbd5e1",
+                      background: "#ffffff",
+                      color: "#1e293b",
                       outline: "none",
+                      width: "100%",
                       transition: "border-color 0.2s ease",
                       height: 32,
                     }}
-                    onFocus={(e) => (e.target.style.borderColor = C.accent)}
-                    onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
+                    onFocus={(e) => (e.target.style.borderColor = "#1e2d42")}
+                    onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
                     onMouseEnter={(e) => {
                       if (document.activeElement !== e.target)
                         e.target.style.borderColor = "#94a3b8";
                     }}
                     onMouseLeave={(e) => {
                       if (document.activeElement !== e.target)
-                        e.target.style.borderColor = C.cardBorder;
+                        e.target.style.borderColor = "#cbd5e1";
                     }}
                   />
                 ) : null}
@@ -1729,20 +1733,20 @@ WantedBy=multi-user.target
                     fullWidth
                     sx={{
                       height: 32,
-                      borderRadius: "10px",
+                      borderRadius: "4px",
                       fontSize: 13,
-                      backgroundColor: C.cardBg,
+                      backgroundColor: "#ffffff",
                       "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: C.cardBorder,
+                        borderColor: "#cbd5e1",
                       },
                       "&:hover .MuiOutlinedInput-notchedOutline": {
                         borderColor: "#94a3b8",
                       },
                       "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: `${C.accent} !important`,
+                        borderColor: "#1e2d42 !important",
                       },
                       "& .MuiSelect-select": {
-                        padding: "6px 10px !important",
+                        padding: "6px 8px !important",
                         display: "flex",
                         alignItems: "center",
                       },
@@ -1782,7 +1786,7 @@ WantedBy=multi-user.target
             gap: 2,
             p: 3,
             borderTop: `1px solid ${C.divider}`,
-            backgroundColor: C.cardBg,
+            backgroundColor: "#f8fafc",
           }}
         >
           <Btn
