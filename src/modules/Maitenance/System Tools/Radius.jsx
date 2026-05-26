@@ -281,7 +281,7 @@ const Radius = () => {
                                   value={opt.value}
                                   sx={{
                                     "& .MuiSvgIcon-root": { fontSize: 20 },
-                                    color: C.accent,
+                                    color: "#64748b",
                                     "&.Mui-checked": { color: C.accent },
                                   }}
                                 />
@@ -314,7 +314,7 @@ const Radius = () => {
                                 name={field.name}
                                 sx={{
                                   "& .MuiSvgIcon-root": { fontSize: 20 },
-                                  color: C.accent,
+                                  color: "#64748b",
                                   "&.Mui-checked": { color: C.accent },
                                 }}
                               />

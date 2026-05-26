@@ -7,7 +7,7 @@ import {
   SC_BUTTONS,
   SC_NOTE,
 } from "../../../constants/SignalingCaptureConstants";
-import { Alert, CircularProgress } from "@mui/material";
+import { Alert, CircularProgress, Checkbox } from "@mui/material";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 
 // ── Color palette (same as UserManage) ────────────────────────────────────────
@@ -200,11 +200,21 @@ const SignalingCapture = () => {
     setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
   };
 
-  const handleFocus = (e) => {
-    if (!e.target.disabled) e.target.style.borderColor = C.primary;
-  };
-  const handleBlur = (e) => {
-    if (!e.target.disabled) e.target.style.borderColor = C.cardBorder;
+  const inputInteraction = {
+    onFocus: (e) => {
+      if (!e.target.disabled) e.target.style.borderColor = "#0284c7";
+    },
+    onBlur: (e) => {
+      if (!e.target.disabled) e.target.style.borderColor = C.cardBorder;
+    },
+    onMouseEnter: (e) => {
+      if (!e.target.disabled && document.activeElement !== e.target)
+        e.target.style.borderColor = "#64748b";
+    },
+    onMouseLeave: (e) => {
+      if (!e.target.disabled && document.activeElement !== e.target)
+        e.target.style.borderColor = C.cardBorder;
+    }
   };
 
   // Fetch system info and populate network options
@@ -552,8 +562,7 @@ const SignalingCapture = () => {
                       value={network}
                       onChange={(e) => setNetwork(e.target.value)}
                       disabled={loading || isCapturing}
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
+                      {...inputInteraction}
                     >
                       {loading ? (
                         <option value="">Loading...</option>
@@ -592,17 +601,17 @@ const SignalingCapture = () => {
                   {SC_LABELS.captureSyslog}
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
+                    size="small"
                     checked={syslogEnabled}
                     onChange={(e) => setSyslogEnabled(e.target.checked)}
                     id="syslog-enable"
                     disabled={isCapturing}
-                    style={{
-                      width: 16,
-                      height: 16,
+                    sx={{
+                      padding: "4px",
+                      color: "#64748b",
+                      "&.Mui-checked": { color: C.accent },
                       cursor: isCapturing ? "not-allowed" : "pointer",
-                      accentColor: C.primary,
                     }}
                   />
                   <label
@@ -635,8 +644,7 @@ const SignalingCapture = () => {
                     cursor:
                       !syslogEnabled || isCapturing ? "not-allowed" : "text",
                   }}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
+                  {...inputInteraction}
                 />
               </div>
 
@@ -680,8 +688,7 @@ const SignalingCapture = () => {
                           ? setTs1Pcm(e.target.value)
                           : setTs2Pcm(e.target.value)
                       }
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
+                      {...inputInteraction}
                     >
                       {SC_PCM_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -697,8 +704,7 @@ const SignalingCapture = () => {
                           ? setTs1Slot(e.target.value)
                           : setTs2Slot(e.target.value)
                       }
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
+                      {...inputInteraction}
                     >
                       {SC_TS_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -751,8 +757,7 @@ const SignalingCapture = () => {
                           ? setE1aPcm(e.target.value)
                           : setE1bPcm(e.target.value)
                       }
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
+                      {...inputInteraction}
                     >
                       {SC_PCM_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -768,8 +773,7 @@ const SignalingCapture = () => {
                           ? setE1aSlot(e.target.value)
                           : setE1bSlot(e.target.value)
                       }
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
+                      {...inputInteraction}
                     >
                       {SC_TS_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>

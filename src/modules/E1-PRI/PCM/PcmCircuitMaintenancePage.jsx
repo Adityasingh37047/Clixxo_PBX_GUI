@@ -186,6 +186,7 @@ const actionBarStyle = {
   padding: "14px 18px",
   borderTop: `1px solid ${C.cardBorder}`,
   background: "#ffffff",
+  justifyContent: "center",
 };
 
 const tableCellStyle = {
@@ -239,8 +240,8 @@ const channelRowLabelStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: C.accent,
-  "&.Mui-checked": { color: C.accent },
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
 };
 
 const PcmCircuitMaintenancePage = () => {

@@ -488,7 +488,9 @@ const PcmNumReceivingRulePage = () => {
               maxWidth: "100%",
               minWidth: 0,
               backgroundColor: "#ffffff",
-              "& .MuiOutlinedInput-notchedOutline": { borderColor: "#d1d5db" },
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: "#cbd5e1" },
+              "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#64748b" },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#0284c7", borderWidth: 1 },
             }}
           >
             {field.options.map((option) => (
@@ -510,6 +512,9 @@ const PcmNumReceivingRulePage = () => {
               maxWidth: "100%",
               minWidth: 0,
               backgroundColor: "#ffffff",
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: "#cbd5e1" },
+              "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#64748b" },
+              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#0284c7", borderWidth: 1 },
             }}
             placeholder={field.placeholder || ""}
           />
@@ -800,9 +805,9 @@ const PcmNumReceivingRulePage = () => {
                         }}
                         sx={{
                           padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          color: "#64748b",
+                          "&.Mui-checked": { color: "#0284c7" },
+                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
                         }}
                       />
                     </TH>
@@ -870,8 +875,8 @@ const PcmNumReceivingRulePage = () => {
                               disabled={loading.delete}
                               sx={{
                                 padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
+                                color: "#64748b",
+                                "&.Mui-checked": { color: "#0284c7" },
                               }}
                             />
                           </td>
@@ -1143,10 +1148,11 @@ const PcmNumReceivingRulePage = () => {
                           borderColor: "#cbd5e1",
                         },
                         "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#94a3b8",
+                          borderColor: "#64748b",
                         },
                         "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#1e2d42",
+                          borderColor: "#0284c7",
+                          borderWidth: 1,
                         },
                       }}
                     >
@@ -1176,11 +1182,12 @@ const PcmNumReceivingRulePage = () => {
                         "& .MuiOutlinedInput-notchedOutline": {
                           borderColor: "#cbd5e1",
                         },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#94a3b8",
+                        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#64748b",
                         },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#1e2d42",
+                        "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#0284c7",
+                          borderWidth: 1,
                         },
                       }}
                       inputProps={{

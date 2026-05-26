@@ -6,7 +6,7 @@ import {
   CENTRALIZED_PROTOCOL_OPTIONS,
   SNMP_VERSION_OPTIONS,
 } from "../../../constants/CentralizedManageConstants";
-import { Alert, CircularProgress } from "@mui/material";
+import { Alert, CircularProgress, Checkbox } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
 
@@ -769,17 +769,16 @@ fi`;
                       <div className="flex flex-col w-full max-w-[280px]">
                         {field.name === "monitoringPort" ? (
                           <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
+                            <Checkbox
+                              size="small"
                               checked={!!form.monitoringPort}
                               onChange={handleChange}
                               name="monitoringPort"
                               disabled={!isEditable}
-                              style={{
-                                width: 16,
-                                height: 16,
-                                cursor: "pointer",
-                                accentColor: C.primary,
+                              sx={{
+                                padding: "4px",
+                                color: "#64748b",
+                                "&.Mui-checked": { color: C.accent },
                               }}
                             />
                             <input
@@ -817,8 +816,8 @@ fi`;
                           </div>
                         ) : field.type === "checkbox" ? (
                           <div className="flex items-center gap-2 h-[32px]">
-                            <input
-                              type="checkbox"
+                            <Checkbox
+                              size="small"
                               checked={!!form[field.name]}
                               onChange={handleChange}
                               name={field.name}
@@ -826,11 +825,10 @@ fi`;
                                 !form.centralizedManage &&
                                 field.name !== "centralizedManage"
                               }
-                              style={{
-                                width: 16,
-                                height: 16,
-                                cursor: "pointer",
-                                accentColor: C.primary,
+                              sx={{
+                                padding: "4px",
+                                color: "#64748b",
+                                "&.Mui-checked": { color: C.accent },
                               }}
                             />
                             <span style={{ fontSize: 12, color: C.valueText }}>

@@ -8,7 +8,7 @@ import {
   fetchSaveDhcpSettings,
   fetchResetDhcpSettings,
 } from "../api/apiService";
-import { Alert } from "@mui/material";
+import { Alert, Checkbox } from "@mui/material";
 
 const C = {
   pageBg: "#f8fafc",
@@ -437,16 +437,15 @@ const DhcpServerSettings = () => {
                       </label>
                       <div className="flex flex-col w-full max-w-[400px]">
                         <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
+                          <Checkbox
+                            size="small"
                             name={lanGroup.fields[0].name}
                             checked={isEnabled || false}
                             onChange={handleChange}
-                            style={{
-                              width: 16,
-                              height: 16,
-                              cursor: "pointer",
-                              accentColor: C.primary,
+                            sx={{
+                              padding: "4px",
+                              color: "#64748b",
+                              "&.Mui-checked": { color: C.accent },
                             }}
                           />
                           <span

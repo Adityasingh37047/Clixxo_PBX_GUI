@@ -1103,9 +1103,9 @@ const PcmTrunkGroupPage = () => {
                         onChange={handleToggleAll}
                         sx={{
                           padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          color: "#64748b",
+                          "&.Mui-checked": { color: "#0284c7" },
+                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
                         }}
                       />
                     </TH>
@@ -1172,8 +1172,8 @@ const PcmTrunkGroupPage = () => {
                               disabled={isLoadingData}
                               sx={{
                                 padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
+                                color: "#64748b",
+                                "&.Mui-checked": { color: "#0284c7" },
                               }}
                             />
                           </td>
@@ -1609,8 +1609,8 @@ const PcmTrunkGroupPage = () => {
                       }}
                       sx={{
                         padding: "2px",
-                        color: C.accent,
-                        "&.Mui-checked": { color: C.accent },
+                        color: "#64748b",
+                        "&.Mui-checked": { color: "#0284c7" },
                       }}
                     />
                     Check All
@@ -1712,8 +1712,8 @@ const PcmTrunkGroupPage = () => {
                           }
                           sx={{
                             padding: "2px",
-                            color: C.accent,
-                            "&.Mui-checked": { color: C.accent },
+                            color: "#64748b",
+                            "&.Mui-checked": { color: "#0284c7" },
                           }}
                         />
                         <span style={{ marginLeft: 4 }}>

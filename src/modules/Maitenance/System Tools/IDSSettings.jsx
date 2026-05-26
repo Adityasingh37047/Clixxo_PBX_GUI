@@ -5,7 +5,7 @@ import {
   IDS_WARNING_LOG,
   IDS_LOG_NOTE,
 } from "../../../constants/IDSSettingsConstants";
-import { Alert } from "@mui/material";
+import { Alert, Checkbox } from "@mui/material";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
@@ -254,11 +254,15 @@ const IDSSettings = () => {
                   IDS Settings:
                 </span>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
+                    size="small"
                     checked={form.enable}
                     onChange={handleEnable}
-                    style={{ accentColor: C.accent, width: 16, height: 16 }}
+                    sx={{
+                      padding: "4px",
+                      color: "#64748b",
+                      "&.Mui-checked": { color: C.accent },
+                    }}
                   />
                   <span style={{ fontSize: 14, color: C.valueText }}>
                     Enable
@@ -290,11 +294,15 @@ const IDSSettings = () => {
                 {IDS_TYPES.map((type, idx) => (
                   <React.Fragment key={type.key}>
                     <div className="flex flex-row items-center gap-2 col-span-1">
-                      <input
-                        type="checkbox"
+                      <Checkbox
+                        size="small"
                         checked={form[type.key]}
                         onChange={() => handleCheckbox(type.key)}
-                        style={{ accentColor: C.accent, width: 16, height: 16 }}
+                        sx={{
+                          padding: "4px",
+                          color: "#64748b",
+                          "&.Mui-checked": { color: C.accent },
+                        }}
                       />
                       <span
                         style={{
@@ -366,11 +374,15 @@ const IDSSettings = () => {
                     }}
                   >
                     <div className="flex items-center gap-2 mb-3">
-                      <input
-                        type="checkbox"
+                      <Checkbox
+                        size="small"
                         checked={form[type.key]}
                         onChange={() => handleCheckbox(type.key)}
-                        style={{ accentColor: C.accent, width: 16, height: 16 }}
+                        sx={{
+                          padding: "4px",
+                          color: "#64748b",
+                          "&.Mui-checked": { color: C.accent },
+                        }}
                       />
                       <span
                         style={{
