@@ -543,19 +543,7 @@ const PickupGroup = () => {
                 flexWrap: "wrap",
               }}
             >
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {filteredRows.length} records
-              </span>
+              
               {selected.length > 0 && (
                 <span
                   style={{
@@ -652,7 +640,7 @@ const PickupGroup = () => {
 }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH>Name</TH>
                     <TH>Members</TH>
                     <TH style={{ width: 70 }}>Modify</TH>
@@ -1062,55 +1050,63 @@ const PickupGroup = () => {
             gap: 12,
           }}
         >
-          <Button
-            onClick={handleSave}
-            disabled={loading.save}
-            variant="contained"
-            sx={{
-              padding: "8px 20px",
-              fontSize: 13,
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-              color: "#fff",
-              border: "1px solid #5A6F8F",
-              boxShadow: "0 2px 8px #3E5475",
-              fontWeight: 600,
-              textTransform: "none",
-              minWidth: "unset",
-              width: "auto",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-              },
-              "&:disabled": {
-                background: "#94a3b8",
-                color: "#e2e8f0",
-                border: "1px solid #94a3b8",
-              },
-            }}
-          >
-            {loading.save ? (
-              <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
-            ) : null}
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update Group"
-                : "Create Group"}
-          </Button>
-          <Btn
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            variant="outline"
-            style={{
-              background: "#cbd5e1",
-              color: "#374151",
-              border: "1px solid #cbd5e1",
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            Cancel
-          </Btn>
+         <Button
+  onClick={handleSave}
+  disabled={loading.save}
+  variant="contained"
+  sx={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+    fontWeight: 600,
+    textTransform: "none",
+    minWidth: "unset",
+    width: "auto",
+    borderRadius: "6px",
+
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
+      opacity: 0.85,
+    },
+
+    "&:disabled": {
+      background: "#94a3b8",
+      color: "#e2e8f0",
+      border: "1px solid #94a3b8",
+    },
+  }}
+>
+  {loading.save ? (
+    <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
+  ) : null}
+
+  {loading.save
+    ? "Saving..."
+    : editId != null
+      ? "Update Group"
+      : "Create Group"}
+</Button>
+        <Btn
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="outline"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    borderRadius: 6,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Cancel
+</Btn>
         </DialogActions>
       </Dialog>
     </div>

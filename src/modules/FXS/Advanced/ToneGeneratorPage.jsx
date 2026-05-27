@@ -4,13 +4,20 @@ import { Button, TextField } from "@mui/material";
 
 // ── Color Palette (Matched from Reference) ──────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
+
+  accent: "#2e2f31",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
 
 // ── Shared UI Layout Components (Matched from Reference) ────────────────────
@@ -338,41 +345,71 @@ const ToneGeneratorPage = () => {
               background: "#f8fafc",
             }}
           >
-            <Button
-              variant="contained"
-              onClick={handleSave}
-              sx={{
-                background:
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 120,
-                "&:hover": { background: "#1e2d42" },
-              }}
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleReset}
-              sx={{
-                color: C.accent,
-                borderColor: C.cardBorder,
-                background:
-                  "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 100,
-                "&:hover": { borderColor: C.accent, background: "#f1f5f9" },
-              }}
-            >
-              Reset
-            </Button>
+           <Button
+  variant="contained"
+  onClick={handleSave}
+  sx={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+
+    height: 36,
+    padding: "0 28px",
+    borderRadius: "6px",
+
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
+      opacity: 0.85,
+    },
+
+    "&:disabled": {
+      background: "#94a3b8",
+      color: "#e2e8f0",
+      border: "1px solid #94a3b8",
+    },
+  }}
+>
+  Save
+</Button>
+           <Button
+  variant="outlined"
+  onClick={handleReset}
+  sx={{
+    background: "#fff",
+    color: "#475569",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+
+    height: 36,
+    padding: "0 24px",
+    borderRadius: "6px",
+
+    "&:hover": {
+      background: "#f8fafc",
+      border: "1px solid #94a3b8",
+      color: "#1e293b",
+    },
+
+    "&:disabled": {
+      background: "#f8fafc",
+      color: "#94a3b8",
+      border: "1px solid #e2e8f0",
+    },
+  }}
+>
+  Reset
+</Button>
           </div>
         </div>
       </div>

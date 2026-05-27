@@ -358,42 +358,57 @@ const SipMediaPage = () => {
                 background: "#f8fafc",
               }}
             >
-              <Button
-                variant="contained"
-                onClick={handleSave}
-                disabled={loading || saving}
-                startIcon={
-                  saving && <CircularProgress size={16} color="inherit" />
-                }
-                sx={{
-                  background: "#1e2d42",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  textTransform: "none",
-                  padding: "6px 32px",
-                  minWidth: 120,
-                  "&:hover": { background: "#0f172a" },
-                }}
-              >
-                {saving ? "Saving..." : "Save"}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleReset}
-                sx={{
-                  color: "#1e293b",
-                  borderColor: "#9ca3af",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  textTransform: "none",
-                  padding: "6px 32px",
-                  minWidth: 100,
-                  "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
-                }}
-              >
-                Reset
-              </Button>
+          <Button
+  variant="contained"
+  onClick={handleSave}
+  disabled={loading || saving}
+  startIcon={
+    saving && <CircularProgress size={14} color="inherit" />
+  }
+  sx={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+    padding: "8px 28px",
+    minWidth: 110,
+    borderRadius: "6px",
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      opacity: 0.85,
+    },
+  }}
+>
+  {saving ? "Saving..." : "Save"}
+</Button>
+           <Button
+  variant="outlined"
+  onClick={handleReset}
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08)",
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+    padding: "8px 20px",
+    minWidth: 110,
+    borderRadius: "6px",
+    "&:hover": {
+      background: "#cbd5e1",
+      border: "1px solid #cbd5e1",
+      opacity: 0.85,
+    },
+  }}
+>
+  Reset
+</Button>
             </div>
           )}
         </div>

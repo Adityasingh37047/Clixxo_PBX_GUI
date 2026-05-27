@@ -1603,9 +1603,7 @@ const SipRegisterPage = () => {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid #e2e8f0", background: "#ffffff", flexWrap: "wrap", gap: 10 }}>
             {/* Left: page info + selected count */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: TABLE_C.labelText, fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 999 }}>
-                Page {page} · {filteredRows.length} records
-              </span>
+            
               {selectedIds.length > 0 && (
                 <span style={{ background: "#eff6ff", color: TABLE_C.accent, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 999, border: `1px solid ${TABLE_C.accent}` }}>
                   {selectedIds.length} selected
@@ -1822,17 +1820,27 @@ const SipRegisterPage = () => {
                             )}
                           </td>
                           <td style={{ textAlign: "center", padding: "7px 8px" }}>
-                            <IconButton
-                              size="small"
-                              disabled={loading.delete}
-                              onClick={() => !loading.delete && handleOpenModal(trunk, realIdx)}
-                              sx={{
-                                color: "#1e40af",
-                                "&:hover": { background: "#eff6ff" },
-                              }}
-                            >
-                              <EditDocumentIcon fontSize="small" />
-                            </IconButton>
+                           <IconButton
+  size="small"
+  disabled={loading.delete}
+  onClick={() =>
+    !loading.delete && handleOpenModal(trunk, realIdx)
+  }
+  sx={{
+    color: "#2563eb",
+    opacity: 0.7,
+    transition: "opacity 0.15s ease",
+
+    "&:hover": {
+      background: "transparent",
+      opacity: 1,
+    },
+  }}
+>
+  <EditDocumentIcon
+   
+  />
+</IconButton>
                           </td>
                         </tr>
                       );
@@ -3628,73 +3636,77 @@ const SipRegisterPage = () => {
         </DialogContent>
 
         <DialogActions className="p-4 justify-center gap-5">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
+      <Button
+  variant="contained"
+  onClick={handleSave}
+  disabled={loading.save}
+  startIcon={
+    loading.save && (
+      <CircularProgress size={20} color="inherit" />
+    )
+  }
+  sx={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
+    color: "#fff",
 
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
+    padding: "8px 24px",
+    height: 36,
+    fontSize: 13,
+    borderRadius: "6px",
 
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
-            onClick={handleSave}
-            disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
-          >
-            {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
+    boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
+    textTransform: "none",
 
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
+      color: "#fff",
+      opacity: 0.85,
+    },
 
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
-            onClick={handleCloseModal}
-            disabled={loading.save}
-          >
-            Close
-          </Button>
+    "&:disabled": {
+      background: "#cbd5e1",
+      color: "#64748b",
+    },
+  }}
+>
+  {loading.save ? "Saving..." : "Save"}
+</Button>
+  <Button
+  variant="contained"
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  sx={{
+    padding: "8px 24px",
+    fontSize: 13,
+    height: 36,
+    borderRadius: "6px",
+
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+    fontWeight: 600,
+    textTransform: "none",
+
+    "&:hover": {
+      background: "#cbd5e1",
+      border: "1px solid #cbd5e1",
+      opacity: 0.85,
+      color: "#374151",
+    },
+
+    "&:disabled": {
+      background: "#e2e8f0",
+      color: "#94a3b8",
+      border: "1px solid #e2e8f0",
+    },
+  }}
+>
+  Close
+</Button>
         </DialogActions>
       </Dialog>
     </div>

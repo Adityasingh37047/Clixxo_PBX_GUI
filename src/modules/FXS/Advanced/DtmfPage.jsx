@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { DTMF_INITIAL_FORM } from "../../../sections/advanced/constants/DtmfConstants"; // Adjust path if needed
-import { TextField, Button, Checkbox } from "@mui/material";
+import { TextField, Button, Checkbox, Alert } from "@mui/material";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+  accent: "#2563eb",
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+  purple: "#8b5cf6",
 };
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
@@ -24,7 +24,7 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
         fontSize: 13,
         fontWeight: 600,
         color: C.labelText,
-        width: 250, // Wider to accommodate long DTMF labels
+        width: 240, // Match FxsPage label width
         flexShrink: 0,
         paddingTop: align === "flex-start" ? 8 : 0,
       }}
@@ -274,37 +274,20 @@ const DtmfPage = () => {
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
         {/* Error / Success Banner */}
         {message.text && (
-          <div
-            style={{
-              background:
-                message.type === "error"
-                  ? "#fef2f2"
-                  : message.type === "success"
-                    ? "#f0fdf4"
-                    : "#eff6ff",
-              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
-              color:
-                message.type === "error"
-                  ? "#b91c1c"
-                  : message.type === "success"
-                    ? "#166534"
-                    : "#1e40af",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 12,
-              fontSize: 13,
-              display: "flex",
-              justifyContent: "space-between",
+          <Alert
+            severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
             }}
           >
-            <span>{message.text}</span>
-            <span
-              onClick={() => setMessage({ type: "", text: "" })}
-              style={{ cursor: "pointer", fontSize: 16 }}
-            >
-              ✕
-            </span>
-          </div>
+            {message.text}
+          </Alert>
         )}
 
         {/* Breadcrumb */}
@@ -407,9 +390,15 @@ const DtmfPage = () => {
                       onChange={() => handleCheckboxChange("enableDisplayDtmf")}
                       size="small"
                       sx={{
-                        padding: "2px",
-                        color: C.accent,
-                        "&.Mui-checked": { color: C.accent },
+                        padding: "1px",
+                        color: "#64748b",
+                        "&.Mui-checked": {
+                          color: "#0284c7",
+                        },
+                        "&.MuiCheckbox-indeterminate": {
+                          color: "#0284c7",
+                        },
+                        "&:hover": { backgroundColor: "transparent" },
                       }}
                     />
                     <span
@@ -490,9 +479,15 @@ const DtmfPage = () => {
                       onChange={() => handleCheckboxChange("enableOmitABCD")}
                       size="small"
                       sx={{
-                        padding: "2px",
-                        color: C.accent,
-                        "&.Mui-checked": { color: C.accent },
+                        padding: "1px",
+                        color: "#64748b",
+                        "&.Mui-checked": {
+                          color: "#0284c7",
+                        },
+                        "&.MuiCheckbox-indeterminate": {
+                          color: "#0284c7",
+                        },
+                        "&:hover": { backgroundColor: "transparent" },
                       }}
                     />
                     <span
@@ -521,9 +516,15 @@ const DtmfPage = () => {
                     onChange={() => handleCheckboxChange("dtmfEnergyAdvance")}
                     size="small"
                     sx={{
-                      padding: "2px",
-                      color: C.accent,
-                      "&.Mui-checked": { color: C.accent },
+                      padding: "1px",
+                      color: "#64748b",
+                      "&.Mui-checked": {
+                        color: "#0284c7",
+                      },
+                      "&.MuiCheckbox-indeterminate": {
+                        color: "#0284c7",
+                      },
+                      "&:hover": { backgroundColor: "transparent" },
                     }}
                   />
                   <span
@@ -697,14 +698,27 @@ const DtmfPage = () => {
               variant="contained"
               onClick={handleSave}
               sx={{
-                background: "#1e2d42",
+                background:
+                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
                 color: "#fff",
+                border: "1px solid #5A6F8F",
+                boxShadow: "0 2px 8px #3E5475",
                 fontWeight: 600,
                 fontSize: 13,
                 textTransform: "none",
-                padding: "6px 32px",
+                padding: "8px 28px",
                 minWidth: 120,
-                "&:hover": { background: "#0f172a" },
+                borderRadius: "6px",
+                "&:hover": {
+                  background:
+                    "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
+                  opacity: 0.85,
+                },
+                "&:disabled": {
+                  background: "#94a3b8",
+                  color: "#e2e8f0",
+                  border: "1px solid #94a3b8",
+                },
               }}
             >
               Save Settings
@@ -713,14 +727,21 @@ const DtmfPage = () => {
               variant="outlined"
               onClick={handleReset}
               sx={{
-                color: "#1e293b",
-                borderColor: "#9ca3af",
+                background: "#cbd5e1",
+                color: "#374151",
+                border: "1px solid #cbd5e1",
+                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
                 fontWeight: 600,
                 fontSize: 13,
                 textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 100,
-                "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
+                padding: "8px 28px",
+                minWidth: 110,
+                borderRadius: "6px",
+                "&:hover": {
+                  background: "#cbd5e1",
+                  border: "1px solid #cbd5e1",
+                  opacity: 0.85,
+                },
               }}
             >
               Reset

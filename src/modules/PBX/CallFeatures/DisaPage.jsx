@@ -692,19 +692,7 @@ const DisaPage = () => {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {filteredRows.length} records
-              </span>
+             
               {selected.length > 0 && (
                 <span
                   style={{
@@ -801,7 +789,7 @@ const DisaPage = () => {
 }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
                       Name
                     </TH>

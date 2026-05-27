@@ -576,19 +576,7 @@ const CCRoutePage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {rows.length} records
-              </span>
+              
               {selected.length > 0 && (
                 <span
                   style={{
@@ -686,7 +674,7 @@ const CCRoutePage = () => {
 }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH>CC Interval Time</TH>
                     <TH>Through</TH>
                     <TH>Record Keep Time</TH>
@@ -694,7 +682,7 @@ const CCRoutePage = () => {
                     <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
                       Member Extensions
                     </TH>
-                    <TH style={{ width: 70 }}>Actions</TH>
+                    <TH style={{ width: 70 }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -758,10 +746,11 @@ const CCRoutePage = () => {
                           </td>
                           <td
                             style={{
+                              padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
-                              padding: "10px 6px",
-                              fontSize: 11,
-                              color: C.mutedText,
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
@@ -770,9 +759,10 @@ const CCRoutePage = () => {
                           <td
                             style={{
                               padding: "10px 14px",
-                              textAlign: "center",
                               fontSize: 13,
+                              fontWeight: 400,
                               color: C.valueText,
+                              textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
@@ -781,9 +771,10 @@ const CCRoutePage = () => {
                           <td
                             style={{
                               padding: "10px 14px",
-                              textAlign: "center",
                               fontSize: 13,
+                              fontWeight: 400,
                               color: C.valueText,
+                              textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
@@ -792,9 +783,10 @@ const CCRoutePage = () => {
                           <td
                             style={{
                               padding: "10px 14px",
-                              textAlign: "center",
                               fontSize: 13,
+                              fontWeight: 400,
                               color: C.valueText,
+                              textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
@@ -803,25 +795,21 @@ const CCRoutePage = () => {
                           <td
                             style={{
                               padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             <span
                               style={{
-                          
-                                color:
-                                  row.enabled === "Yes" ? "#166534" : "#475569",
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 72,
+                           padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
+                              textAlign: "center",
+                              borderRight: "1px solid #f1f5f9",
                               }}
                             >
                               {row.enabled}
@@ -831,9 +819,10 @@ const CCRoutePage = () => {
                             style={{
                               padding: "10px 14px",
                               fontSize: 13,
+                              fontWeight: 400,
                               color: C.valueText,
+                              textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
-                              wordBreak: "break-all",
                             }}
                           >
                             {row.memberExtensions?.length > 0 ? (

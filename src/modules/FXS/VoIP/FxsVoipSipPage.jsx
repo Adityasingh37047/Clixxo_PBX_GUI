@@ -15,17 +15,18 @@ import {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+  accent: "#2563eb",
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+  purple: "#8b5cf6",
 };
+
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const FieldRow = ({ label, children, required, align = "center" }) => (
@@ -171,7 +172,7 @@ const FxsVoipSipPage = () => {
           <div style={{ fontSize: 11, color: C.mutedText }}>
             FXS &rsaquo; VoIP &rsaquo;{" "}
             <span style={{ color: C.valueText, fontWeight: 600 }}>
-              SIP Settings
+              SIP
             </span>
           </div>
         </div>
@@ -275,37 +276,40 @@ const FxsVoipSipPage = () => {
                         </FormControl>
                       )}
 
-                      {/* Checkbox */}
-                      {field.type === "checkbox" && (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
-                          }}
-                        >
-                          <Checkbox
-                            checked={!!form[field.key]}
-                            onChange={() => handleCheckbox(field.key)}
-                            size="small"
-                            sx={{
-                              padding: "2px",
-                              color: C.accent,
-                              "&.Mui-checked": { color: C.accent },
-                            }}
-                          />
-                          <span
-                            style={{
-                              fontSize: 13,
-                              color: C.valueText,
-                              cursor: "pointer",
-                            }}
-                            onClick={() => handleCheckbox(field.key)}
-                          >
-                            Enable
-                          </span>
-                        </div>
-                      )}
+                     {/* Checkbox */}
+{field.type === "checkbox" && (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+    }}
+  >
+    <Checkbox
+      checked={!!form[field.key]}
+      onChange={() => handleCheckbox(field.key)}
+      size="small"
+      sx={{
+        padding: "1px",
+        color: "#64748b",
+        "&.Mui-checked": { color: "#0284c7" },
+        "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+      }}
+    />
+
+    <span
+      style={{
+        fontSize: 13,
+        color: C.valueText,
+        cursor: "pointer",
+        userSelect: "none",
+      }}
+      onClick={() => handleCheckbox(field.key)}
+    >
+      Enable
+    </span>
+  </div>
+)}
 
                       {/* Helper Text */}
                       {field.helper && (
@@ -339,38 +343,53 @@ const FxsVoipSipPage = () => {
               background: "#f8fafc",
             }}
           >
-            <Button
-              variant="contained"
-              onClick={handleSave}
-              sx={{
-                background: "#1e2d42",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 120,
-                "&:hover": { background: "#0f172a" },
-              }}
-            >
-              Save Settings
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleReset}
-              sx={{
-                color: "#1e293b",
-                borderColor: "#9ca3af",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 100,
-                "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
-              }}
-            >
-              Reset
-            </Button>
+          <Button
+  variant="contained"
+  onClick={handleSave}
+  sx={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+    padding: "8px 28px",
+    minWidth: 120,
+    borderRadius: "6px",
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      opacity: 0.85,
+    },
+  }}
+>
+  Save Settings
+</Button>
+          <Button
+  variant="outlined"
+  onClick={handleReset}
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+    padding: "8px 28px",
+    minWidth: 110,
+    borderRadius: "6px",
+    "&:hover": {
+      background: "#cbd5e1",
+      border: "1px solid #cbd5e1",
+      opacity: 0.85,
+    },
+  }}
+>
+  Reset
+</Button>
           </div>
         </div>
       </div>

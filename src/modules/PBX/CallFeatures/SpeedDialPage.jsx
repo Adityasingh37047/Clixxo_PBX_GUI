@@ -511,19 +511,7 @@ const SpeedDialPage = () => {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
-                }}
-              >
-                Page {page} · {filteredRows.length} records
-              </span>
+            
               {selected.length > 0 && (
                 <span
                   style={{
@@ -661,7 +649,7 @@ const SpeedDialPage = () => {
 }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH>
                       Name
                     </TH>

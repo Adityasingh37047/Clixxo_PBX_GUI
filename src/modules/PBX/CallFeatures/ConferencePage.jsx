@@ -810,19 +810,7 @@ const ConferencePage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {filteredRows.length} records
-              </span>
+              
               {selected.length > 0 && (
                 <span
                   style={{
@@ -998,7 +986,7 @@ const ConferencePage = () => {
 }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH>Room Name</TH>
                     <TH>Conference Number</TH>
                     <TH>Enabled</TH>
@@ -1726,19 +1714,21 @@ const ConferencePage = () => {
                 : "Create Conference"}
           </Btn>
           <Btn
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            variant="outline"
-         style={{
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="outline"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
     background: "#cbd5e1",
     color: "#374151",
     border: "1px solid #cbd5e1",
     boxShadow:
       "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
-          >
-            Cancel
-          </Btn>
+>
+  Cancel
+</Btn>
         </DialogActions>
       </Dialog>
     </div>

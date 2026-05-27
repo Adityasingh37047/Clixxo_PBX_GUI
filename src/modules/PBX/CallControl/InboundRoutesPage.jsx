@@ -946,19 +946,7 @@ const InboundRoutesPage = () => {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 20,
-                }}
-              >
-                Page {page} · {rows.length} records
-              </span>
+              
               {selected.length > 0 && (
                 <span
                   style={{
@@ -1088,7 +1076,7 @@ const InboundRoutesPage = () => {
                         }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH style={{ textAlign: "left", paddingLeft: 16 }}>Name</TH>
                     <TH>DID Pattern</TH>
                     <TH>Caller ID Pattern</TH>
@@ -1097,7 +1085,7 @@ const InboundRoutesPage = () => {
                     <TH style={{ textAlign: "left", paddingLeft: 16 }}>
                       Member Trunks
                     </TH>
-                    <TH style={{ width: 70 }}>Actions</TH>
+                    <TH style={{ width: 70 }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1231,8 +1219,7 @@ const InboundRoutesPage = () => {
                           >
                             <span
                               style={{
-                                background:
-                                  row.enabled === "Yes" ? "#dcfce7" : "#f1f5f9",
+                                
                                 color:
                                   row.enabled === "Yes" ? "#15803d" : "#475569",
                                 padding: "2px 8px",

@@ -632,19 +632,7 @@ const Paging = () => {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
-                }}
-              >
-                Page {page} · {filteredRows.length} records
-              </span>
+             
               {selected.length > 0 && (
                 <span
                   style={{
@@ -741,7 +729,7 @@ const Paging = () => {
 }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH> Name </TH>
                     <TH>Number</TH>
                     <TH>Type</TH>
@@ -1263,13 +1251,14 @@ const Paging = () => {
             gap: 12,
           }}
         >
-         <Button
+        <Button
   onClick={handleSave}
   disabled={loading.save}
   variant="contained"
   sx={{
     padding: "8px 28px",
     fontSize: 13,
+    borderRadius: "6px",
     background:
       "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
     color: "#fff",
@@ -1283,6 +1272,7 @@ const Paging = () => {
     "&:hover": {
       background:
         "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
+      opacity: 0.85,
     },
 
     "&:disabled": {
@@ -1303,29 +1293,33 @@ const Paging = () => {
       : "Create Group"}
 </Button>
           <Button
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            variant="outlined"
-            sx={{
-              color: "#1e293b",
-              borderColor: "#9ca3af",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 100,
-              "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
-            }}
-            style={{
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="outlined"
+  sx={{
+    padding: "8px 28px",
+    fontSize: 13,
+    minWidth: 120,
+    borderRadius: "6px",
+
     background: "#cbd5e1",
     color: "#374151",
     border: "1px solid #cbd5e1",
     boxShadow:
       "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+    fontWeight: 600,
+    textTransform: "none",
+
+    "&:hover": {
+      background: "#cbd5e1",
+      border: "1px solid #cbd5e1",
+      opacity: 0.85,
+    },
   }}
-          >
-            Cancel
-          </Button>
+>
+  Cancel
+</Button>
         </DialogActions>
       </Dialog>
     </div>

@@ -19,7 +19,7 @@ const C = {
   valueText: "#0f172a",
   mutedText: "#94a3b8",
 
-  accent: "#2563eb",
+  accent: "#1a1b1b",
 
   successGreen: "#22c55e",
   errorRed: "#ef4444",

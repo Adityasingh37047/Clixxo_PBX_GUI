@@ -960,19 +960,6 @@ const OutboundRoutesPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {rows.length} records
-              </span>
               {selected.length > 0 && (
                 <span
                   style={{
@@ -1125,7 +1112,7 @@ const OutboundRoutesPage = () => {
 }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH>Name</TH>
                     <TH>Priority</TH>
                     <TH>Enabled</TH>
@@ -1136,7 +1123,7 @@ const OutboundRoutesPage = () => {
                     <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
                       Member Trunks
                     </TH>
-                    <TH style={{ width: 70 }}>Actions</TH>
+                    <TH style={{ width: 70 }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1307,13 +1294,12 @@ const OutboundRoutesPage = () => {
                           <td
                             style={{ textAlign: "center", padding: "7px 8px" }}
                           >
-                           
                               <EditDocumentIcon
   className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
   titleAccess="Edit"
   onClick={() => handleOpenEditModal(row)}
 />
-                            
+
                           </td>
                         </tr>
                       );
