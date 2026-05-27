@@ -12,6 +12,8 @@ import {
   CircularProgress,
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import Checkbox from "@mui/material/Checkbox";
 import SearchIcon from "@mui/icons-material/Search";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import {
@@ -23,76 +25,108 @@ import {
   deleteAllNumberFilters,
 } from "../../../api/apiService";
 
-// ── Color Palette ─────────────────────────────────────────────────────────────
+// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 
-// ── Shared: Action Button ─────────────────────────────────────────────────────
+const CARD_RADIUS = 20;
+
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
-  title,
+  type,
 }) => {
-  const variants = {
+  const styles = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
+      background: " #cbd5e1",
+      color: C.valueText,
       border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: `0.5px solid #fecaca`,
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
-  const s = variants[variant] || variants.default;
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "danger":
+        return "#fca5a5";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
-      title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -100,27 +134,43 @@ const Btn = ({
   );
 };
 
-// ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+};
 
 const Whitelist = () => {
   const [callerRows, setCallerRows] = useState([]);
@@ -145,19 +195,15 @@ const Whitelist = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState("success");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
 
   useEffect(() => {
     fetchWhitelistData();
   }, []);
 
   const displayToast = (message, type = "success") => {
-    setToastMessage(message);
-    setToastType(type);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    setToast({ msg: message, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
   const fetchWhitelistData = async () => {
@@ -635,7 +681,7 @@ const Whitelist = () => {
             alignItems: "center",
             gap: 6,
             background: "#ffffff",
-            border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
+            border: searchFocused ? "1px solid #0284c7" : `1px solid ${C.cardBorder}`,
             borderRadius: 6,
             padding: "5px 10px",
             transition: "border-color 0.15s ease",
@@ -646,7 +692,7 @@ const Whitelist = () => {
           <span
             style={{
               fontSize: 12,
-              color: searchFocused ? C.accent : C.mutedText,
+              color: searchFocused ? "#0284c7" : C.mutedText,
             }}
           >
             🔍
@@ -681,14 +727,19 @@ const Whitelist = () => {
           onClick={onSearch}
           disabled={isSearchingFlag}
           variant="default"
-          style={{ gap: 4 }}
+          style={{ gap: 4, width: 75 }}
         >
           {isSearchingFlag ? (
             <CircularProgress size={11} style={{ color: "#fff" }} />
           ) : null}
           {isSearchingFlag ? "Searching..." : "Search"}
         </Btn>
-        <Btn onClick={onReset} disabled={isSearchingFlag} variant="outline">
+        <Btn
+          onClick={onReset}
+          disabled={isSearchingFlag}
+          variant="default"
+          style={{ width: 75 }}
+        >
           Reset
         </Btn>
       </div>
@@ -697,106 +748,120 @@ const Whitelist = () => {
       <div
         style={{
           background: C.cardBg,
-          border: `1px solid ${C.cardBorder}`,
-          borderRadius: 8,
+          border: `1.5px solid ${C.cardBorder}`,
+          borderRadius: 10,
           overflow: "hidden",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
         }}
       >
-        {/* Toolbar */}
+        {/* Top Actions Bar */}
         <div
           style={{
+            padding: "14px 18px",
             display: "flex",
-            alignItems: "center",
             justifyContent: "space-between",
-            padding: "10px 14px",
-            borderBottom: `1px solid ${C.cardBorder}`,
-            background: "#DCE6F2",
+            alignItems: "center",
             flexWrap: "wrap",
-            gap: 8,
+            gap: 10,
+            background: "#ffffff",
+            borderBottom: `1px solid ${C.cardBorder}`,
+            borderTopLeftRadius: CARD_RADIUS,
+            borderTopRightRadius: CARD_RADIUS,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* Left Section */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span
               style={{
-                background: "#f1f5f9",
-                border: `0.5px solid ${C.cardBorder}`,
-                color: "#475569",
-                fontSize: 11,
-                fontWeight: 600,
-                padding: "3px 12px",
-                borderRadius: 20,
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#3E5475",
+                letterSpacing: "0.02em",
               }}
             >
-              {rows.length} records
+              {title}
             </span>
             {checkedItems.length > 0 && (
               <span
                 style={{
-                  background: "#e0f2fe",
+                  background: "#eff6ff",
                   color: C.accent,
                   fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 10px",
-                  borderRadius: 20,
-                  border: `0.5px solid ${C.accent}`,
+                  fontWeight: 700,
+                  padding: "5px 12px",
+                  borderRadius: 999,
+                  border: `1px solid ${C.accent}`,
                 }}
               >
                 {checkedItems.length} selected
               </span>
             )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+          {/* Right Section: Actions */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
             <Btn
+              variant="cancel"
               onClick={onDelete}
               disabled={checkedItems.length === 0 || isDeleting}
-              variant="danger"
+              style={{ height: 30 }}
             >
               {isDeleting ? (
-                <CircularProgress size={11} style={{ color: C.errorRed }} />
-              ) : null}
-              🗑 Delete
+                <CircularProgress size={12} color="inherit" />
+              ) : (
+                <>
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                  Delete
+                </>
+              )}
             </Btn>
             <Btn
+              variant="cancel"
               onClick={onClear}
               disabled={rows.length === 0 || isDeleting}
-              variant="danger"
+              style={{ height: 30 }}
             >
               Clear All
             </Btn>
-            <Btn onClick={onAddNew} disabled={isDeleting} variant="accent">
+            <Btn
+              variant="primary"
+              onClick={onAddNew}
+              disabled={isDeleting}
+              style={{
+                height: 30,
+                padding: "6px 14px",
+                fontSize: 12,
+                borderRadius: 10,
+              }}
+            >
               + Add New
             </Btn>
           </div>
         </div>
 
-        {/* Table header title */}
-        <div
-          style={{
-            background: "#f3f4f6",
-            color: "#1e293b",
-            fontWeight: 700,
-            fontSize: 13,
-            textAlign: "center",
-            padding: "8px 14px",
-            letterSpacing: "0.02em",
-            borderBottom: "0.5px solid #9ca3af",
-          }}
-        >
-          {title}
-        </div>
-
         {/* Table */}
         <div style={{ overflowX: "auto", overflowY: "auto", maxHeight: 360 }}>
           <table
-            style={{ width: "100%", borderCollapse: "collapse", minWidth: 460 }}
+            style={{
+              width: "100%",
+              borderCollapse: "separate",
+              borderSpacing: 0,
+              minWidth: 460,
+            }}
           >
             <thead>
               <tr>
-                <TH style={{ width: 56 }}>Check</TH>
+                <TH style={{ width: 56, borderLeft: "none" }}>Check</TH>
                 <TH>Group No.</TH>
                 <TH>{idKey === "callerId" ? "CallerID" : "CalleeID"}</TH>
-                <TH style={{ width: 80 }}>Modify</TH>
+                <TH style={{ width: 80, borderRight: "none" }}>Modify</TH>
               </tr>
             </thead>
             <tbody>
@@ -807,8 +872,9 @@ const Whitelist = () => {
                     style={{
                       textAlign: "center",
                       padding: "36px 0",
-                      color: C.mutedText,
+                      color: "#3E5475",
                       fontSize: 13,
+                      fontWeight: 600,
                     }}
                   >
                     No entries found.
@@ -817,22 +883,25 @@ const Whitelist = () => {
               ) : (
                 rows.map((row, idx) => {
                   const isChecked = checkedItems.includes(idx);
+                  const isLastRow = idx === rows.length - 1;
                   const rowBg = isChecked
                     ? "#f0f9ff"
                     : idx % 2 === 1
                       ? "#f8fafc"
                       : "#ffffff";
+                  const lastRowCellStyle = isLastRow
+                    ? { borderBottom: "none" }
+                    : {};
                   return (
                     <tr
-                      key={idx}
+                      key={row.id || idx}
                       style={{
                         background: rowBg,
-                        borderBottom: "0.5px solid #9ca3af",
                         transition: "background 0.1s ease",
                       }}
                       onMouseEnter={(e) => {
                         if (!isChecked)
-                          e.currentTarget.style.background = "#f0f9ff";
+                          e.currentTarget.style.background = "#f1f5f9";
                       }}
                       onMouseLeave={(e) => {
                         if (!isChecked)
@@ -841,57 +910,54 @@ const Whitelist = () => {
                     >
                       <td
                         style={{
-                          textAlign: "center",
-                          padding: "6px 4px",
-                          borderRight: "0.5px solid #edf2f7",
+                          ...tdStyle,
+                          background: rowBg,
+                          borderLeft: "none",
+                          ...lastRowCellStyle,
                         }}
                       >
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={isChecked}
                           onChange={() => onCheck(idx)}
-                          style={{
-                            width: 14,
-                            height: 14,
-                            cursor: "pointer",
-                            accentColor: C.accent,
-                          }}
+                          size="small"
+                          sx={checkboxSx}
                         />
                       </td>
-                      <td
-                        style={{
-                          textAlign: "center",
-                          padding: "7px 8px",
-                          fontSize: 12,
-                          color: C.valueText,
-                          borderRight: "0.5px solid #edf2f7",
-                        }}
-                      >
+                      <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
                         {row.groupNo}
                       </td>
-                      <td
-                        style={{
-                          textAlign: "center",
-                          padding: "7px 8px",
-                          fontSize: 12,
-                          color: C.valueText,
-                          borderRight: "0.5px solid #edf2f7",
-                        }}
-                      >
+                      <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
                         {row[idKey]}
                       </td>
-                      <td style={{ textAlign: "center", padding: "4px 8px" }}>
-                        <Btn
-                          onClick={() => onEdit(row)}
-                          variant="outline"
-                          style={{
-                            fontSize: 10,
-                            padding: "3px 10px",
-                            margin: "0 auto",
-                          }}
+                      <td
+                        style={{
+                          ...tdStyle,
+                          background: rowBg,
+                          borderRight: "none",
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <div
+                          style={{ display: "flex", justifyContent: "center" }}
                         >
-                          Edit
-                        </Btn>
+                          <EditDocumentIcon
+                            titleAccess="Edit"
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onClick={() => onEdit(row)}
+                            onMouseEnter={(e) =>
+                              (e.currentTarget.style.opacity = "1")
+                            }
+                            onMouseLeave={(e) =>
+                              (e.currentTarget.style.opacity = "0.7")
+                            }
+                          />
+                        </div>
                       </td>
                     </tr>
                   );
@@ -906,14 +972,17 @@ const Whitelist = () => {
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-end",
-            padding: "8px 14px",
-            borderTop: `0.5px solid ${C.cardBorder}`,
-            background: "#f8fafc",
+            justifyContent: "space-between",
+            padding: "10px 14px",
+            borderTop: `1px solid ${C.cardBorder}`,
+            background: "#ffffff",
+            borderBottomLeftRadius: CARD_RADIUS,
+            borderBottomRightRadius: CARD_RADIUS,
           }}
         >
           <span style={{ fontSize: 11, color: C.mutedText }}>
-            {rows.length} record{rows.length !== 1 ? "s" : ""} total
+            Showing {rows.length} record
+            {rows.length !== 1 ? "s" : ""}
           </span>
         </div>
       </div>
@@ -928,11 +997,40 @@ const Whitelist = () => {
         padding: 16,
       }}
     >
+      {/* Alerts */}
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
         {/* Breadcrumb */}
-        <div style={{ fontSize: 11, color: C.mutedText, marginBottom: 12 }}>
-          E1-PRI &rsaquo; Number Filter &rsaquo;{" "}
-          <span style={{ color: C.valueText, fontWeight: 600 }}>Whitelist</span>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            display: "flex",
+            gap: 4,
+          }}
+        >
+          E1-PRI &rsaquo; Number Filter &rsaquo;{" "} 
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            Whitelist
+          </span>
         </div>
 
         {isInitialLoading ? (
@@ -997,12 +1095,10 @@ const Whitelist = () => {
             <div
               style={{
                 textAlign: "center",
-                color: C.errorRed,
+                color: "#dc2626",
                 fontSize: 12,
                 marginTop: 24,
                 padding: "8px 16px",
-                // background: "#fef2f2",
-                // border: "0.5px solid #fecaca",
                 borderRadius: 6,
               }}
             >
@@ -1018,16 +1114,30 @@ const Whitelist = () => {
         open={showModal}
         onClose={() => setShowModal(false)}
         maxWidth={false}
-        PaperProps={{ sx: { width: 400, maxWidth: "96vw", borderRadius: 2 } }}
+        className="z-50"
+        PaperProps={{
+          sx: {
+            width: 500,
+            maxWidth: "95vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
+            color: "#ffffff",
+            fontWeight: 600,
             fontSize: 16,
             textAlign: "center",
-            padding: "14px 24px",
+            padding: "16px 24px",
           }}
         >
           {modalType === "caller"
@@ -1035,140 +1145,140 @@ const Whitelist = () => {
             : "CalleeIDs in Whitelist"}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
-        >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#f8fafc" }}>
           <div
             style={{
               background: "#fff",
               border: `1px solid ${C.cardBorder}`,
-              borderRadius: 6,
-              padding: 16,
+              borderRadius: 8,
+              padding: 20,
               display: "flex",
               flexDirection: "column",
-              gap: 14,
+              gap: 16,
             }}
           >
             {/* Group No. */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <label
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
                   color: C.labelText,
-                  width: 120,
-                  flexShrink: 0,
+                  width: 140,
+                  whiteSpace: "normal",
+                  lineHeight: 1.2,
                 }}
               >
                 Group No.:
               </label>
-              <div style={{ flex: 1 }}>
-                <MuiSelect
-                  value={modalData.groupNo}
-                  onChange={(e) => handleGroupNoChange(e.target.value)}
-                  size="small"
-                  fullWidth
-                  sx={{ fontSize: 13, background: "#fff" }}
-                  MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
-                >
-                  {[...Array(200).keys()].map((i) => (
-                    <MenuItem key={i} value={i} sx={{ fontSize: 13 }}>
-                      {i}
-                    </MenuItem>
-                  ))}
-                </MuiSelect>
-              </div>
+              <MuiSelect
+                value={modalData.groupNo}
+                onChange={(e) => handleGroupNoChange(e.target.value)}
+                size="small"
+                fullWidth
+                sx={{
+                  fontSize: 13,
+                  height: 36,
+                  backgroundColor: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: C.cardBorder,
+                    transition: "border-color 0.2s ease",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#64748b",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#0284c7 !important",
+                    borderWidth: "1px !important",
+                  },
+                }}
+                MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
+              >
+                {[...Array(200).keys()].map((i) => (
+                  <MenuItem key={i} value={i} sx={{ fontSize: 13 }}>
+                    {i}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
             </div>
 
             {/* ID Value */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <label
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
                   color: C.labelText,
-                  width: 120,
-                  flexShrink: 0,
+                  width: 140,
+                  whiteSpace: "normal",
+                  lineHeight: 1.2,
                 }}
               >
                 {modalType === "caller" ? "CallerID:" : "CalleeID:"}
               </label>
-              <div style={{ flex: 1 }}>
-                <TextField
-                  type="text"
-                  value={modalData.idValue}
-                  onChange={(e) =>
-                    setModalData({ ...modalData, idValue: e.target.value })
-                  }
-                  size="small"
-                  fullWidth
-                  disabled={isEditMode}
-                  sx={{
-                    "& .MuiInputBase-input": { fontSize: 13 },
-                    "& .MuiInputBase-root": { background: "#fff" },
-                  }}
-                />
-              </div>
+              <TextField
+                type="text"
+                value={modalData.idValue}
+                onChange={(e) =>
+                  setModalData({ ...modalData, idValue: e.target.value })
+                }
+                size="small"
+                fullWidth
+                disabled={isEditMode}
+                inputProps={{ style: { fontSize: 13, height: 16 } }}
+                sx={{
+                  backgroundColor: "#fff",
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: C.cardBorder,
+                      transition: "border-color 0.2s ease",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#64748b",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#0284c7",
+                      borderWidth: 1,
+                    },
+                  },
+                }}
+              />
             </div>
           </div>
         </DialogContent>
 
         <DialogActions
           style={{
+            background: "#ffffff",
             padding: "16px 24px",
-            background: C.pageBg,
             borderTop: `1px solid ${C.cardBorder}`,
+            display: "flex",
             justifyContent: "center",
             gap: 12,
           }}
         >
           <Btn
             onClick={handleSave}
+            variant="primary"
+            style={{ width: 120, height: 38 }}
             disabled={isLoading}
-            style={{ padding: "8px 28px", fontSize: 13 }}
           >
             {isLoading ? (
-              <CircularProgress
-                size={13}
-                style={{ color: "#fff", marginRight: 6 }}
-              />
-            ) : null}
-            {isLoading ? "Saving..." : "Save"}
+              <CircularProgress size={16} style={{ color: "#fff" }} />
+            ) : (
+              "Save"
+            )}
           </Btn>
           <Btn
             onClick={() => setShowModal(false)}
+            variant="cancel"
+            style={{ width: 120, height: 38 }}
             disabled={isLoading}
-            variant="outline"
-            style={{ padding: "8px 28px", fontSize: 13 }}
           >
-            Close
+            Cancel
           </Btn>
         </DialogActions>
       </Dialog>
-
-      {/* Toast */}
-      {showToast && (
-        <div
-          style={{
-            position: "fixed",
-            top: 16,
-            right: 16,
-            zIndex: 9999,
-            maxWidth: 360,
-          }}
-        >
-          <Alert
-            severity={toastType}
-            onClose={() => setShowToast(false)}
-            sx={{
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              borderRadius: "8px",
-            }}
-          >
-            {toastMessage}
-          </Alert>
-        </div>
-      )}
     </div>
   );
 };

@@ -25,5 +25,4 @@ export const ROUTE_IP_IP_TABLE_COLUMNS = [
   { key: 'calleeIdPrefix', label: 'CalleeID Prefix' },
   { key: 'callDestination', label: 'Call Destination' },
   { key: 'numberFilter', label: 'Number Filter' },
-  { key: 'description', label: 'Description' },
 ];

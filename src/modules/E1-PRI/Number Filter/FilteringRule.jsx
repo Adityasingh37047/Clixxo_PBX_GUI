@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FILTERING_RULE_COLUMNS,
   FILTERING_RULE_DROPDOWN_OPTIONS,
@@ -24,77 +24,110 @@ import {
   Checkbox,
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
-// ── Color Palette & Shared Styles ─────────────────────────────────────────────
+// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 
-// ── Shared: Action Button ─────────────────────────────────────────────────────
+const CARD_RADIUS = 20;
+
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
-  title,
+  type,
 }) => {
-  const variants = {
+  const styles = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
+      background: " #cbd5e1",
+      color: C.valueText,
       border: "1px solid #9ca3af",
     },
-    outline: {
-      background: "#fff",
-      color: "#1e293b",
-      border: "1px solid #9ca3af",
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     danger: {
       background: "#fef2f2",
-      color: C.errorRed,
+      color: C.amber,
       border: `0.5px solid #fecaca`,
     },
-    accent: {
+    outline: {
       background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
-  const s = variants[variant] || variants.default;
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "danger":
+        return "#fca5a5";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
-      title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -102,27 +135,43 @@ const Btn = ({
   );
 };
 
-// ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+};
 
 const MIN_ROWS = 14;
 const initialForm = {
@@ -151,17 +200,19 @@ const FilteringRule = () => {
     blCallee: ["none"],
     poolGroups: ["none"],
   });
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState("success");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const displayToast = (message, type = "success") => {
-    setToastMessage(message);
-    setToastType(type);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+  const displayToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const alert = (msg) => {
+    const isErr =
+      /error|failed|required|please/i.test(msg) && !/successfully/i.test(msg);
+    displayToast(msg, isErr ? "error" : "success");
   };
 
   const openModal = (rowIdx = null) => {
@@ -389,13 +440,6 @@ const FilteringRule = () => {
     loadRows();
   }, []);
 
-  const displayRows = [
-    ...rows,
-    ...Array.from({ length: Math.max(0, MIN_ROWS - rows.length) }).map(
-      () => null,
-    ),
-  ];
-
   return (
     <div
       style={{
@@ -404,252 +448,329 @@ const FilteringRule = () => {
         padding: 16,
       }}
     >
+      {/* Alerts */}
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
         {/* Breadcrumb / Title area */}
         <div
           style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 12,
+            gap: 4,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            E1-PRI &rsaquo; Number Filter &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              Filtering Rule
-            </span>
-          </div>
+          E1-PRI &rsaquo; Number Filter &rsaquo;{" "} 
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            Filtering Rule
+          </span>
         </div>
 
         {/* Main Card */}
         <div
           style={{
             background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: 10,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
-          {/* Toolbar */}
+          {/* Top Actions Bar */}
           <div
             style={{
+              padding: "14px 18px",
               display: "flex",
-              alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              alignItems: "center",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 10,
+              background: "#ffffff",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
+            {/* Left Section */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {rows.some((r) => r.checked) && (
                 <span
                   style={{
-                    background: "#f1f5f9",
-                    border: `0.5px solid ${C.cardBorder}`,
-                    color: "#475569",
+                    background: "#eff6ff",
+                    color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 12px",
-                    borderRadius: 20,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
-                  {rows.length} rules
+                  {rows.filter((r) => r.checked).length} selected
                 </span>
-                {rows.some((r) => r.checked) && (
-                  <span
-                    style={{
-                      background: "#e0f2fe",
-                      color: C.accent,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      padding: "3px 10px",
-                      borderRadius: 20,
-                      border: `0.5px solid ${C.accent}`,
-                    }}
-                  >
-                    {rows.filter((r) => r.checked).length} selected
-                  </span>
-                )}
-              </div>
-              <div
-                style={{
-                  color: "#000",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  letterSpacing: "0.02em",
-                }}
-              >
-                Filtering Rule
-              </div>
+              )}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+            {/* Right Section: Actions */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
+                variant="cancel"
                 onClick={handleDelete}
                 disabled={!rows.some((r) => r.checked) || isDeleting}
-                variant="danger"
+                style={{ height: 30 }}
               >
                 {isDeleting ? (
-                  <CircularProgress size={11} style={{ color: C.errorRed }} />
-                ) : null}
-                🗑 Delete
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
+                )}
               </Btn>
               <Btn
+                variant="cancel"
                 onClick={handleClearAll}
                 disabled={rows.length === 0 || isDeleting}
-                variant="danger"
+                style={{ height: 30 }}
               >
                 Clear All
               </Btn>
               <Btn
+                variant="primary"
                 onClick={() => openModal()}
                 disabled={isDeleting}
-                variant="accent"
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table Area */}
           <div
             style={{
               overflowX: "auto",
               overflowY: "auto",
-              maxHeight: 400,
+              flex: 1,
             }}
           >
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                minWidth: "1800px",
-              }}
-            >
-              <thead>
-                <tr>
-                  {FILTERING_RULE_COLUMNS.map((col) => (
-                    <TH
-                      key={col.key}
-                      style={{
-                        width:
-                          col.key === "check"
-                            ? 60
-                            : col.key === "modify"
-                              ? 80
-                              : col.key === "description"
-                                ? 180
-                                : [
-                                      "callerIdPoolWhitelist",
-                                      "callerIdPoolBlacklist",
-                                      "calleeIdPoolWhitelist",
-                                      "calleeIdPoolBlacklist",
-                                      "originalCallerIdPoolWhitelist",
-                                      "originalCallerIdPoolBlacklist",
-                                    ].includes(col.key)
-                                  ? 160
-                                  : [
-                                        "callerIdWhitelist",
-                                        "calleeIdWhitelist",
-                                        "callerIdBlacklist",
-                                        "calleeIdBlacklist",
-                                      ].includes(col.key)
-                                    ? 140
-                                    : 100,
-                      }}
-                    >
-                      {col.label}
-                    </TH>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {displayRows.map((row, idx) => {
-                  const isChecked = row?.checked || false;
-                  const rowBg = isChecked
-                    ? "#f0f9ff"
-                    : idx % 2 === 1
-                      ? "#f8fafc"
-                      : "#ffffff";
-                  return (
-                    <tr
-                      key={idx}
-                      style={{
-                        background: rowBg,
-                        borderBottom: "0.5px solid #9ca3af",
-                        transition: "background 0.1s ease",
-                      }}
-                    >
+            {rows.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No Filtering Rules Configured!
+                </div>
+                <Btn
+                  onClick={() => openModal()}
+                  variant="cancel"
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New Rule
+                </Btn>
+              </div>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  minWidth: "1800px",
+                }}
+              >
+                  <thead>
+                    <tr>
                       {FILTERING_RULE_COLUMNS.map((col) => (
-                        <td
+                        <TH
                           key={col.key}
                           style={{
-                            textAlign: "center",
-                            padding: "7px 8px",
-                            fontSize: 12,
-                            color: C.valueText,
-                            borderRight: "0.5px solid #edf2f7",
-                            height: 32,
+                            ...(col.key === "check" ? { borderLeft: "none" } : {}),
+                            ...(col.key === "modify" ? { borderRight: "none" } : {}),
+                            width:
+                              col.key === "check"
+                                ? 60
+                                : col.key === "modify"
+                                  ? 80
+                                  : col.key === "description"
+                                    ? 180
+                                    : [
+                                          "callerIdPoolWhitelist",
+                                          "callerIdPoolBlacklist",
+                                          "calleeIdPoolWhitelist",
+                                          "calleeIdPoolBlacklist",
+                                          "originalCallerIdPoolWhitelist",
+                                          "originalCallerIdPoolBlacklist",
+                                        ].includes(col.key)
+                                      ? 160
+                                      : [
+                                            "callerIdWhitelist",
+                                            "calleeIdWhitelist",
+                                            "callerIdBlacklist",
+                                            "calleeIdBlacklist",
+                                          ].includes(col.key)
+                                        ? 140
+                                        : 100,
                           }}
                         >
-                          {row ? (
-                            col.key === "check" ? (
-                              <Checkbox
-                                checked={isChecked}
-                                onChange={() => handleCheck(idx)}
-                                size="small"
-                                sx={{
-                                  padding: 0,
-                                  color: C.accent,
-                                  "&.Mui-checked": { color: C.accent },
-                                }}
-                              />
-                            ) : col.key === "modify" ? (
-                              <Btn
-                                onClick={() => openModal(idx)}
-                                variant="outline"
-                                style={{
-                                  fontSize: 10,
-                                  padding: "3px 10px",
-                                  margin: "0 auto",
-                                }}
-                              >
-                                Edit
-                              </Btn>
-                            ) : (
-                              row[col.key]
-                            )
-                          ) : (
-                            "\u00A0"
-                          )}
-                        </td>
+                          {col.label}
+                        </TH>
                       ))}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, idx) => {
+                      const realIdx = idx;
+                      const isChecked = row?.checked || false;
+                      const isLastRow = idx === rows.length - 1;
+                      const rowBg = isChecked
+                        ? "#f0f9ff"
+                        : realIdx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: `1px solid ${C.cardBorder}` }
+                        : {};
+                      return (
+                        <tr
+                          key={row.id || realIdx}
+                          style={{
+                            background: rowBg,
+                            transition: "background 0.1s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isChecked)
+                              e.currentTarget.style.background = "#f1f5f9";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isChecked)
+                              e.currentTarget.style.background = rowBg;
+                          }}
+                        >
+                          {FILTERING_RULE_COLUMNS.map((col) => (
+                            <td
+                              key={col.key}
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...(col.key === "check"
+                                  ? { borderLeft: "none" }
+                                  : {}),
+                                ...(col.key === "modify"
+                                  ? { borderRight: "none" }
+                                  : {}),
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {col.key === "check" ? (
+                                <Checkbox
+                                  checked={isChecked}
+                                  onChange={() => handleCheck(realIdx)}
+                                  size="small"
+                                  sx={checkboxSx}
+                                />
+                              ) : col.key === "modify" ? (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <EditDocumentIcon
+                                    titleAccess="Edit"
+                                    style={{
+                                      cursor: "pointer",
+                                      color: "#2563eb",
+                                      fontSize: 22,
+                                      opacity: 0.7,
+                                      transition: "opacity 0.15s ease",
+                                    }}
+                                    onClick={() => openModal(realIdx)}
+                                    onMouseEnter={(e) =>
+                                      (e.currentTarget.style.opacity = "1")
+                                    }
+                                    onMouseLeave={(e) =>
+                                      (e.currentTarget.style.opacity = "0.7")
+                                    }
+                                  />
+                                </div>
+                              ) : col.key === "id" ? (
+                                realIdx + 1
+                              ) : (
+                                row[col.key]
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+              </table>
+            )}
           </div>
 
-          {/* Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              padding: "8px 14px",
-              borderTop: `0.5px solid ${C.cardBorder}`,
-              background: "#f8fafc",
-            }}
-          >
-            <span style={{ fontSize: 11, color: C.mutedText }}>
-              {rows.length} rule{rows.length !== 1 ? "s" : ""} total
-            </span>
-          </div>
+          {rows.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                background: "#ffffff",
+                borderTop: `1px solid ${C.cardBorder}`,
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {rows.length} record
+                {rows.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -658,53 +779,78 @@ const FilteringRule = () => {
         open={modalOpen}
         onClose={closeModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 440, borderRadius: 2 } }}
+        className="z-50"
+        PaperProps={{
+          sx: {
+            width: 600,
+            maxWidth: "95vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
+            color: "#ffffff",
+            fontWeight: 600,
             fontSize: 16,
             textAlign: "center",
-            padding: "14px 24px",
+            padding: "16px 24px",
           }}
         >
           {editIndex !== null ? "Edit" : "Add"} Filtering Rule
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#eef2f7" }}
-        >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#f8fafc" }}>
           <div
             style={{
               background: "#fff",
               border: `1px solid ${C.cardBorder}`,
-              borderRadius: 6,
-              padding: 16,
+              borderRadius: 8,
+              padding: 20,
               display: "flex",
               flexDirection: "column",
-              gap: 12,
+              gap: 16,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <label
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 600,
                   color: C.labelText,
-                  width: 160,
+                  width: 200,
+                  whiteSpace: "normal",
+                  lineHeight: 1.2,
                 }}
               >
                 No.:
               </label>
               <TextField
                 name="id"
-                value={form.id}
-                onChange={handleFormChange}
+                value={editIndex !== null ? editIndex + 1 : rows.length + 1}
+                disabled
                 size="small"
                 fullWidth
-                inputProps={{ style: { fontSize: 12, height: 16 } }}
-                sx={{ backgroundColor: "#fff" }}
+                inputProps={{ style: { fontSize: 13, height: 16 } }}
+                sx={{
+                  backgroundColor: "#f1f5f9",
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: C.cardBorder,
+                      transition: "border-color 0.2s ease",
+                    },
+                  },
+                  "& .Mui-disabled": {
+                    WebkitTextFillColor: "#64748b",
+                  }
+                }}
               />
             </div>
             {[
@@ -765,10 +911,12 @@ const FilteringRule = () => {
               >
                 <label
                   style={{
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 600,
                     color: C.labelText,
-                    width: 160,
+                    width: 200,
+                    whiteSpace: "normal",
+                    lineHeight: 1.2,
                   }}
                 >
                   {field.label}
@@ -780,11 +928,19 @@ const FilteringRule = () => {
                   size="small"
                   fullWidth
                   sx={{
-                    fontSize: 12,
-                    height: 32,
+                    fontSize: 13,
+                    height: 36,
                     backgroundColor: "#fff",
                     "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#999999",
+                      borderColor: C.cardBorder,
+                      transition: "border-color 0.2s ease",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#64748b",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#0284c7 !important",
+                      borderWidth: "1px !important",
                     },
                   }}
                 >
@@ -796,8 +952,8 @@ const FilteringRule = () => {
                       ),
                     ),
                   ].map((opt) => (
-                    <MenuItem key={opt} value={opt} sx={{ fontSize: 12 }}>
-                      {opt}
+                    <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                      {opt === "none" ? "None" : opt}
                     </MenuItem>
                   ))}
                 </MuiSelect>
@@ -807,48 +963,36 @@ const FilteringRule = () => {
         </DialogContent>
         <DialogActions
           style={{
+            background: "#ffffff",
             padding: "16px 24px",
-            background: "#eef2f7",
             borderTop: `1px solid ${C.cardBorder}`,
+            display: "flex",
             justifyContent: "center",
             gap: 12,
           }}
         >
           <Btn
             onClick={handleSave}
+            variant="primary"
+            style={{ width: 120, height: 38 }}
             disabled={isLoading}
-            style={{ padding: "8px 32px" }}
           >
             {isLoading ? (
-              <CircularProgress size={16} color="inherit" />
+              <CircularProgress size={16} style={{ color: "#fff" }} />
             ) : (
               "Save"
             )}
           </Btn>
           <Btn
             onClick={closeModal}
-            variant="outline"
-            style={{ padding: "8px 32px" }}
+            variant="cancel"
+            style={{ width: 120, height: 38 }}
+            disabled={isLoading}
           >
             Cancel
           </Btn>
         </DialogActions>
       </Dialog>
-
-      {showToast && (
-        <div className="fixed top-4 right-4 z-[9999] max-w-sm w-[90vw] sm:w-auto">
-          <Alert
-            severity={toastType}
-            onClose={() => setShowToast(false)}
-            sx={{
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              borderRadius: "8px",
-            }}
-          >
-            {toastMessage}
-          </Alert>
-        </div>
-      )}
     </div>
   );
 };

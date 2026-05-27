@@ -1,10 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ROUTE_IP_PSTN_FIELDS,
   ROUTE_IP_PSTN_INITIAL_FORM,
   ROUTE_IP_PSTN_TABLE_COLUMNS,
 } from "../../../constants/RouteIPtoPstnConstants";
-import { FaPencilAlt } from "react-icons/fa";
 import {
   Button,
   Checkbox,
@@ -13,14 +12,14 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Select,
+  Select as MuiSelect,
   MenuItem,
   FormControl,
   Alert,
   CircularProgress,
 } from "@mui/material";
-
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   listIpPstnRoutes,
   createIpPstnRoute,
@@ -30,78 +29,110 @@ import {
   listPstnGroups,
 } from "../../../api/apiService";
 
-const LOCAL_STORAGE_KEY = "routeIpPstnRules";
-
-// ── Design System (From CCRoutePage) ─────────────────────────────────────────
+// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 
-// ── Shared UI Components ──────────────────────────────────────────────────────
+const CARD_RADIUS = 20;
+
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
+  type,
   title,
 }) => {
-  const variants = {
+  const styles = {
     default: {
-      background: "#1e2d42",
-      color: "#fff",
+      background: C.cardBg,
+      color: C.valueText,
       border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
     danger: {
       background: "#fef2f2",
-      color: C.errorRed,
+      color: C.amber,
       border: `0.5px solid #fecaca`,
     },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
   };
-  const s = variants[variant] || variants.default;
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "danger":
+        return "#fee2e2";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -112,23 +143,34 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
 
 const FieldRow = ({ label, children }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -139,6 +181,7 @@ const FieldRow = ({ label, children }) => (
         color: C.labelText,
         width: 170,
         flexShrink: 0,
+        textAlign: "right",
       }}
     >
       {label}
@@ -147,12 +190,25 @@ const FieldRow = ({ label, children }) => (
   </div>
 );
 
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+};
+
 const RouteIpPstnPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(ROUTE_IP_PSTN_INITIAL_FORM);
   const [rules, setRules] = useState([]);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
+  const itemsPerPage = 20;
+  const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
+  const pagedRules = rules.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage,
+  );
+
   const [sipTrunkGroups, setSipTrunkGroups] = useState([]);
   const [pcmTrunkGroups, setPcmTrunkGroups] = useState([]);
   const [loading, setLoading] = useState({
@@ -161,12 +217,6 @@ const RouteIpPstnPage = () => {
     delete: false,
   });
   const [message, setMessage] = useState({ type: "", text: "" });
-  const itemsPerPage = 20;
-  const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
-  const pagedRules = rules.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
 
   // Message handling
   const showMessage = (type, text) => {
@@ -174,7 +224,7 @@ const RouteIpPstnPage = () => {
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
-  // Fetch SIP Trunk Groups for Call Source dropdown
+  // Fetch SIP Trunk Groups for Call Source
   const fetchSipTrunkGroups = async () => {
     try {
       const response = await listGroups();
@@ -192,7 +242,7 @@ const RouteIpPstnPage = () => {
     }
   };
 
-  // Fetch PCM Trunk Groups for Call Destination dropdown
+  // Fetch PCM Trunk Groups for Call Destination
   const fetchPcmTrunkGroups = async () => {
     try {
       const response = await listPstnGroups();
@@ -215,14 +265,15 @@ const RouteIpPstnPage = () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
     try {
       const response = await listIpPstnRoutes("ip_to_pstn");
-      if (response.response && response.message) {
+      if (response.response && Array.isArray(response.message)) {
         const mappedRules = response.message.map((rule) => ({
-          ...rule,
+          id: rule.id,
           callSource: rule.call_source,
           callerIdPrefix: rule.caller_id_prefix,
           calleeIdPrefix: rule.callee_id_prefix,
           callDestination: rule.call_destination,
           numberFilter: rule.number_filter,
+          description: rule.description,
         }));
         setRules(mappedRules);
       } else {
@@ -251,16 +302,7 @@ const RouteIpPstnPage = () => {
 
   const handleOpenModal = (item = null, index = -1) => {
     if (item) {
-      const formData = {
-        callSource: item.call_source,
-        callerIdPrefix: item.caller_id_prefix,
-        calleeIdPrefix: item.callee_id_prefix,
-        callDestination: String(item.call_destination),
-        numberFilter: item.number_filter,
-        description: item.description,
-        originalIndex: index,
-      };
-      setFormData(formData);
+      setFormData({ ...item, originalIndex: index });
     } else {
       const defaultFormData = { ...ROUTE_IP_PSTN_INITIAL_FORM };
       if (sipTrunkGroups && sipTrunkGroups.length > 0) {
@@ -275,6 +317,7 @@ const RouteIpPstnPage = () => {
           firstPcmGroup.group_id || firstPcmGroup.id || firstPcmGroup,
         );
       }
+      defaultFormData.originalIndex = -1;
       setFormData(defaultFormData);
     }
     setIsModalOpen(true);
@@ -282,64 +325,62 @@ const RouteIpPstnPage = () => {
 
   const handleCloseModal = () => setIsModalOpen(false);
 
-  const validatePrefix = (prefix) => {
-    const validPrefixPattern = /^[\d*]+$/;
-    return validPrefixPattern.test(prefix);
-  };
+  const validatePrefix = (prefix) => /^[\d*]+$/.test(prefix || "");
 
   const handleSave = async () => {
-    if (!validatePrefix(formData.callerIdPrefix)) {
+    const { originalIndex, ...dataToSave } = formData;
+    if (!validatePrefix(dataToSave.callerIdPrefix)) {
       showMessage(
         "error",
         "Invalid CallerID Prefix! Only numbers (0-9) and asterisks (*) are allowed.",
       );
       return;
     }
-    if (!validatePrefix(formData.calleeIdPrefix)) {
+    if (!validatePrefix(dataToSave.calleeIdPrefix)) {
       showMessage(
         "error",
         "Invalid CalleeID Prefix! Only numbers (0-9) and asterisks (*) are allowed.",
       );
       return;
     }
+
+    const apiData = {
+      call_source: dataToSave.callSource,
+      caller_id_prefix: dataToSave.callerIdPrefix,
+      callee_id_prefix: dataToSave.calleeIdPrefix,
+      call_destination: dataToSave.callDestination,
+      number_filter: dataToSave.numberFilter,
+      description: dataToSave.description,
+    };
+
     setLoading((prev) => ({ ...prev, save: true }));
     try {
-      const { originalIndex, ...formDataToSave } = formData;
-      const apiData = {
-        call_source: formDataToSave.callSource,
-        caller_id_prefix: formDataToSave.callerIdPrefix,
-        callee_id_prefix: formDataToSave.calleeIdPrefix,
-        call_destination: formDataToSave.callDestination,
-        number_filter: formDataToSave.numberFilter,
-        description: formDataToSave.description,
-      };
-
       if (originalIndex !== undefined && originalIndex > -1) {
         const response = await updateIpPstnRoute(
           rules[originalIndex].id,
           apiData,
           "ip_to_pstn",
         );
-        if (response.response) {
+        if (response?.response) {
           showMessage("success", "Route updated successfully!");
           handleCloseModal();
           await fetchIpPstnRoutes();
         } else {
-          showMessage("error", "Failed to update route");
+          showMessage("error", response?.message || "Failed to update route");
         }
       } else {
         const response = await createIpPstnRoute(apiData, "ip_to_pstn");
-        if (response.response) {
+        if (response?.response) {
           showMessage("success", "Route created successfully!");
           handleCloseModal();
           await fetchIpPstnRoutes();
         } else {
-          showMessage("error", "Failed to create route");
+          showMessage("error", response?.message || "Failed to create route");
         }
       }
-    } catch (error) {
-      console.error("Error saving route:", error);
-      showMessage("error", error.message || "Failed to save route");
+    } catch (e) {
+      console.error("Error saving route:", e);
+      showMessage("error", e.message || "Failed to save route");
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
@@ -357,13 +398,10 @@ const RouteIpPstnPage = () => {
     );
   };
 
-  // Helper function to format display values for table
   const formatDisplayValue = (key, value, rowIndex = 0) => {
     if (key === "index") {
-      // Calculate index based on current page and row position
       return (page - 1) * itemsPerPage + rowIndex + 1;
     }
-
     if (value === undefined || value === null || value === "") return "--";
 
     switch (key) {
@@ -383,6 +421,7 @@ const RouteIpPstnPage = () => {
         return String(value);
     }
   };
+
   const handleCheckAll = () => setSelected(rules.map((_, idx) => idx));
   const handleUncheckAll = () => setSelected([]);
   const handleInverse = () =>
@@ -391,12 +430,12 @@ const RouteIpPstnPage = () => {
         .map((_, idx) => (!selected.includes(idx) ? idx : null))
         .filter((i) => i !== null),
     );
+
   const handleDelete = async () => {
     if (selected.length === 0) {
-      alert("Please select at least one item to delete.");
+      showMessage("warning", "Please select items to delete");
       return;
     }
-
     const confirmed = window.confirm(
       `Are you sure you want to delete ${selected.length} selected item(s)?`,
     );
@@ -404,80 +443,49 @@ const RouteIpPstnPage = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const deletePromises = selected.map(async (idx) => {
-        const rule = rules[idx];
-        if (rule && rule.id) {
-          return await deleteIpPstnRoute(rule.id, "ip_to_pstn");
-        }
-      });
-
-      const results = await Promise.all(deletePromises);
-      const allSuccessful = results.every(
-        (result) => result && result.response,
-      );
-
-      if (allSuccessful) {
-        await fetchIpPstnRoutes(); // Refresh data
-        setSelected([]);
-        alert("Selected routes deleted successfully!");
-      } else {
-        alert("Some routes could not be deleted. Please try again.");
+      const idsToDelete = rules
+        .filter((_, idx) => selected.includes(idx))
+        .map((r) => r.id);
+      for (const id of idsToDelete) {
+        await deleteIpPstnRoute(id, "ip_to_pstn");
       }
+      await fetchIpPstnRoutes();
+      setSelected([]);
+      showMessage("success", "Selected routes deleted successfully!");
     } catch (error) {
-      console.error("Error deleting routes:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", error.message || "Failed to delete routes");
-      }
+      console.error("Delete failed:", error);
+      showMessage("error", error.message || "Failed to delete routes");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
   };
+
   const handleClearAll = async () => {
     if (rules.length === 0) {
-      alert("No routes to clear.");
+      showMessage("warning", "No routes to clear");
       return;
     }
-
     const confirmed = window.confirm(
-      `Are you sure you want to delete ALL ${rules.length} routes? This action cannot be undone.`,
+      `Are you sure you want to delete ALL ${rules.length} routes?`,
     );
     if (!confirmed) return;
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      // Delete all routes one by one
-      const deletePromises = rules.map(async (rule) => {
-        if (rule && rule.id) {
-          return await deleteIpPstnRoute(rule.id, "ip_to_pstn");
-        }
-      });
-
-      const results = await Promise.all(deletePromises);
-      const allSuccessful = results.every(
-        (result) => result && result.response,
-      );
-
-      if (allSuccessful) {
-        await fetchIpPstnRoutes(); // Refresh data from server
-        setSelected([]);
-        setPage(1);
-        alert("All routes deleted successfully!");
-      } else {
-        alert("Some routes could not be deleted. Please try again.");
+      for (const r of rules) {
+        await deleteIpPstnRoute(r.id, "ip_to_pstn");
       }
+      await fetchIpPstnRoutes();
+      setSelected([]);
+      setPage(1);
+      showMessage("success", "All routes deleted successfully!");
     } catch (error) {
-      console.error("Error clearing all routes:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", error.message || "Failed to clear all routes");
-      }
+      showMessage("error", "Failed to clear all routes");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
   };
+
   return (
     <div
       style={{
@@ -508,28 +516,26 @@ const RouteIpPstnPage = () => {
         {/* Breadcrumb */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            E1-PRI &rsaquo; Route &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              IP-&gt;PSTN Routing Rule
-            </span>
-          </div>
+          E1-PRI <span style={{ margin: "0 6px" }}>›</span> Route{" "}
+          <span style={{ margin: "0 6px" }}>›</span>{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            IP-&gt;PSTN Routing Rule
+          </span>
         </div>
 
         {/* Main Card */}
         <div
           style={{
             background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: 10,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
@@ -538,188 +544,266 @@ const RouteIpPstnPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              padding: "14px 18px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              background: "#ffffff",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 10,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
-                }}
-              >
-                Page {page} · {rules.length} records
-              </span>
               {selected.length > 0 && (
                 <span
                   style={{
-                    background: "#e0f2fe",
+                    background: "#eff6ff",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Btn onClick={handleCheckAll} variant="outline">
-                Check All
-              </Btn>
-              <Btn onClick={handleUncheckAll} variant="outline">
-                Uncheck All
-              </Btn>
-              <Btn onClick={handleInverse} variant="outline">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete || loading.fetch}
+                style={{ height: 30 }}
+              >
                 Inverse
               </Btn>
               <Btn
+                variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0 || loading.delete}
-                variant="danger"
+                style={{ height: 30 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
                 ) : (
-                  "🗑 Delete"
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
                 )}
               </Btn>
               <Btn
+                variant="cancel"
                 onClick={handleClearAll}
                 disabled={rules.length === 0 || loading.delete}
-                variant="danger"
+                style={{ height: 30 }}
               >
-                Clear All
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Clear All"
+                )}
               </Btn>
-              <Btn onClick={() => handleOpenModal()} variant="accent">
+              <Btn
+                onClick={() => handleOpenModal()}
+                variant="primary"
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+              >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
-          <div style={{ overflowX: "auto", maxHeight: 400 }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                minWidth: 1200,
-              }}
-            >
-              <thead>
-                <tr>
-                  <TH style={{ width: 40 }}>Check</TH>
-                  {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
-                    <TH key={col.key}>{col.label}</TH>
-                  ))}
-                  <TH style={{ width: 70 }}>Modify</TH>
-                </tr>
-              </thead>
-              <tbody>
-                {loading.fetch ? (
-                  <tr>
-                    <td
-                      colSpan={ROUTE_IP_PSTN_TABLE_COLUMNS.length + 2}
-                      style={{ textAlign: "center", padding: 36 }}
-                    >
-                      <CircularProgress size={24} />
-                    </td>
-                  </tr>
-                ) : rules.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={ROUTE_IP_PSTN_TABLE_COLUMNS.length + 2}
-                      style={{
-                        textAlign: "center",
-                        padding: 36,
-                        color: C.mutedText,
-                      }}
-                    >
-                      No data found.
-                    </td>
-                  </tr>
-                ) : (
-                  pagedRules.map((item, idx) => {
-                    const realIdx = (page - 1) * itemsPerPage + idx;
-                    const isSelected = selected.includes(realIdx);
-                    return (
-                      <tr
-                        key={realIdx}
-                        style={{
-                          background: isSelected
-                            ? "#f0f9ff"
-                            : idx % 2 === 1
-                              ? "#f8fafc"
-                              : "#fff",
-                          borderBottom: "0.5px solid #9ca3af",
-                        }}
-                      >
-                        <td
+          {/* Table Area */}
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+            {loading.fetch ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 240,
+                }}
+              >
+                <CircularProgress size={24} />
+              </div>
+            ) : rules.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No rules configured!
+                </div>
+                <Btn
+                  onClick={() => handleOpenModal()}
+                  variant="cancel"
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New Rule
+                </Btn>
+              </div>
+            ) : (
+              <>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    minWidth: 1200,
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <TH style={{ width: 40, padding: 0, borderLeft: "none" }}>
+                        <Checkbox
+                          size="small"
+                          checked={
+                            rules.length > 0 && selected.length === rules.length
+                          }
+                          indeterminate={
+                            selected.length > 0 &&
+                            selected.length < rules.length
+                          }
+                          onChange={(e) => {
+                            if (e.target.checked) handleCheckAll();
+                            else handleUncheckAll();
+                          }}
+                          sx={checkboxSx}
+                        />
+                      </TH>
+                      {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
+                        <TH key={col.key}>{col.label}</TH>
+                      ))}
+                      <TH style={{ width: 70, borderRight: "none" }}>Modify</TH>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedRules.map((item, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRules.length - 1;
+                      const rowBg = isSelected
+                        ? "#f0f9ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
+
+                      return (
+                        <tr
+                          key={realIdx}
                           style={{
-                            textAlign: "center",
-                            padding: "4px 8px",
-                            borderRight: "0.5px solid #edf2f7",
+                            background: rowBg,
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f1f5f9";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          <Checkbox
-                            size="small"
-                            checked={isSelected}
-                            onChange={() => handleSelectRow(idx)}
-                            sx={{
-                              padding: "1px",
-                              color: C.accent,
-                              "&.Mui-checked": { color: C.accent },
-                            }}
-                          />
-                        </td>
-                        {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
                           <td
-                            key={col.key}
                             style={{
-                              textAlign: "center",
-                              fontSize: 12,
-                              padding: "7px 8px",
-                              color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              borderLeft: "none",
+                              width: 36,
+                              ...lastRowCellStyle,
                             }}
                           >
-                            {formatDisplayValue(col.key, item[col.key], idx)}
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleSelectRow(idx)}
+                              sx={checkboxSx}
+                            />
                           </td>
-                        ))}
-                        <td style={{ textAlign: "center", padding: "4px 8px" }}>
-                          <Btn
-                            onClick={() => handleOpenModal(item, realIdx)}
-                            variant="outline"
+                          {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
+                            <td
+                              key={col.key}
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {formatDisplayValue(col.key, item[col.key], idx)}
+                            </td>
+                          ))}
+                          <td
                             style={{
-                              fontSize: 10,
-                              padding: "3px 10px",
-                              margin: "0 auto",
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
                             }}
                           >
-                            <EditDocumentIcon
-                              style={{ fontSize: 12, marginRight: 2 }}
-                            />{" "}
-                            Edit
-                          </Btn>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <EditDocumentIcon
+                                titleAccess="Edit"
+                                style={{
+                                  cursor: "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onClick={() => handleOpenModal(item, realIdx)}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.opacity = "1")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.opacity = "0.7")
+                                }
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </>
+            )}
           </div>
 
           {/* Pagination Footer */}
@@ -730,28 +814,24 @@ const RouteIpPstnPage = () => {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
-                gap: 8,
+                background: "#ffffff",
+                borderTop: `1px solid ${C.cardBorder}`,
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
+                overflow: "hidden",
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRules.length} records on page {page}
+                Showing {pagedRules.length} record
+                {pagedRules.length !== 1 ? "s" : ""} on page {page}
               </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={() => handlePageChange(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
+              <div style={{ display: "flex", gap: 8 }}>
                 <Btn
                   onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
+                  disabled={page <= 1}
                   variant="outline"
                 >
-                  &larr; Prev
+                  ← Prev
                 </Btn>
                 <span
                   style={{
@@ -761,24 +841,17 @@ const RouteIpPstnPage = () => {
                     background: "#e0f2fe",
                     padding: "5px 14px",
                     borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
+                    border: `1px solid ${C.cardBorder}`,
                   }}
                 >
                   Page {page} of {totalPages}
                 </span>
                 <Btn
                   onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
+                  disabled={page >= totalPages}
                   variant="outline"
                 >
-                  Next &rarr;
-                </Btn>
-                <Btn
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
+                  Next →
                 </Btn>
               </div>
             </div>
@@ -786,149 +859,214 @@ const RouteIpPstnPage = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Configuration Modal */}
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
-        PaperProps={{ sx: { width: 550, borderRadius: 2 } }}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            width: 600,
+            maxWidth: "95vw",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
+            color: "#ffffff",
+            fontWeight: 600,
             fontSize: 16,
+            padding: "16px 24px",
             textAlign: "center",
-            padding: "14px 24px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
-          {formData.originalIndex !== undefined ? "Edit" : "Add"} IP-&gt;PSTN
-          Routing Rule
+          {formData.originalIndex !== undefined && formData.originalIndex > -1
+            ? "Edit IP->PSTN Routing Rule"
+            : "Add IP->PSTN Routing Rule"}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 6,
-              padding: 16,
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-            }}
-          >
-            {ROUTE_IP_PSTN_FIELDS.map((field) => (
-              <FieldRow key={field.key} label={`${field.label}:`}>
-                {field.type === "select" ? (
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={formData[field.key] || ""}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          [field.key]: e.target.value,
-                        }))
-                      }
-                      sx={{
-                        fontSize: 13,
-                        height: 32,
-                        backgroundColor: "#fff",
-                      }}
-                    >
-                      {field.key === "callSource" ? (
-                        sipTrunkGroups.length > 0 ? (
-                          sipTrunkGroups.map((g) => (
-                            <MenuItem
-                              key={g.group_id || g.id}
-                              value={String(g.group_id || g.id)}
-                              sx={{ fontSize: 13 }}
-                            >
-                              SIP Trunk Group [{g.group_id || g.id}]
-                            </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem value="any" sx={{ fontSize: 13 }}>
-                            SIP Trunk Group [Any]
-                          </MenuItem>
-                        )
-                      ) : field.key === "callDestination" ? (
-                        pcmTrunkGroups.length > 0 ? (
-                          pcmTrunkGroups.map((g) => (
-                            <MenuItem
-                              key={g.group_id || g.id}
-                              value={String(g.group_id || g.id)}
-                              sx={{ fontSize: 13 }}
-                            >
-                              PCM Trunk Group [{g.group_id || g.id}]
-                            </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem value="any" sx={{ fontSize: 13 }}>
-                            PCM Trunk Group [Any]
-                          </MenuItem>
-                        )
-                      ) : (
-                        field.options?.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))
-                      )}
-                    </Select>
-                  </FormControl>
-                ) : (
-                  <TextField
-                    value={formData[field.key] || ""}
-                    onChange={(e) =>
-                      setFormData((p) => ({
-                        ...p,
-                        [field.key]: e.target.value,
-                      }))
-                    }
-                    size="small"
-                    fullWidth
-                    variant="outlined"
-                    InputProps={{
-                      style: {
-                        fontSize: 13,
-                        height: 32,
-                        padding: "0 8px",
-                        boxSizing: "border-box",
-                        backgroundColor: "#fff",
-                      },
-                    }}
-                  />
-                )}
-              </FieldRow>
-            ))}
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div
+              style={{
+                background: "#f8fafc",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 8,
+                padding: 20,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                Configuration
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
+                {ROUTE_IP_PSTN_FIELDS.map((field) => (
+                  <FieldRow key={field.key} label={`${field.label}:`}>
+                    {field.type === "select" ? (
+                      <FormControl size="small" fullWidth>
+                        <MuiSelect
+                          value={formData[field.key] || ""}
+                          onChange={(e) =>
+                            setFormData((p) => ({
+                              ...p,
+                              [field.key]: e.target.value,
+                            }))
+                          }
+                          displayEmpty
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
+                        >
+                          {field.key === "callSource" ? (
+                            sipTrunkGroups.length > 0 ? (
+                              sipTrunkGroups.map((g) => {
+                                const id = g.group_id ?? g.id ?? g;
+                                return (
+                                  <MenuItem
+                                    key={String(id) || "any"}
+                                    value={String(id)}
+                                    sx={{ fontSize: 13 }}
+                                  >
+                                    SIP Trunk Group [{String(id) || "Any"}]
+                                  </MenuItem>
+                                );
+                              })
+                            ) : (
+                              <MenuItem value="any" sx={{ fontSize: 13 }}>
+                                SIP Trunk Group [Any]
+                              </MenuItem>
+                            )
+                          ) : field.key === "callDestination" ? (
+                            pcmTrunkGroups.length > 0 ? (
+                              pcmTrunkGroups.map((g) => {
+                                const id = g.group_id ?? g.id ?? g;
+                                return (
+                                  <MenuItem
+                                    key={String(id) || "any"}
+                                    value={String(id)}
+                                    sx={{ fontSize: 13 }}
+                                  >
+                                    PCM Trunk Group [{String(id) || "Any"}]
+                                  </MenuItem>
+                                );
+                              })
+                            ) : (
+                              <MenuItem value="any" sx={{ fontSize: 13 }}>
+                                PCM Trunk Group [Any]
+                              </MenuItem>
+                            )
+                          ) : (
+                            field.options?.map((opt) => (
+                              <MenuItem
+                                key={opt}
+                                value={opt}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {opt}
+                              </MenuItem>
+                            ))
+                          )}
+                        </MuiSelect>
+                      </FormControl>
+                    ) : (
+                      <TextField
+                        value={formData[field.key] || ""}
+                        onChange={(e) =>
+                          setFormData((p) => ({
+                            ...p,
+                            [field.key]: e.target.value,
+                          }))
+                        }
+                        size="small"
+                        fullWidth
+                        variant="outlined"
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
+                      />
+                    )}
+                  </FieldRow>
+                ))}
+              </div>
+            </div>
           </div>
         </DialogContent>
         <DialogActions
           style={{
             padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+            background: "#f8fafc",
+            borderTop: "1px solid #e5e7eb",
             justifyContent: "center",
             gap: 12,
           }}
         >
           <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ padding: "8px 36px", fontSize: 13 }}
+            style={{ minWidth: 110, height: 34 }}
           >
             {loading.save ? (
-              <CircularProgress size={16} color="inherit" />
+              <CircularProgress size={20} color="inherit" />
             ) : (
-              "Save Changes"
+              "Save"
             )}
           </Btn>
           <Btn
+            variant="cancel"
             onClick={handleCloseModal}
-            variant="outline"
-            style={{ padding: "8px 36px", fontSize: 13 }}
+            disabled={loading.save}
+            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
           >
             Cancel
           </Btn>

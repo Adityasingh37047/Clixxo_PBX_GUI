@@ -20,6 +20,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   listIpPstnRoutes,
   createIpPstnRoute,
@@ -29,76 +30,110 @@ import {
   listPstnGroups,
 } from "../../../api/apiService";
 
-// ── Color Palette (From RouteIpPstnPage) ──────────────────────────────────────
+// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 
-// ── Shared UI Components ──────────────────────────────────────────────────────
+const CARD_RADIUS = 20;
+
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
+  type,
   title,
 }) => {
-  const variants = {
+  const styles = {
     default: {
-      background: "#1e2d42",
-      color: "#fff",
+      background: C.cardBg,
+      color: C.valueText,
       border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
     danger: {
       background: "#fef2f2",
-      color: C.errorRed,
+      color: C.amber,
       border: `0.5px solid #fecaca`,
     },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
   };
-  const s = variants[variant] || variants.default;
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "danger":
+        return "#fee2e2";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -109,23 +144,40 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+};
 
 const FieldRow = ({ label, children }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -165,12 +217,7 @@ const RoutePstnToIPPage = () => {
     page * itemsPerPage,
   );
 
-  const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
+
 
   // Message handling
   const showMessage = (type, text) => {
@@ -350,28 +397,7 @@ const RoutePstnToIPPage = () => {
   const handlePageChange = (newPage) =>
     setPage(Math.max(1, Math.min(totalPages, newPage)));
 
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
 
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-      }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [rules, page]);
 
   const handleSelectRow = (idx) => {
     const realIdx = (page - 1) * itemsPerPage + idx;
@@ -495,28 +521,26 @@ const RoutePstnToIPPage = () => {
         {/* Breadcrumb */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            E1-PRI &rsaquo; Route &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              PSTN-&gt;IP Routing Rule
-            </span>
-          </div>
+          E1-PRI <span style={{ margin: "0 6px" }}>›</span> Route{" "}
+          <span style={{ margin: "0 6px" }}>›</span>{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            PSTN-&gt;IP Routing Rule
+          </span>
         </div>
 
         {/* Main Card */}
         <div
           style={{
             background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: 10,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
@@ -525,204 +549,256 @@ const RoutePstnToIPPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              padding: "14px 18px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              background: "#ffffff",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 10,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
-                }}
-              >
-                Page {page} · {rules.length} records
-              </span>
+
               {selected.length > 0 && (
                 <span
                   style={{
-                    background: "#e0f2fe",
+                    background: "#eff6ff",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Btn onClick={handleCheckAll} variant="outline">
-                Check All
-              </Btn>
-              <Btn onClick={handleUncheckAll} variant="outline">
-                Uncheck All
-              </Btn>
-              <Btn onClick={handleInverse} variant="outline">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete || loading.fetch}
+                style={{ height: 30 }}
+              >
                 Inverse
               </Btn>
               <Btn
+                variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0 || loading.delete}
-                variant="danger"
+                style={{ height: 30 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
                 ) : (
-                  "🗑 Delete"
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
                 )}
               </Btn>
               <Btn
+                variant="cancel"
                 onClick={handleClearAll}
                 disabled={rules.length === 0 || loading.delete}
-                variant="danger"
+                style={{ height: 30 }}
               >
-                Clear All
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Clear All"
+                )}
               </Btn>
-              <Btn onClick={() => handleOpenModal()} variant="accent">
+              <Btn
+                onClick={() => handleOpenModal()}
+                variant="primary"
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+              >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table Area */}
           <div
-            style={{ width: "100%", display: "flex", flexDirection: "column" }}
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
           >
-            <div
-              ref={tableScrollRef}
-              onScroll={handleTableScroll}
-              style={{
-                overflowX: "auto",
-                overflowY: "auto",
-                maxHeight: 400,
-                scrollbarWidth: "none",
-                msOverflowStyle: "none",
-              }}
-            >
-              <table
+            {loading.fetch ? (
+              <div
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  minWidth: 1200,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 240,
                 }}
               >
-                <thead>
-                  <tr>
-                    <TH
-                      style={{
-                        width: 40,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      Check
-                    </TH>
-                    {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
+                <CircularProgress size={24} />
+              </div>
+            ) : rules.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No rules configured!
+                </div>
+                <Btn
+                  onClick={() => handleOpenModal()}
+                  variant="cancel"
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New Rule
+                </Btn>
+              </div>
+            ) : (
+              <>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    minWidth: 1600,
+                  }}
+                >
+                  <thead>
+                    <tr>
                       <TH
-                        key={col.key}
-                        style={{ position: "sticky", top: 0, zIndex: 10 }}
-                      >
-                        {col.label}
-                      </TH>
-                    ))}
-                    <TH
-                      style={{
-                        width: 70,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      Modify
-                    </TH>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading.fetch ? (
-                    <tr>
-                      <td
-                        colSpan={ROUTE_PSTN_IP_TABLE_COLUMNS.length + 2}
-                        style={{ textAlign: "center", padding: "36px 0" }}
-                      >
-                        <CircularProgress size={24} />
-                      </td>
-                    </tr>
-                  ) : rules.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={ROUTE_PSTN_IP_TABLE_COLUMNS.length + 2}
                         style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
                         }}
                       >
-                        No data. Click '+ Add New' to create one.
-                      </td>
+                        <Checkbox
+                          size="small"
+                          checked={
+                            rules.length > 0 && selected.length === rules.length
+                          }
+                          indeterminate={
+                            selected.length > 0 && selected.length < rules.length
+                          }
+                          onChange={(e) => {
+                            if (e.target.checked) handleCheckAll();
+                            else handleUncheckAll();
+                          }}
+                          sx={checkboxSx}
+                        />
+                      </TH>
+                      {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
+                        <TH
+                          key={col.key}
+                          style={{ position: "sticky", top: 0, zIndex: 10 }}
+                        >
+                          {col.label}
+                        </TH>
+                      ))}
+                      <TH
+                        style={{
+                          width: 70,
+                          borderRight: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        Modify
+                      </TH>
                     </tr>
-                  ) : (
-                    pagedRules.map((item, idx) => {
+                  </thead>
+                  <tbody>
+                    {pagedRules.map((item, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRules.length - 1;
+                      const rowBg = isSelected
+                        ? "#f0f9ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
                       return (
                         <tr
                           key={realIdx}
                           style={{
-                            background: isSelected
-                              ? "#f0f9ff"
-                              : idx % 2 === 1
-                                ? "#f8fafc"
-                                : "#ffffff",
-                            borderBottom: "0.5px solid #9ca3af",
-                            transition: "background 0.1s ease",
+                            background: rowBg,
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f1f5f9";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "4px 8px",
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              borderLeft: "none",
+                              width: 36,
+                              ...lastRowCellStyle,
                             }}
                           >
-                            <input
-                              type="checkbox"
+                            <Checkbox
+                              size="small"
                               checked={isSelected}
                               onChange={() => handleSelectRow(idx)}
-                              style={{ cursor: "pointer" }}
+                              sx={checkboxSx}
                             />
                           </td>
                           {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
                             <td
                               key={col.key}
-                              style={{
-                                textAlign: "center",
-                                fontSize: 12,
-                                padding: "7px 8px",
-                                color: C.valueText,
-                                borderRight: "0.5px solid #edf2f7",
-                              }}
+                              style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}
                             >
                               {formatDisplayValue(col.key, item[col.key], idx)}
                             </td>
                           ))}
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "4px 8px",
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
                             }}
                           >
                             <div
@@ -732,19 +808,31 @@ const RoutePstnToIPPage = () => {
                               }}
                             >
                               <EditDocumentIcon
-                                className="cursor-pointer text-blue-600"
+                                titleAccess="Edit"
+                                style={{
+                                  cursor: "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
                                 onClick={() => handleOpenModal(item, realIdx)}
-                                style={{ fontSize: 20 }}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.opacity = "1")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.opacity = "0.7")
+                                }
                               />
                             </div>
                           </td>
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
-            </div>
+            </>
+          )}
           </div>
 
           {/* Pagination Footer */}
@@ -755,28 +843,24 @@ const RoutePstnToIPPage = () => {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
-                gap: 8,
+                background: "#ffffff",
+                borderTop: `1px solid ${C.cardBorder}`,
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
+                overflow: "hidden",
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRules.length} records on page {page}
+                Showing {pagedRules.length} record
+                {pagedRules.length !== 1 ? "s" : ""} on page {page}
               </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={() => handlePageChange(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
+              <div style={{ display: "flex", gap: 8 }}>
                 <Btn
                   onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
+                  disabled={page <= 1}
                   variant="outline"
                 >
-                  &larr; Prev
+                  ← Prev
                 </Btn>
                 <span
                   style={{
@@ -786,24 +870,17 @@ const RoutePstnToIPPage = () => {
                     background: "#e0f2fe",
                     padding: "5px 14px",
                     borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
+                    border: `1px solid ${C.cardBorder}`,
                   }}
                 >
                   Page {page} of {totalPages}
                 </span>
                 <Btn
                   onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
+                  disabled={page >= totalPages}
                   variant="outline"
                 >
-                  Next &rarr;
-                </Btn>
-                <Btn
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
+                  Next →
                 </Btn>
               </div>
             </div>
@@ -811,21 +888,38 @@ const RoutePstnToIPPage = () => {
         </div>
       </div>
 
-      {/* Modal */}
       <Dialog
         open={isModalOpen}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 550, maxWidth: "95vw", borderRadius: 2 } }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
+        PaperProps={{
+          sx: {
+            width: 600,
+            maxWidth: "95vw",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
+            color: "#ffffff",
+            fontWeight: 600,
             fontSize: 16,
+            padding: "16px 24px",
             textAlign: "center",
-            padding: "14px 24px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           {formData.originalIndex !== undefined && formData.originalIndex > -1
@@ -878,6 +972,14 @@ const RoutePstnToIPPage = () => {
                             backgroundColor: "#fff",
                             "& .MuiOutlinedInput-notchedOutline": {
                               borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
                             },
                           }}
                         >
@@ -956,8 +1058,18 @@ const RoutePstnToIPPage = () => {
                           },
                         }}
                         sx={{
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: C.cardBorder,
+                          "& .MuiOutlinedInput-root": {
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
                           },
                         }}
                       />
@@ -971,29 +1083,31 @@ const RoutePstnToIPPage = () => {
         <DialogActions
           style={{
             padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+            background: "#f8fafc",
+            borderTop: "1px solid #e5e7eb",
             justifyContent: "center",
             gap: 12,
           }}
         >
           <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ padding: "8px 36px", fontSize: 13 }}
+            style={{ minWidth: 110, height: 34 }}
           >
             {loading.save ? (
-              <CircularProgress size={16} color="inherit" />
+              <CircularProgress size={20} color="inherit" />
             ) : (
               "Save"
             )}
           </Btn>
           <Btn
+            variant="cancel"
             onClick={handleCloseModal}
-            variant="outline"
-            style={{ padding: "8px 36px", fontSize: 13 }}
+            disabled={loading.save}
+            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
           >
-            Close
+            Cancel
           </Btn>
         </DialogActions>
       </Dialog>
