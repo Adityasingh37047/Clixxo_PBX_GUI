@@ -495,6 +495,19 @@ const BlockedListPage = () => {
                 flexWrap: "wrap",
               }}
             >
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: "1px solid #e2e8f0",
+                  color: C.labelText,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "5px 14px",
+                  borderRadius: 999,
+                }}
+              >
+                Page {page} · {filteredRows.length} records
+              </span>
               {selected.length > 0 && (
                 <span
                   style={{
@@ -587,21 +600,7 @@ const BlockedListPage = () => {
               >
                 Next →
               </Btn> */}
-              <Btn
-                onClick={handleDelete}
-                disabled={
-                  loading.delete || loading.fetch || selected.length === 0
-                }
-                variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                🗑 Delete
-              </Btn>
+
               <Btn
                 onClick={() => {
                   setImportFile(null);
@@ -640,7 +639,21 @@ const BlockedListPage = () => {
                   "Refresh"
                 )}
               </Btn> */}
-
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="danger"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                🗑 Delete
+              </Btn>
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.fetch}
@@ -689,9 +702,9 @@ const BlockedListPage = () => {
                         onChange={handleToggleAll}
                         sx={{
                           padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                          "&.MuiCheckbox-indeterminate": { color: C.accent },
                         }}
                       />
                     </TH>
@@ -763,8 +776,8 @@ const BlockedListPage = () => {
                               onChange={() => handleToggleRow(realIdx)}
                               sx={{
                                 padding: "1px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: "#0284c7" },
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
                               }}
                             />
                           </td>
@@ -887,11 +900,17 @@ const BlockedListPage = () => {
                           <td
                             style={{ textAlign: "center", padding: "7px 8px" }}
                           >
-                            <EditDocumentIcon
-                              className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                              titleAccess="Edit"
+                            <Btn
                               onClick={() => handleOpenEditModal(row)}
-                            />
+                              variant="outline"
+                              style={{
+                                fontSize: 10,
+                                padding: "3px 10px",
+                                margin: "0 auto",
+                              }}
+                            >
+                              Edit
+                            </Btn>
                           </td>
                         </tr>
                       );
@@ -1267,12 +1286,10 @@ const BlockedListPage = () => {
             disabled={loading.save}
             variant="outline"
             style={{
-              padding: "8px 28px",
-              fontSize: 13,
               background: "#cbd5e1",
               color: "#374151",
               border: "1px solid #cbd5e1",
-              boxShadow: "0  2px 8px rgba(15, 23, 42, 0.08)",
+              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
             }}
           >
             Cancel
