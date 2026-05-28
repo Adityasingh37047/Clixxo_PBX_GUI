@@ -35,16 +35,21 @@ const listGroups = async () => ({ response: true, message: [] });
 
 // ── Color Palette (From Source) ───────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
-  mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
-};
+  cardBorder: "#e2e8f0",
 
+  labelText: "#64748b",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+
+  accent: "#2563eb",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
+};
 // ── Shared UI Components (From Source) ────────────────────────────────────────
 const Btn = ({
   children,
@@ -595,15 +600,21 @@ const IPCallInCallerID = () => {
                   No available number manipulation rule!{" "}
                 </div>
 
-                <Btn
-                  onClick={() => handleOpenModal()}
-                  style={{
-                    fontSize: 13,
-                    padding: "6px 20px",
-                  }}
-                >
-                  + Add New
-                </Btn>
+              <Btn
+  onClick={() => handleOpenModal()}
+  style={{
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + Add New
+</Btn>
               </div>
             ) : (
               <div style={{ maxWidth: "100%", margin: "0 auto" }}>
@@ -1235,21 +1246,38 @@ const IPCallInCallerID = () => {
                   gap: 12,
                 }}
               >
-                <Btn
-                  onClick={handleSave}
-                  disabled={loading.save}
-                  style={{ padding: "8px 36px", fontSize: 13 }}
-                >
-                  {loading.save ? "Saving..." : "Save"}
-                </Btn>
-                <Btn
-                  onClick={handleCloseModal}
-                  disabled={loading.save}
-                  variant="outline"
-                  style={{ padding: "8px 36px", fontSize: 13 }}
-                >
-                  Cancel
-                </Btn>
+             <Btn
+  onClick={handleSave}
+  disabled={loading.save}
+  style={{
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  {loading.save ? "Saving..." : "Save"}
+</Btn>
+             <Btn
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="outline"
+  style={{
+    height: 36,
+    padding: "0 18px",
+    fontSize: 13,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Cancel
+</Btn>
               </DialogActions>
             </Dialog>
           </div>

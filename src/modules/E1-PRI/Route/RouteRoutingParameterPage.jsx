@@ -13,15 +13,20 @@ import {
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
   valueText: "#1e293b",
+  strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
+  accent: "#0284c7",
+  primary: "#2563eb",
   errorRed: "#dc2626",
 };
+
 
 const RouteRoutingParameterPage = () => {
   const [settings, setSettings] = useState({ ...ROUTE_SETTINGS_DEFAULTS });
@@ -238,26 +243,34 @@ const RouteRoutingParameterPage = () => {
             }}
           >
             <Button
-              variant="contained"
-              onClick={handleSave}
-              disabled={loading}
-              startIcon={
-                loading && <CircularProgress size={16} color="inherit" />
-              }
-              sx={{
-                background: "#1e2d42",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "8px 40px",
-                minWidth: 140,
-                borderRadius: 1.5,
-                "&:hover": { background: "#0f172a" },
-              }}
-            >
-              {loading ? "Saving..." : "Save"}
-            </Button>
+  variant="contained"
+  onClick={handleSave}
+  disabled={loading}
+  startIcon={
+    loading && <CircularProgress size={16} color="inherit" />
+  }
+  sx={{
+    height: 36,
+    padding: "0 24px",
+    minWidth: 100,
+    fontSize: 13,
+    fontWeight: 600,
+    textTransform: "none",
+    borderRadius: 1.5,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    },
+  }}
+>
+  {loading ? "Saving..." : "Save"}
+</Button>
           </div>
         </div>
       </div>
