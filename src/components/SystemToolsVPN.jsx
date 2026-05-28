@@ -46,14 +46,14 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
@@ -75,7 +75,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -153,7 +154,7 @@ const inputStyle = {
   fontSize: 13,
   padding: "6px 10px",
   borderRadius: 10,
-  border: `1px solid ${C.cardBorder}`,
+  border: `1.5px solid ${C.cardBorder}`,
   background: C.cardBg,
   color: C.valueText,
   outline: "none",
@@ -161,11 +162,11 @@ const inputStyle = {
 };
 
 const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
   onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
   onMouseEnter: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#94a3b8";
+      e.target.style.borderColor = "#64748b";
   },
   onMouseLeave: (e) => {
     if (document.activeElement !== e.target)
@@ -1447,11 +1448,11 @@ const SystemToolsVPN = () => {
         <div
           style={{
             background: C.cardBg,
-            borderRadius: 20,
+            borderRadius: 10,
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
-            border: `1px solid ${C.cardBorder}`,
+            border: `1.5px solid ${C.cardBorder}`,
           }}
         >
           {/* Card Header */}
@@ -1471,7 +1472,7 @@ const SystemToolsVPN = () => {
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: C.strongText,
+                color: C.labelText,
                 letterSpacing: "0.02em",
               }}
             >
@@ -1482,61 +1483,6 @@ const SystemToolsVPN = () => {
           {/* Card Body */}
           <div style={{ padding: "24px 32px" }}>
             <div className="flex flex-col gap-8">
-              {/* OPENVPN AutoStart */}
-              {form.vpnType === "openvpn" && (
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                    <label
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 200,
-                        flexShrink: 0,
-                      }}
-                    >
-                      AutoStart OPENVPN:
-                    </label>
-                    <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="enableOpenVpn"
-                          checked={enableChoice === "yes"}
-                          onChange={() => setEnableChoice("yes")}
-                          style={{ accentColor: C.primary }}
-                        />
-                        <span style={{ fontSize: 13, color: C.valueText }}>
-                          Yes
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="enableOpenVpn"
-                          checked={enableChoice === "no"}
-                          onChange={() => setEnableChoice("no")}
-                          style={{ accentColor: C.primary }}
-                        />
-                        <span style={{ fontSize: 13, color: C.valueText }}>
-                          No
-                        </span>
-                      </label>
-                    </div>
-                    <div className="sm:ml-auto">
-                      <Btn
-                        variant="primary"
-                        onClick={handleSaveEnable}
-                        disabled={loading.toggle}
-                        style={{ minWidth: 100 }}
-                      >
-                        {loading.toggle ? "Saving..." : "Save"}
-                      </Btn>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* SoftEther AutoStart */}
               {form.vpnType === "softethervpn" && (
                 <div className="flex flex-col gap-4">
@@ -1592,211 +1538,331 @@ const SystemToolsVPN = () => {
                 </div>
               )}
 
-              {/* OpenVPN Section */}
-              {showAdvanced && form.vpnType === "openvpn" && (
-                <>
-                  <div
-                    style={{
-                      height: 1,
-                      background: C.divider,
-                      margin: "10px 0",
-                    }}
-                  />
-                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                    <label
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 200,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Configuration File:
-                    </label>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full max-w-[400px]">
-                      <input
-                        id="vpn-file-upload"
-                        type="file"
-                        accept=".ovpn,.conf"
-                        onChange={handleCertChange}
-                        style={{ display: "none" }}
-                      />
+              {/* OPENVPN Section (Centered Row-wise layout) */}
+              {form.vpnType === "openvpn" && (
+                <div className="flex flex-col gap-6 w-full">
+                  <div className="flex flex-col gap-4 w-full max-w-[650px] mx-auto">
+                    {/* AutoStart OPENVPN */}
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
                       <label
-                        htmlFor="vpn-file-upload"
-                        className="cursor-pointer select-none"
                         style={{
-                          padding: "6px 14px",
-                          background: "#cbd5e1",
-                          border: `1px solid #cbd5e1`,
-                          borderRadius: 10,
                           fontSize: 12,
                           fontWeight: 600,
-                          color: "#374151",
-                          whiteSpace: "nowrap",
-                          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                          transition: "all 0.15s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#b6c2d3";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "#cbd5e1";
+                          color: C.labelText,
+                          width: 180,
+                          marginLeft: 40,
+                          flexShrink: 0,
                         }}
                       >
-                        Choose File
+                        AutoStart OPENVPN:
                       </label>
-                      <span
-                        style={{
-                          fontSize: 12,
-                          color: C.mutedText,
-                          textOverflow: "ellipsis",
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          flex: 1,
-                        }}
-                      >
-                        {selectedFile ? selectedFile.name : "No file chosen"}
-                      </span>
-                      <Btn
-                        variant="primary"
-                        onClick={handleFileUpload}
-                        disabled={loading.upload || !selectedFile}
-                        startIcon={
-                          loading.upload ? (
-                            <CircularProgress size={14} color="inherit" />
-                          ) : (
-                            <UploadIcon sx={{ fontSize: 14 }} />
-                          )
-                        }
-                      >
-                        {loading.upload ? "Uploading..." : "Upload File"}
-                      </Btn>
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="enableOpenVpn"
+                            checked={enableChoice === "yes"}
+                            onChange={() => setEnableChoice("yes")}
+                            style={{ accentColor: C.primary }}
+                          />
+                          <span style={{ fontSize: 13, color: C.valueText }}>
+                            Yes
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="enableOpenVpn"
+                            checked={enableChoice === "no"}
+                            onChange={() => setEnableChoice("no")}
+                            style={{ accentColor: C.primary }}
+                          />
+                          <span style={{ fontSize: 13, color: C.valueText }}>
+                            No
+                          </span>
+                        </label>
+                      </div>
+                      <div className="sm:ml-auto sm:mr-10">
+                        <Btn
+                          variant="primary"
+                          onClick={handleSaveEnable}
+                          disabled={loading.toggle}
+                          style={{ minWidth: 100 }}
+                        >
+                          {loading.toggle ? "Saving..." : "Save"}
+                        </Btn>
+                      </div>
                     </div>
+
+                    {showAdvanced && (
+                      <>
+                        <div
+                          style={{
+                            borderBottom: `1.5px solid ${C.cardBorder}`,
+                            width: "calc(min(1000px, 100vw) - 64px)",
+                            position: "relative",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            margin: "4px 0",
+                          }}
+                        />
+
+                        {/* Configuration File */}
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                          <label
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: C.labelText,
+                              width: 180,
+                              marginLeft: 40,
+                              flexShrink: 0,
+                            }}
+                          >
+                            Configuration File:
+                          </label>
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1 w-full justify-between">
+                            <div className="flex items-center gap-3">
+                              <input
+                                id="vpn-file-upload"
+                                type="file"
+                                accept=".ovpn,.conf"
+                                onChange={handleCertChange}
+                                style={{ display: "none" }}
+                              />
+                              <label
+                                htmlFor="vpn-file-upload"
+                                className="cursor-pointer select-none"
+                                style={{
+                                  padding: "6px 14px",
+                                  background: "#cbd5e1",
+                                  border: `1px solid #cbd5e1`,
+                                  borderRadius: 10,
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: "#374151",
+                                  whiteSpace: "nowrap",
+                                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                                  transition: "all 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = "#b6c2d3";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = "#cbd5e1";
+                                }}
+                              >
+                                Choose File
+                              </label>
+                              <span
+                                style={{
+                                  fontSize: 12,
+                                  color: C.mutedText,
+                                  textOverflow: "ellipsis",
+                                  overflow: "hidden",
+                                  whiteSpace: "nowrap",
+                                  maxWidth: "180px",
+                                }}
+                                title={
+                                  selectedFile
+                                    ? selectedFile.name
+                                    : "No file chosen"
+                                }
+                              >
+                                {selectedFile
+                                  ? selectedFile.name
+                                  : "No file chosen"}
+                              </span>
+                            </div>
+                            <div className="sm:ml-auto sm:mr-10">
+                              <Btn
+                                variant="primary"
+                                onClick={handleFileUpload}
+                                disabled={loading.upload || !selectedFile}
+                                startIcon={
+                                  loading.upload ? (
+                                    <CircularProgress
+                                      size={14}
+                                      color="inherit"
+                                    />
+                                  ) : (
+                                    <UploadIcon sx={{ fontSize: 14 }} />
+                                  )
+                                }
+                              >
+                                {loading.upload
+                                  ? "Uploading..."
+                                  : "Upload File"}
+                              </Btn>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            // borderBottom: `1.5px solid ${C.cardBorder}`,
+                            width: "calc(min(1000px, 100vw) - 64px)",
+                            position: "relative",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            margin: "4px 0",
+                          }}
+                        />
+
+                        {/* Current Status */}
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                          <label
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: C.labelText,
+                              width: 180,
+                              marginLeft: 40,
+                              flexShrink: 0,
+                            }}
+                          >
+                            Current Status:
+                          </label>
+                          <div className="flex items-center gap-4">
+                            <Chip
+                              label={vpnStatus}
+                              size="small"
+                              sx={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                borderRadius: 2,
+                                color: "#fff",
+                                backgroundColor:
+                                  vpnStatus === "Running"
+                                    ? "#16a34a"
+                                    : vpnStatus === "Stopped"
+                                      ? C.errorRed
+                                      : "#ea580c",
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            borderBottom: `1.5px solid ${C.cardBorder}`,
+                            width: "calc(min(1000px, 100vw) - 64px)",
+                            position: "relative",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            margin: "4px 0",
+                          }}
+                        />
+
+                        {/* Control Buttons */}
+                        <div className="flex flex-wrap gap-25 mt-2 justify-center w-full">
+                          <Btn
+                            variant="primary"
+                            onClick={handleStartVpn}
+                            disabled={loading.start}
+                            startIcon={
+                              loading.start ? (
+                                <CircularProgress size={14} color="inherit" />
+                              ) : (
+                                <StartIcon sx={{ fontSize: 14 }} />
+                              )
+                            }
+                            style={{ minWidth: 120 }}
+                          >
+                            {loading.start ? "Starting..." : "Start VPN"}
+                          </Btn>
+                          <Btn
+                            variant="primary"
+                            onClick={handleStopVpn}
+                            disabled={loading.stop}
+                            startIcon={
+                              loading.stop ? (
+                                <CircularProgress size={14} color="inherit" />
+                              ) : (
+                                <StopIcon sx={{ fontSize: 14 }} />
+                              )
+                            }
+                            style={{ minWidth: 120 }}
+                          >
+                            {loading.stop ? "Stopping..." : "Stop VPN"}
+                          </Btn>
+                          <Btn
+                            variant="cancel"
+                            onClick={handleCheckStatus}
+                            disabled={loading.status}
+                            startIcon={
+                              loading.status ? (
+                                <CircularProgress size={14} color="inherit" />
+                              ) : (
+                                <CheckCircleIcon sx={{ fontSize: 14 }} />
+                              )
+                            }
+                            style={{ minWidth: 130 }}
+                          >
+                            {loading.status ? "Checking..." : "Check Status"}
+                          </Btn>
+                        </div>
+                      </>
+                    )}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                    <label
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 200,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Current Status:
-                    </label>
-                    <div className="flex items-center gap-4 w-full">
-                      <Chip
-                        label={vpnStatus}
-                        size="small"
-                        sx={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          borderRadius: 2,
-                          color: "#fff",
-                          backgroundColor:
-                            vpnStatus === "Running"
-                              ? "#16a34a"
-                              : vpnStatus === "Stopped"
-                                ? C.errorRed
-                                : "#ea580c",
+                  {showAdvanced && (
+                    <div className="w-full">
+                      <div
+                        style={{
+                          borderBottom: `1.5px solid ${C.cardBorder}`,
+                          margin: "15px 0",
                         }}
                       />
-                    </div>
-                  </div>
 
-                  <div className="flex flex-wrap gap-4 mt-2 justify-start">
-                    <Btn
-                      variant="primary"
-                      onClick={handleStartVpn}
-                      disabled={loading.start}
-                      startIcon={
-                        loading.start ? (
-                          <CircularProgress size={14} color="inherit" />
-                        ) : (
-                          <StartIcon sx={{ fontSize: 14 }} />
-                        )
-                      }
-                    >
-                      {loading.start ? "Starting..." : "Start VPN"}
-                    </Btn>
-                    <Btn
-                      variant="primary"
-                      onClick={handleStopVpn}
-                      disabled={loading.stop}
-                      startIcon={
-                        loading.stop ? (
-                          <CircularProgress size={14} color="inherit" />
-                        ) : (
-                          <StopIcon sx={{ fontSize: 14 }} />
-                        )
-                      }
-                    >
-                      {loading.stop ? "Stopping..." : "Stop VPN"}
-                    </Btn>
-                    <Btn
-                      variant="cancel"
-                      onClick={handleCheckStatus}
-                      disabled={loading.status}
-                      startIcon={
-                        loading.status ? (
-                          <CircularProgress size={14} color="inherit" />
-                        ) : (
-                          <CheckCircleIcon sx={{ fontSize: 14 }} />
-                        )
-                      }
-                    >
-                      {loading.status ? "Checking..." : "Check Status"}
-                    </Btn>
-                  </div>
-
-                  <div className="flex flex-col gap-2 mt-4">
-                    <div className="flex items-center justify-between">
-                      <span
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: C.strongText,
-                        }}
-                      >
-                        VPN Logs
-                      </span>
-                      <Btn
-                        variant="cancel"
-                        onClick={handleRefreshLogs}
-                        disabled={loading.logs}
-                        startIcon={
-                          loading.logs ? (
-                            <CircularProgress size={14} color="inherit" />
-                          ) : (
-                            <RefreshIcon sx={{ fontSize: 14 }} />
-                          )
-                        }
-                      >
-                        {loading.logs ? "Refreshing..." : "Refresh Logs"}
-                      </Btn>
+                      {/* OpenVPN Logs */}
+                      <div className="flex flex-col gap-2 mt-4">
+                        <div className="flex items-center justify-between">
+                          <span
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 700,
+                              color: C.strongText,
+                            }}
+                          >
+                            VPN Logs
+                          </span>
+                          <Btn
+                            variant="cancel"
+                            onClick={handleRefreshLogs}
+                            disabled={loading.logs}
+                            startIcon={
+                              loading.logs ? (
+                                <CircularProgress size={14} color="inherit" />
+                              ) : (
+                                <RefreshIcon sx={{ fontSize: 14 }} />
+                              )
+                            }
+                          >
+                            {loading.logs ? "Refreshing..." : "Refresh Logs"}
+                          </Btn>
+                        </div>
+                        <textarea
+                          value={vpnLogs || "No logs available"}
+                          readOnly
+                          style={{
+                            width: "100%",
+                            height: "200px",
+                            fontSize: 12,
+                            fontFamily: "monospace",
+                            backgroundColor: "#f8fafc",
+                            color: C.valueText,
+                            padding: 12,
+                            borderRadius: 8,
+                            border: `1.5px solid ${C.cardBorder}`,
+                            outline: "none",
+                            resize: "vertical",
+                          }}
+                        />
+                      </div>
                     </div>
-                    <textarea
-                      value={vpnLogs || "No logs available"}
-                      readOnly
-                      style={{
-                        width: "100%",
-                        height: "200px",
-                        fontSize: 12,
-                        fontFamily: "monospace",
-                        backgroundColor: "#f8fafc",
-                        color: C.valueText,
-                        padding: 12,
-                        borderRadius: 8,
-                        border: `1px solid ${C.cardBorder}`,
-                        outline: "none",
-                        resize: "vertical",
-                      }}
-                    />
-                  </div>
-                </>
+                  )}
+                </div>
               )}
 
               {/* SoftEther Section */}
@@ -2217,7 +2283,7 @@ const SystemToolsVPN = () => {
                           style={{
                             padding: "6px 14px",
                             background: "#f8fafc",
-                            border: `1px solid ${C.cardBorder}`,
+                            border: `1.5px solid ${C.cardBorder}`,
                             borderRadius: 8,
                             fontSize: 12,
                             fontWeight: 600,
@@ -2246,7 +2312,7 @@ const SystemToolsVPN = () => {
                           style={{
                             padding: "6px 14px",
                             background: "#f8fafc",
-                            border: `1px solid ${C.cardBorder}`,
+                            border: `1.5px solid ${C.cardBorder}`,
                             borderRadius: 8,
                             fontSize: 12,
                             fontWeight: 600,
@@ -2386,7 +2452,7 @@ const SystemToolsVPN = () => {
                         color: C.valueText,
                         padding: 12,
                         borderRadius: 8,
-                        border: `1px solid ${C.cardBorder}`,
+                        border: `1.5px solid ${C.cardBorder}`,
                         outline: "none",
                         resize: "vertical",
                       }}

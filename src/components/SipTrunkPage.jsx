@@ -32,6 +32,7 @@ import {
   fetchSystemInfo,
 } from "../api/apiService";
 
+
 const SipTrunkPage = () => {
   // State
   const [registers, setRegisters] = useState([]);

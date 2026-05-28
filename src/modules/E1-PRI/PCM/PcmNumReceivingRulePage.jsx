@@ -28,9 +28,8 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  cardBorderSoft: "#f1f5f9",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#3E5475",
@@ -75,7 +74,7 @@ const Btn = ({
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
 
@@ -129,18 +128,19 @@ const Btn = ({
   );
 };
 
-// ── Reusable Table Header ─────────────────────────────────────────────────────
+const CARD_RADIUS = 20;
+
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
       padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -150,6 +150,24 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
 
 const PcmNumReceivingRulePage = () => {
   // State
@@ -643,9 +661,9 @@ const PcmNumReceivingRulePage = () => {
         <div
           style={{
             background: "#ffffff",
-            borderRadius: 22,
+            borderRadius: 10,
             overflow: "hidden",
-            border: `1px solid ${C.cardBorder}`,
+            border: `1.5px solid ${C.cardBorder}`,
             boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
@@ -656,27 +674,15 @@ const PcmNumReceivingRulePage = () => {
               alignItems: "center",
               justifyContent: "space-between",
               padding: "14px 18px",
-              borderBottom: "1px solid #e2e8f0",
+              borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
               gap: 10,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
-            {/* Left: badges */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `1px solid #e2e8f0`,
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {rules.length} records
-              </span>
               {selected.length > 0 && (
                 <span
                   style={{
@@ -772,14 +778,15 @@ const PcmNumReceivingRulePage = () => {
               <table
                 style={{
                   width: "100%",
-                  borderCollapse: "collapse",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                   tableLayout: "auto",
                   minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH style={{ width: 36, borderLeft: "none" }}>
                       <Checkbox
                         size="small"
                         checked={
@@ -803,18 +810,20 @@ const PcmNumReceivingRulePage = () => {
                           if (allSelected) handleUncheckAllRows();
                           else handleCheckAllRows();
                         }}
-                        sx={{
-                          padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-                        }}
+                        sx={checkboxSx}
                       />
                     </TH>
                     {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
                       (c) => c.key !== "check",
                     ).map((c) => (
-                      <TH key={c.key}>{c.label}</TH>
+                      <TH
+                        key={c.key}
+                        style={
+                          c.key === "modify" ? { borderRight: "none" } : undefined
+                        }
+                      >
+                        {c.label}
+                      </TH>
                     ))}
                   </tr>
                 </thead>
@@ -838,17 +847,23 @@ const PcmNumReceivingRulePage = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const globalIndex = realIdx + 1;
                       const isRowChecked = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRules.length - 1;
                       const rowBg = isRowChecked
                         ? "#e0f2fe"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
                       return (
                         <tr
                           key={item.id || realIdx}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
+                            borderBottom: isLastRow
+                              ? "none"
+                              : `1px solid ${C.cardBorder}`,
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
@@ -860,12 +875,15 @@ const PcmNumReceivingRulePage = () => {
                               e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          {/* Checkbox cell */}
                           <td
                             style={{
-                              textAlign: "center",
+                              ...tdStyle,
                               padding: "10px 0",
-                              borderRight: "1px solid #f1f5f9",
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
+                              ...(isLastRow
+                                ? { borderBottomLeftRadius: CARD_RADIUS }
+                                : {}),
                             }}
                           >
                             <Checkbox
@@ -873,14 +891,9 @@ const PcmNumReceivingRulePage = () => {
                               checked={isRowChecked}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={loading.delete}
-                              sx={{
-                                padding: "1px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: "#0284c7" },
-                              }}
+                              sx={checkboxSx}
                             />
                           </td>
-                          {/* Data cells */}
                           {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
                             (col) => col.key !== "check",
                           ).map((col) => {
@@ -889,11 +902,11 @@ const PcmNumReceivingRulePage = () => {
                                 <td
                                   key={col.key}
                                   style={{
-                                    textAlign: "center",
+                                    ...tdStyle,
                                     padding: "10px 6px",
                                     fontSize: 11,
                                     color: C.mutedText,
-                                    borderRight: "1px solid #f1f5f9",
+                                    ...lastRowCellStyle,
                                   }}
                                 >
                                   {globalIndex}
@@ -905,8 +918,13 @@ const PcmNumReceivingRulePage = () => {
                                 <td
                                   key={col.key}
                                   style={{
+                                    ...tdStyle,
                                     padding: "7px 8px",
-                                    textAlign: "center",
+                                    borderRight: "none",
+                                    ...lastRowCellStyle,
+                                    ...(isLastRow
+                                      ? { borderBottomRightRadius: CARD_RADIUS }
+                                      : {}),
                                   }}
                                 >
                                   <EditDocumentIcon
@@ -931,13 +949,7 @@ const PcmNumReceivingRulePage = () => {
                             return (
                               <td
                                 key={col.key}
-                                style={{
-                                  padding: "10px 14px",
-                                  fontSize: 13,
-                                  color: C.valueText,
-                                  textAlign: "center",
-                                  borderRight: "1px solid #f1f5f9",
-                                }}
+                                style={{ ...tdStyle, ...lastRowCellStyle }}
                               >
                                 {item[col.key] !== undefined &&
                                 item[col.key] !== "" ? (
@@ -964,33 +976,22 @@ const PcmNumReceivingRulePage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "10px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
+                overflow: "hidden",
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRules.length} of {rules.length} rule
-                {rules.length !== 1 ? "s" : ""} · Page {page} of {totalPages}
+                Showing {pagedRules.length} record
+                {pagedRules.length !== 1 ? "s" : ""} on page {page}
               </span>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Btn
-                  onClick={() => handlePageChange(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
+              <div style={{ display: "flex", gap: 8 }}>
                 <Btn
                   onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
+                  disabled={page <= 1}
                   variant="outline"
                 >
                   ← Prev
@@ -1003,46 +1004,18 @@ const PcmNumReceivingRulePage = () => {
                     background: "#e0f2fe",
                     padding: "5px 14px",
                     borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
+                    border: `1px solid ${C.cardBorder}`,
                   }}
                 >
-                  Page {page}
+                  Page {page} of {totalPages}
                 </span>
                 <Btn
                   onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
+                  disabled={page >= totalPages}
                   variant="outline"
                 >
                   Next →
                 </Btn>
-                <Btn
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-                <span style={{ fontSize: 11, color: C.mutedText }}>Go to</span>
-                <select
-                  value={page}
-                  onChange={(e) => handlePageChange(Number(e.target.value))}
-                  style={{
-                    fontSize: 11,
-                    borderRadius: 4,
-                    border: `0.5px solid ${C.cardBorder}`,
-                    padding: "3px 6px",
-                    color: C.labelText,
-                    background: "#fff",
-                  }}
-                >
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ),
-                  )}
-                </select>
               </div>
             </div>
           )}

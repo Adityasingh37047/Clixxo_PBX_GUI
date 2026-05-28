@@ -5,18 +5,18 @@ import {
   IP_CALL_IN_CALLERID_INITIAL_FORM,
 } from "../../../constants/IPCallInCallerIDConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
-  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
   Select as MuiSelect,
   MenuItem,
   FormControl,
   CircularProgress,
+  Checkbox,
   Alert,
 } from "@mui/material";
 import {
@@ -27,76 +27,96 @@ import {
   listGroups,
 } from "../../../api/apiService";
 
-// ── Color palette (matches CDR / SipRegisterPage) ──────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 
-// ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
+  type,
 }) => {
-  const variants = {
+  const styles = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
+      background: C.cardBg,
+      color: C.valueText,
       border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
-  const s = variants[variant] || variants.default;
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = s.background;
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -104,21 +124,22 @@ const Btn = ({
   );
 };
 
-// ── Shared: Table Header ──────────────────────────────────────────────────────
+const CARD_RADIUS = 20;
+
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -126,18 +147,30 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: "#0f172a",
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+};
+
 const LOCAL_STORAGE_KEY = "ipCallInCallerIdRules";
 
 const IPCallInCallerID = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(IP_CALL_IN_CALLERID_INITIAL_FORM);
   const [rules, setRules] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
+  const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
   const itemsPerPage = 20;
   const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
@@ -152,6 +185,19 @@ const IPCallInCallerID = () => {
     delete: false,
   });
   const [editIndex, setEditIndex] = useState(null);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  // Replace default alert with toast
+  const alert = (msg) => {
+    const isErr =
+      /error|failed|required|please/i.test(msg) && !/successfully/i.test(msg);
+    showToast(msg, isErr ? "error" : "success");
+  };
 
   const tableScrollRef = useRef(null);
   const [scrollState, setScrollState] = useState({
@@ -186,12 +232,9 @@ const IPCallInCallerID = () => {
     } catch (error) {
       console.error("Error fetching SIP trunk groups:", error);
       if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
+        alert("Network error. Please check your connection.");
       } else {
-        showMessage(
-          "error",
-          error.message || "Failed to load SIP trunk groups",
-        );
+        alert(error.message || "Failed to load SIP trunk groups");
       }
       setSipTrunkGroups([]);
     }
@@ -215,17 +258,13 @@ const IPCallInCallerID = () => {
     } catch (error) {
       console.error("Error fetching number manipulations:", error);
       if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
+        alert("Network error. Please check your connection.");
       } else if (error.response?.status === 500) {
-        showMessage(
-          "error",
+        alert(
           "Server error. The number manipulations endpoint may have issues.",
         );
       } else {
-        showMessage(
-          "error",
-          error.message || "Failed to load number manipulations",
-        );
+        alert(error.message || "Failed to load number manipulations");
       }
       setRules([]);
     } finally {
@@ -273,7 +312,7 @@ const IPCallInCallerID = () => {
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSave = async () => {
-    // Validation: only these are mandatory
+    // Validation: required fields (including With Original CalleeID on this page)
     if (!formData.call_initiator) {
       alert("Call Initiator is required.");
       return;
@@ -325,8 +364,8 @@ const IPCallInCallerID = () => {
           stripped_digits_from_left: normalized.stripped_digits_from_left,
           stripped_digits_from_right: normalized.stripped_digits_from_right,
           reserved_digits_from_right: normalized.reserved_digits_from_right,
-          // prefix_to_add: normalized.prefix_to_add,
-          // suffix_to_add: normalized.suffix_to_add,
+          prefix_to_add: normalized.prefix_to_add,
+          suffix_to_add: normalized.suffix_to_add,
           description: normalized.description,
         };
         // console.log('Update request data:', updateData);
@@ -407,51 +446,42 @@ const IPCallInCallerID = () => {
   const handlePageChange = (newPage) =>
     setPage(Math.max(1, Math.min(totalPages, newPage)));
 
-  const allPageSelected =
-    pagedRules.length > 0 &&
-    pagedRules.every((r) => selectedIds.includes(r.id));
-  const somePageSelected =
-    pagedRules.some((r) => selectedIds.includes(r.id)) && !allPageSelected;
-
-  const handleToggleRow = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+  const handleSelectRow = (idx) => {
+    const realIdx = (page - 1) * itemsPerPage + idx;
+    setSelected((sel) =>
+      sel.includes(realIdx)
+        ? sel.filter((i) => i !== realIdx)
+        : [...sel, realIdx],
     );
   };
-
-  const handleToggleAll = () => {
-    const pageIds = pagedRules.map((r) => r.id);
-    if (allPageSelected) {
-      setSelectedIds((prev) => prev.filter((id) => !pageIds.includes(id)));
-    } else {
-      setSelectedIds((prev) => Array.from(new Set([...prev, ...pageIds])));
-    }
-  };
-
-  const handleInverse = () => {
-    const allIds = rules.map((r) => r.id);
-    setSelectedIds(allIds.filter((id) => !selectedIds.includes(id)));
-  };
-
-  const handleUncheckAll = () => setSelectedIds([]);
-  const handleCheckAll = () => setSelectedIds(rules.map((r) => r.id));
-
+  const handleCheckAll = () => setSelected(rules.map((_, idx) => idx));
+  const handleUncheckAll = () => setSelected([]);
+  const handleInverse = () =>
+    setSelected(
+      rules
+        .map((_, idx) => (!selected.includes(idx) ? idx : null))
+        .filter((i) => i !== null),
+    );
   const handleDelete = async () => {
-    if (selectedIds.length === 0) {
-      showMessage("error", "Please select items to delete");
+    if (selected.length === 0) {
+      alert("Please select items to delete");
       return;
     }
 
+    // Show browser confirmation dialog
     const confirmed = window.confirm(
-      `Are you sure you want to delete ${selectedIds.length} selected item(s)?`,
+      `Are you sure you want to delete ${selected.length} selected item(s)?`,
     );
     if (!confirmed) return;
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const deletePromises = selectedIds.map(async (id) => {
-        if (id) {
-          return await deleteNumberManipulation(id);
+      // console.log('Deleting selected items:', selected);
+      const deletePromises = selected.map(async (idx) => {
+        const item = rules[idx];
+        if (item && item.id) {
+          // console.log('Deleting item with ID:', item.id);
+          return await deleteNumberManipulation(item.id);
         }
         return null;
       });
@@ -465,22 +495,39 @@ const IPCallInCallerID = () => {
       ).length;
       const failCount = results.length - successCount;
 
+      // console.log('Delete results:', results);
+
       if (successCount > 0) {
-        showMessage("success", `${successCount} item(s) deleted successfully`);
+        alert(`${successCount} item(s) deleted successfully`);
+
+        // Try to reload data, but don't fail if it doesn't work
         try {
           await fetchNumberManipulations();
         } catch (reloadError) {
-          setRules((prev) => prev.filter((item) => !selectedIds.includes(item.id)));
+          console.warn(
+            "Failed to reload after delete, removing from local state:",
+            reloadError,
+          );
+          // Remove deleted items from local state as fallback
+          const selectedItems = selected.map((idx) => rules[idx]);
+          const selectedIds = selectedItems.map((item) => item.id);
+          setRules((prev) =>
+            prev.filter((item) => !selectedIds.includes(item.id)),
+          );
         }
-        setSelectedIds([]);
+        setSelected([]); // Clear selection
       }
 
       if (failCount > 0) {
-        showMessage("error", `Failed to delete ${failCount} item(s)`);
+        alert(`Failed to delete ${failCount} item(s)`);
       }
     } catch (error) {
       console.error("Error deleting selected items:", error);
-      showMessage("error", error.message || "Failed to delete selected items");
+      if (error.message === "Network Error") {
+        alert("Network error. Please check your connection.");
+      } else {
+        alert(error.message || "Failed to delete selected items");
+      }
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -488,7 +535,7 @@ const IPCallInCallerID = () => {
 
   const handleClearAll = async () => {
     if (rules.length === 0) {
-      showMessage("error", "No data to clear");
+      alert("No data to clear");
       return;
     }
 
@@ -502,8 +549,10 @@ const IPCallInCallerID = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
+      // console.log('Clearing all number manipulations:', rules.map(item => item.id));
       const deletePromises = rules.map(async (item) => {
         if (item && item.id) {
+          // console.log('Deleting item:', item.id);
           return await deleteNumberManipulation(item.id);
         }
         return null;
@@ -519,22 +568,33 @@ const IPCallInCallerID = () => {
       const failCount = results.length - successCount;
 
       if (successCount > 0) {
-        showMessage("success", `All ${successCount} item(s) deleted successfully`);
+        alert(`All ${successCount} item(s) deleted successfully`);
+
+        // Try to reload data, but don't fail if it doesn't work
         try {
           await fetchNumberManipulations();
         } catch (reloadError) {
+          console.warn(
+            "Failed to reload after clear all, clearing local state:",
+            reloadError,
+          );
+          // Clear all items from local state as fallback
           setRules([]);
         }
-        setSelectedIds([]);
+        setSelected([]);
         setPage(1);
       }
 
       if (failCount > 0) {
-        showMessage("error", `Failed to delete ${failCount} item(s)`);
+        alert(`Failed to delete ${failCount} item(s)`);
       }
     } catch (error) {
       console.error("Error clearing all items:", error);
-      showMessage("error", error.message || "Failed to clear all items");
+      if (error.message === "Network Error") {
+        alert("Network error. Please check your connection.");
+      } else {
+        alert(error.message || "Failed to clear all items");
+      }
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -589,18 +649,6 @@ const IPCallInCallerID = () => {
     return () => window.removeEventListener("resize", update);
   }, [rules, page]);
 
-  const rootStyle = {
-    background: "#fff",
-    minHeight: "calc(100vh - 128px)",
-    padding: "40px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: rules.length === 0 ? "center" : "flex-start",
-    position: "relative",
-    boxSizing: "border-box",
-  };
-
   const thumbWidth =
     scrollState.width && scrollState.scrollWidth
       ? Math.max(
@@ -616,62 +664,6 @@ const IPCallInCallerID = () => {
       ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
         (scrollState.width - thumbWidth - 16)
       : 0;
-
-  // Add these sx objects for button hover effects and correct sizing
-  const grayButtonSx = {
-    background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-    color: "#222",
-    fontWeight: 600,
-    fontSize: 15,
-    borderRadius: 1.5,
-    minWidth: 110,
-    boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-    textTransform: "none",
-    px: 2.25,
-    py: 1,
-    padding: "4px 18px",
-    border: "1px solid #bbb",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)",
-      color: "#222",
-    },
-  };
-  const blueButtonSx = {
-    background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-    color: "#fff",
-    fontWeight: 600,
-    fontSize: 16,
-    borderRadius: 1.5,
-    minWidth: 120,
-    boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-    textTransform: "none",
-    px: 3,
-    py: 1.5,
-    padding: "6px 28px",
-    border: "1px solid #5A6F8F",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-      color: "#fff",
-    },
-  };
-  const paginationButtonSx = {
-    background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-    color: "#222",
-    fontWeight: 600,
-    fontSize: 13,
-    borderRadius: 1.5,
-    minWidth: 60,
-    boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-    textTransform: "none",
-    px: 1.25,
-    py: 0.5,
-    padding: "2px 10px",
-    border: "1px solid #bbb",
-    "&:hover": {
-      background: "linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)",
-      color: "#222",
-    },
-  };
 
   // Get updated fields with SIP trunk groups
   const getUpdatedFields = () => {
@@ -697,132 +689,148 @@ const IPCallInCallerID = () => {
         padding: 16,
       }}
     >
-      <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto" }}>
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
         {/* Breadcrumb */}
         <div
           style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            gap: 4,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            E1-PRI &rsaquo; Num Manipulate &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              IP Call In CallerID
-            </span>
-          </div>
+          E1-PRI &rsaquo; Num Manipulate &rsaquo;{" "}
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
+            IP Call In CallerID
+          </span>
         </div>
-
-        {/* Message / Alert Banner */}
-        {message.text && (
-          <div style={{ marginBottom: 12 }}>
-            <Alert
-              severity={message.type}
-              onClose={() => setMessage({ type: "", text: "" })}
-            >
-              {message.text}
-            </Alert>
-          </div>
-        )}
 
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            background: "#ffffff",
+            borderRadius: 10,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
-          {/* Soft Slate-Blue Toolbar */}
+          {/* Toolbar */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1.5px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              padding: "14px 18px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 10,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
-            {/* Left Section: Pagination Info pill & selection pill */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
-                }}
-              >
-                Page {page} · {rules.length} records
-              </span>
-              {selectedIds.length > 0 && (
+              {selected.length > 0 && (
                 <span
                   style={{
-                    background: "#e0f2fe",
+                    background: "#eff6ff",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
-                  {selectedIds.length} selected
+                  {selected.length} selected
                 </span>
               )}
             </div>
-
-            {/* Right Section: Core Actions */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
-                variant="outline"
+                variant="cancel"
                 onClick={handleInverse}
-                disabled={rules.length === 0}
+                disabled={loading.delete || rules.length === 0}
+                style={{ height: 30 }}
               >
                 Inverse
               </Btn>
               <Btn
-                variant="outline"
-                onClick={handleUncheckAll}
-                disabled={selectedIds.length === 0}
-              >
-                Clear Selection
-              </Btn>
-              <Btn
-                variant="danger"
+                variant="cancel"
                 onClick={handleDelete}
-                disabled={selectedIds.length === 0 || loading.delete}
+                disabled={loading.delete || selected.length === 0}
+                style={{ height: 30 }}
               >
-                {loading.delete ? "Deleting..." : "Delete"}
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
+                )}
               </Btn>
               <Btn
-                variant="danger"
+                variant="cancel"
                 onClick={handleClearAll}
-                disabled={rules.length === 0 || loading.delete}
+                disabled={loading.delete || rules.length === 0}
+                style={{ height: 30 }}
               >
-                {loading.delete ? "Clearing..." : "Clear All"}
-              </Btn>
-              <Btn variant="outline" onClick={handleRefresh} disabled={loading.fetch}>
-                {loading.fetch ? "Refreshing..." : "Refresh"}
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Clear All"
+                )}
               </Btn>
               <Btn
-                variant="default"
+                variant="cancel"
+                onClick={handleRefresh}
+                disabled={loading.fetch}
+                style={{ height: 30 }}
+              >
+                {loading.fetch ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Refresh"
+                )}
+              </Btn>
+              <Btn
+                variant="primary"
                 onClick={() => handleOpenModal()}
+                disabled={loading.fetch}
                 style={{
-                  background: "linear-gradient(135deg, #1e2d42 0%, #111827 100%)",
-                  border: "none",
-                  padding: "6px 16px",
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
                 }}
               >
-                + Add New Rule
+                + Add New
               </Btn>
             </div>
           </div>
@@ -835,14 +843,16 @@ const IPCallInCallerID = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   minHeight: 280,
+                  borderBottomLeftRadius: CARD_RADIUS,
+                  borderBottomRightRadius: CARD_RADIUS,
                 }}
               >
                 <div style={{ textAlign: "center" }}>
-                  <CircularProgress size={36} sx={{ color: "#1e2d42" }} />
+                  <CircularProgress size={28} style={{ color: C.accent }} />
                   <div
                     style={{
                       marginTop: 12,
-                      color: "#64748b",
+                      color: "#3E5475",
                       fontSize: 13,
                       fontWeight: 500,
                     }}
@@ -861,11 +871,13 @@ const IPCallInCallerID = () => {
                   minHeight: 240,
                   padding: 24,
                   textAlign: "center",
+                  borderBottomLeftRadius: CARD_RADIUS,
+                  borderBottomRightRadius: CARD_RADIUS,
                 }}
               >
                 <div
                   style={{
-                    color: "#64748b",
+                    color: "#3E5475",
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 16,
@@ -874,14 +886,9 @@ const IPCallInCallerID = () => {
                   No available number manipulation rule (IP Call In CallerID)!
                 </div>
                 <Btn
-                  variant="default"
+                  variant="cancel"
                   onClick={() => handleOpenModal()}
-                  style={{
-                    background: "linear-gradient(135deg, #1e2d42 0%, #111827 100%)",
-                    border: "none",
-                    padding: "8px 24px",
-                    fontSize: 12,
-                  }}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
                 >
                   + Add New Rule
                 </Btn>
@@ -891,58 +898,74 @@ const IPCallInCallerID = () => {
                 <div
                   ref={tableScrollRef}
                   onScroll={handleTableScroll}
-                  className="scrollbar-hide"
                   style={{
                     overflowX: "auto",
                     overflowY: "auto",
                     maxHeight: 460,
-                    scrollbarWidth: "none",
-                    msOverflowStyle: "none",
                   }}
                 >
                   <table
                     style={{
                       width: "100%",
-                      borderCollapse: "collapse",
-                      minWidth: 1400,
+                      borderCollapse: "separate",
+                      borderSpacing: 0,
                     }}
                   >
                     <thead>
                       <tr>
-                        <TH style={{ width: 40 }}>
-                          <input
-                            type="checkbox"
-                            checked={allPageSelected}
-                            ref={(el) => {
-                              if (el) el.indeterminate = somePageSelected;
+                        <TH
+                          style={{ width: 40, padding: 0, borderLeft: "none" }}
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={
+                              rules.length > 0 &&
+                              selected.length === rules.length
+                            }
+                            indeterminate={
+                              selected.length > 0 &&
+                              selected.length < rules.length
+                            }
+                            onChange={(e) => {
+                              if (e.target.checked) handleCheckAll();
+                              else handleUncheckAll();
                             }}
-                            onChange={handleToggleAll}
-                            style={{ cursor: "pointer", accentColor: "#1e2d42" }}
+                            sx={checkboxSx}
                           />
                         </TH>
-                        <TH style={{ width: 50 }}>#</TH>
-                        {IP_CALL_IN_CALLERID_TABLE_COLUMNS.slice(2).map((c) => (
-                          <TH key={c.key}>{c.label}</TH>
-                        ))}
-                        <TH style={{ width: 70 }}>Action</TH>
+                        <TH style={{ width: 50 }}>ID</TH>
+                        <TH>Call Initiator</TH>
+                        <TH>CallerID Prefix</TH>
+                        <TH>CalleeID Prefix</TH>
+                        <TH>Stripped Digits from Right</TH>
+                        <TH>Reserved Digits from Right</TH>
+                        <TH style={{ width: 60, borderRight: "none" }}>
+                          Modify
+                        </TH>
                       </tr>
                     </thead>
                     <tbody>
                       {pagedRules.map((item, idx) => {
                         const realIdx = (page - 1) * itemsPerPage + idx;
-                        const isSelected = selectedIds.includes(item.id);
+                        const isSelected = selected.includes(realIdx);
+                        const isLastRow = idx === pagedRules.length - 1;
                         const rowBg = isSelected
                           ? "#f0f9ff"
                           : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
+                            ? "#f8fafc"
+                            : "#ffffff";
+                        const lastRowCellStyle = isLastRow
+                          ? { borderBottom: "none" }
+                          : {};
 
                         return (
                           <tr
                             key={item.id || realIdx}
                             style={{
                               background: rowBg,
-                              borderBottom: `0.5px solid #e2e8f0`,
+                              borderBottom: isLastRow
+                                ? "none"
+                                : `1px solid ${C.cardBorder}`,
                               transition: "background-color 0.15s ease",
                             }}
                             onMouseEnter={(e) => {
@@ -956,104 +979,70 @@ const IPCallInCallerID = () => {
                           >
                             <td
                               style={{
-                                borderRight: "0.5px solid #e2e8f0",
-                                padding: "7px 8px",
-                                textAlign: "center",
+                                ...tdStyle,
+                                borderLeft: "none",
+                                ...lastRowCellStyle,
+                                ...(isLastRow
+                                  ? { borderBottomLeftRadius: CARD_RADIUS }
+                                  : {}),
                               }}
                             >
-                              <input
-                                type="checkbox"
+                              <Checkbox
+                                size="small"
                                 checked={isSelected}
-                                onChange={() => handleToggleRow(item.id)}
-                                style={{ cursor: "pointer", accentColor: "#1e2d42" }}
+                                onChange={() => handleSelectRow(idx)}
+                                sx={checkboxSx}
                               />
                             </td>
-                            <td
-                              style={{
-                                borderRight: "0.5px solid #e2e8f0",
-                                padding: "7px 8px",
-                                fontSize: 12,
-                                color: C.valueText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
                               {realIdx + 1}
                             </td>
-                            <td
-                              style={{
-                                borderRight: "0.5px solid #e2e8f0",
-                                padding: "7px 8px",
-                                fontSize: 12,
-                                color: C.valueText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
                               SIP Trunk Group [{item.call_initiator}]
                             </td>
-                            <td
-                              style={{
-                                borderRight: "0.5px solid #e2e8f0",
-                                padding: "7px 8px",
-                                fontSize: 12,
-                                color: C.valueText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
                               {item.callerid_prefix}
                             </td>
-                            <td
-                              style={{
-                                borderRight: "0.5px solid #e2e8f0",
-                                padding: "7px 8px",
-                                fontSize: 12,
-                                color: C.valueText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
                               {item.calleeid_prefix}
                             </td>
-                            <td
-                              style={{
-                                borderRight: "0.5px solid #e2e8f0",
-                                padding: "7px 8px",
-                                fontSize: 12,
-                                color: C.valueText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
                               {item.stripped_digits_from_right}
                             </td>
-                            <td
-                              style={{
-                                borderRight: "0.5px solid #e2e8f0",
-                                padding: "7px 8px",
-                                fontSize: 12,
-                                color: C.valueText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
                               {item.reserved_digits_from_right}
                             </td>
                             <td
                               style={{
-                                padding: "7px 8px",
-                                textAlign: "center",
+                                ...tdStyle,
+                                borderRight: "none",
+                                ...lastRowCellStyle,
+                                ...(isLastRow
+                                  ? { borderBottomRightRadius: CARD_RADIUS }
+                                  : {}),
                               }}
                             >
-                              <div style={{ display: "flex", justifyContent: "center" }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                }}
+                              >
                                 <EditDocumentIcon
+                                  titleAccess="Edit"
                                   style={{
                                     cursor: "pointer",
-                                    color: "#1e2d42",
-                                    fontSize: 18,
-                                    transition: "transform 0.15s ease",
+                                    color: "#2563eb",
+                                    fontSize: 22,
+                                    opacity: 0.7,
+                                    transition: "opacity 0.15s ease",
                                   }}
                                   onClick={() => handleOpenModal(item, realIdx)}
                                   onMouseEnter={(e) =>
-                                    (e.currentTarget.style.transform = "scale(1.15)")
+                                    (e.currentTarget.style.opacity = "1")
                                   }
                                   onMouseLeave={(e) =>
-                                    (e.currentTarget.style.transform = "scale(1)")
+                                    (e.currentTarget.style.opacity = "0.7")
                                   }
                                 />
                               </div>
@@ -1065,97 +1054,18 @@ const IPCallInCallerID = () => {
                   </table>
                 </div>
 
-                {/* Custom scrollbar matching SipRegisterPage */}
-                {showCustomScrollbar && (
-                  <div
-                    style={{
-                      width: "100%",
-                      background: "#f8fafc",
-                      display: "flex",
-                      alignItems: "center",
-                      height: 24,
-                      borderTop: `1px solid ${C.cardBorder}`,
-                      padding: "0 12px",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#fff",
-                        border: `1px solid ${C.cardBorder}`,
-                        borderRadius: 4,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 11,
-                        color: C.labelText,
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                      onClick={() => handleArrowClick("left")}
-                    >
-                      &#9664;
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        height: 8,
-                        background: "#e2e8f0",
-                        borderRadius: 4,
-                        position: "relative",
-                        margin: "0 8px",
-                        overflow: "hidden",
-                      }}
-                      onClick={handleScrollbarDrag}
-                    >
-                      <div
-                        style={{
-                          position: "absolute",
-                          height: 8,
-                          background: C.mutedText,
-                          borderRadius: 4,
-                          cursor: "pointer",
-                          top: 0,
-                          width: thumbWidth,
-                          left: thumbLeft,
-                        }}
-                        draggable
-                        onDrag={handleScrollbarDrag}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#fff",
-                        border: `1px solid ${C.cardBorder}`,
-                        borderRadius: 4,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 11,
-                        color: C.labelText,
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                      onClick={() => handleArrowClick("right")}
-                    >
-                      &#9654;
-                    </div>
-                  </div>
-                )}
-
-                {/* Pagination Footer matching SipRegisterPage */}
+                {/* Pagination Footer */}
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "10px 14px",
-                    background: "#f3f4f6",
+                    background: "#ffffff",
                     borderTop: `1px solid ${C.cardBorder}`,
+                    borderBottomLeftRadius: CARD_RADIUS,
+                    borderBottomRightRadius: CARD_RADIUS,
+                    overflow: "hidden",
                   }}
                 >
                   <span style={{ fontSize: 11, color: C.mutedText }}>
@@ -1178,7 +1088,7 @@ const IPCallInCallerID = () => {
                         background: "#e0f2fe",
                         padding: "5px 14px",
                         borderRadius: 6,
-                        border: `0.5px solid ${C.cardBorder}`,
+                        border: `1px solid ${C.cardBorder}`,
                       }}
                     >
                       Page {page} of {totalPages}
@@ -1197,6 +1107,7 @@ const IPCallInCallerID = () => {
           </div>
         </div>
       </div>
+
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
@@ -1209,9 +1120,9 @@ const IPCallInCallerID = () => {
             mx: "auto",
             p: 0,
             borderRadius: 2,
+            overflow: "hidden",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            overflow: "hidden",
           },
         }}
         disableRestoreFocus
@@ -1223,31 +1134,23 @@ const IPCallInCallerID = () => {
             color: "#ffffff",
             fontWeight: 600,
             fontSize: 16,
-            textAlign: "center",
             padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
-          {formData.originalIndex !== undefined
+          {editIndex !== null
             ? "Edit IP Call In CallerID"
             : "Add IP Call In CallerID"}
         </DialogTitle>
-        <DialogContent
-          style={{
-            padding: "20px 24px",
-            backgroundColor: C.pageBg,
-          }}
-        >
+        <DialogContent style={{ padding: "16px", backgroundColor: "#f8fafc" }}>
           <div
             style={{
-              background: "#fff",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 6,
-              padding: "16px 20px",
               display: "flex",
               flexDirection: "column",
-              gap: 12,
+              gap: 8,
               width: "100%",
-              boxSizing: "border-box",
             }}
           >
             {getUpdatedFields().map((field) => (
@@ -1256,17 +1159,22 @@ const IPCallInCallerID = () => {
                 style={{
                   display: "flex",
                   alignItems: "center",
+                  background: "#fff",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 4,
+                  padding: "8px 12px",
                   gap: 12,
-                  minHeight: 32,
+                  minHeight: 36,
                 }}
               >
                 <label
                   style={{
-                    fontSize: 13,
-                    color: C.labelText,
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                    width: 180,
+                    fontSize: 14,
+                    color: "#374151",
+                    fontWeight: 500,
+                    whiteSpace: "normal",
+                    width: 200,
+                    lineHeight: 1.2,
                   }}
                 >
                   {field.label}
@@ -1283,16 +1191,20 @@ const IPCallInCallerID = () => {
                         }
                         variant="outlined"
                         sx={{
-                          fontSize: 13,
+                          fontSize: 14,
+                          height: 36,
                           borderRadius: 1,
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderColor: "#cbd5e1",
+                            borderWidth: 1,
                           },
                           "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#94a3b8",
+                            borderColor: "#64748b",
+                            borderWidth: 1,
                           },
                           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#1e2d42",
+                            borderColor: "#0284c7",
+                            borderWidth: 1,
                           },
                         }}
                       >
@@ -1300,7 +1212,7 @@ const IPCallInCallerID = () => {
                           <MenuItem
                             key={opt.value}
                             value={opt.value}
-                            sx={{ fontSize: 13 }}
+                            sx={{ fontSize: 14 }}
                           >
                             {opt.label}
                           </MenuItem>
@@ -1317,15 +1229,29 @@ const IPCallInCallerID = () => {
                       fullWidth
                       variant="outlined"
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 10px" },
+                        style: {
+                          fontSize: 14,
+                          padding: "8px 12px",
+                          height: "auto",
+                        },
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 1,
-                          fontSize: 13,
-                          "& fieldset": { borderColor: "#cbd5e1" },
-                          "& hover fieldset": { borderColor: "#94a3b8" },
-                          "&.Mui-focused fieldset": { borderColor: "#1e2d42" },
+                          fontSize: 14,
+                          height: 36,
+                          "& fieldset": {
+                            borderColor: "#cbd5e1",
+                            borderWidth: 1,
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "#64748b",
+                            borderWidth: 1,
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: "#0284c7",
+                            borderWidth: 1,
+                          },
                         },
                       }}
                     />
@@ -1337,48 +1263,36 @@ const IPCallInCallerID = () => {
         </DialogContent>
         <DialogActions
           style={{
-            padding: "16px 24px",
-            background: "#f1f5f9",
-            borderTop: `1px solid ${C.cardBorder}`,
             display: "flex",
-            justifyContent: "flex-end",
-            gap: 12,
+            justifyContent: "center",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
-          <Button
-            variant="outlined"
-            onClick={handleCloseModal}
-            sx={{
-              color: "#1e293b",
-              borderColor: "#9ca3af",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              borderRadius: 1.5,
-              "&:hover": { borderColor: "#1e293b", background: "#e2e8f0" },
-            }}
-          >
-            Close
-          </Button>
-          <Button
-            variant="contained"
+          <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            sx={{
-              background: "#1e2d42",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              borderRadius: 1.5,
-              "&:hover": { background: "#0f172a" },
-              "&:disabled": { background: "#cbd5e1", color: "#64748b" },
-            }}
+            style={{ minWidth: 110, height: 34 }}
           >
-            {loading.save ? "Saving..." : "Save"}
-          </Button>
+            {loading.save
+              ? "Saving..."
+              : editIndex !== null
+                ? "Update"
+                : "Save"}
+          </Btn>
+          <Btn
+            variant="cancel"
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
+          >
+            Close
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

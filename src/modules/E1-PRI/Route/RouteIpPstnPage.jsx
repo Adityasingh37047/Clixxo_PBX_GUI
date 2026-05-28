@@ -217,6 +217,7 @@ const RouteIpPstnPage = () => {
     delete: false,
   });
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [tableMinWidth, setTableMinWidth] = useState("100%");
 
   // Message handling
   const showMessage = (type, text) => {
@@ -298,6 +299,25 @@ const RouteIpPstnPage = () => {
       ]);
     };
     loadAllData();
+  }, []);
+
+  useEffect(() => {
+    const updateTableWidthForZoom = () => {
+      const scale = window.visualViewport?.scale || 1;
+      setTableMinWidth(scale >= 1.15 ? 1200 : "100%");
+    };
+
+    updateTableWidthForZoom();
+    window.addEventListener("resize", updateTableWidthForZoom);
+    window.visualViewport?.addEventListener("resize", updateTableWidthForZoom);
+
+    return () => {
+      window.removeEventListener("resize", updateTableWidthForZoom);
+      window.visualViewport?.removeEventListener(
+        "resize",
+        updateTableWidthForZoom,
+      );
+    };
   }, []);
 
   const handleOpenModal = (item = null, index = -1) => {
@@ -678,7 +698,7 @@ const RouteIpPstnPage = () => {
                     width: "100%",
                     borderCollapse: "separate",
                     borderSpacing: 0,
-                    minWidth: 1200,
+                    minWidth: tableMinWidth,
                   }}
                 >
                   <thead>

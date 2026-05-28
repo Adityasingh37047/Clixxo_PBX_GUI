@@ -13,8 +13,8 @@ import { Alert, CircularProgress } from "@mui/material";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#64748b",
   valueText: "#1e293b",
@@ -129,7 +129,7 @@ const blueBarStyle = {
   padding: "0 20px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.strongText,
+  color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
 

@@ -31,9 +31,8 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  cardBorderSoft: "#f1f5f9",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#3E5475",
@@ -77,7 +76,7 @@ const Btn = ({
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
 
@@ -131,17 +130,19 @@ const Btn = ({
   );
 };
 
+const CARD_RADIUS = 20;
+
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
       padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -151,6 +152,24 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
 
 // const LOCAL_STORAGE_KEY = 'pcmTrunkGroups';
 
@@ -492,163 +511,10 @@ const PcmTrunkGroupPage = () => {
     }
   };
 
-  const rootStyle = {
-    background: "#fff",
-    minHeight: "calc(100vh - 128px)",
-    padding: "40px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: groups.length === 0 ? "center" : "flex-start",
-    position: "relative",
-    boxSizing: "border-box",
-  };
-
-  const addNewButtonStyleSip = {
-    background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-    color: "#fff",
-    fontSize: 16,
-    padding: "7px 32px",
-    border: "none",
-    borderRadius: 6,
-    boxShadow: "0 2px 4px rgba(0,0,0,0.10)",
-    cursor: "pointer",
-    minWidth: 120,
-    marginTop: 0,
-  };
-
   const handleSelectRow = (idx) => {
     setSelected((sel) =>
       sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
     );
-  };
-
-  const tableStyle = {
-    width: "100%",
-    borderCollapse: "collapse",
-  };
-  const thStyle = {
-    background: "#fff",
-    color: "#222",
-    fontWeight: 600,
-    fontSize: 15,
-    border: "1px solid #bbb",
-    padding: "6px 8px",
-    whiteSpace: "nowrap",
-  };
-  const tdStyle = {
-    border: "1px solid #bbb",
-    padding: "6px 8px",
-    fontSize: 14,
-    background: "#fff",
-    textAlign: "center",
-    whiteSpace: "nowrap",
-  };
-
-  // Add table scroll handler (for future custom scroll logic, matches SIP pages)
-  const handleTableScroll = (e) => {
-    // You can add custom scroll logic here if needed
-  };
-
-  // Add styles for table container, blue bar, scrollbar, buttons, and pagination (copied from SIP Register page)
-  const tableContainerStyle = {
-    width: "100%",
-    maxWidth: "100%",
-    margin: "0 auto",
-    background: "#f8fafd",
-    border: "2px solid #888",
-    borderRadius: 8,
-    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-  };
-  const blueBarStyle = {
-    width: "100%",
-    height: 36,
-    background: "linear-gradient(#3E5475 100%)",
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    marginBottom: 0,
-    display: "flex",
-    alignItems: "center",
-    fontWeight: 600,
-    fontSize: 18,
-    color: "#2266aa",
-    justifyContent: "center",
-    boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-  };
-  const customScrollbarRowStyle = {
-    width: "100%",
-    margin: "0 auto",
-    background: "#f4f6fa",
-    display: "flex",
-    alignItems: "center",
-    height: 24,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    border: "2px solid #888",
-    borderTop: "none",
-    padding: "0 4px",
-    boxSizing: "border-box",
-  };
-  const customScrollbarTrackStyle = {
-    flex: 1,
-    height: 12,
-    background: "#e3e7ef",
-    borderRadius: 8,
-    position: "relative",
-    margin: "0 4px",
-    overflow: "hidden",
-  };
-  const customScrollbarThumbStyle = {
-    position: "absolute",
-    height: 12,
-    background: "#888",
-    borderRadius: 8,
-    cursor: "pointer",
-    top: 0,
-  };
-  const customScrollbarArrowStyle = {
-    width: 18,
-    height: 18,
-    background: "#e3e7ef",
-    border: "1px solid #bbb",
-    borderRadius: 8,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 16,
-    color: "#888",
-    cursor: "pointer",
-    userSelect: "none",
-  };
-  const tableButtonStyle = {
-    background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-    color: "#222",
-    fontSize: 15,
-    padding: "4px 18px",
-    border: "1px solid #bbb",
-    borderRadius: 6,
-    boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-    cursor: "pointer",
-    fontWeight: 500,
-  };
-  const addNewButtonStyle = {
-    ...tableButtonStyle,
-    background: "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-    color: "#fff",
-  };
-  const paginationButtonStyle = {
-    ...tableButtonStyle,
-    fontSize: 13,
-    padding: "2px 10px",
-    minWidth: 0,
-    borderRadius: 4,
-  };
-  const pageSelectStyle = {
-    fontSize: 13,
-    padding: "2px 6px",
-    borderRadius: 3,
-    border: "1px solid #bbb",
-    background: "#fff",
   };
 
   const pagedRowIndexes = pagedGroups.map(
@@ -962,9 +828,9 @@ const PcmTrunkGroupPage = () => {
         <div
           style={{
             background: "#ffffff",
-            borderRadius: 22,
+            borderRadius: 10,
             overflow: "hidden",
-            border: `1px solid ${C.cardBorder}`,
+            border: `1.5px solid ${C.cardBorder}`,
             boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
@@ -975,26 +841,15 @@ const PcmTrunkGroupPage = () => {
               alignItems: "center",
               justifyContent: "space-between",
               padding: "14px 18px",
-              borderBottom: "1px solid #e2e8f0",
+              borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
               gap: 10,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `1px solid #e2e8f0`,
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {groups.length} records
-              </span>
               {selected.length > 0 && (
                 <span
                   style={{
@@ -1071,82 +926,97 @@ const PcmTrunkGroupPage = () => {
             </div>
           </div>
 
-          {/* Table */}
-          <div style={{ overflowX: "auto" }}>
-            {isLoadingData ? (
+          {isLoadingData ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 48,
+              }}
+            >
+              <CircularProgress size={28} style={{ color: C.accent }} />
+            </div>
+          ) : groups.length === 0 ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 240,
+                padding: 24,
+                textAlign: "center",
+              }}
+            >
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
+                  color: "#3E5475",
+                  fontSize: 13,
+                  fontWeight: 600,
                 }}
               >
-                <CircularProgress size={28} style={{ color: C.accent }} />
+                No PCM Trunk Groups found.
               </div>
-            ) : (
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  tableLayout: "auto",
-                  minWidth: 900,
-                }}
-              >
-                <thead>
-                  <tr>
-                    <TH style={{ width: 36 }}>
-                      <Checkbox
-                        size="small"
-                        checked={allPageSelected}
-                        indeterminate={somePageSelected}
-                        onChange={handleToggleAll}
-                        sx={{
-                          padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-                        }}
-                      />
-                    </TH>
-                    {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                      (c) => c.key !== "check",
-                    ).map((c) => (
-                      <TH key={c.key}>{c.label}</TH>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {groups.length === 0 ? (
+            </div>
+          ) : (
+            <>
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
+                  }}
+                >
+                  <thead>
                     <tr>
-                      <td
-                        colSpan={PCM_TRUNK_GROUP_TABLE_COLUMNS.length}
-                        style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
-                        }}
-                      >
-                        No PCM Trunk Groups found.
-                      </td>
+                      <TH style={{ width: 36, borderLeft: "none" }}>
+                        <Checkbox
+                          size="small"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={handleToggleAll}
+                          sx={checkboxSx}
+                        />
+                      </TH>
+                      {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                        (c) => c.key !== "check",
+                      ).map((c) => (
+                        <TH
+                          key={c.key}
+                          style={
+                            c.key === "modify"
+                              ? { borderRight: "none" }
+                              : undefined
+                          }
+                        >
+                          {c.label}
+                        </TH>
+                      ))}
                     </tr>
-                  ) : (
-                    pagedGroups.map((item, idx) => {
+                  </thead>
+                  <tbody>
+                    {pagedGroups.map((item, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isRowChecked = selected.includes(realIdx);
+                      const isLastRow = idx === pagedGroups.length - 1;
                       const rowBg = isRowChecked
                         ? "#e0f2fe"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
 
                       return (
                         <tr
                           key={realIdx}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
@@ -1160,9 +1030,11 @@ const PcmTrunkGroupPage = () => {
                         >
                           <td
                             style={{
-                              textAlign: "center",
+                              ...tdStyle,
+                              background: rowBg,
                               padding: "10px 0",
-                              borderRight: "1px solid #f1f5f9",
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
                             }}
                           >
                             <Checkbox
@@ -1170,11 +1042,7 @@ const PcmTrunkGroupPage = () => {
                               checked={isRowChecked}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={isLoadingData}
-                              sx={{
-                                padding: "1px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: "#0284c7" },
-                              }}
+                              sx={checkboxSx}
                             />
                           </td>
 
@@ -1186,8 +1054,11 @@ const PcmTrunkGroupPage = () => {
                                 <td
                                   key={col.key}
                                   style={{
+                                    ...tdStyle,
+                                    background: rowBg,
                                     padding: "7px 8px",
-                                    textAlign: "center",
+                                    borderRight: "none",
+                                    ...lastRowCellStyle,
                                   }}
                                 >
                                   <EditDocumentIcon
@@ -1214,11 +1085,9 @@ const PcmTrunkGroupPage = () => {
                                 <td
                                   key={col.key}
                                   style={{
-                                    padding: "10px 14px",
-                                    fontSize: 13,
-                                    color: C.valueText,
-                                    textAlign: "center",
-                                    borderRight: "1px solid #f1f5f9",
+                                    ...tdStyle,
+                                    background: rowBg,
+                                    ...lastRowCellStyle,
                                   }}
                                 >
                                   {item.pstnIds && item.pstnIds.length > 0 ? (
@@ -1235,11 +1104,9 @@ const PcmTrunkGroupPage = () => {
                               <td
                                 key={col.key}
                                 style={{
-                                  padding: "10px 14px",
-                                  fontSize: 13,
-                                  color: C.valueText,
-                                  textAlign: "center",
-                                  borderRight: "1px solid #f1f5f9",
+                                  ...tdStyle,
+                                  background: rowBg,
+                                  ...lastRowCellStyle,
                                 }}
                               >
                                 {item[col.key] !== undefined &&
@@ -1253,101 +1120,59 @@ const PcmTrunkGroupPage = () => {
                           })}
                         </tr>
                       );
-                    })
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-          {/* Pagination footer */}
-          {!isLoadingData && groups.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 18px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedGroups.length} of {groups.length} group
-                {groups.length !== 1 ? "s" : ""} · Page {page} of {totalPages}
-              </span>
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
-                  flexWrap: "wrap",
+                  justifyContent: "space-between",
+                  padding: "10px 14px",
+                  borderTop: `1px solid ${C.cardBorder}`,
+                  background: "#ffffff",
+                  borderBottomLeftRadius: CARD_RADIUS,
+                  borderBottomRightRadius: CARD_RADIUS,
+                  overflow: "hidden",
                 }}
               >
-                <Btn
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
-                <Btn
-                  onClick={() => setPage(page - 1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page}
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  Showing {pagedGroups.length} record
+                  {pagedGroups.length !== 1 ? "s" : ""} on page {page}
                 </span>
-                <Btn
-                  onClick={() => setPage(page + 1)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-                <Btn
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-                <span style={{ fontSize: 11, color: C.mutedText }}>Go to</span>
-                <select
-                  value={page}
-                  onChange={(e) => setPage(Number(e.target.value))}
-                  style={{
-                    fontSize: 11,
-                    borderRadius: 4,
-                    border: `0.5px solid ${C.cardBorder}`,
-                    padding: "3px 6px",
-                    color: C.labelText,
-                    background: "#fff",
-                  }}
-                >
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ),
-                  )}
-                </select>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn
+                    onClick={() => setPage(page - 1)}
+                    disabled={page <= 1}
+                    variant="outline"
+                  >
+                    ← Prev
+                  </Btn>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: C.accent,
+                      background: "#e0f2fe",
+                      padding: "5px 14px",
+                      borderRadius: 6,
+                      border: `1px solid ${C.cardBorder}`,
+                    }}
+                  >
+                    Page {page} of {totalPages}
+                  </span>
+                  <Btn
+                    onClick={() => setPage(page + 1)}
+                    disabled={page >= totalPages}
+                    variant="outline"
+                  >
+                    Next →
+                  </Btn>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -1447,10 +1272,11 @@ const PcmTrunkGroupPage = () => {
                           borderColor: "#cbd5e1",
                         },
                         "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#94a3b8",
+                          borderColor: "#64748b",
                         },
                         "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#1e2d42",
+                          borderColor: "#0284c7",
+                          borderWidth: 1,
                         },
                       }}
                     >
@@ -1483,11 +1309,12 @@ const PcmTrunkGroupPage = () => {
                         "& .MuiOutlinedInput-notchedOutline": {
                           borderColor: "#cbd5e1",
                         },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#94a3b8",
+                        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#64748b",
                         },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#1e2d42",
+                        "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#0284c7",
+                          borderWidth: 1,
                         },
                       }}
                       inputProps={{

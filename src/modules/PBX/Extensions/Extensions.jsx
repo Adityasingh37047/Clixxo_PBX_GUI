@@ -1184,19 +1184,7 @@ const SipAccountPage = () => {
           >
             {/* Left: page info + selection count */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `1px solid #e2e8f0`,
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {filteredAccounts.length} records
-              </span>
+              
               {selected.length > 0 && (
                 <span
                   style={{
@@ -1337,33 +1325,8 @@ const SipAccountPage = () => {
               >
                 Clear Allkk
               </Btn> */}
-             <Btn
-  onClick={() => handleOpenModal()}
-  disabled={loading.fetch || loading.save}
-  variant="outline"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  + Add New
-</Btn>
+          
 
-<Btn
-  onClick={openBulkModal}
-  disabled={loading.fetch || loading.save}
-  variant="outline"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  + Bulk Add
-</Btn>
 
 <Btn
   onClick={() => {
@@ -1394,6 +1357,33 @@ const SipAccountPage = () => {
   }}
 >
   ⬆ Export
+</Btn>
+<Btn
+  onClick={openBulkModal}
+  disabled={loading.fetch || loading.save}
+  variant="outline"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  + Bulk Add
+</Btn>
+
+ <Btn
+  onClick={() => handleOpenModal()}
+  disabled={loading.fetch || loading.save}
+  variant="outline"
+  style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  + Add New
 </Btn>
             </div>
           </div>
@@ -1431,19 +1421,19 @@ const SipAccountPage = () => {
                         onChange={handleToggleAll}
                         sx={{
                           padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          color: "#64748b",
+                          "&.Mui-checked": { color: "#0284c7" },
+                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
                         }}
                       />
                     </TH>
-                    <TH style={{ width: 36 }}>#</TH>
+                    <TH style={{ width: 36 }}>ID</TH>
                     <TH>Extension</TH>
                     <TH>Context</TH>
                     <TH>Codecs</TH>
                     <TH>Password</TH>
                     <TH>Status</TH>
-                    <TH style={{ width: 60 }}>Edit</TH>
+                    <TH style={{ width: 60 }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1506,8 +1496,8 @@ const SipAccountPage = () => {
                               disabled={loading.delete}
                               sx={{
                                 padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
+                                color: "#64748b",
+                                "&.Mui-checked": { color: "#0284c7" },
                               }}
                             />
                           </td>
@@ -1515,10 +1505,11 @@ const SipAccountPage = () => {
                           {/* Row number */}
                           <td
                             style={{
+                             padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
-                              padding: "10px 6px",
-                              fontSize: 11,
-                              color: C.mutedText,
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
@@ -1546,8 +1537,8 @@ const SipAccountPage = () => {
                             style={{
                               padding: "10px 14px",
                               fontSize: 13,
-                              color: C.accent,
-                              fontFamily: "monospace",
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
                             }}
@@ -1560,15 +1551,12 @@ const SipAccountPage = () => {
                           {/* Codecs */}
                           <td
                             style={{
-                              padding: "10px 14px",
+                             padding: "10px 14px",
                               fontSize: 13,
-                              color: C.labelText,
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              maxWidth: 160,
                             }}
                           >
                             {item.allow_codecs || (
@@ -1579,11 +1567,11 @@ const SipAccountPage = () => {
                           {/* Password (masked) */}
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 12,
-                              fontFamily: "monospace",
+                            padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
-                              color: C.mutedText,
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
@@ -1615,20 +1603,14 @@ const SipAccountPage = () => {
                           <td
                             style={{ padding: "7px 8px", textAlign: "center" }}
                           >
-                            <IconButton
-                              size="small"
-                              disabled={loading.delete}
-                              onClick={() =>
-                                !loading.delete &&
-                                handleOpenModal(item, realIdx)
-                              }
-                              sx={{
-                                color: "#1e40af",
-                                "&:hover": { background: "#eff6ff" },
+                            <EditDocumentIcon
+                              className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                              titleAccess="Edit"
+                              onClick={() => {
+                                if (!loading.delete)
+                                  handleOpenModal(item, realIdx);
                               }}
-                            >
-                              <EditDocumentIcon fontSize="small" />
-                            </IconButton>
+                            />
                           </td>
                         </tr>
                       );
@@ -3480,7 +3462,7 @@ const SipAccountPage = () => {
   {loading.save && (
     <CircularProgress
       size={13}
-      style={{ color: "#fff" }}
+      style={{ color: "#fff" , height: 36, padding: "0 24px", fontSize: 13, }}
     />
   )}
 
@@ -3491,8 +3473,7 @@ const SipAccountPage = () => {
   disabled={loading.save}
   variant="outline"
   style={{
-    padding: "8px 28px",
-    fontSize: 13,
+    height: 36, padding: "0 24px", fontSize: 13,
     background: "#cbd5e1",
     color: "#374151",
     border: "1px solid #cbd5e1",

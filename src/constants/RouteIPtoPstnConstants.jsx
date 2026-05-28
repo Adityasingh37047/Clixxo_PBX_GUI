@@ -32,10 +32,11 @@ export const ROUTE_IP_PSTN_INITIAL_FORM = {
 };
 
 export const ROUTE_IP_PSTN_TABLE_COLUMNS = [
-  { key: "index", label: "Index" },
+  { key: "index", label: "ID" },
   { key: "callSource", label: "Call Source" },
   { key: "callerIdPrefix", label: "CallerID Prefix" },
   { key: "calleeIdPrefix", label: "CalleeID Prefix" },
   { key: "callDestination", label: "Call Destination" },
-  { key: "numberFilter", label: "Number Filter" },
+  // { key: "numberFilter", label: "Number Filter" },
+  // { key: "description", label: "Description" },
 ];

@@ -12,10 +12,10 @@ import { Alert } from "@mui/material";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
@@ -43,7 +43,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -131,15 +132,21 @@ const blueBarStyle = {
   padding: "0 20px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.strongText,
+  color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
 
 const inputInteraction = {
   onFocus: (e) => (e.target.style.borderColor = C.accent),
   onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "#94a3b8" },
-  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = C.cardBorder },
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#64748b";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
+  },
 };
 
 const SIPAccountGenerator = () => {

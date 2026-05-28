@@ -14,16 +14,18 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   errorRed: "#dc2626",
 };
+
+const CARD_RADIUS = 20;
 
 // ── Button Component (same as SIPAccountGenerator) ────────────────────────────
 const Btn = ({
@@ -105,8 +107,8 @@ const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
   marginBottom: 24,
@@ -116,29 +118,29 @@ const blueBarStyle = {
   width: "100%",
   height: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "0 20px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.strongText,
-  borderBottom: `1px solid ${C.divider}`,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.cardBorder}`,
 };
 
 const thStyle = {
-  background: C.pageBg,
+  background: "#F8FAFC",
   color: C.labelText,
   fontWeight: 700,
   fontSize: 11,
-  padding: "10px 16px",
+  padding: "12px 14px",
   textAlign: "center",
   borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.cardBorder}`,
   textTransform: "uppercase",
-  letterSpacing: "0.05em",
+  letterSpacing: "0.14em",
   whiteSpace: "nowrap",
 };
 
@@ -146,9 +148,9 @@ const tdStyle = {
   padding: "10px 16px",
   fontSize: 13,
   color: C.valueText,
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
   textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
 };
 
 const PcmReceptionTimeoutPage = () => {
@@ -232,12 +234,12 @@ const PcmReceptionTimeoutPage = () => {
           </div>
 
           <div className="overflow-x-auto w-full">
-            <table className="w-full border-collapse" style={{ tableLayout: "auto" }}>
+            <table className="w-full" style={{ tableLayout: "auto", borderCollapse: "separate", borderSpacing: 0 }}>
               <thead>
                 <tr>
-                  <th style={thStyle}>Inter Digit Timeout (s)</th>
+                  <th style={{ ...thStyle, borderLeft: "none" }}>Inter Digit Timeout (s)</th>
                   <th style={thStyle}>Description</th>
-                  <th style={{ ...thStyle, textAlign: "center" }}>Modify</th>
+                  <th style={{ ...thStyle, textAlign: "center", borderRight: "none" }}>Modify</th>
                 </tr>
               </thead>
               <tbody>
@@ -246,9 +248,9 @@ const PcmReceptionTimeoutPage = () => {
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f8fafc"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#ffffff"; }}
                 >
-                  <td style={tdStyle}>{timeoutData.interDigitTimeout ?? "—"}</td>
-                  <td style={tdStyle}>{timeoutData.description ?? "—"}</td>
-                  <td style={{ ...tdStyle, textAlign: "center" }}>
+                  <td style={{ ...tdStyle, borderBottomLeftRadius: CARD_RADIUS, borderBottom: "none" }}>{timeoutData.interDigitTimeout ?? "—"}</td>
+                  <td style={{ ...tdStyle, borderBottom: "none" }}>{timeoutData.description ?? "—"}</td>
+                  <td style={{ ...tdStyle, textAlign: "center", borderRight: "none", borderBottomRightRadius: CARD_RADIUS, borderBottom: "none" }}>
                     <EditDocumentIcon
                       className="cursor-pointer text-blue-600 opacity-70 hover:opacity-100 transition-opacity"
                       titleAccess="Edit"

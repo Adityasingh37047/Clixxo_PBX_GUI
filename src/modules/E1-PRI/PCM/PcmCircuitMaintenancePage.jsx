@@ -26,8 +26,15 @@ import PhoneLockedIcon from "@mui/icons-material/PhoneLocked";
 // Color block function to match PSTN Status page
 const colorBlock = (color) => (
   <div
-    className="w-6 h-6 mx-auto border border-gray-500"
-    style={{ background: color, borderRadius: 0 }}
+    className="mx-auto border border-gray-500"
+    style={{
+      background: color,
+      borderRadius: 0,
+      width: "100%",
+      maxWidth: 22,
+      height: 22,
+      aspectRatio: "1",
+    }}
   />
 );
 
@@ -79,16 +86,18 @@ const ICONS = [
   </div>, // Unusable (dark red phone locked)
 ];
 
-// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
+// ── Color palette (matches PSTN Call In CallerID) ─────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  labelText: "#64748b",
-  valueText: "#0f172a",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#3E5475",
   mutedText: "#94a3b8",
-  accent: "#2563eb",
+  accent: "#3E5475",
 };
+
+const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
@@ -113,7 +122,7 @@ const Btn = ({
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
   const s = styles[variant] || styles.cancel;
@@ -158,11 +167,17 @@ const Btn = ({
 
 const cardStyle = {
   background: "#ffffff",
-  borderRadius: 22,
+  borderRadius: 10,
   overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
+  border: `1.5px solid ${C.cardBorder}`,
   boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
   marginBottom: 24,
+};
+
+// Channel grid cards must allow inner horizontal scroll (overflow:hidden clips scrollbars)
+const channelCardStyle = {
+  ...cardStyle,
+  overflow: "hidden",
 };
 
 const sectionHeaderStyle = {
@@ -170,13 +185,15 @@ const sectionHeaderStyle = {
   alignItems: "center",
   justifyContent: "center",
   padding: "14px 18px",
-  borderBottom: "1px solid #e2e8f0",
+  borderBottom: `1px solid ${C.cardBorder}`,
   background: "#ffffff",
   fontWeight: 700,
   fontSize: 13,
-  color: "#1e293b",
+  color: C.labelText,
   textAlign: "center",
   width: "100%",
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
 const actionBarStyle = {
@@ -187,6 +204,8 @@ const actionBarStyle = {
   borderTop: `1px solid ${C.cardBorder}`,
   background: "#ffffff",
   justifyContent: "center",
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const tableCellStyle = {
@@ -195,14 +214,15 @@ const tableCellStyle = {
   color: C.valueText,
   textAlign: "center",
   background: "#ffffff",
-  borderBottom: "1px solid #f1f5f9",
-  borderRight: "1px solid #f1f5f9",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
 };
 
 const labelCellStyle = {
   ...tableCellStyle,
   fontWeight: 600,
   width: "50%",
+  borderLeft: "none",
 };
 
 const valueCellStyle = {
@@ -211,36 +231,146 @@ const valueCellStyle = {
 };
 
 const channelThStyle = {
-  background: "#ffffff",
+  background: "#F8FAFC",
   color: C.labelText,
   fontWeight: 700,
-  fontSize: 11,
-  padding: "10px 6px",
+  fontSize: 10,
+  padding: "6px 2px",
   textAlign: "center",
   borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: "1px solid #f1f5f9",
+  borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+  overflow: "hidden",
 };
 
 const channelTdStyle = {
-  padding: "8px 4px",
+  padding: "4px 2px",
   textAlign: "center",
-  borderBottom: "1px solid #f1f5f9",
-  borderRight: "1px solid #f1f5f9",
-  fontSize: 13,
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  fontSize: 12,
   color: C.valueText,
   background: "#ffffff",
+  overflow: "hidden",
 };
 
 const channelRowLabelStyle = {
   ...channelTdStyle,
   fontWeight: 600,
   color: C.labelText,
+  borderLeft: "none",
+  width: 72,
+  minWidth: 72,
+  maxWidth: 72,
+  padding: "6px 4px",
+  fontSize: 11,
+};
+
+const channelTableStyle = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "fixed",
+};
+
+const CHANNEL_LABEL_COL_WIDTH = 72;
+// When container is narrower than this, enable horizontal scroll (e.g. at 120% browser zoom)
+const CHANNEL_COL_SCROLL_WIDTH = 31;
+
+const AdaptiveChannelTable = ({ channelCount, children }) => {
+  const containerRef = useRef(null);
+  const [layout, setLayout] = useState({ containerWidth: 0, vvScale: 1 });
+
+  const tableMinWidth =
+    CHANNEL_LABEL_COL_WIDTH + channelCount * CHANNEL_COL_SCROLL_WIDTH;
+
+  const needsScroll =
+    (layout.containerWidth > 0 && layout.containerWidth < tableMinWidth) ||
+    layout.vvScale >= 1.15;
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const measure = () => {
+      setLayout({
+        containerWidth: container.clientWidth,
+        vvScale: window.visualViewport?.scale ?? 1,
+      });
+    };
+
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+
+    const onWheel = (e) => {
+      if (e.ctrlKey) requestAnimationFrame(measure);
+    };
+
+    const onKeyDown = (e) => {
+      if (
+        e.ctrlKey &&
+        (e.key === "+" ||
+          e.key === "-" ||
+          e.key === "=" ||
+          e.key === "0" ||
+          e.key === "_")
+      ) {
+        setTimeout(measure, 50);
+        setTimeout(measure, 250);
+      }
+    };
+
+    window.addEventListener("resize", measure);
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
+    window.visualViewport?.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("scroll", measure);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
+      window.visualViewport?.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("scroll", measure);
+    };
+  }, [channelCount, tableMinWidth]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: "100%",
+        overflowX: needsScroll ? "auto" : "hidden",
+      }}
+    >
+      <table
+        style={{
+          ...channelTableStyle,
+          width: "100%",
+          minWidth: tableMinWidth,
+        }}
+      >
+        {children}
+      </table>
+    </div>
+  );
+};
+
+const lastTableRowCellStyle = { borderBottom: "none" };
+
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "fixed",
 };
 
 const checkboxSx = {
   padding: "1px",
-  color: "#64748b",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
 };
 
@@ -456,21 +586,15 @@ const PcmCircuitMaintenancePage = () => {
     <div style={cardStyle}>
       <div style={sectionHeaderStyle}>PCM Maintenance</div>
       <div style={{ overflowX: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            tableLayout: "fixed",
-          }}
-        >
+        <table style={tableStyle}>
           <tbody>
             <tr>
               <td style={labelCellStyle}>PCM No.</td>
-              <td style={valueCellStyle}>0</td>
+              <td style={{ ...valueCellStyle, borderRight: "none" }}>0</td>
             </tr>
             <tr>
               <td style={labelCellStyle}>PCM Status</td>
-              <td style={valueCellStyle}>
+              <td style={{ ...valueCellStyle, borderRight: "none" }}>
                 <div
                   style={{
                     display: "flex",
@@ -483,8 +607,16 @@ const PcmCircuitMaintenancePage = () => {
               </td>
             </tr>
             <tr>
-              <td style={labelCellStyle}>Check</td>
-              <td style={valueCellStyle}>
+              <td style={{ ...labelCellStyle, ...lastTableRowCellStyle }}>
+                Check
+              </td>
+              <td
+                style={{
+                  ...valueCellStyle,
+                  borderRight: "none",
+                  ...lastTableRowCellStyle,
+                }}
+              >
                 <Checkbox
                   size="small"
                   checked={maintenanceChecked}
@@ -517,21 +649,15 @@ const PcmCircuitMaintenancePage = () => {
     <div style={cardStyle}>
       <div style={sectionHeaderStyle}>PCM LoopBack Config</div>
       <div style={{ overflowX: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            tableLayout: "fixed",
-          }}
-        >
+        <table style={tableStyle}>
           <tbody>
             <tr>
               <td style={labelCellStyle}>PCM No.</td>
-              <td style={valueCellStyle}>0</td>
+              <td style={{ ...valueCellStyle, borderRight: "none" }}>0</td>
             </tr>
             <tr>
               <td style={labelCellStyle}>PCM LoopBack Status</td>
-              <td style={valueCellStyle}>
+              <td style={{ ...valueCellStyle, borderRight: "none" }}>
                 <div
                   style={{
                     display: "flex",
@@ -544,8 +670,16 @@ const PcmCircuitMaintenancePage = () => {
               </td>
             </tr>
             <tr>
-              <td style={labelCellStyle}>Check</td>
-              <td style={valueCellStyle}>
+              <td style={{ ...labelCellStyle, ...lastTableRowCellStyle }}>
+                Check
+              </td>
+              <td
+                style={{
+                  ...valueCellStyle,
+                  borderRight: "none",
+                  ...lastTableRowCellStyle,
+                }}
+              >
                 <Checkbox
                   size="small"
                   checked={loopbackChecked}
@@ -608,150 +742,160 @@ const PcmCircuitMaintenancePage = () => {
 
   const renderPcm0 = () => {
     return (
-      <div style={cardStyle}>
+      <div style={channelCardStyle}>
         <div style={sectionHeaderStyle}>PCM 0</div>
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              minWidth: 900,
-            }}
-          >
-            <thead>
-              <tr>
-                <th style={{ ...channelThStyle, minWidth: 90 }}>Channel No.</th>
-                {Array.from({ length: 32 }, (_, i) => (
-                  <th
-                    key={i}
-                    style={{ ...channelThStyle, width: 36, minWidth: 36 }}
-                  >
-                    {i}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={channelRowLabelStyle}>Status</td>
-                {pcm0Values.map((v, i) => {
-                  const ch =
-                    channels.find((c) => Number(c.channelid) === i) || {};
+        <AdaptiveChannelTable channelCount={32}>
+          <thead>
+            <tr>
+              <th
+                style={{
+                  ...channelThStyle,
+                  width: CHANNEL_LABEL_COL_WIDTH,
+                  borderLeft: "none",
+                }}
+              >
+                Channel No.
+              </th>
+              {Array.from({ length: 32 }, (_, i) => (
+                <th
+                  key={i}
+                  style={{
+                    ...channelThStyle,
+                    ...(i === 31 ? { borderRight: "none" } : {}),
+                  }}
+                >
+                  {i}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={channelRowLabelStyle}>Status</td>
+              {pcm0Values.map((v, i) => {
+                const ch =
+                  channels.find((c) => Number(c.channelid) === i) || {};
 
-                  // Extract caller from channel field (e.g., "DAHDI/i1/1202210116-1" -> "1202210116")
-                  let caller = "";
-                  if (ch.channel) {
-                    const channelMatch =
-                      ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
-                    if (channelMatch) {
-                      caller = channelMatch[1];
-                    }
+                // Extract caller from channel field (e.g., "DAHDI/i1/1202210116-1" -> "1202210116")
+                let caller = "";
+                if (ch.channel) {
+                  const channelMatch = ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
+                  if (channelMatch) {
+                    caller = channelMatch[1];
                   }
+                }
 
-                  // Extract called from appdata field (e.g., "Dial(PJSIP/07309377930@..." -> "07309377930")
-                  let called = "";
-                  if (ch.appdata) {
-                    const appdataMatch =
-                      ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
-                    if (appdataMatch) {
-                      called = appdataMatch[1];
-                    }
+                // Extract called from appdata field (e.g., "Dial(PJSIP/07309377930@..." -> "07309377930")
+                let called = "";
+                if (ch.appdata) {
+                  const appdataMatch = ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
+                  if (appdataMatch) {
+                    called = appdataMatch[1];
                   }
+                }
 
-                  const info = {
-                    channel: ch.channel || `DAHDI/${i}`,
-                    state:
-                      ch.state ||
-                      (v === "unusable"
-                        ? "Unusable"
-                        : v === "red"
-                          ? "Reserved"
-                          : "Idle"),
-                    inService:
-                      ch?.dahdi_status?.in_service ||
-                      (v === "unusable" ? "No" : "Yes"),
-                    caller: caller,
-                    called: called,
-                  };
-                  const tooltipContent = (
-                    <div style={{ whiteSpace: "pre-line" }}>
-                      <div>
-                        <strong>Channel:</strong> {info.channel}
-                      </div>
-                      <div>
-                        <strong>State:</strong> {info.state}
-                      </div>
-                      <div>
-                        <strong>In Service:</strong> {info.inService}
-                      </div>
-                      {info.caller ? (
-                        <div>
-                          <strong>Caller:</strong> {info.caller}
-                        </div>
-                      ) : null}
-                      {info.called ? (
-                        <div>
-                          <strong>Called:</strong> {info.called}
-                        </div>
-                      ) : null}
+                const info = {
+                  channel: ch.channel || `DAHDI/${i}`,
+                  state:
+                    ch.state ||
+                    (v === "unusable"
+                      ? "Unusable"
+                      : v === "red"
+                        ? "Reserved"
+                        : "Idle"),
+                  inService:
+                    ch?.dahdi_status?.in_service ||
+                    (v === "unusable" ? "No" : "Yes"),
+                  caller: caller,
+                  called: called,
+                };
+                const tooltipContent = (
+                  <div style={{ whiteSpace: "pre-line" }}>
+                    <div>
+                      <strong>Channel:</strong> {info.channel}
                     </div>
-                  );
-                  return (
-                    <td key={i} style={channelTdStyle}>
-                      <Tooltip
-                        title={tooltipContent}
-                        arrow
-                        placement="top"
-                        enterDelay={0}
-                        enterNextDelay={0}
-                        leaveDelay={100}
-                        componentsProps={{
-                          tooltip: {
-                            sx: {
-                              bgcolor: "#fff",
-                              color: "#111",
-                              border: "1px solid #bbb",
-                              boxShadow: 2,
-                              fontSize: 12,
-                            },
-                          },
-                          arrow: { sx: { color: "#fff" } },
-                        }}
-                      >
-                        <div
-                          className="flex items-center justify-center w-full h-full"
-                          style={{ minHeight: 24 }}
-                        >
-                          {v === "frame"
-                            ? colorBlock("#222") // Black for Frame Sync (channel 0)
-                            : v === "signaling"
-                              ? colorBlock("#0070a8") // Blue for Signaling (channel 16)
-                              : v === "red"
-                                ? colorBlock("#e53935") // Red when span is down
-                                : ICONS[Number(v) || 0]}{" "}
-                          {/* Material UI icons when span is up */}
-                        </div>
-                      </Tooltip>
-                    </td>
-                  );
-                })}
-              </tr>
-              <tr>
-                <td style={channelRowLabelStyle}>Check</td>
-                {Array.from({ length: 32 }, (_, i) => (
+                    <div>
+                      <strong>State:</strong> {info.state}
+                    </div>
+                    <div>
+                      <strong>In Service:</strong> {info.inService}
+                    </div>
+                    {info.caller ? (
+                      <div>
+                        <strong>Caller:</strong> {info.caller}
+                      </div>
+                    ) : null}
+                    {info.called ? (
+                      <div>
+                        <strong>Called:</strong> {info.called}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+                return (
                   <td key={i} style={channelTdStyle}>
-                    <Checkbox
-                      size="small"
-                      checked={pcm0Checked[i] || false}
-                      onChange={() => handlePcm0Check(i)}
-                      sx={checkboxSx}
-                    />
+                    <Tooltip
+                      title={tooltipContent}
+                      arrow
+                      placement="top"
+                      enterDelay={0}
+                      enterNextDelay={0}
+                      leaveDelay={100}
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            bgcolor: "#fff",
+                            color: "#111",
+                            border: "1px solid #bbb",
+                            boxShadow: 2,
+                            fontSize: 12,
+                          },
+                        },
+                        arrow: { sx: { color: "#fff" } },
+                      }}
+                    >
+                      <div
+                        className="flex items-center justify-center w-full h-full"
+                        style={{ minHeight: 24 }}
+                      >
+                        {v === "frame"
+                          ? colorBlock("#222") // Black for Frame Sync (channel 0)
+                          : v === "signaling"
+                            ? colorBlock("#0070a8") // Blue for Signaling (channel 16)
+                            : v === "red"
+                              ? colorBlock("#e53935") // Red when span is down
+                              : ICONS[Number(v) || 0]}{" "}
+                        {/* Material UI icons when span is up */}
+                      </div>
+                    </Tooltip>
                   </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                );
+              })}
+            </tr>
+            <tr>
+              <td style={{ ...channelRowLabelStyle, ...lastTableRowCellStyle }}>
+                Check
+              </td>
+              {Array.from({ length: 32 }, (_, i) => (
+                <td
+                  key={i}
+                  style={{
+                    ...channelTdStyle,
+                    ...lastTableRowCellStyle,
+                    ...(i === 31 ? { borderRight: "none" } : {}),
+                  }}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={pcm0Checked[i] || false}
+                    onChange={() => handlePcm0Check(i)}
+                    sx={checkboxSx}
+                  />
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </AdaptiveChannelTable>
         <div style={actionBarStyle}>
           <Btn onClick={handleCheckAll}>Check All</Btn>
           <Btn onClick={handleUncheckAll}>Uncheck All</Btn>
@@ -778,123 +922,138 @@ const PcmCircuitMaintenancePage = () => {
     });
 
     return (
-      <div key={span.spanId} style={cardStyle}>
+      <div key={span.spanId} style={channelCardStyle}>
         <div style={sectionHeaderStyle}>
           {span.name} · {span.ip}
         </div>
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              minWidth: 900,
-            }}
-          >
-            <thead>
-              <tr>
-                <th style={{ ...channelThStyle, minWidth: 90 }}>Channel No.</th>
-                {span.channelRanges.map((chId, i) => (
-                  <th
-                    key={i}
-                    style={{ ...channelThStyle, width: 36, minWidth: 36 }}
-                  >
-                    {chId}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={channelRowLabelStyle}>Status</td>
-                {span.channelRanges.map((channelId, i) => {
-                  const v = pcmValues[i];
-                  const ch =
-                    channels.find((c) => Number(c.channelid) === channelId) ||
-                    {};
-                  let caller = "";
-                  if (ch.channel) {
-                    const m = ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
-                    if (m) caller = m[1];
-                  }
-                  let called = "";
-                  if (ch.appdata) {
-                    const m = ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
-                    if (m) called = m[1];
-                  }
-                  const info = {
-                    channel: ch.channel || `DAHDI/${channelId}`,
-                    state:
-                      ch.state ||
-                      (v === "unusable"
-                        ? "Unusable"
-                        : v === "red"
-                          ? "Reserved"
-                          : "Idle"),
-                    inService:
-                      ch?.dahdi_status?.in_service ||
-                      (v === "unusable" ? "No" : "Yes"),
-                    caller,
-                    called,
-                  };
-                  const tooltipContent = (
-                    <div style={{ whiteSpace: "pre-line" }}>
-                      <div>
-                        <strong>Channel:</strong> {info.channel}
-                      </div>
-                      <div>
-                        <strong>State:</strong> {info.state}
-                      </div>
-                      <div>
-                        <strong>In Service:</strong> {info.inService}
-                      </div>
-                      {info.caller ? (
-                        <div>
-                          <strong>Caller:</strong> {info.caller}
-                        </div>
-                      ) : null}
-                      {info.called ? (
-                        <div>
-                          <strong>Called:</strong> {info.called}
-                        </div>
-                      ) : null}
+        <AdaptiveChannelTable channelCount={span.channelRanges.length}>
+          <thead>
+            <tr>
+              <th
+                style={{
+                  ...channelThStyle,
+                  width: CHANNEL_LABEL_COL_WIDTH,
+                  borderLeft: "none",
+                }}
+              >
+                Channel No.
+              </th>
+              {span.channelRanges.map((chId, i) => (
+                <th
+                  key={i}
+                  style={{
+                    ...channelThStyle,
+                    ...(i === span.channelRanges.length - 1
+                      ? { borderRight: "none" }
+                      : {}),
+                  }}
+                >
+                  {chId}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={channelRowLabelStyle}>Status</td>
+              {span.channelRanges.map((channelId, i) => {
+                const v = pcmValues[i];
+                const ch =
+                  channels.find((c) => Number(c.channelid) === channelId) || {};
+                let caller = "";
+                if (ch.channel) {
+                  const m = ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
+                  if (m) caller = m[1];
+                }
+                let called = "";
+                if (ch.appdata) {
+                  const m = ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
+                  if (m) called = m[1];
+                }
+                const info = {
+                  channel: ch.channel || `DAHDI/${channelId}`,
+                  state:
+                    ch.state ||
+                    (v === "unusable"
+                      ? "Unusable"
+                      : v === "red"
+                        ? "Reserved"
+                        : "Idle"),
+                  inService:
+                    ch?.dahdi_status?.in_service ||
+                    (v === "unusable" ? "No" : "Yes"),
+                  caller,
+                  called,
+                };
+                const tooltipContent = (
+                  <div style={{ whiteSpace: "pre-line" }}>
+                    <div>
+                      <strong>Channel:</strong> {info.channel}
                     </div>
-                  );
-                  return (
-                    <td key={i} style={channelTdStyle}>
-                      <Tooltip title={tooltipContent} arrow placement="top">
-                        <div
-                          className="flex items-center justify-center w-full h-full"
-                          style={{ minHeight: 24 }}
-                        >
-                          {v === "frame"
-                            ? colorBlock("#222")
-                            : v === "signaling"
-                              ? colorBlock("#0070a8")
-                              : v === "red"
-                                ? colorBlock("#e53935")
-                                : ICONS[Number(v) || 0]}
-                        </div>
-                      </Tooltip>
-                    </td>
-                  );
-                })}
-              </tr>
-              <tr>
-                <td style={channelRowLabelStyle}>Check</td>
-                {span.channelRanges.map((_, i) => (
+                    <div>
+                      <strong>State:</strong> {info.state}
+                    </div>
+                    <div>
+                      <strong>In Service:</strong> {info.inService}
+                    </div>
+                    {info.caller ? (
+                      <div>
+                        <strong>Caller:</strong> {info.caller}
+                      </div>
+                    ) : null}
+                    {info.called ? (
+                      <div>
+                        <strong>Called:</strong> {info.called}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+                return (
                   <td key={i} style={channelTdStyle}>
-                    <Checkbox
-                      size="small"
-                      checked={pcm0Checked[i] || false}
-                      onChange={() => handlePcm0Check(i)}
-                      sx={checkboxSx}
-                    />
+                    <Tooltip title={tooltipContent} arrow placement="top">
+                      <div
+                        className="flex items-center justify-center w-full h-full"
+                        style={{ minHeight: 24 }}
+                      >
+                        {v === "frame"
+                          ? colorBlock("#222")
+                          : v === "signaling"
+                            ? colorBlock("#0070a8")
+                            : v === "red"
+                              ? colorBlock("#e53935")
+                              : ICONS[Number(v) || 0]}
+                      </div>
+                    </Tooltip>
                   </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                );
+              })}
+            </tr>
+            <tr>
+              <td style={{ ...channelRowLabelStyle, ...lastTableRowCellStyle }}>
+                Check
+              </td>
+              {span.channelRanges.map((_, i) => (
+                <td
+                  key={i}
+                  style={{
+                    ...channelTdStyle,
+                    ...lastTableRowCellStyle,
+                    ...(i === span.channelRanges.length - 1
+                      ? { borderRight: "none" }
+                      : {}),
+                  }}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={pcm0Checked[i] || false}
+                    onChange={() => handlePcm0Check(i)}
+                    sx={checkboxSx}
+                  />
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </AdaptiveChannelTable>
       </div>
     );
   };
@@ -908,7 +1067,15 @@ const PcmCircuitMaintenancePage = () => {
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        <div style={{ fontSize: 12, color: C.mutedText, marginBottom: 16, display: "flex", gap: 4 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            display: "flex",
+            gap: 4,
+          }}
+        >
           E1-PRI &rsaquo; PCM &rsaquo;{" "}
           <span style={{ color: "#1e293b", fontWeight: 600 }}>
             Circuit Maintenance

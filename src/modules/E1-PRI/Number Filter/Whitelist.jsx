@@ -14,8 +14,6 @@ import {
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import Checkbox from "@mui/material/Checkbox";
-import SearchIcon from "@mui/icons-material/Search";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import {
   saveCallerWhitelist,
   saveCalleeWhitelist,
@@ -175,10 +173,6 @@ const checkboxSx = {
 const Whitelist = () => {
   const [callerRows, setCallerRows] = useState([]);
   const [calleeRows, setCalleeRows] = useState([]);
-  const [callerSearch, setCallerSearch] = useState("");
-  const [calleeSearch, setCalleeSearch] = useState("");
-  const [callerSearchFocused, setCallerSearchFocused] = useState(false);
-  const [calleeSearchFocused, setCalleeSearchFocused] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("caller");
   const [modalData, setModalData] = useState({
@@ -193,7 +187,6 @@ const Whitelist = () => {
   const [calleeChecked, setCalleeChecked] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isSearching, setIsSearching] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState({ msg: "", type: "success" });
 
@@ -404,84 +397,6 @@ const Whitelist = () => {
     }
   };
 
-  const handleCallerSearch = async () => {
-    if (!callerSearch.trim()) {
-      displayToast("Please enter a caller ID to search", "error");
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const response = await fetchNumberFilters(
-        "whitelist",
-        callerSearch.trim(),
-      );
-      if (response && response.success && response.data) {
-        const callerData = response.data
-          .filter((item) => item.type === "callerid")
-          .map((item) => ({
-            groupNo: item.group,
-            noInGroup: item.no_of_groups,
-            callerId: item.number,
-          }))
-          .sort((a, b) => {
-            const g = parseInt(a.groupNo) - parseInt(b.groupNo);
-            return g !== 0 ? g : parseInt(a.noInGroup) - parseInt(b.noInGroup);
-          });
-        setCallerRows(callerData);
-        if (callerData.length === 0)
-          displayToast("No caller IDs found matching your search", "info");
-      } else {
-        setCallerRows([]);
-        displayToast("No data found", "info");
-      }
-    } catch (error) {
-      console.error("Error searching caller data:", error);
-      displayToast("Failed to search caller data. Please try again.", "error");
-      setCallerRows([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleCalleeSearch = async () => {
-    if (!calleeSearch.trim()) {
-      displayToast("Please enter a callee ID to search", "error");
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const response = await fetchNumberFilters(
-        "whitelist",
-        calleeSearch.trim(),
-      );
-      if (response && response.success && response.data) {
-        const calleeData = response.data
-          .filter((item) => item.type === "calleeid")
-          .map((item) => ({
-            groupNo: item.group,
-            noInGroup: item.no_of_groups,
-            calleeId: item.number,
-          }))
-          .sort((a, b) => {
-            const g = parseInt(a.groupNo) - parseInt(b.groupNo);
-            return g !== 0 ? g : parseInt(a.noInGroup) - parseInt(b.noInGroup);
-          });
-        setCalleeRows(calleeData);
-        if (calleeData.length === 0)
-          displayToast("No callee IDs found matching your search", "info");
-      } else {
-        setCalleeRows([]);
-        displayToast("No data found", "info");
-      }
-    } catch (error) {
-      console.error("Error searching callee data:", error);
-      displayToast("Failed to search callee data. Please try again.", "error");
-      setCalleeRows([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
   const handleCallerCheck = (idx) =>
     setCallerChecked((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
@@ -625,125 +540,19 @@ const Whitelist = () => {
     }
   };
 
-  const handleCallerReset = () => {
-    setCallerSearch("");
-    fetchWhitelistData();
-  };
-  const handleCalleeReset = () => {
-    setCalleeSearch("");
-    fetchWhitelistData();
-  };
-
   // Reusable table panel
   const renderTablePanel = ({
     title,
     rows,
     checkedItems,
-    searchValue,
-    searchFocused,
-    onSearchChange,
-    onSearchFocus,
-    onSearchBlur,
-    onSearch,
-    onReset,
     onCheck,
     onDelete,
     onClear,
     onAddNew,
     onEdit,
     idKey,
-    isSearchingFlag,
   }) => (
     <div style={{ flex: 1, minWidth: 0 }}>
-      {/* Search bar */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <label
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: C.labelText,
-            minWidth: 72,
-          }}
-        >
-          {idKey === "callerId" ? "CallerID:" : "CalleeID:"}
-        </label>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            background: "#ffffff",
-            border: searchFocused ? "1px solid #0284c7" : `1px solid ${C.cardBorder}`,
-            borderRadius: 6,
-            padding: "5px 10px",
-            transition: "border-color 0.15s ease",
-            flex: 1,
-            minWidth: 140,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 12,
-              color: searchFocused ? "#0284c7" : C.mutedText,
-            }}
-          >
-            🔍
-          </span>
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) => onSearchChange(e.target.value)}
-            onFocus={onSearchFocus}
-            onBlur={onSearchBlur}
-            onKeyPress={(e) => e.key === "Enter" && onSearch()}
-            placeholder={`Search ${idKey === "callerId" ? "caller" : "callee"} ID...`}
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: 11,
-              color: C.valueText,
-              outline: "none",
-              width: "100%",
-            }}
-          />
-          {searchValue && (
-            <span
-              onClick={() => onSearchChange("")}
-              style={{ fontSize: 11, color: C.mutedText, cursor: "pointer" }}
-            >
-              ✕
-            </span>
-          )}
-        </div>
-        <Btn
-          onClick={onSearch}
-          disabled={isSearchingFlag}
-          variant="default"
-          style={{ gap: 4, width: 75 }}
-        >
-          {isSearchingFlag ? (
-            <CircularProgress size={11} style={{ color: "#fff" }} />
-          ) : null}
-          {isSearchingFlag ? "Searching..." : "Search"}
-        </Btn>
-        <Btn
-          onClick={onReset}
-          disabled={isSearchingFlag}
-          variant="default"
-          style={{ width: 75 }}
-        >
-          Reset
-        </Btn>
-      </div>
-
       {/* Card */}
       <div
         style={{
@@ -1056,39 +865,23 @@ const Whitelist = () => {
                 title: "CallerID Whitelist",
                 rows: callerRows,
                 checkedItems: callerChecked,
-                searchValue: callerSearch,
-                searchFocused: callerSearchFocused,
-                onSearchChange: setCallerSearch,
-                onSearchFocus: () => setCallerSearchFocused(true),
-                onSearchBlur: () => setCallerSearchFocused(false),
-                onSearch: handleCallerSearch,
-                onReset: handleCallerReset,
                 onCheck: handleCallerCheck,
                 onDelete: handleCallerDelete,
                 onClear: handleCallerClear,
                 onAddNew: () => handleAddNew("caller"),
                 onEdit: (row) => handleEdit("caller", row),
                 idKey: "callerId",
-                isSearchingFlag: isSearching,
               })}
               {renderTablePanel({
                 title: "CalleeID Whitelist",
                 rows: calleeRows,
                 checkedItems: calleeChecked,
-                searchValue: calleeSearch,
-                searchFocused: calleeSearchFocused,
-                onSearchChange: setCalleeSearch,
-                onSearchFocus: () => setCalleeSearchFocused(true),
-                onSearchBlur: () => setCalleeSearchFocused(false),
-                onSearch: handleCalleeSearch,
-                onReset: handleCalleeReset,
                 onCheck: handleCalleeCheck,
                 onDelete: handleCalleeDelete,
                 onClear: handleCalleeClear,
                 onAddNew: () => handleAddNew("callee"),
                 onEdit: (row) => handleEdit("callee", row),
                 idKey: "calleeId",
-                isSearchingFlag: isSearching,
               })}
             </div>
 

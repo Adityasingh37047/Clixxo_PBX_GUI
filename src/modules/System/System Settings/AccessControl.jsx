@@ -19,19 +19,60 @@ import { IPTABLES_INFO } from "../../../constants/AccessControlConstants";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  gridHeaderBg: "#f8fafc",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  gridHeaderBg: "#F8FAFC",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
-  footerBg: "#e3e7ef",
+  footerBg: "#ffffff",
+};
+
+const CARD_RADIUS = 20;
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "12px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: "#0f172a",
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const Btn = ({
@@ -76,6 +117,11 @@ const Btn = ({
       color: C.cardBg,
       border: `1px solid ${C.errorRed}`,
     },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
   };
 
   const s = styles[variant] || styles.default;
@@ -91,6 +137,8 @@ const Btn = ({
         return "#bbf7d0";
       case "cancel":
         return "#b6c2d3";
+      case "outline":
+        return "#e2e8f0";
       case "default":
       default:
         return "#e2e8f0";
@@ -162,6 +210,21 @@ const AccessControl = () => {
     scrollWidth: 0,
   });
   const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.max(1, Math.ceil(commands.length / itemsPerPage));
+  const pagedCommands = commands.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage,
+  );
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
+  };
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [commands.length, totalPages, page]);
 
   // Update scroll state when data changes
   useEffect(() => {
@@ -562,30 +625,45 @@ const AccessControl = () => {
         style={{
           maxWidth: 1000,
           background: C.cardBg,
-          borderRadius: 20,
+          borderRadius: 10,
           overflow: "hidden",
           boxShadow: C.cardShadow,
           marginBottom: 24,
-          border: `1px solid ${C.cardBorder}`,
+          border: `1.5px solid ${C.cardBorder}`,
         }}
       >
-        {/* ── Header ── */}
+        {/* ── Toolbar ── */}
         <div
           style={{
-            minHeight: 44,
             display: "flex",
             flexWrap: "wrap",
             gap: 12,
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "10px 14px",
-            fontWeight: 700,
-            fontSize: 13,
-            color: C.strongText,
-            borderBottom: `1px solid ${C.divider}`,
+            padding: "14px 18px",
+            borderBottom: `1px solid ${C.cardBorder}`,
+            background: "#ffffff",
+            borderTopLeftRadius: CARD_RADIUS,
+            borderTopRightRadius: CARD_RADIUS,
           }}
         >
-          <span>Access Control List</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {selected.length > 0 && (
+              <span
+                style={{
+                  background: "#eff6ff",
+                  color: C.accent,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "5px 12px",
+                  borderRadius: 999,
+                  border: `1px solid ${C.accent}`,
+                }}
+              >
+                {selected.length} selected
+              </span>
+            )}
+          </div>
           <div
             style={{
               display: "flex",
@@ -631,34 +709,32 @@ const AccessControl = () => {
         </div>
 
         <div
+          ref={tableScrollRef}
           className="scrollbar-hide w-full overflow-x-auto"
           style={{
             maxHeight: 400,
             overflowY: "auto",
             scrollbarWidth: "auto",
           }}
+          onScroll={() => {
+            if (tableScrollRef.current) {
+              const el = tableScrollRef.current;
+              setScrollState({
+                left: el.scrollLeft,
+                width: el.clientWidth,
+                scrollWidth: el.scrollWidth,
+              });
+              setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
+            }
+          }}
         >
-          <table className="w-full md:min-w-[700px] border-collapse table-auto">
-            <thead
-              style={{
-                position: "sticky",
-                top: 0,
-                zIndex: 10,
-                backgroundColor: C.gridHeaderBg,
-              }}
-            >
+          <table
+            className="w-full md:min-w-[700px]"
+            style={{ borderCollapse: "separate", borderSpacing: 0 }}
+          >
+            <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
               <tr>
-                <th
-                  className="whitespace-nowrap text-center"
-                  style={{
-                    padding: "8px 12px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.strongText,
-                    borderBottom: `1px solid ${C.divider}`,
-                    borderRight: `1px solid ${C.divider}`,
-                  }}
-                >
+                <TH style={{ borderLeft: "none" }}>
                   <Checkbox
                     size="small"
                     checked={
@@ -670,53 +746,12 @@ const AccessControl = () => {
                     onChange={(e) =>
                       e.target.checked ? handleCheckAll() : handleUncheckAll()
                     }
-                    sx={{
-                      padding: "1px",
-                      color: "#64748b",
-                      "&.Mui-checked": { color: C.accent },
-                      "&.MuiCheckbox-indeterminate": { color: C.accent },
-                    }}
+                    sx={checkboxSx}
                   />
-                </th>
-                <th
-                  className="whitespace-nowrap text-center"
-                  style={{
-                    padding: "8px 12px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.strongText,
-                    borderBottom: `1px solid ${C.divider}`,
-                    borderRight: `1px solid ${C.divider}`,
-                  }}
-                >
-                  Index
-                </th>
-                <th
-                  className="whitespace-nowrap text-center"
-                  style={{
-                    padding: "8px 12px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.strongText,
-                    borderBottom: `1px solid ${C.divider}`,
-                    borderRight: `1px solid ${C.divider}`,
-                  }}
-                >
-                  Command
-                </th>
-                <th
-                  className="whitespace-nowrap text-center"
-                  style={{
-                    padding: "8px 12px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.strongText,
-                    borderBottom: `1px solid ${C.divider}`,
-                    borderRight: `1px solid ${C.divider}`,
-                  }}
-                >
-                  Modify
-                </th>
+                </TH>
+                <TH>Id</TH>
+                <TH>Command</TH>
+                <TH style={{ borderRight: "none" }}>Modify</TH>
               </tr>
             </thead>
             <tbody>
@@ -724,76 +759,65 @@ const AccessControl = () => {
                 <tr>
                   <td
                     colSpan={4}
-                    className="text-center py-8 text-gray-500 text-[13px]"
+                    style={{
+                      ...tdStyle,
+                      borderLeft: "none",
+                      borderRight: "none",
+                      borderBottom: "none",
+                      padding: "32px 14px",
+                      color: C.mutedText,
+                    }}
                   >
                     No data
                   </td>
                 </tr>
               ) : (
-                commands.map((cmd, idx) => {
+                pagedCommands.map((cmd, pageIdx) => {
+                  const rowIdx = (page - 1) * itemsPerPage + pageIdx;
+                  const isLastRow = pageIdx === pagedCommands.length - 1;
+                  const lastRowCellStyle = isLastRow
+                    ? { borderBottom: "none" }
+                    : {};
                   return (
                     <tr
-                      key={idx}
-                      style={{ borderBottom: `1px solid ${C.divider}` }}
+                      key={rowIdx}
                       className="hover:bg-[#f8fafc] transition-colors"
                     >
                       <td
-                        className="text-center bg-white"
                         style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
+                          ...tdStyle,
+                          ...lastRowCellStyle,
+                          borderLeft: "none",
+                          ...(isLastRow ? { borderBottomLeftRadius: 0 } : {}),
                         }}
                       >
                         <Checkbox
                           size="small"
-                          checked={selected.includes(idx)}
-                          onChange={() => handleSelectRow(idx)}
+                          checked={selected.includes(rowIdx)}
+                          onChange={() => handleSelectRow(rowIdx)}
                           disabled={loading.delete}
-                          sx={{
-                            padding: "1px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
-                          }}
+                          sx={checkboxSx}
                         />
                       </td>
-                      <td
-                        className="text-center bg-white"
-                        style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
-                        }}
-                      >
+                      <td style={{ ...tdStyle, ...lastRowCellStyle }}>
                         {cmd.index}
                       </td>
-                      <td
-                        className="text-center bg-white"
-                        style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
-                        }}
-                      >
+                      <td style={{ ...tdStyle, ...lastRowCellStyle }}>
                         {cmd.command}
                       </td>
                       <td
-                        className="text-center bg-white"
                         style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
+                          ...tdStyle,
+                          ...lastRowCellStyle,
+                          borderRight: "none",
+                          ...(isLastRow ? { borderBottomRightRadius: 0 } : {}),
                         }}
                       >
                         <EditDocumentIcon
                           className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
                           titleAccess="Edit"
                           onClick={() => {
-                            if (!loading.delete) handleOpenModal(cmd, idx);
+                            if (!loading.delete) handleOpenModal(cmd, rowIdx);
                           }}
                         />
                       </td>
@@ -808,24 +832,29 @@ const AccessControl = () => {
         {/* ── Footer ── */}
         <div
           style={{
-            minHeight: 44,
             display: "flex",
             flexWrap: "wrap",
             gap: 12,
             alignItems: "center",
             justifyContent: "space-between",
             padding: "10px 14px",
-            fontWeight: 700,
-            fontSize: 13,
-            color: C.strongText,
-            borderTop: `1px solid ${C.divider}`,
+            background: C.footerBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: CARD_RADIUS,
+            borderBottomRightRadius: CARD_RADIUS,
           }}
         >
           <div
-            className="flex items-center gap-2 text-[13px]"
-            style={{ color: C.labelText, fontWeight: 400 }}
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 12,
+            }}
           >
-            <span>{commands.length} items Total</span>
+            <span style={{ fontSize: 11, color: C.mutedText }}>
+              Showing {commands.length} record{commands.length !== 1 ? "s" : ""}
+            </span>
           </div>
 
           <div
@@ -916,7 +945,8 @@ const AccessControl = () => {
             maxWidth: "95vw",
             mx: "auto",
             borderRadius: "8px",
-            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
             backgroundColor: "#f8fafc",
             backgroundImage: "none",
           },
@@ -951,7 +981,16 @@ const AccessControl = () => {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", background: editIndex !== null ? "#f1f5f9" : "#ffffff", border: "1px solid #cbd5e1", borderRadius: 6, padding: "6px 12px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                background: editIndex !== null ? "#f1f5f9" : "#ffffff",
+                border: "1px solid #cbd5e1",
+                borderRadius: 6,
+                padding: "6px 12px",
+              }}
+            >
               <label
                 style={{
                   width: 110,
@@ -985,10 +1024,12 @@ const AccessControl = () => {
                   transition: "border-color 0.2s ease",
                 }}
                 onFocus={(e) => {
-                  if (editIndex === null) e.target.style.borderColor = "#0284c7";
+                  if (editIndex === null)
+                    e.target.style.borderColor = "#0284c7";
                 }}
                 onBlur={(e) => {
-                  if (editIndex === null) e.target.style.borderColor = "#cbd5e1";
+                  if (editIndex === null)
+                    e.target.style.borderColor = "#cbd5e1";
                 }}
                 onMouseEnter={(e) => {
                   if (editIndex === null && document.activeElement !== e.target)
@@ -1001,7 +1042,16 @@ const AccessControl = () => {
               />
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 6, padding: "6px 12px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                background: "#ffffff",
+                border: "1px solid #cbd5e1",
+                borderRadius: 6,
+                padding: "6px 12px",
+              }}
+            >
               <label
                 style={{
                   width: 110,

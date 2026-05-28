@@ -23,18 +23,59 @@ import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  gridHeaderBg: "#f8fafc",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  gridHeaderBg: "#F8FAFC",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
+};
+
+const CARD_RADIUS = 20;
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "12px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const tdStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: "#0f172a",
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const Btn = ({
@@ -78,6 +119,11 @@ const Btn = ({
       color: C.cardBg,
       border: `1px solid ${C.errorRed}`,
     },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
   };
 
   const s = styles[variant] || styles.default;
@@ -93,6 +139,8 @@ const Btn = ({
         return "#bbf7d0";
       case "cancel":
         return "#b6c2d3";
+      case "outline":
+        return "#e2e8f0";
       case "default":
       default:
         return "#e2e8f0";
@@ -1290,14 +1338,12 @@ WantedBy=multi-user.target
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fill up to MIN_ROWS for grid look
   const displayRows = [
     ...rows,
     ...Array.from({ length: Math.max(0, MIN_ROWS - rows.length) }).map(
       () => null,
     ),
   ];
-
   return (
     <div
       className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
@@ -1365,30 +1411,45 @@ WantedBy=multi-user.target
         <div
           style={{
             background: C.cardBg,
-            borderRadius: 20,
+            borderRadius: 10,
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
-            border: `1px solid ${C.cardBorder}`,
+            border: `1.5px solid ${C.cardBorder}`,
           }}
         >
-          {/* Header */}
+          {/* Toolbar */}
           <div
             style={{
-              minHeight: 44,
               display: "flex",
               flexWrap: "wrap",
               gap: 12,
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
-              fontWeight: 700,
-              fontSize: 13,
-              color: C.strongText,
-              borderBottom: `1px solid ${C.divider}`,
+              padding: "14px 18px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
-            <span>IP Routing Table</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {rows.some((r) => r.checked) && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {rows.filter((r) => r.checked).length} selected
+                </span>
+              )}
+            </div>
             <div
               style={{
                 display: "flex",
@@ -1432,31 +1493,27 @@ WantedBy=multi-user.target
               maxHeight: 400,
               overflowY: "auto",
               scrollbarWidth: "auto",
+              ...(rows.length === 0
+                ? {
+                    borderBottomLeftRadius: CARD_RADIUS,
+                    borderBottomRightRadius: CARD_RADIUS,
+                  }
+                : {}),
             }}
             ref={tableScrollRef}
             onScroll={handleTableScroll}
           >
-            <table className="w-full md:min-w-[700px] border-collapse table-auto">
-              <thead
-                style={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 10,
-                  backgroundColor: C.gridHeaderBg,
-                }}
-              >
+            <table
+              className="w-full md:min-w-[700px]"
+              style={{ borderCollapse: "separate", borderSpacing: 0 }}
+            >
+              <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
                 <tr>
-                  {IP_ROUTING_TABLE_COLUMNS.map((col) => (
-                    <th
+                  {IP_ROUTING_TABLE_COLUMNS.map((col, colIdx) => (
+                    <TH
                       key={col.key}
-                      className="whitespace-nowrap text-center"
                       style={{
-                        padding: "8px 12px",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.strongText,
-                        borderBottom: `1px solid ${C.divider}`,
-                        borderRight: `1px solid ${C.divider}`,
+                        ...(colIdx === 0 ? { borderLeft: "none" } : {}),
                       }}
                     >
                       {col.key === "checked" ||
@@ -1472,136 +1529,107 @@ WantedBy=multi-user.target
                             !rows.every((r) => r.checked)
                           }
                           onChange={handleSelectAll}
-                          sx={{
-                            padding: "1px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
-                            "&.MuiCheckbox-indeterminate": { color: C.accent },
-                          }}
+                          sx={checkboxSx}
                         />
                       ) : (
                         col.label
                       )}
-                    </th>
+                    </TH>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {displayRows.map((row, idx) =>
-                  row ? (
-                    <tr
-                      key={idx}
-                      style={{ borderBottom: `1px solid ${C.divider}` }}
-                      className="hover:bg-[#f8fafc] transition-colors"
-                    >
-                      <td
-                        className="text-center bg-white"
-                        style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
-                        }}
+                {displayRows.map((row, idx) => {
+                  const isLastRow = idx === displayRows.length - 1;
+                  const lastRowCellStyle =
+                    isLastRow && rows.length > 0
+                      ? { borderBottom: "none" }
+                      : {};
+                  const colCount = IP_ROUTING_TABLE_COLUMNS.length;
+
+                  if (row) {
+                    return (
+                      <tr
+                        key={`row-${idx}`}
+                        className="hover:bg-[#f8fafc] transition-colors"
                       >
-                        <Checkbox
-                          size="small"
-                          checked={row.checked || false}
-                          onChange={() => handleCheck(idx)}
-                          sx={{
-                            padding: "1px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
+                        <td
+                          style={{
+                            ...tdStyle,
+                            ...lastRowCellStyle,
+                            borderLeft: "none",
                           }}
-                        />
-                      </td>
-                      <td
-                        className="text-center bg-white"
-                        style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        {row.no}
-                      </td>
-                      <td
-                        className="text-center bg-white"
-                        style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        {row.destination}
-                      </td>
-                      <td
-                        className="text-center bg-white"
-                        style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        {row.subnetMask}
-                      </td>
-                      <td
-                        className="text-center bg-white"
-                        style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        {row.networkPort}
-                      </td>
-                      <td
-                        className="text-center bg-white"
-                        style={{
-                          padding: "10px 12px",
-                          fontSize: 13,
-                          color: C.valueText,
-                          borderRight: `1px solid ${C.divider}`,
-                        }}
-                      >
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                          titleAccess="Edit"
-                          onClick={() => openModal(idx)}
-                        />
-                      </td>
-                    </tr>
-                  ) : (
-                    <tr
-                      key={idx}
-                      style={{
-                        borderBottom: `1px solid ${C.divider}`,
-                        background: "#fff",
-                      }}
-                    >
-                      {IP_ROUTING_TABLE_COLUMNS.map((col) => (
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={row.checked || false}
+                            onChange={() => handleCheck(idx)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                          {row.no}
+                        </td>
+                        <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                          {row.destination}
+                        </td>
+                        <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                          {row.subnetMask}
+                        </td>
+                        <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                          {row.networkPort}
+                        </td>
+                        <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => openModal(idx)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return (
+                    <tr key={`empty-${idx}`}>
+                      {IP_ROUTING_TABLE_COLUMNS.map((col, colIdx) => (
                         <td
                           key={col.key}
-                          className="text-center bg-white"
                           style={{
-                            padding: "10px 12px",
-                            fontSize: 13,
-                            color: C.valueText,
-                            borderRight: `1px solid ${C.divider}`,
+                            ...tdStyle,
+                            ...lastRowCellStyle,
+                            ...(colIdx === 0 ? { borderLeft: "none" } : {}),
                           }}
                         >
                           &nbsp;
                         </td>
                       ))}
                     </tr>
-                  ),
-                )}
+                  );
+                })}
               </tbody>
             </table>
           </div>
+
+          {rows.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                background: "#ffffff",
+                borderTop: `1px solid ${C.cardBorder}`,
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}>
+                Showing {rows.length} record
+                {rows.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
         </div>
       </div>
       {/* Modal */}

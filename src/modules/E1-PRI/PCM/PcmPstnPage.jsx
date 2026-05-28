@@ -28,17 +28,19 @@ import {
   Checkbox,
 } from "@mui/material";
 
-// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
+// ── Color palette (matches Num Manipulate pages) ─────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#3E5475",
   amber: "#dc2626",
 };
+
+const CARD_RADIUS = 20;
 
 const Btn = ({
   children,
@@ -74,7 +76,7 @@ const Btn = ({
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
 
@@ -135,13 +137,15 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "10px 8px",
       textAlign: "center",
+      verticalAlign: "middle",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.14em",
+      letterSpacing: "0.06em",
+      lineHeight: 1.3,
       ...extra,
     }}
   >
@@ -150,20 +154,36 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "10px 14px",
-  fontSize: 13,
+  padding: "8px 8px",
+  fontSize: 12,
   color: C.valueText,
   textAlign: "center",
+  verticalAlign: "middle",
   background: "#ffffff",
-  borderBottom: "1px solid #f1f5f9",
-  borderRight: "1px solid #f1f5f9",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+};
+
+const modifyCellStyle = {
+  ...tdStyle,
+  padding: "6px 4px",
+  borderRight: "none",
+};
+
+const modifyIconWrapStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+  minHeight: 28,
 };
 
 const checkboxSx = {
   padding: "1px",
-  color: "#64748b",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const PRIMARY_CHANNEL = "1-15,17-31";
@@ -182,7 +202,6 @@ const PcmPstnPage = () => {
   const [formData, setFormData] = useState(PCM_PSTN_INITIAL_FORM);
   const [editIndex, setEditIndex] = useState(-1);
   const [tab, setTab] = useState(0);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState({
     fetch: false,
     save: false,
@@ -191,11 +210,9 @@ const PcmPstnPage = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
   const pollingRef = useRef(null);
+  const silentRefreshRef = useRef(false);
   const lastVisibilityStateRef = useRef(document.visibilityState);
-
-  const itemsPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(data.length / itemsPerPage));
-  const pagedData = data.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Load data on component mount
   useEffect(() => {
@@ -269,17 +286,17 @@ const PcmPstnPage = () => {
   // Handlers
   const handleInputChange = (name, value) =>
     setFormData((prev) => ({ ...prev, [name]: value }));
-  const handlePageChange = (newPage) =>
-    setPage(Math.max(1, Math.min(totalPages, newPage)));
 
   // Load PSTN data from API
   const loadPstnData = async (isRefresh = false) => {
-    // Prevent concurrent calls
-    if (loading.fetch) {
-      return;
+    if (isRefresh) {
+      if (silentRefreshRef.current) return;
+      silentRefreshRef.current = true;
+    } else {
+      if (loading.fetch) return;
+      setLoading((prev) => ({ ...prev, fetch: true }));
     }
 
-    setLoading((prev) => ({ ...prev, fetch: true }));
     try {
       console.log("Attempting to load PSTN data...");
       const response = await listPstn();
@@ -327,7 +344,12 @@ const PcmPstnPage = () => {
         setData([]);
       }
     } finally {
-      setLoading((prev) => ({ ...prev, fetch: false }));
+      if (isRefresh) {
+        silentRefreshRef.current = false;
+      } else {
+        setLoading((prev) => ({ ...prev, fetch: false }));
+        setIsInitialLoad(false);
+      }
     }
   };
 
@@ -431,7 +453,7 @@ const PcmPstnPage = () => {
   };
 
   const handleInverse = () => {
-    const ids = pagedData.map((item) => item.span_id || item.span?.id);
+    const ids = data.map((item) => item.span_id || item.span?.id);
     setSelectedItems(ids.filter((id) => !selectedItems.includes(id)));
   };
   const handleDelete = async () => {
@@ -553,7 +575,6 @@ const PcmPstnPage = () => {
           setData([]);
         }
         setSelectedItems([]);
-        setPage(1);
       }
 
       if (failCount > 0) {
@@ -769,8 +790,8 @@ const PcmPstnPage = () => {
 
   // Render helpers
 
-  const renderTableRow = (row, idx) => {
-    const realIndex = (page - 1) * itemsPerPage + idx;
+  const renderTableRow = (row, idx, isLastRow = false) => {
+    const realIndex = idx;
     const spanId = row.span_id || row.span?.id;
     const isRowChecked = selectedItems.includes(spanId);
     const rowBg = isRowChecked
@@ -778,13 +799,14 @@ const PcmPstnPage = () => {
       : idx % 2 === 1
         ? "#f8fafc"
         : "#ffffff";
+    const lastRowCellStyle = isLastRow ? { borderBottom: "none" } : {};
 
     return (
       <tr
         key={spanId}
         style={{
           background: rowBg,
-          borderBottom: "1px solid #f1f5f9",
+          borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
           transition: "background 0.15s ease",
         }}
         onMouseEnter={(e) => {
@@ -794,8 +816,24 @@ const PcmPstnPage = () => {
           if (!isRowChecked) e.currentTarget.style.background = rowBg;
         }}
       >
-        <td style={{ ...tdStyle, width: 36 }}>
-          <Checkbox
+        <td
+          style={{
+            ...tdStyle,
+            width: 44,
+            borderLeft: "none",
+            ...lastRowCellStyle,
+            ...(isLastRow ? { borderBottomLeftRadius: CARD_RADIUS } : {}),
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 28,
+            }}
+          >
+            <Checkbox
             size="small"
             checked={isRowChecked}
             onChange={() => {
@@ -808,23 +846,33 @@ const PcmPstnPage = () => {
             disabled={loading.delete}
             sx={checkboxSx}
           />
+          </div>
         </td>
         {PCM_PSTN_TABLE_COLUMNS.map((col) => {
           if (col.key === "modify") {
             return (
-              <td key={col.key} style={{ ...tdStyle, padding: "7px 8px" }}>
-                <EditDocumentIcon
-                  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                  titleAccess="Edit"
-                  onClick={() => handleEditItem(row, realIndex)}
-                  style={{ fontSize: 22 }}
-                />
+              <td
+                key={col.key}
+                style={{
+                  ...modifyCellStyle,
+                  ...lastRowCellStyle,
+                  ...(isLastRow ? { borderBottomRightRadius: CARD_RADIUS } : {}),
+                }}
+              >
+                <div style={modifyIconWrapStyle}>
+                  <EditDocumentIcon
+                    className="cursor-pointer text-blue-600 opacity-70 hover:opacity-100 transition-opacity"
+                    titleAccess="Edit"
+                    onClick={() => handleEditItem(row, realIndex)}
+                    style={{ fontSize: 20, display: "block" }}
+                  />
+                </div>
               </td>
             );
           }
           if (col.key === "span_status") {
             return (
-              <td key={col.key} style={tdStyle}>
+              <td key={col.key} style={{ ...tdStyle, ...lastRowCellStyle }}>
                 <span
                   className={`text-[13px] font-semibold ${
                     row.span_status?.includes("Up")
@@ -875,7 +923,7 @@ const PcmPstnPage = () => {
           };
 
           return (
-            <td key={col.key} style={tdStyle}>
+            <td key={col.key} style={{ ...tdStyle, ...lastRowCellStyle }}>
               {displayValue(col.key, getValue(col.key))}
             </td>
           );
@@ -992,7 +1040,7 @@ const PcmPstnPage = () => {
         </Alert>
       )}
 
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
         <div
           style={{
             fontSize: 12,
@@ -1003,7 +1051,7 @@ const PcmPstnPage = () => {
           }}
         >
           E1-PRI &rsaquo; PCM &rsaquo;{" "}
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+          <span style={{ color: C.valueText, fontWeight: 600 }}>
             PSTN Settings
           </span>
         </div>
@@ -1011,9 +1059,9 @@ const PcmPstnPage = () => {
         <div
           style={{
             background: "#ffffff",
-            borderRadius: 22,
+            borderRadius: 10,
             overflow: "hidden",
-            border: `1px solid ${C.cardBorder}`,
+            border: `1.5px solid ${C.cardBorder}`,
             boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
@@ -1023,26 +1071,23 @@ const PcmPstnPage = () => {
               alignItems: "center",
               justifyContent: "space-between",
               padding: "14px 18px",
-              borderBottom: "1px solid #e2e8f0",
+              borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
               gap: 10,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `1px solid #e2e8f0`,
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {data.length} records
-              </span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {selectedItems.length > 0 && (
                 <span
                   style={{
@@ -1070,7 +1115,7 @@ const PcmPstnPage = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.delete || loading.fetch}
+                disabled={loading.delete || isInitialLoad}
                 style={{ height: 30 }}
               >
                 Inverse
@@ -1079,7 +1124,7 @@ const PcmPstnPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={
-                  loading.delete || loading.fetch || selectedItems.length === 0
+                  loading.delete || isInitialLoad || selectedItems.length === 0
                 }
                 style={{ height: 30 }}
               >
@@ -1095,7 +1140,7 @@ const PcmPstnPage = () => {
               <Btn
                 variant="cancel"
                 onClick={handleClearAll}
-                disabled={loading.delete || loading.fetch || data.length === 0}
+                disabled={loading.delete || isInitialLoad || data.length === 0}
                 style={{ height: 30 }}
               >
                 {loading.delete ? (
@@ -1107,7 +1152,7 @@ const PcmPstnPage = () => {
               <Btn
                 variant="primary"
                 onClick={handleAddNew}
-                disabled={loading.save || loading.fetch}
+                disabled={loading.save || isInitialLoad}
                 style={{
                   height: 30,
                   padding: "6px 14px",
@@ -1121,7 +1166,7 @@ const PcmPstnPage = () => {
           </div>
 
           <div style={{ overflowX: "auto" }}>
-            {loading.fetch ? (
+            {isInitialLoad ? (
               <div
                 style={{
                   display: "flex",
@@ -1136,65 +1181,94 @@ const PcmPstnPage = () => {
               <table
                 style={{
                   width: "100%",
-                  borderCollapse: "collapse",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 1200,
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
-                      <Checkbox
-                        size="small"
-                        checked={
-                          pagedData.length > 0 &&
-                          pagedData.every((row) =>
-                            selectedItems.includes(row.span_id || row.span?.id),
-                          )
-                        }
-                        indeterminate={
-                          pagedData.some((row) =>
-                            selectedItems.includes(row.span_id || row.span?.id),
-                          ) &&
-                          !pagedData.every((row) =>
-                            selectedItems.includes(row.span_id || row.span?.id),
-                          )
-                        }
-                        onChange={() => {
-                          const allSelected = pagedData.every((row) =>
-                            selectedItems.includes(row.span_id || row.span?.id),
-                          );
-                          if (allSelected) {
-                            const pagedIds = pagedData.map(r => r.span_id || r.span?.id);
-                            setSelectedItems(prev => prev.filter(id => !pagedIds.includes(id)));
-                          } else {
-                            setSelectedItems((prev) => {
-                              const newSelections = [...prev];
-                              pagedData.forEach((row) => {
-                                const id = row.span_id || row.span?.id;
-                                if (!newSelections.includes(id)) {
-                                  newSelections.push(id);
-                                }
-                              });
-                              return newSelections;
-                            });
+                    <TH
+                      style={{
+                        width: 44,
+                        padding: 0,
+                        borderLeft: "none",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          minHeight: 36,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={
+                            data.length > 0 &&
+                            data.every((row) =>
+                              selectedItems.includes(row.span_id || row.span?.id),
+                            )
                           }
-                        }}
-                        sx={{
-                          padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-                        }}
-                      />
+                          indeterminate={
+                            data.some((row) =>
+                              selectedItems.includes(row.span_id || row.span?.id),
+                            ) &&
+                            !data.every((row) =>
+                              selectedItems.includes(row.span_id || row.span?.id),
+                            )
+                          }
+                          onChange={() => {
+                            const allSelected = data.every((row) =>
+                              selectedItems.includes(row.span_id || row.span?.id),
+                            );
+                            if (allSelected) {
+                              const rowIds = data.map(
+                                (r) => r.span_id || r.span?.id,
+                              );
+                              setSelectedItems((prev) =>
+                                prev.filter((id) => !rowIds.includes(id)),
+                              );
+                            } else {
+                              setSelectedItems((prev) => {
+                                const newSelections = [...prev];
+                                data.forEach((row) => {
+                                  const id = row.span_id || row.span?.id;
+                                  if (!newSelections.includes(id)) {
+                                    newSelections.push(id);
+                                  }
+                                });
+                                return newSelections;
+                              });
+                            }
+                          }}
+                          sx={checkboxSx}
+                        />
+                      </div>
                     </TH>
                     {PCM_PSTN_TABLE_COLUMNS.map((col) => (
-                      <TH key={col.key}>{col.label}</TH>
+                      <TH
+                        key={col.key}
+                        style={
+                          col.key === "modify"
+                            ? {
+                                borderRight: "none",
+                                verticalAlign: "middle",
+                                padding: "10px 8px",
+                              }
+                            : undefined
+                        }
+                      >
+                        {col.label}
+                      </TH>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedData.length === 0 ? (
+                  {data.length === 0 ? (
                     <tr>
                       <td
                         colSpan={PCM_PSTN_TABLE_COLUMNS.length + 1}
@@ -1209,102 +1283,31 @@ const PcmPstnPage = () => {
                       </td>
                     </tr>
                   ) : (
-                    pagedData.map(renderTableRow)
+                    data.map((row, idx) =>
+                      renderTableRow(row, idx, idx === data.length - 1),
+                    )
                   )}
                 </tbody>
               </table>
             )}
           </div>
 
-          {!loading.fetch && data.length > 0 && (
+          {!isInitialLoad && data.length > 0 && (
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "10px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
-                flexWrap: "wrap",
-                gap: 12,
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedData.length} of {data.length} record
-                {data.length !== 1 ? "s" : ""} · {itemsPerPage} per page · Page{" "}
-                {page} of {totalPages}
+                Showing {data.length} record
+                {data.length !== 1 ? "s" : ""} on page 1
               </span>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Btn
-                  onClick={() => handlePageChange(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
-                <Btn
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page}
-                </span>
-                <Btn
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-                <Btn
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-                <span style={{ fontSize: 11, color: C.mutedText }}>Go to</span>
-                <select
-                  value={page}
-                  onChange={(e) => handlePageChange(Number(e.target.value))}
-                  style={{
-                    fontSize: 11,
-                    borderRadius: 4,
-                    border: `0.5px solid ${C.cardBorder}`,
-                    padding: "3px 6px",
-                    color: C.labelText,
-                    background: "#fff",
-                  }}
-                >
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </div>
             </div>
           )}
         </div>

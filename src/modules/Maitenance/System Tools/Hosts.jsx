@@ -19,8 +19,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#64748b",
   valueText: "#1e293b",
@@ -49,7 +49,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -132,8 +133,6 @@ const Btn = ({
   );
 };
 
-
-
 const modalOverlayStyle = {
   position: "fixed",
   inset: 0,
@@ -206,10 +205,18 @@ const modalInputStyle = {
 };
 
 const getInputInteraction = (hasError) => ({
-  onFocus: (e) => (e.target.style.borderColor = hasError ? C.errorRed : "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1"),
-  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : "#64748b" },
-  onMouseLeave: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1" },
+  onFocus: (e) =>
+    (e.target.style.borderColor = hasError ? C.errorRed : "#0284c7"),
+  onBlur: (e) =>
+    (e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1"),
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = hasError ? C.errorRed : "#64748b";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1";
+  },
 });
 const modalFooterStyle = {
   display: "flex",
@@ -226,6 +233,7 @@ const thStyle = {
   padding: "14px 18px",
   textAlign: "center",
   borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
   textTransform: "uppercase",
   letterSpacing: "0.08em",
@@ -233,6 +241,7 @@ const thStyle = {
 
 const tdStyle = {
   borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   padding: "8px 18px",
   fontSize: 13,
   fontWeight: 500,
@@ -266,7 +275,7 @@ const blueBarStyle = {
   padding: "0 20px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.strongText,
+  color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
 
@@ -549,13 +558,13 @@ const Hosts = () => {
       showMessage("error", "Please select hosts to delete");
       return;
     }
-    const confirmed = window.confirm("Are you sure you want to delete the selected host(s)?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete the selected host(s)?",
+    );
     if (!confirmed) return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const updatedHosts = hosts.filter(
-        (_, idx) => !selected.includes(idx),
-      );
+      const updatedHosts = hosts.filter((_, idx) => !selected.includes(idx));
 
       const reindexedHosts = updatedHosts.map((host, i) => ({
         ...host,
@@ -578,10 +587,7 @@ const Hosts = () => {
     } catch (error) {
       console.error("Error deleting hosts:", error);
       if (error.message === "Network Error") {
-        showMessage(
-          "error",
-          "Network error. Please check your connection.",
-        );
+        showMessage("error", "Network error. Please check your connection.");
       } else {
         showMessage("error", error.message || "Failed to delete hosts");
       }
@@ -596,7 +602,9 @@ const Hosts = () => {
       showMessage("info", "No hosts to clear");
       return;
     }
-    const confirmed = window.confirm("Are you sure you want to delete ALL hosts? This action cannot be undone.");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete ALL hosts? This action cannot be undone.",
+    );
     if (!confirmed) return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
@@ -614,10 +622,7 @@ const Hosts = () => {
     } catch (error) {
       console.error("Error clearing all hosts:", error);
       if (error.message === "Network Error") {
-        showMessage(
-          "error",
-          "Network error. Please check your connection.",
-        );
+        showMessage("error", "Network error. Please check your connection.");
       } else {
         showMessage("error", error.message || "Failed to clear all hosts");
       }
@@ -631,8 +636,6 @@ const Hosts = () => {
       className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
-
-
       {/* ── Breadcrumb ── */}
       <div className="w-full" style={{ maxWidth: 1000 }}>
         <div
@@ -715,10 +718,13 @@ const Hosts = () => {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table
+              className="w-full text-left"
+              style={{ borderCollapse: "separate", borderSpacing: 0 }}
+            >
               <thead>
                 <tr>
-                  <th style={thStyle}>
+                  <th style={{ ...thStyle, borderLeft: "none" }}>
                     <Checkbox
                       size="small"
                       checked={allSelected}
@@ -733,10 +739,10 @@ const Hosts = () => {
                       }}
                     />
                   </th>
-                  <th style={thStyle}>Index</th>
+                  <th style={thStyle}>ID</th>
                   <th style={thStyle}>Proxy IP</th>
                   <th style={thStyle}>Domain</th>
-                  <th style={thStyle}>Edit</th>
+                  <th style={{ ...thStyle, borderRight: "none" }}>Modify</th>
                 </tr>
               </thead>
               <tbody>
@@ -766,48 +772,63 @@ const Hosts = () => {
                     </td>
                   </tr>
                 ) : (
-                  hosts.map((item, idx) => (
-                    <tr
-                      key={idx}
-                      style={{
-                        borderBottom: `1px solid ${C.divider}`,
-                        transition: "background-color 0.2s",
-                      }}
-                      className="hover:bg-gray-50"
-                    >
-                      <td style={tdStyle}>
-                        <Checkbox
-                          size="small"
-                          checked={selected.includes(idx)}
-                          onChange={() => handleSelectRow(idx)}
-                          disabled={loading.delete}
-                          sx={{
-                            padding: "1px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
+                  hosts.map((item, idx) => {
+                    const isLastRow = idx === hosts.length - 1;
+                    const rowBottomStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+                    return (
+                      <tr
+                        key={idx}
+                        style={{
+                          transition: "background-color 0.2s",
+                        }}
+                        className="hover:bg-gray-50"
+                      >
+                        <td
+                          style={{
+                            ...tdStyle,
+                            borderLeft: "none",
+                            ...rowBottomStyle,
                           }}
-                        />
-                      </td>
-                      <td style={tdStyle}>
-                        {idx}
-                      </td>
-                      <td style={tdStyle}>
-                        {item.proxyIp || "--"}
-                      </td>
-                      <td style={tdStyle}>
-                        {item.domain || "--"}
-                      </td>
-                      <td style={tdStyle}>
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                          titleAccess="Edit"
-                          onClick={() => {
-                            if (!loading.delete) handleOpenModal(item, idx);
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={selected.includes(idx)}
+                            onChange={() => handleSelectRow(idx)}
+                            disabled={loading.delete}
+                            sx={{
+                              padding: "1px",
+                              color: "#64748b",
+                              "&.Mui-checked": { color: C.accent },
+                            }}
+                          />
+                        </td>
+                        <td style={{ ...tdStyle, ...rowBottomStyle }}>{idx}</td>
+                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                          {item.proxyIp || "--"}
+                        </td>
+                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                          {item.domain || "--"}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            borderRight: "none",
+                            ...rowBottomStyle,
                           }}
-                        />
-                      </td>
-                    </tr>
-                  ))
+                        >
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => {
+                              if (!loading.delete) handleOpenModal(item, idx);
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -831,7 +852,12 @@ const Hosts = () => {
                   <input
                     type="text"
                     value={form.index}
-                    style={{ ...modalInputStyle, backgroundColor: "#f1f5f9", color: "#94a3b8", cursor: "not-allowed" }}
+                    style={{
+                      ...modalInputStyle,
+                      backgroundColor: "#f1f5f9",
+                      color: "#94a3b8",
+                      cursor: "not-allowed",
+                    }}
                     disabled
                   />
                 </div>

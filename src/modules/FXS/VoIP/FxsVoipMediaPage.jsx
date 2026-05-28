@@ -11,18 +11,17 @@ import {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+  accent: "#2563eb",
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+  purple: "#8b5cf6",
 };
-
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
@@ -563,168 +562,262 @@ const FxsVoipMediaPage = () => {
                   borderRadius: 6,
                 }}
               >
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    minWidth: 600,
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <TH style={{ width: 60 }}>Check</TH>
-                      <TH style={{ width: 80 }}>Priority</TH>
-                      <TH>CODEC</TH>
-                      <TH>Packing Time</TH>
-                      <TH>Bit Rate (kbs)</TH>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {codecData.map((item, index) => (
-                      <tr
-                        key={index}
-                        style={{
-                          borderBottom: "1px solid #e2e8f0",
-                          background: index % 2 === 1 ? "#f8fafc" : "#fff",
-                        }}
-                      >
-                        <td
-                          style={{
-                            textAlign: "center",
-                            padding: "6px 0",
-                            borderRight: "0.5px solid #edf2f7",
-                          }}
-                        >
-                          <Checkbox
-                            size="small"
-                            checked={item.enabled}
-                            onChange={() => handleCodecCheckbox(index)}
-                            sx={{
-                              padding: "1px",
-                              color: C.accent,
-                              "&.Mui-checked": { color: C.accent },
-                            }}
-                          />
-                        </td>
-                        <td
-                          style={{
-                            textAlign: "center",
-                            padding: "6px",
-                            fontSize: 12,
-                            color: C.mutedText,
-                            borderRight: "0.5px solid #edf2f7",
-                          }}
-                        >
-                          {index + 1}
-                        </td>
-                        <td
-                          style={{
-                            padding: "6px 12px",
-                            borderRight: "0.5px solid #edf2f7",
-                            textAlign: "center",
-                          }}
-                        >
-                          <FormControl size="small" sx={{ width: 120 }}>
-                            <MuiSelect
-                              value={item.codec}
-                              onChange={(e) =>
-                                handleCodecChange(index, e.target.value)
-                              }
-                              disabled={!item.enabled}
-                              sx={{
-                                fontSize: 12,
-                                height: 28,
-                                background: item.enabled ? "#fff" : "#f1f5f9",
-                              }}
-                            >
-                              <MenuItem value="6" sx={{ fontSize: 12 }}>
-                                G711A
-                              </MenuItem>
-                              <MenuItem value="7" sx={{ fontSize: 12 }}>
-                                G711U
-                              </MenuItem>
-                              <MenuItem value="131" sx={{ fontSize: 12 }}>
-                                G729
-                              </MenuItem>
-                              <MenuItem value="98" sx={{ fontSize: 12 }}>
-                                iLBC
-                              </MenuItem>
-                              <MenuItem value="96" sx={{ fontSize: 12 }}>
-                                AMR
-                              </MenuItem>
-                              <MenuItem value="4" sx={{ fontSize: 12 }}>
-                                G723
-                              </MenuItem>
-                            </MuiSelect>
-                          </FormControl>
-                        </td>
-                        <td
-                          style={{
-                            padding: "6px 12px",
-                            borderRight: "0.5px solid #edf2f7",
-                            textAlign: "center",
-                          }}
-                        >
-                          <FormControl size="small" sx={{ width: 100 }}>
-                            <MuiSelect
-                              value={item.packingTime}
-                              onChange={(e) =>
-                                handlePackingTimeChange(index, e.target.value)
-                              }
-                              disabled={!item.enabled}
-                              sx={{
-                                fontSize: 12,
-                                height: 28,
-                                background: item.enabled ? "#fff" : "#f1f5f9",
-                              }}
-                            >
-                              {getPackingTimeOptions(item.codec).map((opt) => (
-                                <MenuItem
-                                  key={opt}
-                                  value={opt}
-                                  sx={{ fontSize: 12 }}
-                                >
-                                  {opt}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </td>
-                        <td
-                          style={{ padding: "6px 12px", textAlign: "center" }}
-                        >
-                          <FormControl size="small" sx={{ width: 100 }}>
-                            <MuiSelect
-                              value={item.bitRate}
-                              onChange={(e) =>
-                                handleBitRateChange(index, e.target.value)
-                              }
-                              disabled={!item.enabled}
-                              sx={{
-                                fontSize: 12,
-                                height: 28,
-                                background: item.enabled ? "#fff" : "#f1f5f9",
-                              }}
-                            >
-                              {getBitRateOptions(
-                                item.codec,
-                                item.packingTime,
-                              ).map((opt) => (
-                                <MenuItem
-                                  key={opt.value}
-                                  value={opt.value}
-                                  sx={{ fontSize: 12 }}
-                                >
-                                  {opt.label}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+    <table
+  style={{
+    width: "100%",
+    borderCollapse: "collapse",
+    minWidth: 700,
+  }}
+>
+  <thead>
+    <tr>
+      <TH
+        style={{
+          width: 60,
+          background: "#ffffff",
+          borderRight: "1px solid #cbd5e1",
+        }}
+      >
+        Check
+      </TH>
+
+      <TH
+        style={{
+          width: 70,
+          background: "#ffffff",
+          borderRight: "1px solid #cbd5e1",
+        }}
+      >
+        Priority
+      </TH>
+
+      <TH
+        style={{
+          background: "#ffffff",
+          borderRight: "1px solid #cbd5e1",
+        }}
+      >
+        CODEC
+      </TH>
+
+      <TH
+        style={{
+          background: "#ffffff",
+          borderRight: "1px solid #cbd5e1",
+        }}
+      >
+        Packing Time
+      </TH>
+
+      <TH
+        style={{
+          background: "#ffffff",
+        }}
+      >
+        Bit Rate (kbs)
+      </TH>
+    </tr>
+  </thead>
+
+  <tbody>
+    {codecData.map((item, index) => {
+      const rowBg =
+        index % 2 === 0 ? "#f8fafc" : "#ffffff";
+
+      return (
+        <tr
+          key={index}
+          style={{
+            background: rowBg,
+            borderBottom: "1px solid #dbe4ee",
+            transition: "background 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#eef4fb";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = rowBg;
+          }}
+        >
+          {/* Checkbox */}
+          <td
+            style={{
+              textAlign: "center",
+              padding: "8px 0",
+              borderRight: "1px solid #dbe4ee",
+            }}
+          >
+            <Checkbox
+              size="small"
+              checked={item.enabled}
+              onChange={() => handleCodecCheckbox(index)}
+              sx={{
+                padding: "1px",
+                color: "#64748b",
+                "&.Mui-checked": { color: "#0284c7" },
+                "&.MuiCheckbox-indeterminate": {
+                  color: "#0284c7",
+                },
+              }}
+            />
+          </td>
+
+          {/* Priority */}
+          <td
+            style={{
+              textAlign: "center",
+              padding: "8px 6px",
+              fontSize: 12,
+              color: C.mutedText,
+              borderRight: "1px solid #dbe4ee",
+            }}
+          >
+            {index + 1}
+          </td>
+
+          {/* Codec */}
+          <td
+            style={{
+              padding: "8px 10px",
+              borderRight: "1px solid #dbe4ee",
+              textAlign: "center",
+            }}
+          >
+            <FormControl size="small" sx={{ width: 110 }}>
+              <MuiSelect
+                value={item.codec}
+                onChange={(e) =>
+                  handleCodecChange(index, e.target.value)
+                }
+                disabled={!item.enabled}
+                sx={{
+                  fontSize: 12,
+                  height: 30,
+                  borderRadius: "6px",
+                  background: item.enabled
+                    ? "#fff"
+                    : "#f1f5f9",
+
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                }}
+              >
+                <MenuItem value="6" sx={{ fontSize: 12 }}>
+                  G711A
+                </MenuItem>
+
+                <MenuItem value="7" sx={{ fontSize: 12 }}>
+                  G711U
+                </MenuItem>
+
+                <MenuItem value="131" sx={{ fontSize: 12 }}>
+                  G729
+                </MenuItem>
+
+                <MenuItem value="98" sx={{ fontSize: 12 }}>
+                  iLBC
+                </MenuItem>
+
+                <MenuItem value="96" sx={{ fontSize: 12 }}>
+                  AMR
+                </MenuItem>
+
+                <MenuItem value="4" sx={{ fontSize: 12 }}>
+                  G723
+                </MenuItem>
+              </MuiSelect>
+            </FormControl>
+          </td>
+
+          {/* Packing Time */}
+          <td
+            style={{
+              padding: "8px 10px",
+              borderRight: "1px solid #dbe4ee",
+              textAlign: "center",
+            }}
+          >
+            <FormControl size="small" sx={{ width: 95 }}>
+              <MuiSelect
+                value={item.packingTime}
+                onChange={(e) =>
+                  handlePackingTimeChange(index, e.target.value)
+                }
+                disabled={!item.enabled}
+                sx={{
+                  fontSize: 12,
+                  height: 30,
+                  borderRadius: "6px",
+                  background: item.enabled
+                    ? "#fff"
+                    : "#f1f5f9",
+
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                }}
+              >
+                {getPackingTimeOptions(item.codec).map((opt) => (
+                  <MenuItem
+                    key={opt}
+                    value={opt}
+                    sx={{ fontSize: 12 }}
+                  >
+                    {opt}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </td>
+
+          {/* Bit Rate */}
+          <td
+            style={{
+              padding: "8px 10px",
+              textAlign: "center",
+            }}
+          >
+            <FormControl size="small" sx={{ width: 95 }}>
+              <MuiSelect
+                value={item.bitRate}
+                onChange={(e) =>
+                  handleBitRateChange(index, e.target.value)
+                }
+                disabled={!item.enabled}
+                sx={{
+                  fontSize: 12,
+                  height: 30,
+                  borderRadius: "6px",
+                  background: item.enabled
+                    ? "#fff"
+                    : "#f1f5f9",
+
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cbd5e1",
+                  },
+                }}
+              >
+                {getBitRateOptions(
+                  item.codec,
+                  item.packingTime,
+                ).map((opt) => (
+                  <MenuItem
+                    key={opt.value}
+                    value={opt.value}
+                    sx={{ fontSize: 12 }}
+                  >
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </td>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
               </div>
 
               {/* Notes */}
@@ -767,37 +860,52 @@ const FxsVoipMediaPage = () => {
             }}
           >
             <Button
-              variant="contained"
-              onClick={handleSave}
-              sx={{
-                background: "#1e2d42",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 120,
-                "&:hover": { background: "#0f172a" },
-              }}
-            >
-              Save Parameters
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleReset}
-              sx={{
-                color: "#1e293b",
-                borderColor: "#9ca3af",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 100,
-                "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
-              }}
-            >
-              Reset
-            </Button>
+  variant="contained"
+  onClick={handleSave}
+  sx={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+    padding: "8px 28px",
+    minWidth: 120,
+    borderRadius: "6px",
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      opacity: 0.85,
+    },
+  }}
+>
+  Save Parameters
+</Button>
+         <Button
+  variant="outlined"
+  onClick={handleReset}
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+    padding: "8px 28px",
+    minWidth: 110,
+    borderRadius: "6px",
+    "&:hover": {
+      background: "#cbd5e1",
+      border: "1px solid #cbd5e1",
+      opacity: 0.85,
+    },
+  }}
+>
+  Reset
+</Button>
           </div>
         </div>
       </div>

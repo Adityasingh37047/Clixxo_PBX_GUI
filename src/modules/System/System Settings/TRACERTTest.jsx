@@ -15,14 +15,14 @@ import { Alert } from "@mui/material";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
@@ -109,7 +109,7 @@ const inputStyle = {
   fontSize: 13,
   padding: "6px 10px",
   borderRadius: 10,
-  border: `1px solid ${C.cardBorder}`,
+  border: `1.5px solid ${C.cardBorder}`,
   background: C.cardBg,
   color: C.valueText,
   outline: "none",
@@ -117,11 +117,11 @@ const inputStyle = {
 };
 
 const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
   onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
   onMouseEnter: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#94a3b8";
+      e.target.style.borderColor = "#64748b";
   },
   onMouseLeave: (e) => {
     if (document.activeElement !== e.target)
@@ -484,11 +484,11 @@ const TRACERTTest = () => {
         <div
           style={{
             background: C.cardBg,
-            borderRadius: 20,
+            borderRadius: 10,
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
-            border: `1px solid ${C.cardBorder}`,
+            border: `1.5px solid ${C.cardBorder}`,
           }}
         >
           {/* Card Header */}
@@ -508,7 +508,7 @@ const TRACERTTest = () => {
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: C.strongText,
+                color: C.labelText,
                 letterSpacing: "0.02em",
               }}
             >
@@ -688,11 +688,11 @@ const TRACERTTest = () => {
                   value={info}
                   onChange={(e) => setInfo(e.target.value)}
                   readOnly
-                  onFocus={(e) => (e.target.style.borderColor = C.accent)}
+                  onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
                   onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
                   onMouseEnter={(e) => {
                     if (document.activeElement !== e.target)
-                      e.target.style.borderColor = "#94a3b8";
+                      e.target.style.borderColor = "#64748b";
                   }}
                   onMouseLeave={(e) => {
                     if (document.activeElement !== e.target)

@@ -23,18 +23,20 @@ import Checkbox from "@mui/material/Checkbox";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+
+const CARD_RADIUS = 20;
 
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
@@ -239,44 +241,44 @@ const tableContainerStyle = {
   maxWidth: "100%",
   margin: "0 auto",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
 };
 const blueBarStyle = {
   width: "100%",
-  minHeight: 44,
+  minHeight: 48,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   flexWrap: "wrap",
   gap: 12,
-  marginLeft: 6,
-
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "10px 14px",
+  padding: "14px 18px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.strongText,
-  borderBottom: `1px solid ${C.divider}`,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.cardBorder}`,
 };
 const thStyle = {
-  background: C.pageBg,
+  background: "#F8FAFC",
   color: C.labelText,
   fontWeight: 700,
   fontSize: 11,
-  borderBottom: `1px solid ${C.divider}`,
-  padding: "10px 18px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  padding: "12px 14px",
   whiteSpace: "nowrap",
   textTransform: "uppercase",
-  letterSpacing: "0.08em",
+  letterSpacing: "0.14em",
 };
 const tdStyle = {
-  borderBottom: `1px solid ${C.divider}`,
-  padding: "8px 18px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  padding: "10px 14px",
   fontSize: 13,
   fontWeight: 500,
   background: C.cardBg,
@@ -847,7 +849,23 @@ const AccountManage = () => {
           }}
         >
           <div style={blueBarStyle}>
-            <span>Info</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
             <div
               style={{
                 display: "flex",
@@ -901,13 +919,23 @@ const AccountManage = () => {
               style={{
                 width: "100%",
                 minWidth: 600,
-                borderCollapse: "collapse",
+                borderCollapse: "separate",
+                borderSpacing: 0,
               }}
             >
               <thead>
                 <tr>
-                  {ACCOUNT_MANAGE_TABLE_COLUMNS.map((col) => (
-                    <th key={col.key} style={thStyle}>
+                  {ACCOUNT_MANAGE_TABLE_COLUMNS.map((col, colIdx) => (
+                    <th
+                      key={col.key}
+                      style={{
+                        ...thStyle,
+                        ...(colIdx === 0 ? { borderLeft: "none" } : {}),
+                        ...(colIdx === ACCOUNT_MANAGE_TABLE_COLUMNS.length - 1
+                          ? { borderRight: "none" }
+                          : {}),
+                      }}
+                    >
                       {col.key === "choose" ? (
                         <Checkbox
                           size="small"
@@ -933,7 +961,7 @@ const AccountManage = () => {
                   <tr>
                     <td
                       colSpan={ACCOUNT_MANAGE_TABLE_COLUMNS.length}
-                      style={tdStyle}
+                      style={{ ...tdStyle, borderRight: "none", borderLeft: "none" }}
                     >
                       {loading ? "Loading..." : "No data"}
                     </td>
@@ -941,6 +969,10 @@ const AccountManage = () => {
                 ) : (
                   combinedAccounts.map((item, idx) => {
                     const realIdx = idx;
+                    const isLastRow = idx === combinedAccounts.length - 1;
+                    const rowBottomStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
                     return (
                       <tr
                         key={realIdx}
@@ -956,7 +988,13 @@ const AccountManage = () => {
                         }}
                       >
                         {/* Choose */}
-                        <td style={tdStyle}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            borderLeft: "none",
+                            ...rowBottomStyle,
+                          }}
+                        >
                           {!item.isAdmin && (
                             <Checkbox
                               size="small"
@@ -971,13 +1009,25 @@ const AccountManage = () => {
                           )}
                         </td>
                         {/* Id */}
-                        <td style={tdStyle}>{realIdx + 1}</td>
+                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                          {realIdx + 1}
+                        </td>
                         {/* Username */}
-                        <td style={tdStyle}>{item.username}</td>
+                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                          {item.username}
+                        </td>
                         {/* Authority */}
-                        <td style={tdStyle}>{item.authority ?? "-"}</td>
+                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                          {item.authority ?? "-"}
+                        </td>
                         {/* Modify */}
-                        <td style={tdStyle}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            borderRight: "none",
+                            ...rowBottomStyle,
+                          }}
+                        >
                           <EditDocumentIcon
                             className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
                             titleAccess="Edit"
@@ -999,6 +1049,23 @@ const AccountManage = () => {
                 )}
               </tbody>
             </table>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              background: "#ffffff",
+              borderTop: `1px solid ${C.cardBorder}`,
+              borderBottomLeftRadius: CARD_RADIUS,
+              borderBottomRightRadius: CARD_RADIUS,
+            }}
+          >
+            <span style={{ fontSize: 11, color: C.mutedText }}>
+              Showing {combinedAccounts.length} record
+              {combinedAccounts.length !== 1 ? "s" : ""}
+            </span>
           </div>
         </div>
         {/* Table Buttons (removed as they are now in the top bar) */}

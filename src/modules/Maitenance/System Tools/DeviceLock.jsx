@@ -8,10 +8,10 @@ import { Alert, TextField, Checkbox } from "@mui/material";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
@@ -122,14 +122,13 @@ const blueBarStyle = {
   background: C.cardBg,
   borderTopLeftRadius: 20,
   borderTopRightRadius: 20,
-  marginLeft: 6,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "0 14px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.strongText,
+  color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
 
@@ -340,7 +339,10 @@ const DeviceLock = () => {
                           transition: "border-color 0.2s ease",
                         },
                         "&:hover fieldset": { borderColor: "#64748b" },
-                        "&.Mui-focused fieldset": { borderColor: "#0284c7", borderWidth: 1 },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#0284c7",
+                          borderWidth: 1,
+                        },
                       },
                       "& .MuiInputBase-input": {
                         fontSize: 13,
@@ -387,7 +389,10 @@ const DeviceLock = () => {
                           transition: "border-color 0.2s ease",
                         },
                         "&:hover fieldset": { borderColor: "#64748b" },
-                        "&.Mui-focused fieldset": { borderColor: "#0284c7", borderWidth: 1 },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#0284c7",
+                          borderWidth: 1,
+                        },
                       },
                       "& .MuiInputBase-input": {
                         fontSize: 13,

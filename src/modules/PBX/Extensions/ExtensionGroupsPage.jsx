@@ -18,6 +18,7 @@ import {
   updateExtensionGroup,
   deleteExtensionGroup,
 } from "../../../api/apiService";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
 // ── Color palette (matches PBX / CDR) ────────────────────────────────────────
 const C = {
@@ -402,19 +403,7 @@ const ExtensionGroupsPage = () => {
           >
             {/* Left Toolbar Info */}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `1px solid ${C.cardBorder}`,
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {filteredGroups.length} records
-              </span>
+            
               {selectedIds.length > 0 && (
                 <span
                   style={{
@@ -585,18 +574,18 @@ const ExtensionGroupsPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
-                        }}
+                     sx={{
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+}}
                       />
                     </TH>
-                    <TH style={{ width: 36 }}>#</TH>
+                    <TH style={{ width: 36 }}>ID</TH>
                     <TH>Group Name</TH>
                     <TH>Extensions</TH>
-                    <TH style={{ width: 80 }}>Actions</TH>
+                    <TH style={{ width: 80 }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -605,11 +594,13 @@ const ExtensionGroupsPage = () => {
                       <td
                         colSpan={5}
                         style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
-                        }}
+                              padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
+                              textAlign: "center",
+                              borderRight: "1px solid #f1f5f9",
+                            }}
                       >
                         {searchQuery
                           ? `No results for "${searchQuery}"`
@@ -630,10 +621,13 @@ const ExtensionGroupsPage = () => {
                         <tr
                           key={row.id}
                           style={{
-                            background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
-                            transition: "background 0.15s ease",
-                          }}
+                              padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
+                              textAlign: "center",
+                              borderRight: "1px solid #f1f5f9",
+                            }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
                               e.currentTarget.style.background = "#f8fafc";
@@ -645,8 +639,11 @@ const ExtensionGroupsPage = () => {
                         >
                           <td
                             style={{
+                              padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
-                              padding: "10px 0",
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
@@ -655,18 +652,19 @@ const ExtensionGroupsPage = () => {
                               checked={isSelected}
                               onChange={() => handleToggleRow(row.id)}
                               sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+  padding: "1px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+}}
                             />
                           </td>
                           <td
                             style={{
+                            padding: "10px 14px",
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
-                              padding: "10px 6px",
-                              fontSize: 11,
-                              color: C.mutedText,
                               borderRight: "1px solid #f1f5f9",
                             }}
                           >
@@ -674,7 +672,7 @@ const ExtensionGroupsPage = () => {
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
+                             padding: "10px 14px",
                               fontSize: 13,
                               fontWeight: 400,
                               color: C.valueText,
@@ -688,12 +686,10 @@ const ExtensionGroupsPage = () => {
                             style={{
                               padding: "10px 14px",
                               fontSize: 13,
-                              color: C.labelText,
+                              fontWeight: 400,
+                              color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
                             }}
                           >
                             {row.extensions?.length > 0 ? (
@@ -705,17 +701,12 @@ const ExtensionGroupsPage = () => {
                           <td
                             style={{ padding: "7px 8px", textAlign: "center" }}
                           >
-                            <Btn
-                              onClick={() => handleOpenEditModal(row)}
-                              variant="outline"
-                              style={{
-                                fontSize: 10,
-                                padding: "3px 10px",
-                                margin: "0 auto",
-                              }}
-                            >
-                              Edit
-                            </Btn>
+                           <EditDocumentIcon
+  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+  titleAccess="Edit"
+  onClick={() => handleOpenEditModal(row)}
+  
+/>
                           </td>
                         </tr>
                       );

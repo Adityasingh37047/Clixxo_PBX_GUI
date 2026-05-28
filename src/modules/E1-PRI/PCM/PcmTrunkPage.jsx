@@ -15,8 +15,139 @@ import DialogActions from "@mui/material/DialogActions";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const LOCAL_STORAGE_KEY = "pcm_trunks";
+
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
+};
+
+const CARD_RADIUS = 20;
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = s.background;
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "12px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const cellStyle = {
+  padding: "10px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+};
 const modalOverlayStyle = {
   position: "fixed",
   top: 0,
@@ -114,47 +245,49 @@ const batchAddButtonStyle = {
 };
 const tableContainerStyle = {
   width: "100%",
-  maxWidth: 1200,
-  margin: "0 auto",
-  background: "#fff",
-  border: "2px solid #d3d3d3",
-  borderRadius: 8,
-  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+  maxWidth: "100%",
+  background: C.cardBg,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
+  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  overflow: "hidden",
 };
 const blueBarStyle = {
   width: "100%",
-  height: 36,
-  background:
-    "linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-  marginBottom: 0,
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  fontWeight: 600,
-  fontSize: 18,
-  color: "#2266aa",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
   justifyContent: "center",
-  boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+  borderBottom: `1px solid ${C.cardBorder}`,
 };
 const thStyle = {
-  background: "#fff",
-  color: "#222",
-  fontWeight: 600,
-  fontSize: 15,
-  border: "1px solid #d3d3d3",
-  padding: "4px 24px",
+  background: "#F8FAFC",
+  color: C.labelText,
+  fontWeight: 700,
+  fontSize: 11,
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  padding: "12px 14px",
   whiteSpace: "nowrap",
-  height: 32,
+  textTransform: "uppercase",
+  letterSpacing: "0.14em",
+  textAlign: "center",
 };
 const tdStyle = {
-  border: "1px solid #d3d3d3",
-  padding: "4px 24px",
-  fontSize: 14,
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  padding: "10px 14px",
+  fontSize: 13,
   background: "#fff",
   textAlign: "center",
   whiteSpace: "nowrap",
-  height: 32,
+  color: C.valueText,
 };
 const tableButtonStyle = {
   background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
@@ -282,244 +415,247 @@ const PcmTrunkPage = () => {
   // UI
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-80px)] p-4 flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="w-full">
-        {/* Breadcrumb */}
-        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 16, display: "flex", gap: 4 }}>
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            display: "flex",
+            gap: 4,
+          }}
+        >
           E1-PRI &rsaquo; PCM &rsaquo;{" "}
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            PCM Trunk Group
-          </span>
+          <span style={{ color: C.valueText, fontWeight: 600 }}>PCM Trunk</span>
         </div>
-      </div>
       {trunks.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center w-full h-full min-h-[calc(100vh-160px)]">
-          <div className="text-gray-800 text-2xl mb-6">
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 280,
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <div style={{ color: "#3E5475", fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
             No available PCM trunk!
           </div>
-          <div className="flex flex-row gap-4">
-            <Button
-              variant="contained"
-              sx={{
-                background:
-                  "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: "18px",
-                borderRadius: 2,
-                minWidth: 140,
-                minHeight: 48,
-                px: 2,
-                py: 0.5,
-                boxShadow: "0 2px 8px #b3e0ff",
-                textTransform: "none",
-                "&:hover": {
-                  background:
-                    "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
-                  color: "#fff",
-                },
-              }}
-              onClick={() => handleOpenModal()}
-            >
-              Add New
-            </Button>
-            <Button
-              variant="contained"
-              sx={{
-                background:
-                  "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: "18px",
-                borderRadius: 2,
-                minWidth: 140,
-                minHeight: 48,
-                px: 2,
-                py: 0.5,
-                boxShadow: "0 2px 8px #b3e0ff",
-                textTransform: "none",
-                "&:hover": {
-                  background:
-                    "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
-                  color: "#fff",
-                },
-              }}
-              // TODO: Implement batch add logic if needed
-            >
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+            <Btn variant="primary" onClick={() => handleOpenModal()} style={{ height: 36 }}>
+              + Add New
+            </Btn>
+            <Btn variant="cancel" style={{ height: 36 }}>
               Batch Add
-            </Button>
+            </Btn>
           </div>
         </div>
       ) : (
-        <div className="w-full max-w-full mx-auto">
+        <div style={tableContainerStyle}>
           <div
-            className="rounded-t-lg border-b-2 border-[#888] h-9 flex items-center justify-center font-semibold text-[18px] text-[#222] shadow-sm"
             style={{
-              background:
-                "linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 18px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 10,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
-            PCM Trunks
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <Btn variant="cancel" onClick={handleInverse} style={{ height: 30 }}>
+                Inverse
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={selected.length === 0}
+                style={{ height: 30 }}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
+              </Btn>
+              <Btn variant="cancel" onClick={handleClearAll} style={{ height: 30 }}>
+                Clear All
+              </Btn>
+              <Btn variant="primary" onClick={() => handleOpenModal()} style={{ height: 30, padding: "6px 14px", fontSize: 12 }}>
+                + Add New
+              </Btn>
+            </div>
           </div>
-          <div className="overflow-x-auto w-full">
-            <table className="w-full min-w-[1200px] bg-[#f8fafd] border-2 border-gray-400 rounded-b-lg shadow-sm">
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                tableLayout: "auto",
+                minWidth: 900,
+              }}
+            >
               <thead>
                 <tr>
-                  <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                    Check
-                  </th>
-                  <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                    Index
-                  </th>
-                  <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                    PCM NO.
-                  </th>
-                  <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                    Including Ts
-                  </th>
-                  <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 whitespace-nowrap">
-                    Modify
-                  </th>
+                  <TH style={{ width: 36, borderLeft: "none" }}>Check</TH>
+                  <TH>Index</TH>
+                  <TH>PCM NO.</TH>
+                  <TH>Including Ts</TH>
+                  <TH style={{ borderRight: "none" }}>Modify</TH>
                 </tr>
               </thead>
               <tbody>
-                {pagedTrunks.map((trunk, idx) => (
-                  <tr key={idx}>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
+                {pagedTrunks.map((trunk, idx) => {
+                  const isLastRow = idx === pagedTrunks.length - 1;
+                  const lastRowCellStyle = isLastRow
+                    ? { borderBottom: "none" }
+                    : {};
+                  return (
+                  <tr
+                    key={idx}
+                    style={{
+                      background: selected.includes(
+                        (page - 1) * PCM_TRUNK_ITEMS_PER_PAGE + idx,
+                      )
+                        ? "#e0f2fe"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff",
+                      borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
+                    }}
+                  >
+                    <td
+                      style={{
+                        ...cellStyle,
+                        borderLeft: "none",
+                        ...lastRowCellStyle,
+                        ...(isLastRow
+                          ? { borderBottomLeftRadius: CARD_RADIUS }
+                          : {}),
+                      }}
+                    >
                       <Checkbox
                         checked={selected.includes(
                           (page - 1) * PCM_TRUNK_ITEMS_PER_PAGE + idx,
                         )}
                         onChange={() => handleSelectRow(idx)}
-                        sx={{ "& .MuiSvgIcon-root": { fontSize: 22 } }}
+                        sx={checkboxSx}
                       />
                     </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {trunk.index}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {trunk.pcmNo}
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
+                    <td style={{ ...cellStyle, ...lastRowCellStyle }}>{trunk.index}</td>
+                    <td style={{ ...cellStyle, ...lastRowCellStyle }}>{trunk.pcmNo}</td>
+                    <td style={{ ...cellStyle, ...lastRowCellStyle }}>
                       {trunk.ts
                         .map((checked, i) => (checked ? i : null))
                         .filter((i) => i !== null)
                         .join(",")}
                     </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <Button
+                    <td
+                      style={{
+                        ...cellStyle,
+                        borderRight: "none",
+                        ...lastRowCellStyle,
+                        ...(isLastRow
+                          ? { borderBottomRightRadius: CARD_RADIUS }
+                          : {}),
+                      }}
+                    >
+                      <EditDocumentIcon
+                        style={{
+                          fontSize: 22,
+                          color: "#2563eb",
+                          cursor: "pointer",
+                          opacity: 0.7,
+                        }}
                         onClick={() => handleOpenModal(trunk, idx)}
-                        sx={{ minWidth: 0, p: 0, borderRadius: 1 }}
-                      >
-                        <EditDocumentIcon
-                          style={{
-                            fontSize: 22,
-                            color: "#0e8fd6",
-                            transition: "color 0.2s, transform 0.2s",
-                          }}
-                        />
-                      </Button>
+                      />
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
-          {/* Table controls */}
-          <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-                onClick={handleCheckAllRows}
-              >
-                Check All
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-                onClick={handleUncheckAllRows}
-              >
-                Uncheck All
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-                onClick={handleInverse}
-              >
-                Inverse
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-                onClick={handleDelete}
-              >
-                Delete
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-                onClick={handleClearAll}
-              >
-                Clear All
-              </button>
-            </div>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400"
-              onClick={() => handleOpenModal()}
-            >
-              Add New
-            </button>
-          </div>
-          {/* Pagination */}
-          <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-            <span>{trunks.length} items Total</span>
-            <span>{PCM_TRUNK_ITEMS_PER_PAGE} Items/Page</span>
-            <span>
-              {page}/{totalPages}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderTop: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              borderBottomLeftRadius: CARD_RADIUS,
+              borderBottomRightRadius: CARD_RADIUS,
+            }}
+          >
+            <span style={{ fontSize: 11, color: C.mutedText }}>
+              Showing {pagedTrunks.length} record
+              {pagedTrunks.length !== 1 ? "s" : ""} on page {page}
             </span>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(1)}
-              disabled={page === 1}
-            >
-              First
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-gray-300 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <span>Go to Page</span>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => handlePageChange(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Btn
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page <= 1}
+                variant="outline"
+              >
+                ← Prev
+              </Btn>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: C.accent,
+                  background: "#e0f2fe",
+                  padding: "5px 14px",
+                  borderRadius: 6,
+                  border: `1px solid ${C.cardBorder}`,
+                }}
+              >
+                Page {page} of {totalPages}
+              </span>
+              <Btn
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= totalPages}
+                variant="outline"
+              >
+                Next →
+              </Btn>
+            </div>
           </div>
         </div>
       )}
+      </div>
       {/* Modal Dialog */}
       <Dialog
         open={isModalOpen}

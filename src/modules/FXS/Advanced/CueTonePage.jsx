@@ -12,16 +12,20 @@ import {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+
+  accent: "#2e2f31",
+
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+
+  purple: "#8b5cf6",
 };
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
@@ -353,22 +357,38 @@ const CueTonePage = () => {
               background: "#f8fafc",
             }}
           >
-            <Button
-              variant="contained"
-              onClick={handleUpload}
-              sx={{
-                background: "#1e2d42",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 120,
-                "&:hover": { background: "#0f172a" },
-              }}
-            >
-              Upload
-            </Button>
+           <Button
+  variant="contained"
+  onClick={handleUpload}
+  sx={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+
+    fontWeight: 600,
+    fontSize: 13,
+    textTransform: "none",
+
+    padding: "8px 28px",
+    borderRadius: "6px",
+
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
+      opacity: 0.85,
+    },
+
+    "&:disabled": {
+      background: "#94a3b8",
+      color: "#e2e8f0",
+      border: "1px solid #94a3b8",
+    },
+  }}
+>
+  Upload
+</Button>
           </div>
         </div>
       </div>

@@ -176,7 +176,7 @@ const RouteRoutingParameterPage = () => {
       borderColor: "#64748b",
     },
     "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-      borderColor: C.accent,
+      borderColor: "#0284c7",
       borderWidth: 1,
     },
     "& .MuiSelect-select": {

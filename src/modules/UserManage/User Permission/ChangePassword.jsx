@@ -24,14 +24,14 @@ import Button from "@mui/material/Button";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
@@ -124,8 +124,8 @@ const tableContainerStyle = {
   maxWidth: "100%",
   margin: "0 auto",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
   paddingBottom: "24px",
@@ -137,15 +137,14 @@ const blueBarStyle = {
   background: C.cardBg,
   borderTopLeftRadius: 20,
   borderTopRightRadius: 20,
-  marginLeft: 6,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "0 14px",
+  padding: "14px 18px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.strongText,
-  borderBottom: `1px solid ${C.divider}`,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.cardBorder}`,
 };
 
 const ChangePassword = () => {
@@ -388,12 +387,13 @@ const ChangePassword = () => {
                             "&:hover fieldset": {
                               borderColor: fieldErrors[field.name]
                                 ? C.errorRed
-                                : "#94a3b8",
+                                : "#64748b",
                             },
                             "&.Mui-focused fieldset": {
                               borderColor: fieldErrors[field.name]
                                 ? C.errorRed
-                                : C.accent,
+                                : "#0284c7",
+                              borderWidth: 1,
                             },
                           },
                           "& .MuiInputBase-input": {
@@ -472,12 +472,13 @@ const ChangePassword = () => {
                                   ? C.cardBorder
                                   : fieldErrors[field.name]
                                     ? C.errorRed
-                                    : "#94a3b8",
+                                    : "#64748b",
                             },
                             "&.Mui-focused fieldset": {
                               borderColor: fieldErrors[field.name]
                                 ? C.errorRed
-                                : C.accent,
+                                : "#0284c7",
+                              borderWidth: 1,
                             },
                             "&.Mui-disabled": {
                               cursor: "not-allowed",
@@ -522,7 +523,12 @@ const ChangePassword = () => {
                 onClick={handleSave}
                 disabled={loading}
                 type="submit"
-                style={{ minWidth: 110, height: 36, fontSize: 13, letterSpacing: "0.2px" }}
+                style={{
+                  minWidth: 110,
+                  height: 36,
+                  fontSize: 13,
+                  letterSpacing: "0.2px",
+                }}
               >
                 {loading ? "Changing Password..." : "Save"}
               </Btn>

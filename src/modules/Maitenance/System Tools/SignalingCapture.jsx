@@ -14,11 +14,11 @@ import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#64748b",
-  valueText: "#1e293b",
+  valueText: "#3E5475",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",
@@ -43,7 +43,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -150,7 +151,7 @@ const blueBarStyle = {
   padding: "0 20px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.strongText,
+  color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
 
@@ -214,7 +215,7 @@ const SignalingCapture = () => {
     onMouseLeave: (e) => {
       if (!e.target.disabled && document.activeElement !== e.target)
         e.target.style.borderColor = C.cardBorder;
-    }
+    },
   };
 
   // Fetch system info and populate network options
@@ -553,7 +554,7 @@ const SignalingCapture = () => {
               {/* Network Interface Row exactly like TS Recording rows */}
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label className="text-[14px] font-semibold text-gray-700 sm:w-[280px] whitespace-nowrap">
+                  <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
                     {SC_LABELS.networkInterface}
                   </label>
                   <div className="flex flex-col sm:flex-row gap-4">
@@ -597,7 +598,7 @@ const SignalingCapture = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label className="text-[14px] font-semibold text-gray-700 sm:w-[280px] whitespace-nowrap">
+                <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
                   {SC_LABELS.captureSyslog}
                 </label>
                 <div className="flex items-center gap-2">
@@ -628,7 +629,7 @@ const SignalingCapture = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label className="text-[14px] font-semibold text-gray-700 sm:w-[280px] whitespace-nowrap">
+                <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
                   {SC_LABELS.syslogDest}
                 </label>
                 <input
@@ -659,7 +660,6 @@ const SignalingCapture = () => {
                   {SC_NOTE}
                 </span>
               </div>
-
             </div>
           </div>
         </div>
@@ -676,7 +676,7 @@ const SignalingCapture = () => {
                 className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 border-b border-gray-100 last:border-b-0 last:pb-0"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label className="text-[14px] font-semibold text-gray-700 sm:w-[280px] whitespace-nowrap">
+                  <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
                     {SC_LABELS.pcmTs}
                   </label>
                   <div className="flex flex-col sm:flex-row gap-4">
@@ -745,7 +745,7 @@ const SignalingCapture = () => {
                 className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 border-b border-gray-100 last:border-b-0 last:pb-0"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label className="text-[14px] font-semibold text-gray-700 sm:w-[280px] whitespace-nowrap">
+                  <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
                     {SC_LABELS.pcmTs}
                   </label>
                   <div className="flex flex-col sm:flex-row gap-4">

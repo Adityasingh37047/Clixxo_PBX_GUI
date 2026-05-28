@@ -495,19 +495,6 @@ const BlockedListPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {filteredRows.length} records
-              </span>
               {selected.length > 0 && (
                 <span
                   style={{
@@ -600,28 +587,46 @@ const BlockedListPage = () => {
               >
                 Next →
               </Btn> */}
-
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="danger"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                🗑 Delete
+              </Btn>
               <Btn
                 onClick={() => {
                   setImportFile(null);
                   setShowImportModal(true);
                 }}
                 variant="outline"
-                    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 ⬇ Import
               </Btn>
-              <Btn onClick={handleExport} variant="outline" style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}>
+              <Btn
+                onClick={handleExport}
+                variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
                 ⬆ Export
               </Btn>
               {/* <Btn
@@ -635,21 +640,7 @@ const BlockedListPage = () => {
                   "Refresh"
                 )}
               </Btn> */}
-              <Btn
-                onClick={handleDelete}
-                disabled={
-                  loading.delete || loading.fetch || selected.length === 0
-                }
-                variant="danger"
-                    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-              >
-                🗑 Delete
-              </Btn>
+
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.fetch}
@@ -698,13 +689,13 @@ const BlockedListPage = () => {
                         onChange={handleToggleAll}
                         sx={{
                           padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          color: "#64748b",
+                          "&.Mui-checked": { color: "#0284c7" },
+                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
                         }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ width: 40 }}>ID</TH>
                     <TH>Name</TH>
                     <TH>Match Mode</TH>
                     <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
@@ -772,8 +763,8 @@ const BlockedListPage = () => {
                               onChange={() => handleToggleRow(realIdx)}
                               sx={{
                                 padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
+                                color: "#64748b",
+                                "&.Mui-checked": { color: "#0284c7" },
                               }}
                             />
                           </td>
@@ -896,17 +887,11 @@ const BlockedListPage = () => {
                           <td
                             style={{ textAlign: "center", padding: "7px 8px" }}
                           >
-                            <Btn
+                            <EditDocumentIcon
+                              className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                              titleAccess="Edit"
                               onClick={() => handleOpenEditModal(row)}
-                              variant="outline"
-                              style={{
-                                fontSize: 10,
-                                padding: "3px 10px",
-                                margin: "0 auto",
-                              }}
-                            >
-                              Edit
-                            </Btn>
+                            />
                           </td>
                         </tr>
                       );
@@ -1076,23 +1061,23 @@ const BlockedListPage = () => {
                         sx={{ fontSize: 13 }}
                       >
                         <MenuItem
-  value="Exact Match"
-  sx={{ fontSize: 13, fontWeight: 400 }}
->
-  Exact Match
-</MenuItem>
+                          value="Exact Match"
+                          sx={{ fontSize: 13, fontWeight: 400 }}
+                        >
+                          Exact Match
+                        </MenuItem>
                         <MenuItem
-  value="Regex Match"
-  sx={{ fontSize: 13, fontWeight: 400 }}
->
-  Regex Match
-</MenuItem>
-<MenuItem
-  value="Extension"
-  sx={{ fontSize: 13, fontWeight: 400 }}
->
-  Extension
-</MenuItem>
+                          value="Regex Match"
+                          sx={{ fontSize: 13, fontWeight: 400 }}
+                        >
+                          Regex Match
+                        </MenuItem>
+                        <MenuItem
+                          value="Extension"
+                          sx={{ fontSize: 13, fontWeight: 400 }}
+                        >
+                          Extension
+                        </MenuItem>
 
                         <MenuItem value="Extension" sx={{ fontSize: 13 }}>
                           Extension
@@ -1255,15 +1240,15 @@ const BlockedListPage = () => {
             onClick={handleSave}
             disabled={loading.save}
             variant="default"
-             style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+            style={{
+              padding: "8px 28px",
+              fontSize: 13,
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+              color: "#fff",
+              border: "1px solid #5A6F8F",
+              boxShadow: "0 2px 8px #3E5475",
+            }}
           >
             {loading.save ? (
               <CircularProgress
@@ -1281,12 +1266,14 @@ const BlockedListPage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="outline"
-              style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
+            style={{
+              padding: "8px 28px",
+              fontSize: 13,
+              background: "#cbd5e1",
+              color: "#374151",
+              border: "1px solid #cbd5e1",
+              boxShadow: "0  2px 8px rgba(15, 23, 42, 0.08)",
+            }}
           >
             Cancel
           </Btn>

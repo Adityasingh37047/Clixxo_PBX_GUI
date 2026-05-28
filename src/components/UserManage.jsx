@@ -17,14 +17,14 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   successGreen: "#16a34a",
@@ -144,6 +144,7 @@ const TH = ({ children, style: extra }) => (
       padding: "14px 18px",
       textAlign: "left",
       borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.08em",
@@ -156,9 +157,9 @@ const TH = ({ children, style: extra }) => (
 
 const cbSx = {
   p: 0,
-  color: C.accent,
-  "&.Mui-checked": { color: C.accent },
-  "&.MuiCheckbox-indeterminate": { color: C.accent },
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
   "& .MuiSvgIcon-root": { fontSize: 16 },
 };
 
@@ -698,6 +699,7 @@ export default function UserManage() {
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
+            border: `1.5px solid ${C.cardBorder}`,
           }}
         >
           {/* Card Toolbar */}
@@ -808,7 +810,7 @@ export default function UserManage() {
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 50, textAlign: "center" }}>#</TH>
+                    <TH style={{ width: 50, textAlign: "center" }}>ID</TH>
                     <TH style={{ width: 180 }}>Username</TH>
                     <TH style={{ width: 140, textAlign: "center" }}>
                       Access Type
@@ -817,7 +819,15 @@ export default function UserManage() {
                       Role Permission
                     </TH>
                     <TH>Sections</TH>
-                    <TH style={{ width: 160, textAlign: "center" }}>Actions</TH>
+                    <TH
+                      style={{
+                        width: 160,
+                        textAlign: "center",
+                        borderRight: "none",
+                      }}
+                    >
+                      Actions
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -827,12 +837,15 @@ export default function UserManage() {
                       access.access_type ?? user.access_type ?? user.role ?? "";
                     const isSuperAdmin =
                       accessType === "superadmin" || accessType === "admin";
+                    const isLastRow = i === users.length - 1;
+                    const rowBottomStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : { borderBottom: `1px solid ${C.divider}` };
                     return (
                       <tr
                         key={user.id}
                         style={{
                           background: C.cardBg,
-                          borderBottom: `1px solid ${C.divider}`,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -849,7 +862,8 @@ export default function UserManage() {
                             textAlign: "center",
                             fontSize: 13,
                             fontWeight: 500,
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...rowBottomStyle,
+                            borderRight: `1px solid ${C.divider}`,
                           }}
                         >
                           {i + 1}
@@ -860,7 +874,8 @@ export default function UserManage() {
                             fontWeight: 500,
                             color: C.valueText,
                             fontSize: 13,
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...rowBottomStyle,
+                            borderRight: `1px solid ${C.divider}`,
                           }}
                         >
                           {user.username}
@@ -869,7 +884,8 @@ export default function UserManage() {
                           style={{
                             padding: "8px 18px",
                             textAlign: "center",
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...rowBottomStyle,
+                            borderRight: `1px solid ${C.divider}`,
                           }}
                         >
                           <span
@@ -891,7 +907,8 @@ export default function UserManage() {
                             fontSize: 13,
                             textAlign: "center",
                             fontWeight: 500,
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...rowBottomStyle,
+                            borderRight: `1px solid ${C.divider}`,
                           }}
                         >
                           {access.role_permission ??
@@ -908,7 +925,8 @@ export default function UserManage() {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...rowBottomStyle,
+                            borderRight: `1px solid ${C.divider}`,
                           }}
                         >
                           {isSuperAdmin ? (
@@ -933,7 +951,8 @@ export default function UserManage() {
                           style={{
                             padding: "8px 18px",
                             textAlign: "center",
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...rowBottomStyle,
+                            borderRight: "none",
                           }}
                         >
                           <div
@@ -979,6 +998,7 @@ export default function UserManage() {
                 boxShadow: C.cardShadow,
                 marginTop: 24,
                 marginBottom: 24,
+                border: `1.5px solid ${C.cardBorder}`,
               }}
             >
               {/* Card Header */}
@@ -1111,6 +1131,7 @@ export default function UserManage() {
                 boxShadow: C.cardShadow,
                 marginTop: 24,
                 marginBottom: 0,
+                border: `1.5px solid ${C.cardBorder}`,
               }}
             >
               {/* Card Header */}

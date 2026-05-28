@@ -33,22 +33,25 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
+  cardBorder: "#e2e8f0",
+
+  labelText: "#64748b",
   valueText: "#1e293b",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
+  accent: "#2563eb",
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
+  purple: "#8b5cf6",
 };
-
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
+  type,
   title,
 }) => {
   const variants = {
@@ -76,6 +79,7 @@ const Btn = ({
   const s = variants[variant] || variants.default;
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -83,7 +87,7 @@ const Btn = ({
         ...s,
         fontSize: 11,
         fontWeight: 600,
-        padding: "5px 14px",
+        padding: "6px 14px",
         borderRadius: 6,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
@@ -96,7 +100,7 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.opacity = "0.85";
       }}
       onMouseLeave={(e) => {
         if (!disabled) e.currentTarget.style.opacity = "1";
@@ -110,17 +114,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
-      color: "#1e293b",
+      background: "#f8fafc",
+      color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
-      borderBottom: "1px solid #9ca3af",
-      borderRight: "0.5px solid #9ca3af",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -515,24 +519,20 @@ const SipTrunkGroup = () => {
     >
       {/* Toast Alert */}
       {message.text && (
-        <div
-          style={{
+        <Alert
+          severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
+          onClose={() => setMessage({ type: "", text: "" })}
+          sx={{
             position: "fixed",
             top: 20,
             right: 20,
             zIndex: 9999,
             minWidth: 300,
-            maxWidth: 420,
+            boxShadow: 3,
           }}
         >
-          <Alert
-            severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{ boxShadow: 3 }}
-          >
-            {message.text}
-          </Alert>
-        </div>
+          {message.text}
+        </Alert>
       )}
 
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
@@ -549,9 +549,9 @@ const SipTrunkGroup = () => {
           style={{
             background: C.cardBg,
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            borderRadius: 22,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
@@ -560,37 +560,25 @@ const SipTrunkGroup = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              padding: "14px 18px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              background: "#ffffff",
               flexWrap: "wrap",
               gap: 8,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
-                }}
-              >
-                Page {page} · {groups.length} records
-              </span>
+              
               {selected.length > 0 && (
                 <span
                   style={{
                     background: "#e0f2fe",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
@@ -602,6 +590,12 @@ const SipTrunkGroup = () => {
                 onClick={handleCheckAll}
                 disabled={loading.delete}
                 variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 Check All
               </Btn>
@@ -609,6 +603,12 @@ const SipTrunkGroup = () => {
                 onClick={handleUncheckAll}
                 disabled={loading.delete}
                 variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 Uncheck All
               </Btn>
@@ -616,6 +616,12 @@ const SipTrunkGroup = () => {
                 onClick={handleInverse}
                 disabled={loading.delete}
                 variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 Inverse
               </Btn>
@@ -623,6 +629,12 @@ const SipTrunkGroup = () => {
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
                 variant="danger"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#dc2626" }} />
@@ -633,6 +645,12 @@ const SipTrunkGroup = () => {
                 onClick={handleClearAll}
                 disabled={loading.delete}
                 variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 Clear All
               </Btn>
@@ -640,6 +658,12 @@ const SipTrunkGroup = () => {
                 onClick={handleAddNew}
                 disabled={loading.fetch}
                 variant="accent"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 + Add New
               </Btn>
@@ -674,7 +698,7 @@ const SipTrunkGroup = () => {
                       disabled={loading.delete}
                       sx={{
                         padding: "1px",
-                        color: C.accent,
+                        color: "#64748b",
                         "&.Mui-checked": { color: C.accent },
                       }}
                     />
@@ -725,14 +749,21 @@ const SipTrunkGroup = () => {
                         key={realIdx}
                         style={{
                           background: rowBg,
-                          borderBottom: "0.5px solid #9ca3af",
+                          borderBottom: "1px solid #f1f5f9",
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSel) e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSel) e.currentTarget.style.background = rowBg;
                         }}
                       >
                         <td
                           style={{
                             textAlign: "center",
-                            padding: "4px 0",
-                            borderRight: "0.5px solid #edf2f7",
+                            padding: "10px 0",
+                            borderRight: "1px solid #f1f5f9",
                           }}
                         >
                           <Checkbox
@@ -742,7 +773,7 @@ const SipTrunkGroup = () => {
                             disabled={loading.delete}
                             sx={{
                               padding: "1px",
-                              color: C.accent,
+                              color: "#64748b",
                               "&.Mui-checked": { color: C.accent },
                             }}
                           />
@@ -757,9 +788,10 @@ const SipTrunkGroup = () => {
                               key={col.key}
                               style={{
                                 textAlign: "center",
-                                fontSize: 12,
-                                borderRight: "0.5px solid #edf2f7",
-                                padding: "6px 8px",
+                                padding: "10px 14px",
+                                fontSize: 13,
+                                color: C.valueText,
+                                borderRight: "1px solid #f1f5f9",
                               }}
                             >
                               {value !== undefined &&
@@ -770,15 +802,12 @@ const SipTrunkGroup = () => {
                             </td>
                           );
                         })}
-                        <td style={{ textAlign: "center", padding: "4px 0" }}>
-                          <Btn
+                        <td style={{ textAlign: "center", padding: "7px 8px" }}>
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
                             onClick={() => handleEdit(realIdx)}
-                            disabled={loading.delete}
-                            variant="outline"
-                            style={{ margin: "0 auto" }}
-                          >
-                            Edit
-                          </Btn>
+                          />
                         </td>
                       </tr>
                     );
@@ -797,7 +826,7 @@ const SipTrunkGroup = () => {
                 justifyContent: "space-between",
                 padding: "10px 14px",
                 borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
+                background: "#ffffff",
                 flexWrap: "wrap",
                 gap: 12,
               }}
@@ -811,9 +840,7 @@ const SipTrunkGroup = () => {
                   color: C.mutedText,
                 }}
               >
-                <span>
-                  Showing {pagedGroups.length} records on page {page}
-                </span>
+                <span>Showing {pagedGroups.length} records on page {page}</span>
                 {/* <span>{groups.length} items Total</span>   */}
                 {/* <span>{itemsPerPage} Items/Page</span> */}
                 {/* <span style={{ color: C.accent, fontWeight: 600 }}>{page} / {totalPages} Pages</span> */}
@@ -913,124 +940,145 @@ const SipTrunkGroup = () => {
           {editIndex !== -1 ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
         </DialogTitle>
         <DialogContent
-          style={{ padding: "12px 12px 0 12px", backgroundColor: "#f8fafc" }}
+          style={{ padding: "20px 24px", backgroundColor: "#f8fafc" }}
         >
-          <div className="flex flex-col gap-2 w-full">
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
             >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
+              <h3
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 12,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
               >
-                SIP Trunk ID:
-              </label>
-              <div className="flex-1">
-                <Select
-                  name="sip_trunk_id"
-                  value={formData.sip_trunk_id}
-                  onChange={handleInputChange}
-                  size="small"
-                  displayEmpty
-                  sx={{
-                    width: 300,
-                    "& .MuiOutlinedInput-input": {
-                      padding: "6px 8px",
-                      fontSize: 14,
-                    },
-                  }}
-                >
-                  <MenuItem value="" disabled>
-                    Select SIP Trunk ID
-                  </MenuItem>
-                  {trunkIds.length === 0 ? (
-                    <MenuItem value="" disabled>
-                      No options
-                    </MenuItem>
-                  ) : (
-                    trunkIds.map((opt) => (
-                      <MenuItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </MenuItem>
-                    ))
-                  )}
-                </Select>
-              </div>
-            </div>
-            <div
-              className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-              style={{ minHeight: 32 }}
-            >
-              <label
-                className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                style={{ width: 160, marginRight: 10 }}
+                Trunk Group Info
+              </h3>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px 32px",
+                }}
               >
-                Group ID:
-              </label>
-              <div className="flex-1">
-                <TextField
-                  type="text"
-                  name="group_id"
-                  value={formData.group_id}
-                  onChange={handleInputChange}
-                  size="small"
-                  variant="outlined"
-                  placeholder="Enter Group ID"
-                  sx={{ width: 300 }}
-                  inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
-                />
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 120,
+                      flexShrink: 0,
+                    }}
+                  >
+                    SIP Trunk ID:
+                  </label>
+                  <div className="flex-1">
+                    <Select
+                      name="sip_trunk_id"
+                      value={formData.sip_trunk_id}
+                      onChange={handleInputChange}
+                      size="small"
+                      fullWidth
+                      displayEmpty
+                      sx={{ fontSize: 13 }}
+                    >
+                      <MenuItem value="" disabled sx={{ fontSize: 13 }}>Select SIP Trunk ID</MenuItem>
+                      {trunkIds.length === 0 ? (
+                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>No options</MenuItem>
+                      ) : (
+                        trunkIds.map((opt) => (
+                          <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: 13 }}>
+                            {opt.label}
+                          </MenuItem>
+                        ))
+                      )}
+                    </Select>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 120,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Group ID:
+                  </label>
+                  <div className="flex-1">
+                    <TextField
+                      type="text"
+                      name="group_id"
+                      value={formData.group_id}
+                      onChange={handleInputChange}
+                      size="small"
+                      fullWidth
+                      variant="outlined"
+                      placeholder="Enter Group ID"
+                      inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </DialogContent>
         <DialogActions
           style={{
-            background: "#f8fafc",
             padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
             justifyContent: "center",
-            gap: 16,
+            gap: 12,
           }}
         >
-          <Button
+          <Btn
             onClick={handleSave}
             variant="contained"
             disabled={loading.save}
-            startIcon={
-              loading.save ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : null
-            }
-            sx={{
-              background: "#1e2d42",
-              color: "#fff",
-              fontWeight: 600,
+            style={{
+              padding: "8px 28px",
               fontSize: 13,
-              textTransform: "none",
-              padding: "6px 32px",
-              minWidth: 120,
-              "&:hover": { background: "#0f172a" },
+              background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+              color: "#fff",
+              border: "1px solid #5A6F8F",
+              boxShadow: "0 2px 8px #3E5475",
             }}
           >
+            {loading.save ? (
+              <CircularProgress size={14} style={{ color: "#fff", marginRight: 8 }} />
+            ) : null}
             {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
+          </Btn>
+          <Btn
             onClick={() => setShowModal(false)}
             variant="outlined"
             disabled={loading.save}
-            sx={{
-              color: "#1e293b",
-              borderColor: "#9ca3af",
-              fontWeight: 600,
+            style={{
+              background: "#cbd5e1",
+              color: "#374151",
+              border: "1px solid #cbd5e1",
+              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+              padding: "8px 28px",
               fontSize: 13,
-              textTransform: "none",
-              padding: "6px 32px",
-              minWidth: 100,
-              "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
             }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>
