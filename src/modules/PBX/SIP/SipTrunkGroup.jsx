@@ -36,15 +36,17 @@ const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#e2e8f0",
-
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#64748b",
   valueText: "#1e293b",
+  strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#2563eb",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  errorRed: "#dc2626",
 };
+
 const Btn = ({
   children,
   onClick,

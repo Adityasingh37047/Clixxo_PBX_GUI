@@ -16,33 +16,91 @@ import {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
   valueText: "#1e293b",
+  strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
+  accent: "#0284c7",
+  primary: "#2563eb",
   errorRed: "#dc2626",
-  amber: "#d97706",
 };
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type = "button",
+}) => {
+  const styles = {
+    default: { background: C.cardBg, color: C.valueText, border: "1px solid #9ca3af" },
+    primary: {
+      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: { background: C.cardBg, color: C.labelText, border: `0.5px solid ${C.cardBorder}` },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = variant === "primary" ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)" : variant === "cancel" ? "#b6c2d3" : "#e2e8f0";
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 5,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.background = hoverBg; }}
+      onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.background = s.background; }}
+    >
+      {children}
+    </button>
+  );
+};
+
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -50,41 +108,45 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+const FieldRow = ({ label, children, style }) => (
+  <div style={{ 
+    display: "flex", 
+    alignItems: "center", 
+    background: "#ffffff",
+    border: `1px solid #cbd5e1`,
+    borderRadius: 6,
+    padding: "6px 12px",
+    gap: 12, 
+    minHeight: 40,
+    ...style 
+  }}>
     <label
       style={{
         fontSize: 13,
         fontWeight: 600,
-        color: C.labelText,
-        width: 240, // Wider for long labels
+        color: "#1e293b",
+        width: 160,
         flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
       }}
     >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+      {label}:
     </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+    <div className="flex-1" style={{ maxWidth: 280 }}>{children}</div>
   </div>
 );
 
 const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
+  <div
+    style={{
+      fontSize: 13,
+      fontWeight: 700,
+      color: C.strongText,
+      marginBottom: 14,
+      borderBottom: `1px solid ${C.cardBorder}`,
+      paddingBottom: 6,
+    }}
+  >
+    {title}
   </div>
 );
 
@@ -232,9 +294,12 @@ const DialingTimeoutPage = () => {
             marginBottom: 12,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Advanced &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
+          <div style={{ fontSize: 12, color: C.mutedText, display: "flex", gap: 4 }}>
+            <span>FXS</span>
+            <span>&gt;</span>
+            <span>Advanced</span>
+            <span>&gt;</span>
+            <span style={{ color: C.strongText, fontWeight: 600 }}>
               Dialing Timeout
             </span>
           </div>
@@ -243,20 +308,19 @@ const DialingTimeoutPage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            background: "#ffffff",
+            borderRadius: 22,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            border: `1px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
-          <div style={{ overflowX: "auto", padding: "12px" }}>
+          <div style={{ overflowX: "auto" }}>
             <table
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
-                tableLayout: "auto",
-                minWidth: 600,
+                minWidth: 800,
               }}
             >
               <thead>
@@ -270,31 +334,27 @@ const DialingTimeoutPage = () => {
                 <tr
                   style={{
                     background: "#ffffff",
-                    borderBottom: "0.5px solid #9ca3af",
+                    borderBottom: "1px solid #f1f5f9",
                   }}
                 >
                   <td
                     style={{
                       textAlign: "center",
-                      padding: "8px 0",
+                      padding: "4px 8px",
                       borderRight: "0.5px solid #edf2f7",
                     }}
                   >
                     <EditDocumentIcon
-                      style={{
-                        cursor: "pointer",
-                        color: "#0284c7",
-                        fontSize: 18,
-                        margin: "0 auto",
-                        opacity: 0.8,
-                      }}
-                      onClick={handleOpenModal}
-                    />
+  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+  titleAccess="Edit"
+  onClick={handleOpenModal}
+  style={{ fontSize: 18 }}
+/>
                   </td>
                   <td
                     style={{
                       textAlign: "center",
-                      padding: "8px 16px",
+                      padding: "7px 16px",
                       fontSize: 12,
                       color: C.valueText,
                       borderRight: "0.5px solid #edf2f7",
@@ -305,7 +365,7 @@ const DialingTimeoutPage = () => {
                   <td
                     style={{
                       textAlign: "center",
-                      padding: "8px 16px",
+                      padding: "7px 16px",
                       fontSize: 12,
                       color: C.valueText,
                       borderRight: "0.5px solid #edf2f7",
@@ -316,7 +376,7 @@ const DialingTimeoutPage = () => {
                   <td
                     style={{
                       textAlign: "center",
-                      padding: "8px 16px",
+                      padding: "7px 16px",
                       fontSize: 12,
                       color: C.mutedText,
                     }}
@@ -337,23 +397,23 @@ const DialingTimeoutPage = () => {
         maxWidth={false}
         disableRestoreFocus
         disableEnforceFocus
-        PaperProps={{ sx: { width: 550, maxWidth: "95vw", borderRadius: 2 } }}
+        PaperProps={{ sx: { width: 550, maxWidth: "95vw", borderRadius: "12px", overflow: "hidden" } }}
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 600,
             fontSize: 16,
             textAlign: "center",
-            padding: "14px 24px",
+            padding: "16px 24px",
           }}
         >
           Edit Dialing Timeout
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px", backgroundColor: "#f8fafc" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
@@ -361,12 +421,12 @@ const DialingTimeoutPage = () => {
                 background: "#fff",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
-                padding: "20px 24px 16px",
+                padding: 16,
               }}
             >
-              <SectionHeading title="Timeout Settings" />
-
-              <FieldRow label="Description" required>
+              <SectionHeading title="Configuration" />
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <FieldRow label="Description">
                 <TextField
                   name="description"
                   value={formData.description || ""}
@@ -377,7 +437,7 @@ const DialingTimeoutPage = () => {
                 />
               </FieldRow>
 
-              <FieldRow label="Inter Digit Timeout (s)" required>
+                <FieldRow label="Inter Digit Timeout (s)">
                 <TextField
                   name="interDigitTimeout"
                   value={formData.interDigitTimeout || ""}
@@ -389,7 +449,7 @@ const DialingTimeoutPage = () => {
                 />
               </FieldRow>
 
-              <FieldRow label="Off-hook waiting digit timeout (s)" required>
+                <FieldRow label="Off-hook wait timeout (s)">
                 <TextField
                   name="offHookTimeout"
                   value={formData.offHookTimeout || ""}
@@ -400,6 +460,7 @@ const DialingTimeoutPage = () => {
                   inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                 />
               </FieldRow>
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -407,44 +468,26 @@ const DialingTimeoutPage = () => {
         <DialogActions
           style={{
             padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+            background: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
             justifyContent: "center",
             gap: 12,
           }}
         >
-          <Button
+          <Btn
             onClick={handleSave}
-            variant="contained"
-            sx={{
-              background: "#1e2d42",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 120,
-              "&:hover": { background: "#0f172a" },
-            }}
+            variant="primary"
+            style={{ minWidth: 120, height: 36, fontSize: 14 }}
           >
             Save
-          </Button>
-          <Button
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
-            variant="outlined"
-            sx={{
-              color: "#1e293b",
-              borderColor: "#9ca3af",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 100,
-              "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
-            }}
+            variant="cancel"
+            style={{ minWidth: 120, height: 36, fontSize: 14 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

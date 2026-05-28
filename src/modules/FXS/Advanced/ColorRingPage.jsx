@@ -526,9 +526,22 @@ const ColorRingPage = () => {
               >
                 No available color ring!
               </div>
-              <Btn onClick={() => handleOpenModal()} variant="accent">
-                + Upload New Color Ring
-              </Btn>
+             <Btn
+  onClick={() => handleOpenModal()}
+  variant="accent"
+  style={{
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + Upload New Color Ring
+</Btn>
             </div>
           ) : (
             <>

@@ -15,13 +15,17 @@ import { Alert, Checkbox } from "@mui/material";
 
 // ── Color Palette (From Source) ───────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
   valueText: "#1e293b",
+  strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
+  accent: "#0284c7",
+  primary: "#2563eb",
   errorRed: "#dc2626",
 };
 
@@ -32,59 +36,50 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
-  title,
+  type,
 }) => {
-  const variants = {
-    default: {
-      background: "#1e293b",
+  const styles = {
+    default: { background: C.cardBg, color: C.valueText, border: "1px solid #9ca3af" },
+    primary: {
+      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
-      border: "1px solid #9ca3af",
+      border: "1px solid #5A6F8F",
     },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
+    outline: { background: C.cardBg, color: C.labelText, border: `0.5px solid ${C.cardBorder}` },
   };
-  const s = variants[variant] || variants.default;
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = variant === "primary" ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)" : variant === "cancel" ? "#b6c2d3" : "#e2e8f0";
+
   return (
     <button
-      type="button"
+      type={type || "button"}
       onClick={onClick}
-      disabled={disabled}
-      title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
         gap: 5,
-        transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.background = hoverBg; }}
+      onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.background = s.background; }}
     >
       {children}
     </button>
@@ -94,17 +89,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -113,33 +108,41 @@ const TH = ({ children, style: extra }) => (
 );
 
 const FieldRow = ({ label, children, style }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12, ...style }}>
+  <div style={{ 
+    display: "flex", 
+    alignItems: "center", 
+    background: "#ffffff",
+    border: `1px solid #cbd5e1`,
+    borderRadius: 6,
+    padding: "6px 12px",
+    gap: 12, 
+    minHeight: 40,
+    ...style 
+  }}>
     <label
       style={{
         fontSize: 13,
         fontWeight: 600,
-        color: C.labelText,
-        width: 220,
+        color: "#1e293b",
+        width: 160,
         flexShrink: 0,
       }}
     >
-      {label}
+      {label}:
     </label>
-    <div style={{ flex: 1 }}>{children}</div>
+    <div className="flex-1" style={{ maxWidth: 280 }}>{children}</div>
   </div>
 );
 
 const inputStyle = {
-  height: 32,
-  padding: "0 8px",
+  width: "100%",
   fontSize: 13,
-  border: `1px solid ${C.cardBorder}`,
+  padding: "6px 8px",
+  border: "1px solid #cbd5e1",
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "#fff",
-  color: C.valueText,
-  boxSizing: "border-box",
-  width: "280px",
+  color: "#1e293b",
+  background: "#ffffff",
 };
 
 // ── Initial State Logic ───────────────────────────────────────────────────────
@@ -382,7 +385,8 @@ const PortFxsAdvancedPage = () => {
                     display: "flex",
                     alignItems: "center",
                     fontSize: 12,
-                    color: C.valueText,
+                    fontWeight: 600,
+                    color: C.labelText,
                     cursor: "pointer",
                   }}
                 >
@@ -396,10 +400,10 @@ const PortFxsAdvancedPage = () => {
                       )
                     }
                     sx={{
-                      padding: "2px",
-                      marginRight: "2px",
-                      color: C.accent,
-                      "&.Mui-checked": { color: C.accent },
+                      padding: "1px",
+                      marginRight: "4px",
+                      color: "#64748b",
+                      "&.Mui-checked": { color: "#0284c7" },
                     }}
                   />
                   {day}
@@ -456,11 +460,12 @@ const PortFxsAdvancedPage = () => {
               marginBottom: 12,
             }}
           >
-            <div style={{ fontSize: 11, color: C.mutedText }}>
-              FXS &rsaquo; Port &rsaquo;{" "}
-              <span style={{ color: "#1e293b", fontWeight: 600 }}>
-                FXS Advanced
-              </span>
+            <div style={{ fontSize: 12, color: C.mutedText, display: "flex", gap: 4 }}>
+              <span>FXS</span>
+              <span>&gt;</span>
+              <span>Port</span>
+              <span>&gt;</span>
+              <span style={{ color: C.strongText, fontWeight: 600 }}>FXS Advanced</span>
             </div>
           </div>
         )}
@@ -469,11 +474,11 @@ const PortFxsAdvancedPage = () => {
         {!showBatchModify ? (
           <div
             style={{
-              background: C.cardBg,
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
+              background: "#ffffff",
+              borderRadius: 22,
               overflow: "hidden",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+              border: `1px solid ${C.cardBorder}`,
+              boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
             }}
           >
             {/* Toolbar */}
@@ -482,30 +487,23 @@ const PortFxsAdvancedPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderBottom: `1px solid ${C.cardBorder}`,
-                background: "#DCE6F2",
+                padding: "14px 18px",
+                borderBottom: "1px solid #e2e8f0",
+                background: "#ffffff",
                 flexWrap: "wrap",
-                gap: 8,
+                gap: 10,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span
-                  style={{
-                    background: "#f1f5f9",
-                    border: `0.5px solid ${C.cardBorder}`,
-                    color: "#475569",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 12px",
-                    borderRadius: 20,
-                  }}
-                >
-                  {PORT_FXS_ADVANCED_PAGE_TITLE} · {ports.length} records
-                </span>
+                
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Btn onClick={handleBatchModify} variant="accent">
+                <Btn onClick={handleBatchModify} variant="primary" style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}>
                   Batch Modify
                 </Btn>
               </div>
@@ -533,15 +531,15 @@ const PortFxsAdvancedPage = () => {
                       <tr
                         key={port.port}
                         style={{
-                          background: rowBg,
-                          borderBottom: "0.5px solid #9ca3af",
-                          transition: "background 0.1s ease",
+                          background: idx % 2 === 1 ? "#f8fafc" : "#ffffff",
+                          borderBottom: "1px solid #f1f5f9",
+                          transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#f0f9ff";
+                          e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = rowBg;
+                          e.currentTarget.style.background = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
                         }}
                       >
                         <td
@@ -551,28 +549,21 @@ const PortFxsAdvancedPage = () => {
                             borderRight: "0.5px solid #edf2f7",
                           }}
                         >
-                          <Btn
-                            onClick={() => {
-                              const portNumber = String(port.port);
-                              setBatchForm((prev) => ({
-                                ...prev,
-                                port: portNumber,
-                                type: "FXS",
-                              }));
-                              setShowBatchModify(true);
-                            }}
-                            variant="outline"
-                            style={{
-                              fontSize: 10,
-                              padding: "3px 10px",
-                              margin: "0 auto",
-                            }}
-                          >
-                            <EditDocumentIcon
-                              style={{ fontSize: 12, marginRight: 2 }}
-                            />{" "}
-                            Edit
-                          </Btn>
+                          <EditDocumentIcon
+  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+  titleAccess="Edit"
+  onClick={() => {
+    const portNumber = String(port.port);
+
+    setBatchForm((prev) => ({
+      ...prev,
+      port: portNumber,
+      type: "FXS",
+    }));
+
+    setShowBatchModify(true);
+  }}
+/>
                         </td>
                         <td
                           style={{
@@ -632,11 +623,11 @@ const PortFxsAdvancedPage = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  padding: "10px 14px",
-                  borderTop: `0.5px solid ${C.cardBorder}`,
-                  background: "#f8fafc",
-                  gap: 8,
+                  padding: "12px 18px",
+                  borderTop: `1px solid ${C.cardBorder}`,
+                  background: "#ffffff",
                   flexWrap: "wrap",
+                  gap: 12,
                 }}
               >
                 <span style={{ fontSize: 11, color: C.mutedText }}>
@@ -666,7 +657,7 @@ const PortFxsAdvancedPage = () => {
                       background: "#e0f2fe",
                       padding: "5px 14px",
                       borderRadius: 6,
-                      border: `0.5px solid ${C.cardBorder}`,
+                      border: `1px solid ${C.cardBorder}`,
                     }}
                   >
                     Page {page} of {totalPages}
@@ -686,14 +677,14 @@ const PortFxsAdvancedPage = () => {
                     Last
                   </Btn>
                   <span
-                    style={{ fontSize: 11, color: C.mutedText, marginLeft: 8 }}
+                    style={{ fontSize: 11, color: C.mutedText }}
                   >
-                    Go to Page:
+                    Go to
                   </span>
                   <select
                     style={{
                       fontSize: 11,
-                      padding: "2px 6px",
+                      padding: "3px 6px",
                       borderRadius: 4,
                       border: `1px solid ${C.cardBorder}`,
                       background: "#fff",
@@ -724,11 +715,12 @@ const PortFxsAdvancedPage = () => {
                 marginBottom: 12,
               }}
             >
-              <div style={{ fontSize: 11, color: C.mutedText }}>
-                PBX &rsaquo; Port FXS Advanced &rsaquo;{" "}
-                <span style={{ color: C.valueText, fontWeight: 600 }}>
-                  Modify
-                </span>
+              <div style={{ fontSize: 12, color: C.mutedText, display: "flex", gap: 4 }}>
+                <span>PBX</span>
+                <span>&gt;</span>
+                <span>Port FXS Advanced</span>
+                <span>&gt;</span>
+                <span style={{ color: C.strongText, fontWeight: 600 }}>Modify</span>
               </div>
             </div>
 
@@ -736,9 +728,9 @@ const PortFxsAdvancedPage = () => {
               style={{
                 background: C.cardBg,
                 border: `1px solid ${C.cardBorder}`,
-                borderRadius: 8,
+                borderRadius: 22,
                 overflow: "hidden",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
               }}
             >
               <div
@@ -754,7 +746,7 @@ const PortFxsAdvancedPage = () => {
                 {PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE}
               </div>
 
-              <div style={{ padding: "24px 32px" }}>
+              <div style={{ padding: "24px 32px", backgroundColor: "#f8fafc" }}>
                 <form onSubmit={handleSave}>
                   <div
                     style={{
@@ -810,9 +802,9 @@ const PortFxsAdvancedPage = () => {
                           onChange={() => handleCheckbox("forbidOutgoingCall")}
                           sx={{
                             padding: "2px",
-                            marginRight: "4px",
-                            color: C.accent,
-                            "&.Mui-checked": { color: C.accent },
+                            marginRight: "6px",
+                            color: "#64748b",
+                            "&.Mui-checked": { color: "#0284c7" },
                           }}
                         />
                         Enable
@@ -928,26 +920,27 @@ const PortFxsAdvancedPage = () => {
                       gap: 12,
                       marginTop: 24,
                       paddingTop: 16,
-                      borderTop: `1px solid ${C.cardBorder}`,
+                      borderTop: "1px solid #e2e8f0",
                     }}
                   >
                     <Btn
                       onClick={handleSave}
-                      style={{ padding: "8px 36px", fontSize: 13 }}
+                      variant="primary"
+                      style={{ minWidth: 120, height: 36, fontSize: 14 }}
                     >
                       Modify
                     </Btn>
                     <Btn
                       onClick={handleReset}
-                      variant="outline"
-                      style={{ padding: "8px 36px", fontSize: 13 }}
+                      variant="cancel"
+                      style={{ minWidth: 120, height: 36, fontSize: 14 }}
                     >
                       Reset
                     </Btn>
                     <Btn
                       onClick={handleCancel}
-                      variant="outline"
-                      style={{ padding: "8px 36px", fontSize: 13 }}
+                      variant="cancel"
+                      style={{ minWidth: 120, height: 36, fontSize: 14 }}
                     >
                       Cancel
                     </Btn>
