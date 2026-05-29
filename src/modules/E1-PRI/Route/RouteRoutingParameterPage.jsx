@@ -3,12 +3,7 @@ import {
   ROUTE_SETTINGS_OPTIONS,
   ROUTE_SETTINGS_DEFAULTS,
 } from "../../../constants/RouteRoutingParameterPageConstants";
-import {
-  Select,
-  MenuItem,
-  FormControl,
-  Alert,
-} from "@mui/material";
+import { Select, MenuItem, FormControl, Alert } from "@mui/material";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
@@ -51,7 +46,6 @@ const Btn = ({
       fontWeight: 600,
       fontSize: 15,
       borderRadius: 6,
-      boxShadow: "0 2px 8px #3E5475",
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -125,14 +119,16 @@ const tableContainerStyle = {
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,
   borderTopRightRadius: CARD_RADIUS,
   display: "flex",
+  flexWrap: "wrap",
+  gap: 12,
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "0 18px",
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -271,7 +267,9 @@ const RouteRoutingParameterPage = () => {
                     <Select
                       name="ipIncoming"
                       value={settings.ipIncoming}
-                      onChange={(e) => handleChange("ipIncoming", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("ipIncoming", e.target.value)
+                      }
                       variant="outlined"
                       sx={selectSx}
                     >

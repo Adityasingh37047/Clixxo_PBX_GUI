@@ -34,6 +34,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -133,13 +134,16 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -148,11 +152,10 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
-  color: "#0f172a",
+  color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
@@ -160,8 +163,9 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#64748b",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const LOCAL_STORAGE_KEY = "ipCallInCalleeIdRules";
@@ -712,12 +716,17 @@ const IPCallInCalleeID = () => {
             fontSize: 12,
             color: C.mutedText,
             marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
+            alignItems: "center",
             gap: 4,
           }}
         >
-          E1-PRI &rsaquo; Num Manipulate &rsaquo;{" "}
-          <span style={{ color: C.valueText, fontWeight: 600 }}>
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>Num Manipulate</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             IP Call In CalleeID
           </span>
         </div>
@@ -738,11 +747,12 @@ const IPCallInCalleeID = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
+              minHeight: 44,
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
               borderTopRightRadius: CARD_RADIUS,
             }}
@@ -980,6 +990,7 @@ const IPCallInCalleeID = () => {
                             <td
                               style={{
                                 ...tdStyle,
+                                background: rowBg,
                                 borderLeft: "none",
                                 ...lastRowCellStyle,
                                 ...(isLastRow
@@ -994,27 +1005,28 @@ const IPCallInCalleeID = () => {
                                 sx={checkboxSx}
                               />
                             </td>
-                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
                               {realIdx + 1}
                             </td>
-                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
                               SIP Trunk Group [{item.call_initiator}]
                             </td>
-                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
                               {item.callerid_prefix}
                             </td>
-                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
                               {item.calleeid_prefix}
                             </td>
-                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
                               {item.stripped_digits_from_right}
                             </td>
-                            <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
                               {item.reserved_digits_from_right}
                             </td>
                             <td
                               style={{
                                 ...tdStyle,
+                                background: rowBg,
                                 borderRight: "none",
                                 ...lastRowCellStyle,
                                 ...(isLastRow
@@ -1060,7 +1072,7 @@ const IPCallInCalleeID = () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    padding: "10px 14px",
+                    padding: "7px 14px",
                     background: "#ffffff",
                     borderTop: `1px solid ${C.cardBorder}`,
                     borderBottomLeftRadius: CARD_RADIUS,
@@ -1144,13 +1156,16 @@ const IPCallInCalleeID = () => {
             ? "Edit IP Call In CalleeID"
             : "Add IP Call In CalleeID"}
         </DialogTitle>
-        <DialogContent style={{ padding: "16px", backgroundColor: "#f8fafc" }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 8,
-              width: "100%",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
             }}
           >
             {getUpdatedFields().map((field) => (
@@ -1159,27 +1174,24 @@ const IPCallInCalleeID = () => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  background: "#fff",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 4,
-                  padding: "8px 12px",
+                  justifyContent: "center",
                   gap: 12,
-                  minHeight: 36,
                 }}
               >
                 <label
                   style={{
-                    fontSize: 14,
-                    color: "#374151",
-                    fontWeight: 500,
-                    whiteSpace: "normal",
-                    width: 200,
+                    fontSize: 13,
+                    color: C.labelText,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 170,
                     lineHeight: 1.2,
+                    textAlign: "left",
                   }}
                 >
                   {field.label}
                 </label>
-                <div style={{ flex: 1 }}>
+                <div style={{ width: "min(100%, 320px)" }}>
                   {field.type === "select" ? (
                     <FormControl size="small" fullWidth>
                       <MuiSelect
@@ -1191,16 +1203,15 @@ const IPCallInCalleeID = () => {
                         }
                         variant="outlined"
                         sx={{
-                          fontSize: 14,
-                          height: 36,
-                          borderRadius: 1,
+                          fontSize: 13,
+                          height: 32,
+                          backgroundColor: "#fff",
                           "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#cbd5e1",
-                            borderWidth: 1,
+                            borderColor: C.cardBorder,
+                            transition: "border-color 0.2s ease",
                           },
                           "&:hover .MuiOutlinedInput-notchedOutline": {
                             borderColor: "#64748b",
-                            borderWidth: 1,
                           },
                           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                             borderColor: "#0284c7",
@@ -1230,23 +1241,21 @@ const IPCallInCalleeID = () => {
                       variant="outlined"
                       inputProps={{
                         style: {
-                          fontSize: 14,
-                          padding: "8px 12px",
-                          height: "auto",
+                          fontSize: 13,
+                          height: 32,
+                          padding: "0 8px",
+                          boxSizing: "border-box",
                         },
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          borderRadius: 1,
-                          fontSize: 14,
-                          height: 36,
+                          backgroundColor: "#fff",
                           "& fieldset": {
-                            borderColor: "#cbd5e1",
-                            borderWidth: 1,
+                            borderColor: C.cardBorder,
+                            transition: "border-color 0.2s ease",
                           },
                           "&:hover fieldset": {
                             borderColor: "#64748b",
-                            borderWidth: 1,
                           },
                           "&.Mui-focused fieldset": {
                             borderColor: "#0284c7",
@@ -1268,7 +1277,7 @@ const IPCallInCalleeID = () => {
             gap: 16,
             padding: "16px 24px",
             background: "#f8fafc",
-            borderTop: "1px solid #e2e8f0",
+            borderTop: `1px solid ${C.cardBorder}`,
             borderBottomLeftRadius: 8,
             borderBottomRightRadius: 8,
           }}

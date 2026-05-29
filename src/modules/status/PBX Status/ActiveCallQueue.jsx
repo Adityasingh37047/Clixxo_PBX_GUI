@@ -8,22 +8,118 @@ import { CircularProgress } from "@mui/material";
 
 const POLL_INTERVAL = 5000;
 
-// ── Color palette (matches SystemInfo + PBX Monitor) ─────────────────────────
+// ── Color palette (matches IP→PSTN Routing Rule) ─────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
+  cardBorder: "#9CA3AF",
   cardHeader: "#1e2d42",
-  labelText: "#64748b",
-  valueText: "#1e293b",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#29a8e0",
+  accent: "#3E5475",
   successGreen: "#16a34a",
   errorRed: "#dc2626",
   amber: "#d97706",
   purple: "#8b5cf6",
   teal: "#0e7490",
-  darkGreen: "#1f2937",
+  darkGreen: "#3E5475",
+};
+
+const CARD_RADIUS = 10;
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type || "button"}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const toolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
 };
 
 // ── Shared: Answered rate progress bar ───────────────────────────────────────
@@ -54,8 +150,8 @@ const StatCard = ({ label, value, color }) => (
   <div
     style={{
       background: C.cardBg,
-      border: `0.5px solid ${C.cardBorder}`,
-      borderRadius: 8,
+      border: `1px solid ${C.cardBorder}`,
+      borderRadius: CARD_RADIUS,
       padding: "14px 16px",
       textAlign: "center",
       boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
@@ -78,41 +174,58 @@ const StatCard = ({ label, value, color }) => (
 );
 
 // ── Shared: TH ───────────────────────────────────────────────────────────────
-const TH = ({ children, align = "left" }) => (
+const TH = ({ children, align = "center", style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 10px",
+      fontSize: 11,
+      padding: "9px 14px",
       textAlign: align,
       borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
+      ...extra,
     }}
   >
     {children}
   </th>
 );
 
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
 // ── Shared: TD ───────────────────────────────────────────────────────────────
-const TD = ({ children, align = "left", mono, muted }) => (
+const TD = ({ children, align = "center", mono, muted, bg, style: extra }) => (
   <td
     style={{
-      padding: "8px 10px",
-      fontSize: 12,
+      ...tdStyle,
       color: mono ? C.accent : muted ? C.mutedText : C.valueText,
       textAlign: align,
       fontFamily: mono ? "monospace, monospace" : "inherit",
       fontWeight: mono ? 600 : 400,
-      whiteSpace: "nowrap",
+      ...(bg != null ? { background: bg } : {}),
+      ...extra,
     }}
   >
     {children ?? <span style={{ color: C.mutedText }}>—</span>}
   </td>
 );
+
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+};
 
 // ── Shared: Rate pill ─────────────────────────────────────────────────────────
 const RatePill = ({ value }) => (
@@ -162,49 +275,6 @@ const EmptyRow = ({ cols, msg = "No data available" }) => (
     </td>
   </tr>
 );
-
-// ── Action button (shared style) ─────────────────────────────────────────────
-const ActionBtn = ({ children, onClick, variant = "dark" }) => {
-  const styles = {
-    dark: {
-      background: C.cardHeader,
-      color: "#fff",
-      border: `1px solid #162233`,
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.accent}`,
-    },
-  };
-  const s = styles[variant] || styles.dark;
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
-      onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-    >
-      {children}
-    </button>
-  );
-};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CALL QUEUE STATISTICS VIEW
@@ -305,54 +375,53 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
         padding: 16,
+        fontFamily: "Inter, sans-serif",
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb + last updated */}
+        {/* Breadcrumb */}
         <div
           style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            gap: 4,
+            flexWrap: "wrap",
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            Status &rsaquo; PBX Status &rsaquo; Active Call Queue &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              Call Queue Statistics
-            </span>
-          </div>
-          {lastUpdated && (
-            <span style={{ fontSize: 10, color: C.mutedText }}>
-              Last updated: {lastUpdated.toLocaleTimeString()}
-            </span>
-          )}
+          <span>Status</span>
+          <span>&gt;</span>
+          <span>PBX Status</span>
+          <span>&gt;</span>
+          <span>Active Call Queue</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Call Queue Statistics
+          </span>
         </div>
 
         {/* Main card */}
         <div
           style={{
             background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: CARD_RADIUS,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
-          {/* Tab bar + action buttons */}
+          {/* Toolbar: tabs + actions */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              padding: "0 14px 0 0",
+              ...toolbarStyle,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
-            {/* Tabs */}
-            <div style={{ display: "flex" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {[
                 { key: "agent", label: "Agent Statistics" },
                 { key: "queue", label: "Queue Statistics" },
@@ -361,48 +430,46 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   style={{
-                    padding: "10px 22px",
-                    fontSize: 12,
+                    padding: "5px 14px",
+                    fontSize: 11,
                     fontWeight: 700,
                     color: activeTab === tab.key ? C.accent : C.labelText,
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    borderBottom:
+                    background:
+                      activeTab === tab.key ? "#eff6ff" : "#f1f5f9",
+                    border:
                       activeTab === tab.key
-                        ? `2px solid ${C.accent}`
-                        : "2px solid transparent",
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
-                    transition: "color 0.15s ease",
+                        ? `1px solid ${C.accent}`
+                        : `1px solid ${C.cardBorder}`,
+                    borderRadius: 999,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {tab.label}
                 </button>
               ))}
+              {lastUpdated && (
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  Updated {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
             </div>
 
-            {/* Action buttons */}
-            <div style={{ display: "flex", gap: 8 }}>
-              {/* <ActionBtn variant="dark">⬇ Download</ActionBtn> */}
-             <ActionBtn
-  variant="outline"
-  onClick={() => {
-    setAgentData([]);
-    setQueueData([]);
-  }}
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  Clear
-</ActionBtn>
-              <ActionBtn variant="accent" onClick={onBack}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Btn
+                variant="cancel"
+                onClick={() => {
+                  setAgentData([]);
+                  setQueueData([]);
+                }}
+                style={{ height: 30 }}
+              >
+                Clear
+              </Btn>
+              <Btn variant="cancel" onClick={onBack} style={{ height: 30 }}>
                 ← Back
-              </ActionBtn>
+              </Btn>
             </div>
           </div>
 
@@ -410,40 +477,36 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           {activeTab === "agent" && (
             <>
               {/* Toolbar */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "8px 14px",
-                  borderBottom: `0.5px solid #f1f5f9`,
-                }}
-              >
+              <div style={toolbarStyle}>
                 <span
                   style={{
-                    background: "#f1f5f9",
-                    border: `0.5px solid ${C.cardBorder}`,
-                    color: "#475569",
+                    background: "#eff6ff",
+                    color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 12px",
-                    borderRadius: 20,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {agentData.length} Agent{agentData.length !== 1 ? "s" : ""}
                 </span>
 
-                {/* Search with focus ring */}
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
-                    background: "#f8fafc",
-                    border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: "5px 10px",
-                    transition: "border-color 0.15s ease",
+                    height: 30,
+                    boxSizing: "border-box",
+                    background: "#ffffff",
+                    border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
+                    borderRadius: 10,
+                    padding: "0 10px",
+                    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+                    boxShadow: searchFocused
+                      ? "0 0 0 4px rgba(62, 84, 117, 0.08)"
+                      : "none",
                   }}
                 >
                   <span
@@ -467,7 +530,8 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       fontSize: 11,
                       color: C.valueText,
                       outline: "none",
-                      width: 200,
+                      width: 140,
+                      minWidth: 100,
                     }}
                   />
                   {agentSearch && (
@@ -487,17 +551,11 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
 
               {/* Agent table */}
               <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    minWidth: 900,
-                  }}
-                >
+                <table style={{ ...tableStyle, minWidth: 900 }}>
                   <thead>
                     <tr>
                       <TH align="center">Agent No.</TH>
-                      <TH>Agent Name</TH>
+                      <TH align="left">Agent Name</TH>
                       <TH align="center">Online Time</TH>
                       <TH align="center">Total Calls</TH>
                       <TH align="center">Answered</TH>
@@ -505,7 +563,9 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       <TH align="center">Caller Hangup (Ring)</TH>
                       <TH align="center">Avg Talk Time</TH>
                       <TH align="center">Idle Time</TH>
-                      <TH align="center">Avg Idle Time</TH>
+                      <TH align="center" style={{ borderRight: "none" }}>
+                        Avg Idle Time
+                      </TH>
                     </tr>
                   </thead>
                   <tbody>
@@ -521,57 +581,72 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                         }
                       />
                     ) : (
-                      filteredAgents.map((row, i) => (
+                      filteredAgents.map((row, i) => {
+                        const rowBg =
+                          i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                        const isLastRow =
+                          i === filteredAgents.length - 1;
+                        const lastRowCellStyle = isLastRow
+                          ? { borderBottom: "none" }
+                          : {};
+
+                        return (
                         <tr
                           key={i}
                           style={{
-                            background: i % 2 === 1 ? "#f3f4f6" : "#ffffff",
-                            borderBottom: "0.5px solid #9ca3af",
+                            background: rowBg,
+                            transition: "background 0.15s ease",
                           }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.background = "#f0f9ff")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.background =
-                              i % 2 === 1 ? "#f8fafc" : "#ffffff")
-                          }
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "#f1f5f9";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = rowBg;
+                          }}
                         >
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             <strong style={{ color: C.valueText }}>
                               {row.agent_number ?? row.agentNumber ?? "—"}
                             </strong>
                           </TD>
-                          <TD>{row.agent_name ?? row.agentName ?? null}</TD>
-                          <TD align="center" mono>
+                          <TD align="left" bg={rowBg} style={lastRowCellStyle}>
+                            {row.agent_name ?? row.agentName ?? null}
+                          </TD>
+                          <TD align="center" mono bg={rowBg} style={lastRowCellStyle}>
                             {row.online_time ?? row.onlineTime ?? null}
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             {row.total_calls ?? row.totalCalls ?? 0}
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             {row.answered_calls ?? row.answeredCalls ?? 0}
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             <RatePill
                               value={row.answered_rate ?? row.answeredRate ?? 0}
                             />
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             {row.caller_hangup_while_agent_ring ??
                               row.callerHangup ??
                               0}
                           </TD>
-                          <TD align="center" mono>
+                          <TD align="center" mono bg={rowBg} style={lastRowCellStyle}>
                             {row.avg_talk_time ?? row.averageTalkTime ?? null}
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             {row.idle_time ?? row.idleTime ?? null}
                           </TD>
-                          <TD align="center">
+                          <TD
+                            align="center"
+                            bg={rowBg}
+                            style={{ ...lastRowCellStyle, borderRight: "none" }}
+                          >
                             {row.avg_idle_time ?? row.averageIdleTime ?? null}
                           </TD>
                         </tr>
-                      ))
+                      );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -583,21 +658,16 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           {activeTab === "queue" && (
             <>
               {/* Toolbar */}
-              <div
-                style={{
-                  padding: "8px 14px",
-                  borderBottom: `0.5px solid #f1f5f9`,
-                }}
-              >
+              <div style={toolbarStyle}>
                 <span
                   style={{
-                    background: "#f1f5f9",
-                    border: `0.5px solid ${C.cardBorder}`,
-                    color: "#475569",
+                    background: "#eff6ff",
+                    color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 12px",
-                    borderRadius: 20,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {queueData.length} Queue{queueData.length !== 1 ? "s" : ""}
@@ -606,17 +676,11 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
 
               {/* Queue table */}
               <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    minWidth: 800,
-                  }}
-                >
+                <table style={{ ...tableStyle, minWidth: 800 }}>
                   <thead>
                     <tr>
                       <TH align="center">Queue No.</TH>
-                      <TH>Queue Name</TH>
+                      <TH align="left">Queue Name</TH>
                       <TH align="center">Total Calls</TH>
                       <TH align="center">Answered</TH>
                       <TH align="center">Answered Rate</TH>
@@ -624,7 +688,9 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       <TH align="center">Avg Talk Time</TH>
                       <TH align="center">Caller Hangup</TH>
                       <TH align="center">Timeout Calls</TH>
-                      <TH align="center">Callback Calls</TH>
+                      <TH align="center" style={{ borderRight: "none" }}>
+                        Callback Calls
+                      </TH>
                     </tr>
                   </thead>
                   <tbody>
@@ -633,57 +699,71 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                     ) : queueData.length === 0 ? (
                       <EmptyRow cols={10} msg="No queue data available" />
                     ) : (
-                      queueData.map((row, i) => (
+                      queueData.map((row, i) => {
+                        const rowBg =
+                          i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                        const isLastRow = i === queueData.length - 1;
+                        const lastRowCellStyle = isLastRow
+                          ? { borderBottom: "none" }
+                          : {};
+
+                        return (
                         <tr
                           key={i}
                           style={{
-                            background: i % 2 === 1 ? "#f8fafc" : "#ffffff",
-                            borderBottom: "0.5px solid #f1f5f9",
+                            background: rowBg,
+                            transition: "background 0.15s ease",
                           }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.background = "#f0f9ff")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.background =
-                              i % 2 === 1 ? "#f8fafc" : "#ffffff")
-                          }
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "#f1f5f9";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = rowBg;
+                          }}
                         >
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             <strong style={{ color: C.valueText }}>
                               {row.queue_number ?? row.queueNumber ?? "—"}
                             </strong>
                           </TD>
-                          <TD>{row.queue_name ?? row.queueName ?? null}</TD>
-                          <TD align="center">
+                          <TD align="left" bg={rowBg} style={lastRowCellStyle}>
+                            {row.queue_name ?? row.queueName ?? null}
+                          </TD>
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             {row.total_calls ?? row.totalCalls ?? 0}
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             {row.answered_calls ?? row.answeredCalls ?? 0}
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             <RatePill
                               value={row.answered_rate ?? row.answeredRate ?? 0}
                             />
                           </TD>
-                          <TD align="center" mono>
+                          <TD align="center" mono bg={rowBg} style={lastRowCellStyle}>
                             {row.average_wait_time ?? row.avgWaitTime ?? null}
                           </TD>
-                          <TD align="center" mono>
+                          <TD align="center" mono bg={rowBg} style={lastRowCellStyle}>
                             {row.average_talk_time ?? row.avgTalkTime ?? null}
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             {row.caller_hangup ?? row.callerHangup ?? 0}
                           </TD>
-                          <TD align="center">
+                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                             {row.call_queue_timeout_calls ??
                               row.timeoutCalls ??
                               0}
                           </TD>
-                          <TD align="center">
+                          <TD
+                            align="center"
+                            bg={rowBg}
+                            style={{ ...lastRowCellStyle, borderRight: "none" }}
+                          >
                             {row.callback_calls ?? row.callbackCalls ?? 0}
                           </TD>
                         </tr>
-                      ))
+                      );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -703,14 +783,22 @@ const ActiveCallQueue = () => {
   const [showStats, setShowStats] = useState(false);
   const [queueList, setQueueList] = useState([]);
   const [selectedQueue, setSelectedQueue] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const pollRef = useRef(null);
+  const silentRefreshRef = useRef(false);
 
-  const loadActivity = useCallback(async (isInitial = false) => {
-    if (isInitial) setLoading(true);
-    setError("");
+  const loadActivity = useCallback(async (silent = false) => {
+    if (silent) {
+      if (silentRefreshRef.current) return;
+      silentRefreshRef.current = true;
+    } else {
+      setIsRefreshing(true);
+      setError("");
+    }
+
     try {
       const data = await fetchCallQueueActivity();
       const list = Array.isArray(data) ? data : [];
@@ -730,16 +818,22 @@ const ActiveCallQueue = () => {
         return list[0] || null;
       });
       setLastUpdated(new Date());
+      setHasLoaded(true);
+      setError("");
     } catch {
-      if (isInitial) setError("Failed to load queue data. Retrying...");
+      if (!silent) setError("Failed to load queue data. Retrying...");
     } finally {
-      if (isInitial) setLoading(false);
+      if (silent) {
+        silentRefreshRef.current = false;
+      } else {
+        setIsRefreshing(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadActivity(true);
-    pollRef.current = setInterval(() => loadActivity(false), POLL_INTERVAL);
+    loadActivity(false);
+    pollRef.current = setInterval(() => loadActivity(true), POLL_INTERVAL);
     return () => clearInterval(pollRef.current);
   }, [loadActivity]);
 
@@ -782,95 +876,147 @@ const ActiveCallQueue = () => {
       style={{
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 24,
+        padding: 16,
         fontFamily: "Inter, sans-serif",
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb + last updated */}
+        {/* Breadcrumb */}
         <div
           style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 24,
+            gap: 4,
           }}
         >
-          <div style={{ fontSize: 12, color: C.mutedText }}>
-            Status &rsaquo; PBX Status &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              Active Call Queue
-            </span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {lastUpdated && (
-              <span style={{ fontSize: 10, color: C.mutedText }}>
-                Last updated: {lastUpdated.toLocaleTimeString()}
-              </span>
-            )}
-            <ActionBtn variant="dark" onClick={() => setShowStats(true)}>
-              Call Queue Statistics {/*  📊 */}
-            </ActionBtn>
-          </div>
+          <span>Status</span>
+          <span>&gt;</span>
+          <span>PBX Status</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Active Call Queue
+          </span>
         </div>
 
-        {/* Loading state */}
-        {loading && (
+        {/* Main card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: CARD_RADIUS,
+            overflow: "hidden",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
+          {/* Toolbar */}
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: 60,
+              ...toolbarStyle,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
-            <CircularProgress size={28} style={{ color: C.accent }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {hasLoaded && queueList.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {queueList.length} queue{queueList.length !== 1 ? "s" : ""}
+                </span>
+              )}
+              {lastUpdated && (
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  Updated {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Btn
+                variant="cancel"
+                onClick={() => loadActivity(false)}
+                disabled={isRefreshing}
+                style={{ height: 30 }}
+              >
+                {isRefreshing ? (
+                  <>
+                    <CircularProgress size={14} sx={{ color: "inherit" }} />
+                    Refreshing...
+                  </>
+                ) : (
+                  "Refresh"
+                )}
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => setShowStats(true)}
+                style={{ height: 30 }}
+              >
+                Call Queue Statistics
+              </Btn>
+            </div>
           </div>
-        )}
 
-        {/* Error state */}
-        {error && !loading && (
+          <div style={{ padding: "14px 16px 16px" }}>
+            {/* Error state */}
+            {error && (
+              <div
+                style={{
+                  background: "#fef2f2",
+                  borderLeft: `3px solid #f87171`,
+                  color: "#b91c1c",
+                  padding: "10px 14px",
+                  borderRadius: 6,
+                  marginBottom: 14,
+                  fontSize: 13,
+                }}
+              >
+                {error}
+              </div>
+            )}
+
+            {/* Initial load */}
+            {!hasLoaded && queueList.length === 0 && !error && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            )}
+
+            {/* Empty state */}
+            {hasLoaded && !error && queueList.length === 0 && (
+              <div
+                style={{
+                  padding: "48px 0",
+                  textAlign: "center",
+                  color: C.mutedText,
+                  fontSize: 13,
+                }}
+              >
+                No active queues found.
+              </div>
+            )}
+
+            {/* Main content */}
+            {queueList.length > 0 && (
           <div
             style={{
-              background: "#fef2f2",
-              borderLeft: `3px solid #f87171`,
-              color: "#b91c1c",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 14,
-              fontSize: 13,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!loading && !error && queueList.length === 0 && (
-          <div
-            style={{
-              background: C.cardBg,
-              border: `0.5px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: "48px 0",
-              textAlign: "center",
-              color: C.mutedText,
-              fontSize: 13,
-            }}
-          >
-            No active queues found.
-          </div>
-        )}
-
-        {/* Main content */}
-        {!loading && queueList.length > 0 && (
-          <div
-            style={{
-              background: "#ffffff",
-              borderRadius: 20,
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
-              padding: 24,
               display: "flex",
               flexDirection: "column",
               gap: 16,
@@ -906,9 +1052,9 @@ const ActiveCallQueue = () => {
                     onClick={() => setSelectedQueue(q)}
                     style={{
                       background: isSelected ? "#f0f9ff" : C.cardBg,
-                      border: `0.5px solid ${isSelected ? C.accent : C.cardBorder}`,
+                      border: `1px solid ${isSelected ? C.accent : C.cardBorder}`,
                       borderLeft: `3px solid ${isSelected ? C.accent : "transparent"}`,
-                      borderRadius: 8,
+                      borderRadius: CARD_RADIUS,
                       padding: "10px 12px",
                       marginBottom: 8,
                       cursor: "pointer",
@@ -997,8 +1143,8 @@ const ActiveCallQueue = () => {
                 <div
                   style={{
                     background: C.cardBg,
-                    border: `0.5px solid ${C.cardBorder}`,
-                    borderRadius: 8,
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: CARD_RADIUS,
                     padding: "12px 18px",
                     display: "flex",
                     alignItems: "center",
@@ -1149,8 +1295,8 @@ const ActiveCallQueue = () => {
                       key={label}
                       style={{
                         background: C.cardBg,
-                        border: `0.5px solid ${C.cardBorder}`,
-                        borderRadius: 8,
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: CARD_RADIUS,
                         padding: "12px 18px",
                         display: "flex",
                         alignItems: "center",
@@ -1184,7 +1330,9 @@ const ActiveCallQueue = () => {
             )}
             </div>
           </div>
-        )}
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

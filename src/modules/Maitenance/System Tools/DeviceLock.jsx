@@ -47,9 +47,10 @@ const Btn = ({
       border: `0.5px solid ${C.errorRed}`,
     },
     cancel: {
-      background: "#f1f5f9",
-      color: "#64748b",
+      background: "#cbd5e1",
+      color: "#374151",
       border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
   };
 
@@ -61,7 +62,7 @@ const Btn = ({
       case "danger":
         return "#b91c1c";
       case "cancel":
-        return "#e2e8f0";
+        return "#b6c2d3";
       case "default":
       default:
         return "#e2e8f0";
@@ -110,22 +111,55 @@ const tableContainerStyle = {
   margin: "0 auto",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  paddingBottom: "24px",
+};
+
+const labelBaseStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  whiteSpace: "nowrap",
+};
+
+const passwordFieldSx = {
+  width: "100%",
+  maxWidth: 280,
+  "& .MuiOutlinedInput-root": {
+    height: 36,
+    fontSize: 13,
+    backgroundColor: C.cardBg,
+    transition: "border-color 0.2s ease",
+    "& fieldset": {
+      borderColor: C.cardBorder,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": { borderColor: "#64748b" },
+    "&.Mui-focused fieldset": {
+      borderColor: "#0284c7",
+      borderWidth: 1,
+    },
+  },
+  "& .MuiInputBase-input": {
+    fontSize: 13,
+    color: C.valueText,
+    padding: "6px 10px",
+  },
 };
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "0 14px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -244,80 +278,77 @@ const DeviceLock = () => {
           {/* Header */}
           <div style={blueBarStyle}>{DEVICE_LOCK_LABELS.title}</div>
 
-          <form
-            onSubmit={handleLock}
-            style={{
-              padding: "32px 24px",
-              maxWidth: 600,
-              width: "100%",
-              margin: "0 auto",
-            }}
-          >
-            <div className="space-y-6">
-              <div
-                style={{
-                  fontSize: 14,
-                  color: C.valueText,
-                  textAlign: "center",
-                  lineHeight: 1.6,
-                  fontWeight: 500,
-                  marginBottom: "32px",
-                }}
-              >
-                {DEVICE_LOCK_LABELS.instruction}
-              </div>
+          <form onSubmit={handleLock}>
+            <div
+              style={{
+                padding: "10px 24px 0",
+                maxWidth: 600,
+                width: "100%",
+                margin: "0 auto",
+              }}
+            >
+              <div className="space-y-6">
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: C.valueText,
+                    textAlign: "center",
+                    lineHeight: 1.6,
+                    fontWeight: 500,
+                    marginBottom: "32px",
+                  }}
+                >
+                  {DEVICE_LOCK_LABELS.instruction}
+                </div>
 
-              {/* Checkbox Options */}
-              <div className="flex justify-center gap-8 mb-8 flex-wrap">
-                {DEVICE_LOCK_OPTIONS.map((opt) => (
-                  <label
-                    key={opt.value}
-                    className="flex items-center cursor-pointer select-none"
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      transition: "color 0.2s",
-                    }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.color = C.strongText)
-                    }
-                    onMouseOut={(e) =>
-                      (e.currentTarget.style.color = C.labelText)
-                    }
-                  >
-                    <Checkbox
-                      size="small"
-                      checked={!!selectedOptions[opt.value]}
-                      onChange={() => handleOptionChange(opt.value)}
-                      sx={{
-                        padding: "4px",
-                        marginRight: "4px",
-                        color: "#64748b",
-                        "&.Mui-checked": { color: C.accent },
+                {/* Checkbox Options */}
+                <div className="flex justify-center gap-8 mb-8 flex-wrap">
+                  {DEVICE_LOCK_OPTIONS.map((opt) => (
+                    <label
+                      key={opt.value}
+                      className="flex items-center cursor-pointer select-none"
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        transition: "color 0.2s",
                       }}
-                    />
-                    {opt.label}
-                  </label>
-                ))}
-              </div>
+                      onMouseOver={(e) =>
+                        (e.currentTarget.style.color = C.strongText)
+                      }
+                      onMouseOut={(e) =>
+                        (e.currentTarget.style.color = C.labelText)
+                      }
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={!!selectedOptions[opt.value]}
+                        onChange={() => handleOptionChange(opt.value)}
+                        sx={{
+                          padding: "4px",
+                          marginRight: "4px",
+                          color: "#64748b",
+                          "&.Mui-checked": { color: C.accent },
+                        }}
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
 
-              {/* Password Fields */}
-              <div className="space-y-4">
-                <div className="flex items-center" style={{ flexWrap: "wrap" }}>
-                  <label
-                    style={{
-                      width: "auto",
-                      minWidth: 160,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      textAlign: "right",
-                      marginRight: 16,
-                      whiteSpace: "nowrap",
-                      flexShrink: 0,
-                    }}
-                  >
+                {/* Password Fields — grid aligns both input boxes */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "max-content minmax(0, 280px)",
+                    columnGap: 16,
+                    rowGap: 16,
+                    alignItems: "center",
+                    margin: "0 auto",
+                    width: "fit-content",
+                  }}
+                >
+                  <label style={{ ...labelBaseStyle, textAlign: "left" }}>
                     {DEVICE_LOCK_LABELS.password}:
                   </label>
                   <TextField
@@ -326,48 +357,10 @@ const DeviceLock = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     variant="outlined"
                     size="small"
-                    sx={{
-                      width: "100%",
-                      maxWidth: 280,
-                      "& .MuiOutlinedInput-root": {
-                        height: 36,
-                        fontSize: 13,
-                        backgroundColor: C.cardBg,
-                        transition: "border-color 0.2s ease",
-                        "& fieldset": {
-                          borderColor: C.cardBorder,
-                          transition: "border-color 0.2s ease",
-                        },
-                        "&:hover fieldset": { borderColor: "#64748b" },
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#0284c7",
-                          borderWidth: 1,
-                        },
-                      },
-                      "& .MuiInputBase-input": {
-                        fontSize: 13,
-                        color: C.valueText,
-                        padding: "6px 10px",
-                      },
-                    }}
+                    sx={passwordFieldSx}
                     autoComplete="new-password"
                   />
-                </div>
-
-                <div className="flex items-center" style={{ flexWrap: "wrap" }}>
-                  <label
-                    style={{
-                      width: "auto",
-                      minWidth: 160,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      textAlign: "right",
-                      marginRight: 16,
-                      whiteSpace: "nowrap",
-                      flexShrink: 0,
-                    }}
-                  >
+                  <label style={{ ...labelBaseStyle, textAlign: "right" }}>
                     {DEVICE_LOCK_LABELS.confirmPassword}:
                   </label>
                   <TextField
@@ -376,42 +369,27 @@ const DeviceLock = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     variant="outlined"
                     size="small"
-                    sx={{
-                      width: "100%",
-                      maxWidth: 280,
-                      "& .MuiOutlinedInput-root": {
-                        height: 36,
-                        fontSize: 13,
-                        backgroundColor: C.cardBg,
-                        transition: "border-color 0.2s ease",
-                        "& fieldset": {
-                          borderColor: C.cardBorder,
-                          transition: "border-color 0.2s ease",
-                        },
-                        "&:hover fieldset": { borderColor: "#64748b" },
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#0284c7",
-                          borderWidth: 1,
-                        },
-                      },
-                      "& .MuiInputBase-input": {
-                        fontSize: 13,
-                        color: C.valueText,
-                        padding: "6px 10px",
-                      },
-                    }}
+                    sx={passwordFieldSx}
                     autoComplete="new-password"
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Buttons */}
-              <div className="flex justify-center gap-4 pt-6">
+            {/* Buttons — divider inset from card left/right edges */}
+            <div
+              className="w-full mt-2 pb-4"
+              style={{ paddingLeft: 24, paddingRight: 24 }}
+            >
+              <div
+                className="flex flex-row flex-wrap justify-center gap-4 pt-2 pb-1"
+                style={{ borderTop: `1px solid ${C.divider}` }}
+              >
                 <Btn
                   variant="primary"
                   onClick={handleLock}
                   type="submit"
-                  style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+                  style={{ minWidth: 100, height: 34, fontSize: 12 }}
                 >
                   {DEVICE_LOCK_LABELS.lock}
                 </Btn>
@@ -419,7 +397,7 @@ const DeviceLock = () => {
                   variant="cancel"
                   onClick={handleReset}
                   type="button"
-                  style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+                  style={{ minWidth: 100, height: 34, fontSize: 12 }}
                 >
                   {DEVICE_LOCK_LABELS.reset}
                 </Btn>

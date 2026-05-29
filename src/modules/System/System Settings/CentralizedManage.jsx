@@ -703,7 +703,7 @@ fi`;
               flexWrap: "wrap",
               gap: 12,
               alignItems: "center",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.divider}`,
               background: C.cardBg,
             }}
@@ -721,8 +721,8 @@ fi`;
           </div>
 
           {/* Card Body */}
-          <div style={{ padding: "24px 32px" }}>
-            <form onSubmit={handleSave} className="flex flex-col gap-6">
+          <div className="w-full flex flex-col px-5 pt-3 pb-2">
+            <form onSubmit={handleSave} className="flex flex-col gap-4">
               <div className="flex flex-col gap-4 items-center w-full">
                 {CENTRALIZED_MANAGE_FIELDS.map((field) => {
                   if (field.name === "monitoringPortValue") return null;
@@ -903,12 +903,15 @@ fi`;
               </div>
 
               {/* Action Buttons Row */}
-              <div className="flex flex-wrap gap-4 mt-6 justify-start sm:justify-center">
+              <div
+                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1"
+                style={{ borderTop: `1px solid ${C.divider}` }}
+              >
                 <Btn
                   variant="primary"
                   type="submit"
                   disabled={isApplying}
-                  style={{ minWidth: 100 }}
+                  style={{ minWidth: 120, height: 34 }}
                 >
                   {isApplying ? "Connecting…" : "Save"}
                 </Btn>
@@ -917,7 +920,7 @@ fi`;
                   type="button"
                   onClick={handleReset}
                   disabled={isApplying}
-                  style={{ minWidth: 100 }}
+                  style={{ minWidth: 120, height: 34 }}
                 >
                   Reset
                 </Btn>
@@ -926,14 +929,14 @@ fi`;
                   type="button"
                   onClick={handleDownloadMib}
                   disabled={isApplying}
-                  style={{ minWidth: 100 }}
+                  style={{ minWidth: 120, height: 34 }}
                 >
                   {CENTRALIZED_MANAGE_BUTTONS[2].label}
                 </Btn>
               </div>
 
               {isApplying && (
-                <div className="flex justify-center items-center gap-3 mt-4 text-gray-700">
+                <div className="flex justify-center items-center gap-3 mt-3 text-gray-700">
                   <CircularProgress size={18} />
                   <span style={{ fontSize: 14 }}>
                     {applyStatus || "Applying…"}

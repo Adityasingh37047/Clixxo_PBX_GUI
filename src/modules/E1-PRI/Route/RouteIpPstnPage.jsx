@@ -37,6 +37,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -147,7 +148,7 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
@@ -162,7 +163,7 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
@@ -173,7 +174,14 @@ const tdStyle = {
 };
 
 const FieldRow = ({ label, children }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
     <label
       style={{
         fontSize: 13,
@@ -181,12 +189,12 @@ const FieldRow = ({ label, children }) => (
         color: C.labelText,
         width: 170,
         flexShrink: 0,
-        textAlign: "right",
+        textAlign: "left",
       }}
     >
       {label}
     </label>
-    <div style={{ flex: 1 }}>{children}</div>
+    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
 );
 
@@ -539,11 +547,17 @@ const RouteIpPstnPage = () => {
             fontSize: 12,
             color: C.mutedText,
             marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
           }}
         >
-          E1-PRI <span style={{ margin: "0 6px" }}>›</span> Route{" "}
-          <span style={{ margin: "0 6px" }}>›</span>{" "}
-          <span style={{ color: C.valueText, fontWeight: 600 }}>
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>Route</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             IP-&gt;PSTN Routing Rule
           </span>
         </div>
@@ -564,11 +578,12 @@ const RouteIpPstnPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
+              minHeight: 44,
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
               borderTopRightRadius: CARD_RADIUS,
             }}
@@ -833,7 +848,7 @@ const RouteIpPstnPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
+                padding: "7px 14px",
                 background: "#ffffff",
                 borderTop: `1px solid ${C.cardBorder}`,
                 borderBottomLeftRadius: CARD_RADIUS,
@@ -922,7 +937,7 @@ const RouteIpPstnPage = () => {
                 padding: 20,
               }}
             >
-              <div
+              {/* <div
                 style={{
                   fontSize: 13,
                   fontWeight: 700,
@@ -933,7 +948,7 @@ const RouteIpPstnPage = () => {
                 }}
               >
                 Configuration
-              </div>
+              </div> */}
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 14 }}
               >
@@ -1040,6 +1055,7 @@ const RouteIpPstnPage = () => {
                         }}
                         sx={{
                           "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
                             "& fieldset": {
                               borderColor: C.cardBorder,
                               transition: "border-color 0.2s ease",
@@ -1051,6 +1067,9 @@ const RouteIpPstnPage = () => {
                               borderColor: "#0284c7",
                               borderWidth: 1,
                             },
+                          },
+                          "& .MuiOutlinedInput-input": {
+                            backgroundColor: "#fff",
                           },
                         }}
                       />

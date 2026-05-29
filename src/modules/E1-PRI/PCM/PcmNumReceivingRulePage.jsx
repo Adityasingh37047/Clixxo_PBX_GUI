@@ -32,6 +32,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
   successGreen: "#22c55e",
   errorRed: "#ef4444",
@@ -137,7 +138,7 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
@@ -159,11 +160,10 @@ const checkboxSx = {
 };
 
 const tdStyle = {
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
@@ -541,87 +541,6 @@ const PcmNumReceivingRulePage = () => {
     </div>
   );
 
-  // Render table row
-  const renderTableRow = (item, idx) => {
-    const realIdx = (page - 1) * itemsPerPage + idx;
-    const globalIndex = realIdx + 1; // Auto-incrementing index starting from 1
-    return (
-      <tr key={item.id || realIdx} style={{ minHeight: 32 }}>
-        <td
-          className="border border-gray-300 text-center bg-white"
-          style={{
-            border: "1px solid #bbb",
-            padding: "6px 8px",
-            minHeight: 32,
-            whiteSpace: "nowrap",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={selected.includes(realIdx)}
-            onChange={() => handleSelectRow(realIdx)}
-          />
-        </td>
-        {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
-          (col) => col.key !== "check",
-        ).map((col) => {
-          if (col.key === "index") {
-            return (
-              <td
-                key={col.key}
-                className="border border-gray-300 text-center bg-white"
-                style={{
-                  border: "1px solid #bbb",
-                  padding: "6px 8px",
-                  minHeight: 32,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {globalIndex}
-              </td>
-            );
-          }
-          if (col.key === "modify") {
-            return (
-              <td
-                key={col.key}
-                className="border border-gray-300 text-center bg-white"
-                style={{
-                  border: "1px solid #bbb",
-                  padding: "6px 8px",
-                  minHeight: 32,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <EditDocumentIcon
-                  className="cursor-pointer text-blue-600 mx-auto"
-                  onClick={() => handleOpenModal(item, realIdx)}
-                  style={{ fontSize: 22 }}
-                />
-              </td>
-            );
-          }
-          return (
-            <td
-              key={col.key}
-              className="border border-gray-300 text-center bg-white"
-              style={{
-                border: "1px solid #bbb",
-                padding: "6px 8px",
-                minHeight: 32,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {item[col.key] !== undefined && item[col.key] !== ""
-                ? item[col.key]
-                : "--"}
-            </td>
-          );
-        })}
-      </tr>
-    );
-  };
-
   return (
     <div
       style={{
@@ -650,9 +569,22 @@ const PcmNumReceivingRulePage = () => {
 
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
         {/* Breadcrumb */}
-        <div style={{ fontSize: 12, color: C.mutedText, marginBottom: 16, display: "flex", gap: 4 }}>
-          E1-PRI &rsaquo; PCM &rsaquo;{" "}
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>PCM</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             Number-Receiving Rule
           </span>
         </div>
@@ -673,11 +605,12 @@ const PcmNumReceivingRulePage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
+              minHeight: 44,
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
               borderTopRightRadius: CARD_RADIUS,
             }}
@@ -762,7 +695,13 @@ const PcmNumReceivingRulePage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {loading.fetch ? (
               <div
                 style={{
@@ -786,7 +725,16 @@ const PcmNumReceivingRulePage = () => {
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36, borderLeft: "none" }}>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={
@@ -818,9 +766,14 @@ const PcmNumReceivingRulePage = () => {
                     ).map((c) => (
                       <TH
                         key={c.key}
-                        style={
-                          c.key === "modify" ? { borderRight: "none" } : undefined
-                        }
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                          ...(c.key === "modify"
+                            ? { width: 70, borderRight: "none" }
+                            : {}),
+                        }}
                       >
                         {c.label}
                       </TH>
@@ -849,7 +802,7 @@ const PcmNumReceivingRulePage = () => {
                       const isRowChecked = selected.includes(realIdx);
                       const isLastRow = idx === pagedRules.length - 1;
                       const rowBg = isRowChecked
-                        ? "#e0f2fe"
+                        ? "#f0f9ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -861,14 +814,11 @@ const PcmNumReceivingRulePage = () => {
                           key={item.id || realIdx}
                           style={{
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : `1px solid ${C.cardBorder}`,
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isRowChecked)
-                              e.currentTarget.style.background = "#f8fafc";
+                              e.currentTarget.style.background = "#f1f5f9";
                           }}
                           onMouseLeave={(e) => {
                             if (!isRowChecked)
@@ -878,8 +828,9 @@ const PcmNumReceivingRulePage = () => {
                           <td
                             style={{
                               ...tdStyle,
-                              padding: "10px 0",
+                              background: rowBg,
                               borderLeft: "none",
+                              width: 36,
                               ...lastRowCellStyle,
                               ...(isLastRow
                                 ? { borderBottomLeftRadius: CARD_RADIUS }
@@ -903,9 +854,7 @@ const PcmNumReceivingRulePage = () => {
                                   key={col.key}
                                   style={{
                                     ...tdStyle,
-                                    padding: "10px 6px",
-                                    fontSize: 11,
-                                    color: C.mutedText,
+                                    background: rowBg,
                                     ...lastRowCellStyle,
                                   }}
                                 >
@@ -919,7 +868,7 @@ const PcmNumReceivingRulePage = () => {
                                   key={col.key}
                                   style={{
                                     ...tdStyle,
-                                    padding: "7px 8px",
+                                    background: rowBg,
                                     borderRight: "none",
                                     ...lastRowCellStyle,
                                     ...(isLastRow
@@ -927,29 +876,52 @@ const PcmNumReceivingRulePage = () => {
                                       : {}),
                                   }}
                                 >
-                                  <EditDocumentIcon
-                                    className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                                    titleAccess="Edit"
-                                    onClick={() => {
-                                      if (!loading.delete) {
-                                        handleOpenModal(item, realIdx);
-                                      }
-                                    }}
+                                  <div
                                     style={{
-                                      fontSize: 22,
-                                      opacity: loading.delete ? 0.4 : undefined,
-                                      pointerEvents: loading.delete
-                                        ? "none"
-                                        : "auto",
+                                      display: "flex",
+                                      justifyContent: "center",
                                     }}
-                                  />
+                                  >
+                                    <EditDocumentIcon
+                                      titleAccess="Edit"
+                                      onClick={() => {
+                                        if (!loading.delete) {
+                                          handleOpenModal(item, realIdx);
+                                        }
+                                      }}
+                                      style={{
+                                        cursor: loading.delete
+                                          ? "not-allowed"
+                                          : "pointer",
+                                        color: "#2563eb",
+                                        fontSize: 22,
+                                        opacity: loading.delete ? 0.4 : 0.7,
+                                        transition: "opacity 0.15s ease",
+                                        pointerEvents: loading.delete
+                                          ? "none"
+                                          : "auto",
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (!loading.delete)
+                                          e.currentTarget.style.opacity = "1";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (!loading.delete)
+                                          e.currentTarget.style.opacity = "0.7";
+                                      }}
+                                    />
+                                  </div>
                                 </td>
                               );
                             }
                             return (
                               <td
                                 key={col.key}
-                                style={{ ...tdStyle, ...lastRowCellStyle }}
+                                style={{
+                                  ...tdStyle,
+                                  background: rowBg,
+                                  ...lastRowCellStyle,
+                                }}
                               >
                                 {item[col.key] !== undefined &&
                                 item[col.key] !== "" ? (
@@ -976,7 +948,7 @@ const PcmNumReceivingRulePage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
                 borderBottomLeftRadius: CARD_RADIUS,
@@ -1068,15 +1040,16 @@ const PcmNumReceivingRulePage = () => {
             ? "Edit Number-Receiving Rule"
             : "Add Number-Receiving Rule"}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#f8fafc" }}
-        >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 12,
-              width: "100%",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
             }}
           >
             {NUM_RECEIVING_RULE_FIELDS.map((field) => (
@@ -1085,26 +1058,23 @@ const PcmNumReceivingRulePage = () => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  background: "#ffffff",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 6,
-                  padding: "6px 12px",
+                  justifyContent: "center",
                   gap: 12,
-                  minHeight: 40,
                 }}
               >
                 <label
                   style={{
                     fontSize: 13,
-                    color: "#1e293b",
+                    color: C.labelText,
                     fontWeight: 600,
                     whiteSpace: "nowrap",
-                    width: 140,
+                    width: 170,
+                    textAlign: "left",
                   }}
                 >
                   {field.label}:
                 </label>
-                <div className="flex-1" style={{ maxWidth: 300 }}>
+                <div style={{ width: "min(100%, 320px)" }}>
                   {field.type === "select" ? (
                     <Select
                       value={form[field.name]}
@@ -1117,8 +1087,11 @@ const PcmNumReceivingRulePage = () => {
                       MenuProps={{ PaperProps: { style: { maxHeight: 240 } } }}
                       sx={{
                         fontSize: 13,
+                        height: 32,
+                        backgroundColor: "#fff",
                         "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#cbd5e1",
+                          borderColor: C.cardBorder,
+                          transition: "border-color 0.2s ease",
                         },
                         "&:hover .MuiOutlinedInput-notchedOutline": {
                           borderColor: "#64748b",
@@ -1152,8 +1125,12 @@ const PcmNumReceivingRulePage = () => {
                       placeholder={field.placeholder || ""}
                       sx={{
                         fontSize: 13,
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "#fff",
+                        },
                         "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#cbd5e1",
+                          borderColor: C.cardBorder,
+                          transition: "border-color 0.2s ease",
                         },
                         "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
                           borderColor: "#64748b",
@@ -1164,7 +1141,7 @@ const PcmNumReceivingRulePage = () => {
                         },
                       }}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, height: 32, padding: "0 8px", boxSizing: "border-box" },
                       }}
                     />
                   )}

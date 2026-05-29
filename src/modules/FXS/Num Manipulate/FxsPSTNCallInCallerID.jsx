@@ -43,6 +43,7 @@ const C = {
   labelText: "#1e293b",
   valueText: "#1e293b",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#1e293b",
   errorRed: "#dc2626",
 };
@@ -626,18 +627,22 @@ const PSTNCallInCallerID = () => {
         {/* Breadcrumb */}
         <div
           style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            gap: 4,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Num Manipulate &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              PSTN Call In CallerID
-            </span>
-          </div>
+          <span>FXS</span>
+          <span>&gt;</span>
+          <span>Num Manipulate</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            PSTN Call In CallerID
+          </span>
         </div>
 
         {/* Main Card */}
@@ -685,18 +690,22 @@ const PSTNCallInCallerID = () => {
                 {/* Breadcrumb */}
                 <div
                   style={{
+                    fontSize: 12,
+                    color: C.mutedText,
+                    marginBottom: 16,
+                    fontWeight: 400,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: 12,
+                    gap: 4,
                   }}
                 >
-                  <div style={{ fontSize: 11, color: C.mutedText }}>
-                    FXS &rsaquo; Num Manipulate &rsaquo;{" "}
-                    <span style={{ color: C.valueText, fontWeight: 600 }}>
-                      PSTN Call In CallerID
-                    </span>
-                  </div>
+                  <span>FXS</span>
+                  <span>&gt;</span>
+                  <span>Num Manipulate</span>
+                  <span>&gt;</span>
+                  <span style={{ color: C.strongText, fontWeight: 600 }}>
+                    PSTN Call In CallerID
+                  </span>
                 </div>
 
                 {/* Main Card */}
@@ -715,11 +724,12 @@ const PSTNCallInCallerID = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      padding: "10px 14px",
+                      minHeight: 44,
+                      padding: "7px 14px",
                       borderBottom: `1px solid ${C.cardBorder}`,
-                      background: "#DCE6F2",
+                      background: "#ffffff",
                       flexWrap: "wrap",
-                      gap: 8,
+                      gap: 12,
                     }}
                   >
                     <div
@@ -766,6 +776,7 @@ const PSTNCallInCallerID = () => {
                         onClick={handleCheckAll}
                         disabled={loading.delete}
                         variant="outline"
+                        style={{ height: 30 }}
                       >
                         Check All
                       </Btn>
@@ -773,6 +784,7 @@ const PSTNCallInCallerID = () => {
                         onClick={handleUncheckAll}
                         disabled={loading.delete}
                         variant="outline"
+                        style={{ height: 30 }}
                       >
                         Uncheck All
                       </Btn>
@@ -780,6 +792,7 @@ const PSTNCallInCallerID = () => {
                         onClick={handleInverse}
                         disabled={loading.delete}
                         variant="outline"
+                        style={{ height: 30 }}
                       >
                         Inverse
                       </Btn>
@@ -787,6 +800,7 @@ const PSTNCallInCallerID = () => {
                         onClick={handleDelete}
                         disabled={loading.delete || selected.length === 0}
                         variant="danger"
+                        style={{ height: 30 }}
                       >
                         {loading.delete ? "Deleting..." : "🗑 Delete"}
                       </Btn>
@@ -794,6 +808,7 @@ const PSTNCallInCallerID = () => {
                         onClick={handleClearAll}
                         disabled={loading.delete || rules.length === 0}
                         variant="danger"
+                        style={{ height: 30 }}
                       >
                         {loading.delete ? "Clearing..." : "Clear All"}
                       </Btn>
@@ -801,6 +816,7 @@ const PSTNCallInCallerID = () => {
                         onClick={handleRefresh}
                         disabled={loading.fetch}
                         variant="outline"
+                        style={{ height: 30 }}
                       >
                         {loading.fetch ? "Refreshing..." : "Refresh"}
                       </Btn>
@@ -808,6 +824,7 @@ const PSTNCallInCallerID = () => {
                         onClick={() => handleOpenModal()}
                         disabled={loading.save}
                         variant="accent"
+                        style={{ height: 30 }}
                       >
                         + Add New
                       </Btn>

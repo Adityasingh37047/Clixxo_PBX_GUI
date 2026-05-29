@@ -112,23 +112,25 @@ const tableContainerStyle = {
   maxWidth: "100%",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 24,
+  marginBottom: 8,
 };
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "0 20px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -562,14 +564,14 @@ const DDOSSettings = () => {
             <span>DDOS Settings</span>
           </div>
 
-          <div className="p-6">
+          <div className="px-5 pt-3 pb-0">
             <div className="w-full max-w-4xl mx-auto">
               <form
                 onSubmit={handleSave}
                 className="w-full flex flex-col gap-0"
               >
                 {/* Form Fields Grid */}
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                   {/* WEB Port Attack Protection */}
                   <React.Fragment>
                     <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
@@ -917,7 +919,7 @@ const DDOSSettings = () => {
 
                 {/* Action Buttons */}
                 <div
-                  className="flex flex-col sm:flex-row justify-center gap-6 mt-6 pt-4"
+                  className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1 mb-0"
                   style={{ borderTop: `1px solid ${C.divider}` }}
                 >
                   <Btn
@@ -950,37 +952,32 @@ const DDOSSettings = () => {
 
                 {/* Info Log Section */}
                 <div
-                  className="w-full flex flex-col items-center mt-8 pt-6"
+                  className="w-full mt-1 pt-2 pb-0"
                   style={{ borderTop: `1px solid ${C.divider}` }}
                 >
-                  <div
-                    className="flex justify-between items-center w-full mb-2"
-                    style={{ maxWidth: 700 }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: C.strongText,
-                      }}
-                    >
-                      Info Log
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 items-center mb-1">
+                    <div className="flex items-center text-[13px] font-semibold text-left pl-2 sm:pl-4 min-h-[34px]">
+                      <span style={{ color: C.labelText }}>Info Log</span>
                     </div>
-                    <Btn
-                      type="button"
-                      variant="cancel"
-                      onClick={handleClearLogs}
-                      disabled={loading}
-                      style={{ minWidth: 100, height: 28, fontSize: 12 }}
-                    >
-                      Clear Logs
-                    </Btn>
+                    <div className="flex items-center justify-start md:justify-end min-h-[34px]">
+                      <Btn
+                        type="button"
+                        variant="cancel"
+                        onClick={handleClearLogs}
+                        disabled={loading}
+                        style={{ minWidth: 100, height: 28, fontSize: 12 }}
+                      >
+                        Clear Logs
+                      </Btn>
+                    </div>
                   </div>
                   <textarea
-                    className="w-full min-h-[120px] max-h-[200px] rounded resize-y"
+                    className="w-full rounded resize-y"
                     style={{
+                      minHeight: 120,
+                      maxHeight: 200,
                       fontSize: 13,
-                      padding: "8px 12px",
+                      padding: "12px",
                       backgroundColor: "#f8fafc",
                       border: `1px solid ${C.cardBorder}`,
                       color: C.valueText,

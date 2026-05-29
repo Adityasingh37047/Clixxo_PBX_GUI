@@ -29,7 +29,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#30415A",
   accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
@@ -52,7 +52,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -158,6 +159,31 @@ const disabledInputStyle = {
   cursor: "not-allowed",
   borderColor: "#e2e8f0",
 };
+
+const SectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 const Network = () => {
   const [lanInterfaces, setLanInterfaces] = useState([]);
@@ -1021,26 +1047,25 @@ const Network = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb Row */}
-        <div className="flex justify-between items-center mb-4">
-          <div
-            style={{
-              fontSize: 12,
-              color: C.mutedText,
-              fontWeight: 400,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            <span>System</span>
-            <span>&gt;</span>
-            <span>System Settings</span>
-            <span>&gt;</span>
-            <span style={{ color: C.strongText, fontWeight: 600 }}>
-              Network
-            </span>
-          </div>
+        {/* Breadcrumb */}
+        <div
+          style={{
+            fontSize: 12,
+            color: "#94a3b8",
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Network
+          </span>
         </div>
 
         {/* Main Card */}
@@ -1062,7 +1087,7 @@ const Network = () => {
               flexWrap: "wrap",
               gap: 12,
               alignItems: "center",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.divider}`,
               background: C.cardBg,
             }}
@@ -1096,21 +1121,15 @@ const Network = () => {
                 {!vlanEnabled &&
                   lanInterfaces.map((lan, idx) => (
                     <div key={lan.name || idx} className="flex flex-col gap-4">
-                      {/* Section Title */}
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: C.labelText,
-                          marginBottom: 8,
-                          paddingBottom: 8,
-                          borderBottom: `1px solid ${C.cardBorder}`,
-                        }}
-                      >
-                        {lan.name || `LAN ${idx + 1}`}
-                      </div>
+                      <SectionHeading
+                        title={lan.name || `LAN ${idx + 1}`}
+                        isFirst={idx === 0}
+                      />
 
-                      <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 640, margin: "0 auto" }}>
+                      <div
+                        className="flex flex-col gap-4 w-full"
+                        style={{ maxWidth: 640, margin: "0 auto" }}
+                      >
                         {/* IPV4 Network Type */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                           <label
@@ -1370,19 +1389,14 @@ const Network = () => {
 
                 {/* VLAN Enable */}
                 <div className="flex flex-col gap-4">
+                  <SectionHeading
+                    title="VLAN Configuration"
+                    isFirst={vlanEnabled}
+                  />
                   <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: C.labelText,
-                      marginBottom: 8,
-                      paddingBottom: 8,
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                    }}
+                    className="flex flex-col gap-4 w-full"
+                    style={{ maxWidth: 640, margin: "0 auto" }}
                   >
-                    VLAN Configuration
-                  </div>
-                  <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 640, margin: "0 auto" }}>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <label
                         style={{
@@ -1615,19 +1629,11 @@ const Network = () => {
 
                 {/* DNS Server Set */}
                 <div className="flex flex-col gap-4">
+                  <SectionHeading title="DNS Server Set" />
                   <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: C.labelText,
-                      marginBottom: 8,
-                      paddingBottom: 8,
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                    }}
+                    className="flex flex-col gap-4 w-full"
+                    style={{ maxWidth: 640, margin: "0 auto" }}
                   >
-                    DNS Server Set
-                  </div>
-                  <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 640, margin: "0 auto" }}>
                     {/* Preferred DNS Server */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <label
@@ -1720,19 +1726,11 @@ const Network = () => {
 
                 {/* ARP Mode */}
                 <div className="flex flex-col gap-4">
+                  <SectionHeading title="ARP Mode" />
                   <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: C.labelText,
-                      marginBottom: 8,
-                      paddingBottom: 8,
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                    }}
+                    className="flex flex-col gap-4 w-full"
+                    style={{ maxWidth: 640, margin: "0 auto" }}
                   >
-                    ARP Mode
-                  </div>
-                  <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 640, margin: "0 auto" }}>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <label
                         style={{

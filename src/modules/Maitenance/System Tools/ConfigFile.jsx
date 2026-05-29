@@ -43,7 +43,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -111,22 +112,24 @@ const tableContainerStyle = {
   margin: "0 auto",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
 };
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "0 20px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -299,7 +302,7 @@ const ConfigFile = () => {
 
         <div style={tableContainerStyle}>
           {/* Top Blue Bar */}
-          <div style={{ ...blueBarStyle, flexWrap: "wrap", height: "auto", minHeight: 44, padding: "8px 20px" }}>
+          <div style={blueBarStyle}>
             <span style={{ flex: 1, textAlign: "left" }}>
               {CONFIG_FILE_TITLE}
             </span>
@@ -368,7 +371,7 @@ const ConfigFile = () => {
 
             {/* Action buttons */}
             <div
-              className="flex justify-center gap-4 py-5 flex-wrap"
+              className="flex justify-center gap-4 py-3 flex-wrap"
               style={{ borderTop: `1px solid ${C.divider}` }}
             >
               <Btn

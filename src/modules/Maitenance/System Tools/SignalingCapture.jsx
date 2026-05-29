@@ -132,7 +132,7 @@ const tableContainerStyle = {
   margin: "0 auto",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
   marginBottom: 24,
@@ -140,15 +140,17 @@ const tableContainerStyle = {
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start", // Left alignment as requested
-  padding: "0 20px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -673,7 +675,11 @@ const SignalingCapture = () => {
             {[0, 1].map((i) => (
               <div
                 key={i}
-                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 border-b border-gray-100 last:border-b-0 last:pb-0"
+                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 last:pb-0"
+                style={{
+                  borderBottom:
+                    i === 0 ? `1px solid ${C.divider}` : "none",
+                }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
                   <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
@@ -742,7 +748,11 @@ const SignalingCapture = () => {
             {[0, 1].map((i) => (
               <div
                 key={i}
-                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 border-b border-gray-100 last:border-b-0 last:pb-0"
+                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 last:pb-0"
+                style={{
+                  borderBottom:
+                    i === 0 ? `1px solid ${C.divider}` : "none",
+                }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
                   <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">

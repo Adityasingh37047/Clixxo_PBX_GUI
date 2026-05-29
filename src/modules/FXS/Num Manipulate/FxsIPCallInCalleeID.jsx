@@ -41,6 +41,7 @@ const C = {
   labelText: "#1e293b",
   valueText: "#1e293b",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#1e293b",
   errorRed: "#dc2626",
 };
@@ -555,18 +556,22 @@ const IPCallInCalleeID = () => {
         {/* Breadcrumb */}
         <div
           style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            gap: 4,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Num Manipulate &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              IP Call In CalleeID
-            </span>
-          </div>
+          <span>FXS</span>
+          <span>&gt;</span>
+          <span>Num Manipulate</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            IP Call In CalleeID
+          </span>
         </div>
 
         {/* Main Card */}
@@ -614,18 +619,22 @@ const IPCallInCalleeID = () => {
                 {/* Breadcrumb */}
                 <div
                   style={{
+                    fontSize: 12,
+                    color: C.mutedText,
+                    marginBottom: 16,
+                    fontWeight: 400,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: 12,
+                    gap: 4,
                   }}
                 >
-                  <div style={{ fontSize: 11, color: C.mutedText }}>
-                    FXS &rsaquo; Num Manipulate &rsaquo;{" "}
-                    <span style={{ color: C.valueText, fontWeight: 600 }}>
-                      IP Call In CalleeID
-                    </span>
-                  </div>
+                  <span>FXS</span>
+                  <span>&gt;</span>
+                  <span>Num Manipulate</span>
+                  <span>&gt;</span>
+                  <span style={{ color: C.strongText, fontWeight: 600 }}>
+                    IP Call In CalleeID
+                  </span>
                 </div>
 
                 {/* Main Card */}
@@ -644,11 +653,12 @@ const IPCallInCalleeID = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      padding: "10px 14px",
+                      minHeight: 44,
+                      padding: "7px 14px",
                       borderBottom: `1px solid ${C.cardBorder}`,
-                      background: "#DCE6F2",
+                      background: "#ffffff",
                       flexWrap: "wrap",
-                      gap: 8,
+                      gap: 12,
                     }}
                   >
                     <div
@@ -695,6 +705,7 @@ const IPCallInCalleeID = () => {
                         onClick={handleCheckAll}
                         disabled={loading.delete}
                         variant="outline"
+                        style={{ height: 30 }}
                       >
                         Check All
                       </Btn>
@@ -702,6 +713,7 @@ const IPCallInCalleeID = () => {
                         onClick={handleUncheckAll}
                         disabled={loading.delete}
                         variant="outline"
+                        style={{ height: 30 }}
                       >
                         Uncheck All
                       </Btn>
@@ -709,6 +721,7 @@ const IPCallInCalleeID = () => {
                         onClick={handleInverse}
                         disabled={loading.delete}
                         variant="outline"
+                        style={{ height: 30 }}
                       >
                         Inverse
                       </Btn>
@@ -716,6 +729,7 @@ const IPCallInCalleeID = () => {
                         onClick={handleDelete}
                         disabled={loading.delete || selected.length === 0}
                         variant="danger"
+                        style={{ height: 30 }}
                       >
                         {loading.delete ? "Deleting..." : "🗑 Delete"}
                       </Btn>
@@ -723,6 +737,7 @@ const IPCallInCalleeID = () => {
                         onClick={handleClearAll}
                         disabled={loading.delete || rules.length === 0}
                         variant="danger"
+                        style={{ height: 30 }}
                       >
                         {loading.delete ? "Clearing..." : "Clear All"}
                       </Btn>
@@ -730,6 +745,7 @@ const IPCallInCalleeID = () => {
                         onClick={handleRefresh}
                         disabled={loading.fetch}
                         variant="outline"
+                        style={{ height: 30 }}
                       >
                         {loading.fetch ? "Refreshing..." : "Refresh"}
                       </Btn>
@@ -737,6 +753,7 @@ const IPCallInCalleeID = () => {
                         onClick={() => handleOpenModal()}
                         disabled={loading.save}
                         variant="accent"
+                        style={{ height: 30 }}
                       >
                         + Add New
                       </Btn>

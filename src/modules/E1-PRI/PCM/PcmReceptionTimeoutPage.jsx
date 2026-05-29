@@ -43,7 +43,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -116,47 +117,61 @@ const tableContainerStyle = {
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,
   borderTopRightRadius: CARD_RADIUS,
   display: "flex",
+  flexWrap: "wrap",
+  gap: 12,
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "0 20px",
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
   borderBottom: `1px solid ${C.cardBorder}`,
 };
 
-const thStyle = {
-  background: "#F8FAFC",
-  color: C.labelText,
-  fontWeight: 700,
-  fontSize: 11,
-  padding: "12px 14px",
-  textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  textTransform: "uppercase",
-  letterSpacing: "0.14em",
-  whiteSpace: "nowrap",
-};
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 
 const tdStyle = {
-  padding: "10px 16px",
+  padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
 };
 
 const PcmReceptionTimeoutPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ ...PCM_RECEPTION_TIMEOUT_INITIAL_FORM });
-  const [timeoutData, setTimeoutData] = useState(PCM_RECEPTION_TIMEOUT_INITIAL_FORM);
+  const [formData, setFormData] = useState({
+    ...PCM_RECEPTION_TIMEOUT_INITIAL_FORM,
+  });
+  const [timeoutData, setTimeoutData] = useState(
+    PCM_RECEPTION_TIMEOUT_INITIAL_FORM,
+  );
   const [toast, setToast] = useState({ msg: "", type: "success" });
 
   const showToast = (msg, type = "success") => {
@@ -233,28 +248,72 @@ const PcmReceptionTimeoutPage = () => {
             <span>Number-Receiving Timeout Info</span>
           </div>
 
-          <div className="overflow-x-auto w-full">
-            <table className="w-full" style={{ tableLayout: "auto", borderCollapse: "separate", borderSpacing: 0 }}>
+          <div style={{ overflowX: "auto", width: "100%" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                tableLayout: "auto",
+                minWidth: 600,
+              }}
+            >
               <thead>
                 <tr>
-                  <th style={{ ...thStyle, borderLeft: "none" }}>Inter Digit Timeout (s)</th>
-                  <th style={thStyle}>Description</th>
-                  <th style={{ ...thStyle, textAlign: "center", borderRight: "none" }}>Modify</th>
+                  <TH
+                    style={{
+                      borderLeft: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    Inter Digit Timeout (s)
+                  </TH>
+                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    Description
+                  </TH>
+                  <TH
+                    style={{
+                      width: 70,
+                      borderRight: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    Modify
+                  </TH>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  style={{ background: "#ffffff", transition: "background-color 0.15s ease" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f8fafc"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#ffffff"; }}
-                >
-                  <td style={{ ...tdStyle, borderBottomLeftRadius: CARD_RADIUS, borderBottom: "none" }}>{timeoutData.interDigitTimeout ?? "—"}</td>
-                  <td style={{ ...tdStyle, borderBottom: "none" }}>{timeoutData.description ?? "—"}</td>
-                  <td style={{ ...tdStyle, textAlign: "center", borderRight: "none", borderBottomRightRadius: CARD_RADIUS, borderBottom: "none" }}>
+                <tr style={{ background: "#ffffff" }}>
+                  <td
+                    style={{
+                      ...tdStyle,
+                      borderLeft: "none",
+                      borderBottom: "none",
+                      borderBottomLeftRadius: CARD_RADIUS,
+                    }}
+                  >
+                    {timeoutData.interDigitTimeout ?? "—"}
+                  </td>
+                  <td style={{ ...tdStyle, borderBottom: "none" }}>
+                    {timeoutData.description ?? "—"}
+                  </td>
+                  <td
+                    style={{
+                      ...tdStyle,
+                      borderRight: "none",
+                      borderBottom: "none",
+                      borderBottomRightRadius: CARD_RADIUS,
+                    }}
+                  >
                     <EditDocumentIcon
                       className="cursor-pointer text-blue-600 opacity-70 hover:opacity-100 transition-opacity"
                       titleAccess="Edit"
                       onClick={handleOpenModal}
+                      style={{ fontSize: 22 }}
                     />
                   </td>
                 </tr>
@@ -283,7 +342,8 @@ const PcmReceptionTimeoutPage = () => {
             maxWidth: "95vw",
             mx: "auto",
             borderRadius: "8px",
-            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
             backgroundColor: "#f8fafc",
             backgroundImage: "none",
           },
@@ -307,76 +367,88 @@ const PcmReceptionTimeoutPage = () => {
         </DialogTitle>
         <DialogContent
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            p: "20px 24px",
-            pt: "24px !important",
-            backgroundColor: "#f8fafc",
+            p: "16px 24px",
+            pb: "16px",
+            backgroundColor: "#ffffff",
           }}
         >
-          {PCM_RECEPTION_TIMEOUT_FIELDS.map((field) => (
-            <div
-              key={field.name}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                background: "#ffffff",
-                border: "1px solid #cbd5e1",
-                borderRadius: 6,
-                padding: "6px 12px",
-              }}
-            >
-              <label
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+              marginTop: 19,
+              marginBottom: 6,
+            }}
+          >
+            {PCM_RECEPTION_TIMEOUT_FIELDS.map((field) => (
+              <div
+                key={field.name}
                 style={{
-                  width: 160,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  textAlign: "left",
-                  marginRight: 10,
-                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 12,
                 }}
               >
-                {field.label}:
-              </label>
-              <input
-                type={field.type || "text"}
-                name={field.name}
-                value={formData[field.name] ?? ""}
-                onChange={handleInputChange}
-                placeholder={field.placeholder || ""}
-                style={{
-                  flex: 1,
-                  fontSize: 13,
-                  padding: "6px 8px",
-                  borderRadius: 4,
-                  border: "1px solid #cbd5e1",
-                  background: "#ffffff",
-                  color: "#1e293b",
-                  outline: "none",
-                  width: "100%",
-                  transition: "border-color 0.2s ease",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
-                onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
-                onMouseEnter={(e) => {
-                  if (document.activeElement !== e.target)
-                    e.target.style.borderColor = "#64748b";
-                }}
-                onMouseLeave={(e) => {
-                  if (document.activeElement !== e.target)
-                    e.target.style.borderColor = "#cbd5e1";
-                }}
-              />
-            </div>
-          ))}
+                <label
+                  style={{
+                    width: 170,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {field.label}:
+                </label>
+                <div style={{ width: "min(100%, 320px)" }}>
+                  <input
+                    type={field.type || "text"}
+                    name={field.name}
+                    value={formData[field.name] ?? ""}
+                    onChange={handleInputChange}
+                    placeholder={field.placeholder || ""}
+                    style={{
+                      fontSize: 13,
+                      padding: "0 8px",
+                      height: 32,
+                      borderRadius: 4,
+                      border: `1px solid ${C.cardBorder}`,
+                      background: "#ffffff",
+                      color: "#1e293b",
+                      outline: "none",
+                      width: "100%",
+                      transition: "border-color 0.2s ease",
+                      boxSizing: "border-box",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
+                    onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
+                    onMouseEnter={(e) => {
+                      if (document.activeElement !== e.target)
+                        e.target.style.borderColor = "#64748b";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (document.activeElement !== e.target)
+                        e.target.style.borderColor = C.cardBorder;
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </DialogContent>
         <DialogActions
           sx={{
             justifyContent: "center",
             gap: 2,
-            p: 3,
+            py: "10px",
+            px: "16px",
             borderTop: `1px solid ${C.cardBorder}`,
             backgroundColor: "#f8fafc",
           }}

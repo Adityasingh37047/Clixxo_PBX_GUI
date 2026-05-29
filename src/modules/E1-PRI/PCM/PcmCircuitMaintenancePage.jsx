@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   PCM_MAINTENANCE_HEADERS,
   PCM_LOOPBACK_HEADERS,
@@ -94,6 +94,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#3E5475",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
 };
 
@@ -184,7 +185,8 @@ const sectionHeaderStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  padding: "14px 18px",
+  minHeight: 44,
+  padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
   background: "#ffffff",
   fontWeight: 700,
@@ -199,8 +201,9 @@ const sectionHeaderStyle = {
 const actionBarStyle = {
   display: "flex",
   flexWrap: "wrap",
-  gap: 8,
-  padding: "14px 18px",
+  gap: 12,
+  minHeight: 44,
+  padding: "7px 14px",
   borderTop: `1px solid ${C.cardBorder}`,
   background: "#ffffff",
   justifyContent: "center",
@@ -208,8 +211,33 @@ const actionBarStyle = {
   borderBottomRightRadius: CARD_RADIUS,
 };
 
+// PCM Maintenance & LoopBack only — tighter vertical spacing so page fits at 100% zoom
+const topConfigCardStyle = {
+  ...cardStyle,
+  marginBottom: 25,
+};
+
+const topConfigCardLastStyle = {
+  ...cardStyle,
+  marginBottom: 25,
+};
+
+const topConfigSectionHeaderStyle = {
+  ...sectionHeaderStyle,
+};
+
+const topConfigActionBarStyle = {
+  ...actionBarStyle,
+  flexWrap: "nowrap",
+  overflowX: "auto",
+};
+
+const topConfigCellStyle = {
+  padding: "5px 12px",
+};
+
 const tableCellStyle = {
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
@@ -374,6 +402,8 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
 };
 
+const PAGE_CHROME_OFFSET = 80; // navbar + layout padding
+
 const PcmCircuitMaintenancePage = () => {
   // State for checkboxes and table data
   const [maintenanceChecked, setMaintenanceChecked] = useState(false);
@@ -386,6 +416,68 @@ const PcmCircuitMaintenancePage = () => {
   const [spansData, setSpansData] = useState([]);
   const pollingRef = useRef(null);
   const aliveRef = useRef(true);
+
+  const contentRef = useRef(null);
+  // true = content taller than viewport → allow page scroll (e.g. 120% zoom)
+  const [contentOverflows, setContentOverflows] = useState(false);
+
+  const measurePageFit = useCallback(() => {
+    const contentEl = contentRef.current;
+    if (!contentEl) return;
+
+    const available = window.innerHeight - PAGE_CHROME_OFFSET;
+    const totalContent = contentEl.scrollHeight + 32; // page padding (16 × 2)
+    setContentOverflows(totalContent > available + 1);
+  }, []);
+
+  useEffect(() => {
+    const schedule = () => requestAnimationFrame(measurePageFit);
+
+    schedule();
+    const ro = new ResizeObserver(schedule);
+    const contentEl = contentRef.current;
+    if (contentEl) ro.observe(contentEl);
+
+    window.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("scroll", schedule);
+
+    const onWheel = (e) => {
+      if (e.ctrlKey) {
+        setTimeout(schedule, 50);
+        setTimeout(schedule, 250);
+      }
+    };
+    const onKeyDown = (e) => {
+      if (
+        e.ctrlKey &&
+        (e.key === "+" ||
+          e.key === "-" ||
+          e.key === "=" ||
+          e.key === "0" ||
+          e.key === "_")
+      ) {
+        setTimeout(schedule, 50);
+        setTimeout(schedule, 250);
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("scroll", schedule);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [measurePageFit, spansData.length, channels.length]);
+
+  useEffect(() => {
+    measurePageFit();
+  }, [contentOverflows, measurePageFit]);
 
   // Map API channel state -> icon index (same as PSTN Status page)
   const stateToIconIndex = (state) => {
@@ -583,23 +675,41 @@ const PcmCircuitMaintenancePage = () => {
 
   // PCM Maintenance section
   const renderPcmMaintenance = () => (
-    <div style={cardStyle}>
-      <div style={sectionHeaderStyle}>PCM Maintenance</div>
+    <div style={topConfigCardStyle}>
+      <div style={topConfigSectionHeaderStyle}>PCM Maintenance</div>
       <div style={{ overflowX: "auto" }}>
         <table style={tableStyle}>
           <tbody>
             <tr>
-              <td style={labelCellStyle}>PCM No.</td>
-              <td style={{ ...valueCellStyle, borderRight: "none" }}>0</td>
+              <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
+                PCM No.
+              </td>
+              <td
+                style={{
+                  ...valueCellStyle,
+                  ...topConfigCellStyle,
+                  borderRight: "none",
+                }}
+              >
+                0
+              </td>
             </tr>
             <tr>
-              <td style={labelCellStyle}>PCM Status</td>
-              <td style={{ ...valueCellStyle, borderRight: "none" }}>
+              <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
+                PCM Status
+              </td>
+              <td
+                style={{
+                  ...valueCellStyle,
+                  ...topConfigCellStyle,
+                  borderRight: "none",
+                }}
+              >
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "center",
-                    minHeight: 24,
+                    minHeight: 20,
                   }}
                 >
                   {colorBlock("#0070a8")}
@@ -607,12 +717,19 @@ const PcmCircuitMaintenancePage = () => {
               </td>
             </tr>
             <tr>
-              <td style={{ ...labelCellStyle, ...lastTableRowCellStyle }}>
+              <td
+                style={{
+                  ...labelCellStyle,
+                  ...topConfigCellStyle,
+                  ...lastTableRowCellStyle,
+                }}
+              >
                 Check
               </td>
               <td
                 style={{
                   ...valueCellStyle,
+                  ...topConfigCellStyle,
                   borderRight: "none",
                   ...lastTableRowCellStyle,
                 }}
@@ -628,7 +745,7 @@ const PcmCircuitMaintenancePage = () => {
           </tbody>
         </table>
       </div>
-      <div style={actionBarStyle}>
+      <div style={topConfigActionBarStyle}>
         <Btn onClick={() => setMaintenanceChecked(true)}>Check All</Btn>
         <Btn onClick={() => setMaintenanceChecked(false)}>Uncheck All</Btn>
         <Btn onClick={() => setMaintenanceChecked((v) => !v)}>Inverse</Btn>
@@ -646,23 +763,41 @@ const PcmCircuitMaintenancePage = () => {
 
   // PCM LoopBack Config section
   const renderPcmLoopback = () => (
-    <div style={cardStyle}>
-      <div style={sectionHeaderStyle}>PCM LoopBack Config</div>
+    <div style={topConfigCardLastStyle}>
+      <div style={topConfigSectionHeaderStyle}>PCM LoopBack Config</div>
       <div style={{ overflowX: "auto" }}>
         <table style={tableStyle}>
           <tbody>
             <tr>
-              <td style={labelCellStyle}>PCM No.</td>
-              <td style={{ ...valueCellStyle, borderRight: "none" }}>0</td>
+              <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
+                PCM No.
+              </td>
+              <td
+                style={{
+                  ...valueCellStyle,
+                  ...topConfigCellStyle,
+                  borderRight: "none",
+                }}
+              >
+                0
+              </td>
             </tr>
             <tr>
-              <td style={labelCellStyle}>PCM LoopBack Status</td>
-              <td style={{ ...valueCellStyle, borderRight: "none" }}>
+              <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
+                PCM LoopBack Status
+              </td>
+              <td
+                style={{
+                  ...valueCellStyle,
+                  ...topConfigCellStyle,
+                  borderRight: "none",
+                }}
+              >
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "center",
-                    minHeight: 24,
+                    minHeight: 20,
                   }}
                 >
                   {colorBlock("#ccc")}
@@ -670,12 +805,19 @@ const PcmCircuitMaintenancePage = () => {
               </td>
             </tr>
             <tr>
-              <td style={{ ...labelCellStyle, ...lastTableRowCellStyle }}>
+              <td
+                style={{
+                  ...labelCellStyle,
+                  ...topConfigCellStyle,
+                  ...lastTableRowCellStyle,
+                }}
+              >
                 Check
               </td>
               <td
                 style={{
                   ...valueCellStyle,
+                  ...topConfigCellStyle,
                   borderRight: "none",
                   ...lastTableRowCellStyle,
                 }}
@@ -691,7 +833,7 @@ const PcmCircuitMaintenancePage = () => {
           </tbody>
         </table>
       </div>
-      <div style={actionBarStyle}>
+      <div style={topConfigActionBarStyle}>
         <Btn onClick={() => setLoopbackChecked(true)}>Check All</Btn>
         <Btn onClick={() => setLoopbackChecked(false)}>Uncheck All</Btn>
         <Btn onClick={() => setLoopbackChecked((v) => !v)}>Inverse</Btn>
@@ -1062,22 +1204,35 @@ const PcmCircuitMaintenancePage = () => {
     <div
       style={{
         backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
         padding: 16,
+        boxSizing: "border-box",
+        ...(contentOverflows
+          ? { minHeight: "calc(100vh - 80px)" }
+          : {
+              height: "calc(100vh - 80px)",
+              maxHeight: "calc(100vh - 80px)",
+              overflow: "hidden",
+            }),
       }}
     >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+      <div ref={contentRef} style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
         <div
           style={{
             fontSize: 12,
             color: C.mutedText,
             marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
+            alignItems: "center",
             gap: 4,
           }}
         >
-          E1-PRI &rsaquo; PCM &rsaquo;{" "}
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>PCM</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             Circuit Maintenance
           </span>
         </div>

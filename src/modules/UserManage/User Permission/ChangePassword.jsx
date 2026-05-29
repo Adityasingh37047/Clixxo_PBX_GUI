@@ -59,7 +59,6 @@ const Btn = ({
       fontWeight: 600,
       fontSize: 15,
       borderRadius: 6,
-      boxShadow: "0 2px 8px #3E5475",
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -128,7 +127,6 @@ const tableContainerStyle = {
   borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  paddingBottom: "24px",
 };
 
 const blueBarStyle = {
@@ -140,7 +138,7 @@ const blueBarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "14px 18px",
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
@@ -329,215 +327,213 @@ const ChangePassword = () => {
           {/* Header */}
           <div style={blueBarStyle}>Change Password</div>
 
-          <form
-            onSubmit={handleSave}
-            style={{
-              padding: "32px 24px",
-              maxWidth: 500,
-              width: "100%",
-              margin: "0 auto",
-            }}
-          >
-            <div className="space-y-4">
-              {CHANGE_PASSWORD_FIELDS.map((field) => (
-                <div
-                  key={field.name}
-                  className="flex items-center"
-                  style={{ flexWrap: "wrap" }}
-                >
-                  <label
-                    style={{
-                      width: "auto",
-                      minWidth: 130,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      textAlign: "left",
-                      marginRight: 10,
-                      whiteSpace: "nowrap",
-                      flexShrink: 0,
-                    }}
+          <div className="w-full px-5 pt-3 pb-2">
+            <form onSubmit={handleSave} className="w-full">
+              <div className="space-y-4 w-full max-w-[500px] mx-auto">
+                {CHANGE_PASSWORD_FIELDS.map((field) => (
+                  <div
+                    key={field.name}
+                    className="flex items-center"
+                    style={{ flexWrap: "wrap" }}
                   >
-                    {field.label}:
-                  </label>
-                  <div className="flex-1 flex flex-col">
-                    {field.type === "password" ? (
-                      <TextField
-                        name={field.name}
-                        value={form[field.name]}
-                        onChange={handleChange}
-                        type={showPasswords[field.name] ? "text" : "password"}
-                        disabled={loading}
-                        autoComplete="off"
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          width: "100%",
-                          "& .MuiOutlinedInput-root": {
-                            height: 36,
-                            fontSize: 13,
-                            backgroundColor: C.cardBg,
-                            transition: "border-color 0.2s ease",
-                            "& fieldset": {
-                              borderColor: fieldErrors[field.name]
-                                ? C.errorRed
-                                : C.cardBorder,
+                    <label
+                      style={{
+                        width: "auto",
+                        minWidth: 130,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        textAlign: "left",
+                        marginRight: 10,
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {field.label}:
+                    </label>
+                    <div className="flex-1 flex flex-col">
+                      {field.type === "password" ? (
+                        <TextField
+                          name={field.name}
+                          value={form[field.name]}
+                          onChange={handleChange}
+                          type={showPasswords[field.name] ? "text" : "password"}
+                          disabled={loading}
+                          autoComplete="off"
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            width: "100%",
+                            "& .MuiOutlinedInput-root": {
+                              height: 36,
+                              fontSize: 13,
+                              backgroundColor: C.cardBg,
                               transition: "border-color 0.2s ease",
+                              "& fieldset": {
+                                borderColor: fieldErrors[field.name]
+                                  ? C.errorRed
+                                  : C.cardBorder,
+                                transition: "border-color 0.2s ease",
+                              },
+                              "&:hover fieldset": {
+                                borderColor: fieldErrors[field.name]
+                                  ? C.errorRed
+                                  : "#64748b",
+                              },
+                              "&.Mui-focused fieldset": {
+                                borderColor: fieldErrors[field.name]
+                                  ? C.errorRed
+                                  : "#0284c7",
+                                borderWidth: 1,
+                              },
                             },
-                            "&:hover fieldset": {
-                              borderColor: fieldErrors[field.name]
-                                ? C.errorRed
-                                : "#64748b",
+                            "& .MuiInputBase-input": {
+                              fontSize: 13,
+                              color: C.valueText,
+                              padding: "6px 10px",
+                              textAlign: "center",
                             },
-                            "&.Mui-focused fieldset": {
-                              borderColor: fieldErrors[field.name]
-                                ? C.errorRed
-                                : "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                          "& .MuiInputBase-input": {
-                            fontSize: 13,
-                            color: C.valueText,
-                            padding: "6px 10px",
-                            textAlign: "center",
-                          },
-                        }}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment
-                              position="start"
-                              sx={{ visibility: "hidden" }}
-                            >
-                              <IconButton size="small" edge="start" disabled>
-                                <VisibilityIcon fontSize="small" />
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                aria-label="toggle password visibility"
-                                onClick={() =>
-                                  handleTogglePasswordVisibility(field.name)
-                                }
-                                edge="end"
-                                size="small"
-                                sx={{
-                                  color: "#666",
-                                  "&:hover": {
-                                    color: "#888",
-                                  },
-                                }}
+                          }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment
+                                position="start"
+                                sx={{ visibility: "hidden" }}
                               >
-                                {showPasswords[field.name] ? (
-                                  <VisibilityOffIcon fontSize="small" />
-                                ) : (
+                                <IconButton size="small" edge="start" disabled>
                                   <VisibilityIcon fontSize="small" />
-                                )}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    ) : (
-                      <TextField
-                        name={field.name}
-                        value={form[field.name]}
-                        onChange={handleChange}
-                        type="text"
-                        disabled={loading || field.name === "username"}
-                        autoComplete="off"
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          width: "100%",
-                          "& .MuiOutlinedInput-root": {
-                            height: 36,
-                            fontSize: 13,
-                            backgroundColor:
-                              field.name === "username" || loading
-                                ? "#f1f5f9"
-                                : C.cardBg,
-                            transition: "border-color 0.2s ease",
-                            "& fieldset": {
-                              borderColor: fieldErrors[field.name]
-                                ? C.errorRed
-                                : C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor:
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  aria-label="toggle password visibility"
+                                  onClick={() =>
+                                    handleTogglePasswordVisibility(field.name)
+                                  }
+                                  edge="end"
+                                  size="small"
+                                  sx={{
+                                    color: "#666",
+                                    "&:hover": {
+                                      color: "#888",
+                                    },
+                                  }}
+                                >
+                                  {showPasswords[field.name] ? (
+                                    <VisibilityOffIcon fontSize="small" />
+                                  ) : (
+                                    <VisibilityIcon fontSize="small" />
+                                  )}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      ) : (
+                        <TextField
+                          name={field.name}
+                          value={form[field.name]}
+                          onChange={handleChange}
+                          type="text"
+                          disabled={loading || field.name === "username"}
+                          autoComplete="off"
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            width: "100%",
+                            "& .MuiOutlinedInput-root": {
+                              height: 36,
+                              fontSize: 13,
+                              backgroundColor:
                                 field.name === "username" || loading
-                                  ? C.cardBorder
-                                  : fieldErrors[field.name]
-                                    ? C.errorRed
-                                    : "#64748b",
+                                  ? "#f1f5f9"
+                                  : C.cardBg,
+                              transition: "border-color 0.2s ease",
+                              "& fieldset": {
+                                borderColor: fieldErrors[field.name]
+                                  ? C.errorRed
+                                  : C.cardBorder,
+                                transition: "border-color 0.2s ease",
+                              },
+                              "&:hover fieldset": {
+                                borderColor:
+                                  field.name === "username" || loading
+                                    ? C.cardBorder
+                                    : fieldErrors[field.name]
+                                      ? C.errorRed
+                                      : "#64748b",
+                              },
+                              "&.Mui-focused fieldset": {
+                                borderColor: fieldErrors[field.name]
+                                  ? C.errorRed
+                                  : "#0284c7",
+                                borderWidth: 1,
+                              },
+                              "&.Mui-disabled": {
+                                cursor: "not-allowed",
+                              },
+                              "&.Mui-disabled fieldset": {
+                                borderColor: C.cardBorder,
+                              },
                             },
-                            "&.Mui-focused fieldset": {
-                              borderColor: fieldErrors[field.name]
-                                ? C.errorRed
-                                : "#0284c7",
-                              borderWidth: 1,
+                            "& .MuiInputBase-input": {
+                              fontSize: 13,
+                              color: C.valueText,
+                              padding: "6px 10px",
+                              textAlign: "center",
                             },
-                            "&.Mui-disabled": {
-                              cursor: "not-allowed",
+                            "& .MuiInputBase-input.Mui-disabled": {
+                              color: "#94a3b8",
+                              WebkitTextFillColor: "#94a3b8",
                             },
-                            "&.Mui-disabled fieldset": {
-                              borderColor: C.cardBorder,
-                            },
-                          },
-                          "& .MuiInputBase-input": {
-                            fontSize: 13,
-                            color: C.valueText,
-                            padding: "6px 10px",
-                            textAlign: "center",
-                          },
-                          "& .MuiInputBase-input.Mui-disabled": {
-                            color: "#94a3b8",
-                            WebkitTextFillColor: "#94a3b8",
-                          },
-                        }}
-                      />
-                    )}
-                    {fieldErrors[field.name] && (
-                      <div
-                        style={{
-                          color: C.errorRed,
-                          fontSize: "12px",
-                          marginTop: "4px",
-                          marginLeft: "4px",
-                        }}
-                      >
-                        {fieldErrors[field.name]}
-                      </div>
-                    )}
+                          }}
+                        />
+                      )}
+                      {fieldErrors[field.name] && (
+                        <div
+                          style={{
+                            color: C.errorRed,
+                            fontSize: "12px",
+                            marginTop: "4px",
+                            marginLeft: "4px",
+                          }}
+                        >
+                          {fieldErrors[field.name]}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div className="flex justify-center mt-8 gap-4">
-              <Btn
-                variant="primary"
-                onClick={handleSave}
-                disabled={loading}
-                type="submit"
-                style={{
-                  minWidth: 110,
-                  height: 36,
-                  fontSize: 13,
-                  letterSpacing: "0.2px",
-                }}
+              {/* Action Buttons */}
+              <div
+                className="w-full flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1 mb-0"
+                style={{ borderTop: `1px solid ${C.divider}` }}
               >
-                {loading ? "Changing Password..." : "Save"}
-              </Btn>
-            </div>
-          </form>
+                <Btn
+                  variant="primary"
+                  onClick={handleSave}
+                  disabled={loading}
+                  type="submit"
+                  style={{
+                    minWidth: 110,
+                    height: 34,
+                    fontSize: 13,
+                    letterSpacing: "0.2px",
+                  }}
+                >
+                  {loading ? "Changing Password..." : "Save"}
+                </Btn>
+              </div>
+            </form>
+          </div>
         </div>
 
         {/* Red note text in background */}
-        <div className="w-full text-center mt-6">
+        <div className="w-full text-center mt-2">
           <Typography
             variant="body2"
             sx={{

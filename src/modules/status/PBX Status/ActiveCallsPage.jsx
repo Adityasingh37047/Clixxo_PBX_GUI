@@ -4,7 +4,6 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import HeadsetMicIcon from "@mui/icons-material/HeadsetMic";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { IconButton, CircularProgress, Tooltip } from "@mui/material";
 import { fetchAriChannels, ariHangup } from "../../../api/apiService";
 
@@ -12,17 +11,79 @@ import { fetchAriChannels, ariHangup } from "../../../api/apiService";
 const POLL_MS = 1000;
 const TICK_MS = 1000;
 
-/** Align with PbxMonitor.jsx palette / card chrome */
+/** Align with IP→PSTN Routing Rule / PbxMonitor palette */
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
+  cardBorder: "#9CA3AF",
   cardBorderSoft: "#f1f5f9",
-  labelText: "#64748b",
+  labelText: "#3E5475",
   valueText: "#0f172a",
+  strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#2563eb",
+  accent: "#3E5475",
   errorRed: "#ef4444",
+};
+
+const CARD_RADIUS = 10;
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg = variant === "cancel" ? "#b6c2d3" : "#e2e8f0";
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type || "button"}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
 };
 
 /**
@@ -197,11 +258,13 @@ function channelDisplayLine(channel) {
 
 const ActiveCallsPage = () => {
   const [channels, setChannels] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [tick, setTick] = useState(0);
   const [hangupChannelId, setHangupChannelId] = useState(null);
   const mounted = useRef(true);
+  const silentRefreshRef = useRef(false);
   /** When we first saw this call as Up — creationtime is dial start, not answer */
   const talkingStartedAtRef = useRef(new Map());
 
@@ -236,19 +299,26 @@ const ActiveCallsPage = () => {
         showAlert(hardFailure);
         return;
       }
-      await loadChannels();
+      await loadChannels(true);
     } catch (e) {
       if (!isChannelAlreadyGone(e)) {
         showAlert(e?.message || String(e) || "Hangup failed.");
       } else {
-        await loadChannels();
+        await loadChannels(true);
       }
     } finally {
       setHangupChannelId(null);
     }
   };
 
-  const loadChannels = useCallback(async () => {
+  const loadChannels = useCallback(async (silent = false) => {
+    if (silent) {
+      if (silentRefreshRef.current) return;
+      silentRefreshRef.current = true;
+    } else {
+      setIsRefreshing(true);
+    }
+
     try {
       const res = await fetchAriChannels();
       if (!mounted.current) return;
@@ -284,19 +354,26 @@ const ActiveCallsPage = () => {
       saveTalkingStartsPersisted(persisted);
       setChannels(merged);
       setError(null);
+      setHasLoaded(true);
     } catch (e) {
       if (!mounted.current) return;
-      setError(e?.message || "Failed to load active calls");
-      setChannels([]);
+      if (!silent) {
+        setError(e?.message || "Failed to load active calls");
+        setChannels([]);
+      }
     } finally {
-      if (mounted.current) setLoading(false);
+      if (silent) {
+        silentRefreshRef.current = false;
+      } else {
+        setIsRefreshing(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     mounted.current = true;
-    loadChannels();
-    const pollId = setInterval(loadChannels, POLL_MS);
+    loadChannels(false);
+    const pollId = setInterval(() => loadChannels(true), POLL_MS);
     return () => {
       mounted.current = false;
       clearInterval(pollId);
@@ -309,137 +386,144 @@ const ActiveCallsPage = () => {
     return () => clearInterval(id);
   }, []);
 
-  const handleRefresh = () => {
-    setLoading(true);
-    loadChannels();
-  };
-
   // Always reserve two columns on desktop so one card keeps same size
   const gridClass = "grid-cols-1 md:grid-cols-2";
 
   return (
-  <div
-    className="min-h-full w-full flex flex-col justify-start"
-    style={{
-      background: C.pageBg,
-      minHeight: "calc(100vh - 80px)",
-      padding: 24,
-      fontFamily: "Inter, sans-serif",
-    }}
-  >
-    {/* Header */}
     <div
+      className="min-h-full w-full flex flex-col justify-start"
       style={{
-        marginBottom: 24,
+        background: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+        fontFamily: "Inter, sans-serif",
       }}
     >
-      {/* Breadcrumb */}
-      <div
-        style={{
-          fontSize: 12,
-          color: C.mutedText,
-          marginBottom: 14,
-          fontWeight: 400,
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-        }}
-      >
-        <span>Status</span>
-        <span>&gt;</span>
-
-        <span>PBX Status</span>
-        <span>&gt;</span>
-
-        <span
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
+        <div
           style={{
-            color: C.valueText,
-            fontWeight: 600,
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
           }}
         >
-          Active Calls
-        </span>
-      </div>
-    </div>
-
-    {/* Main Container — matches PbxMonitor main white shell */}
-    <div
-      className="w-full max-w-full overflow-hidden"
-      style={{
-        backgroundColor: C.cardBg,
-        borderRadius: 20,
-        border: `1px solid ${C.cardBorder}`,
-        boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
-      }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-5 pb-4">
-        <div>
-          <h1
-            className="text-2xl font-bold m-0"
-            style={{ color: C.valueText }}
-          >
-            
-          </h1>
-
-          <div
-            className="text-sm mt-1"
-            style={{ color: C.mutedText }}
-          >
-           
-          </div>
+          <span>Status</span>
+          <span>&gt;</span>
+          <span>PBX Status</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Active Calls
+          </span>
         </div>
 
-        <Tooltip title="Refresh">
-          <span>
-            <IconButton
-              size="small"
-              onClick={handleRefresh}
-              disabled={loading}
-              aria-label="Refresh"
-              sx={{
-                background: C.pageBg,
-                border: `1px solid ${C.cardBorder}`,
-                "&:hover": {
-                  background: C.cardBorderSoft,
-                },
-              }}
-            >
-              {loading ? (
-                <CircularProgress size={20} sx={{ color: C.accent }} />
-              ) : (
-                <RefreshIcon fontSize="small" />
+        {/* Main card */}
+        <div
+          className="w-full max-w-full overflow-hidden"
+          style={{
+            backgroundColor: C.cardBg,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: CARD_RADIUS,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
+          {/* Toolbar */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {hasLoaded && channels.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {channels.length} active
+                </span>
               )}
-            </IconButton>
-          </span>
-        </Tooltip>
-      </div>
-
-      {/* Body */}
-      <div className="px-6 pb-6 pt-2 min-h-[200px]">
-        {error && (
-          <div className="text-center text-red-600 text-sm py-8">
-            {error}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!error && !loading && channels.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="text-5xl mb-4">📞</div>
-
-            <div className="text-gray-800 text-lg font-semibold">
-              No Active Calls
             </div>
-
-            <div className="text-gray-400 text-sm mt-1">
-              No ongoing calls right now
-            </div>
+            <Btn
+              variant="cancel"
+              onClick={() => loadChannels(false)}
+              disabled={isRefreshing}
+              style={{ height: 30 }}
+            >
+              {isRefreshing ? (
+                <>
+                  <CircularProgress size={14} sx={{ color: "inherit" }} />
+                  Refreshing...
+                </>
+              ) : (
+                "Refresh"
+              )}
+            </Btn>
           </div>
-        )}
 
-        {/* Active Calls */}
-        {!error && channels.length > 0 && (
+          {/* Body */}
+          <div
+            className="min-h-[200px]"
+            style={{ padding: "14px 16px 16px" }}
+          >
+            {error && (
+              <div
+                style={{
+                  textAlign: "center",
+                  color: C.errorRed,
+                  fontSize: 13,
+                  padding: "32px 0",
+                }}
+              >
+                {error}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!error && hasLoaded && channels.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="text-5xl mb-4">📞</div>
+                <div
+                  className="text-lg font-semibold"
+                  style={{ color: C.valueText }}
+                >
+                  No Active Calls
+                </div>
+                <div className="text-sm mt-1" style={{ color: C.mutedText }}>
+                  No ongoing calls right now
+                </div>
+              </div>
+            )}
+
+            {/* Initial load */}
+            {!error && !hasLoaded && channels.length === 0 && (
+              <div className="flex justify-center py-12">
+                <CircularProgress size={32} sx={{ color: C.accent }} />
+              </div>
+            )}
+
+            {/* Active calls */}
+            {!error && channels.length > 0 && (
           <div className={`grid gap-4 ${gridClass}`}>
             {channels.map((ch) => {
               const callerNum = ch.caller?.number || "";
@@ -495,9 +579,9 @@ const ActiveCallsPage = () => {
                   className="flex items-stretch min-w-0 overflow-hidden"
                   style={{
                     backgroundColor: C.cardBg,
-                    borderRadius: 16,
-                    border: `1px solid ${C.cardBorderSoft}`,
-                    boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+                    borderRadius: CARD_RADIUS,
+                    border: `1px solid ${C.cardBorder}`,
+                    boxShadow: "0 2px 10px rgba(15,23,42,0.04)",
                   }}
                 >
                   {/* Left Icon */}
@@ -607,19 +691,11 @@ const ActiveCallsPage = () => {
               );
             })}
           </div>
-        )}
-
-        {/* Loader */}
-        {loading &&
-          channels.length === 0 &&
-          !error && (
-            <div className="flex justify-center py-12">
-              <CircularProgress size={32} sx={{ color: C.accent }} />
-            </div>
-          )}
+            )}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 export default ActiveCallsPage;

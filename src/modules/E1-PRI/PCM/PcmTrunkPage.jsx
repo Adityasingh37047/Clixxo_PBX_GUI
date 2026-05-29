@@ -26,6 +26,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
 };
 
@@ -118,7 +119,7 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
@@ -133,7 +134,7 @@ const TH = ({ children, style: extra }) => (
 );
 
 const cellStyle = {
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
@@ -254,16 +255,19 @@ const tableContainerStyle = {
 };
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,
   borderTopRightRadius: CARD_RADIUS,
   display: "flex",
+  flexWrap: "wrap",
+  gap: 12,
   alignItems: "center",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
   justifyContent: "center",
+  padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
 };
 const thStyle = {
@@ -273,7 +277,7 @@ const thStyle = {
   fontSize: 11,
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
-  padding: "12px 14px",
+  padding: "9px 14px",
   whiteSpace: "nowrap",
   textTransform: "uppercase",
   letterSpacing: "0.14em",
@@ -282,7 +286,7 @@ const thStyle = {
 const tdStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
   background: "#fff",
   textAlign: "center",
@@ -422,17 +426,23 @@ const PcmTrunkPage = () => {
       }}
     >
       <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
         <div
           style={{
             fontSize: 12,
             color: C.mutedText,
             marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
+            alignItems: "center",
             gap: 4,
           }}
         >
-          E1-PRI &rsaquo; PCM &rsaquo;{" "}
-          <span style={{ color: C.valueText, fontWeight: 600 }}>PCM Trunk</span>
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>PCM</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>PCM Trunk</span>
         </div>
       {trunks.length === 0 ? (
         <div
@@ -469,11 +479,12 @@ const PcmTrunkPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
+              minHeight: 44,
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
               borderTopRightRadius: CARD_RADIUS,
             }}
@@ -612,7 +623,7 @@ const PcmTrunkPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderTop: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               borderBottomLeftRadius: CARD_RADIUS,

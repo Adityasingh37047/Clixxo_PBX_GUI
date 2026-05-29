@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 import { Button, CircularProgress } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
+
+const REFRESH_INTERVAL_MS = 5000;
 
 // ── Color palette ─────────────────────────────────────────────────────────────
 const C = {
@@ -102,13 +104,19 @@ const SystemInfo = () => {
   const [SYSTEM_INFO, setSYSTEM_INFO] = useState([]);
   const [VERSION_INFO, setVERSION_INFO] = useState([]);
   const [error, setErros] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [licenseSerialNumber, setLicenseSerialNumber] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const silentRefreshRef = useRef(false);
 
-  const setSystemInfo = async () => {
-    try {
+  const loadSystemInfo = useCallback(async (silent = false) => {
+    if (silent) {
+      if (silentRefreshRef.current) return;
+      silentRefreshRef.current = true;
+    } else {
       setIsRefreshing(true);
+    }
 
+    try {
       // Fetch system info and serial (via astlicense) in parallel
       const [systemData, versionInfoData, astLicData] =
         await Promise.allSettled([
@@ -283,15 +291,19 @@ const SystemInfo = () => {
       setVERSION_INFO([]);
       setLicenseSerialNumber("");
     } finally {
-      setIsRefreshing(false);
+      if (silent) {
+        silentRefreshRef.current = false;
+      } else {
+        setIsRefreshing(false);
+      }
     }
-  };
-  useEffect(() => {
-    setSystemInfo();
-    // setInterval(()=>{
-    //   setSystemInfo();
-    // },5000)
   }, []);
+
+  useEffect(() => {
+    loadSystemInfo(false);
+    const interval = setInterval(() => loadSystemInfo(true), REFRESH_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [loadSystemInfo]);
   // Extract top-level stats from SYSTEM_INFO
   const getMetric = (keywords) => {
     const item = (SYSTEM_INFO || []).find(i =>
@@ -374,12 +386,18 @@ const SystemInfo = () => {
         <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 16 }}>
           <Button
             variant="outlined"
-            startIcon={isRefreshing ? <CircularProgress size={16} /> : <RefreshIcon />}
-            onClick={setSystemInfo}
+            startIcon={
+              isRefreshing ? (
+                <CircularProgress size={16} />
+              ) : (
+                <RefreshIcon />
+              )
+            }
+            onClick={() => loadSystemInfo(false)}
             disabled={isRefreshing}
             sx={refreshBtnSx}
           >
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
         </div>
 

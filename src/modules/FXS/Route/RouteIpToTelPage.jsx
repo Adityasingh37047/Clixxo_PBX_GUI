@@ -24,6 +24,7 @@ const C = {
   labelText: "#1e293b",
   valueText: "#1e293b",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#1e293b",
   errorRed: "#dc2626",
 };
@@ -495,18 +496,22 @@ const RouteIpPstnPage = () => {
         {/* Breadcrumb */}
         <div
           style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            gap: 4,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Route &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              IP-&gt;Tel Routing Rule
-            </span>
-          </div>
+          <span>FXS</span>
+          <span>&gt;</span>
+          <span>Route</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            IP-&gt;Tel Routing Rule
+          </span>
         </div>
 
         {/* Main Card */}

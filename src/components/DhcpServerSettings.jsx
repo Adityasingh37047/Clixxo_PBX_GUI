@@ -19,7 +19,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#30415A",
   accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
@@ -41,7 +41,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -135,6 +136,31 @@ const disabledInputStyle = {
   cursor: "not-allowed",
   borderColor: "#e2e8f0",
 };
+
+const SectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 const DhcpServerSettings = () => {
   const [form, setForm] = useState(DHCP_SERVER_SETTINGS_INITIAL_FORM);
@@ -347,7 +373,7 @@ const DhcpServerSettings = () => {
         <div
           style={{
             fontSize: 12,
-            color: C.mutedText,
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
@@ -383,7 +409,7 @@ const DhcpServerSettings = () => {
               flexWrap: "wrap",
               gap: 12,
               alignItems: "center",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.divider}`,
               background: C.cardBg,
             }}
@@ -401,63 +427,57 @@ const DhcpServerSettings = () => {
           </div>
 
           {/* Card Body */}
-          <div style={{ padding: "24px 32px" }}>
-            <form onSubmit={handleSave} className="flex flex-col gap-10">
-              {DHCP_SERVER_SETTINGS_FIELDS.map((lanGroup) => {
+          <div
+            className="w-full flex flex-col"
+            style={{ padding: "24px 32px 0" }}
+          >
+            <form onSubmit={handleSave} className="flex flex-col gap-8">
+              {DHCP_SERVER_SETTINGS_FIELDS.map((lanGroup, idx) => {
                 const isEnabled = form[lanGroup.fields[0].name];
                 return (
                   <div key={lanGroup.lan} className="flex flex-col gap-4">
-                    {/* Section Label */}
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: C.labelText,
-                        marginBottom: 8,
-                        paddingBottom: 8,
-                        borderBottom: `1px solid ${C.cardBorder}`,
-                      }}
-                    >
-                      {lanGroup.lan}
-                    </div>
+                    <SectionHeading title={lanGroup.lan} isFirst={idx === 0} />
 
-                    <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 640, margin: "0 auto" }}>
+                    <div
+                      className="flex flex-col gap-4 w-full"
+                      style={{ maxWidth: 640, margin: "0 auto" }}
+                    >
                       {/* Enable DHCP Checkbox */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-4">
-                          <label
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: C.labelText,
-                              width: "100%",
-                              maxWidth: 220,
-                              flexShrink: 0,
-                            }}
-                      >
-                        DHCP Server:
-                      </label>
-                      <div className="flex flex-col w-full max-w-[280px]">
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            size="small"
-                            name={lanGroup.fields[0].name}
-                            checked={isEnabled || false}
-                            onChange={handleChange}
-                            sx={{
-                              padding: "4px",
-                              color: "#64748b",
-                              "&.Mui-checked": { color: C.accent },
-                            }}
-                          />
-                          <span
-                            style={{
-                              fontSize: 12,
-                              color: C.valueText,
-                            }}
-                          >
-                            Enable
-                          </span>
-                        </div>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                        <label
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: "100%",
+                            maxWidth: 220,
+                            flexShrink: 0,
+                          }}
+                        >
+                          DHCP Server:
+                        </label>
+                        <div className="flex flex-col w-full max-w-[280px]">
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              size="small"
+                              name={lanGroup.fields[0].name}
+                              checked={isEnabled || false}
+                              onChange={handleChange}
+                              sx={{
+                                padding: "4px",
+                                color: "#64748b",
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontSize: 12,
+                                color: C.valueText,
+                              }}
+                            >
+                              Enable
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -465,7 +485,7 @@ const DhcpServerSettings = () => {
                       {lanGroup.fields.slice(1).map((field) => (
                         <div
                           key={field.name}
-                          className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-4"
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
                         >
                           <label
                             style={{
@@ -477,49 +497,54 @@ const DhcpServerSettings = () => {
                               flexShrink: 0,
                               opacity: isEnabled ? 1 : 0.6,
                             }}
-                        >
-                          {field.label}:
-                        </label>
-                        <div className="flex flex-col w-full max-w-[280px]">
-                          <input
-                            type="text"
-                            name={field.name}
-                            value={form[field.name] || ""}
-                            onChange={handleChange}
-                            disabled={!isEnabled}
-                            style={isEnabled ? inputStyle : disabledInputStyle}
-                            onFocus={
-                              isEnabled ? inputInteraction.onFocus : undefined
-                            }
-                            onBlur={
-                              isEnabled ? inputInteraction.onBlur : undefined
-                            }
-                            onMouseEnter={
-                              isEnabled
-                                ? inputInteraction.onMouseEnter
-                                : undefined
-                            }
-                            onMouseLeave={
-                              isEnabled
-                                ? inputInteraction.onMouseLeave
-                                : undefined
-                            }
-                          />
-                            </div>
+                          >
+                            {field.label}:
+                          </label>
+                          <div className="flex flex-col w-full max-w-[280px]">
+                            <input
+                              type="text"
+                              name={field.name}
+                              value={form[field.name] || ""}
+                              onChange={handleChange}
+                              disabled={!isEnabled}
+                              style={
+                                isEnabled ? inputStyle : disabledInputStyle
+                              }
+                              onFocus={
+                                isEnabled ? inputInteraction.onFocus : undefined
+                              }
+                              onBlur={
+                                isEnabled ? inputInteraction.onBlur : undefined
+                              }
+                              onMouseEnter={
+                                isEnabled
+                                  ? inputInteraction.onMouseEnter
+                                  : undefined
+                              }
+                              onMouseLeave={
+                                isEnabled
+                                  ? inputInteraction.onMouseLeave
+                                  : undefined
+                              }
+                            />
                           </div>
-                        ))}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 );
               })}
 
               {/* Action Buttons Row */}
-              <div className="flex flex-wrap gap-4 mt-6 justify-start sm:justify-center">
+              <div
+                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-2"
+                style={{ borderTop: `1px solid ${C.divider}` }}
+              >
                 <Btn
                   variant="primary"
                   type="submit"
                   disabled={loading}
-                  style={{ minWidth: 100 }}
+                  style={{ minWidth: 120, height: 34 }}
                 >
                   {loading ? "Saving..." : "Save"}
                 </Btn>
@@ -528,7 +553,7 @@ const DhcpServerSettings = () => {
                   type="button"
                   onClick={handleReset}
                   disabled={loading}
-                  style={{ minWidth: 100 }}
+                  style={{ minWidth: 120, height: 34 }}
                 >
                   {loading ? "Resetting..." : "Reset"}
                 </Btn>

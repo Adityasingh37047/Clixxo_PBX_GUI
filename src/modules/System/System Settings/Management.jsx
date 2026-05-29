@@ -28,7 +28,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#1e293b",
   strongText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#30415A",
   accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
@@ -51,7 +51,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -157,6 +158,31 @@ const disabledInputStyle = {
   cursor: "not-allowed",
   borderColor: "#e2e8f0",
 };
+
+const SectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 const Management = () => {
   const [form, setForm] = useState(MANAGEMENT_INITIAL_FORM);
@@ -1207,8 +1233,8 @@ const Management = () => {
         {field.label}
       </label>
       <div className="flex-1 w-full max-w-[280px]">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <input
               type="checkbox"
               name={nextField.name}
@@ -1223,24 +1249,29 @@ const Management = () => {
           <input
             type="datetime-local"
             name={field.name}
+            className="management-system-time-input"
             value={form[field.name] ? form[field.name].replace(" ", "T") : ""}
             onChange={handleChange}
             readOnly={!form[nextField.name]}
             style={{
               ...(form[nextField.name] ? inputStyle : disabledInputStyle),
               flex: 1,
+              minWidth: 0,
+              maxWidth: "none",
+              width: "auto",
+              borderRadius: 4,
               borderColor: fieldErrors[field.name] ? C.errorRed : C.cardBorder,
             }}
-            onFocus={
-              form[nextField.name] ? inputInteraction.onFocus : undefined
-            }
-            onBlur={form[nextField.name] ? inputInteraction.onBlur : undefined}
-            onMouseEnter={
-              form[nextField.name] ? inputInteraction.onMouseEnter : undefined
-            }
-            onMouseLeave={
-              form[nextField.name] ? inputInteraction.onMouseLeave : undefined
-            }
+          onFocus={
+            form[nextField.name] ? inputInteraction.onFocus : undefined
+          }
+          onBlur={form[nextField.name] ? inputInteraction.onBlur : undefined}
+          onMouseEnter={
+            form[nextField.name] ? inputInteraction.onMouseEnter : undefined
+          }
+          onMouseLeave={
+            form[nextField.name] ? inputInteraction.onMouseLeave : undefined
+          }
             step="1"
           />
         </div>
@@ -1279,26 +1310,25 @@ const Management = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb Row */}
-        <div className="flex justify-between items-center mb-4">
-          <div
-            style={{
-              fontSize: 12,
-              color: C.mutedText,
-              fontWeight: 400,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            <span>System</span>
-            <span>&gt;</span>
-            <span>System Settings</span>
-            <span>&gt;</span>
-            <span style={{ color: C.strongText, fontWeight: 600 }}>
-              Management
-            </span>
-          </div>
+        {/* Breadcrumb */}
+        <div
+          style={{
+            fontSize: 12,
+            color: "#94a3b8",
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Management
+          </span>
         </div>
 
         {/* Main Card */}
@@ -1320,7 +1350,7 @@ const Management = () => {
               flexWrap: "wrap",
               gap: 12,
               alignItems: "center",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.divider}`,
               background: C.cardBg,
             }}
@@ -1356,21 +1386,15 @@ const Management = () => {
               >
                 {MANAGEMENT_SECTIONS.map((section, idx) => (
                   <div key={section.section} className="flex flex-col gap-4">
-                    {/* Section Title */}
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: C.labelText,
-                        marginBottom: 8,
-                        paddingBottom: 8,
-                        borderBottom: `1px solid ${C.cardBorder}`,
-                      }}
-                    >
-                      {section.section}
-                    </div>
+                    <SectionHeading
+                      title={section.section}
+                      isFirst={idx === 0}
+                    />
 
-                    <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 640, margin: "0 auto" }}>
+                    <div
+                      className="flex flex-col gap-4 w-full"
+                      style={{ maxWidth: 640, margin: "0 auto" }}
+                    >
                       {section.fields.map((field, fieldIdx) => {
                         // Check if field should be conditionally hidden (single condition)
                         if (

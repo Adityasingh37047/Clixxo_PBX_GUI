@@ -128,21 +128,23 @@ const tableContainerStyle = {
   margin: "0 auto",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
 };
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "0 14px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -229,15 +231,8 @@ const SignalingCallTest = () => {
             <span>{SCT_TITLE}</span>
           </div>
 
-          <div
-            style={{
-              padding: "32px 24px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <form className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 items-center mb-8">
+          <div className="w-full px-5 pt-3 pb-2 flex flex-col items-center">
+            <form className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center">
               <label
                 style={{
                   fontSize: 13,
@@ -339,15 +334,10 @@ const SignalingCallTest = () => {
               />
             </form>
 
+            {/* Action Buttons */}
             <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: 16,
-                marginBottom: 32,
-              }}
+              className="w-full max-w-2xl flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1 mb-0"
+              style={{ borderTop: `1px solid ${C.divider}` }}
             >
               <Btn
                 variant="primary"
@@ -366,9 +356,11 @@ const SignalingCallTest = () => {
               </Btn>
             </div>
 
+            {/* Signaling Trace */}
             <div
+              className="w-full max-w-2xl mt-1 pt-2 pb-0"
               style={{
-                width: "100%",
+                borderTop: `1px solid ${C.divider}`,
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,

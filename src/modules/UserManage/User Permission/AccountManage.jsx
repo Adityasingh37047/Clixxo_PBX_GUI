@@ -27,7 +27,7 @@ const C = {
   divider: "#9CA3AF",
   cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
   labelText: "#3E5475",
-  valueText: "#1e293b",
+  valueText: "#0f172a",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#3E5475",
@@ -152,7 +152,7 @@ const modalOverlayStyle = {
   justifyContent: "center",
 };
 const modalStyle = {
-  background: "#f8fafc",
+  background: "#ffffff",
   border: `none`,
   borderRadius: 8,
   width: 500,
@@ -176,38 +176,37 @@ const modalHeaderStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 const modalBodyStyle = {
-  padding: "20px 24px",
+  padding: "24px",
   display: "flex",
   flexDirection: "column",
-  gap: 12,
-  backgroundColor: "#f8fafc",
+  gap: 14,
+  backgroundColor: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
 };
 const modalRowStyle = {
   display: "flex",
   alignItems: "center",
-  background: "#ffffff",
-  border: `1px solid #cbd5e1`,
-  borderRadius: 6,
-  padding: "6px 12px",
+  justifyContent: "center",
+  padding: "0",
   marginBottom: 0,
-  minHeight: 40,
   gap: 12,
 };
 const modalLabelStyle = {
-  width: 160,
+  width: 170,
   fontSize: 13,
   fontWeight: 600,
-  color: "#1e293b",
+  color: C.labelText,
   textAlign: "left",
   marginRight: 0,
   whiteSpace: "nowrap",
 };
 const modalInputStyle = {
-  flex: 1,
-  maxWidth: 280,
+  width: "min(100%, 320px)",
   fontSize: 13,
-  padding: "6px 8px",
-  border: "1px solid #cbd5e1",
+  height: 32,
+  padding: "0 8px",
+  boxSizing: "border-box",
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: 4,
   outline: "none",
   color: "#1e293b",
@@ -216,23 +215,23 @@ const modalInputStyle = {
 
 const inputInteraction = {
   onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = "#cbd5e1"),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
   onMouseEnter: (e) => {
     if (document.activeElement !== e.target)
       e.target.style.borderColor = "#64748b";
   },
   onMouseLeave: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#cbd5e1";
+      e.target.style.borderColor = C.cardBorder;
   },
 };
 const modalFooterStyle = {
   display: "flex",
   justifyContent: "center",
-  gap: 16,
-  padding: "16px 24px",
+  gap: 12,
+  padding: "10px 16px",
   background: "#f8fafc",
-  borderTop: "1px solid #e2e8f0",
+  borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: 8,
   borderBottomRightRadius: 8,
 };
@@ -248,7 +247,7 @@ const tableContainerStyle = {
 };
 const blueBarStyle = {
   width: "100%",
-  minHeight: 48,
+  minHeight: 44,
   background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,
   borderTopRightRadius: CARD_RADIUS,
@@ -257,34 +256,49 @@ const blueBarStyle = {
   gap: 12,
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "14px 18px",
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
   borderBottom: `1px solid ${C.cardBorder}`,
 };
-const thStyle = {
-  background: "#F8FAFC",
-  color: C.labelText,
-  fontWeight: 700,
-  fontSize: 11,
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  padding: "12px 14px",
-  whiteSpace: "nowrap",
-  textTransform: "uppercase",
-  letterSpacing: "0.14em",
-};
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
 const tdStyle = {
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
-  fontWeight: 500,
-  background: C.cardBg,
   color: C.valueText,
   textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 // const tableButtonSx = {
 //   background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
@@ -845,7 +859,7 @@ const AccountManage = () => {
             ...tableContainerStyle,
             background: C.cardBg,
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 20,
+            borderRadius: 10,
           }}
         >
           <div style={blueBarStyle}>
@@ -925,35 +939,37 @@ const AccountManage = () => {
             >
               <thead>
                 <tr>
-                  {ACCOUNT_MANAGE_TABLE_COLUMNS.map((col, colIdx) => (
-                    <th
-                      key={col.key}
-                      style={{
-                        ...thStyle,
-                        ...(colIdx === 0 ? { borderLeft: "none" } : {}),
-                        ...(colIdx === ACCOUNT_MANAGE_TABLE_COLUMNS.length - 1
-                          ? { borderRight: "none" }
-                          : {}),
-                      }}
-                    >
-                      {col.key === "choose" ? (
-                        <Checkbox
-                          size="small"
-                          checked={allPageSelected}
-                          indeterminate={somePageSelected}
-                          onChange={handleToggleAll}
-                          sx={{
-                            padding: "1px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
-                            "&.MuiCheckbox-indeterminate": { color: C.accent },
-                          }}
-                        />
-                      ) : (
-                        col.label
-                      )}
-                    </th>
-                  ))}
+                  {ACCOUNT_MANAGE_TABLE_COLUMNS.map((col, colIdx) => {
+                    const isFirst = colIdx === 0;
+                    const isLast =
+                      colIdx === ACCOUNT_MANAGE_TABLE_COLUMNS.length - 1;
+                    return (
+                      <TH
+                        key={col.key}
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                          ...(isFirst
+                            ? { width: 40, padding: 0, borderLeft: "none" }
+                            : {}),
+                          ...(isLast ? { width: 70, borderRight: "none" } : {}),
+                        }}
+                      >
+                        {col.key === "choose" ? (
+                          <Checkbox
+                            size="small"
+                            checked={allPageSelected}
+                            indeterminate={somePageSelected}
+                            onChange={handleToggleAll}
+                            sx={checkboxSx}
+                          />
+                        ) : (
+                          col.label
+                        )}
+                      </TH>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
@@ -961,7 +977,15 @@ const AccountManage = () => {
                   <tr>
                     <td
                       colSpan={ACCOUNT_MANAGE_TABLE_COLUMNS.length}
-                      style={{ ...tdStyle, borderRight: "none", borderLeft: "none" }}
+                      style={{
+                        ...tdStyle,
+                        padding: "32px 14px",
+                        borderRight: "none",
+                        borderLeft: "none",
+                        borderBottom: "none",
+                        color: C.labelText,
+                        fontWeight: 600,
+                      }}
                     >
                       {loading ? "Loading..." : "No data"}
                     </td>
@@ -969,79 +993,128 @@ const AccountManage = () => {
                 ) : (
                   combinedAccounts.map((item, idx) => {
                     const realIdx = idx;
+                    const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === combinedAccounts.length - 1;
-                    const rowBottomStyle = isLastRow
+                    const rowBg = isSelected
+                      ? "#f0f9ff"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
                     return (
                       <tr
                         key={realIdx}
                         style={{
-                          background: C.cardBg,
+                          background: rowBg,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = C.pageBg;
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f1f5f9";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = C.cardBg;
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
                         }}
                       >
                         {/* Choose */}
                         <td
                           style={{
                             ...tdStyle,
+                            background: rowBg,
                             borderLeft: "none",
-                            ...rowBottomStyle,
+                            width: 40,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {!item.isAdmin && (
                             <Checkbox
                               size="small"
-                              checked={selected.includes(realIdx)}
+                              checked={isSelected}
                               onChange={() => handleSelectRow(realIdx)}
-                              sx={{
-                                padding: "1px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+                              sx={checkboxSx}
                             />
                           )}
                         </td>
                         {/* Id */}
-                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            color: C.mutedText,
+                            fontWeight: 500,
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {realIdx + 1}
                         </td>
                         {/* Username */}
-                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 500,
+                            textAlign: "left",
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {item.username}
                         </td>
                         {/* Authority */}
-                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 500,
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {item.authority ?? "-"}
                         </td>
                         {/* Modify */}
                         <td
                           style={{
                             ...tdStyle,
+                            background: rowBg,
                             borderRight: "none",
-                            ...rowBottomStyle,
+                            ...lastRowCellStyle,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                            titleAccess="Edit"
-                            onClick={() => {
-                              if (item.isAdmin) {
-                                showToast(
-                                  "Admin user cannot be modified.",
-                                  "error",
-                                );
-                                return;
-                              }
-                              handleOpenModal(item, realIdx);
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
                             }}
-                          />
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              style={{
+                                cursor: "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: 0.7,
+                                transition: "opacity 0.15s ease",
+                              }}
+                              onClick={() => {
+                                if (item.isAdmin) {
+                                  showToast(
+                                    "Admin user cannot be modified.",
+                                    "error",
+                                  );
+                                  return;
+                                }
+                                handleOpenModal(item, realIdx);
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.opacity = "0.7";
+                              }}
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1055,7 +1128,7 @@ const AccountManage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              padding: "7px 14px",
               background: "#ffffff",
               borderTop: `1px solid ${C.cardBorder}`,
               borderBottomLeftRadius: CARD_RADIUS,
@@ -1077,55 +1150,67 @@ const AccountManage = () => {
           <div style={modalStyle}>
             <div style={modalHeaderStyle}>User Information</div>
             <div style={modalBodyStyle}>
-              {ACCOUNT_MANAGE_MODAL_FIELDS.map((field) => (
-                <div key={field.name} style={modalRowStyle}>
-                  <label style={modalLabelStyle}>{field.label}:</label>
-                  {field.type === "select" ? (
-                    <select
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      style={{
-                        ...modalInputStyle,
-                        ...(field.disabled
-                          ? {
-                              backgroundColor: "#f1f5f9",
-                              color: "#94a3b8",
-                              cursor: "not-allowed",
-                            }
-                          : {}),
-                      }}
-                      disabled={field.disabled}
-                      {...(field.disabled ? {} : inputInteraction)}
-                    >
-                      {field.options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type={field.type}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      style={{
-                        ...modalInputStyle,
-                        ...(field.disabled
-                          ? {
-                              backgroundColor: "#f1f5f9",
-                              color: "#94a3b8",
-                              cursor: "not-allowed",
-                            }
-                          : {}),
-                      }}
-                      disabled={field.disabled}
-                      {...(field.disabled ? {} : inputInteraction)}
-                    />
-                  )}
-                </div>
-              ))}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                  background: "#f8fafc",
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 8,
+                  padding: 20,
+                }}
+              >
+                {ACCOUNT_MANAGE_MODAL_FIELDS.map((field) => (
+                  <div key={field.name} style={modalRowStyle}>
+                    <label style={modalLabelStyle}>{field.label}:</label>
+                    {field.type === "select" ? (
+                      <select
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleInputChange}
+                        style={{
+                          ...modalInputStyle,
+                          ...(field.disabled
+                            ? {
+                                backgroundColor: "#f1f5f9",
+                                color: "#94a3b8",
+                                cursor: "not-allowed",
+                              }
+                            : {}),
+                        }}
+                        disabled={field.disabled}
+                        {...(field.disabled ? {} : inputInteraction)}
+                      >
+                        {field.options.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={field.type}
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleInputChange}
+                        style={{
+                          ...modalInputStyle,
+                          ...(field.disabled
+                            ? {
+                                backgroundColor: "#f1f5f9",
+                                color: "#94a3b8",
+                                cursor: "not-allowed",
+                              }
+                            : {}),
+                        }}
+                        disabled={field.disabled}
+                        {...(field.disabled ? {} : inputInteraction)}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
             <div style={modalFooterStyle}>
               <Btn

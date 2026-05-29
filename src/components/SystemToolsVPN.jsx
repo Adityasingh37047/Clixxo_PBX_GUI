@@ -1404,11 +1404,14 @@ const SystemToolsVPN = () => {
         )}
 
         {/* Breadcrumb & Dropdown Row */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+        <div
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+          style={{ marginBottom: 16 }}
+        >
           <div
             style={{
               fontSize: 12,
-              color: C.mutedText,
+              color: "#94a3b8",
               fontWeight: 400,
               display: "flex",
               alignItems: "center",
@@ -2286,6 +2289,7 @@ const SystemToolsVPN = () => {
                             border: `1.5px solid ${C.cardBorder}`,
                             borderRadius: 8,
                             fontSize: 12,
+                            marginLeft: 156,
                             fontWeight: 600,
                             color: C.valueText,
                             whiteSpace: "nowrap",

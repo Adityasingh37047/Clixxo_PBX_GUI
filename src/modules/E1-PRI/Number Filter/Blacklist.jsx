@@ -31,6 +31,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -139,7 +140,7 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
@@ -154,7 +155,7 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
@@ -567,12 +568,13 @@ const Blacklist = () => {
           {/* Top Actions Bar */}
           <div
             style={{
-              padding: "14px 18px",
+              minHeight: 44,
+              padding: "7px 14px",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
               background: "#ffffff",
               borderBottom: `1px solid ${C.cardBorder}`,
               borderTopLeftRadius: CARD_RADIUS,
@@ -786,7 +788,7 @@ const Blacklist = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderTop: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               borderBottomLeftRadius: CARD_RADIUS,
@@ -837,12 +839,17 @@ const Blacklist = () => {
             fontSize: 12,
             color: C.mutedText,
             marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
+            alignItems: "center",
             gap: 4,
           }}
         >
-          E1-PRI &rsaquo; Number Filter &rsaquo;{" "} 
-          <span style={{ color: C.valueText, fontWeight: 600 }}>
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>Number Filter</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             Blacklist
           </span>
         </div>

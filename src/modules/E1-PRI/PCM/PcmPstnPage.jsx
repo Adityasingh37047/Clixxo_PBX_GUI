@@ -36,6 +36,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -137,15 +138,13 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "10px 8px",
+      padding: "9px 14px",
       textAlign: "center",
-      verticalAlign: "middle",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.06em",
-      lineHeight: 1.3,
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -154,29 +153,13 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "8px 8px",
-  fontSize: 12,
+  padding: "7px 14px",
+  fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  verticalAlign: "middle",
-  background: "#ffffff",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
-};
-
-const modifyCellStyle = {
-  ...tdStyle,
-  padding: "6px 4px",
-  borderRight: "none",
-};
-
-const modifyIconWrapStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "100%",
-  minHeight: 28,
 };
 
 const checkboxSx = {
@@ -795,7 +778,7 @@ const PcmPstnPage = () => {
     const spanId = row.span_id || row.span?.id;
     const isRowChecked = selectedItems.includes(spanId);
     const rowBg = isRowChecked
-      ? "#e0f2fe"
+      ? "#f0f9ff"
       : idx % 2 === 1
         ? "#f8fafc"
         : "#ffffff";
@@ -806,11 +789,10 @@ const PcmPstnPage = () => {
         key={spanId}
         style={{
           background: rowBg,
-          borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
           transition: "background 0.15s ease",
         }}
         onMouseEnter={(e) => {
-          if (!isRowChecked) e.currentTarget.style.background = "#f8fafc";
+          if (!isRowChecked) e.currentTarget.style.background = "#f1f5f9";
         }}
         onMouseLeave={(e) => {
           if (!isRowChecked) e.currentTarget.style.background = rowBg;
@@ -819,21 +801,14 @@ const PcmPstnPage = () => {
         <td
           style={{
             ...tdStyle,
-            width: 44,
+            background: rowBg,
+            width: 36,
             borderLeft: "none",
             ...lastRowCellStyle,
             ...(isLastRow ? { borderBottomLeftRadius: CARD_RADIUS } : {}),
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: 28,
-            }}
-          >
-            <Checkbox
+          <Checkbox
             size="small"
             checked={isRowChecked}
             onChange={() => {
@@ -846,7 +821,6 @@ const PcmPstnPage = () => {
             disabled={loading.delete}
             sx={checkboxSx}
           />
-          </div>
         </td>
         {PCM_PSTN_TABLE_COLUMNS.map((col) => {
           if (col.key === "modify") {
@@ -854,17 +828,35 @@ const PcmPstnPage = () => {
               <td
                 key={col.key}
                 style={{
-                  ...modifyCellStyle,
+                  ...tdStyle,
+                  background: rowBg,
+                  borderRight: "none",
                   ...lastRowCellStyle,
                   ...(isLastRow ? { borderBottomRightRadius: CARD_RADIUS } : {}),
                 }}
               >
-                <div style={modifyIconWrapStyle}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
                   <EditDocumentIcon
-                    className="cursor-pointer text-blue-600 opacity-70 hover:opacity-100 transition-opacity"
                     titleAccess="Edit"
                     onClick={() => handleEditItem(row, realIndex)}
-                    style={{ fontSize: 20, display: "block" }}
+                    style={{
+                      cursor: "pointer",
+                      color: "#2563eb",
+                      fontSize: 22,
+                      opacity: 0.7,
+                      transition: "opacity 0.15s ease",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.opacity = "1")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.opacity = "0.7")
+                    }
                   />
                 </div>
               </td>
@@ -872,7 +864,10 @@ const PcmPstnPage = () => {
           }
           if (col.key === "span_status") {
             return (
-              <td key={col.key} style={{ ...tdStyle, ...lastRowCellStyle }}>
+              <td
+                key={col.key}
+                style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}
+              >
                 <span
                   className={`text-[13px] font-semibold ${
                     row.span_status?.includes("Up")
@@ -923,7 +918,10 @@ const PcmPstnPage = () => {
           };
 
           return (
-            <td key={col.key} style={{ ...tdStyle, ...lastRowCellStyle }}>
+            <td
+              key={col.key}
+              style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}
+            >
               {displayValue(col.key, getValue(col.key))}
             </td>
           );
@@ -935,12 +933,22 @@ const PcmPstnPage = () => {
   const renderFormField = (field) => (
     <div
       key={field.name}
-      className="flex items-center bg-white border border-gray-300 rounded px-3 py-2 gap-3"
-      style={{ minHeight: 36 }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 12,
+      }}
     >
       <label
-        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-        style={{ width: 160, marginRight: 15 }}
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          width: 170,
+        }}
       >
         {field.label}
         {["spanNo", "context", "signalling", "status"].includes(field.name) && (
@@ -948,7 +956,7 @@ const PcmPstnPage = () => {
         )}
         :
       </label>
-      <div className="flex-1" style={{ maxWidth: 280 }}>
+      <div style={{ width: "min(100%, 320px)" }}>
         {field.type === "select" ? (
           <Select
             value={formData[field.name] || ""}
@@ -963,13 +971,28 @@ const PcmPstnPage = () => {
               }
               return selected;
             }}
-            sx={{ fontSize: 14 }}
+            sx={{
+              fontSize: 13,
+              height: 32,
+              backgroundColor: "#fff",
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: C.cardBorder,
+                transition: "border-color 0.2s ease",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#64748b",
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#0284c7",
+                borderWidth: 1,
+              },
+            }}
           >
             {/* hidden placeholder */}
             <MenuItem value="" disabled hidden />
 
             {field.options.map((opt) => (
-              <MenuItem key={opt} value={opt} sx={{ fontSize: 14 }}>
+              <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                 {opt}
               </MenuItem>
             ))}
@@ -1008,7 +1031,30 @@ const PcmPstnPage = () => {
             size="small"
             fullWidth
             variant="outlined"
-            inputProps={{ style: { fontSize: 14, padding: "3px 6px" } }}
+            inputProps={{
+              style: {
+                fontSize: 13,
+                height: 32,
+                padding: "0 8px",
+                boxSizing: "border-box",
+              },
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "#fff",
+                "& fieldset": {
+                  borderColor: C.cardBorder,
+                  transition: "border-color 0.2s ease",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#64748b",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#0284c7",
+                  borderWidth: 1,
+                },
+              },
+            }}
           />
         )}
       </div>
@@ -1041,17 +1087,23 @@ const PcmPstnPage = () => {
       )}
 
       <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
         <div
           style={{
             fontSize: 12,
             color: C.mutedText,
             marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
+            alignItems: "center",
             gap: 4,
           }}
         >
-          E1-PRI &rsaquo; PCM &rsaquo;{" "}
-          <span style={{ color: C.valueText, fontWeight: 600 }}>
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>PCM</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             PSTN Settings
           </span>
         </div>
@@ -1070,11 +1122,12 @@ const PcmPstnPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
+              minHeight: 44,
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
               borderTopRightRadius: CARD_RADIUS,
             }}
@@ -1165,7 +1218,13 @@ const PcmPstnPage = () => {
             </div>
           </div>
 
-          <div style={{ overflowX: "auto" }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {isInitialLoad ? (
               <div
                 style={{
@@ -1191,20 +1250,14 @@ const PcmPstnPage = () => {
                   <tr>
                     <TH
                       style={{
-                        width: 44,
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
-                        verticalAlign: "middle",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
                       }}
                     >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          minHeight: 36,
-                        }}
-                      >
                         <Checkbox
                           size="small"
                           checked={
@@ -1247,20 +1300,18 @@ const PcmPstnPage = () => {
                           }}
                           sx={checkboxSx}
                         />
-                      </div>
                     </TH>
                     {PCM_PSTN_TABLE_COLUMNS.map((col) => (
                       <TH
                         key={col.key}
-                        style={
-                          col.key === "modify"
-                            ? {
-                                borderRight: "none",
-                                verticalAlign: "middle",
-                                padding: "10px 8px",
-                              }
-                            : undefined
-                        }
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                          ...(col.key === "modify"
+                            ? { width: 70, borderRight: "none" }
+                            : {}),
+                        }}
                       >
                         {col.label}
                       </TH>
@@ -1297,7 +1348,7 @@ const PcmPstnPage = () => {
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "10px 14px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
                 borderBottomLeftRadius: CARD_RADIUS,
@@ -1306,7 +1357,7 @@ const PcmPstnPage = () => {
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {data.length} record
-                {data.length !== 1 ? "s" : ""} on page 1
+                {data.length !== 1 ? "s" : ""}
               </span>
             </div>
           )}
@@ -1393,11 +1444,22 @@ const PcmPstnPage = () => {
 
         <DialogContent
           style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#f8fafc",
+            padding: "24px",
+            backgroundColor: "#ffffff",
           }}
         >
-          <div className="flex flex-col gap-2 w-full">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "100%",
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+            }}
+          >
             {(tab === 0
               ? SPAN_FIELDS
               : tab === 1

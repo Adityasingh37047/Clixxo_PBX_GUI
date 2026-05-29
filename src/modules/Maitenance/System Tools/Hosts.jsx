@@ -14,6 +14,8 @@ import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import CardToolbar from "../../../components/CardToolbar";
+import { cardToolbarButtonStyle } from "../../../styles/cardToolbar";
 
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
@@ -22,8 +24,8 @@ const C = {
   cardBorder: "#9CA3AF",
   divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
-  valueText: "#1e293b",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",
@@ -143,7 +145,7 @@ const modalOverlayStyle = {
   justifyContent: "center",
 };
 const modalStyle = {
-  background: "#f8fafc",
+  background: "#ffffff",
   border: `none`,
   borderRadius: 8,
   width: 500,
@@ -167,40 +169,39 @@ const modalHeaderStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 const modalBodyStyle = {
-  padding: "20px 24px",
+  padding: "24px",
+  paddingBottom: "16px",
   display: "flex",
   flexDirection: "column",
-  gap: 12,
-  backgroundColor: "#f8fafc",
+  gap: 14,
+  backgroundColor: "#ffffff",
 };
 const modalRowStyle = {
   display: "flex",
   alignItems: "center",
-  background: "#ffffff",
-  border: `1px solid #cbd5e1`,
-  borderRadius: 6,
-  padding: "6px 12px",
+  justifyContent: "center",
+  gap: 12,
   marginBottom: 0,
 };
 const modalLabelStyle = {
-  width: 110,
-  fontSize: 12,
+  width: 170,
+  fontSize: 13,
   fontWeight: 600,
   color: C.labelText,
   textAlign: "left",
-  marginRight: 10,
   whiteSpace: "nowrap",
 };
 const modalInputStyle = {
-  flex: 1,
   fontSize: 13,
-  padding: "6px 8px",
+  padding: "0 8px",
   borderRadius: 4,
-  border: "1px solid #cbd5e1",
+  border: `1px solid ${C.cardBorder}`,
   background: "#ffffff",
   color: "#1e293b",
   outline: "none",
   width: "100%",
+  height: 32,
+  boxSizing: "border-box",
   transition: "border-color 0.2s ease",
 };
 
@@ -208,47 +209,62 @@ const getInputInteraction = (hasError) => ({
   onFocus: (e) =>
     (e.target.style.borderColor = hasError ? C.errorRed : "#0284c7"),
   onBlur: (e) =>
-    (e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1"),
+    (e.target.style.borderColor = hasError ? C.errorRed : C.cardBorder),
   onMouseEnter: (e) => {
     if (document.activeElement !== e.target)
       e.target.style.borderColor = hasError ? C.errorRed : "#64748b";
   },
   onMouseLeave: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = hasError ? C.errorRed : "#cbd5e1";
+      e.target.style.borderColor = hasError ? C.errorRed : C.cardBorder;
   },
 });
 const modalFooterStyle = {
   display: "flex",
   justifyContent: "center",
-  gap: 24,
-  padding: "16px 0 18px",
+  gap: 12,
+  padding: "10px 16px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  background: "#f8fafc",
 };
 
-const thStyle = {
-  background: C.pageBg,
-  color: C.labelText,
-  fontWeight: 700,
-  fontSize: 11,
-  padding: "14px 18px",
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-};
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
 
 const tdStyle = {
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  padding: "8px 18px",
+  padding: "7px 14px",
   fontSize: 13,
-  fontWeight: 500,
-  background: C.cardBg,
   color: C.valueText,
   textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const tableContainerStyle = {
@@ -257,26 +273,9 @@ const tableContainerStyle = {
   margin: "0 auto",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-};
-
-const blueBarStyle = {
-  width: "100%",
-  height: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-  marginBottom: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "0 20px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: "#3E5475",
-  borderBottom: `1px solid ${C.divider}`,
 };
 
 const Hosts = () => {
@@ -675,88 +674,127 @@ const Hosts = () => {
         )}
 
         <div style={tableContainerStyle}>
-          <div style={{ ...blueBarStyle, justifyContent: "space-between" }}>
-            <span>Hosts</span>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Btn
-                onClick={handleInverse}
-                disabled={loading.delete || loading.fetch}
-                variant="cancel"
-                style={{ height: 30 }}
-              >
-                Inverse
-              </Btn>
-              <Btn
-                onClick={handleClearAll}
-                disabled={loading.delete || loading.fetch || hosts.length === 0}
-                variant="cancel"
-                style={{ height: 30 }}
-              >
-                Clear All
-              </Btn>
-              <Btn
-                onClick={handleDelete}
-                disabled={
-                  loading.delete || loading.fetch || selected.length === 0
-                }
-                variant="cancel"
-                startIcon={<DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />}
-                style={{ height: 30 }}
-              >
-                Delete
-              </Btn>
-              <Btn
-                onClick={() => handleOpenModal()}
-                disabled={loading.fetch || loading.save}
-                variant="primary"
-                style={{ height: 30, minWidth: 110 }}
-              >
-                + Add New
-              </Btn>
-            </div>
-          </div>
+          <CardToolbar
+            title="Hosts"
+            actions={
+              <>
+                <Btn
+                  onClick={handleInverse}
+                  disabled={loading.delete || loading.fetch}
+                  variant="cancel"
+                  style={cardToolbarButtonStyle}
+                >
+                  Inverse
+                </Btn>
+                <Btn
+                  onClick={handleClearAll}
+                  disabled={
+                    loading.delete || loading.fetch || hosts.length === 0
+                  }
+                  variant="cancel"
+                  style={cardToolbarButtonStyle}
+                >
+                  Clear All
+                </Btn>
+                <Btn
+                  onClick={handleDelete}
+                  disabled={
+                    loading.delete || loading.fetch || selected.length === 0
+                  }
+                  variant="cancel"
+                  startIcon={
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                  }
+                  style={cardToolbarButtonStyle}
+                >
+                  Delete
+                </Btn>
+                <Btn
+                  onClick={() => handleOpenModal()}
+                  disabled={loading.fetch || loading.save}
+                  variant="primary"
+                  style={cardToolbarButtonStyle}
+                >
+                  + Add New
+                </Btn>
+              </>
+            }
+          />
 
           {/* Table */}
-          <div className="overflow-x-auto">
+          <div style={{ overflowX: "auto" }}>
             <table
-              className="w-full text-left"
-              style={{ borderCollapse: "separate", borderSpacing: 0 }}
+              style={{
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+              }}
             >
               <thead>
                 <tr>
-                  <th style={{ ...thStyle, borderLeft: "none" }}>
+                  <TH
+                    style={{
+                      width: 40,
+                      padding: 0,
+                      borderLeft: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
                     <Checkbox
                       size="small"
                       checked={allSelected}
                       indeterminate={someSelected}
                       onChange={handleToggleAll}
                       disabled={hosts.length === 0}
-                      sx={{
-                        padding: "1px",
-                        color: "#64748b",
-                        "&.Mui-checked": { color: C.accent },
-                        "&.MuiCheckbox-indeterminate": { color: C.accent },
-                      }}
+                      sx={checkboxSx}
                     />
-                  </th>
-                  <th style={thStyle}>ID</th>
-                  <th style={thStyle}>Proxy IP</th>
-                  <th style={thStyle}>Domain</th>
-                  <th style={{ ...thStyle, borderRight: "none" }}>Modify</th>
+                  </TH>
+                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>ID</TH>
+                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    Proxy IP
+                  </TH>
+                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    Domain
+                  </TH>
+                  <TH
+                    style={{
+                      width: 70,
+                      borderRight: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    Modify
+                  </TH>
                 </tr>
               </thead>
               <tbody>
                 {loading.fetch ? (
                   <tr>
                     <td
-                      colSpan="5"
-                      className="py-8 text-center text-sm text-gray-500"
+                      colSpan={5}
+                      style={{
+                        ...tdStyle,
+                        padding: "32px 14px",
+                        borderLeft: "none",
+                        borderRight: "none",
+                        borderBottom: "none",
+                      }}
                     >
-                      <div className="flex items-center justify-center gap-3">
-                        <CircularProgress
-                          size={24}
-                          style={{ color: C.primary }}
-                        />
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 12,
+                          color: C.labelText,
+                          fontSize: 13,
+                        }}
+                      >
+                        <CircularProgress size={24} />
                         <span>Loading hosts...</span>
                       </div>
                     </td>
@@ -764,67 +802,129 @@ const Hosts = () => {
                 ) : hosts.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="5"
-                      className="py-8 text-center text-sm text-gray-500"
-                      style={{ borderBottom: `1px solid ${C.divider}` }}
+                      colSpan={5}
+                      style={{
+                        ...tdStyle,
+                        padding: "32px 14px",
+                        color: C.labelText,
+                        fontWeight: 600,
+                        borderLeft: "none",
+                        borderRight: "none",
+                        borderBottom: "none",
+                      }}
                     >
                       No data available
                     </td>
                   </tr>
                 ) : (
                   hosts.map((item, idx) => {
+                    const isSelected = selected.includes(idx);
                     const isLastRow = idx === hosts.length - 1;
-                    const rowBottomStyle = isLastRow
+                    const rowBg = isSelected
+                      ? "#f0f9ff"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
                     return (
                       <tr
                         key={idx}
                         style={{
-                          transition: "background-color 0.2s",
+                          background: rowBg,
+                          transition: "background 0.15s ease",
                         }}
-                        className="hover:bg-gray-50"
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f1f5f9";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
                       >
                         <td
                           style={{
                             ...tdStyle,
+                            background: rowBg,
                             borderLeft: "none",
-                            ...rowBottomStyle,
+                            width: 40,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <Checkbox
                             size="small"
-                            checked={selected.includes(idx)}
+                            checked={isSelected}
                             onChange={() => handleSelectRow(idx)}
                             disabled={loading.delete}
-                            sx={{
-                              padding: "1px",
-                              color: "#64748b",
-                              "&.Mui-checked": { color: C.accent },
-                            }}
+                            sx={checkboxSx}
                           />
                         </td>
-                        <td style={{ ...tdStyle, ...rowBottomStyle }}>{idx}</td>
-                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {idx}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {item.proxyIp || "--"}
                         </td>
-                        <td style={{ ...tdStyle, ...rowBottomStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {item.domain || "--"}
                         </td>
                         <td
                           style={{
                             ...tdStyle,
+                            background: rowBg,
                             borderRight: "none",
-                            ...rowBottomStyle,
+                            ...lastRowCellStyle,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                            titleAccess="Edit"
-                            onClick={() => {
-                              if (!loading.delete) handleOpenModal(item, idx);
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
                             }}
-                          />
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              style={{
+                                cursor: loading.delete
+                                  ? "not-allowed"
+                                  : "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: 0.7,
+                                transition: "opacity 0.15s ease",
+                              }}
+                              onClick={() => {
+                                if (!loading.delete) handleOpenModal(item, idx);
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.opacity = "0.7";
+                              }}
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -832,6 +932,23 @@ const Hosts = () => {
                 )}
               </tbody>
             </table>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "7px 14px",
+              background: "#ffffff",
+              borderTop: `1px solid ${C.cardBorder}`,
+              borderBottomLeftRadius: 10,
+              borderBottomRightRadius: 10,
+            }}
+          >
+            <span style={{ fontSize: 11, color: C.mutedText }}>
+              Showing {hosts.length} record
+              {hosts.length !== 1 ? "s" : ""}
+            </span>
           </div>
         </div>
       </div>
@@ -844,76 +961,108 @@ const Hosts = () => {
               {editIndex !== null ? "Edit Host" : "Add Host"}
             </div>
             <div style={modalBodyStyle}>
-              <div style={modalRowStyle}>
-                <label style={modalLabelStyle}>Index:</label>
-                <div
-                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
-                >
-                  <input
-                    type="text"
-                    value={form.index}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                  background: "#f8fafc",
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 8,
+                  padding: 20,
+                }}
+              >
+                <div style={modalRowStyle}>
+                  <label style={modalLabelStyle}>Index:</label>
+                  <div
                     style={{
-                      ...modalInputStyle,
-                      backgroundColor: "#f1f5f9",
-                      color: "#94a3b8",
-                      cursor: "not-allowed",
+                      width: "min(100%, 320px)",
+                      display: "flex",
+                      flexDirection: "column",
                     }}
-                    disabled
-                  />
+                  >
+                    <input
+                      type="text"
+                      value={form.index}
+                      style={{
+                        ...modalInputStyle,
+                        backgroundColor: "#f1f5f9",
+                        color: "#94a3b8",
+                        cursor: "not-allowed",
+                      }}
+                      disabled
+                    />
+                  </div>
                 </div>
-              </div>
-              <div style={modalRowStyle}>
-                <label style={modalLabelStyle}>Proxy IP:</label>
-                <div
-                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
-                >
-                  <input
-                    type="text"
-                    value={form.proxyIp}
-                    onChange={(e) => handleChange("proxyIp", e.target.value)}
+                <div style={modalRowStyle}>
+                  <label style={modalLabelStyle}>Proxy IP:</label>
+                  <div
                     style={{
-                      ...modalInputStyle,
-                      borderColor: validationErrors.proxyIp
-                        ? C.errorRed
-                        : "#cbd5e1",
+                      width: "min(100%, 320px)",
+                      display: "flex",
+                      flexDirection: "column",
                     }}
-                    placeholder="e.g., 192.168.1.1"
-                    {...getInputInteraction(!!validationErrors.proxyIp)}
-                  />
-                  {validationErrors.proxyIp && (
-                    <span
-                      style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}
-                    >
-                      {validationErrors.proxyIp}
-                    </span>
-                  )}
+                  >
+                    <input
+                      type="text"
+                      value={form.proxyIp}
+                      onChange={(e) => handleChange("proxyIp", e.target.value)}
+                      style={{
+                        ...modalInputStyle,
+                        borderColor: validationErrors.proxyIp
+                          ? C.errorRed
+                          : "#cbd5e1",
+                      }}
+                      placeholder="e.g., 192.168.1.1"
+                      {...getInputInteraction(!!validationErrors.proxyIp)}
+                    />
+                    {validationErrors.proxyIp && (
+                      <span
+                        style={{
+                          color: C.errorRed,
+                          fontSize: 11,
+                          marginTop: 4,
+                        }}
+                      >
+                        {validationErrors.proxyIp}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div style={modalRowStyle}>
-                <label style={modalLabelStyle}>Domain:</label>
-                <div
-                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
-                >
-                  <input
-                    type="text"
-                    value={form.domain}
-                    onChange={(e) => handleChange("domain", e.target.value)}
+                <div style={modalRowStyle}>
+                  <label style={modalLabelStyle}>Domain:</label>
+                  <div
                     style={{
-                      ...modalInputStyle,
-                      borderColor: validationErrors.domain
-                        ? C.errorRed
-                        : "#cbd5e1",
+                      width: "min(100%, 320px)",
+                      display: "flex",
+                      flexDirection: "column",
                     }}
-                    placeholder="e.g., example.com (Optional)"
-                    {...getInputInteraction(!!validationErrors.domain)}
-                  />
-                  {validationErrors.domain && (
-                    <span
-                      style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}
-                    >
-                      {validationErrors.domain}
-                    </span>
-                  )}
+                  >
+                    <input
+                      type="text"
+                      value={form.domain}
+                      onChange={(e) => handleChange("domain", e.target.value)}
+                      style={{
+                        ...modalInputStyle,
+                        borderColor: validationErrors.domain
+                          ? C.errorRed
+                          : "#cbd5e1",
+                      }}
+                      placeholder="e.g., example.com (Optional)"
+                      {...getInputInteraction(!!validationErrors.domain)}
+                    />
+                    {validationErrors.domain && (
+                      <span
+                        style={{
+                          color: C.errorRed,
+                          fontSize: 11,
+                          marginTop: 4,
+                        }}
+                      >
+                        {validationErrors.domain}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

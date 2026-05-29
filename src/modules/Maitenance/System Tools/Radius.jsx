@@ -118,28 +118,57 @@ const tableContainerStyle = {
   maxWidth: "100%",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 24,
+  marginBottom: 8,
 };
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "0 20px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
+
+const callTypeCheckboxSx = {
+  padding: "6px 8px",
+  "& .MuiSvgIcon-root": { fontSize: 20 },
+  color: "#64748b",
+  "&.Mui-checked": { color: C.accent },
+};
+
+const CallTypeCheckbox = ({ checked, onChange, name, value, label }) => (
+  <FormControlLabel
+    control={
+      <Checkbox
+        checked={checked}
+        onChange={onChange}
+        name={name}
+        value={value}
+        sx={callTypeCheckboxSx}
+      />
+    }
+    label={<span style={{ fontSize: 14, color: C.valueText }}>{label}</span>}
+    sx={{ margin: 0, marginLeft: 0 }}
+    className="m-0 min-w-[140px] sm:min-w-[160px]"
+  />
+);
+
+const ENABLE_CHECKBOX_FIELDS = RADIUS_FIELDS.filter((f) => f.type === "checkbox");
+const RADIUS_FORM_FIELDS = RADIUS_FIELDS.filter((f) => f.type !== "checkbox");
 
 const inputInteraction = {
   onFocus: (e) => (e.target.style.borderColor = C.accent),
@@ -258,78 +287,61 @@ const Radius = () => {
               <span>Radius Configuration</span>
             </div>
 
-            <div className="p-6">
+            <div className="px-5 pt-3 pb-0">
               <div className="w-full max-w-[640px] mx-auto">
                 {/* Form Fields Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                  {RADIUS_FIELDS.map((field) =>
-                    field.type === "checkboxGroup" ? (
-                      <React.Fragment key={field.name || "callTypeGroup"}>
-                        <div className="flex items-start min-h-[36px] pt-2 text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
+                  {/* Enable checkboxes — same spacing as Call Type list, tighter rows only */}
+                  <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
+                    {ENABLE_CHECKBOX_FIELDS.map((field) => (
+                      <React.Fragment key={field.name}>
+                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
                           <span style={{ color: C.labelText }}>
                             {field.label}
                           </span>
                         </div>
-                        <div className="flex flex-col min-h-[36px] pl-2 sm:pl-0 gap-0 pt-1">
+                        <div className="flex items-center pl-2 sm:pl-0">
+                          <CallTypeCheckbox
+                            checked={!!form[field.name]}
+                            onChange={handleChange}
+                            name={field.name}
+                            label={field.enableLabel}
+                          />
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                  {RADIUS_FORM_FIELDS.map((field) =>
+                    field.type === "checkboxGroup" ? (
+                      <React.Fragment key={field.name || "callTypeGroup"}>
+                        <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
+                          <span style={{ color: C.labelText }}>
+                            {field.label}
+                          </span>
+                        </div>
+                        <div className="flex flex-col min-h-[34px] pl-2 sm:pl-0 gap-0 pt-0.5">
                           {CALL_TYPE_OPTIONS.map((opt) => (
-                            <FormControlLabel
+                            <CallTypeCheckbox
                               key={opt.value}
-                              control={
-                                <Checkbox
-                                  checked={form.callType.includes(opt.value)}
-                                  onChange={handleCallTypeChange}
-                                  name="callType"
-                                  value={opt.value}
-                                  sx={{
-                                    "& .MuiSvgIcon-root": { fontSize: 20 },
-                                    color: "#64748b",
-                                    "&.Mui-checked": { color: C.accent },
-                                  }}
-                                />
-                              }
-                              label={
-                                <span
-                                  style={{ fontSize: 14, color: C.valueText }}
-                                >
-                                  {opt.label}
-                                </span>
-                              }
-                              className="m-0 min-w-[140px] sm:min-w-[160px]"
+                              checked={form.callType.includes(opt.value)}
+                              onChange={handleCallTypeChange}
+                              name="callType"
+                              value={opt.value}
+                              label={opt.label}
                             />
                           ))}
                         </div>
                       </React.Fragment>
                     ) : (
                       <React.Fragment key={field.name}>
-                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words min-h-[36px]">
+                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words min-h-[34px]">
                           <span style={{ color: C.labelText }}>
                             {field.label}
                           </span>
                         </div>
-                        <div className="flex items-center min-h-[36px] pl-2 sm:pl-0">
-                          {field.type === "checkbox" ? (
-                            <div className="flex items-center">
-                              <Checkbox
-                                checked={!!form[field.name]}
-                                onChange={handleChange}
-                                name={field.name}
-                                sx={{
-                                  "& .MuiSvgIcon-root": { fontSize: 20 },
-                                  color: "#64748b",
-                                  "&.Mui-checked": { color: C.accent },
-                                }}
-                              />
-                              <span
-                              // style={{
-                              //   marginLeft: 4,
-                              //   fontSize: 14,
-                              //   color: C.valueText,
-                              // }}
-                              >
-                                {field.enableLabel}
-                              </span>
-                            </div>
-                          ) : field.type === "select" ? (
+                        <div className="flex items-center min-h-[34px] pl-2 sm:pl-0">
+                          {field.type === "select" ? (
                             <Select
                               value={form[field.name] || ""}
                               onChange={handleChange}
@@ -372,7 +384,7 @@ const Radius = () => {
                               value={form[field.name] || ""}
                               onChange={handleChange}
                               style={{
-                                padding: "8px 12px",
+                                padding: "6px 12px",
                                 borderRadius: 6,
                                 border: `1px solid ${C.cardBorder}`,
                                 fontSize: 14,
@@ -390,29 +402,29 @@ const Radius = () => {
                     ),
                   )}
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div
-                  className="flex flex-col sm:flex-row justify-center gap-6 mt-10 pt-6"
-                  style={{ borderTop: `1px solid ${C.divider}` }}
+              {/* Action Buttons — top border full content width */}
+              <div
+                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-2"
+                style={{ borderTop: `1px solid ${C.divider}` }}
+              >
+                <Btn
+                  type="button"
+                  variant="cancel"
+                  onClick={handleReset}
+                  style={{ minWidth: 120, height: 34 }}
                 >
-                  <Btn
-                    type="button"
-                    variant="cancel"
-                    onClick={handleReset}
-                    style={{ minWidth: 120, height: 38 }}
-                  >
-                    Reset
-                  </Btn>
-                  <Btn
-                    type="submit"
-                    variant="primary"
-                    onClick={handleSave}
-                    style={{ minWidth: 120, height: 38 }}
-                  >
-                    Save
-                  </Btn>
-                </div>
+                  Reset
+                </Btn>
+                <Btn
+                  type="submit"
+                  variant="primary"
+                  onClick={handleSave}
+                  style={{ minWidth: 120, height: 34 }}
+                >
+                  Save
+                </Btn>
               </div>
             </div>
           </div>

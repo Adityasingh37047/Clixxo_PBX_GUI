@@ -43,7 +43,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -499,7 +500,7 @@ const TRACERTTest = () => {
               flexWrap: "wrap",
               gap: 12,
               alignItems: "center",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.divider}`,
               background: C.cardBg,
             }}
@@ -517,12 +518,13 @@ const TRACERTTest = () => {
           </div>
 
           {/* Card Body */}
-          <div style={{ padding: "24px 32px" }}>
-            <div className="flex flex-col gap-6">
+          <div className="w-full flex flex-col px-5 pt-3 pb-2 gap-4">
+            <div
+              className="flex flex-col gap-4 w-full"
+              style={{ maxWidth: 460, margin: "0 auto" }}
+            >
               {/* Form Rows */}
-              {/* Form Rows */}
-              <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 460, margin: "0 auto" }}>
-                
+              <div className="flex flex-col gap-4 w-full">
                 {/* Source IP */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
                   <label
@@ -559,7 +561,13 @@ const TRACERTTest = () => {
                       )}
                     </select>
                     {sourceIpError && (
-                      <div style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}>
+                      <div
+                        style={{
+                          color: C.errorRed,
+                          fontSize: 11,
+                          marginTop: 4,
+                        }}
+                      >
                         {sourceIpError}
                       </div>
                     )}
@@ -584,7 +592,7 @@ const TRACERTTest = () => {
                       type="text"
                       style={{
                         ...inputStyle,
-                        borderColor: destIpError ? C.errorRed : C.cardBorder
+                        borderColor: destIpError ? C.errorRed : C.cardBorder,
                       }}
                       value={destIp}
                       onChange={(e) => {
@@ -595,7 +603,13 @@ const TRACERTTest = () => {
                       {...inputInteraction}
                     />
                     {destIpError && (
-                      <div style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}>
+                      <div
+                        style={{
+                          color: C.errorRed,
+                          fontSize: 11,
+                          marginTop: 4,
+                        }}
+                      >
                         {destIpError}
                       </div>
                     )}
@@ -620,7 +634,7 @@ const TRACERTTest = () => {
                       type="number"
                       style={{
                         ...inputStyle,
-                        borderColor: jumpsError ? C.errorRed : C.cardBorder
+                        borderColor: jumpsError ? C.errorRed : C.cardBorder,
                       }}
                       value={maxJumps}
                       onChange={(e) => {
@@ -631,16 +645,34 @@ const TRACERTTest = () => {
                       {...inputInteraction}
                     />
                     {jumpsError && (
-                      <div style={{ color: C.errorRed, fontSize: 11, marginTop: 4 }}>
+                      <div
+                        style={{
+                          color: C.errorRed,
+                          fontSize: 11,
+                          marginTop: 4,
+                        }}
+                      >
                         {jumpsError}
                       </div>
                     )}
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Buttons Row */}
-              <div className="flex flex-wrap gap-4 mt-2 mb-2 justify-start sm:justify-center">
+            {/* Buttons Row — top border content width, bottom border full content area */}
+            <div
+              className="w-full"
+              style={{ borderBottom: `1px solid ${C.divider}` }}
+            >
+              <div
+                className="flex flex-wrap gap-3 justify-center w-full py-2"
+                style={{
+                  maxWidth: 460,
+                  margin: "0 auto",
+                  borderTop: `1px solid ${C.divider}`,
+                }}
+              >
                 <Btn
                   variant="primary"
                   onClick={startTracert}
@@ -659,47 +691,55 @@ const TRACERTTest = () => {
                   {TRACERT_BUTTONS.end}
                 </Btn>
               </div>
+            </div>
 
-              {/* Logs Row */}
-              <div className="flex flex-col gap-2">
-                <label
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.labelText,
-                  }}
-                >
-                  {TRACERT_LABELS.info}
-                </label>
-                <textarea
-                  style={{
-                    ...inputStyle,
-                    height: "auto",
-                    minHeight: 180,
-                    maxHeight: 320,
-                    fontFamily: "monospace",
-                    fontSize: 12,
-                    lineHeight: 1.5,
-                    resize: "vertical",
-                    whiteSpace: "pre-wrap",
-                    backgroundColor: "#f8fafc",
-                    borderColor: C.cardBorder,
-                  }}
-                  value={info}
-                  onChange={(e) => setInfo(e.target.value)}
-                  readOnly
-                  onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
-                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
-                  onMouseEnter={(e) => {
-                    if (document.activeElement !== e.target)
-                      e.target.style.borderColor = "#64748b";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (document.activeElement !== e.target)
-                      e.target.style.borderColor = C.cardBorder;
-                  }}
-                />
-              </div>
+            {/* Info log — wider, centered */}
+            <div
+              className="flex flex-col gap-2"
+              style={{
+                width: "80%",
+                margin: "0 auto",
+              }}
+            >
+              <label
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.labelText,
+                }}
+              >
+                {TRACERT_LABELS.info}
+              </label>
+              <textarea
+                style={{
+                  ...inputStyle,
+                  width: "100%",
+                  boxSizing: "border-box",
+                  height: "auto",
+                  minHeight: 180,
+                  maxHeight: 320,
+                  fontFamily: "monospace",
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                  resize: "vertical",
+                  whiteSpace: "pre-wrap",
+                  backgroundColor: "#f8fafc",
+                  borderColor: C.cardBorder,
+                }}
+                value={info}
+                onChange={(e) => setInfo(e.target.value)}
+                readOnly
+                onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
+                onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
+                onMouseEnter={(e) => {
+                  if (document.activeElement !== e.target)
+                    e.target.style.borderColor = "#64748b";
+                }}
+                onMouseLeave={(e) => {
+                  if (document.activeElement !== e.target)
+                    e.target.style.borderColor = C.cardBorder;
+                }}
+              />
             </div>
           </div>
         </div>

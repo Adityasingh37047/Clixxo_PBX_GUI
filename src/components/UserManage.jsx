@@ -21,7 +21,7 @@ const C = {
   divider: "#9CA3AF",
   cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
   labelText: "#3E5475",
-  valueText: "#1e293b",
+  valueText: "#0f172a",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#3E5475",
@@ -137,23 +137,34 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: C.pageBg,
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "14px 18px",
-      textAlign: "left",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.08em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
 
 const cbSx = {
   p: 0,
@@ -695,7 +706,7 @@ export default function UserManage() {
         <div
           style={{
             background: C.cardBg,
-            borderRadius: 20,
+            borderRadius: 10,
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
@@ -711,7 +722,7 @@ export default function UserManage() {
               gap: 12,
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.divider}`,
             }}
           >
@@ -804,26 +815,62 @@ export default function UserManage() {
                 style={{
                   width: "100%",
                   minWidth: 600,
-                  borderCollapse: "collapse",
-                  fontSize: 13,
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 50, textAlign: "center" }}>ID</TH>
-                    <TH style={{ width: 180 }}>Username</TH>
-                    <TH style={{ width: 140, textAlign: "center" }}>
+                    <TH
+                      style={{
+                        width: 50,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
+                    <TH
+                      style={{
+                        width: 180,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Username
+                    </TH>
+                    <TH
+                      style={{
+                        width: 140,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       Access Type
                     </TH>
-                    <TH style={{ width: 160, textAlign: "center" }}>
-                      Role Permission
-                    </TH>
-                    <TH>Sections</TH>
                     <TH
                       style={{
                         width: 160,
-                        textAlign: "center",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Role Permission
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Sections
+                    </TH>
+                    <TH
+                      style={{
+                        width: 70,
                         borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
                       }}
                     >
                       Actions
@@ -838,54 +885,51 @@ export default function UserManage() {
                     const isSuperAdmin =
                       accessType === "superadmin" || accessType === "admin";
                     const isLastRow = i === users.length - 1;
-                    const rowBottomStyle = isLastRow
+                    const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                    const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
-                      : { borderBottom: `1px solid ${C.divider}` };
+                      : {};
                     return (
                       <tr
                         key={user.id}
                         style={{
-                          background: C.cardBg,
+                          background: rowBg,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = C.pageBg;
+                          e.currentTarget.style.background = "#f1f5f9";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = C.cardBg;
+                          e.currentTarget.style.background = rowBg;
                         }}
                       >
                         <td
                           style={{
-                            padding: "8px 18px",
+                            ...tdStyle,
+                            background: rowBg,
                             color: C.mutedText,
-                            textAlign: "center",
-                            fontSize: 13,
                             fontWeight: 500,
-                            ...rowBottomStyle,
-                            borderRight: `1px solid ${C.divider}`,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {i + 1}
                         </td>
                         <td
                           style={{
-                            padding: "8px 18px",
+                            ...tdStyle,
+                            background: rowBg,
                             fontWeight: 500,
-                            color: C.valueText,
-                            fontSize: 13,
-                            ...rowBottomStyle,
-                            borderRight: `1px solid ${C.divider}`,
+                            textAlign: "left",
+                            ...lastRowCellStyle,
                           }}
                         >
                           {user.username}
                         </td>
                         <td
                           style={{
-                            padding: "8px 18px",
-                            textAlign: "center",
-                            ...rowBottomStyle,
-                            borderRight: `1px solid ${C.divider}`,
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <span
@@ -902,13 +946,10 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "8px 18px",
-                            color: C.valueText,
-                            fontSize: 13,
-                            textAlign: "center",
+                            ...tdStyle,
+                            background: rowBg,
                             fontWeight: 500,
-                            ...rowBottomStyle,
-                            borderRight: `1px solid ${C.divider}`,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {access.role_permission ??
@@ -917,16 +958,14 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "8px 18px",
-                            color: C.valueText,
-                            fontSize: 13,
+                            ...tdStyle,
+                            background: rowBg,
                             fontWeight: 500,
                             maxWidth: 220,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            ...rowBottomStyle,
-                            borderRight: `1px solid ${C.divider}`,
+                            textAlign: "left",
+                            ...lastRowCellStyle,
                           }}
                         >
                           {isSuperAdmin ? (
@@ -949,10 +988,10 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "8px 18px",
-                            textAlign: "center",
-                            ...rowBottomStyle,
+                            ...tdStyle,
+                            background: rowBg,
                             borderRight: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
                           <div
@@ -964,16 +1003,40 @@ export default function UserManage() {
                           >
                             {!isSuperAdmin && (
                               <EditDocumentIcon
-                                className="cursor-pointer text-blue-600 opacity-70 hover:opacity-100 transition-opacity"
                                 titleAccess="Edit"
+                                style={{
+                                  cursor: "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
                                 onClick={() => openEdit(user)}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.opacity = "0.7";
+                                }}
                               />
                             )}
                             {!isSuperAdmin && (
                               <DeleteOutlineOutlinedIcon
-                                className="cursor-pointer text-red-600 opacity-70 hover:opacity-100 transition-opacity"
                                 titleAccess="Delete"
+                                style={{
+                                  cursor: "pointer",
+                                  color: "#dc2626",
+                                  fontSize: 22,
+                                  opacity: 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
                                 onClick={() => handleDelete(user)}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.opacity = "0.7";
+                                }}
                               />
                             )}
                           </div>
@@ -993,7 +1056,7 @@ export default function UserManage() {
             <div
               style={{
                 background: C.cardBg,
-                borderRadius: 20,
+                borderRadius: 10,
                 overflow: "hidden",
                 boxShadow: C.cardShadow,
                 marginTop: 24,
@@ -1126,7 +1189,7 @@ export default function UserManage() {
             <div
               style={{
                 background: C.cardBg,
-                borderRadius: 20,
+                borderRadius: 10,
                 overflow: "hidden",
                 boxShadow: C.cardShadow,
                 marginTop: 24,

@@ -35,6 +35,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
   successGreen: "#22c55e",
   errorRed: "#ef4444",
@@ -139,7 +140,7 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "8px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
@@ -161,7 +162,7 @@ const checkboxSx = {
 };
 
 const tdStyle = {
-  padding: "10px 14px",
+  padding: "6px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
@@ -265,7 +266,7 @@ const PcmTrunkGroupPage = () => {
       }
     } catch (error) {
       console.error("Error fetching PSTN groups:", error);
-      alert(error?.message || "Failed to load PSTN groups");
+      showMessage("error", error?.message || "Failed to load PSTN groups");
       // On error, keep empty array
       setGroups([]);
     } finally {
@@ -349,7 +350,8 @@ const PcmTrunkGroupPage = () => {
       );
 
       if (otherIndexes.includes(newIndex)) {
-        alert(
+        showMessage(
+          "error",
           `Index ${newIndex} is already in use. Please select a different index.`,
         );
         return; // Don't update the form data
@@ -405,17 +407,17 @@ const PcmTrunkGroupPage = () => {
       formData.groupId === undefined ||
       formData.groupId === ""
     ) {
-      alert("Please select a Group ID.");
+      showMessage("error", "Please select a Group ID.");
       return;
     }
 
     if (!formData.description || formData.description.trim() === "") {
-      alert("Please fill in the Description field.");
+      showMessage("error", "Please fill in the Description field.");
       return;
     }
 
     if (!formData.pstnIds || formData.pstnIds.length === 0) {
-      alert("Please select at least one PSTN ID.");
+      showMessage("error", "Please select at least one PSTN ID.");
       return;
     }
 
@@ -429,7 +431,8 @@ const PcmTrunkGroupPage = () => {
     const otherIndexes = existingIndexes.filter((idx) => idx !== currentIndex);
 
     if (otherIndexes.includes(newIndex)) {
-      alert(
+      showMessage(
+        "error",
         `Index ${newIndex} is already in use. Please select a different index.`,
       );
       return;
@@ -477,13 +480,14 @@ const PcmTrunkGroupPage = () => {
 
           setGroups((prev) => [...prev, ...newGroups]);
 
-          alert(
+          showMessage(
+            "success",
             `Successfully created ${formData.pstnIds.length} PSTN group(s)!`,
           );
           setIsModalOpen(false);
           await fetchPcmTrunkGroupData();
         } else {
-          alert("Failed to create some PSTN groups. Please try again.");
+          showMessage("error", "Failed to create some PSTN groups. Please try again.");
         }
       } else {
         const response = await savePstnGroup(
@@ -492,11 +496,11 @@ const PcmTrunkGroupPage = () => {
           formData.description,
         );
         if (response?.response) {
-          alert("PSTN Group saved successfully!");
+          showMessage("success", "PSTN Group saved successfully!");
           setIsModalOpen(false);
           await fetchPcmTrunkGroupData();
         } else {
-          alert("Failed to save PSTN Group. Please try again.");
+          showMessage("error", "Failed to save PSTN Group. Please try again.");
         }
       }
     } catch (error) {
@@ -636,7 +640,7 @@ const PcmTrunkGroupPage = () => {
   // Delete individual PCM trunk group
   const handleDeleteSelected = async () => {
     if (selected.length === 0) {
-      alert("Please select at least one item to delete.");
+      showMessage("error", "Please select at least one item to delete.");
       return;
     }
 
@@ -657,7 +661,8 @@ const PcmTrunkGroupPage = () => {
         // Check if group is referenced before deleting
         const inUse = await isPcmGroupReferenced(item.groupId);
         if (inUse) {
-          alert(
+          showMessage(
+            "error",
             "The PCM trunk group cannot be deleted because it is quoted by the routing rule!",
           );
           skippedCount++;
@@ -733,7 +738,8 @@ const PcmTrunkGroupPage = () => {
         // Check if group is referenced before deleting
         const inUse = await isPcmGroupReferenced(group.groupId);
         if (inUse) {
-          alert(
+          showMessage(
+            "error",
             "The PCM trunk group cannot be deleted because it is quoted by the routing rule!",
           );
           skippedCount++;
@@ -817,9 +823,22 @@ const PcmTrunkGroupPage = () => {
 
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
         {/* Breadcrumb */}
-        <div style={{ fontSize: 12, color: C.mutedText, marginBottom: 16, display: "flex", gap: 4 }}>
-          E1-PRI &rsaquo; PCM &rsaquo;{" "}
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>PCM</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             PCM Trunk Group
           </span>
         </div>
@@ -840,11 +859,12 @@ const PcmTrunkGroupPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
+              minHeight: 44,
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
               borderTopRightRadius: CARD_RADIUS,
             }}
@@ -1032,7 +1052,7 @@ const PcmTrunkGroupPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              padding: "10px 0",
+                              padding: "6px 0",
                               borderLeft: "none",
                               ...lastRowCellStyle,
                             }}
@@ -1056,7 +1076,7 @@ const PcmTrunkGroupPage = () => {
                                   style={{
                                     ...tdStyle,
                                     background: rowBg,
-                                    padding: "7px 8px",
+                                    padding: "6px 8px",
                                     borderRight: "none",
                                     ...lastRowCellStyle,
                                   }}
@@ -1130,7 +1150,7 @@ const PcmTrunkGroupPage = () => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  padding: "10px 14px",
+                  padding: "7px 14px",
                   borderTop: `1px solid ${C.cardBorder}`,
                   background: "#ffffff",
                   borderBottomLeftRadius: CARD_RADIUS,
@@ -1209,18 +1229,16 @@ const PcmTrunkGroupPage = () => {
             ? "Edit PCM Trunk Group"
             : "Add PCM Trunk Group"}
         </DialogTitle>
-        <DialogContent
-          style={{
-            padding: "20px 24px",
-            backgroundColor: "#f8fafc",
-          }}
-        >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 12,
-              width: "100%",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
             }}
           >
             {PCM_TRUNK_GROUP_FIELDS.map((field) => (
@@ -1229,26 +1247,23 @@ const PcmTrunkGroupPage = () => {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  background: "#ffffff",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 6,
-                  padding: "6px 12px",
+                  justifyContent: "center",
                   gap: 12,
-                  minHeight: 40,
                 }}
               >
                 <label
                   style={{
                     fontSize: 13,
-                    color: "#1e293b",
+                    color: C.labelText,
                     fontWeight: 600,
                     whiteSpace: "nowrap",
-                    width: 160,
+                    width: 170,
+                    textAlign: "left",
                   }}
                 >
                   {field.label}:
                 </label>
-                <div className="flex-1" style={{ maxWidth: 280 }}>
+                <div style={{ width: "min(100%, 320px)" }}>
                   {field.type === "select" ? (
                     <Select
                       value={formData[field.name]}
@@ -1268,8 +1283,11 @@ const PcmTrunkGroupPage = () => {
                       }}
                       sx={{
                         fontSize: 13,
+                        height: 32,
+                        backgroundColor: "#fff",
                         "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#cbd5e1",
+                          borderColor: C.cardBorder,
+                          transition: "border-color 0.2s ease",
                         },
                         "&:hover .MuiOutlinedInput-notchedOutline": {
                           borderColor: "#64748b",
@@ -1306,8 +1324,12 @@ const PcmTrunkGroupPage = () => {
                       placeholder={field.placeholder || ""}
                       sx={{
                         fontSize: 13,
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "#fff",
+                        },
                         "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#cbd5e1",
+                          borderColor: C.cardBorder,
+                          transition: "border-color 0.2s ease",
                         },
                         "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
                           borderColor: "#64748b",
@@ -1318,7 +1340,7 @@ const PcmTrunkGroupPage = () => {
                         },
                       }}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, height: 32, padding: "0 8px", boxSizing: "border-box" },
                       }}
                     />
                   )}

@@ -112,23 +112,25 @@ const tableContainerStyle = {
   maxWidth: "100%",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 24,
+  marginBottom: 8,
 };
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "0 20px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -240,14 +242,14 @@ const IDSSettings = () => {
             <span>IDS Settings</span>
           </div>
 
-          <form onSubmit={handleSave} className="w-full p-6">
+          <form onSubmit={handleSave} className="w-full px-5 pt-3 pb-0">
             <div className="w-full max-w-4xl mx-auto">
               {/* Enable Checkbox */}
               <div
-                className="flex items-center gap-4 mb-6"
+                className="flex items-center gap-4 mb-3"
                 style={{
                   borderBottom: `1px solid ${C.divider}`,
-                  paddingBottom: 16,
+                  paddingBottom: 8,
                 }}
               >
                 <span
@@ -278,7 +280,7 @@ const IDSSettings = () => {
               </div>
 
               {/* Table Header - Hidden on mobile, shown on larger screens */}
-              <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-2 items-center w-full mb-4 px-2 py-2 rounded bg-slate-50">
+              <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-2 items-center w-full mb-3 px-2 py-2 rounded bg-slate-50">
                 <span
                   style={{ fontSize: 12, fontWeight: 700, color: C.strongText }}
                 >
@@ -370,7 +372,7 @@ const IDSSettings = () => {
               </div>
 
               {/* Mobile Layout - Stacked cards */}
-              <div className="md:hidden space-y-4">
+              <div className="md:hidden space-y-3">
                 {IDS_TYPES.map((type, idx) => (
                   <div
                     key={type.key}
@@ -472,7 +474,7 @@ const IDSSettings = () => {
 
               {/* Blacklist Validity */}
               <div
-                className="flex flex-col sm:flex-row items-start sm:items-center mt-6 pt-6 gap-4"
+                className="flex flex-col sm:flex-row items-start sm:items-center mt-3 pt-3 gap-2"
                 style={{ borderTop: `1px solid ${C.divider}` }}
               >
                 <span
@@ -507,7 +509,7 @@ const IDSSettings = () => {
 
               {/* Action Buttons */}
               <div
-                className="flex flex-col sm:flex-row justify-center gap-6 mt-8 pt-6"
+                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-2 mb-0"
                 style={{ borderTop: `1px solid ${C.divider}` }}
               >
                 <Btn
@@ -536,14 +538,14 @@ const IDSSettings = () => {
             <span>IDS Warning Log</span>
           </div>
 
-          <div className="p-6">
-            <div className="w-full max-w-4xl mx-auto">
+          <div className="px-5 pt-3 pb-2">
+            <div className="w-full max-w-4xl mx-auto flex flex-col gap-2">
               {/* Log Display Area */}
               <textarea
                 className="w-full rounded resize-y"
                 style={{
-                  minHeight: 140,
-                  maxHeight: 220,
+                  minHeight: 120,
+                  maxHeight: 200,
                   fontSize: 13,
                   padding: "12px",
                   backgroundColor: "#f8fafc",
@@ -559,7 +561,7 @@ const IDSSettings = () => {
               />
 
               {/* Download Button */}
-              <div className="flex flex-col sm:flex-row justify-center mt-6">
+              <div className="flex justify-center">
                 <Btn
                   variant="primary"
                   onClick={handleDownload}
@@ -568,18 +570,22 @@ const IDSSettings = () => {
                   Download
                 </Btn>
               </div>
-
-              {/* Note */}
-              <div className="text-center mt-4">
-                <span
-                  style={{ color: C.errorRed, fontSize: 13, fontWeight: 500 }}
-                >
-                  {IDS_LOG_NOTE}
-                </span>
-              </div>
             </div>
           </div>
         </div>
+
+        {/* Note */}
+        <p
+          className="text-center m-0 mt-2"
+          style={{
+            color: C.errorRed,
+            fontSize: 12,
+            fontWeight: 500,
+            lineHeight: 1.45,
+          }}
+        >
+          {IDS_LOG_NOTE}
+        </p>
       </div>
     </div>
   );

@@ -114,25 +114,27 @@ const Btn = ({
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
+  margin: "0 auto",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
-  overflow: "hidden",
   marginBottom: 24,
 };
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "0 20px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -481,74 +483,81 @@ const Authorization = () => {
             <span>Authorization Information</span>
           </div>
 
-          <div className="w-full flex flex-col gap-0 px-5 py-4 rounded-b-lg">
-            <div className="w-full max-w-3xl mx-auto">
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                {rows.map((row) => (
-                  <React.Fragment key={row.label}>
-                    <div className="flex items-center text-[13px] font-semibold text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                      <span style={{ color: C.labelText }}>{row.label}</span>
-                    </div>
-                    <div className="flex items-center min-h-[34px]">
-                      <div className="flex items-center gap-2 w-full">
-                        <input
-                          type="text"
-                          value={row.value}
-                          readOnly
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: 6,
-                            border: `1px solid ${C.cardBorder}`,
-                            fontSize: 12,
-                            width: "100%",
-                            maxWidth: 300,
-                            backgroundColor: "#f8fafc",
-                            outline: "none",
-                            color: row.isStatus
-                              ? statusStyle.color
-                              : C.valueText,
-                            fontWeight: row.isStatus ? 700 : 500,
-                            textAlign: "center",
-                            cursor: "text",
-                            transition: "border-color 0.2s ease",
-                          }}
-                          {...inputInteraction}
-                        />
-                        {row.loading && (
-                          <CircularProgress size={16} sx={{ flexShrink: 0 }} />
-                        )}
-                      </div>
-                    </div>
-                  </React.Fragment>
-                ))}
-              </div>
+          <div
+            className="w-full flex flex-col px-5 pt-3 pb-0"
+            style={{ borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
+          >
+            <div className="w-full max-w-3xl mx-auto flex flex-col gap-3">
+              {rows.map((row) => (
+                <div
+                  key={row.label}
+                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full"
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: "100%",
+                      maxWidth: 280,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {row.label}
+                  </label>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <input
+                      type="text"
+                      value={row.value}
+                      readOnly
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 4,
+                        border: `1px solid ${C.cardBorder}`,
+                        fontSize: 12,
+                        width: "100%",
+                        maxWidth: 320,
+                        backgroundColor: "#f8fafc",
+                        outline: "none",
+                        color: row.isStatus ? statusStyle.color : C.valueText,
+                        fontWeight: row.isStatus ? 700 : 500,
+                        textAlign: "center",
+                        cursor: "text",
+                        transition: "border-color 0.2s ease",
+                      }}
+                      {...inputInteraction}
+                    />
+                    {row.loading && (
+                      <CircularProgress size={16} sx={{ flexShrink: 0 }} />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-              {/* Action Buttons */}
-              <div
-                className="flex flex-col sm:flex-row justify-center mt-6 pt-4"
-                style={{ borderTop: `1px solid ${C.divider}` }}
+            {/* Action button — top border full content width */}
+            <div
+              className="flex justify-center mt-3 pt-2 pb-2"
+              style={{ borderTop: `1px solid ${C.divider}` }}
+            >
+              <Btn
+                type="button"
+                variant="primary"
+                onClick={refreshAll}
+                disabled={busy}
+                style={{ minWidth: 120, height: 34 }}
               >
-                <Btn
-                  type="button"
-                  variant="primary"
-                  onClick={refreshAll}
-                  disabled={busy}
-                  style={{ minWidth: 120, height: 34 }}
-                >
-                  {busy ? "Loading…" : "Refresh"}
-                </Btn>
-              </div>
-
-              <div className="text-center mt-3 pt-1">
-                <span
-                  style={{ color: C.errorRed, fontSize: 12, fontWeight: 500 }}
-                >
-                  Note - The information above is a summary of your license. For
-                  any change, contact your vendor or authorized supplier.
-                </span>
-              </div>
+                {busy ? "Loading…" : "Refresh"}
+              </Btn>
             </div>
           </div>
+        </div>
+
+        <div className="text-center mt-2">
+          <span style={{ color: C.errorRed, fontSize: 12, fontWeight: 500 }}>
+            Note - The information above is a summary of your license. For any
+            change, contact your vendor or authorized supplier.
+          </span>
         </div>
       </div>
     </div>

@@ -34,6 +34,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -142,7 +143,7 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
@@ -157,7 +158,7 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
@@ -468,18 +469,23 @@ const FilteringRule = () => {
       )}
 
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb / Title area */}
+        {/* Breadcrumb */}
         <div
           style={{
             fontSize: 12,
             color: C.mutedText,
             marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
+            alignItems: "center",
             gap: 4,
           }}
         >
-          E1-PRI &rsaquo; Number Filter &rsaquo;{" "} 
-          <span style={{ color: C.valueText, fontWeight: 600 }}>
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>Number Filter</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             Filtering Rule
           </span>
         </div>
@@ -497,12 +503,13 @@ const FilteringRule = () => {
           {/* Top Actions Bar */}
           <div
             style={{
-              padding: "14px 18px",
+              minHeight: 44,
+              padding: "7px 14px",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
               background: "#ffffff",
               borderBottom: `1px solid ${C.cardBorder}`,
               borderTopLeftRadius: CARD_RADIUS,
@@ -758,7 +765,7 @@ const FilteringRule = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
+                padding: "7px 14px",
                 background: "#ffffff",
                 borderTop: `1px solid ${C.cardBorder}`,
                 borderBottomLeftRadius: CARD_RADIUS,
@@ -788,6 +795,7 @@ const FilteringRule = () => {
             p: 0,
             borderRadius: 2,
             overflow: "hidden",
+            maxHeight: "95vh",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
           },
@@ -807,51 +815,63 @@ const FilteringRule = () => {
         >
           {editIndex !== null ? "Edit" : "Add"} Filtering Rule
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#f8fafc" }}>
+        <DialogContent
+          style={{ padding: "16px 20px", backgroundColor: "#ffffff", overflowY: "visible" }}
+        >
           <div
             style={{
-              background: "#fff",
+              background: "#f8fafc",
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
-              padding: 20,
+              padding: 14,
               display: "flex",
               flexDirection: "column",
-              gap: 16,
+              gap: 10,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+              }}
+            >
               <label
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
                   color: C.labelText,
-                  width: 200,
-                  whiteSpace: "normal",
+                  width: 240,
+                  whiteSpace: "nowrap",
                   lineHeight: 1.2,
+                  textAlign: "left",
                 }}
               >
                 No.:
               </label>
-              <TextField
-                name="id"
-                value={editIndex !== null ? editIndex + 1 : rows.length + 1}
-                disabled
-                size="small"
-                fullWidth
-                inputProps={{ style: { fontSize: 13, height: 16 } }}
-                sx={{
-                  backgroundColor: "#f1f5f9",
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: C.cardBorder,
-                      transition: "border-color 0.2s ease",
+              <div style={{ width: "min(100%, 280px)" }}>
+                <TextField
+                  name="id"
+                  value={editIndex !== null ? editIndex + 1 : rows.length + 1}
+                  disabled
+                  size="small"
+                  fullWidth
+                  inputProps={{ style: { fontSize: 13, height: 16 } }}
+                  sx={{
+                    backgroundColor: "#f1f5f9",
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: C.cardBorder,
+                        transition: "border-color 0.2s ease",
+                      },
                     },
-                  },
-                  "& .Mui-disabled": {
-                    WebkitTextFillColor: "#64748b",
-                  }
-                }}
-              />
+                    "& .Mui-disabled": {
+                      WebkitTextFillColor: "#64748b",
+                    },
+                  }}
+                />
+              </div>
             </div>
             {[
               {
@@ -907,56 +927,64 @@ const FilteringRule = () => {
             ].map((field) => (
               <div
                 key={field.key}
-                style={{ display: "flex", alignItems: "center", gap: 10 }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 12,
+                }}
               >
                 <label
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
                     color: C.labelText,
-                    width: 200,
-                    whiteSpace: "normal",
+                    width: 240,
+                    whiteSpace: "nowrap",
                     lineHeight: 1.2,
+                    textAlign: "left",
                   }}
                 >
                   {field.label}
                 </label>
-                <MuiSelect
-                  name={field.key}
-                  value={form[field.key] || "none"}
-                  onChange={handleFormChange}
-                  size="small"
-                  fullWidth
-                  sx={{
-                    fontSize: 13,
-                    height: 36,
-                    backgroundColor: "#fff",
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: C.cardBorder,
-                      transition: "border-color 0.2s ease",
-                    },
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#64748b",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#0284c7 !important",
-                      borderWidth: "1px !important",
-                    },
-                  }}
-                >
-                  {[
-                    "none",
-                    ...Array.from(
-                      new Set(
-                        (field.options || []).filter((o) => o !== "none"),
+                <div style={{ width: "min(100%, 280px)" }}>
+                  <MuiSelect
+                    name={field.key}
+                    value={form[field.key] || "none"}
+                    onChange={handleFormChange}
+                    size="small"
+                    fullWidth
+                    sx={{
+                      fontSize: 13,
+                      height: 32,
+                      backgroundColor: "#fff",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: C.cardBorder,
+                        transition: "border-color 0.2s ease",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#64748b",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#0284c7 !important",
+                        borderWidth: "1px !important",
+                      },
+                    }}
+                  >
+                    {[
+                      "none",
+                      ...Array.from(
+                        new Set(
+                          (field.options || []).filter((o) => o !== "none"),
+                        ),
                       ),
-                    ),
-                  ].map((opt) => (
-                    <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                      {opt === "none" ? "None" : opt}
-                    </MenuItem>
-                  ))}
-                </MuiSelect>
+                    ].map((opt) => (
+                      <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                        {opt === "none" ? "None" : opt}
+                      </MenuItem>
+                    ))}
+                  </MuiSelect>
+                </div>
               </div>
             ))}
           </div>

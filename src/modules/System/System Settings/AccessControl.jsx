@@ -43,7 +43,7 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
@@ -58,11 +58,10 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "10px 14px",
+  padding: "7px 14px",
   fontSize: 13,
-  color: "#0f172a",
+  color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
@@ -640,7 +639,8 @@ const AccessControl = () => {
             gap: 12,
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "14px 18px",
+            minHeight: 44,
+            padding: "7px 14px",
             borderBottom: `1px solid ${C.cardBorder}`,
             background: "#ffffff",
             borderTopLeftRadius: CARD_RADIUS,
@@ -701,7 +701,7 @@ const AccessControl = () => {
               variant="primary"
               onClick={() => handleOpenModal()}
               disabled={loading.save}
-              style={{ height: 30, minWidth: 110 }}
+              style={{ height: 30 }}
             >
               + Add New
             </Btn>
@@ -709,124 +709,232 @@ const AccessControl = () => {
         </div>
 
         <div
-          ref={tableScrollRef}
-          className="scrollbar-hide w-full overflow-x-auto"
-          style={{
-            maxHeight: 400,
-            overflowY: "auto",
-            scrollbarWidth: "auto",
-          }}
-          onScroll={() => {
-            if (tableScrollRef.current) {
-              const el = tableScrollRef.current;
-              setScrollState({
-                left: el.scrollLeft,
-                width: el.clientWidth,
-                scrollWidth: el.scrollWidth,
-              });
-              setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-            }
-          }}
+          ref={commands.length > 0 ? tableScrollRef : undefined}
+          className={commands.length > 0 ? "scrollbar-hide w-full" : "w-full"}
+          style={
+            commands.length === 0
+              ? {
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 150,
+                  padding: 24,
+                  textAlign: "center",
+                }
+              : {
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
+                }
+          }
+          onScroll={
+            commands.length > 0
+              ? () => {
+                  if (tableScrollRef.current) {
+                    const el = tableScrollRef.current;
+                    setScrollState({
+                      left: el.scrollLeft,
+                      width: el.clientWidth,
+                      scrollWidth: el.scrollWidth,
+                    });
+                    setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
+                  }
+                }
+              : undefined
+          }
         >
-          <table
-            className="w-full md:min-w-[700px]"
-            style={{ borderCollapse: "separate", borderSpacing: 0 }}
-          >
-            <thead style={{ position: "sticky", top: 0, zIndex: 10 }}>
-              <tr>
-                <TH style={{ borderLeft: "none" }}>
-                  <Checkbox
-                    size="small"
-                    checked={
-                      commands.length > 0 && selected.length === commands.length
-                    }
-                    indeterminate={
-                      selected.length > 0 && selected.length < commands.length
-                    }
-                    onChange={(e) =>
-                      e.target.checked ? handleCheckAll() : handleUncheckAll()
-                    }
-                    sx={checkboxSx}
-                  />
-                </TH>
-                <TH>Id</TH>
-                <TH>Command</TH>
-                <TH style={{ borderRight: "none" }}>Modify</TH>
-              </tr>
-            </thead>
-            <tbody>
-              {commands.length === 0 ? (
+          {commands.length === 0 ? (
+            <>
+              <div
+                style={{
+                  color: "#3E5475",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  marginBottom: 16,
+                }}
+              >
+                No command configured!
+              </div>
+              <Btn
+                onClick={() => handleOpenModal()}
+                variant="cancel"
+                disabled={loading.save}
+                style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+              >
+                + Add New Command
+              </Btn>
+            </>
+          ) : (
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                minWidth: 900,
+              }}
+            >
+              <thead>
                 <tr>
-                  <td
-                    colSpan={4}
+                  <TH
                     style={{
-                      ...tdStyle,
+                      width: 40,
+                      padding: 0,
                       borderLeft: "none",
-                      borderRight: "none",
-                      borderBottom: "none",
-                      padding: "32px 14px",
-                      color: C.mutedText,
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
                     }}
                   >
-                    No data
-                  </td>
+                    <Checkbox
+                      size="small"
+                      checked={
+                        commands.length > 0 &&
+                        selected.length === commands.length
+                      }
+                      indeterminate={
+                        selected.length > 0 && selected.length < commands.length
+                      }
+                      onChange={(e) =>
+                        e.target.checked ? handleCheckAll() : handleUncheckAll()
+                      }
+                      sx={checkboxSx}
+                    />
+                  </TH>
+                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Id</TH>
+                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    Command
+                  </TH>
+                  <TH
+                    style={{
+                      width: 70,
+                      borderRight: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    Modify
+                  </TH>
                 </tr>
-              ) : (
-                pagedCommands.map((cmd, pageIdx) => {
+              </thead>
+              <tbody>
+                {pagedCommands.map((cmd, pageIdx) => {
                   const rowIdx = (page - 1) * itemsPerPage + pageIdx;
                   const isLastRow = pageIdx === pagedCommands.length - 1;
+                  const isSelected = selected.includes(rowIdx);
+                  const rowBg = isSelected
+                    ? "#f0f9ff"
+                    : pageIdx % 2 === 1
+                      ? "#f8fafc"
+                      : "#ffffff";
                   const lastRowCellStyle = isLastRow
                     ? { borderBottom: "none" }
                     : {};
+
                   return (
                     <tr
                       key={rowIdx}
-                      className="hover:bg-[#f8fafc] transition-colors"
+                      style={{
+                        background: rowBg,
+                        transition: "background 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected)
+                          e.currentTarget.style.background = "#f1f5f9";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected)
+                          e.currentTarget.style.background = rowBg;
+                      }}
                     >
                       <td
                         style={{
                           ...tdStyle,
-                          ...lastRowCellStyle,
+                          background: rowBg,
                           borderLeft: "none",
-                          ...(isLastRow ? { borderBottomLeftRadius: 0 } : {}),
+                          width: 36,
+                          ...lastRowCellStyle,
+                          ...(isLastRow
+                            ? { borderBottomLeftRadius: CARD_RADIUS }
+                            : {}),
                         }}
                       >
                         <Checkbox
                           size="small"
-                          checked={selected.includes(rowIdx)}
+                          checked={isSelected}
                           onChange={() => handleSelectRow(rowIdx)}
                           disabled={loading.delete}
                           sx={checkboxSx}
                         />
                       </td>
-                      <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                      <td
+                        style={{
+                          ...tdStyle,
+                          background: rowBg,
+                          ...lastRowCellStyle,
+                        }}
+                      >
                         {cmd.index}
                       </td>
-                      <td style={{ ...tdStyle, ...lastRowCellStyle }}>
+                      <td
+                        style={{
+                          ...tdStyle,
+                          background: rowBg,
+                          ...lastRowCellStyle,
+                        }}
+                      >
                         {cmd.command}
                       </td>
                       <td
                         style={{
                           ...tdStyle,
-                          ...lastRowCellStyle,
+                          background: rowBg,
                           borderRight: "none",
-                          ...(isLastRow ? { borderBottomRightRadius: 0 } : {}),
+                          ...lastRowCellStyle,
+                          ...(isLastRow
+                            ? { borderBottomRightRadius: CARD_RADIUS }
+                            : {}),
                         }}
                       >
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                          titleAccess="Edit"
-                          onClick={() => {
-                            if (!loading.delete) handleOpenModal(cmd, rowIdx);
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
                           }}
-                        />
+                        >
+                          <EditDocumentIcon
+                            titleAccess="Edit"
+                            onClick={() => {
+                              if (!loading.delete) handleOpenModal(cmd, rowIdx);
+                            }}
+                            style={{
+                              cursor: loading.delete
+                                ? "not-allowed"
+                                : "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: loading.delete ? 0.4 : 0.7,
+                              transition: "opacity 0.15s ease",
+                              pointerEvents: loading.delete ? "none" : "auto",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!loading.delete)
+                                e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!loading.delete)
+                                e.currentTarget.style.opacity = "0.7";
+                            }}
+                          />
+                        </div>
                       </td>
                     </tr>
                   );
-                })
-              )}
-            </tbody>
-          </table>
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* ── Footer ── */}
@@ -837,11 +945,12 @@ const AccessControl = () => {
             gap: 12,
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "10px 14px",
+            padding: "7px 14px",
             background: C.footerBg,
             borderTop: `1px solid ${C.cardBorder}`,
             borderBottomLeftRadius: CARD_RADIUS,
             borderBottomRightRadius: CARD_RADIUS,
+            overflow: "hidden",
           }}
         >
           <div
@@ -947,7 +1056,7 @@ const AccessControl = () => {
             borderRadius: "8px",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#f8fafc",
+            backgroundColor: "#ffffff",
             backgroundImage: "none",
           },
         }}
@@ -972,127 +1081,140 @@ const AccessControl = () => {
         </DialogTitle>
         <DialogContent
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-            p: 3,
-            pt: "24px !important",
-            backgroundColor: "#f8fafc",
+            p: "24px",
+            backgroundColor: "#ffffff",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+              marginTop: 22,
+            }}
+          >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                background: editIndex !== null ? "#f1f5f9" : "#ffffff",
-                border: "1px solid #cbd5e1",
-                borderRadius: 6,
-                padding: "6px 12px",
+                justifyContent: "center",
+                gap: 12,
               }}
             >
               <label
                 style={{
-                  width: 110,
-                  fontSize: 12,
+                  width: 170,
+                  fontSize: 13,
                   fontWeight: 600,
                   color: C.labelText,
                   textAlign: "left",
-                  marginRight: 10,
                   whiteSpace: "nowrap",
                 }}
               >
                 Index:
               </label>
-              <input
-                type="text"
-                value={form.index || ""}
-                onChange={(e) => handleChange("index", e.target.value)}
-                disabled={editIndex !== null}
-                placeholder="Auto-generated"
-                style={{
-                  flex: 1,
-                  fontSize: 13,
-                  padding: "6px 8px",
-                  borderRadius: 4,
-                  border: "1px solid #cbd5e1",
-                  background: editIndex !== null ? "#f1f5f9" : "#ffffff",
-                  color: editIndex !== null ? "#94a3b8" : "#1e293b",
-                  outline: "none",
-                  width: "100%",
-                  cursor: editIndex !== null ? "not-allowed" : "text",
-                  transition: "border-color 0.2s ease",
-                }}
-                onFocus={(e) => {
-                  if (editIndex === null)
-                    e.target.style.borderColor = "#0284c7";
-                }}
-                onBlur={(e) => {
-                  if (editIndex === null)
-                    e.target.style.borderColor = "#cbd5e1";
-                }}
-                onMouseEnter={(e) => {
-                  if (editIndex === null && document.activeElement !== e.target)
-                    e.target.style.borderColor = "#64748b";
-                }}
-                onMouseLeave={(e) => {
-                  if (editIndex === null && document.activeElement !== e.target)
-                    e.target.style.borderColor = "#cbd5e1";
-                }}
-              />
+              <div style={{ width: "min(100%, 320px)" }}>
+                <input
+                  type="text"
+                  value={form.index || ""}
+                  onChange={(e) => handleChange("index", e.target.value)}
+                  disabled={editIndex !== null}
+                  placeholder="Auto-generated"
+                  style={{
+                    fontSize: 13,
+                    padding: "0 8px",
+                    height: 32,
+                    borderRadius: 4,
+                    border: `1px solid ${C.cardBorder}`,
+                    background: editIndex !== null ? "#f1f5f9" : "#ffffff",
+                    color: editIndex !== null ? "#94a3b8" : "#1e293b",
+                    outline: "none",
+                    width: "100%",
+                    cursor: editIndex !== null ? "not-allowed" : "text",
+                    transition: "border-color 0.2s ease",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => {
+                    if (editIndex === null)
+                      e.target.style.borderColor = "#0284c7";
+                  }}
+                  onBlur={(e) => {
+                    if (editIndex === null)
+                      e.target.style.borderColor = C.cardBorder;
+                  }}
+                  onMouseEnter={(e) => {
+                    if (
+                      editIndex === null &&
+                      document.activeElement !== e.target
+                    )
+                      e.target.style.borderColor = "#64748b";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (
+                      editIndex === null &&
+                      document.activeElement !== e.target
+                    )
+                      e.target.style.borderColor = C.cardBorder;
+                  }}
+                />
+              </div>
             </div>
 
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                background: "#ffffff",
-                border: "1px solid #cbd5e1",
-                borderRadius: 6,
-                padding: "6px 12px",
+                justifyContent: "center",
+                gap: 12,
               }}
             >
               <label
                 style={{
-                  width: 110,
-                  fontSize: 12,
+                  width: 170,
+                  fontSize: 13,
                   fontWeight: 600,
                   color: C.labelText,
                   textAlign: "left",
-                  marginRight: 10,
                   whiteSpace: "nowrap",
                 }}
               >
                 Command:
               </label>
-              <input
-                type="text"
-                value={form.command || ""}
-                onChange={(e) => handleChange("command", e.target.value)}
-                placeholder="e.g., iptables -P OUTPUT ACCEPT"
-                style={{
-                  flex: 1,
-                  fontSize: 13,
-                  padding: "6px 8px",
-                  borderRadius: 4,
-                  border: "1px solid #cbd5e1",
-                  background: "#ffffff",
-                  color: "#1e293b",
-                  outline: "none",
-                  width: "100%",
-                  transition: "border-color 0.2s ease",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
-                onBlur={(e) => (e.target.style.borderColor = "#cbd5e1")}
-                onMouseEnter={(e) => {
-                  if (document.activeElement !== e.target)
-                    e.target.style.borderColor = "#64748b";
-                }}
-                onMouseLeave={(e) => {
-                  if (document.activeElement !== e.target)
-                    e.target.style.borderColor = "#cbd5e1";
-                }}
-              />
+              <div style={{ width: "min(100%, 320px)" }}>
+                <input
+                  type="text"
+                  value={form.command || ""}
+                  onChange={(e) => handleChange("command", e.target.value)}
+                  placeholder="e.g., iptables -P OUTPUT ACCEPT"
+                  style={{
+                    fontSize: 13,
+                    padding: "0 8px",
+                    height: 32,
+                    borderRadius: 4,
+                    border: `1px solid ${C.cardBorder}`,
+                    background: "#ffffff",
+                    color: "#1e293b",
+                    outline: "none",
+                    width: "100%",
+                    transition: "border-color 0.2s ease",
+                    boxSizing: "border-box",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
+                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
+                  onMouseEnter={(e) => {
+                    if (document.activeElement !== e.target)
+                      e.target.style.borderColor = "#64748b";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (document.activeElement !== e.target)
+                      e.target.style.borderColor = C.cardBorder;
+                  }}
+                />
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -1100,7 +1222,8 @@ const AccessControl = () => {
           sx={{
             justifyContent: "center",
             gap: 2,
-            p: 3,
+            py: "10px",
+            px: "16px",
             borderTop: `1px solid ${C.divider}`,
             backgroundColor: "#f8fafc",
           }}

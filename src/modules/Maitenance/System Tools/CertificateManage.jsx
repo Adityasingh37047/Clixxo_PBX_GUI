@@ -111,23 +111,25 @@ const tableContainerStyle = {
   maxWidth: "100%",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 20,
+  borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 24,
+  marginBottom: 8,
 };
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
   marginBottom: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "0 20px",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
@@ -215,7 +217,7 @@ const CertificateManage = () => {
             <span>Certificate Management</span>
           </div>
 
-          <div className="p-6">
+          <div className="px-5 pt-3 pb-2">
             <div className="w-full max-w-4xl mx-auto">
               {/* Form Fields Grid */}
               <form className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
@@ -250,7 +252,7 @@ const CertificateManage = () => {
 
               {/* Action Buttons */}
               <div
-                className="flex flex-col sm:flex-row justify-center gap-6 mt-6 pt-4"
+                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-0 mb-0"
                 style={{ borderTop: `1px solid ${C.divider}` }}
               >
                 {CERTIFICATE_BUTTONS.map((btn) => (
@@ -270,23 +272,22 @@ const CertificateManage = () => {
                   </Btn>
                 ))}
               </div>
-
-              {/* Note */}
-              <div className="w-full flex justify-center mt-6">
-                <span
-                  style={{
-                    color: C.errorRed,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    textAlign: "center",
-                    padding: "0 16px",
-                  }}
-                >
-                  {CERTIFICATE_NOTE}
-                </span>
-              </div>
             </div>
           </div>
+        </div>
+        {/* Note */}
+        <div className="w-full flex justify-center mt-2">
+          <span
+            style={{
+              color: C.errorRed,
+              fontSize: 13,
+              fontWeight: 500,
+              textAlign: "center",
+              padding: "0 16px",
+            }}
+          >
+            {CERTIFICATE_NOTE}
+          </span>
         </div>
       </div>
     </div>
