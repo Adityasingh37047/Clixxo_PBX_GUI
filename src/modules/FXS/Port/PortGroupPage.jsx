@@ -309,13 +309,23 @@ const PortGroupPage = () => {
       <div style={{ fontSize: 14, color: C.mutedText, marginBottom: 16 }}>
         No available port group!
       </div>
-      <Btn
-        onClick={handleAddNewClick}
-        variant="accent"
-        style={{ margin: "0 auto", padding: "6px 20px" }}
-      >
-        + Add New
-      </Btn>
+     <Btn
+  onClick={handleAddNewClick}
+  variant="accent"
+  style={{
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
+    margin: "0 auto",
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + Add New
+</Btn>
     </div>
   );
 
@@ -927,17 +937,23 @@ const PortGroupPage = () => {
                     cursor: "pointer",
                   }}
                 >
-                  <Checkbox
-                    size="small"
-                    checked={val}
-                    onChange={() => handlePortToggle(idx)}
-                    sx={{
-                      padding: "2px",
-                      marginRight: "4px",
-                      color: C.accent,
-                      "&.Mui-checked": { color: C.accent },
-                    }}
-                  />
+                 <Checkbox
+  size="small"
+  checked={val}
+  onChange={() => handlePortToggle(idx)}
+  sx={{
+    padding: "1px",
+    color: "#64748b",
+
+    "&.Mui-checked": {
+      color: "#0284c7",
+    },
+
+    "&.MuiCheckbox-indeterminate": {
+      color: "#0284c7",
+    },
+  }}
+/>
                   Port {idx + 1}(FXS)
                 </label>
               ))}
@@ -956,16 +972,37 @@ const PortGroupPage = () => {
           gap: 12,
         }}
       >
-        <Btn onClick={handleSave} style={{ padding: "8px 28px", fontSize: 13 }}>
-          Save
-        </Btn>
-        <Btn
-          onClick={handleCancel}
-          variant="outline"
-          style={{ padding: "8px 28px", fontSize: 13 }}
-        >
-          Cancel
-        </Btn>
+       <Btn
+  onClick={handleSave}
+  style={{
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  Save
+</Btn>
+       <Btn
+  onClick={handleCancel}
+  variant="outline"
+  style={{
+    height: 36,
+    padding: "0 16px",
+    fontSize: 13,
+    minWidth: 100,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Cancel
+</Btn>
       </div>
     </div>
   );

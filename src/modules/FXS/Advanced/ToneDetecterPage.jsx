@@ -531,9 +531,22 @@ const ToneDetecterPage = () => {
               >
                 No available tone detector parameter!
               </div>
-              <Btn onClick={() => handleOpenModal()} variant="accent">
-                + Add New
-              </Btn>
+             <Btn
+  onClick={() => handleOpenModal()}
+  variant="accent"
+  style={{
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + Add New
+</Btn>
             </div>
           ) : (
             <>
@@ -1052,27 +1065,24 @@ const ToneDetecterPage = () => {
   onClick={handleCloseModal}
   variant="outlined"
   sx={{
-    background: "#fff",
-    color: "#475569",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-
-    fontWeight: 600,
+    height: 36,
+    padding: "0 18px",
     fontSize: 13,
     textTransform: "none",
 
-    height: 36,
-    padding: "0 24px",
-    borderRadius: "6px",
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 
     "&:hover": {
-      background: "#f8fafc",
-      border: "1px solid #94a3b8",
-      color: "#1e293b",
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
     },
 
     "&:disabled": {
-      background: "#f8fafc",
+      background: "#e2e8f0",
       color: "#94a3b8",
       border: "1px solid #e2e8f0",
     },

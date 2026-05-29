@@ -18,14 +18,22 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
 // ── Color Palette (From Source) ───────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
   valueText: "#1e293b",
+  strongText: "#0f172a",
   mutedText: "#94a3b8",
+<<<<<<< HEAD
   strongText: "#0f172a",
   accent: "#1e293b",
+=======
+  accent: "#0284c7",
+  primary: "#2563eb",
+>>>>>>> 9845773c3393f4b48bcef7d18b0ff370a7806fb0
   errorRed: "#dc2626",
 };
 
@@ -39,57 +47,48 @@ const Btn = ({
   title,
   type = "button",
 }) => {
-  const variants = {
-    default: {
-      background: "#1e293b",
+  const styles = {
+    default: { background: C.cardBg, color: C.valueText, border: "1px solid #9ca3af" },
+    primary: {
+      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
-      border: "1px solid #9ca3af",
+      border: "1px solid #5A6F8F",
     },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
+    outline: { background: C.cardBg, color: C.labelText, border: `0.5px solid ${C.cardBorder}` },
   };
-  const s = variants[variant] || variants.default;
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = variant === "primary" ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)" : variant === "cancel" ? "#b6c2d3" : "#e2e8f0";
+
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
-      title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
         gap: 5,
-        transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.background = hoverBg; }}
+      onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.background = s.background; }}
     >
       {children}
     </button>
@@ -99,17 +98,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#f8fafc",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "12px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderRight: "1px solid #f1f5f9",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -118,33 +117,41 @@ const TH = ({ children, style: extra }) => (
 );
 
 const FieldRow = ({ label, children, style }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12, ...style }}>
+  <div style={{ 
+    display: "flex", 
+    alignItems: "center", 
+    background: "#ffffff",
+    border: `1px solid #cbd5e1`,
+    borderRadius: 6,
+    padding: "6px 12px",
+    gap: 12, 
+    minHeight: 40,
+    ...style 
+  }}>
     <label
       style={{
         fontSize: 13,
         fontWeight: 600,
-        color: C.labelText,
-        width: 170,
+        color: "#1e293b",
+        width: 160,
         flexShrink: 0,
       }}
     >
-      {label}
+      {label}:
     </label>
-    <div style={{ flex: 1 }}>{children}</div>
+    <div className="flex-1" style={{ maxWidth: 280 }}>{children}</div>
   </div>
 );
 
 const inputStyle = {
-  height: 32,
-  padding: "0 8px",
+  width: "100%",
   fontSize: 13,
-  border: `1px solid ${C.cardBorder}`,
+  padding: "6px 8px",
+  border: "1px solid #cbd5e1",
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "#fff",
-  color: C.valueText,
-  boxSizing: "border-box",
-  width: "100%",
+  color: "#1e293b",
+  background: "#ffffff",
 };
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -505,6 +512,7 @@ const RouteIpPstnPage = () => {
             gap: 4,
           }}
         >
+<<<<<<< HEAD
           <span>FXS</span>
           <span>&gt;</span>
           <span>Route</span>
@@ -512,98 +520,156 @@ const RouteIpPstnPage = () => {
           <span style={{ color: C.strongText, fontWeight: 600 }}>
             IP-&gt;Tel Routing Rule
           </span>
+=======
+            <div style={{ fontSize: 12, color: C.mutedText, display: "flex", gap: 4 }}>
+              <span>FXS</span>
+              <span>&gt;</span>
+              <span>Route</span>
+              <span>&gt;</span>
+              <span style={{ color: C.strongText, fontWeight: 600 }}>
+                IP-&gt;Tel Routing
+            </span>
+          </div>
+>>>>>>> 9845773c3393f4b48bcef7d18b0ff370a7806fb0
         </div>
 
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            background: "#ffffff",
+            borderRadius: 22,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            border: `1px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
-              flexWrap: "wrap",
-              gap: 8,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
-                }}
-              >
-                IP-&gt;Tel Routing Rule · {rules.length} records
-              </span>
-              {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
-                  }}
-                >
-                  {selected.length} selected
-                </span>
-              )}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              <Btn onClick={handleCheckAll} variant="outline">
-                Check All
-              </Btn>
-              <Btn onClick={handleUncheckAll} variant="outline">
-                Uncheck All
-              </Btn>
-              <Btn onClick={handleInverse} variant="outline">
-                Inverse
-              </Btn>
-              <Btn
-                onClick={handleDelete}
-                disabled={selected.length === 0}
-                variant="danger"
-              >
-                🗑 Delete
-              </Btn>
-              <Btn
-                onClick={handleClearAll}
-                disabled={rules.length === 0}
-                variant="danger"
-              >
-                Clear All
-              </Btn>
-              <Btn onClick={() => handleOpenModal()} variant="accent">
-                + Add New
-              </Btn>
-            </div>
-          </div>
+     <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "14px 18px",
+    borderBottom: "1px solid #e2e8f0",
+    background: "#ffffff",
+    flexWrap: "wrap",
+    gap: 10,
+  }}
+>
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    {selected.length > 0 && (
+      <span
+        style={{
+          background: "#eff6ff",
+          color: C.accent,
+          fontSize: 11,
+          fontWeight: 700,
+          padding: "5px 12px",
+          borderRadius: 999,
+          border: `1px solid ${C.accent}`,
+        }}
+      >
+        {selected.length} selected
+      </span>
+    )}
+  </div>
 
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      flexWrap: "wrap",
+    }}
+  >
+{/* Common button sx */}
+{[
+  { label: "Check All", onClick: handleCheckAll },
+  { label: "Uncheck All", onClick: handleUncheckAll },
+  { label: "Inverse", onClick: handleInverse },
+].map((btn) => (
+  <Btn
+    key={btn.label}
+    onClick={btn.onClick}
+    sx={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+      "&:hover": {
+        background: "#cbd5e1",
+        color: "#374151",
+        border: "1px solid #cbd5e1",
+        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      },
+    }}
+  >
+    {btn.label}
+  </Btn>
+))}
+
+<Btn
+  onClick={handleDelete}
+  disabled={selected.length === 0}
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+    "&:hover": {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  }}
+>
+  🗑 Delete
+</Btn>
+
+<Btn
+  onClick={handleClearAll}
+  disabled={rules.length === 0}
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+    "&:hover": {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  }}
+>
+  Clear All
+</Btn>
+
+<Btn
+  onClick={() => handleOpenModal()}
+  variant="outline"
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+    "&:hover": {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  }}
+>
+  + Add New
+</Btn>
+  </div>
+</div>
           {/* Table Container with Custom Scrollbar preserved */}
           <div
             style={{ width: "100%", display: "flex", flexDirection: "column" }}
@@ -686,17 +752,15 @@ const RouteIpPstnPage = () => {
                         <tr
                           key={realIdx}
                           style={{
-                            background: rowBg,
-                            borderBottom: "0.5px solid #9ca3af",
-                            transition: "background 0.1s ease",
+                            background: idx % 2 === 1 ? "#f8fafc" : "#ffffff",
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f0f9ff";
+                            if (!isSelected) e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            if (!isSelected) e.currentTarget.style.background = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
                           }}
                         >
                           <td
@@ -905,7 +969,7 @@ const RouteIpPstnPage = () => {
                     background: "#e0f2fe",
                     padding: "5px 14px",
                     borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
+                      border: `1px solid ${C.cardBorder}`,
                   }}
                 >
                   Page {page} of {totalPages}
@@ -925,14 +989,14 @@ const RouteIpPstnPage = () => {
                   Last
                 </Btn>
                 <span
-                  style={{ fontSize: 11, color: C.mutedText, marginLeft: 8 }}
+                    style={{ fontSize: 11, color: C.mutedText }}
                 >
-                  Go to Page:
+                    Go to
                 </span>
                 <select
                   style={{
                     fontSize: 11,
-                    padding: "2px 6px",
+                      padding: "3px 6px",
                     borderRadius: 4,
                     border: `1px solid ${C.cardBorder}`,
                     background: "#fff",
@@ -959,7 +1023,7 @@ const RouteIpPstnPage = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 550, maxWidth: "95vw", borderRadius: 2 } }}
+        PaperProps={{ sx: { width: 550, maxWidth: "95vw", borderRadius: "12px", overflow: "hidden" } }}
         disableRestoreFocus
         disableEnforceFocus
       >
@@ -967,16 +1031,16 @@ const RouteIpPstnPage = () => {
           style={{
             background: "#1e2d42",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 600,
             fontSize: 16,
             textAlign: "center",
-            padding: "14px 24px",
+            padding: "16px 24px",
           }}
         >
           IP-&gt;Tel Routing Rule
         </DialogTitle>
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px", backgroundColor: "#f8fafc" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
@@ -991,7 +1055,7 @@ const RouteIpPstnPage = () => {
                 style={{
                   fontSize: 13,
                   fontWeight: 700,
-                  color: C.labelText,
+                  color: C.strongText,
                   marginBottom: 14,
                   borderBottom: `1px solid ${C.cardBorder}`,
                   paddingBottom: 6,
@@ -1002,7 +1066,7 @@ const RouteIpPstnPage = () => {
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 14 }}
               >
-                <FieldRow label="Index:">
+                <FieldRow label="Index">
                   <FormControl size="small" fullWidth>
                     <MuiSelect
                       value={indexSelect || ""}
@@ -1029,7 +1093,7 @@ const RouteIpPstnPage = () => {
                   </FormControl>
                 </FieldRow>
 
-                <FieldRow label="Description:">
+                <FieldRow label="Description">
                   <input
                     type="text"
                     name="description"
@@ -1039,7 +1103,7 @@ const RouteIpPstnPage = () => {
                   />
                 </FieldRow>
 
-                <FieldRow label="Source IP:">
+                <FieldRow label="Source IP">
                   <div
                     style={{
                       display: "flex",
@@ -1061,7 +1125,7 @@ const RouteIpPstnPage = () => {
                   </div>
                 </FieldRow>
 
-                <FieldRow label="CallerID Prefix:">
+                <FieldRow label="CallerID Prefix">
                   <input
                     type="text"
                     name="callerIdPrefix"
@@ -1071,7 +1135,7 @@ const RouteIpPstnPage = () => {
                   />
                 </FieldRow>
 
-                <FieldRow label="CalleeID Prefix:">
+                <FieldRow label="CalleeID Prefix">
                   <input
                     type="text"
                     name="calleeIdPrefix"
@@ -1081,7 +1145,7 @@ const RouteIpPstnPage = () => {
                   />
                 </FieldRow>
 
-                <FieldRow label="Route by Number:">
+                <FieldRow label="Route by Number">
                   <label
                     style={{
                       display: "flex",
@@ -1098,9 +1162,9 @@ const RouteIpPstnPage = () => {
                       onChange={handleInputChange}
                       sx={{
                         padding: "2px",
-                        marginRight: "4px",
-                        color: C.accent,
-                        "&.Mui-checked": { color: C.accent },
+                        marginRight: "6px",
+                        color: "#64748b",
+                        "&.Mui-checked": { color: "#0284c7" },
                       }}
                     />
                     Enable
@@ -1108,7 +1172,7 @@ const RouteIpPstnPage = () => {
                 </FieldRow>
 
                 {formData.routeByNumber && (
-                  <FieldRow label="Call Destination:">
+                  <FieldRow label="Call Destination">
                     <FormControl size="small" fullWidth>
                       <MuiSelect
                         value={formData.callDestination || ""}
@@ -1150,22 +1214,23 @@ const RouteIpPstnPage = () => {
         <DialogActions
           style={{
             padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+                  background: "#f8fafc",
+                  borderTop: "1px solid #e2e8f0",
             justifyContent: "center",
             gap: 12,
           }}
         >
           <Btn
             onClick={handleSave}
-            style={{ padding: "8px 36px", fontSize: 13 }}
+                  variant="primary"
+                  style={{ minWidth: 120, height: 36, fontSize: 14 }}
           >
             Save
           </Btn>
           <Btn
             onClick={handleCloseModal}
-            variant="outline"
-            style={{ padding: "8px 36px", fontSize: 13 }}
+                  variant="cancel"
+                  style={{ minWidth: 120, height: 36, fontSize: 14 }}
           >
             Cancel
           </Btn>

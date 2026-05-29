@@ -7,14 +7,22 @@ import { Select as MuiSelect, MenuItem, FormControl } from "@mui/material";
 
 // ── Color Palette (From Source) ───────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
   valueText: "#1e293b",
+  strongText: "#0f172a",
   mutedText: "#94a3b8",
+<<<<<<< HEAD
   strongText: "#0f172a",
   accent: "#1e293b",
+=======
+  accent: "#0284c7",
+  primary: "#2563eb",
+>>>>>>> 9845773c3393f4b48bcef7d18b0ff370a7806fb0
   errorRed: "#dc2626",
 };
 
@@ -304,11 +312,20 @@ const RouteRoutingParameterPage = () => {
               }}
             >
               <Btn
-                onClick={handleSave}
-                style={{ padding: "8px 36px", fontSize: 13 }}
-              >
-                Save
-              </Btn>
+  onClick={handleSave}
+  style={{
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  Save
+</Btn>
             </div>
           </div>
         </div>

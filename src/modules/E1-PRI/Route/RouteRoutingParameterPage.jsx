@@ -3,25 +3,35 @@ import {
   ROUTE_SETTINGS_OPTIONS,
   ROUTE_SETTINGS_DEFAULTS,
 } from "../../../constants/RouteRoutingParameterPageConstants";
+<<<<<<< HEAD
 import { Select, MenuItem, FormControl, Alert } from "@mui/material";
+=======
+import {
+  Select,
+  MenuItem,
+  FormControl,
+  Button,
+  CircularProgress,
+} from "@mui/material";
+>>>>>>> 9845773c3393f4b48bcef7d18b0ff370a7806fb0
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
   valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#3E5475",
+  accent: "#0284c7",
   primary: "#2563eb",
-  primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
 
+<<<<<<< HEAD
 const CARD_RADIUS = 20;
 
 const Btn = ({
@@ -134,116 +144,224 @@ const blueBarStyle = {
   color: "#3E5475",
   borderBottom: `1px solid ${C.cardBorder}`,
 };
+=======
+>>>>>>> 9845773c3393f4b48bcef7d18b0ff370a7806fb0
 
 const RouteRoutingParameterPage = () => {
   const [settings, setSettings] = useState({ ...ROUTE_SETTINGS_DEFAULTS });
+  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
 
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  const SectionHeading = ({ title }) => (
+    <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+      <span
+        style={{
+          position: "absolute",
+          top: -10,
+          left: 0,
+          background: "#fff",
+          paddingRight: 8,
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.mutedText,
+        }}
+      >
+        {title}
+      </span>
+    </div>
+  );
+
+  const handleSave = () => {
+    setLoading(true);
+    // Simulate save logic
+    setTimeout(() => {
+      setSaved(true);
+      setLoading(false);
+      alert("Settings Saved Successfully!");
+    }, 800);
   };
 
   const handleChange = (name, value) => {
     setSettings((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSave = (e) => {
-    if (e) e.preventDefault();
-    setLoading(true);
-    // Simulate save logic
-    setTimeout(() => {
-      setLoading(false);
-      showToast("Route settings saved successfully!");
-    }, 800);
-  };
-
-  const selectSx = {
-    width: "100%",
-    height: 36,
-    fontSize: 13,
-    backgroundColor: C.cardBg,
-    "& .MuiOutlinedInput-notchedOutline": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-    "& .MuiSelect-select": {
-      fontSize: 13,
-      color: C.valueText,
-      padding: "6px 10px",
-      textAlign: "center",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "24px", // To match 36px total height
-    },
+    setSaved(false);
   };
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
     >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
+      <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
         {/* Breadcrumb */}
         <div
           style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
             display: "flex",
             alignItems: "center",
-            gap: 4,
+            justifyContent: "space-between",
+            marginBottom: 12,
           }}
         >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>Route</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Route Settings
-          </span>
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            E1-PRI &rsaquo; Route &rsaquo;{" "}
+            <span style={{ color: C.valueText, fontWeight: 600 }}>
+              Route Settings
+            </span>
+          </div>
         </div>
 
-        {/* Global Toast */}
-        {toast.msg && (
-          <Alert
-            severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
-            sx={{
-              position: "fixed",
-              top: 16,
-              right: 16,
-              zIndex: 9999,
-              boxShadow: C.cardShadow,
-            }}
-          >
-            {toast.msg}
-          </Alert>
-        )}
+        {/* Main Card */}
+        <div
+          style={{
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{ padding: "24px 28px" }}>
+            <SectionHeading title="Route Settings" />
 
-        <div style={tableContainerStyle}>
-          {/* Header */}
-          <div style={blueBarStyle}>Route Settings</div>
+            <div style={{ padding: "24px 32px" }}>
+              <div className="flex-1 py-4 px-16">
+                <div className="space-y-6">
+                  {/* IP Incoming */}
+                  <div className="flex items-center justify-between">
+                    <label
+                      className="text-sm text-gray-600 font-semibold text-left whitespace-nowrap"
+                      style={{
+                        width: "320px",
+                        marginRight: "10px",
+                        lineHeight: "1.4",
+                      }}
+                    >
+                      IP Incoming
+                    </label>
+                    <FormControl size="small">
+                      <Select
+                        name="ipIncoming"
+                        value={settings.ipIncoming}
+                        onChange={(e) =>
+                          handleChange("ipIncoming", e.target.value)
+                        }
+                        variant="outlined"
+                        style={{ width: "240px", height: "36px" }}
+                        sx={{
+                          fontSize: 14,
+                          height: 36,
+                          backgroundColor: "#ffffff",
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#ffffff",
+                            height: 36,
+                            "& fieldset": { borderColor: "#9ca3af" },
+                            "&:hover fieldset": { borderColor: "#1e293b" },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#1e293b",
+                            },
+                          },
+                          "& .MuiSelect-select": {
+                            backgroundColor: "#ffffff",
+                            padding: "6px 12px",
+                            height: "auto",
+                            display: "flex",
+                            alignItems: "center",
+                            fontSize: "14px",
+                            fontWeight: 500,
+                          },
+                        }}
+                      >
+                        {ROUTE_SETTINGS_OPTIONS.map((opt) => (
+                          <MenuItem
+                            key={opt.value}
+                            value={opt.value}
+                            sx={{ fontSize: 14 }}
+                          >
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </div>
 
-          <form
-            onSubmit={handleSave}
+                  {/* PSTN Incoming */}
+                  <div className="flex items-center justify-between">
+                    <label
+                      className="text-sm text-gray-600 font-semibold text-left whitespace-nowrap"
+                      style={{
+                        width: "320px",
+                        marginRight: "10px",
+                        lineHeight: "1.4",
+                      }}
+                    >
+                      PSTN Incoming
+                    </label>
+                    <FormControl size="small">
+                      <Select
+                        name="pstnIncoming"
+                        value={settings.pstnIncoming}
+                        onChange={(e) =>
+                          handleChange("pstnIncoming", e.target.value)
+                        }
+                        variant="outlined"
+                        style={{ width: "240px", height: "36px" }}
+                        sx={{
+                          fontSize: 14,
+                          height: 36,
+                          backgroundColor: "#ffffff",
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#ffffff",
+                            height: 36,
+                            "& fieldset": { borderColor: "#9ca3af" },
+                            "&:hover fieldset": { borderColor: "#1e293b" },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#1e293b",
+                            },
+                          },
+                          "& .MuiSelect-select": {
+                            backgroundColor: "#ffffff",
+                            padding: "6px 12px",
+                            height: "auto",
+                            display: "flex",
+                            alignItems: "center",
+                            fontSize: "14px",
+                            fontWeight: 500,
+                          },
+                        }}
+                      >
+                        {ROUTE_SETTINGS_OPTIONS.map((opt) => (
+                          <MenuItem
+                            key={opt.value}
+                            value={opt.value}
+                            sx={{ fontSize: 14 }}
+                          >
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Actions Footer */}
+          <div
             style={{
-              padding: "32px 24px",
-              maxWidth: 500,
-              width: "100%",
-              margin: "0 auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              padding: "16px 24px",
+              borderTop: `1px solid ${C.cardBorder}`,
+              background: "#f8fafc",
             }}
           >
+<<<<<<< HEAD
             <div className="space-y-4">
               {/* IP Incoming */}
               <div className="flex items-center" style={{ flexWrap: "wrap" }}>
@@ -286,66 +404,38 @@ const RouteRoutingParameterPage = () => {
                   </FormControl>
                 </div>
               </div>
+=======
+            <Button
+  variant="contained"
+  onClick={handleSave}
+  disabled={loading}
+  startIcon={
+    loading && <CircularProgress size={16} color="inherit" />
+  }
+  sx={{
+    height: 36,
+    padding: "0 24px",
+    minWidth: 100,
+    fontSize: 13,
+    fontWeight: 600,
+    textTransform: "none",
+    borderRadius: 1.5,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+>>>>>>> 9845773c3393f4b48bcef7d18b0ff370a7806fb0
 
-              {/* PSTN Incoming */}
-              <div className="flex items-center" style={{ flexWrap: "wrap" }}>
-                <label
-                  style={{
-                    width: "auto",
-                    minWidth: 130,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    textAlign: "left",
-                    marginRight: 10,
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                  }}
-                >
-                  PSTN Incoming:
-                </label>
-                <div className="flex-1 flex flex-col">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      name="pstnIncoming"
-                      value={settings.pstnIncoming}
-                      onChange={(e) =>
-                        handleChange("pstnIncoming", e.target.value)
-                      }
-                      variant="outlined"
-                      sx={selectSx}
-                    >
-                      {ROUTE_SETTINGS_OPTIONS.map((opt) => (
-                        <MenuItem
-                          key={opt.value}
-                          value={opt.value}
-                          sx={{ fontSize: 13 }}
-                        >
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-center mt-8 gap-4">
-              <Btn
-                variant="primary"
-                disabled={loading}
-                type="submit"
-                style={{
-                  minWidth: 110,
-                  height: 36,
-                  fontSize: 13,
-                  letterSpacing: "0.2px",
-                }}
-              >
-                {loading ? "Saving..." : "Save"}
-              </Btn>
-            </div>
-          </form>
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    },
+  }}
+>
+  {loading ? "Saving..." : "Save"}
+</Button>
+          </div>
         </div>
       </div>
     </div>
