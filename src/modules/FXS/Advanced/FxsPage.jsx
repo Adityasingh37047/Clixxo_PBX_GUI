@@ -1,69 +1,28 @@
 import React, { useState } from "react";
 import {
   Alert,
-  Button,
   FormControl,
   MenuItem,
   Select as MuiSelect,
   Checkbox,
   TextField,
 } from "@mui/material";
-import { FXS_INITIAL_FORM } from "../../../sections/advanced/constants/FxsConstants"; // Adjust path if needed
-
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#2563eb",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
-};
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 240, // Increased width for longer FXS labels
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
+import { FXS_INITIAL_FORM } from "../../../sections/advanced/constants/FxsConstants";
+import {
+  C,
+  Btn,
+  checkboxSx,
+  muiSelectSx,
+  muiTextFieldSx,
+  numManipulateCardStyle,
+  AdvancedBreadcrumb,
+  FieldRow,
+  SectionHeading,
+  advancedFormPanelStyle,
+  advancedFormActionsStyle,
+  advancedPageWrapStyle,
+  advancedPageInnerStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
 const FxsPage = () => {
   // Form state
@@ -269,15 +228,8 @@ const FxsPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Error / Success Banner */}
+    <div style={advancedPageWrapStyle}>
+      <div style={advancedPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
@@ -295,37 +247,15 @@ const FxsPage = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Advanced &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>FXS</span>
-          </div>
-        </div>
+        <AdvancedBreadcrumb current="FXS" />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ padding: "24px 28px" }}>
+        <div style={numManipulateCardStyle}>
+          <div style={{ padding: 24 }}>
             <SectionHeading title="FXS Settings" />
 
-            {/* 2-Column Grid Layout for Form Fields */}
             <div
               style={{
+                ...advancedFormPanelStyle,
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: "16px 40px",
@@ -339,6 +269,7 @@ const FxsPage = () => {
                   <TextField
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.toneEnergy}
                     onChange={(e) =>
                       handleFieldChange("toneEnergy", e.target.value)
@@ -364,22 +295,7 @@ const FxsPage = () => {
     )
   }
   size="small"
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  }}
+  sx={checkboxSx}
 />
                     <span
                       style={{
@@ -404,6 +320,7 @@ const FxsPage = () => {
                     <TextField
                       size="small"
                       fullWidth
+                      sx={muiTextFieldSx}
                       value={formData.ringMode}
                       onChange={(e) =>
                         handleFieldChange("ringMode", e.target.value)
@@ -432,22 +349,7 @@ const FxsPage = () => {
     )
   }
   size="small"
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  }}
+  sx={checkboxSx}
 />
                     <span
                       style={{
@@ -472,6 +374,7 @@ const FxsPage = () => {
                     <TextField
                       size="small"
                       fullWidth
+                      sx={muiTextFieldSx}
                       value={formData.minHangupTime}
                       onChange={(e) =>
                         handleFieldChange("minHangupTime", e.target.value)
@@ -491,6 +394,7 @@ const FxsPage = () => {
                       <TextField
                         size="small"
                         fullWidth
+                        sx={muiTextFieldSx}
                         value={formData.hookFlashMinTime}
                         onChange={(e) =>
                           handleFieldChange("hookFlashMinTime", e.target.value)
@@ -506,6 +410,7 @@ const FxsPage = () => {
                       <TextField
                         size="small"
                         fullWidth
+                        sx={muiTextFieldSx}
                         value={formData.hookFlashMaxTime}
                         onChange={(e) =>
                           handleFieldChange("hookFlashMaxTime", e.target.value)
@@ -530,7 +435,7 @@ const FxsPage = () => {
                           e.target.value,
                         )
                       }
-                      sx={{ fontSize: 13 }}
+                      sx={muiSelectSx}
                     >
                       <MenuItem value="0" sx={{ fontSize: 13 }}>
                         IMS Ringback
@@ -560,22 +465,7 @@ const FxsPage = () => {
     )
   }
   size="small"
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  }}
+  sx={checkboxSx}
 />
                     <span
                       style={{
@@ -604,7 +494,7 @@ const FxsPage = () => {
                           onChange={(e) =>
                             handleFieldChange("callForwardKey", e.target.value)
                           }
-                          sx={{ fontSize: 13 }}
+                          sx={muiSelectSx}
                         >
                           <MenuItem value="35" sx={{ fontSize: 13 }}>
                             #
@@ -625,7 +515,7 @@ const FxsPage = () => {
                               e.target.value,
                             )
                           }
-                          sx={{ fontSize: 13 }}
+                          sx={muiSelectSx}
                         >
                           <MenuItem value="0" sx={{ fontSize: 13 }}>
                             Call Forward with Negotiation
@@ -646,7 +536,7 @@ const FxsPage = () => {
                       onChange={(e) =>
                         handleFieldChange("cidTransmitMode", e.target.value)
                       }
-                      sx={{ fontSize: 13 }}
+                      sx={muiSelectSx}
                     >
                       <MenuItem value="0" sx={{ fontSize: 13 }}>
                         DTMF
@@ -669,7 +559,7 @@ const FxsPage = () => {
                             e.target.value,
                           )
                         }
-                        sx={{ fontSize: 13 }}
+                        sx={muiSelectSx}
                       >
                         <MenuItem value="0" sx={{ fontSize: 13 }}>
                           Before ring
@@ -695,22 +585,7 @@ const FxsPage = () => {
     )
   }
   size="small"
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  }}
+  sx={checkboxSx}
 />
                     <span
                       style={{
@@ -734,6 +609,7 @@ const FxsPage = () => {
                   <TextField
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.offHookDitherSignalDuration}
                     onChange={(e) =>
                       handleFieldChange(
@@ -759,7 +635,7 @@ const FxsPage = () => {
                           e.target.value,
                         )
                       }
-                      sx={{ fontSize: 13 }}
+                      sx={muiSelectSx}
                     >
                       <MenuItem value="0" sx={{ fontSize: 13 }}>
                         Internal Handling
@@ -781,7 +657,7 @@ const FxsPage = () => {
                           e.target.value,
                         )
                       }
-                      sx={{ fontSize: 13 }}
+                      sx={muiSelectSx}
                     >
                       <MenuItem value="0" sx={{ fontSize: 13 }}>
                         Not Light Up
@@ -806,22 +682,7 @@ const FxsPage = () => {
     )
   }
   size="small"
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  }}
+  sx={checkboxSx}
 />
                     <span
                       style={{
@@ -854,22 +715,7 @@ const FxsPage = () => {
     )
   }
   size="small"
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  }}
+  sx={checkboxSx}
 />
                     <span
                       style={{
@@ -902,22 +748,7 @@ const FxsPage = () => {
     )
   }
   size="small"
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  }}
+  sx={checkboxSx}
 />
                     <span
                       style={{
@@ -940,67 +771,21 @@ const FxsPage = () => {
             </div>
           </div>
 
-          {/* Bottom Actions Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              padding: "16px 24px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              background: "#f8fafc",
-            }}
-          >
-          <Button
-  variant="contained"
-  onClick={handleSave}
-  sx={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-    padding: "8px 28px",
-    minWidth: 120,
-    borderRadius: "6px",
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      opacity: 0.85,
-    },
-  }}
->
-  Save Settings
-</Button>
-       <Button
-  variant="outlined"
-  onClick={handleReset}
-  sx={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-    padding: "8px 28px",
-    minWidth: 110,
-    borderRadius: "6px",
-
-    "&:hover": {
-      background: "#cbd5e1",
-      border: "1px solid #cbd5e1",
-      opacity: 0.85,
-    },
-  }}
->
-  Reset
-</Button>
+          <div style={advancedFormActionsStyle}>
+            <Btn
+              variant="primary"
+              onClick={handleSave}
+              style={{ height: 33, minWidth: 100 }}
+            >
+              Save Settings
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={handleReset}
+              style={{ height: 33, minWidth: 100 }}
+            >
+              Reset
+            </Btn>
           </div>
         </div>
       </div>

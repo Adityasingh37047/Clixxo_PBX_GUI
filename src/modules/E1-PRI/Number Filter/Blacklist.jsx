@@ -59,7 +59,7 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
+      // borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -735,10 +735,22 @@ const Blacklist = () => {
                             sx={checkboxSx}
                           />
                         </td>
-                        <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {row.groupNo}
                         </td>
-                        <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {row[idKey]}
                         </td>
                         <td
@@ -1065,7 +1077,7 @@ const Blacklist = () => {
           <Btn
             onClick={handleSave}
             variant="primary"
-            style={{ width: 120, height: 38 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -1077,7 +1089,7 @@ const Blacklist = () => {
           <Btn
             onClick={() => setShowModal(false)}
             variant="cancel"
-            style={{ width: 120, height: 38 }}
+            style={{ width: 100, height: 33 }}
             disabled={isLoading}
           >
             Cancel

@@ -584,7 +584,7 @@ const SignalingCapture = () => {
                     variant="primary"
                     onClick={handleStartCapture}
                     disabled={isCapturing}
-                    style={{ minWidth: 100, height: 36, fontSize: 13 }}
+                    style={{ minWidth: 100, height: 32, fontSize: 12 }}
                   >
                     {SC_BUTTONS.start}
                   </Btn>
@@ -592,7 +592,7 @@ const SignalingCapture = () => {
                     variant="cancel"
                     onClick={handleStopCapture}
                     disabled={!isCapturing}
-                    style={{ minWidth: 100, height: 36, fontSize: 13 }}
+                    style={{ minWidth: 100, height: 32, fontSize: 12 }}
                   >
                     {SC_BUTTONS.stop}
                   </Btn>
@@ -677,8 +677,7 @@ const SignalingCapture = () => {
                 key={i}
                 className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 last:pb-0"
                 style={{
-                  borderBottom:
-                    i === 0 ? `1px solid ${C.divider}` : "none",
+                  borderBottom: i === 0 ? `1px solid ${C.divider}` : "none",
                 }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
@@ -723,13 +722,13 @@ const SignalingCapture = () => {
                 <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
                   <Btn
                     variant="primary"
-                    style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                    style={{ minWidth: 100, height: 33, fontSize: 12 }}
                   >
                     {SC_BUTTONS.start}
                   </Btn>
                   <Btn
                     variant="cancel"
-                    style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                    style={{ minWidth: 100, height: 33, fontSize: 12 }}
                   >
                     {SC_BUTTONS.stop}
                   </Btn>
@@ -750,8 +749,7 @@ const SignalingCapture = () => {
                 key={i}
                 className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 last:pb-0"
                 style={{
-                  borderBottom:
-                    i === 0 ? `1px solid ${C.divider}` : "none",
+                  borderBottom: i === 0 ? `1px solid ${C.divider}` : "none",
                 }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
@@ -796,13 +794,13 @@ const SignalingCapture = () => {
                 <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
                   <Btn
                     variant="primary"
-                    style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                    style={{ minWidth: 100, height: 33, fontSize: 12 }}
                   >
                     {SC_BUTTONS.start}
                   </Btn>
                   <Btn
                     variant="cancel"
-                    style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                    style={{ minWidth: 100, height: 33, fontSize: 12 }}
                   >
                     {SC_BUTTONS.stop}
                   </Btn>
@@ -816,13 +814,13 @@ const SignalingCapture = () => {
         <div className="flex justify-center items-center gap-6 mt-4 mb-12 flex-wrap">
           <Btn
             variant="primary"
-            style={{ minWidth: 120, height: 38, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {SC_BUTTONS.clean}
           </Btn>
           <Btn
             variant="cancel"
-            style={{ minWidth: 120, height: 38, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {SC_BUTTONS.download}
           </Btn>

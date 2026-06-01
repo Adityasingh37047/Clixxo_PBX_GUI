@@ -1262,16 +1262,16 @@ const Management = () => {
               borderRadius: 4,
               borderColor: fieldErrors[field.name] ? C.errorRed : C.cardBorder,
             }}
-          onFocus={
-            form[nextField.name] ? inputInteraction.onFocus : undefined
-          }
-          onBlur={form[nextField.name] ? inputInteraction.onBlur : undefined}
-          onMouseEnter={
-            form[nextField.name] ? inputInteraction.onMouseEnter : undefined
-          }
-          onMouseLeave={
-            form[nextField.name] ? inputInteraction.onMouseLeave : undefined
-          }
+            onFocus={
+              form[nextField.name] ? inputInteraction.onFocus : undefined
+            }
+            onBlur={form[nextField.name] ? inputInteraction.onBlur : undefined}
+            onMouseEnter={
+              form[nextField.name] ? inputInteraction.onMouseEnter : undefined
+            }
+            onMouseLeave={
+              form[nextField.name] ? inputInteraction.onMouseLeave : undefined
+            }
             step="1"
           />
         </div>
@@ -1702,7 +1702,7 @@ const Management = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading}
-            style={{ minWidth: 120, height: 36, fontSize: 14 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             Save
           </Btn>
@@ -1710,7 +1710,7 @@ const Management = () => {
             variant="cancel"
             onClick={handleReset}
             disabled={loading}
-            style={{ minWidth: 120, height: 36, fontSize: 14 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             Reset
           </Btn>

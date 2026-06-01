@@ -41,7 +41,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -300,7 +301,7 @@ const ModificationRecord = () => {
             variant="primary"
             onClick={handleCheck}
             disabled={loading}
-            style={{ minWidth: 120, height: 36, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {loading ? (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -315,7 +316,7 @@ const ModificationRecord = () => {
             variant="cancel"
             onClick={handleDownload}
             disabled={loading}
-            style={{ minWidth: 120, height: 36, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {loading ? (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

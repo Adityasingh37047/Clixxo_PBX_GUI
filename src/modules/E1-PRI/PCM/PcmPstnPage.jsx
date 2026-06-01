@@ -64,7 +64,6 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -832,7 +831,9 @@ const PcmPstnPage = () => {
                   background: rowBg,
                   borderRight: "none",
                   ...lastRowCellStyle,
-                  ...(isLastRow ? { borderBottomRightRadius: CARD_RADIUS } : {}),
+                  ...(isLastRow
+                    ? { borderBottomRightRadius: CARD_RADIUS }
+                    : {}),
                 }}
               >
                 <div
@@ -851,9 +852,7 @@ const PcmPstnPage = () => {
                       opacity: 0.7,
                       transition: "opacity 0.15s ease",
                     }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.opacity = "1")
-                    }
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.opacity = "0.7")
                     }
@@ -1258,48 +1257,48 @@ const PcmPstnPage = () => {
                         zIndex: 10,
                       }}
                     >
-                        <Checkbox
-                          size="small"
-                          checked={
-                            data.length > 0 &&
-                            data.every((row) =>
-                              selectedItems.includes(row.span_id || row.span?.id),
-                            )
-                          }
-                          indeterminate={
-                            data.some((row) =>
-                              selectedItems.includes(row.span_id || row.span?.id),
-                            ) &&
-                            !data.every((row) =>
-                              selectedItems.includes(row.span_id || row.span?.id),
-                            )
-                          }
-                          onChange={() => {
-                            const allSelected = data.every((row) =>
-                              selectedItems.includes(row.span_id || row.span?.id),
+                      <Checkbox
+                        size="small"
+                        checked={
+                          data.length > 0 &&
+                          data.every((row) =>
+                            selectedItems.includes(row.span_id || row.span?.id),
+                          )
+                        }
+                        indeterminate={
+                          data.some((row) =>
+                            selectedItems.includes(row.span_id || row.span?.id),
+                          ) &&
+                          !data.every((row) =>
+                            selectedItems.includes(row.span_id || row.span?.id),
+                          )
+                        }
+                        onChange={() => {
+                          const allSelected = data.every((row) =>
+                            selectedItems.includes(row.span_id || row.span?.id),
+                          );
+                          if (allSelected) {
+                            const rowIds = data.map(
+                              (r) => r.span_id || r.span?.id,
                             );
-                            if (allSelected) {
-                              const rowIds = data.map(
-                                (r) => r.span_id || r.span?.id,
-                              );
-                              setSelectedItems((prev) =>
-                                prev.filter((id) => !rowIds.includes(id)),
-                              );
-                            } else {
-                              setSelectedItems((prev) => {
-                                const newSelections = [...prev];
-                                data.forEach((row) => {
-                                  const id = row.span_id || row.span?.id;
-                                  if (!newSelections.includes(id)) {
-                                    newSelections.push(id);
-                                  }
-                                });
-                                return newSelections;
+                            setSelectedItems((prev) =>
+                              prev.filter((id) => !rowIds.includes(id)),
+                            );
+                          } else {
+                            setSelectedItems((prev) => {
+                              const newSelections = [...prev];
+                              data.forEach((row) => {
+                                const id = row.span_id || row.span?.id;
+                                if (!newSelections.includes(id)) {
+                                  newSelections.push(id);
+                                }
                               });
-                            }
-                          }}
-                          sx={checkboxSx}
-                        />
+                              return newSelections;
+                            });
+                          }
+                        }}
+                        sx={checkboxSx}
+                      />
                     </TH>
                     {PCM_PSTN_TABLE_COLUMNS.map((col) => (
                       <TH
@@ -1485,7 +1484,7 @@ const PcmPstnPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? "Saving..." : editIndex >= 0 ? "Update" : "Save"}
           </Btn>
@@ -1493,7 +1492,7 @@ const PcmPstnPage = () => {
             variant="cancel"
             onClick={() => setIsModalOpen(false)}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

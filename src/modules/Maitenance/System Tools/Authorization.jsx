@@ -545,7 +545,7 @@ const Authorization = () => {
                 variant="primary"
                 onClick={refreshAll}
                 disabled={busy}
-                style={{ minWidth: 120, height: 34 }}
+                style={{ minWidth: 110, height: 34 }}
               >
                 {busy ? "Loading…" : "Refresh"}
               </Btn>

@@ -442,230 +442,275 @@ const PcmTrunkPage = () => {
           <span>&gt;</span>
           <span>PCM</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>PCM Trunk</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            PCM Trunk
+          </span>
         </div>
-      {trunks.length === 0 ? (
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: 280,
-            padding: 24,
-            textAlign: "center",
-          }}
-        >
-          <div style={{ color: "#3E5475", fontSize: 13, fontWeight: 600, marginBottom: 16 }}>
-            No available PCM trunk!
-          </div>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-            <Btn variant="primary" onClick={() => handleOpenModal()} style={{ height: 36 }}>
-              + Add New
-            </Btn>
-            <Btn variant="cancel" style={{ height: 36 }}>
-              Batch Add
-            </Btn>
-          </div>
-        </div>
-      ) : (
-        <div style={tableContainerStyle}>
+        {trunks.length === 0 ? (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
+              borderRadius: 10,
+              border: `1.5px solid ${C.cardBorder}`,
+              boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 280,
+              padding: 24,
+              textAlign: "center",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
-                  {selected.length} selected
-                </span>
-              )}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <Btn variant="cancel" onClick={handleInverse} style={{ height: 30 }}>
-                Inverse
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleDelete}
-                disabled={selected.length === 0}
-                style={{ height: 30 }}
-              >
-                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
-              </Btn>
-              <Btn variant="cancel" onClick={handleClearAll} style={{ height: 30 }}>
-                Clear All
-              </Btn>
-              <Btn variant="primary" onClick={() => handleOpenModal()} style={{ height: 30, padding: "6px 14px", fontSize: 12 }}>
-                + Add New
-              </Btn>
-            </div>
-          </div>
-          <div style={{ overflowX: "auto" }}>
-            <table
+            <div
               style={{
-                width: "100%",
-                borderCollapse: "separate",
-                borderSpacing: 0,
-                tableLayout: "auto",
-                minWidth: 900,
+                color: "#3E5475",
+                fontSize: 13,
+                fontWeight: 600,
+                marginBottom: 16,
               }}
             >
-              <thead>
-                <tr>
-                  <TH style={{ width: 36, borderLeft: "none" }}>Check</TH>
-                  <TH>Index</TH>
-                  <TH>PCM NO.</TH>
-                  <TH>Including Ts</TH>
-                  <TH style={{ borderRight: "none" }}>Modify</TH>
-                </tr>
-              </thead>
-              <tbody>
-                {pagedTrunks.map((trunk, idx) => {
-                  const isLastRow = idx === pagedTrunks.length - 1;
-                  const lastRowCellStyle = isLastRow
-                    ? { borderBottom: "none" }
-                    : {};
-                  return (
-                  <tr
-                    key={idx}
-                    style={{
-                      background: selected.includes(
-                        (page - 1) * PCM_TRUNK_ITEMS_PER_PAGE + idx,
-                      )
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff",
-                      borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
-                    }}
-                  >
-                    <td
-                      style={{
-                        ...cellStyle,
-                        borderLeft: "none",
-                        ...lastRowCellStyle,
-                        ...(isLastRow
-                          ? { borderBottomLeftRadius: CARD_RADIUS }
-                          : {}),
-                      }}
-                    >
-                      <Checkbox
-                        checked={selected.includes(
-                          (page - 1) * PCM_TRUNK_ITEMS_PER_PAGE + idx,
-                        )}
-                        onChange={() => handleSelectRow(idx)}
-                        sx={checkboxSx}
-                      />
-                    </td>
-                    <td style={{ ...cellStyle, ...lastRowCellStyle }}>{trunk.index}</td>
-                    <td style={{ ...cellStyle, ...lastRowCellStyle }}>{trunk.pcmNo}</td>
-                    <td style={{ ...cellStyle, ...lastRowCellStyle }}>
-                      {trunk.ts
-                        .map((checked, i) => (checked ? i : null))
-                        .filter((i) => i !== null)
-                        .join(",")}
-                    </td>
-                    <td
-                      style={{
-                        ...cellStyle,
-                        borderRight: "none",
-                        ...lastRowCellStyle,
-                        ...(isLastRow
-                          ? { borderBottomRightRadius: CARD_RADIUS }
-                          : {}),
-                      }}
-                    >
-                      <EditDocumentIcon
-                        style={{
-                          fontSize: 22,
-                          color: "#2563eb",
-                          cursor: "pointer",
-                          opacity: 0.7,
-                        }}
-                        onClick={() => handleOpenModal(trunk, idx)}
-                      />
-                    </td>
-                  </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "7px 14px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              borderBottomLeftRadius: CARD_RADIUS,
-              borderBottomRightRadius: CARD_RADIUS,
-            }}
-          >
-            <span style={{ fontSize: 11, color: C.mutedText }}>
-              Showing {pagedTrunks.length} record
-              {pagedTrunks.length !== 1 ? "s" : ""} on page {page}
-            </span>
-            <div style={{ display: "flex", gap: 8 }}>
+              No available PCM trunk!
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+                justifyContent: "center",
+              }}
+            >
               <Btn
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page <= 1}
-                variant="outline"
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                style={{ height: 36 }}
               >
-                ← Prev
+                + Add New
               </Btn>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: C.accent,
-                  background: "#e0f2fe",
-                  padding: "5px 14px",
-                  borderRadius: 6,
-                  border: `1px solid ${C.cardBorder}`,
-                }}
-              >
-                Page {page} of {totalPages}
-              </span>
-              <Btn
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page >= totalPages}
-                variant="outline"
-              >
-                Next →
+              <Btn variant="cancel" style={{ height: 36 }}>
+                Batch Add
               </Btn>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div style={tableContainerStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                minHeight: 44,
+                padding: "7px 14px",
+                borderBottom: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                flexWrap: "wrap",
+                gap: 12,
+                borderTopLeftRadius: CARD_RADIUS,
+                borderTopRightRadius: CARD_RADIUS,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {selected.length > 0 && (
+                  <span
+                    style={{
+                      background: "#eff6ff",
+                      color: C.accent,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: "5px 12px",
+                      borderRadius: 999,
+                      border: `1px solid ${C.accent}`,
+                    }}
+                  >
+                    {selected.length} selected
+                  </span>
+                )}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Btn
+                  variant="cancel"
+                  onClick={handleInverse}
+                  style={{ height: 30 }}
+                >
+                  Inverse
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  onClick={handleDelete}
+                  disabled={selected.length === 0}
+                  style={{ height: 30 }}
+                >
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                  Delete
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  onClick={handleClearAll}
+                  style={{ height: 30 }}
+                >
+                  Clear All
+                </Btn>
+                <Btn
+                  variant="primary"
+                  onClick={() => handleOpenModal()}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+                >
+                  + Add New
+                </Btn>
+              </div>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 36, borderLeft: "none" }}>Check</TH>
+                    <TH>Index</TH>
+                    <TH>PCM NO.</TH>
+                    <TH>Including Ts</TH>
+                    <TH style={{ borderRight: "none" }}>Modify</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedTrunks.map((trunk, idx) => {
+                    const isLastRow = idx === pagedTrunks.length - 1;
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+                    return (
+                      <tr
+                        key={idx}
+                        style={{
+                          background: selected.includes(
+                            (page - 1) * PCM_TRUNK_ITEMS_PER_PAGE + idx,
+                          )
+                            ? "#e0f2fe"
+                            : idx % 2 === 1
+                              ? "#f8fafc"
+                              : "#ffffff",
+                          borderBottom: isLastRow
+                            ? "none"
+                            : `1px solid ${C.cardBorder}`,
+                        }}
+                      >
+                        <td
+                          style={{
+                            ...cellStyle,
+                            borderLeft: "none",
+                            ...lastRowCellStyle,
+                            ...(isLastRow
+                              ? { borderBottomLeftRadius: CARD_RADIUS }
+                              : {}),
+                          }}
+                        >
+                          <Checkbox
+                            checked={selected.includes(
+                              (page - 1) * PCM_TRUNK_ITEMS_PER_PAGE + idx,
+                            )}
+                            onChange={() => handleSelectRow(idx)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td style={{ ...cellStyle, ...lastRowCellStyle }}>
+                          {trunk.index}
+                        </td>
+                        <td style={{ ...cellStyle, ...lastRowCellStyle }}>
+                          {trunk.pcmNo}
+                        </td>
+                        <td style={{ ...cellStyle, ...lastRowCellStyle }}>
+                          {trunk.ts
+                            .map((checked, i) => (checked ? i : null))
+                            .filter((i) => i !== null)
+                            .join(",")}
+                        </td>
+                        <td
+                          style={{
+                            ...cellStyle,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
+                            ...(isLastRow
+                              ? { borderBottomRightRadius: CARD_RADIUS }
+                              : {}),
+                          }}
+                        >
+                          <EditDocumentIcon
+                            style={{
+                              fontSize: 22,
+                              color: "#2563eb",
+                              cursor: "pointer",
+                              opacity: 0.7,
+                            }}
+                            onClick={() => handleOpenModal(trunk, idx)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "7px 14px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedTrunks.length} record
+                {pagedTrunks.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `1px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {/* Modal Dialog */}
       <Dialog

@@ -516,14 +516,14 @@ const IDSSettings = () => {
                   type="button"
                   variant="cancel"
                   onClick={handleReset}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   Reset
                 </Btn>
                 <Btn
                   type="submit"
                   variant="primary"
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   Save
                 </Btn>
@@ -565,7 +565,7 @@ const IDSSettings = () => {
                 <Btn
                   variant="primary"
                   onClick={handleDownload}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   Download
                 </Btn>

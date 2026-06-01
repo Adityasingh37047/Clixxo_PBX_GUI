@@ -60,7 +60,6 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -1146,8 +1145,13 @@ const AccountManage = () => {
       </div>
       {/* Modal */}
       {isModalOpen && (
-        <div style={modalOverlayStyle}>
-          <div style={modalStyle}>
+        <div
+          style={modalOverlayStyle}
+          onClick={() => {
+            if (!loading) handleCloseModal();
+          }}
+        >
+          <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
             <div style={modalHeaderStyle}>User Information</div>
             <div style={modalBodyStyle}>
               <div
@@ -1217,7 +1221,7 @@ const AccountManage = () => {
                 variant="primary"
                 onClick={handleSave}
                 disabled={loading}
-                style={{ minWidth: 110, height: 34 }}
+                style={{ minWidth: 100, height: 33 }}
               >
                 {loading ? "Saving..." : ACCOUNT_MANAGE_BUTTONS.save}
               </Btn>
@@ -1225,7 +1229,7 @@ const AccountManage = () => {
                 variant="cancel"
                 onClick={handleCloseModal}
                 disabled={loading}
-                style={{ minWidth: 110, height: 34, borderRadius: 6 }}
+                style={{ minWidth: 100, height: 33 }}
               >
                 {ACCOUNT_MANAGE_BUTTONS.close}
               </Btn>

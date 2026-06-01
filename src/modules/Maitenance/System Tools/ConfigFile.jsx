@@ -381,7 +381,7 @@ const ConfigFile = () => {
                 startIcon={
                   loading.save && <CircularProgress size={16} color="inherit" />
                 }
-                style={{ minWidth: 120, height: 38 }}
+                style={{ minWidth: 110, height: 34 }}
               >
                 {loading.save ? "Saving..." : "Save Changes"}
               </Btn>
@@ -389,7 +389,7 @@ const ConfigFile = () => {
                 variant="cancel"
                 onClick={handleReset}
                 disabled={loading.fetch || loading.save}
-                style={{ minWidth: 120, height: 38 }}
+                style={{ minWidth: 110, height: 34 }}
               >
                 Reset
               </Btn>

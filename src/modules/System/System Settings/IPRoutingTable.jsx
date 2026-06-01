@@ -1752,9 +1752,8 @@ WantedBy=multi-user.target
       {/* Modal */}
       <Dialog
         open={modalOpen}
-        onClose={(event, reason) => {
-          if (reason === "backdropClick") return;
-          closeModal();
+        onClose={() => {
+          if (!savingRoute) closeModal();
         }}
         maxWidth={false}
         className="z-50"
@@ -1951,14 +1950,14 @@ WantedBy=multi-user.target
             variant="primary"
             onClick={handleSave}
             disabled={savingRoute}
-            style={{ minWidth: 100, height: 36, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {savingRoute ? "Applying..." : "Save"}
           </Btn>
           <Btn
             variant="cancel"
             onClick={closeModal}
-            style={{ minWidth: 100, height: 36, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             Close
           </Btn>

@@ -1,13 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   PCM_RECEPTION_TIMEOUT_FIELDS,
   PCM_RECEPTION_TIMEOUT_INITIAL_FORM,
 } from "../../../constants/PcmReceptionTimeoutConstants";
 import { Alert } from "@mui/material";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
 // ── Color palette (same as SIPAccountGenerator) ───────────────────────────────
@@ -186,6 +183,20 @@ const PcmReceptionTimeoutPage = () => {
 
   const handleCloseModal = () => setIsModalOpen(false);
 
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setIsModalOpen(false);
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isModalOpen]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -323,152 +334,155 @@ const PcmReceptionTimeoutPage = () => {
         </div>
       </div>
 
-      {/* ── Edit Modal ── */}
-      <Dialog
-        open={isModalOpen}
-        onClose={(event, reason) => {
-          if (reason === "backdropClick") return;
-          handleCloseModal();
-        }}
-        maxWidth={false}
-        slotProps={{
-          backdrop: {
-            sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" },
-          },
-        }}
-        PaperProps={{
-          sx: {
-            width: 500,
-            maxWidth: "95vw",
-            mx: "auto",
-            borderRadius: "8px",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#f8fafc",
-            backgroundImage: "none",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            fontWeight: 600,
-            fontSize: "16px",
-            color: "#ffffff",
-            backgroundColor: "#1e2d42",
-            borderBottom: `1px solid ${C.cardBorder}`,
-            px: 3,
-            py: 2,
-            textAlign: "center",
-            borderTopLeftRadius: "8px",
-            borderTopRightRadius: "8px",
-          }}
-        >
-          Number-Receiving Timeout
-        </DialogTitle>
-        <DialogContent
-          sx={{
-            p: "16px 24px",
-            pb: "16px",
-            backgroundColor: "#ffffff",
-          }}
-        >
+      {/* ── Edit Modal (portal + backdrop click — same as Number-Receiving Rule UX) ── */}
+      {isModalOpen &&
+        createPortal(
           <div
+            role="presentation"
+            onClick={handleCloseModal}
             style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1400,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
               display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-              marginTop: 19,
-              marginBottom: 6,
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+              boxSizing: "border-box",
             }}
           >
-            {PCM_RECEPTION_TIMEOUT_FIELDS.map((field) => (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="pcm-reception-timeout-dialog-title"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: 500,
+                maxWidth: "95vw",
+                background: C.cardBg,
+                borderRadius: 8,
+                overflow: "hidden",
+                boxShadow:
+                  "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+              }}
+            >
               <div
-                key={field.name}
+                id="pcm-reception-timeout-dialog-title"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
+                  background: "#1e2d42",
+                  color: "#ffffff",
+                  fontWeight: 600,
+                  fontSize: 16,
+                  padding: "16px 24px",
+                  textAlign: "center",
                 }}
               >
-                <label
+                Number-Receiving Timeout
+              </div>
+              <div style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+                <div
                   style={{
-                    width: 170,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    textAlign: "left",
-                    whiteSpace: "nowrap",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
+                    background: "#f8fafc",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    padding: 20,
                   }}
                 >
-                  {field.label}:
-                </label>
-                <div style={{ width: "min(100%, 320px)" }}>
-                  <input
-                    type={field.type || "text"}
-                    name={field.name}
-                    value={formData[field.name] ?? ""}
-                    onChange={handleInputChange}
-                    placeholder={field.placeholder || ""}
-                    style={{
-                      fontSize: 13,
-                      padding: "0 8px",
-                      height: 32,
-                      borderRadius: 4,
-                      border: `1px solid ${C.cardBorder}`,
-                      background: "#ffffff",
-                      color: "#1e293b",
-                      outline: "none",
-                      width: "100%",
-                      transition: "border-color 0.2s ease",
-                      boxSizing: "border-box",
-                    }}
-                    onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
-                    onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
-                    onMouseEnter={(e) => {
-                      if (document.activeElement !== e.target)
-                        e.target.style.borderColor = "#64748b";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (document.activeElement !== e.target)
-                        e.target.style.borderColor = C.cardBorder;
-                    }}
-                  />
+                  {PCM_RECEPTION_TIMEOUT_FIELDS.map((field) => (
+                    <div
+                      key={field.name}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 12,
+                      }}
+                    >
+                      <label
+                        style={{
+                          width: 170,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          textAlign: "left",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {field.label}:
+                      </label>
+                      <div style={{ width: "min(100%, 320px)" }}>
+                        <input
+                          type={field.type || "text"}
+                          name={field.name}
+                          value={formData[field.name] ?? ""}
+                          onChange={handleInputChange}
+                          placeholder={field.placeholder || ""}
+                          style={{
+                            fontSize: 13,
+                            padding: "0 8px",
+                            height: 32,
+                            borderRadius: 4,
+                            border: `1px solid ${C.cardBorder}`,
+                            background: "#ffffff",
+                            color: "#1e293b",
+                            outline: "none",
+                            width: "100%",
+                            transition: "border-color 0.2s ease",
+                            boxSizing: "border-box",
+                          }}
+                          onFocus={(e) =>
+                            (e.target.style.borderColor = "#0284c7")
+                          }
+                          onBlur={(e) =>
+                            (e.target.style.borderColor = C.cardBorder)
+                          }
+                          onMouseEnter={(e) => {
+                            if (document.activeElement !== e.target)
+                              e.target.style.borderColor = "#64748b";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (document.activeElement !== e.target)
+                              e.target.style.borderColor = C.cardBorder;
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        </DialogContent>
-        <DialogActions
-          sx={{
-            justifyContent: "center",
-            gap: 2,
-            py: "10px",
-            px: "16px",
-            borderTop: `1px solid ${C.cardBorder}`,
-            backgroundColor: "#f8fafc",
-          }}
-        >
-          <Btn
-            variant="primary"
-            onClick={handleSave}
-            style={{ minWidth: 100, height: 36, fontSize: 13 }}
-          >
-            Save
-          </Btn>
-          <Btn
-            variant="cancel"
-            onClick={handleCloseModal}
-            style={{ minWidth: 100, height: 36, fontSize: 13 }}
-          >
-            Close
-          </Btn>
-        </DialogActions>
-      </Dialog>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 16,
+                  padding: "16px 24px",
+                  background: "#f8fafc",
+                  borderTop: "1px solid #e2e8f0",
+                }}
+              >
+                <Btn
+                  variant="primary"
+                  onClick={handleSave}
+                  style={{ minWidth: 100, height: 33 }}
+                >
+                  Save
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  onClick={handleCloseModal}
+                  style={{ minWidth: 100, height: 33 }}
+                >
+                  Cancel
+                </Btn>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

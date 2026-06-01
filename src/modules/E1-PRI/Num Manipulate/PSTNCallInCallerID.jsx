@@ -62,7 +62,6 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -1038,23 +1037,59 @@ const PSTNCallInCallerID = () => {
                                 sx={checkboxSx}
                               />
                             </td>
-                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
                               {realIdx + 1}
                             </td>
-                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
                               PCM Trunk Group [
                               {getPcmGroupIdLabel(item.call_initiator)}]
                             </td>
-                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
                               {item.callerid_prefix}
                             </td>
-                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
                               {item.calleeid_prefix}
                             </td>
-                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
                               {item.stripped_digits_from_right}
                             </td>
-                            <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
                               {item.reserved_digits_from_right}
                             </td>
                             <td
@@ -1322,7 +1357,7 @@ const PSTNCallInCallerID = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save
               ? "Saving..."
@@ -1334,7 +1369,7 @@ const PSTNCallInCallerID = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

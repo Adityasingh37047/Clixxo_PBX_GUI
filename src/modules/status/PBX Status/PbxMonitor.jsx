@@ -295,6 +295,8 @@ const PbxMonitor = () => {
     } finally {
       if (silent) {
         silentRefreshRef.current = false;
+      } else {
+        setIsRefreshing(false);
       }
     }
   }, []);

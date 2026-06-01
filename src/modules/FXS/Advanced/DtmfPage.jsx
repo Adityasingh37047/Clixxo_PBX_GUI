@@ -1,61 +1,20 @@
 import React, { useState } from "react";
-import { DTMF_INITIAL_FORM } from "../../../sections/advanced/constants/DtmfConstants"; // Adjust path if needed
-import { TextField, Button, Checkbox, Alert } from "@mui/material";
-
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#2563eb",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
-};
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 240, // Match FxsPage label width
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
+import { DTMF_INITIAL_FORM } from "../../../sections/advanced/constants/DtmfConstants";
+import { TextField, Checkbox, Alert } from "@mui/material";
+import {
+  C,
+  Btn,
+  checkboxSx,
+  muiTextFieldSx,
+  numManipulateCardStyle,
+  AdvancedBreadcrumb,
+  FieldRow,
+  SectionHeading,
+  advancedFormPanelStyle,
+  advancedFormActionsStyle,
+  advancedPageWrapStyle,
+  advancedPageInnerStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
 const DtmfPage = () => {
   const [formData, setFormData] = useState(DTMF_INITIAL_FORM);
@@ -264,15 +223,8 @@ const DtmfPage = () => {
   const getDtmfKeyLabel = (i) => (i === 10 ? "*" : i === 11 ? "#" : i);
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Error / Success Banner */}
+    <div style={advancedPageWrapStyle}>
+      <div style={advancedPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
@@ -290,36 +242,14 @@ const DtmfPage = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Advanced &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>DTMF</span>
-          </div>
-        </div>
+        <AdvancedBreadcrumb current="DTMF" />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ padding: "24px 28px" }}>
-            {/* ── DTMF Detector Section ── */}
+        <div style={numManipulateCardStyle}>
+          <div style={{ padding: 24 }}>
             <SectionHeading title="DTMF Detector" />
             <div
               style={{
+                ...advancedFormPanelStyle,
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: "16px 40px",
@@ -335,6 +265,7 @@ const DtmfPage = () => {
                     id="positiveTwist"
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.positiveTwist || ""}
                     onChange={(e) =>
                       handleInputChange("positiveTwist", e.target.value)
@@ -352,6 +283,7 @@ const DtmfPage = () => {
                     id="minDuration"
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.minDuration || ""}
                     onChange={(e) =>
                       handleInputChange("minDuration", e.target.value)
@@ -369,6 +301,7 @@ const DtmfPage = () => {
                     id="energyRatio"
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.energyRatio || ""}
                     onChange={(e) =>
                       handleInputChange("energyRatio", e.target.value)
@@ -389,17 +322,7 @@ const DtmfPage = () => {
                       checked={!!formData.enableDisplayDtmf}
                       onChange={() => handleCheckboxChange("enableDisplayDtmf")}
                       size="small"
-                      sx={{
-                        padding: "1px",
-                        color: "#64748b",
-                        "&.Mui-checked": {
-                          color: "#0284c7",
-                        },
-                        "&.MuiCheckbox-indeterminate": {
-                          color: "#0284c7",
-                        },
-                        "&:hover": { backgroundColor: "transparent" },
-                      }}
+                      sx={checkboxSx}
                     />
                     <span
                       style={{
@@ -424,6 +347,7 @@ const DtmfPage = () => {
                     id="negativeTwist"
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.negativeTwist || ""}
                     onChange={(e) =>
                       handleInputChange("negativeTwist", e.target.value)
@@ -441,6 +365,7 @@ const DtmfPage = () => {
                     id="minNegativeDuration"
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.minNegativeDuration || ""}
                     onChange={(e) =>
                       handleInputChange("minNegativeDuration", e.target.value)
@@ -458,6 +383,7 @@ const DtmfPage = () => {
                     id="levelMinIn"
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.levelMinIn || ""}
                     onChange={(e) =>
                       handleInputChange("levelMinIn", e.target.value)
@@ -478,17 +404,7 @@ const DtmfPage = () => {
                       checked={!!formData.enableOmitABCD}
                       onChange={() => handleCheckboxChange("enableOmitABCD")}
                       size="small"
-                      sx={{
-                        padding: "1px",
-                        color: "#64748b",
-                        "&.Mui-checked": {
-                          color: "#0284c7",
-                        },
-                        "&.MuiCheckbox-indeterminate": {
-                          color: "#0284c7",
-                        },
-                        "&:hover": { backgroundColor: "transparent" },
-                      }}
+                      sx={checkboxSx}
                     />
                     <span
                       style={{
@@ -505,27 +421,16 @@ const DtmfPage = () => {
               </div>
             </div>
 
-            {/* ── DTMF Generator Section ── */}
             <SectionHeading title="DTMF Generator" />
 
-            <div style={{ marginBottom: 16 }}>
-              <FieldRow label="DTMF Energy Advance Set">
+            <div style={{ ...advancedFormPanelStyle, marginBottom: 16 }}>
+              <FieldRow label="DTMF Energy Advance Set" labelWidth={240}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Checkbox
                     checked={!!formData.dtmfEnergyAdvance}
                     onChange={() => handleCheckboxChange("dtmfEnergyAdvance")}
                     size="small"
-                    sx={{
-                      padding: "1px",
-                      color: "#64748b",
-                      "&.Mui-checked": {
-                        color: "#0284c7",
-                      },
-                      "&.MuiCheckbox-indeterminate": {
-                        color: "#0284c7",
-                      },
-                      "&:hover": { backgroundColor: "transparent" },
-                    }}
+                    sx={checkboxSx}
                   />
                   <span
                     style={{
@@ -543,6 +448,7 @@ const DtmfPage = () => {
 
             <div
               style={{
+                ...advancedFormPanelStyle,
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: "16px 40px",
@@ -558,6 +464,7 @@ const DtmfPage = () => {
                       id="dtmfPlayEnergy"
                       size="small"
                       fullWidth
+                      sx={muiTextFieldSx}
                       value={formData.dtmfPlayEnergy || ""}
                       onChange={(e) =>
                         handleInputChange("dtmfPlayEnergy", e.target.value)
@@ -579,6 +486,7 @@ const DtmfPage = () => {
                         id={`dtmfPlayEnergy${i}`}
                         size="small"
                         fullWidth
+                        sx={muiTextFieldSx}
                         value={formData[`dtmfPlayEnergy${i}`] || ""}
                         onChange={(e) =>
                           handleInputChange(
@@ -601,6 +509,7 @@ const DtmfPage = () => {
                     id="dtmfTxHighDuration"
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.dtmfTxHighDuration || ""}
                     onChange={(e) =>
                       handleInputChange("dtmfTxHighDuration", e.target.value)
@@ -628,6 +537,7 @@ const DtmfPage = () => {
                         id={`dtmfHighPlayEnergy${i}`}
                         size="small"
                         fullWidth
+                        sx={muiTextFieldSx}
                         value={formData[`dtmfHighPlayEnergy${i}`] || ""}
                         onChange={(e) =>
                           handleInputChange(
@@ -649,6 +559,7 @@ const DtmfPage = () => {
                     id="dtmfTxLowDuration"
                     size="small"
                     fullWidth
+                    sx={muiTextFieldSx}
                     value={formData.dtmfTxLowDuration || ""}
                     onChange={(e) =>
                       handleInputChange("dtmfTxLowDuration", e.target.value)
@@ -668,12 +579,12 @@ const DtmfPage = () => {
               style={{
                 marginTop: 24,
                 fontSize: 12,
-                color: C.errorRed,
+                color: C.amber,
                 lineHeight: 1.6,
                 background: "#fef2f2",
                 padding: "12px 16px",
                 borderRadius: 6,
-                border: `1px solid #fecaca`,
+                border: "1px solid #fecaca",
               }}
             >
               <span style={{ fontWeight: 600 }}>Note:</span> Setting the DTMF
@@ -682,70 +593,21 @@ const DtmfPage = () => {
             </div>
           </div>
 
-          {/* Bottom Actions Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              padding: "16px 24px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              background: "#f8fafc",
-            }}
-          >
-            <Button
-              variant="contained"
+          <div style={advancedFormActionsStyle}>
+            <Btn
+              variant="primary"
               onClick={handleSave}
-              sx={{
-                background:
-                  "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                color: "#fff",
-                border: "1px solid #5A6F8F",
-                boxShadow: "0 2px 8px #3E5475",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "8px 28px",
-                minWidth: 120,
-                borderRadius: "6px",
-                "&:hover": {
-                  background:
-                    "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-                  opacity: 0.85,
-                },
-                "&:disabled": {
-                  background: "#94a3b8",
-                  color: "#e2e8f0",
-                  border: "1px solid #94a3b8",
-                },
-              }}
+              style={{ height: 33, minWidth: 100 }}
             >
               Save Settings
-            </Button>
-            <Button
-              variant="outlined"
+            </Btn>
+            <Btn
+              variant="cancel"
               onClick={handleReset}
-              sx={{
-                background: "#cbd5e1",
-                color: "#374151",
-                border: "1px solid #cbd5e1",
-                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "8px 28px",
-                minWidth: 110,
-                borderRadius: "6px",
-                "&:hover": {
-                  background: "#cbd5e1",
-                  border: "1px solid #cbd5e1",
-                  opacity: 0.85,
-                },
-              }}
+              style={{ height: 33, minWidth: 100 }}
             >
               Reset
-            </Button>
+            </Btn>
           </div>
         </div>
       </div>

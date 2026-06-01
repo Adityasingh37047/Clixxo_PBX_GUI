@@ -1486,56 +1486,59 @@ const SystemToolsVPN = () => {
           {/* Card Body */}
           <div style={{ padding: "24px 32px" }}>
             <div className="flex flex-col gap-8">
-              {/* SoftEther AutoStart */}
+              {/* SoftEther AutoStart (centered — same as OpenVPN) */}
               {form.vpnType === "softethervpn" && (
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                    <label
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 200,
-                        flexShrink: 0,
-                      }}
-                    >
-                      AutoStart SoftEtherVPN:
-                    </label>
-                    <div className="flex items-center gap-4">
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="enableSeTop"
-                          checked={enableSeChoice === "yes"}
-                          onChange={() => setEnableSeChoice("yes")}
-                          style={{ accentColor: C.primary }}
-                        />
-                        <span style={{ fontSize: 13, color: C.valueText }}>
-                          Yes
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="enableSeTop"
-                          checked={enableSeChoice === "no"}
-                          onChange={() => setEnableSeChoice("no")}
-                          style={{ accentColor: C.primary }}
-                        />
-                        <span style={{ fontSize: 13, color: C.valueText }}>
-                          No
-                        </span>
-                      </label>
-                    </div>
-                    <div className="sm:ml-auto">
-                      <Btn
-                        variant="primary"
-                        onClick={handleSaveSeEnable}
-                        disabled={loading.toggle}
-                        style={{ minWidth: 100 }}
+                <div className="flex flex-col gap-6 w-full">
+                  <div className="flex flex-col gap-4 w-full max-w-[650px] mx-auto">
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
+                      <label
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 180,
+                          marginLeft: 40,
+                          flexShrink: 0,
+                        }}
                       >
-                        {loading.toggle ? "Saving..." : "Save"}
-                      </Btn>
+                        AutoStart SoftEtherVPN:
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="enableSeTop"
+                            checked={enableSeChoice === "yes"}
+                            onChange={() => setEnableSeChoice("yes")}
+                            style={{ accentColor: C.primary }}
+                          />
+                          <span style={{ fontSize: 13, color: C.valueText }}>
+                            Yes
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-1 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="enableSeTop"
+                            checked={enableSeChoice === "no"}
+                            onChange={() => setEnableSeChoice("no")}
+                            style={{ accentColor: C.primary }}
+                          />
+                          <span style={{ fontSize: 13, color: C.valueText }}>
+                            No
+                          </span>
+                        </label>
+                      </div>
+                      <div className="sm:ml-auto sm:mr-10">
+                        <Btn
+                          variant="primary"
+                          onClick={handleSaveSeEnable}
+                          disabled={loading.toggle}
+                          style={{ minWidth: 100 }}
+                        >
+                          {loading.toggle ? "Saving..." : "Save"}
+                        </Btn>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -1063,9 +1063,7 @@ const Network = () => {
           <span>&gt;</span>
           <span>System Settings</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Network
-          </span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>Network</span>
         </div>
 
         {/* Main Card */}
@@ -1786,7 +1784,7 @@ const Network = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading || resetting || networkRestarting}
-            style={{ minWidth: 120, height: 36, fontSize: 14 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {loading && !resetting ? "Saving..." : "Save"}
           </Btn>
@@ -1794,7 +1792,7 @@ const Network = () => {
             variant="cancel"
             onClick={handleReset}
             disabled={resetting || networkRestarting}
-            style={{ minWidth: 120, height: 36, fontSize: 14 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {resetting ? "Resetting..." : "Reset"}
           </Btn>

@@ -1,10 +1,10 @@
 // Table columns for the main table view
 export const DIALING_RULE_TABLE_COLUMNS = [
-  { key: 'modify', label: 'Modify' },
   { key: 'check', label: 'Check' },
-  { key: 'index', label: 'Index' },
+  { key: 'index', label: 'ID' },
   { key: 'dialingRule', label: 'Dialing Rule' },
   { key: 'description', label: 'Description' },
+  { key: 'modify', label: 'Modify' },
 ];
 
 // Form fields for the modal

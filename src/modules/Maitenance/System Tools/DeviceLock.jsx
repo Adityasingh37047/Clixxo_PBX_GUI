@@ -389,7 +389,7 @@ const DeviceLock = () => {
                   variant="primary"
                   onClick={handleLock}
                   type="submit"
-                  style={{ minWidth: 100, height: 34, fontSize: 12 }}
+                  style={{ minWidth: 110, height: 34, fontSize: 13 }}
                 >
                   {DEVICE_LOCK_LABELS.lock}
                 </Btn>
@@ -397,7 +397,7 @@ const DeviceLock = () => {
                   variant="cancel"
                   onClick={handleReset}
                   type="button"
-                  style={{ minWidth: 100, height: 34, fontSize: 12 }}
+                  style={{ minWidth: 110, height: 34, fontSize: 12 }}
                 >
                   {DEVICE_LOCK_LABELS.reset}
                 </Btn>

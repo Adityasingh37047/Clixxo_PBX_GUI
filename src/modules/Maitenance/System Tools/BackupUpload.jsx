@@ -41,7 +41,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -284,7 +285,7 @@ const BackupUpload = () => {
                 variant="primary"
                 onClick={handleDownloadBackup}
                 disabled={loadingBackup || loadingRestore}
-                style={{ minWidth: 140, height: 36, fontSize: 13 }}
+                style={{ minWidth: 90, height: 36, fontSize: 13 }}
               >
                 {loadingBackup ? (
                   <div
@@ -359,7 +360,7 @@ const BackupUpload = () => {
                 variant="primary"
                 onClick={handleRestoreUpload}
                 disabled={loadingBackup || loadingRestore}
-                style={{ minWidth: 140, height: 36, fontSize: 13 }}
+                style={{ minWidth: 90, height: 36, fontSize: 13 }}
               >
                 {loadingRestore ? (
                   <div

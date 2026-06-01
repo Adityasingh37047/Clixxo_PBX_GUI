@@ -927,7 +927,7 @@ const DDOSSettings = () => {
                     variant="cancel"
                     onClick={handleReset}
                     disabled={loading}
-                    style={{ minWidth: 120, height: 34 }}
+                    style={{ minWidth: 110, height: 34 }}
                   >
                     Reset
                   </Btn>
@@ -935,7 +935,7 @@ const DDOSSettings = () => {
                     type="submit"
                     variant="primary"
                     disabled={loading}
-                    style={{ minWidth: 120, height: 34 }}
+                    style={{ minWidth: 110, height: 34 }}
                   >
                     {loading ? "Configuring..." : "Save"}
                   </Btn>
@@ -944,7 +944,7 @@ const DDOSSettings = () => {
                     variant="cancel"
                     onClick={handleSimulateAttack}
                     disabled={loading}
-                    style={{ minWidth: 120, height: 34 }}
+                    style={{ minWidth: 110, height: 34 }}
                   >
                     Simulate Attack
                   </Btn>

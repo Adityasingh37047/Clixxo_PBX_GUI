@@ -41,7 +41,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -911,7 +912,7 @@ fi`;
                   variant="primary"
                   type="submit"
                   disabled={isApplying}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   {isApplying ? "Connecting…" : "Save"}
                 </Btn>
@@ -920,7 +921,7 @@ fi`;
                   type="button"
                   onClick={handleReset}
                   disabled={isApplying}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   Reset
                 </Btn>
@@ -929,7 +930,7 @@ fi`;
                   type="button"
                   onClick={handleDownloadMib}
                   disabled={isApplying}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   {CENTRALIZED_MANAGE_BUTTONS[2].label}
                 </Btn>

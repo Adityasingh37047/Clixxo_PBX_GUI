@@ -5,6 +5,7 @@ import {
   PSTN_CALL_IN_CALLERID_INITIAL_FORM,
 } from "../../../sections/numManipulate/constants/PSTNCallInCallerIDConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Checkbox,
   Dialog,
@@ -15,7 +16,22 @@ import {
   MenuItem,
   FormControl,
   CircularProgress,
+  TextField,
+  Alert,
 } from "@mui/material";
+import {
+  C,
+  CARD_RADIUS,
+  Btn,
+  TH,
+  tdStyle,
+  checkboxSx,
+  muiSelectSx,
+  muiTextFieldSx,
+  numManipulateCardStyle,
+  numManipulateToolbarStyle,
+  numManipulatePaginationStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
 
 // Stub functions when API imports are commented out
 const listNumberManipulations = async () => ({ response: true, message: [] });
@@ -35,149 +51,6 @@ const listPstnGroups = async () => ({ response: true, message: [] });
 
 const LOCAL_STORAGE_KEY = "pstnCallInCallerIdRules";
 
-// ── Color Palette (From Source) ───────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-<<<<<<< HEAD
-  strongText: "#0f172a",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
-=======
-
-  accent: "#2563eb",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
->>>>>>> 9845773c3393f4b48bcef7d18b0ff370a7806fb0
-};
-
-// ── Shared UI Components (From Source) ────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  title,
-  type = "button",
-}) => {
-  const variants = {
-    default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#f3f4f6",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const FieldRow = ({ label, children, style }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12, ...style }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 180,
-        flexShrink: 0,
-      }}
-    >
-      {label}
-    </label>
-    <div style={{ flex: 1 }}>{children}</div>
-  </div>
-);
-
-const inputStyle = {
-  height: 32,
-  padding: "0 8px",
-  fontSize: 13,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  outline: "none",
-  backgroundColor: "#fff",
-  color: C.valueText,
-  boxSizing: "border-box",
-  width: "100%",
-};
-
-// ── Main Component ────────────────────────────────────────────────────────────
 const PSTNCallInCallerID = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(PSTN_CALL_IN_CALLERID_INITIAL_FORM);
@@ -197,16 +70,21 @@ const PSTNCallInCallerID = () => {
     delete: false,
   });
   const [editIndex, setEditIndex] = useState(null);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const alert = (msg) => {
+    const isErr =
+      /error|failed|required|please/i.test(msg) && !/successfully/i.test(msg);
+    showToast(msg, isErr ? "error" : "success");
+  };
 
   const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
 
-  // Fetch PCM Trunk Groups for Call Initiator dropdown
   const fetchPcmTrunkGroups = async () => {
     try {
       const response = await listPstnGroups();
@@ -238,7 +116,6 @@ const PSTNCallInCallerID = () => {
     }
   };
 
-  // Fetch Number Manipulations
   const fetchNumberManipulations = async () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
     try {
@@ -556,25 +433,10 @@ const PSTNCallInCallerID = () => {
     }
   };
 
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
+  const handleTableScroll = (e) => {
+    if (tableScrollRef.current) {
+      tableScrollRef.current.scrollLeft = e.target.scrollLeft;
+    }
   };
 
   useEffect(() => {
@@ -585,23 +447,6 @@ const PSTNCallInCallerID = () => {
   const handleRefresh = async () => {
     await fetchNumberManipulations();
   };
-
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-      }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [rules, page]);
 
   const getPcmGroupIdLabel = (groupId) => {
     const group = pcmTrunkGroups.find(
@@ -626,6 +471,20 @@ const PSTNCallInCallerID = () => {
     });
   };
 
+  const renderCellValue = (col, item) => {
+    if (col.key === "call_initiator") {
+      return `PCM Trunk Group [${getPcmGroupIdLabel(item[col.key])}]`;
+    }
+    if (
+      item[col.key] !== undefined &&
+      item[col.key] !== null &&
+      item[col.key] !== ""
+    ) {
+      return String(item[col.key]);
+    }
+    return "--";
+  };
+
   return (
     <div
       style={{
@@ -634,8 +493,23 @@ const PSTNCallInCallerID = () => {
         padding: 16,
       }}
     >
-      <div style={{ width: "100%", maxWidth: 1200, margin: "0 auto" }}>
-        {/* Breadcrumb */}
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
         <div
           style={{
             fontSize: 12,
@@ -656,733 +530,513 @@ const PSTNCallInCallerID = () => {
           </span>
         </div>
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{}}>
-            {/* <SectionHeading title="IP Call In CallerID" /> */}
+        <div style={numManipulateCardStyle}>
+          <div style={numManipulateToolbarStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete || rules.length === 0}
+                style={{ height: 30 }}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={loading.delete || selected.length === 0}
+                style={{ height: 30 }}
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
+                )}
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={loading.delete || rules.length === 0}
+                style={{ height: 30 }}
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Clear All"
+                )}
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleRefresh}
+                disabled={loading.fetch}
+                style={{ height: 30 }}
+              >
+                {loading.fetch ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  "Refresh"
+                )}
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                disabled={loading.fetch}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          <div style={{ position: "relative" }}>
             {loading.fetch ? (
-              <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                  <CircularProgress size={40} sx={{ color: "#1e2d42" }} />
-                  <div className="mt-3 text-gray-600 font-medium">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 280,
+                  borderBottomLeftRadius: CARD_RADIUS,
+                  borderBottomRightRadius: CARD_RADIUS,
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <CircularProgress size={28} style={{ color: C.accent }} />
+                  <div
+                    style={{
+                      marginTop: 12,
+                      color: "#3E5475",
+                      fontSize: 13,
+                      fontWeight: 500,
+                    }}
+                  >
                     Loading number manipulations...
                   </div>
                 </div>
               </div>
             ) : rules.length === 0 ? (
               <div
-                className="w-full h-full flex flex-col items-center justify-center"
-                style={{ minHeight: "200px" }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                  borderBottomLeftRadius: CARD_RADIUS,
+                  borderBottomRightRadius: CARD_RADIUS,
+                }}
               >
-                <div className="text-gray-600 text-sm font-semibold mb-4 text-center">
-                  No available number manipulation rule!{" "}
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No available number manipulation rule (PSTN Call In CallerID)!
                 </div>
-
                 <Btn
-  onClick={() => handleOpenModal()}
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  + Add New
-</Btn>
+                  variant="cancel"
+                  onClick={() => handleOpenModal()}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New Rule
+                </Btn>
               </div>
             ) : (
-              <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-                {/* Breadcrumb */}
+              <>
                 <div
+                  ref={tableScrollRef}
+                  onScroll={handleTableScroll}
                   style={{
-                    fontSize: 12,
-                    color: C.mutedText,
-                    marginBottom: 16,
-                    fontWeight: 400,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
+                    overflowX: "auto",
+                    overflowY: "auto",
+                    maxHeight: 460,
                   }}
                 >
-                  <span>FXS</span>
-                  <span>&gt;</span>
-                  <span>Num Manipulate</span>
-                  <span>&gt;</span>
-                  <span style={{ color: C.strongText, fontWeight: 600 }}>
-                    PSTN Call In CallerID
-                  </span>
-                </div>
-
-                {/* Main Card */}
-                <div
-                  style={{
-                    background: C.cardBg,
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    overflow: "hidden",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  {/* Toolbar */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      minHeight: 44,
-                      padding: "7px 14px",
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                      background: "#ffffff",
-                      flexWrap: "wrap",
-                      gap: 12,
-                    }}
-                  >
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 8 }}
-                    >
-                      <span
-                        style={{
-                          background: "#f1f5f9",
-                          border: `0.5px solid ${C.cardBorder}`,
-                          color: "#475569",
-                          fontSize: 11,
-                          fontWeight: 600,
-                          padding: "3px 12px",
-                          borderRadius: 20,
-                        }}
-                      >
-                        PSTN Call In CallerID · {rules.length} records
-                      </span>
-                      {selected.length > 0 && (
-                        <span
-                          style={{
-                            background: "#e0f2fe",
-                            color: C.accent,
-                            fontSize: 11,
-                            fontWeight: 600,
-                            padding: "3px 10px",
-                            borderRadius: 20,
-                            border: `0.5px solid ${C.accent}`,
-                          }}
-                        >
-                          {selected.length} selected
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <Btn
-                        onClick={handleCheckAll}
-                        disabled={loading.delete}
-                        variant="outline"
-                        style={{ height: 30 }}
-                      >
-                        Check All
-                      </Btn>
-                      <Btn
-                        onClick={handleUncheckAll}
-                        disabled={loading.delete}
-                        variant="outline"
-                        style={{ height: 30 }}
-                      >
-                        Uncheck All
-                      </Btn>
-                      <Btn
-                        onClick={handleInverse}
-                        disabled={loading.delete}
-                        variant="outline"
-                        style={{ height: 30 }}
-                      >
-                        Inverse
-                      </Btn>
-                      <Btn
-                        onClick={handleDelete}
-                        disabled={loading.delete || selected.length === 0}
-                        variant="danger"
-                        style={{ height: 30 }}
-                      >
-                        {loading.delete ? "Deleting..." : "🗑 Delete"}
-                      </Btn>
-                      <Btn
-                        onClick={handleClearAll}
-                        disabled={loading.delete || rules.length === 0}
-                        variant="danger"
-                        style={{ height: 30 }}
-                      >
-                        {loading.delete ? "Clearing..." : "Clear All"}
-                      </Btn>
-                      <Btn
-                        onClick={handleRefresh}
-                        disabled={loading.fetch}
-                        variant="outline"
-                        style={{ height: 30 }}
-                      >
-                        {loading.fetch ? "Refreshing..." : "Refresh"}
-                      </Btn>
-                      <Btn
-                        onClick={() => handleOpenModal()}
-                        disabled={loading.save}
-                        variant="accent"
-                        style={{ height: 30 }}
-                      >
-                        + Add New
-                      </Btn>
-                    </div>
-                  </div>
-
-                  {/* Table Container with Custom Scrollbar preserved */}
-                  <div
+                  <table
                     style={{
                       width: "100%",
-                      display: "flex",
-                      flexDirection: "column",
+                      borderCollapse: "separate",
+                      borderSpacing: 0,
                     }}
                   >
-                    <div
-                      ref={tableScrollRef}
-                      onScroll={handleTableScroll}
-                      style={{
-                        overflowX: "auto",
-                        overflowY: "auto",
-                        maxHeight: 400,
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none",
-                      }}
-                    >
-                      <table
-                        style={{
-                          width: "100%",
-                          borderCollapse: "collapse",
-                          minWidth: 1400,
-                        }}
-                      >
-                        <thead>
-                          <tr>
-                            <TH
-                              style={{
-                                width: 40,
-                                position: "sticky",
-                                top: 0,
-                                zIndex: 10,
-                              }}
-                            >
-                              Check
-                            </TH>
-                            <TH
-                              style={{
-                                width: 40,
-                                position: "sticky",
-                                top: 0,
-                                zIndex: 10,
-                              }}
-                            >
-                              #
-                            </TH>
-                            {PSTN_CALL_IN_CALLERID_TABLE_COLUMNS.map((col) => (
-                              <TH
-                                key={col.key}
-                                style={{
-                                  position: "sticky",
-                                  top: 0,
-                                  zIndex: 10,
-                                }}
-                              >
-                                {col.label}
-                              </TH>
-                            ))}
-                            <TH
-                              style={{
-                                width: 70,
-                                position: "sticky",
-                                top: 0,
-                                zIndex: 10,
-                              }}
-                            >
-                              Modify
-                            </TH>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {pagedRules.map((item, idx) => {
-                            const realIdx = (page - 1) * itemsPerPage + idx;
-                            const isSelected = selected.includes(realIdx);
-                            const rowBg = isSelected
-                              ? "#f0f9ff"
-                              : idx % 2 === 1
-                                ? "#f8fafc"
-                                : "#ffffff";
-                            return (
-                              <tr
-                                key={realIdx}
-                                style={{
-                                  background: rowBg,
-                                  borderBottom: "0.5px solid #9ca3af",
-                                  transition: "background 0.1s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!isSelected)
-                                    e.currentTarget.style.background =
-                                      "#f0f9ff";
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!isSelected)
-                                    e.currentTarget.style.background = rowBg;
-                                }}
-                              >
-                                <td
-                                  style={{
-                                    textAlign: "center",
-                                    padding: "4px 8px",
-                                    borderRight: "0.5px solid #edf2f7",
-                                  }}
-                                >
-                                  <Checkbox
-                                    size="small"
-                                    checked={isSelected}
-                                    onChange={() => handleSelectRow(idx)}
-                                    sx={{
-                                      padding: "1px",
-                                      color: C.accent,
-                                      "&.Mui-checked": { color: C.accent },
-                                    }}
-                                  />
-                                </td>
-                                <td
-                                  style={{
-                                    textAlign: "center",
-                                    fontSize: 11,
-                                    color: C.mutedText,
-                                    padding: "7px 8px",
-                                    borderRight: "0.5px solid #edf2f7",
-                                  }}
-                                >
-                                  {realIdx + 1}
-                                </td>
-                                {PSTN_CALL_IN_CALLERID_TABLE_COLUMNS.map(
-                                  (col) => (
-                                    <td
-                                      key={col.key}
-                                      style={{
-                                        textAlign: "center",
-                                        fontSize: 12,
-                                        padding: "7px 8px",
-                                        color: C.valueText,
-                                        borderRight: "0.5px solid #edf2f7",
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      {col.key === "call_initiator"
-                                        ? `PCM Trunk Group [${getPcmGroupIdLabel(item[col.key])}]`
-                                        : item[col.key] !== undefined &&
-                                            item[col.key] !== null &&
-                                            item[col.key] !== ""
-                                          ? String(item[col.key])
-                                          : "--"}
-                                    </td>
-                                  ),
-                                )}
-                                <td
-                                  style={{
-                                    textAlign: "center",
-                                    padding: "4px 8px",
-                                    borderRight: "0.5px solid #edf2f7",
-                                  }}
-                                >
-                                  <Btn
-                                    onClick={() =>
-                                      handleOpenModal(item, item.id)
-                                    }
-                                    variant="outline"
-                                    style={{
-                                      fontSize: 10,
-                                      padding: "3px 10px",
-                                      margin: "0 auto",
-                                    }}
-                                  >
-                                    <EditDocumentIcon
-                                      style={{ fontSize: 12, marginRight: 2 }}
-                                    />{" "}
-                                    Edit
-                                  </Btn>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                    <thead>
+                      <tr>
+                        <TH
+                          style={{ width: 40, padding: 0, borderLeft: "none" }}
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={
+                              rules.length > 0 &&
+                              selected.length === rules.length
+                            }
+                            indeterminate={
+                              selected.length > 0 &&
+                              selected.length < rules.length
+                            }
+                            onChange={(e) => {
+                              if (e.target.checked) handleCheckAll();
+                              else handleUncheckAll();
+                            }}
+                            sx={checkboxSx}
+                          />
+                        </TH>
+                        <TH style={{ width: 50 }}>ID</TH>
+                        {PSTN_CALL_IN_CALLERID_TABLE_COLUMNS.map((col) => (
+                          <TH key={col.key}>{col.label}</TH>
+                        ))}
+                        <TH style={{ width: 60, borderRight: "none" }}>
+                          Modify
+                        </TH>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagedRules.map((item, idx) => {
+                        const realIdx = (page - 1) * itemsPerPage + idx;
+                        const isSelected = selected.includes(realIdx);
+                        const isLastRow = idx === pagedRules.length - 1;
+                        const rowBg = isSelected
+                          ? "#f0f9ff"
+                          : idx % 2 === 1
+                            ? "#f8fafc"
+                            : "#ffffff";
+                        const lastRowCellStyle = isLastRow
+                          ? { borderBottom: "none" }
+                          : {};
 
-                    {/* Custom Scrollbar Retained but styled for the new theme */}
-                    {(() => {
-                      const thumbWidth =
-                        scrollState.width && scrollState.scrollWidth
-                          ? Math.max(
-                              40,
-                              (scrollState.width / scrollState.scrollWidth) *
-                                (scrollState.width - 8),
-                            )
-                          : 40;
-                      const thumbLeft =
-                        scrollState.width &&
-                        scrollState.scrollWidth &&
-                        scrollState.scrollWidth > scrollState.width
-                          ? (scrollState.left /
-                              (scrollState.scrollWidth - scrollState.width)) *
-                            (scrollState.width - thumbWidth - 16)
-                          : 0;
-                      return (
-                        showCustomScrollbar && (
-                          <div
+                        return (
+                          <tr
+                            key={item.id || realIdx}
                             style={{
-                              width: "100%",
-                              margin: "0 auto",
-                              background: "#f4f6fa",
-                              display: "flex",
-                              alignItems: "center",
-                              height: 24,
-                              borderBottom: `1px solid ${C.cardBorder}`,
-                              padding: "0 4px",
-                              boxSizing: "border-box",
+                              background: rowBg,
+                              borderBottom: isLastRow
+                                ? "none"
+                                : `1px solid ${C.cardBorder}`,
+                              transition: "background-color 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = "#f1f5f9";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = rowBg;
                             }}
                           >
-                            <div
+                            <td
                               style={{
-                                width: 18,
-                                height: 18,
-                                background: "#fff",
-                                border: `1px solid ${C.cardBorder}`,
-                                borderRadius: 4,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 10,
-                                color: C.mutedText,
-                                cursor: "pointer",
-                                userSelect: "none",
+                                ...tdStyle,
+                                background: rowBg,
+                                borderLeft: "none",
+                                ...lastRowCellStyle,
+                                ...(isLastRow
+                                  ? { borderBottomLeftRadius: CARD_RADIUS }
+                                  : {}),
                               }}
-                              onClick={() => handleArrowClick("left")}
                             >
-                              &#9664;
-                            </div>
-                            <div
+                              <Checkbox
+                                size="small"
+                                checked={isSelected}
+                                onChange={() => handleSelectRow(idx)}
+                                sx={checkboxSx}
+                              />
+                            </td>
+                            <td
                               style={{
-                                flex: 1,
-                                height: 12,
-                                background: "#eef2f7",
-                                borderRadius: 8,
-                                position: "relative",
-                                margin: "0 4px",
-                                overflow: "hidden",
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
                               }}
-                              onClick={handleScrollbarDrag}
+                            >
+                              {realIdx + 1}
+                            </td>
+                            {PSTN_CALL_IN_CALLERID_TABLE_COLUMNS.map((col) => (
+                              <td
+                                key={col.key}
+                                style={{
+                                  ...tdStyle,
+                                  background: rowBg,
+                                  ...lastRowCellStyle,
+                                }}
+                              >
+                                {renderCellValue(col, item)}
+                              </td>
+                            ))}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                borderRight: "none",
+                                ...lastRowCellStyle,
+                                ...(isLastRow
+                                  ? { borderBottomRightRadius: CARD_RADIUS }
+                                  : {}),
+                              }}
                             >
                               <div
                                 style={{
-                                  position: "absolute",
-                                  height: 12,
-                                  background: C.cardBorder,
-                                  borderRadius: 8,
-                                  cursor: "pointer",
-                                  top: 0,
-                                  width: thumbWidth,
-                                  left: thumbLeft,
-                                }}
-                                draggable
-                                onDrag={handleScrollbarDrag}
-                              />
-                            </div>
-                            <div
-                              style={{
-                                width: 18,
-                                height: 18,
-                                background: "#fff",
-                                border: `1px solid ${C.cardBorder}`,
-                                borderRadius: 4,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 10,
-                                color: C.mutedText,
-                                cursor: "pointer",
-                                userSelect: "none",
-                              }}
-                              onClick={() => handleArrowClick("right")}
-                            >
-                              &#9654;
-                            </div>
-                          </div>
-                        )
-                      );
-                    })()}
-                  </div>
-
-                  {/* Footer Pagination */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "10px 14px",
-                      background: "#f8fafc",
-                      gap: 8,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <span style={{ fontSize: 11, color: C.mutedText }}>
-                      Showing {pagedRules.length} records of {rules.length}{" "}
-                      Total ({itemsPerPage} / Page)
-                    </span>
-                    <div
-                      style={{ display: "flex", gap: 8, alignItems: "center" }}
-                    >
-                      <Btn
-                        onClick={() => handlePageChange(1)}
-                        disabled={page === 1}
-                        variant="outline"
-                      >
-                        First
-                      </Btn>
-                      <Btn
-                        onClick={() => handlePageChange(page - 1)}
-                        disabled={page === 1}
-                        variant="outline"
-                      >
-                        ← Prev
-                      </Btn>
-                      <span
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          color: C.accent,
-                          background: "#e0f2fe",
-                          padding: "5px 14px",
-                          borderRadius: 6,
-                          border: `0.5px solid ${C.cardBorder}`,
-                        }}
-                      >
-                        Page {page} of {totalPages}
-                      </span>
-                      <Btn
-                        onClick={() => handlePageChange(page + 1)}
-                        disabled={page === totalPages}
-                        variant="outline"
-                      >
-                        Next →
-                      </Btn>
-                      <Btn
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={page === totalPages}
-                        variant="outline"
-                      >
-                        Last
-                      </Btn>
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: C.mutedText,
-                          marginLeft: 8,
-                        }}
-                      >
-                        Go to Page:
-                      </span>
-                      <select
-                        style={{
-                          fontSize: 11,
-                          padding: "2px 6px",
-                          borderRadius: 4,
-                          border: `1px solid ${C.cardBorder}`,
-                          background: "#fff",
-                          color: C.valueText,
-                          outline: "none",
-                        }}
-                        value={page}
-                        onChange={(e) =>
-                          handlePageChange(Number(e.target.value))
-                        }
-                      >
-                        {Array.from({ length: totalPages }, (_, i) => (
-                          <option key={i + 1} value={i + 1}>
-                            {i + 1}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── Add/Edit Modal ── */}
-            <Dialog
-              open={isModalOpen}
-              onClose={handleCloseModal}
-              maxWidth={false}
-              PaperProps={{
-                sx: { width: 550, maxWidth: "95vw", borderRadius: 2 },
-              }}
-              disableRestoreFocus
-              disableEnforceFocus
-            >
-              <DialogTitle
-                style={{
-                  background: "#1e2d42",
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: 16,
-                  textAlign: "center",
-                  padding: "14px 24px",
-                }}
-              >
-                {editIndex !== null
-                  ? "Edit PSTN Call In CallerID"
-                  : "Add PSTN Call In CallerID"}
-              </DialogTitle>
-              <DialogContent
-                style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
-              >
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  <div
-                    style={{
-                      background: "#fff",
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 6,
-                      padding: 16,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: C.labelText,
-                        marginBottom: 14,
-                        borderBottom: `1px solid ${C.cardBorder}`,
-                        paddingBottom: 6,
-                      }}
-                    >
-                      Configuration
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 14,
-                      }}
-                    >
-                      {getUpdatedFields().map((field) => (
-                        <FieldRow key={field.name} label={`${field.label}:`}>
-                          {field.type === "select" ? (
-                            <FormControl size="small" fullWidth>
-                              <MuiSelect
-                                value={formData[field.name] || ""}
-                                onChange={(e) =>
-                                  handleInputChange({
-                                    target: {
-                                      name: field.name,
-                                      value: e.target.value,
-                                    },
-                                  })
-                                }
-                                sx={{
-                                  fontSize: 13,
-                                  height: 32,
-                                  backgroundColor: "#fff",
-                                  "& .MuiOutlinedInput-notchedOutline": {
-                                    borderColor: C.cardBorder,
-                                  },
+                                  display: "flex",
+                                  justifyContent: "center",
                                 }}
                               >
-                                {field.options.map((opt) => (
-                                  <MenuItem
-                                    key={opt.value}
-                                    value={opt.value}
-                                    sx={{ fontSize: 13 }}
-                                  >
-                                    {opt.label}
-                                  </MenuItem>
-                                ))}
-                              </MuiSelect>
-                            </FormControl>
-                          ) : (
-                            <input
-                              type={field.type || "text"}
-                              name={field.name}
-                              value={formData[field.name] || ""}
-                              onChange={handleInputChange}
-                              style={inputStyle}
-                            />
-                          )}
-                        </FieldRow>
-                      ))}
-                    </div>
+                                <EditDocumentIcon
+                                  titleAccess="Edit"
+                                  style={{
+                                    cursor: "pointer",
+                                    color: "#2563eb",
+                                    fontSize: 22,
+                                    opacity: 0.7,
+                                    transition: "opacity 0.15s ease",
+                                  }}
+                                  onClick={() => handleOpenModal(item, realIdx)}
+                                  onMouseEnter={(e) =>
+                                    (e.currentTarget.style.opacity = "1")
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.currentTarget.style.opacity = "0.7")
+                                  }
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={numManipulatePaginationStyle}>
+                  <span style={{ fontSize: 11, color: C.mutedText }}>
+                    Showing {pagedRules.length} record
+                    {pagedRules.length !== 1 ? "s" : ""} on page {page}
+                  </span>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Btn
+                      onClick={() => handlePageChange(page - 1)}
+                      disabled={page <= 1}
+                      variant="outline"
+                    >
+                      ← Prev
+                    </Btn>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: C.accent,
+                        background: "#e0f2fe",
+                        padding: "5px 14px",
+                        borderRadius: 6,
+                        border: `1px solid ${C.cardBorder}`,
+                      }}
+                    >
+                      Page {page} of {totalPages}
+                    </span>
+                    <Btn
+                      onClick={() => handlePageChange(page + 1)}
+                      disabled={page >= totalPages}
+                      variant="outline"
+                    >
+                      Next →
+                    </Btn>
                   </div>
                 </div>
-              </DialogContent>
-              <DialogActions
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Dialog
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        maxWidth={false}
+        className="z-50"
+        PaperProps={{
+          sx: {
+            width: 600,
+            maxWidth: "95vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
+        disableRestoreFocus
+        disableEnforceFocus
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
+          }}
+        >
+          {editIndex !== null
+            ? "Edit PSTN Call In CallerID"
+            : "Add PSTN Call In CallerID"}
+        </DialogTitle>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+            }}
+          >
+            {getUpdatedFields().map((field) => (
+              <div
+                key={field.name}
                 style={{
-                  padding: "16px 24px",
-                  background: C.pageBg,
-                  borderTop: `1px solid ${C.cardBorder}`,
+                  display: "flex",
+                  alignItems: "center",
                   justifyContent: "center",
                   gap: 12,
                 }}
               >
-               <Btn
-  onClick={handleSave}
-  disabled={loading.save}
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  {loading.save ? "Saving..." : "Save"}
-</Btn>
-              <Btn
-  onClick={handleCloseModal}
-  disabled={loading.save}
-  variant="outline"
-  style={{
-    height: 36,
-    padding: "0 18px",
-    fontSize: 13,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  Cancel
-</Btn>
-              </DialogActions>
-            </Dialog>
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: C.labelText,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 170,
+                    lineHeight: 1.2,
+                    textAlign: "left",
+                  }}
+                >
+                  {field.label}
+                </label>
+                <div style={{ width: "min(100%, 320px)" }}>
+                  {field.type === "select" ? (
+                    <FormControl size="small" fullWidth>
+                      <MuiSelect
+                        value={formData[field.name] || ""}
+                        onChange={(e) =>
+                          handleInputChange({
+                            target: { name: field.name, value: e.target.value },
+                          })
+                        }
+                        variant="outlined"
+                        sx={muiSelectSx}
+                      >
+                        {field.options.map((opt) => (
+                          <MenuItem
+                            key={opt.value}
+                            value={opt.value}
+                            sx={{ fontSize: 14 }}
+                          >
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </MuiSelect>
+                    </FormControl>
+                  ) : (
+                    <TextField
+                      type={field.type || "text"}
+                      name={field.name}
+                      value={formData[field.name] || ""}
+                      onChange={handleInputChange}
+                      size="small"
+                      fullWidth
+                      variant="outlined"
+                      inputProps={{
+                        style: {
+                          fontSize: 13,
+                          height: 32,
+                          padding: "0 8px",
+                          boxSizing: "border-box",
+                        },
+                      }}
+                      sx={muiTextFieldSx}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
+        </DialogContent>
+        <DialogActions
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
+          }}
+        >
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading.save}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save
+              ? "Saving..."
+              : editIndex !== null
+                ? "Update"
+                : "Save"}
+          </Btn>
+          <Btn
+            variant="cancel"
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            style={{ minWidth: 100, height: 33 }}
+          >
+            Close
+          </Btn>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

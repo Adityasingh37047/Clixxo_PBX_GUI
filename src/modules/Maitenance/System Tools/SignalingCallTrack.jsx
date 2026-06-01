@@ -284,31 +284,31 @@ const SignalingCallTrack = () => {
             >
               <Btn
                 variant="primary"
-                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.start}
               </Btn>
               <Btn
                 variant="cancel"
-                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.stop}
               </Btn>
               <Btn
                 variant="cancel"
-                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.filter}
               </Btn>
               <Btn
                 variant="cancel"
-                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.clear}
               </Btn>
               <Btn
                 variant="cancel"
-                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.download}
               </Btn>

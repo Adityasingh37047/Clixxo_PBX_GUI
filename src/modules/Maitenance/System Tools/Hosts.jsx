@@ -955,8 +955,13 @@ const Hosts = () => {
 
       {/* Modal */}
       {showModal && (
-        <div style={modalOverlayStyle}>
-          <div style={modalStyle}>
+        <div
+          style={modalOverlayStyle}
+          onClick={() => {
+            if (!loading.save) handleCloseModal();
+          }}
+        >
+          <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
             <div style={modalHeaderStyle}>
               {editIndex !== null ? "Edit Host" : "Add Host"}
             </div>
@@ -1071,7 +1076,7 @@ const Hosts = () => {
                 variant="primary"
                 onClick={handleSave}
                 disabled={loading.save}
-                style={{ minWidth: 110, height: 34 }}
+                style={{ minWidth: 100, height: 33 }}
               >
                 {loading.save ? "Saving..." : "Save"}
               </Btn>
@@ -1079,7 +1084,7 @@ const Hosts = () => {
                 variant="cancel"
                 onClick={handleCloseModal}
                 disabled={loading.save}
-                style={{ minWidth: 110, height: 34 }}
+                style={{ minWidth: 100, height: 33 }}
               >
                 Close
               </Btn>

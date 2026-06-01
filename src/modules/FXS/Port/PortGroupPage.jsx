@@ -1,6 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import { Checkbox } from "@mui/material";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import {
   PORT_GROUP_TOTAL_PORTS,
   PORT_GROUP_TABLE_COLUMNS,
@@ -9,128 +16,53 @@ import {
   PORT_GROUP_AUTHENTICATION_MODE_OPTIONS,
   PORT_GROUP_SELECT_MODE_OPTIONS,
   PORT_GROUP_MULTI_GROUP_OPTIONS,
-  PORT_GROUP_PAGE_TITLE,
-  PORT_GROUP_ADD_TITLE,
 } from "../../../sections/port/constants/PortGroupPageConstants";
+import {
+  C,
+  Btn,
+  TH,
+  tdStyle,
+  checkboxSx,
+  numManipulateCardStyle,
+  numManipulateToolbarStyle,
+  numManipulatePaginationStyle,
+  routeTableMinWidthForZoom,
+} from "../../../sections/route/routeSharedUi";
 
-// ── Color Palette (From Source) ───────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-
-  accent: "#2e2f31",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
+const routeTdStyle = {
+  ...tdStyle,
+  fontSize: 12,
+  padding: "7px 8px",
 };
 
-// ── Shared UI Components (From Source) ────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  title,
-}) => {
-  const variants = {
-    default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
-    >
-      {children}
-    </button>
-  );
+const routeThExtra = {
+  fontSize: 10.5,
+  padding: "9px 8px",
+  letterSpacing: "0.04em",
 };
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#f3f4f6",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
 
 const FieldRow = ({ label, children }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
     <label
       style={{
         fontSize: 13,
         fontWeight: 600,
         color: C.labelText,
-        width: 200,
+        width: 170,
         flexShrink: 0,
+        textAlign: "left",
       }}
     >
       {label}
     </label>
-    <div style={{ flex: 1 }}>{children}</div>
+    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
 );
 
@@ -145,6 +77,24 @@ const inputStyle = {
   backgroundColor: "#fff",
   color: C.valueText,
   boxSizing: "border-box",
+  transition: "border-color 0.15s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    e.target.style.borderColor = "#0284c7";
+  },
+  onBlur: (e) => {
+    e.target.style.borderColor = C.cardBorder;
+  },
+  onMouseEnter: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = "#64748b";
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement !== e.target)
+      e.target.style.borderColor = C.cardBorder;
+  },
 };
 
 // ── Initial State ─────────────────────────────────────────────────────────────
@@ -167,13 +117,50 @@ const initialFormState = () => ({
 
 const PortGroupPage = () => {
   const [groups, setGroups] = useState([]);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingGroupId, setEditingGroupId] = useState(null);
   const [form, setForm] = useState(initialFormState());
   const [checkedRows, setCheckedRows] = useState({});
+  const [tableMinWidth, setTableMinWidth] = useState("100%");
+
+  useEffect(() => {
+    const updateTableWidthForZoom = () => {
+      setTableMinWidth(routeTableMinWidthForZoom(1400));
+    };
+    updateTableWidthForZoom();
+    window.addEventListener("resize", updateTableWidthForZoom);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", updateTableWidthForZoom);
+    vv?.addEventListener("scroll", updateTableWidthForZoom);
+    return () => {
+      window.removeEventListener("resize", updateTableWidthForZoom);
+      vv?.removeEventListener("resize", updateTableWidthForZoom);
+      vv?.removeEventListener("scroll", updateTableWidthForZoom);
+    };
+  }, []);
+
+  const handleOpenModal = (group = null) => {
+    if (group) {
+      setForm({
+        ...initialFormState(),
+        index: group.index,
+      });
+      setEditingGroupId(group.id);
+    } else {
+      setForm(initialFormState());
+      setEditingGroupId(null);
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingGroupId(null);
+    setForm(initialFormState());
+  };
 
   const handleAddNewClick = () => {
-    setForm(initialFormState());
-    setShowAddForm(true);
+    handleOpenModal();
   };
 
   const handleFormChange = (key, value) => {
@@ -247,15 +234,7 @@ const PortGroupPage = () => {
     };
 
     setGroups((prev) => [...prev, newGroup]);
-    setShowAddForm(false);
-  };
-
-  const handleCancel = () => {
-    setShowAddForm(false);
-  };
-
-  const handleResetForm = () => {
-    setForm(initialFormState());
+    handleCloseModal();
   };
 
   const handleRowCheck = (id) => {
@@ -292,93 +271,162 @@ const PortGroupPage = () => {
   };
 
   const handleDelete = () => {
-    const anyChecked = groups.some((g) => checkedRows[g.id]);
-    if (!anyChecked) return;
+    const selectedIds = groups.filter((g) => checkedRows[g.id]);
+    if (selectedIds.length === 0) {
+      window.alert("Please select at least one item to delete.");
+      return;
+    }
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${selectedIds.length} selected item(s)?`,
+    );
+    if (!confirmed) return;
     setGroups((prev) => prev.filter((g) => !checkedRows[g.id]));
     setCheckedRows({});
   };
 
   const handleClearAll = () => {
+    if (groups.length === 0) {
+      window.alert("No port groups to clear.");
+      return;
+    }
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ALL ${groups.length} port group(s)? This action cannot be undone.`,
+    );
+    if (!confirmed) return;
     setGroups([]);
     setCheckedRows({});
   };
 
-  // ── Renders ─────────────────────────────────────────────────────────────────
+  const selectedCount = Object.values(checkedRows).filter(Boolean).length;
+  const allChecked =
+    groups.length > 0 && groups.every((g) => checkedRows[g.id]);
+
   const renderEmptyState = () => (
-    <div style={{ padding: 48, textAlign: "center" }}>
-      <div style={{ fontSize: 14, color: C.mutedText, marginBottom: 16 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: 240,
+        padding: 24,
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          color: "#3E5475",
+          fontSize: 13,
+          fontWeight: 600,
+          marginBottom: 16,
+        }}
+      >
         No available port group!
       </div>
-     <Btn
-  onClick={handleAddNewClick}
-  variant="accent"
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    margin: "0 auto",
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  + Add New
-</Btn>
+      <Btn
+        variant="cancel"
+        onClick={handleAddNewClick}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        + Add New
+      </Btn>
     </div>
   );
+
+  const renderTableCell = (col, group, isSelected, rowBg, cellExtra = {}) => {
+    if (col.key === "modify") {
+      return (
+        <td
+          key={col.key}
+          style={{
+            ...routeTdStyle,
+            background: rowBg,
+            borderRight: "none",
+            ...cellExtra,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <EditDocumentIcon
+              titleAccess="Edit"
+              style={{
+                cursor: "pointer",
+                color: "#2563eb",
+                fontSize: 22,
+                opacity: 0.7,
+                transition: "opacity 0.15s ease",
+              }}
+              onClick={() => handleOpenModal(group)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "0.7";
+              }}
+            />
+          </div>
+        </td>
+      );
+    }
+    if (col.key === "check") {
+      return (
+        <td
+          key={col.key}
+          style={{
+            ...routeTdStyle,
+            background: rowBg,
+            width: 36,
+            ...cellExtra,
+          }}
+        >
+          <Checkbox
+            size="small"
+            checked={isSelected}
+            onChange={() => handleRowCheck(group.id)}
+            sx={checkboxSx}
+          />
+        </td>
+      );
+    }
+    return (
+      <td
+        key={col.key}
+        style={{
+          ...routeTdStyle,
+          background: rowBg,
+          wordBreak: col.key === "ports" ? "break-all" : undefined,
+          ...cellExtra,
+        }}
+      >
+        {group[col.key]}
+      </td>
+    );
+  };
+
+  const tableSectionBorder = `1px solid ${C.cardBorder}`;
 
   const renderTable = () => (
     <div
       style={{
-        background: C.cardBg,
-        border: `1px solid ${C.cardBorder}`,
-        borderRadius: 8,
-        overflow: "hidden",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+        ...numManipulateCardStyle,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      {/* Toolbar */}
-      {/* <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "10px 14px",
-          borderBottom: `1px solid ${C.cardBorder}`,
-          background: "#DCE6F2",
-          flexWrap: "wrap",
-          gap: 8,
-        }}
-      > */}
-      {/* <div style={{ display: "flex", alignItems: "center", gap: 8 }}> */}
-      {/* <span
-            style={{
-              background: "#f1f5f9",
-              border: `0.5px solid ${C.cardBorder}`,
-              color: "#475569",
-              fontSize: 11,
-              fontWeight: 600,
-              padding: "3px 12px",
-              borderRadius: 20,
-            }}
-          >
-            {PORT_GROUP_PAGE_TITLE} · {groups.length} records
-          </span>
-          {Object.values(checkedRows).filter(Boolean).length > 0 && (
+      <div style={numManipulateToolbarStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {selectedCount > 0 && (
             <span
               style={{
-                background: "#e0f2fe",
+                background: "#eff6ff",
                 color: C.accent,
                 fontSize: 11,
-                fontWeight: 600,
-                padding: "3px 10px",
-                borderRadius: 20,
-                border: `0.5px solid ${C.accent}`,
+                fontWeight: 700,
+                padding: "5px 12px",
+                borderRadius: 999,
+                border: `1px solid ${C.accent}`,
               }}
             >
-              {Object.values(checkedRows).filter(Boolean).length} selected
+              {selectedCount} selected
             </span>
           )}
         </div>
@@ -390,52 +438,114 @@ const PortGroupPage = () => {
             flexWrap: "wrap",
           }}
         >
-          <Btn onClick={handleTableCheckAll} variant="outline">
-            Check All
-          </Btn>
-          <Btn onClick={handleTableUncheckAll} variant="outline">
-            Uncheck All
-          </Btn>
-          <Btn onClick={handleTableInverse} variant="outline">
+          <Btn
+            variant="cancel"
+            onClick={handleTableInverse}
+            disabled={groups.length === 0}
+            style={{ height: 30 }}
+          >
             Inverse
           </Btn>
           <Btn
+            variant="cancel"
             onClick={handleDelete}
-            disabled={groups.length === 0}
-            variant="danger"
+            disabled={selectedCount === 0}
+            style={{ height: 30 }}
           >
-            🗑 Delete
+            <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+            Delete
           </Btn>
           <Btn
+            variant="cancel"
             onClick={handleClearAll}
             disabled={groups.length === 0}
-            variant="danger"
+            style={{ height: 30 }}
           >
             Clear All
           </Btn>
-          <Btn onClick={handleAddNewClick} variant="accent">
+          <Btn
+            variant="primary"
+            onClick={handleAddNewClick}
+            style={{
+              height: 30,
+              padding: "6px 14px",
+              fontSize: 12,
+              borderRadius: 10,
+            }}
+          >
             + Add New
-          </Btn> */}
-      {/* </div> */}
-      {/* </div> */}
+          </Btn>
+        </div>
+      </div>
 
-      {/* Table Data */}
-      <div style={{ overflowX: "auto" }}>
+      <div
+        style={{
+          overflowX: "auto",
+          overflowY: "auto",
+          width: "100%",
+          boxSizing: "border-box",
+          borderBottom: groups.length > 0 ? tableSectionBorder : undefined,
+        }}
+      >
         {groups.length === 0 ? (
           renderEmptyState()
         ) : (
           <table
             style={{
               width: "100%",
-              borderCollapse: "collapse",
-              minWidth: 900,
+              borderCollapse: "separate",
+              borderSpacing: 0,
+              minWidth: tableMinWidth,
             }}
           >
             <thead>
               <tr>
-                {PORT_GROUP_TABLE_COLUMNS.map((col) => (
-                  <TH key={col.key}>{col.label}</TH>
-                ))}
+                {PORT_GROUP_TABLE_COLUMNS.map((col) => {
+                  if (col.key === "check") {
+                    return (
+                      <TH
+                        key={col.key}
+                        style={{
+                          width: 40,
+                          padding: 0,
+                          ...routeThExtra,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={allChecked}
+                          indeterminate={
+                            selectedCount > 0 && !allChecked
+                          }
+                          onChange={(e) => {
+                            if (e.target.checked) handleTableCheckAll();
+                            else handleTableUncheckAll();
+                          }}
+                          sx={checkboxSx}
+                        />
+                      </TH>
+                    );
+                  }
+                  if (col.key === "modify") {
+                    return (
+                      <TH
+                        key={col.key}
+                        style={{
+                          width: 70,
+                          borderRight: "none",
+                          ...routeThExtra,
+                        }}
+                      >
+                        {col.label}
+                      </TH>
+                    );
+                  }
+                  return (
+                    <TH key={col.key} style={routeThExtra}>
+                      {col.label}
+                    </TH>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -446,169 +556,25 @@ const PortGroupPage = () => {
                   : idx % 2 === 1
                     ? "#f8fafc"
                     : "#ffffff";
-
                 return (
                   <tr
                     key={group.id}
                     style={{
                       background: rowBg,
-                      borderBottom: "0.5px solid #9ca3af",
-                      transition: "background 0.1s ease",
+                      transition: "background 0.15s ease",
                     }}
                     onMouseEnter={(e) => {
                       if (!isSelected)
-                        e.currentTarget.style.background = "#f0f9ff";
+                        e.currentTarget.style.background = "#f1f5f9";
                     }}
                     onMouseLeave={(e) => {
-                      if (!isSelected) e.currentTarget.style.background = rowBg;
+                      if (!isSelected)
+                        e.currentTarget.style.background = rowBg;
                     }}
                   >
-                    <td
-                      style={{
-                        textAlign: "center",
-                        padding: "4px 8px",
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      <Btn
-                        onClick={() => {
-                          setForm((prev) => ({
-                            ...initialFormState(),
-                            index: group.index,
-                          }));
-                          setShowAddForm(true);
-                        }}
-                        variant="outline"
-                        style={{
-                          fontSize: 10,
-                          padding: "3px 10px",
-                          margin: "0 auto",
-                        }}
-                      >
-                        <EditDocumentIcon
-                          style={{ fontSize: 12, marginRight: 2 }}
-                        />{" "}
-                        Edit
-                      </Btn>
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        padding: "4px 0",
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={isSelected}
-                        onChange={() => handleRowCheck(group.id)}
-                        sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                        }}
-                      />
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      {group.index}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      {group.description}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      {group.sipAccount}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      {group.displayName}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                        wordBreak: "break-all",
-                      }}
-                    >
-                      {group.ports}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      {group.portSelectMode}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      {group.enumRule}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      {group.ringExpire}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        padding: "7px 4px",
-                        color: C.valueText,
-                        borderRight: "0.5px solid #edf2f7",
-                      }}
-                    >
-                      {group.robKey}
-                    </td>
+                    {PORT_GROUP_TABLE_COLUMNS.map((col) =>
+                      renderTableCell(col, group, isSelected, rowBg, {}),
+                    )}
                   </tr>
                 );
               })}
@@ -617,26 +583,13 @@ const PortGroupPage = () => {
         )}
       </div>
 
-      {/* Footer Pagination */}
       {groups.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "10px 14px",
-            borderTop: `0.5px solid ${C.cardBorder}`,
-            background: "#f8fafc",
-            gap: 8,
-          }}
-        >
+        <div style={{ ...numManipulatePaginationStyle, borderTop: "none" }}>
           <span style={{ fontSize: 11, color: C.mutedText }}>
-            Showing {groups.length} records on page 1
+            Showing {groups.length} record{groups.length !== 1 ? "s" : ""} on
+            page 1
           </span>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <Btn disabled variant="outline">
-              First
-            </Btn>
+          <div style={{ display: "flex", gap: 8 }}>
             <Btn disabled variant="outline">
               ← Prev
             </Btn>
@@ -648,7 +601,7 @@ const PortGroupPage = () => {
                 background: "#e0f2fe",
                 padding: "5px 14px",
                 borderRadius: 6,
-                border: `0.5px solid ${C.cardBorder}`,
+                border: `1px solid ${C.cardBorder}`,
               }}
             >
               Page 1 of 1
@@ -656,70 +609,20 @@ const PortGroupPage = () => {
             <Btn disabled variant="outline">
               Next →
             </Btn>
-            <Btn disabled variant="outline">
-              Last
-            </Btn>
           </div>
         </div>
       )}
     </div>
   );
 
-  const renderAddForm = () => (
-    <div
-      style={{
-        background: C.cardBg,
-        border: `1px solid ${C.cardBorder}`,
-        borderRadius: 8,
-        overflow: "hidden",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        maxWidth: 800,
-        margin: "0 auto",
-      }}
-    >
-      <div
-        style={{
-          background: "#1e2d42",
-          color: "#fff",
-          fontWeight: 700,
-          fontSize: 16,
-          textAlign: "center",
-          padding: "14px 24px",
-        }}
-      >
-        {PORT_GROUP_ADD_TITLE}
-      </div>
-
-      <div style={{ padding: "20px 24px", backgroundColor: C.pageBg }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Settings Section */}
-          <div
-            style={{
-              background: "#fff",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 6,
-              padding: 16,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.labelText,
-                marginBottom: 14,
-                borderBottom: `1px solid ${C.cardBorder}`,
-                paddingBottom: 6,
-              }}
-            >
-              Configuration
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <FieldRow label="Index">
+  const renderFormFields = () => (
+    <>
+              <FieldRow label="ID:">
                 <select
                   value={form.index}
                   onChange={(e) => handleFormChange("index", e.target.value)}
                   style={inputStyle}
+                  {...inputInteraction}
                 >
                   {PORT_GROUP_INDEX_OPTIONS.map((v) => (
                     <option key={v} value={v}>
@@ -729,7 +632,7 @@ const PortGroupPage = () => {
                 </select>
               </FieldRow>
 
-              <FieldRow label="Description">
+              <FieldRow label="Description:">
                 <input
                   type="text"
                   value={form.description}
@@ -737,17 +640,19 @@ const PortGroupPage = () => {
                     handleFormChange("description", e.target.value)
                   }
                   style={inputStyle}
+                  {...inputInteraction}
                   maxLength={23}
                 />
               </FieldRow>
 
-              <FieldRow label="Register Port Group">
+              <FieldRow label="Register Port Group:">
                 <select
                   value={form.registerPortGroup}
                   onChange={(e) =>
                     handleFormChange("registerPortGroup", e.target.value)
                   }
                   style={inputStyle}
+                  {...inputInteraction}
                 >
                   {PORT_GROUP_REGISTER_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -759,7 +664,7 @@ const PortGroupPage = () => {
 
               {form.registerPortGroup === "1" && (
                 <>
-                  <FieldRow label="SIP Account">
+                  <FieldRow label="SIP Account:">
                     <input
                       type="text"
                       value={form.sipAccount}
@@ -767,9 +672,10 @@ const PortGroupPage = () => {
                         handleFormChange("sipAccount", e.target.value)
                       }
                       style={inputStyle}
+                      {...inputInteraction}
                     />
                   </FieldRow>
-                  <FieldRow label="Display Name">
+                  <FieldRow label="Display Name:">
                     <input
                       type="text"
                       value={form.displayName}
@@ -777,9 +683,10 @@ const PortGroupPage = () => {
                         handleFormChange("displayName", e.target.value)
                       }
                       style={inputStyle}
+                      {...inputInteraction}
                     />
                   </FieldRow>
-                  <FieldRow label="Password">
+                  <FieldRow label="Password:">
                     <input
                       type="password"
                       value={form.password}
@@ -787,18 +694,20 @@ const PortGroupPage = () => {
                         handleFormChange("password", e.target.value)
                       }
                       style={inputStyle}
+                      {...inputInteraction}
                     />
                   </FieldRow>
                 </>
               )}
 
-              <FieldRow label="Authentication Mode">
+              <FieldRow label="Authentication Mode:">
                 <select
                   value={form.registerSelectMode}
                   onChange={(e) =>
                     handleFormChange("registerSelectMode", e.target.value)
                   }
                   style={inputStyle}
+                  {...inputInteraction}
                 >
                   {PORT_GROUP_AUTHENTICATION_MODE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -808,13 +717,14 @@ const PortGroupPage = () => {
                 </select>
               </FieldRow>
 
-              <FieldRow label="Port Select Mode">
+              <FieldRow label="Port Select Mode:">
                 <select
                   value={form.portSelectMode}
                   onChange={(e) =>
                     handleFormChange("portSelectMode", e.target.value)
                   }
                   style={inputStyle}
+                  {...inputInteraction}
                 >
                   {PORT_GROUP_SELECT_MODE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -826,7 +736,7 @@ const PortGroupPage = () => {
 
               {form.portSelectMode === "5" && (
                 <>
-                  <FieldRow label="Rule for Ringing by Turns">
+                  <FieldRow label="Rule for Ringing by Turns:">
                     <input
                       type="text"
                       value={form.enumRule}
@@ -834,9 +744,10 @@ const PortGroupPage = () => {
                         handleFormChange("enumRule", e.target.value)
                       }
                       style={inputStyle}
+                      {...inputInteraction}
                     />
                   </FieldRow>
-                  <FieldRow label="Timeout for Ringing by Turns (s)">
+                  <FieldRow label="Timeout for Ringing by Turns (s):">
                     <input
                       type="text"
                       value={form.ringExpire}
@@ -844,29 +755,32 @@ const PortGroupPage = () => {
                         handleFormChange("ringExpire", e.target.value)
                       }
                       style={inputStyle}
+                      {...inputInteraction}
                     />
                   </FieldRow>
                 </>
               )}
 
               {form.portSelectMode !== "4" && form.portSelectMode !== "5" && (
-                <FieldRow label="Preemptive Answer Keyboard Shortcut">
+                <FieldRow label="Preemptive Answer Keyboard Shortcut:">
                   <input
                     type="text"
                     value={form.robKey}
                     onChange={(e) => handleFormChange("robKey", e.target.value)}
                     style={inputStyle}
+                    {...inputInteraction}
                   />
                 </FieldRow>
               )}
 
-              <FieldRow label="Port Reused by Multiple Groups">
+              <FieldRow label="Port Reused by Multiple Groups:">
                 <select
                   value={form.enablePortMultiGroup}
                   onChange={(e) =>
                     handleFormChange("enablePortMultiGroup", e.target.value)
                   }
                   style={inputStyle}
+                  {...inputInteraction}
                 >
                   {PORT_GROUP_MULTI_GROUP_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -875,15 +789,15 @@ const PortGroupPage = () => {
                   ))}
                 </select>
               </FieldRow>
-            </div>
-          </div>
+    </>
+  );
 
-          {/* Ports Section */}
+  const renderPortsSection = () => (
           <div
             style={{
-              background: "#fff",
+              background: "#ffffff",
               border: `1px solid ${C.cardBorder}`,
-              borderRadius: 6,
+              borderRadius: 8,
               padding: 16,
             }}
           >
@@ -904,15 +818,15 @@ const PortGroupPage = () => {
               <div style={{ display: "flex", gap: 8 }}>
                 <Btn
                   onClick={handleCheckAllPorts}
-                  variant="outline"
-                  style={{ padding: "3px 10px", fontSize: 10 }}
+                  variant="cancel"
+                  style={{ height: 28, padding: "4px 12px", fontSize: 11 }}
                 >
                   Check All
                 </Btn>
                 <Btn
                   onClick={handleInversePorts}
-                  variant="outline"
-                  style={{ padding: "3px 10px", fontSize: 10 }}
+                  variant="cancel"
+                  style={{ height: 28, padding: "4px 12px", fontSize: 11 }}
                 >
                   Inverse
                 </Btn>
@@ -937,74 +851,17 @@ const PortGroupPage = () => {
                     cursor: "pointer",
                   }}
                 >
-                 <Checkbox
-  size="small"
-  checked={val}
-  onChange={() => handlePortToggle(idx)}
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-  }}
-/>
+                  <Checkbox
+                    size="small"
+                    checked={val}
+                    onChange={() => handlePortToggle(idx)}
+                    sx={checkboxSx}
+                  />
                   Port {idx + 1}(FXS)
                 </label>
               ))}
             </div>
           </div>
-        </div>
-      </div>
-
-      <div
-        style={{
-          padding: "16px 24px",
-          background: C.pageBg,
-          borderTop: `1px solid ${C.cardBorder}`,
-          display: "flex",
-          justifyContent: "center",
-          gap: 12,
-        }}
-      >
-       <Btn
-  onClick={handleSave}
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  Save
-</Btn>
-       <Btn
-  onClick={handleCancel}
-  variant="outline"
-  style={{
-    height: 36,
-    padding: "0 16px",
-    fontSize: 13,
-    minWidth: 100,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08)",
-  }}
->
-  Cancel
-</Btn>
-      </div>
-    </div>
   );
 
   return (
@@ -1015,27 +872,113 @@ const PortGroupPage = () => {
         padding: 16,
       }}
     >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
         <div
           style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            gap: 4,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Port &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              Port Group
-            </span>
-          </div>
+          <span>FXS</span>
+          <span>&gt;</span>
+          <span>Port</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Port Group
+          </span>
         </div>
 
-        {/* Main Content */}
-        {!showAddForm && renderTable()}
-        {showAddForm && renderAddForm()}
+        {renderTable()}
+
+        <Dialog
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          maxWidth={false}
+          PaperProps={{
+            sx: {
+              width: 720,
+              maxWidth: "95vw",
+              p: 0,
+              borderRadius: "8px",
+              overflow: "hidden",
+              boxShadow:
+                "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            },
+          }}
+          disableRestoreFocus
+          disableEnforceFocus
+        >
+          <DialogTitle
+            style={{
+              background: "#1e2d42",
+              color: "#ffffff",
+              fontWeight: 600,
+              fontSize: 16,
+              padding: "16px 24px",
+              textAlign: "center",
+              borderTopLeftRadius: 8,
+              borderTopRightRadius: 8,
+            }}
+          >
+            {editingGroupId !== null ? "Edit Port Group" : "Add Port Group"}
+          </DialogTitle>
+          <DialogContent
+            style={{
+              padding: "24px",
+              backgroundColor: "#ffffff",
+              maxHeight: "75vh",
+              overflowY: "auto",
+            }}
+          >
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: 16 }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                  background: "#f8fafc",
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 8,
+                  padding: 20,
+                }}
+              >
+                {renderFormFields()}
+              </div>
+              {renderPortsSection()}
+            </div>
+          </DialogContent>
+          <DialogActions
+            style={{
+              padding: "16px 24px",
+              background: "#f8fafc",
+              borderTop: `1px solid ${C.cardBorder}`,
+              justifyContent: "center",
+              gap: 12,
+            }}
+          >
+            <Btn
+              variant="primary"
+              onClick={handleSave}
+              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            >
+              Save
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={handleCloseModal}
+              style={{ minWidth: 100, height: 33 }}
+            >
+              Close
+            </Btn>
+          </DialogActions>
+        </Dialog>
       </div>
     </div>
   );

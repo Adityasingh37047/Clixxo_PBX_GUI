@@ -3,170 +3,153 @@ import {
   ROUTE_MODE_OPTIONS,
   ROUTE_ROUTING_PARAMETER_INITIAL_FORM,
 } from "../../../sections/route/constants/RouteRoutingParameterPageConstants";
-import { Select as MuiSelect, MenuItem, FormControl } from "@mui/material";
+import {
+  Select,
+  MenuItem,
+  FormControl,
+  TextField,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
+import { C, Btn } from "../../../sections/route/routeSharedUi";
 
-// ── Color Palette (From Source) ───────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-<<<<<<< HEAD
-  strongText: "#0f172a",
-  accent: "#1e293b",
-=======
-  accent: "#0284c7",
-  primary: "#2563eb",
->>>>>>> 9845773c3393f4b48bcef7d18b0ff370a7806fb0
-  errorRed: "#dc2626",
+const muiOutlinedFieldSx = {
+  backgroundColor: C.cardBg,
+  "& .MuiOutlinedInput-root": {
+    height: 36,
+    fontSize: 13,
+    backgroundColor: C.cardBg,
+    transition: "border-color 0.2s ease",
+    "&.Mui-focused": { boxShadow: "none" },
+    "& fieldset": {
+      borderColor: C.cardBorder,
+      borderWidth: "1px",
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover:not(.Mui-focused):not(.Mui-disabled) fieldset": {
+      borderColor: "#64748b !important",
+      borderWidth: "1px !important",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "#0284c7 !important",
+      borderWidth: "1px !important",
+    },
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: `${C.cardBorder} !important`,
+    borderWidth: "1px !important",
+    transition: "border-color 0.2s ease",
+  },
+  "&:hover:not(.Mui-focused):not(.Mui-disabled) fieldset": {
+    borderColor: "#64748b !important",
+    borderWidth: "1px !important",
+  },
+  "&:hover:not(.Mui-focused):not(.Mui-disabled) .MuiOutlinedInput-notchedOutline":
+    {
+      borderColor: "#64748b !important",
+      borderWidth: "1px !important",
+    },
+  "& .MuiOutlinedInput-root:hover:not(.Mui-focused):not(.Mui-disabled) .MuiOutlinedInput-notchedOutline":
+    {
+      borderColor: "#64748b !important",
+      borderWidth: "1px !important",
+    },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#0284c7 !important",
+    borderWidth: "1px !important",
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#0284c7 !important",
+    borderWidth: "1px !important",
+  },
+  "& .MuiSelect-select": {
+    fontSize: 13,
+    color: C.valueText,
+    padding: "6px 10px",
+    display: "flex",
+    alignItems: "center",
+  },
+  "& .MuiInputBase-input": {
+    fontSize: 13,
+    color: C.valueText,
+    padding: "6px 10px",
+  },
 };
 
-// ── Shared UI Components (From Source) ────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  title,
-  type = "button",
-}) => {
-  const variants = {
-    default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
-    >
-      {children}
-    </button>
-  );
-};
+const CARD_RADIUS = 10;
+const HEADER_RADIUS = 20;
 
-const FieldRow = ({ label, children, style }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12, ...style }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 220,
-        flexShrink: 0,
-      }}
-    >
-      {label}
-    </label>
-    <div style={{ flex: 1 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
-
-const inputStyle = {
-  height: 32,
-  padding: "0 8px",
-  fontSize: 13,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  outline: "none",
-  backgroundColor: "#fff",
-  color: C.valueText,
-  boxSizing: "border-box",
+const tableContainerStyle = {
   width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  overflow: "hidden",
 };
 
-// ── Main Component ────────────────────────────────────────────────────────────
+const blueBarStyle = {
+  width: "100%",
+  height: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: HEADER_RADIUS,
+  borderTopRightRadius: HEADER_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.cardBorder}`,
+};
+
+const saveBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  letterSpacing: "0.2px",
+};
+
 const RouteRoutingParameterPage = () => {
   const [formData, setFormData] = useState(
     ROUTE_ROUTING_PARAMETER_INITIAL_FORM,
   );
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Number input validation: allows only numbers
   const handleNumberKeyPress = (e) => {
     const key = e.keyCode || e.which;
     if (key > 47 && key < 58) {
       // Allow numbers
     } else if (key !== 8) {
-      // Allow backspace (8)
       e.preventDefault();
     }
   };
 
   const handleSave = () => {
-    // Form validation can be added here if needed
-    alert("Settings saved successfully!");
+    setLoading(true);
+    try {
+      showToast("Routing parameters saved successfully.");
+    } catch {
+      showToast(
+        "Failed to save routing parameters. Please try again.",
+        "error",
+      );
+    } finally {
+      setTimeout(() => setLoading(false), 800);
+    }
   };
 
   return (
@@ -177,8 +160,23 @@ const RouteRoutingParameterPage = () => {
         padding: 16,
       }}
     >
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        {/* Breadcrumb */}
+      <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 16,
+              right: 16,
+              zIndex: 9999,
+              boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
+
         <div
           style={{
             fontSize: 12,
@@ -199,133 +197,143 @@ const RouteRoutingParameterPage = () => {
           </span>
         </div>
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ padding: "24px 28px" }}>
-            <SectionHeading title="Routing Parameters" />
+        <div style={tableContainerStyle}>
+          <div style={blueBarStyle}>Routing Parameters</div>
 
-            <div style={{ padding: "24px 32px" }}>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 16 }}
-              >
-                <FieldRow label="IP->TEL">
-                  <FormControl size="small" fullWidth>
-                    <MuiSelect
-                      value={formData.ipInRouteMode}
-                      onChange={(e) =>
-                        handleInputChange("ipInRouteMode", e.target.value)
-                      }
-                      variant="outlined"
-                      sx={{
-                        fontSize: 13,
-                        height: 32,
-                        backgroundColor: "white",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.cardBorder,
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.accent,
-                        },
-                        "& .MuiSelect-select": { padding: "4px 8px" },
-                      }}
-                    >
-                      {ROUTE_MODE_OPTIONS.map((opt) => (
-                        <MenuItem
-                          key={opt.value}
-                          value={opt.value}
-                          sx={{ fontSize: 13 }}
-                        >
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </MuiSelect>
-                  </FormControl>
-                </FieldRow>
-
-                <FieldRow label="TEL->IP">
-                  <FormControl size="small" fullWidth>
-                    <MuiSelect
-                      value={formData.pstnToIPRouteMode}
-                      onChange={(e) =>
-                        handleInputChange("pstnToIPRouteMode", e.target.value)
-                      }
-                      variant="outlined"
-                      sx={{
-                        fontSize: 13,
-                        height: 32,
-                        backgroundColor: "white",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.cardBorder,
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.accent,
-                        },
-                        "& .MuiSelect-select": { padding: "4px 8px" },
-                      }}
-                    >
-                      {ROUTE_MODE_OPTIONS.map((opt) => (
-                        <MenuItem
-                          key={opt.value}
-                          value={opt.value}
-                          sx={{ fontSize: 13 }}
-                        >
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </MuiSelect>
-                  </FormControl>
-                </FieldRow>
-
-                <FieldRow label="Route Detection Cycle (s)">
-                  <input
-                    id="RouteCheckPeriod"
-                    type="text"
-                    value={formData.routeCheckPeriod || ""}
+          <div className="w-full px-5 pt-3 pb-2">
+            <div className="space-y-4 w-full max-w-[500px] mx-auto">
+              <div className="flex items-center justify-between">
+                <label
+                  className="text-sm font-semibold text-left whitespace-nowrap"
+                  style={{
+                    width: "auto",
+                    minWidth: 130,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    textAlign: "left",
+                    marginRight: 10,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  IP-&gt;TEL
+                </label>
+                <FormControl size="small">
+                  <Select
+                    name="ipInRouteMode"
+                    value={formData.ipInRouteMode}
                     onChange={(e) =>
-                      handleInputChange("routeCheckPeriod", e.target.value)
+                      handleInputChange("ipInRouteMode", e.target.value)
                     }
-                    onKeyPress={handleNumberKeyPress}
-                    maxLength={31}
-                    style={inputStyle}
-                  />
-                </FieldRow>
+                    variant="outlined"
+                    sx={{ ...muiOutlinedFieldSx, width: 240 }}
+                  >
+                    {ROUTE_MODE_OPTIONS.map((opt) => (
+                      <MenuItem
+                        key={opt.value}
+                        value={opt.value}
+                        sx={{ fontSize: 13 }}
+                      >
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label
+                  className="text-sm font-semibold text-left whitespace-nowrap"
+                  style={{
+                    width: "auto",
+                    minWidth: 130,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    textAlign: "left",
+                    marginRight: 10,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  TEL-&gt;IP
+                </label>
+                <FormControl size="small">
+                  <Select
+                    name="pstnToIPRouteMode"
+                    value={formData.pstnToIPRouteMode}
+                    onChange={(e) =>
+                      handleInputChange("pstnToIPRouteMode", e.target.value)
+                    }
+                    variant="outlined"
+                    sx={{ ...muiOutlinedFieldSx, width: 240 }}
+                  >
+                    {ROUTE_MODE_OPTIONS.map((opt) => (
+                      <MenuItem
+                        key={opt.value}
+                        value={opt.value}
+                        sx={{ fontSize: 13 }}
+                      >
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label
+                  className="text-sm font-semibold text-left whitespace-nowrap"
+                  style={{
+                    width: "auto",
+                    minWidth: 130,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    textAlign: "left",
+                    marginRight: 10,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  Route Detection Cycle (s)
+                </label>
+                <TextField
+                  id="RouteCheckPeriod"
+                  value={formData.routeCheckPeriod || ""}
+                  onChange={(e) =>
+                    handleInputChange("routeCheckPeriod", e.target.value)
+                  }
+                  onKeyPress={handleNumberKeyPress}
+                  inputProps={{ maxLength: 31 }}
+                  variant="outlined"
+                  size="small"
+                  sx={{ ...muiOutlinedFieldSx, width: 240 }}
+                  autoComplete="off"
+                />
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 12,
-                marginTop: 24,
-                paddingTop: 16,
-                borderTop: `1px solid ${C.cardBorder}`,
-              }}
+              className="w-full flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1 mb-0"
+              style={{ borderTop: `1px solid ${C.cardBorder}` }}
             >
               <Btn
-  onClick={handleSave}
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  Save
-</Btn>
+                variant="primary"
+                onClick={handleSave}
+                disabled={loading}
+                style={saveBtnStyle}
+              >
+                {loading ? (
+                  <>
+                    <CircularProgress size={16} sx={{ color: "inherit" }} />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Btn>
             </div>
           </div>
         </div>

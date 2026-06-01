@@ -67,7 +67,6 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -226,8 +225,6 @@ const RoutePstnToIPPage = () => {
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
-
-
 
   // Message handling
   const showMessage = (type, text) => {
@@ -426,8 +423,6 @@ const RoutePstnToIPPage = () => {
   const handlePageChange = (newPage) =>
     setPage(Math.max(1, Math.min(totalPages, newPage)));
 
-
-
   const handleSelectRow = (idx) => {
     const realIdx = (page - 1) * itemsPerPage + idx;
     setSelected((sel) =>
@@ -595,7 +590,6 @@ const RoutePstnToIPPage = () => {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-
               {selected.length > 0 && (
                 <span
                   style={{
@@ -746,7 +740,8 @@ const RoutePstnToIPPage = () => {
                             rules.length > 0 && selected.length === rules.length
                           }
                           indeterminate={
-                            selected.length > 0 && selected.length < rules.length
+                            selected.length > 0 &&
+                            selected.length < rules.length
                           }
                           onChange={(e) => {
                             if (e.target.checked) handleCheckAll();
@@ -824,7 +819,11 @@ const RoutePstnToIPPage = () => {
                           {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
                             <td
                               key={col.key}
-                              style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
                             >
                               {formatDisplayValue(col.key, item[col.key], idx)}
                             </td>
@@ -865,10 +864,10 @@ const RoutePstnToIPPage = () => {
                         </tr>
                       );
                     })}
-                </tbody>
-              </table>
-            </>
-          )}
+                  </tbody>
+                </table>
+              </>
+            )}
           </div>
 
           {/* Pagination Footer */}
@@ -1119,7 +1118,7 @@ const RoutePstnToIPPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <CircularProgress size={20} color="inherit" />
@@ -1131,7 +1130,7 @@ const RoutePstnToIPPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>

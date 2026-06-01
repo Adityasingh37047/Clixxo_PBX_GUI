@@ -62,7 +62,7 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
+      // borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -629,132 +629,136 @@ const FilteringRule = () => {
                   minWidth: "1800px",
                 }}
               >
-                  <thead>
-                    <tr>
-                      {FILTERING_RULE_COLUMNS.map((col) => (
-                        <TH
-                          key={col.key}
-                          style={{
-                            ...(col.key === "check" ? { borderLeft: "none" } : {}),
-                            ...(col.key === "modify" ? { borderRight: "none" } : {}),
-                            width:
-                              col.key === "check"
-                                ? 60
-                                : col.key === "modify"
-                                  ? 80
-                                  : col.key === "description"
-                                    ? 180
+                <thead>
+                  <tr>
+                    {FILTERING_RULE_COLUMNS.map((col) => (
+                      <TH
+                        key={col.key}
+                        style={{
+                          ...(col.key === "check"
+                            ? { borderLeft: "none" }
+                            : {}),
+                          ...(col.key === "modify"
+                            ? { borderRight: "none" }
+                            : {}),
+                          width:
+                            col.key === "check"
+                              ? 60
+                              : col.key === "modify"
+                                ? 80
+                                : col.key === "description"
+                                  ? 180
+                                  : [
+                                        "callerIdPoolWhitelist",
+                                        "callerIdPoolBlacklist",
+                                        "calleeIdPoolWhitelist",
+                                        "calleeIdPoolBlacklist",
+                                        "originalCallerIdPoolWhitelist",
+                                        "originalCallerIdPoolBlacklist",
+                                      ].includes(col.key)
+                                    ? 160
                                     : [
-                                          "callerIdPoolWhitelist",
-                                          "callerIdPoolBlacklist",
-                                          "calleeIdPoolWhitelist",
-                                          "calleeIdPoolBlacklist",
-                                          "originalCallerIdPoolWhitelist",
-                                          "originalCallerIdPoolBlacklist",
+                                          "callerIdWhitelist",
+                                          "calleeIdWhitelist",
+                                          "callerIdBlacklist",
+                                          "calleeIdBlacklist",
                                         ].includes(col.key)
-                                      ? 160
-                                      : [
-                                            "callerIdWhitelist",
-                                            "calleeIdWhitelist",
-                                            "callerIdBlacklist",
-                                            "calleeIdBlacklist",
-                                          ].includes(col.key)
-                                        ? 140
-                                        : 100,
-                          }}
-                        >
-                          {col.label}
-                        </TH>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row, idx) => {
-                      const realIdx = idx;
-                      const isChecked = row?.checked || false;
-                      const isLastRow = idx === rows.length - 1;
-                      const rowBg = isChecked
-                        ? "#f0f9ff"
-                        : realIdx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
-                      const lastRowCellStyle = isLastRow
-                        ? { borderBottom: `1px solid ${C.cardBorder}` }
-                        : {};
-                      return (
-                        <tr
-                          key={row.id || realIdx}
-                          style={{
-                            background: rowBg,
-                            transition: "background 0.1s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isChecked)
-                              e.currentTarget.style.background = "#f1f5f9";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isChecked)
-                              e.currentTarget.style.background = rowBg;
-                          }}
-                        >
-                          {FILTERING_RULE_COLUMNS.map((col) => (
-                            <td
-                              key={col.key}
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...(col.key === "check"
-                                  ? { borderLeft: "none" }
-                                  : {}),
-                                ...(col.key === "modify"
-                                  ? { borderRight: "none" }
-                                  : {}),
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {col.key === "check" ? (
-                                <Checkbox
-                                  checked={isChecked}
-                                  onChange={() => handleCheck(realIdx)}
-                                  size="small"
-                                  sx={checkboxSx}
-                                />
-                              ) : col.key === "modify" ? (
-                                <div
+                                      ? 140
+                                      : 100,
+                        }}
+                      >
+                        {col.label}
+                      </TH>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, idx) => {
+                    const realIdx = idx;
+                    const isChecked = row?.checked || false;
+                    const isLastRow = idx === rows.length - 1;
+                    const rowBg = isChecked
+                      ? "#f0f9ff"
+                      : realIdx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: `1px solid ${C.cardBorder}` }
+                      : {};
+                    return (
+                      <tr
+                        key={row.id || realIdx}
+                        style={{
+                          background: rowBg,
+                          transition: "background 0.1s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isChecked)
+                            e.currentTarget.style.background = "#f1f5f9";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isChecked)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        {FILTERING_RULE_COLUMNS.map((col) => (
+                          <td
+                            key={col.key}
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              ...(col.key === "check"
+                                ? { borderLeft: "none" }
+                                : {}),
+                              ...(col.key === "modify"
+                                ? { borderRight: "none" }
+                                : {}),
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {col.key === "check" ? (
+                              <Checkbox
+                                checked={isChecked}
+                                onChange={() => handleCheck(realIdx)}
+                                size="small"
+                                sx={checkboxSx}
+                              />
+                            ) : col.key === "modify" ? (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <EditDocumentIcon
+                                  titleAccess="Edit"
                                   style={{
-                                    display: "flex",
-                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                    color: "#2563eb",
+                                    fontSize: 22,
+                                    opacity: 0.7,
+                                    transition: "opacity 0.15s ease",
                                   }}
-                                >
-                                  <EditDocumentIcon
-                                    titleAccess="Edit"
-                                    style={{
-                                      cursor: "pointer",
-                                      color: "#2563eb",
-                                      fontSize: 22,
-                                      opacity: 0.7,
-                                      transition: "opacity 0.15s ease",
-                                    }}
-                                    onClick={() => openModal(realIdx)}
-                                    onMouseEnter={(e) =>
-                                      (e.currentTarget.style.opacity = "1")
-                                    }
-                                    onMouseLeave={(e) =>
-                                      (e.currentTarget.style.opacity = "0.7")
-                                    }
-                                  />
-                                </div>
-                              ) : col.key === "id" ? (
-                                realIdx + 1
-                              ) : (
-                                row[col.key]
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
+                                  onClick={() => openModal(realIdx)}
+                                  onMouseEnter={(e) =>
+                                    (e.currentTarget.style.opacity = "1")
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.currentTarget.style.opacity = "0.7")
+                                  }
+                                />
+                              </div>
+                            ) : col.key === "id" ? (
+                              realIdx + 1
+                            ) : (
+                              row[col.key]
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
               </table>
             )}
           </div>
@@ -816,7 +820,11 @@ const FilteringRule = () => {
           {editIndex !== null ? "Edit" : "Add"} Filtering Rule
         </DialogTitle>
         <DialogContent
-          style={{ padding: "16px 20px", backgroundColor: "#ffffff", overflowY: "visible" }}
+          style={{
+            padding: "16px 20px",
+            backgroundColor: "#ffffff",
+            overflowY: "visible",
+          }}
         >
           <div
             style={{
@@ -1002,7 +1010,7 @@ const FilteringRule = () => {
           <Btn
             onClick={handleSave}
             variant="primary"
-            style={{ width: 120, height: 38 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -1014,7 +1022,7 @@ const FilteringRule = () => {
           <Btn
             onClick={closeModal}
             variant="cancel"
-            style={{ width: 120, height: 38 }}
+            style={{ minWidth: 100, height: 33 }}
             disabled={isLoading}
           >
             Cancel

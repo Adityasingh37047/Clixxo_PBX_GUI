@@ -393,7 +393,7 @@ const SIPAccountGenerator = () => {
                   <Btn
                     type="submit"
                     variant="primary"
-                    style={{ minWidth: 100, height: 36 }}
+                    style={{ minWidth: 100, height: 34 }}
                   >
                     {SIP_ACCOUNT_SAVE_BUTTON}
                   </Btn>
@@ -463,7 +463,7 @@ const SIPAccountGenerator = () => {
               <Btn
                 variant="primary"
                 onClick={handleUpload}
-                style={{ minWidth: 110, height: 36 }}
+                style={{ minWidth: 110, height: 34 }}
               >
                 {SIP_ACCOUNT_UPLOAD.button}
               </Btn>
@@ -505,7 +505,7 @@ const SIPAccountGenerator = () => {
               <Btn
                 variant="primary"
                 onClick={handleDownload}
-                style={{ minWidth: 110, height: 36 }}
+                style={{ minWidth: 110, height: 34 }}
               >
                 {SIP_ACCOUNT_DOWNLOAD.button}
               </Btn>

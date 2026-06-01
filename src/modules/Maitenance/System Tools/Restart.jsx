@@ -43,7 +43,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -279,10 +280,14 @@ const Restart = () => {
 
   const handleRestart = async (sectionKey) => {
     if (sectionKey === "system") {
-      const confirmed = window.confirm("Are you sure you want to restart the System?");
+      const confirmed = window.confirm(
+        "Are you sure you want to restart the System?",
+      );
       if (!confirmed) return;
     } else if (sectionKey === "service") {
-      const confirmed = window.confirm("Are you sure you want to restart this Service?");
+      const confirmed = window.confirm(
+        "Are you sure you want to restart this Service?",
+      );
       if (!confirmed) return;
     }
     setError("");

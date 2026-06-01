@@ -167,7 +167,9 @@ const CallTypeCheckbox = ({ checked, onChange, name, value, label }) => (
   />
 );
 
-const ENABLE_CHECKBOX_FIELDS = RADIUS_FIELDS.filter((f) => f.type === "checkbox");
+const ENABLE_CHECKBOX_FIELDS = RADIUS_FIELDS.filter(
+  (f) => f.type === "checkbox",
+);
 const RADIUS_FORM_FIELDS = RADIUS_FIELDS.filter((f) => f.type !== "checkbox");
 
 const inputInteraction = {
@@ -413,7 +415,7 @@ const Radius = () => {
                   type="button"
                   variant="cancel"
                   onClick={handleReset}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   Reset
                 </Btn>
@@ -421,7 +423,7 @@ const Radius = () => {
                   type="submit"
                   variant="primary"
                   onClick={handleSave}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   Save
                 </Btn>

@@ -2,11 +2,11 @@
 
 // Table columns
 export const PORT_FXS_ADVANCED_TABLE_COLUMNS = [
-  { key: 'modify', label: 'Modify', width: '60px' },
   { key: 'port', label: 'Port', width: '60px' },
   { key: 'type', label: 'Type', width: '80px' },
   { key: 'forbidOutgoingCall', label: 'Forbid Outgoing Call', width: '150px' },
   { key: 'blacklistOfOutCalls', label: 'Blacklist of Out Calls', width: '200px' },
+  { key: 'modify', label: 'Modify', width: '60px' },
 ];
 
 // Items per page

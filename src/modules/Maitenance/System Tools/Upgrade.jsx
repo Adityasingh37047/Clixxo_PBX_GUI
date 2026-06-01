@@ -639,7 +639,7 @@ const Upgrade = () => {
             variant="primary"
             onClick={handleUpdate}
             disabled={uploading || rebooting}
-            style={{ minWidth: 120, height: 36, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {uploading
               ? "Uploading..."
@@ -651,7 +651,7 @@ const Upgrade = () => {
             variant="cancel"
             onClick={handleReset}
             disabled={uploading || rebooting}
-            style={{ minWidth: 120, height: 36, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {UPGRADE_BUTTONS.reset}
           </Btn>

@@ -266,7 +266,7 @@ const CertificateManage = () => {
                         : "cancel"
                     }
                     onClick={() => handleAction(btn.label)}
-                    style={{ minWidth: 120, height: 34 }}
+                    style={{ minWidth: 110, height: 34 }}
                   >
                     {btn.label}
                   </Btn>

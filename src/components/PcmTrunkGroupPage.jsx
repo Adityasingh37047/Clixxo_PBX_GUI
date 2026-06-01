@@ -64,7 +64,6 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -487,7 +486,10 @@ const PcmTrunkGroupPage = () => {
           setIsModalOpen(false);
           await fetchPcmTrunkGroupData();
         } else {
-          showMessage("error", "Failed to create some PSTN groups. Please try again.");
+          showMessage(
+            "error",
+            "Failed to create some PSTN groups. Please try again.",
+          );
         }
       } else {
         const response = await savePstnGroup(
@@ -1331,16 +1333,23 @@ const PcmTrunkGroupPage = () => {
                           borderColor: C.cardBorder,
                           transition: "border-color 0.2s ease",
                         },
-                        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#64748b",
-                        },
-                        "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#0284c7",
-                          borderWidth: 1,
-                        },
+                        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                          {
+                            borderColor: "#64748b",
+                          },
+                        "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                          {
+                            borderColor: "#0284c7",
+                            borderWidth: 1,
+                          },
                       }}
                       inputProps={{
-                        style: { fontSize: 13, height: 32, padding: "0 8px", boxSizing: "border-box" },
+                        style: {
+                          fontSize: 13,
+                          height: 32,
+                          padding: "0 8px",
+                          boxSizing: "border-box",
+                        },
                       }}
                     />
                   )}
@@ -1607,7 +1616,7 @@ const PcmTrunkGroupPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={isSaving}
-            style={{ minWidth: 110, height: 34 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {isSaving ? "Saving..." : "Save"}
           </Btn>
@@ -1615,7 +1624,7 @@ const PcmTrunkGroupPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={isSaving}
-            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

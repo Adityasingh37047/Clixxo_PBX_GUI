@@ -544,7 +544,7 @@ const DhcpServerSettings = () => {
                   variant="primary"
                   type="submit"
                   disabled={loading}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   {loading ? "Saving..." : "Save"}
                 </Btn>
@@ -553,7 +553,7 @@ const DhcpServerSettings = () => {
                   type="button"
                   onClick={handleReset}
                   disabled={loading}
-                  style={{ minWidth: 120, height: 34 }}
+                  style={{ minWidth: 110, height: 34 }}
                 >
                   {loading ? "Resetting..." : "Reset"}
                 </Btn>

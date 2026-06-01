@@ -342,7 +342,7 @@ const SignalingCallTest = () => {
               <Btn
                 variant="primary"
                 type="button"
-                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCT_BUTTONS.start}
               </Btn>
@@ -350,7 +350,7 @@ const SignalingCallTest = () => {
                 variant="cancel"
                 type="button"
                 onClick={handleClear}
-                style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCT_BUTTONS.clear}
               </Btn>

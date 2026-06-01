@@ -23,20 +23,34 @@ import SystemSecurityUpdateWarningIcon from "@mui/icons-material/SystemSecurityU
 import AppSettingsAltIcon from "@mui/icons-material/AppSettingsAlt";
 import PhoneLockedIcon from "@mui/icons-material/PhoneLocked";
 
-// Color block function to match PSTN Status page
-const colorBlock = (color) => (
+// Square status color block (matches PSTN Status page)
+const STATUS_BOX_PX = 22;
+
+const colorBlock = (color, size = STATUS_BOX_PX) => (
   <div
-    className="mx-auto border border-gray-500"
     style={{
       background: color,
+      border: "1px solid #6b7280",
       borderRadius: 0,
-      width: "100%",
-      maxWidth: 22,
-      height: 22,
-      aspectRatio: "1",
+      width: size,
+      height: size,
+      minWidth: size,
+      minHeight: size,
+      flexShrink: 0,
+      boxSizing: "border-box",
+      margin: "0 auto",
     }}
   />
 );
+
+const statusCellContentStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+  minHeight: 28,
+  margin: "0 auto",
+};
 
 // Material-UI icons for status (same as PSTN Status page)
 const ICONS = [
@@ -228,8 +242,8 @@ const topConfigSectionHeaderStyle = {
 
 const topConfigActionBarStyle = {
   ...actionBarStyle,
-  flexWrap: "nowrap",
-  overflowX: "auto",
+  flexWrap: "wrap",
+  overflowX: "hidden",
 };
 
 const topConfigCellStyle = {
@@ -302,38 +316,79 @@ const channelTableStyle = {
 };
 
 const CHANNEL_LABEL_COL_WIDTH = 72;
-// When container is narrower than this, enable horizontal scroll (e.g. at 120% browser zoom)
 const CHANNEL_COL_SCROLL_WIDTH = 31;
 
-const AdaptiveChannelTable = ({ channelCount, children }) => {
-  const containerRef = useRef(null);
-  const [layout, setLayout] = useState({ containerWidth: 0, vvScale: 1 });
+/** Locked at ~100% browser zoom. Do NOT refresh while Ctrl+/- shrinks innerWidth. */
+const zoomBaselineRef = { innerWidth: 0, dpr: 1 };
 
-  const tableMinWidth =
-    CHANNEL_LABEL_COL_WIDTH + channelCount * CHANNEL_COL_SCROLL_WIDTH;
+const lockZoomBaseline = (force = false) => {
+  const iw = window.innerWidth;
+  if (!iw) return;
+  if (force || !zoomBaselineRef.innerWidth) {
+    zoomBaselineRef.innerWidth = iw;
+    zoomBaselineRef.dpr = window.devicePixelRatio || 1;
+  }
+};
 
-  const needsScroll =
-    (layout.containerWidth > 0 && layout.containerWidth < tableMinWidth) ||
-    layout.vvScale >= 1.15;
+/** Widen baseline when the window grows at 100% zoom (not browser zoom-in). */
+const syncZoomBaselineIfWindowWidened = () => {
+  const iw = window.innerWidth;
+  const baseW = zoomBaselineRef.innerWidth;
+  if (!baseW || !iw) return;
+  if (iw > baseW) {
+    zoomBaselineRef.innerWidth = iw;
+    zoomBaselineRef.dpr = window.devicePixelRatio || 1;
+  }
+};
+
+/**
+ * ≥110% zoom: touchpad (visualViewport.scale) OR Ctrl+/- / Ctrl+wheel
+ * (innerWidth shrinks vs locked baseline; scale often stays 1.0 on Windows).
+ */
+const isBrowserZoomAtLeast110 = () => {
+  const scale = window.visualViewport?.scale ?? 1;
+  if (scale >= 1.09) return true;
+  if (Math.round(scale * 100) >= 110) return true;
+
+  const baseW = zoomBaselineRef.innerWidth;
+  const iw = window.innerWidth;
+  if (baseW > 0 && iw > 0) {
+    const widthZoom = baseW / iw;
+    // Was 1.29 (130%) — must match 110% for Ctrl+/wheel when scale stays 1.0
+    if (widthZoom >= 1.09) return true;
+  }
+
+  const baseDpr = zoomBaselineRef.dpr;
+  const dpr = window.devicePixelRatio || 1;
+  if (baseDpr > 0 && dpr / baseDpr >= 1.09) return true;
+
+  return false;
+};
+
+const useBrowserZoom110 = () => {
+  const [highZoom, setHighZoom] = useState(false);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
     const measure = () => {
-      setLayout({
-        containerWidth: container.clientWidth,
-        vvScale: window.visualViewport?.scale ?? 1,
-      });
+      const baseW = zoomBaselineRef.innerWidth;
+      const iw = window.innerWidth;
+      // Ctrl+0 or zoomed back out to ~100%
+      if (baseW && iw > 0 && iw >= baseW * 0.97) {
+        lockZoomBaseline(true);
+      } else {
+        syncZoomBaselineIfWindowWidened();
+      }
+      setHighZoom(isBrowserZoomAtLeast110());
     };
 
-    measure();
-
-    const observer = new ResizeObserver(measure);
-    observer.observe(container);
+    lockZoomBaseline(true);
 
     const onWheel = (e) => {
-      if (e.ctrlKey) requestAnimationFrame(measure);
+      if (e.ctrlKey) {
+        requestAnimationFrame(measure);
+        setTimeout(measure, 50);
+        setTimeout(measure, 200);
+      }
     };
 
     const onKeyDown = (e) => {
@@ -345,10 +400,15 @@ const AdaptiveChannelTable = ({ channelCount, children }) => {
           e.key === "0" ||
           e.key === "_")
       ) {
+        if (e.key === "0" || e.key === "_") {
+          lockZoomBaseline(true);
+        }
         setTimeout(measure, 50);
-        setTimeout(measure, 250);
+        setTimeout(measure, 200);
       }
     };
+
+    measure();
 
     window.addEventListener("resize", measure);
     window.addEventListener("wheel", onWheel, { passive: true });
@@ -357,28 +417,37 @@ const AdaptiveChannelTable = ({ channelCount, children }) => {
     window.visualViewport?.addEventListener("scroll", measure);
 
     return () => {
-      observer.disconnect();
       window.removeEventListener("resize", measure);
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKeyDown);
       window.visualViewport?.removeEventListener("resize", measure);
       window.visualViewport?.removeEventListener("scroll", measure);
     };
-  }, [channelCount, tableMinWidth]);
+  }, []);
+
+  return highZoom;
+};
+
+const AdaptiveChannelTable = ({ channelCount, scrollEnabled, children }) => {
+  const tableMinWidth =
+    CHANNEL_LABEL_COL_WIDTH + channelCount * CHANNEL_COL_SCROLL_WIDTH;
 
   return (
     <div
-      ref={containerRef}
       style={{
         width: "100%",
-        overflowX: needsScroll ? "auto" : "hidden",
+        maxWidth: "100%",
+        overflowX: scrollEnabled ? "auto" : "hidden",
+        overflowY: "hidden",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       <table
         style={{
           ...channelTableStyle,
           width: "100%",
-          minWidth: tableMinWidth,
+          maxWidth: "100%",
+          minWidth: scrollEnabled ? tableMinWidth : 0,
         }}
       >
         {children}
@@ -405,6 +474,8 @@ const checkboxSx = {
 const PAGE_CHROME_OFFSET = 80; // navbar + layout padding
 
 const PcmCircuitMaintenancePage = () => {
+  const highZoom = useBrowserZoom110();
+
   // State for checkboxes and table data
   const [maintenanceChecked, setMaintenanceChecked] = useState(false);
   const [loopbackChecked, setLoopbackChecked] = useState(false);
@@ -422,6 +493,10 @@ const PcmCircuitMaintenancePage = () => {
   const [contentOverflows, setContentOverflows] = useState(false);
 
   const measurePageFit = useCallback(() => {
+    if (!isBrowserZoomAtLeast110()) {
+      setContentOverflows(false);
+      return;
+    }
     const contentEl = contentRef.current;
     if (!contentEl) return;
 
@@ -473,11 +548,11 @@ const PcmCircuitMaintenancePage = () => {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [measurePageFit, spansData.length, channels.length]);
+  }, [measurePageFit, spansData.length, channels.length, highZoom]);
 
   useEffect(() => {
     measurePageFit();
-  }, [contentOverflows, measurePageFit]);
+  }, [contentOverflows, measurePageFit, highZoom]);
 
   // Map API channel state -> icon index (same as PSTN Status page)
   const stateToIconIndex = (state) => {
@@ -675,9 +750,9 @@ const PcmCircuitMaintenancePage = () => {
 
   // PCM Maintenance section
   const renderPcmMaintenance = () => (
-    <div style={topConfigCardStyle}>
+    <div style={{ ...topConfigCardStyle, marginBottom: highZoom ? 25 : 14 }}>
       <div style={topConfigSectionHeaderStyle}>PCM Maintenance</div>
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "hidden" }}>
         <table style={tableStyle}>
           <tbody>
             <tr>
@@ -763,9 +838,11 @@ const PcmCircuitMaintenancePage = () => {
 
   // PCM LoopBack Config section
   const renderPcmLoopback = () => (
-    <div style={topConfigCardLastStyle}>
+    <div
+      style={{ ...topConfigCardLastStyle, marginBottom: highZoom ? 25 : 14 }}
+    >
       <div style={topConfigSectionHeaderStyle}>PCM LoopBack Config</div>
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "hidden" }}>
         <table style={tableStyle}>
           <tbody>
             <tr>
@@ -860,6 +937,48 @@ const PcmCircuitMaintenancePage = () => {
   const handleUncheckAll = () => setPcm0Checked(Array(32).fill(false));
   const handleInverse = () => setPcm0Checked((prev) => prev.map((v) => !v));
 
+  const channelThFit = (extra = {}) => ({
+    ...channelThStyle,
+    whiteSpace: highZoom ? "nowrap" : "normal",
+    padding: highZoom ? "6px 2px" : "3px 1px",
+    fontSize: highZoom ? 10 : 9,
+    overflow: "hidden",
+    ...extra,
+  });
+
+  const channelLabelThFit = (extra = {}) => ({
+    ...channelThFit({ borderLeft: "none", ...extra }),
+    width: highZoom ? CHANNEL_LABEL_COL_WIDTH : "8%",
+    minWidth: highZoom ? CHANNEL_LABEL_COL_WIDTH : 0,
+    maxWidth: highZoom ? CHANNEL_LABEL_COL_WIDTH : "8%",
+  });
+
+  const channelLabelTdFit = (extra = {}) => ({
+    ...channelRowLabelStyle,
+    width: highZoom ? 72 : "8%",
+    minWidth: highZoom ? 72 : 0,
+    maxWidth: highZoom ? 72 : "8%",
+    fontSize: highZoom ? 11 : 10,
+    padding: highZoom ? "6px 4px" : "4px 2px",
+    whiteSpace: highZoom ? "nowrap" : "normal",
+    ...extra,
+  });
+
+  const channelDataTdFit = (extra = {}) => ({
+    ...channelTdStyle,
+    padding: highZoom ? "4px 2px" : "2px 1px",
+    fontSize: highZoom ? 12 : 10,
+    overflow: "hidden",
+    ...extra,
+  });
+
+  const statusDataTdFit = (extra = {}) => ({
+    ...channelDataTdFit(extra),
+    textAlign: "center",
+    verticalAlign: "middle",
+    padding: highZoom ? "6px 2px" : "5px 1px",
+  });
+
   // Update PCM0_HEADERS in the component
   const PCM0_HEADERS = Array(32)
     .fill("")
@@ -884,27 +1003,16 @@ const PcmCircuitMaintenancePage = () => {
 
   const renderPcm0 = () => {
     return (
-      <div style={channelCardStyle}>
+      <div style={{ ...channelCardStyle, marginBottom: highZoom ? 24 : 12 }}>
         <div style={sectionHeaderStyle}>PCM 0</div>
-        <AdaptiveChannelTable channelCount={32}>
+        <AdaptiveChannelTable channelCount={32} scrollEnabled={highZoom}>
           <thead>
             <tr>
-              <th
-                style={{
-                  ...channelThStyle,
-                  width: CHANNEL_LABEL_COL_WIDTH,
-                  borderLeft: "none",
-                }}
-              >
-                Channel No.
-              </th>
+              <th style={channelLabelThFit()}>Channel No.</th>
               {Array.from({ length: 32 }, (_, i) => (
                 <th
                   key={i}
-                  style={{
-                    ...channelThStyle,
-                    ...(i === 31 ? { borderRight: "none" } : {}),
-                  }}
+                  style={channelThFit(i === 31 ? { borderRight: "none" } : {})}
                 >
                   {i}
                 </th>
@@ -913,7 +1021,7 @@ const PcmCircuitMaintenancePage = () => {
           </thead>
           <tbody>
             <tr>
-              <td style={channelRowLabelStyle}>Status</td>
+              <td style={channelLabelTdFit()}>Status</td>
               {pcm0Values.map((v, i) => {
                 const ch =
                   channels.find((c) => Number(c.channelid) === i) || {};
@@ -975,7 +1083,7 @@ const PcmCircuitMaintenancePage = () => {
                   </div>
                 );
                 return (
-                  <td key={i} style={channelTdStyle}>
+                  <td key={i} style={statusDataTdFit()}>
                     <Tooltip
                       title={tooltipContent}
                       arrow
@@ -996,18 +1104,27 @@ const PcmCircuitMaintenancePage = () => {
                         arrow: { sx: { color: "#fff" } },
                       }}
                     >
-                      <div
-                        className="flex items-center justify-center w-full h-full"
-                        style={{ minHeight: 24 }}
-                      >
-                        {v === "frame"
-                          ? colorBlock("#222") // Black for Frame Sync (channel 0)
-                          : v === "signaling"
-                            ? colorBlock("#0070a8") // Blue for Signaling (channel 16)
-                            : v === "red"
-                              ? colorBlock("#e53935") // Red when span is down
-                              : ICONS[Number(v) || 0]}{" "}
-                        {/* Material UI icons when span is up */}
+                      <div style={statusCellContentStyle}>
+                        {v === "frame" ? (
+                          colorBlock("#222")
+                        ) : v === "signaling" ? (
+                          colorBlock("#0070a8")
+                        ) : v === "red" ? (
+                          colorBlock("#e53935")
+                        ) : (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: STATUS_BOX_PX,
+                              height: STATUS_BOX_PX,
+                              margin: "0 auto",
+                            }}
+                          >
+                            {ICONS[Number(v) || 0]}
+                          </div>
+                        )}
                       </div>
                     </Tooltip>
                   </td>
@@ -1015,24 +1132,26 @@ const PcmCircuitMaintenancePage = () => {
               })}
             </tr>
             <tr>
-              <td style={{ ...channelRowLabelStyle, ...lastTableRowCellStyle }}>
+              <td style={{ ...channelLabelTdFit(), ...lastTableRowCellStyle }}>
                 Check
               </td>
               {Array.from({ length: 32 }, (_, i) => (
                 <td
                   key={i}
                   style={{
-                    ...channelTdStyle,
+                    ...statusDataTdFit(),
                     ...lastTableRowCellStyle,
                     ...(i === 31 ? { borderRight: "none" } : {}),
                   }}
                 >
-                  <Checkbox
-                    size="small"
-                    checked={pcm0Checked[i] || false}
-                    onChange={() => handlePcm0Check(i)}
-                    sx={checkboxSx}
-                  />
+                  <div style={statusCellContentStyle}>
+                    <Checkbox
+                      size="small"
+                      checked={pcm0Checked[i] || false}
+                      onChange={() => handlePcm0Check(i)}
+                      sx={checkboxSx}
+                    />
+                  </div>
                 </td>
               ))}
             </tr>
@@ -1064,31 +1183,28 @@ const PcmCircuitMaintenancePage = () => {
     });
 
     return (
-      <div key={span.spanId} style={channelCardStyle}>
+      <div
+        key={span.spanId}
+        style={{ ...channelCardStyle, marginBottom: highZoom ? 24 : 12 }}
+      >
         <div style={sectionHeaderStyle}>
           {span.name} · {span.ip}
         </div>
-        <AdaptiveChannelTable channelCount={span.channelRanges.length}>
+        <AdaptiveChannelTable
+          channelCount={span.channelRanges.length}
+          scrollEnabled={highZoom}
+        >
           <thead>
             <tr>
-              <th
-                style={{
-                  ...channelThStyle,
-                  width: CHANNEL_LABEL_COL_WIDTH,
-                  borderLeft: "none",
-                }}
-              >
-                Channel No.
-              </th>
+              <th style={channelLabelThFit()}>Channel No.</th>
               {span.channelRanges.map((chId, i) => (
                 <th
                   key={i}
-                  style={{
-                    ...channelThStyle,
-                    ...(i === span.channelRanges.length - 1
+                  style={channelThFit(
+                    i === span.channelRanges.length - 1
                       ? { borderRight: "none" }
-                      : {}),
-                  }}
+                      : {},
+                  )}
                 >
                   {chId}
                 </th>
@@ -1097,7 +1213,7 @@ const PcmCircuitMaintenancePage = () => {
           </thead>
           <tbody>
             <tr>
-              <td style={channelRowLabelStyle}>Status</td>
+              <td style={channelLabelTdFit()}>Status</td>
               {span.channelRanges.map((channelId, i) => {
                 const v = pcmValues[i];
                 const ch =
@@ -1151,19 +1267,29 @@ const PcmCircuitMaintenancePage = () => {
                   </div>
                 );
                 return (
-                  <td key={i} style={channelTdStyle}>
+                  <td key={i} style={statusDataTdFit()}>
                     <Tooltip title={tooltipContent} arrow placement="top">
-                      <div
-                        className="flex items-center justify-center w-full h-full"
-                        style={{ minHeight: 24 }}
-                      >
-                        {v === "frame"
-                          ? colorBlock("#222")
-                          : v === "signaling"
-                            ? colorBlock("#0070a8")
-                            : v === "red"
-                              ? colorBlock("#e53935")
-                              : ICONS[Number(v) || 0]}
+                      <div style={statusCellContentStyle}>
+                        {v === "frame" ? (
+                          colorBlock("#222")
+                        ) : v === "signaling" ? (
+                          colorBlock("#0070a8")
+                        ) : v === "red" ? (
+                          colorBlock("#e53935")
+                        ) : (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: STATUS_BOX_PX,
+                              height: STATUS_BOX_PX,
+                              margin: "0 auto",
+                            }}
+                          >
+                            {ICONS[Number(v) || 0]}
+                          </div>
+                        )}
                       </div>
                     </Tooltip>
                   </td>
@@ -1171,26 +1297,28 @@ const PcmCircuitMaintenancePage = () => {
               })}
             </tr>
             <tr>
-              <td style={{ ...channelRowLabelStyle, ...lastTableRowCellStyle }}>
+              <td style={{ ...channelLabelTdFit(), ...lastTableRowCellStyle }}>
                 Check
               </td>
               {span.channelRanges.map((_, i) => (
                 <td
                   key={i}
                   style={{
-                    ...channelTdStyle,
+                    ...statusDataTdFit(),
                     ...lastTableRowCellStyle,
                     ...(i === span.channelRanges.length - 1
                       ? { borderRight: "none" }
                       : {}),
                   }}
                 >
-                  <Checkbox
-                    size="small"
-                    checked={pcm0Checked[i] || false}
-                    onChange={() => handlePcm0Check(i)}
-                    sx={checkboxSx}
-                  />
+                  <div style={statusCellContentStyle}>
+                    <Checkbox
+                      size="small"
+                      checked={pcm0Checked[i] || false}
+                      onChange={() => handlePcm0Check(i)}
+                      sx={checkboxSx}
+                    />
+                  </div>
                 </td>
               ))}
             </tr>
@@ -1206,8 +1334,11 @@ const PcmCircuitMaintenancePage = () => {
         backgroundColor: C.pageBg,
         padding: 16,
         boxSizing: "border-box",
-        ...(contentOverflows
-          ? { minHeight: "calc(100vh - 80px)" }
+        width: "100%",
+        maxWidth: "100vw",
+        overflowX: "hidden",
+        ...(highZoom || contentOverflows
+          ? { minHeight: "calc(100vh - 80px)", overflowY: "auto" }
           : {
               height: "calc(100vh - 80px)",
               maxHeight: "calc(100vh - 80px)",
@@ -1215,13 +1346,20 @@ const PcmCircuitMaintenancePage = () => {
             }),
       }}
     >
-      <div ref={contentRef} style={{ maxWidth: "100%", margin: "0 auto" }}>
+      <div
+        ref={contentRef}
+        style={{
+          maxWidth: "100%",
+          margin: "0 auto",
+          overflow: "hidden",
+        }}
+      >
         {/* Breadcrumb */}
         <div
           style={{
             fontSize: 12,
             color: C.mutedText,
-            marginBottom: 16,
+            marginBottom: highZoom ? 16 : 10,
             fontWeight: 400,
             display: "flex",
             alignItems: "center",

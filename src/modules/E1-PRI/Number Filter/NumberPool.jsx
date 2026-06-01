@@ -61,7 +61,7 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
+      // borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -664,10 +664,22 @@ const NumberPool = () => {
                             sx={checkboxSx}
                           />
                         </td>
-                        <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {row.groupNo}
                         </td>
-                        <td style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           {row.numberRange}
                         </td>
                         <td
@@ -919,7 +931,7 @@ const NumberPool = () => {
           <Btn
             onClick={handleSave}
             variant="primary"
-            style={{ width: 120, height: 38 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
             disabled={loading}
           >
             {loading ? (
@@ -931,7 +943,7 @@ const NumberPool = () => {
           <Btn
             onClick={closeModal}
             variant="cancel"
-            style={{ width: 120, height: 38 }}
+            style={{ width: 100, height: 33 }}
             disabled={loading}
           >
             Cancel

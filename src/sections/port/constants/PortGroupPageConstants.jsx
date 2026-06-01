@@ -3,9 +3,8 @@
 export const PORT_GROUP_TOTAL_PORTS = 32;
 
 export const PORT_GROUP_TABLE_COLUMNS = [
-  { key: 'modify', label: 'Modify' },
   { key: 'check', label: 'Check' },
-  { key: 'index', label: 'Index' },
+  { key: 'index', label: 'ID' },
   { key: 'description', label: 'Description' },
   { key: 'sipAccount', label: 'SIP Account' },
   { key: 'displayName', label: 'Display Name' },
@@ -14,6 +13,7 @@ export const PORT_GROUP_TABLE_COLUMNS = [
   { key: 'enumRule', label: 'Rule for Ringing by Turns' },
   { key: 'ringExpire', label: 'Timeout for Ringing by Turns (s)' },
   { key: 'robKey', label: 'Preemptive Answer Keyboard Shortcut' },
+  { key: 'modify', label: 'Modify' },
 ];
 
 export const PORT_GROUP_INDEX_OPTIONS = Array.from({ length: 32 }, (_, i) =>

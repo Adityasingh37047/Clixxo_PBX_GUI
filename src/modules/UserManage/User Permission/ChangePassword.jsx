@@ -58,7 +58,7 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
+      // borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },

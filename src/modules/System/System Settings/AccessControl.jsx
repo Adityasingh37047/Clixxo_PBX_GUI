@@ -1035,8 +1035,7 @@ const AccessControl = () => {
       {/* Modal for Add/Edit Command */}
       <Dialog
         open={showModal}
-        onClose={(event, reason) => {
-          if (reason === "backdropClick") return;
+        onClose={() => {
           if (!loading.save) handleCloseModal();
         }}
         maxWidth={false}
@@ -1232,7 +1231,7 @@ const AccessControl = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 36, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
             startIcon={
               loading.save && <CircularProgress size={16} color="inherit" />
             }
@@ -1243,7 +1242,7 @@ const AccessControl = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 36, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             Close
           </Btn>

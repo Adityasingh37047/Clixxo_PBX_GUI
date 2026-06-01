@@ -66,7 +66,7 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      borderRadius: 6,
+      // borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -1093,7 +1093,7 @@ const RouteIpPstnPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <CircularProgress size={20} color="inherit" />
@@ -1105,7 +1105,7 @@ const RouteIpPstnPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34, borderRadius: 6 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>

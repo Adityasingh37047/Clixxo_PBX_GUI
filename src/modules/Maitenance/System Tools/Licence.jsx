@@ -4,7 +4,6 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import UploadIcon from "@mui/icons-material/Upload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import InfoIcon from "@mui/icons-material/Info";
-import FileUploadIcon from "@mui/icons-material/FileUpload";
 import {
   getLicenseInfo,
   checkLicenseValidity,
@@ -25,7 +24,7 @@ import {
 
 const LICENCE_DEVICE_TYPE_STORAGE_KEY = "clixxo_licence_device_type";
 
-// ── Color palette (same as AccountManage) ────────────────────────────────────
+// ── Color palette (same as SignalingCapture) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -33,7 +32,7 @@ const C = {
   divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#64748b",
-  valueText: "#1e293b",
+  valueText: "#3E5475",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",
@@ -42,7 +41,7 @@ const C = {
   errorRed: "#dc2626",
 };
 
-// ── Button Component (same as AccountManage) ─────────────────────────────────
+// ── Button Component (same as SignalingCapture) ────────────────────────────────
 const Btn = ({
   children,
   onClick,
@@ -60,9 +59,10 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: C.primary,
-      color: C.cardBg,
-      border: `1px solid ${C.primary}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
     cancel: {
       background: "#cbd5e1",
@@ -76,7 +76,7 @@ const Btn = ({
   const hoverBg = (() => {
     switch (variant) {
       case "primary":
-        return C.primaryHover;
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "cancel":
         return "#b6c2d3";
       case "default":
@@ -86,7 +86,6 @@ const Btn = ({
   })();
 
   const baseBg = s.background;
-
   const Component = component || "button";
 
   return (
@@ -100,22 +99,22 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition: "all 0.15s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.backgroundColor = baseBg;
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
@@ -127,12 +126,51 @@ const Btn = ({
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
+  margin: "0 auto",
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
   marginBottom: 24,
+};
+
+const inputStyle = {
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: "6px 12px",
+  fontSize: 14,
+  color: C.valueText,
+  background: C.cardBg,
+  outline: "none",
+  transition: "border-color 0.15s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (!e.target.disabled && !e.target.readOnly)
+      e.target.style.borderColor = "#0284c7";
+  },
+  onBlur: (e) => {
+    if (!e.target.disabled && !e.target.readOnly)
+      e.target.style.borderColor = C.cardBorder;
+  },
+  onMouseEnter: (e) => {
+    if (
+      !e.target.disabled &&
+      !e.target.readOnly &&
+      document.activeElement !== e.target
+    )
+      e.target.style.borderColor = "#64748b";
+  },
+  onMouseLeave: (e) => {
+    if (
+      !e.target.disabled &&
+      !e.target.readOnly &&
+      document.activeElement !== e.target
+    )
+      e.target.style.borderColor = C.cardBorder;
+  },
 };
 
 const blueBarStyle = {
@@ -421,45 +459,37 @@ const Licence = () => {
             <span>License Management</span>
           </div>
 
-          <div className="p-6">
-            <div className="w-full max-w-4xl mx-auto space-y-6">
-              {/* License Information Section */}
-              <div>
-                <div
-                  className="flex items-center justify-between mb-4 pb-2"
-                  style={{ borderBottom: `1px solid ${C.divider}` }}
+          <div className="p-6 flex flex-col gap-6">
+            {/* License Information Section */}
+            <div>
+              <div
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 pb-4"
+                style={{ borderBottom: `1px solid ${C.divider}` }}
+              >
+                <span className="text-[14px] font-semibold text-[#3E5475]">
+                  License Information
+                </span>
+                <Btn
+                  variant="primary"
+                  startIcon={
+                    loading.info ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <RefreshIcon style={{ fontSize: 18 }} />
+                    )
+                  }
+                  onClick={fetchLicenseInfo}
+                  disabled={loading.info}
+                  style={{ minWidth: 100, height: 34, fontSize: 13 }}
                 >
-                  <div className="text-[14px] font-bold text-gray-800 flex items-center">
-                    <InfoIcon
-                      className="mr-2"
-                      style={{ fontSize: 20, color: C.primary }}
-                    />
-                    License Information
-                  </div>
-                  <Btn
-                    variant="primary"
-                    startIcon={
-                      loading.info ? (
-                        <CircularProgress size={16} color="inherit" />
-                      ) : (
-                        <RefreshIcon style={{ fontSize: 18 }} />
-                      )
-                    }
-                    onClick={fetchLicenseInfo}
-                    disabled={loading.info}
-                    style={{ minWidth: 100, height: 32 }}
-                  >
-                    {LICENSE_BUTTON_LABELS.REFRESH_INFO}
-                  </Btn>
-                </div>
+                  {LICENSE_BUTTON_LABELS.REFRESH_INFO}
+                </Btn>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                  {/* Serial Number */}
-                  <div className="flex flex-col">
-                    <label
-                      className="text-[13px] font-semibold mb-1"
-                      style={{ color: C.labelText }}
-                    >
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 shrink-0">
+                    <label className="text-[14px] font-semibold text-[#3E5475] w-[140px] shrink-0 whitespace-nowrap">
                       {LICENSE_FORM_LABELS.Serial_Number}
                     </label>
                     <input
@@ -467,32 +497,20 @@ const Licence = () => {
                       value={serialDisplay}
                       readOnly
                       style={{
-                        padding: "6px 12px",
-                        borderRadius: 6,
-                        border: `1px solid ${C.cardBorder}`,
-                        fontSize: 14,
-                        width: "100%",
+                        ...inputStyle,
+                        width: 210,
+                        flexShrink: 0,
                         backgroundColor: "#f8fafc",
-                        outline: "none",
-                        color: C.valueText,
-                        transition: "border-color 0.2s ease",
+                        cursor: "default",
                       }}
-                      onFocus={(e) => (e.target.style.borderColor = C.accent)}
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = C.cardBorder)
-                      }
                     />
                   </div>
 
-                  {/* Status */}
-                  <div className="flex flex-col">
-                    <label
-                      className="text-[13px] font-semibold mb-1"
-                      style={{ color: C.labelText }}
-                    >
+                  <div className="flex flex-wrap items-center gap-18">
+                    <span className="text-[14px] font-semibold text-[#3E5475] whitespace-nowrap">
                       {LICENSE_FORM_LABELS.STATUS}
-                    </label>
-                    <div className="flex items-center gap-4 min-h-[36px]">
+                    </span>
+                    <div className="flex flex-wrap items-center gap-3">
                       {getStatusDisplay(licenseData.status)}
                       <Btn
                         variant="default"
@@ -505,196 +523,167 @@ const Licence = () => {
                         }
                         onClick={checkValidity}
                         disabled={loading.validity}
-                        style={{ height: 32 }}
+                        style={{ minWidth: 100, height: 34, fontSize: 13 }}
                       >
                         {LICENSE_BUTTON_LABELS.CHECK_VALIDITY}
                       </Btn>
                     </div>
                   </div>
-
-                  {/* Device Type Mode */}
-                  <div className="flex flex-col">
-                    <label
-                      className="text-[13px] font-semibold mb-1"
-                      style={{ color: C.labelText }}
-                    >
-                      {LICENSE_FORM_LABELS.DEVICE_TYPE_MODE}
-                    </label>
-                    <select
-                      value={deviceTypeMode}
-                      onChange={handleDeviceTypeChange}
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 6,
-                        border: `1px solid ${C.cardBorder}`,
-                        fontSize: 14,
-                        width: "100%",
-                        backgroundColor: "#fff",
-                        outline: "none",
-                        color: C.valueText,
-                        transition: "border-color 0.2s ease",
-                        height: 34,
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = C.accent)}
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = C.cardBorder)
-                      }
-                    >
-                      {LICENSE_DEVICE_TYPE_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
-              </div>
 
-              {/* System ID Section */}
-              <div
-                className="pt-4"
-                style={{ borderTop: `1px dashed ${C.divider}` }}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-[14px] font-bold text-gray-800">
-                    {LICENSE_FORM_LABELS.SYSTEM_FINGERPRINT}
-                  </div>
-                  <Btn
-                    variant="primary"
-                    startIcon={
-                      loading.fingerprint ? (
-                        <CircularProgress size={16} color="inherit" />
-                      ) : (
-                        <InfoIcon style={{ fontSize: 18 }} />
-                      )
-                    }
-                    onClick={fetchSystemFingerprint}
-                    disabled={loading.fingerprint}
-                    style={{ minWidth: 100, height: 32 }}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <label className="text-[14px] font-semibold text-[#3E5475] w-[140px] shrink-0 whitespace-nowrap">
+                    {LICENSE_FORM_LABELS.DEVICE_TYPE_MODE}
+                  </label>
+                  <select
+                    value={deviceTypeMode}
+                    onChange={handleDeviceTypeChange}
+                    style={{ ...inputStyle, width: 210, flexShrink: 0 }}
+                    {...inputInteraction}
                   >
-                    {LICENSE_BUTTON_LABELS.GET_FINGERPRINT}
-                  </Btn>
+                    {LICENSE_DEVICE_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+              </div>
+            </div>
 
-                <textarea
-                  value={systemFingerprint}
-                  readOnly
-                  rows={2}
-                  placeholder="Click 'Get System ID' to retrieve system ID"
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 6,
-                    border: `1px solid ${C.cardBorder}`,
-                    fontSize: 14,
-                    width: "100%",
-                    backgroundColor: "#f8fafc",
-                    fontFamily: "monospace",
-                    outline: "none",
-                    color: C.valueText,
-                    resize: "none",
-                    transition: "border-color 0.2s ease",
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = C.accent)}
-                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
-                />
+            {/* System ID Section */}
+            <div
+              className="pt-2"
+              style={{ borderTop: `1px solid ${C.divider}` }}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                <span className="text-[14px] font-semibold text-[#3E5475]">
+                  {LICENSE_FORM_LABELS.SYSTEM_FINGERPRINT}
+                </span>
+                <Btn
+                  variant="primary"
+                  startIcon={
+                    loading.fingerprint ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <InfoIcon style={{ fontSize: 18 }} />
+                    )
+                  }
+                  onClick={fetchSystemFingerprint}
+                  disabled={loading.fingerprint}
+                  style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                >
+                  {LICENSE_BUTTON_LABELS.GET_FINGERPRINT}
+                </Btn>
               </div>
 
-              {/* License File Upload Section */}
-              <div
-                className="pt-4"
-                style={{ borderTop: `1px dashed ${C.divider}` }}
-              >
-                <div className="text-[14px] font-bold text-gray-800 mb-4 flex items-center">
-                  <FileUploadIcon
-                    className="mr-2"
-                    style={{ fontSize: 20, color: C.primary }}
+              <textarea
+                value={systemFingerprint}
+                readOnly
+                rows={2}
+                placeholder="Click 'Get System ID' to retrieve system ID"
+                style={{
+                  ...inputStyle,
+                  width: "100%",
+                  backgroundColor: "#f8fafc",
+                  fontFamily: "monospace",
+                  resize: "none",
+                  cursor: "default",
+                }}
+              />
+            </div>
+
+            {/* License File Upload Section */}
+            <div
+              className="pt-2"
+              style={{ borderTop: `1px solid ${C.divider}` }}
+            >
+              <span className="text-[14px] font-semibold text-[#3E5475] block mb-4">
+                Upload License File
+              </span>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  <input
+                    accept=".lic,.txt,.key"
+                    style={{ display: "none" }}
+                    id="license-file-input"
+                    type="file"
+                    onChange={handleFileSelect}
                   />
-                  Upload License File
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <input
-                      accept=".lic,.txt,.key"
-                      style={{ display: "none" }}
-                      id="license-file-input"
-                      type="file"
-                      onChange={handleFileSelect}
-                    />
-                    <label htmlFor="license-file-input">
-                      <Btn
-                        component="span"
-                        variant="default"
-                        startIcon={<UploadIcon style={{ fontSize: 18 }} />}
-                        style={{ height: 34 }}
-                      >
-                        Select File
-                      </Btn>
-                    </label>
-
-                    {selectedFile && (
-                      <div className="flex items-center gap-2">
-                        <span style={{ fontSize: 13, color: C.labelText }}>
-                          Selected:{" "}
-                          <span style={{ color: C.valueText, fontWeight: 600 }}>
-                            {selectedFile.name}
-                          </span>
-                        </span>
-                        <Chip
-                          label={`${(selectedFile.size / 1024).toFixed(1)} KB`}
-                          size="small"
-                          sx={{ height: 20, fontSize: 11 }}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  <label htmlFor="license-file-input">
+                    <Btn
+                      component="span"
+                      variant="default"
+                      startIcon={<UploadIcon style={{ fontSize: 18 }} />}
+                      style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                    >
+                      Select File
+                    </Btn>
+                  </label>
 
                   {selectedFile && (
-                    <div>
-                      <Btn
-                        variant="primary"
-                        startIcon={
-                          loading.upload ? (
-                            <CircularProgress size={16} color="inherit" />
-                          ) : (
-                            <UploadIcon style={{ fontSize: 18 }} />
-                          )
-                        }
-                        onClick={handleFileUpload}
-                        disabled={loading.upload}
-                        style={{ height: 34 }}
-                      >
-                        {loading.upload
-                          ? "Uploading..."
-                          : LICENSE_BUTTON_LABELS.UPLOAD_LICENSE}
-                      </Btn>
+                    <div className="flex items-center gap-2">
+                      <span style={{ fontSize: 13, color: C.mutedText }}>
+                        Selected:{" "}
+                        <span style={{ color: C.valueText, fontWeight: 600 }}>
+                          {selectedFile.name}
+                        </span>
+                      </span>
+                      <Chip
+                        label={`${(selectedFile.size / 1024).toFixed(1)} KB`}
+                        size="small"
+                        sx={{ height: 20, fontSize: 11 }}
+                      />
                     </div>
                   )}
                 </div>
-              </div>
 
-              {/* Current License Status Summary */}
+                {selectedFile && (
+                  <div>
+                    <Btn
+                      variant="primary"
+                      startIcon={
+                        loading.upload ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <UploadIcon style={{ fontSize: 18 }} />
+                        )
+                      }
+                      onClick={handleFileUpload}
+                      disabled={loading.upload}
+                      style={{ minWidth: 100, height: 34, fontSize: 13 }}
+                    >
+                      {loading.upload
+                        ? "Uploading..."
+                        : LICENSE_BUTTON_LABELS.UPLOAD_LICENSE}
+                    </Btn>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Current License Status Summary */}
+            <div
+              className="pt-2"
+              style={{ borderTop: `1px solid ${C.divider}` }}
+            >
               <div
-                className="pt-4 mt-2"
-                style={{ borderTop: `1px solid ${C.divider}` }}
+                style={{
+                  backgroundColor: "#f8fafc",
+                  padding: "16px",
+                  borderRadius: 8,
+                  border: `1px solid ${C.cardBorder}`,
+                }}
               >
-                <div
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    padding: "16px",
-                    borderRadius: "8px",
-                    border: `1px solid ${C.cardBorder}`,
-                  }}
-                >
-                  <div className="text-[14px] font-bold text-gray-800 mb-2">
-                    Current License Summary
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span style={{ color: C.labelText, fontWeight: 600 }}>
-                      Status:
-                    </span>
-                    {getStatusDisplay(licenseData.status)}
-                  </div>
+                <div className="text-[14px] font-semibold text-[#3E5475] mb-2">
+                  Current License Summary
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-[14px] font-semibold text-[#3E5475]">
+                    Status:
+                  </span>
+                  {getStatusDisplay(licenseData.status)}
                 </div>
               </div>
             </div>
