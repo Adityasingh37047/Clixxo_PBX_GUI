@@ -3,7 +3,7 @@ import { SIP_TRUNK_FIELDS, SIP_TRUNK_INITIAL_FORM, TRUNK_CODEC_OPTIONS } from '.
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select as MuiSelect, MenuItem, FormControl, Alert, CircularProgress, IconButton, InputAdornment, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
-import { listGlobalSipSettings, updateGlobalSipSettings, fetchSystemInfo } from '../api/apiService';
+import { listGlobalSipSettings, createGlobalSipSettings, updateGlobalSipSettings, deleteGlobalSipSettings, fetchNetwork } from '../api/apiService';
 
 const SipTrunkPage = () => {
   // State
@@ -87,24 +87,19 @@ const SipTrunkPage = () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
       const payload = await listGlobalSipSettings();
-      const settings = payload?.message?.sip_settings?.[0];
-      if (settings) {
-        const formState = buildFormStateFromSettings(settings);
-        const tableRow = {
-          ...formState,
-          status: 'active',
-          id: settings.id ?? formState.index
-        };
-        setRegisters([tableRow]);
-        setForm(formState);
+      const list = payload?.message?.sip_settings;
+      if (Array.isArray(list) && list.length > 0) {
+        const rows = list.map(s => ({
+          ...buildFormStateFromSettings(s),
+          id: s.id,
+        }));
+        setRegisters(rows);
       } else {
         setRegisters([]);
-        setForm({ ...SIP_TRUNK_INITIAL_FORM });
       }
     } catch (error) {
       console.error('Failed to fetch global SIP settings', error);
       setRegisters([]);
-      setForm({ ...SIP_TRUNK_INITIAL_FORM });
     } finally {
       setLoading(prev => ({ ...prev, fetch: false }));
     }
@@ -120,58 +115,56 @@ const SipTrunkPage = () => {
           if (options.some(opt => opt.value === form.local_ip)) return options;
           return [...options, { value: form.local_ip, label: form.local_ip }];
         };
+
+        const isValidIpv4 = (ip) =>
+          typeof ip === 'string' &&
+          /^(\d{1,3}\.){3}\d{1,3}$/.test(ip.trim()) &&
+          ip.trim() !== '0.0.0.0';
+
+        const isValidIpv6 = (ip) => {
+          if (typeof ip !== 'string') return false;
+          const t = ip.trim();
+          return t.includes(':') && t.length > 4 && t !== '::' && t !== '::/0';
+        };
+
+        const ifaceLabel = (name) => {
+          if (name === 'eth0') return 'LAN 1';
+          if (name === 'eth1') return 'LAN 2';
+          if (/^eth[01]\.[0-9]+$/.test(name)) return `VLAN ${name.split('.')[1]}`;
+          if (/^(tun|tap|ppp|ovpn)[0-9a-z]*/i.test(name)) return `VPN (${name})`;
+          return name;
+        };
+
         try {
-          const si = await fetchSystemInfo();
-          const details = si?.details || si?.responseData || {};
-          let rawInterfaces = [];
-          if (Array.isArray(details.LAN_INTERFACES)) {
-            rawInterfaces = details.LAN_INTERFACES;
-          } else if (details.LAN_INTERFACES && typeof details.LAN_INTERFACES === 'object') {
-            rawInterfaces = Object.entries(details.LAN_INTERFACES).map(([name, data]) => ({ name, data }));
-          } else if (Array.isArray(details.interfaces)) {
-            rawInterfaces = details.interfaces;
-          } else if (details.network && Array.isArray(details.network.interfaces)) {
-            rawInterfaces = details.network.interfaces;
+          const netData = await fetchNetwork();
+          const ifaces = netData?.data?.interfaces || [];
+          const opts = [];
+          const seenIps = new Set();
+
+          for (const iface of ifaces) {
+            const name = String(iface.interface || iface.name || '');
+            if (!name || name === 'lo') continue;
+            const label = ifaceLabel(name);
+
+            const ipv4 = (iface.ipAddress || iface.ip_address || '').trim();
+            if (isValidIpv4(ipv4) && !seenIps.has(ipv4)) {
+              seenIps.add(ipv4);
+              opts.push({ value: ipv4, label: `${label}: ${ipv4}` });
+            } else if (!isValidIpv4(ipv4) && (name === 'eth0' || name === 'eth1')) {
+              opts.push({ value: `${name}-unavailable`, label: `${label} (Unavailable)`, disabled: true });
+            }
+
+            const ipv6 = (iface.ipv6Address || iface.ipv6_address || iface['IPv6 Address'] || '').trim();
+            if (isValidIpv6(ipv6) && !seenIps.has(ipv6)) {
+              seenIps.add(ipv6);
+              opts.push({ value: ipv6, label: `${label} IPv6: ${ipv6}` });
+            }
           }
 
-          const toIp = (dataObj) => {
-            if (!dataObj || typeof dataObj !== 'object') return '';
-            for (const val of Object.values(dataObj)) {
-              if (typeof val === 'string' && /^(\d{1,3}\.){3}\d{1,3}$/.test(val)) return val;
-              if (Array.isArray(val)) {
-                for (const inner of val) {
-                  if (typeof inner === 'string' && /^(\d{1,3}\.){3}\d{1,3}$/.test(inner)) return inner;
-                }
-              }
-            }
-            return '';
-          };
-
-          let lan1 = '';
-          let lan2 = '';
-          (rawInterfaces || []).forEach((iface) => {
-            const name = (iface && iface.name) ? String(iface.name) : '';
-            const data = iface?.data || iface;
-            if (name === 'eth0' || name === 'LAN 1') lan1 = toIp(data) || lan1;
-            if (name === 'eth1' || name === 'LAN 2') lan2 = toIp(data) || lan2;
-          });
-
-          const orderedOptions = [];
-          orderedOptions.push({
-            value: lan1 || 'lan1-unavailable',
-            label: lan1 ? `LAN 1 (${lan1})` : 'LAN 1 (Unavailable)',
-            disabled: !lan1,
-          });
-          orderedOptions.push({
-            value: lan2 || 'lan2-unavailable',
-            label: lan2 ? `LAN 2 (${lan2})` : 'LAN 2 (Unavailable)',
-            disabled: !lan2,
-          });
-          orderedOptions.push({ value: '0.0.0.0', label: 'Any LAN (0.0.0.0)' });
-
-          setLocalIpOptions(ensureCurrentValue(orderedOptions));
+          opts.push({ value: '0.0.0.0', label: 'Any LAN (0.0.0.0)' });
+          setLocalIpOptions(ensureCurrentValue(opts));
         } catch (error) {
-          console.warn('Failed to load system info for LAN IPs', error);
+          console.warn('Failed to load network IPs', error);
           setLocalIpOptions(ensureCurrentValue([
             { value: 'lan1-unavailable', label: 'LAN 1 (Unavailable)', disabled: true },
             { value: 'lan2-unavailable', label: 'LAN 2 (Unavailable)', disabled: true },
@@ -217,7 +210,7 @@ const SipTrunkPage = () => {
       setForm(buildFormStateFromSettings(row));
       setEditIndex(idx);
     } else {
-      setForm(buildFormStateFromSettings(form));
+      setForm({ ...SIP_TRUNK_INITIAL_FORM });
       setEditIndex(null);
     }
     setShowModal(true);
@@ -279,26 +272,11 @@ const SipTrunkPage = () => {
   
   const handleSave = async () => {
     setLoading(prev => ({ ...prev, save: true }));
-    
+
     const safeTrim = (val, fallback = '') => {
       const value = val === undefined || val === null ? fallback : val;
       return String(value).trim();
     };
-
-    // Validate duplicate group (index) locally and alert user
-    const desiredIndex = String(form.index ?? '').trim();
-    if (desiredIndex !== '') {
-      const duplicate = registers.some((r, idx) => {
-        // allow same index when editing the same row
-        if (editIndex !== null && idx === editIndex) return false;
-        return String(r.index ?? r.id ?? '').trim() === desiredIndex;
-      });
-      if (duplicate) {
-        alert(`Group number ${desiredIndex} already exists. Please choose a different group number.`);
-        setLoading(prev => ({ ...prev, save: false }));
-        return;
-      }
-    }
 
     const resolveLocalIp = () => {
       const current = safeTrim(form.local_ip, '0.0.0.0');
@@ -310,8 +288,9 @@ const SipTrunkPage = () => {
       return current || '0.0.0.0';
     };
 
+    const isEditing = editIndex !== null;
     const settingsPayload = {
-      id: form.index ? Number(form.index) : undefined,
+      ...(isEditing ? { id: Number(form.index) } : {}),
       description: safeTrim(form.description) || undefined,
       local_ip: resolveLocalIp(),
       local_port: safeTrim(form.local_port, '5060') || '5060',
@@ -319,17 +298,17 @@ const SipTrunkPage = () => {
     };
 
     try {
-      const response = await updateGlobalSipSettings(settingsPayload);
+      const fn = isEditing ? updateGlobalSipSettings : createGlobalSipSettings;
+      const response = await fn(settingsPayload);
       if (response?.response) {
-        showMessage('success', response?.message || 'Settings Updated!');
+        showMessage('success', `${response?.message || (isEditing ? 'Entry updated' : 'Entry created')}. SIP service will restart briefly.`);
         await fetchGlobalSipSettings();
         setShowModal(false);
         setEditIndex(null);
       } else {
-        throw new Error(response?.message || 'Update failed');
+        showMessage('error', response?.message || 'Save failed');
       }
     } catch (error) {
-      console.error('Error saving SIP trunk settings:', error);
       showMessage('error', error?.message || 'Failed to save settings');
     } finally {
       setLoading(prev => ({ ...prev, save: false }));
@@ -344,50 +323,52 @@ const SipTrunkPage = () => {
   const handleUncheckAll = () => setSelected([]);
   const handleInverse = () => setSelected(registers.map((_, idx) => selected.includes(idx) ? null : idx).filter(i => i !== null));
   
-  // const handleDelete = () => {
-  //   if (selected.length === 0) {
-  //     showMessage('error', 'Please select trunks to delete');
-  //     return;
-  //   }
-    
-  //   setLoading(prev => ({ ...prev, delete: true }));
-    
-  //   setTimeout(() => {
-  //     setRegisters(prev => prev.filter((_, idx) => !selected.includes(idx)));
-  //     showMessage('success', `${selected.length} row(s) removed locally`);
-  //     setSelected([]);
-  //     setTimeout(() => setLoading(prev => ({ ...prev, delete: false })), 300);
-  //   }, 500);
-  // };
+  const handleDelete = async () => {
+    if (selected.length === 0) {
+      showMessage('error', 'Please select trunks to delete');
+      return;
+    }
+    if (!window.confirm(`Delete ${selected.length} SIP trunk(s)?`)) return;
+
+    setLoading(prev => ({ ...prev, delete: true }));
+    try {
+      for (const realIdx of selected) {
+        const row = registers[realIdx];
+        if (row?.id != null) await deleteGlobalSipSettings(row.id);
+      }
+      showMessage('success', `${selected.length} trunk(s) deleted. SIP service will restart briefly.`);
+      setSelected([]);
+      await fetchGlobalSipSettings();
+    } catch (error) {
+      showMessage('error', error?.message || 'Delete failed');
+    } finally {
+      setLoading(prev => ({ ...prev, delete: false }));
+    }
+  };
   
-  // const handleClearAll = () => {
-  //   if (registers.length === 0) {
-  //     showMessage('info', 'No trunks to clear');
-  //     return;
-  //   }
-    
-  //   if (!window.confirm('Are you sure you want to delete ALL SIP trunks? This action cannot be undone.')) {
-  //     return;
-  //   }
-    
-  //   setLoading(prev => ({ ...prev, delete: true }));
-    
-  //   setTimeout(() => {
-  //     try {
-  //       const totalCount = registers.length;
-  //       setRegisters([]);
-  //       setSelected([]);
-  //       setPage(1);
-  //       setForm({ ...SIP_TRUNK_INITIAL_FORM });
-  //       showMessage('success', `All ${totalCount} trunk(s) deleted successfully`);
-  //     } catch (error) {
-  //       console.error('Error clearing all SIP trunks:', error);
-  //       showMessage('error', 'Failed to clear all trunks');
-  //     } finally {
-  //       setLoading(prev => ({ ...prev, delete: false }));
-  //     }
-  //   }, 500);
-  // };
+  const handleClearAll = async () => {
+    if (registers.length === 0) {
+      showMessage('info', 'No trunks to clear');
+      return;
+    }
+    if (!window.confirm('Are you sure you want to delete ALL SIP trunks? This action cannot be undone.')) return;
+
+    setLoading(prev => ({ ...prev, delete: true }));
+    try {
+      const totalCount = registers.length;
+      for (const row of registers) {
+        if (row?.id != null) await deleteGlobalSipSettings(row.id);
+      }
+      setSelected([]);
+      setPage(1);
+      await fetchGlobalSipSettings();
+      showMessage('success', `All ${totalCount} trunk(s) deleted. SIP service will restart briefly.`);
+    } catch (error) {
+      showMessage('error', error?.message || 'Failed to clear all trunks');
+    } finally {
+      setLoading(prev => ({ ...prev, delete: false }));
+    }
+  };
   
   const handlePageChange = (newPage) => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
@@ -503,7 +484,9 @@ const SipTrunkPage = () => {
                                 className="border border-gray-300 text-center bg-white"
                                 style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}
                               >
-                                {renderCellValue(field, reg)}
+                                {field.name === 'index'
+                                  ? (page - 1) * itemsPerPage + idx + 1
+                                  : renderCellValue(field, reg)}
                               </td>
                             ))}
                             <td className="border border-gray-300 text-center bg-white" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}>
@@ -573,22 +556,24 @@ const SipTrunkPage = () => {
             >
               Inverse
             </button>
-            {/* <button 
+
+            
+            <button 
               className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? 'opacity-50 cursor-not-allowed' : ''}`} 
               onClick={handleDelete}
               disabled={loading.delete}
             >
               {loading.delete && <CircularProgress size={12} />}
               Delete
-            </button> */}
-            {/* <button 
+            </button> 
+             <button 
               className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? 'opacity-50 cursor-not-allowed' : ''}`} 
               onClick={handleClearAll}
               disabled={loading.delete}
             >
               {loading.delete && <CircularProgress size={12} />}
               Clear All
-            </button> */}
+            </button>
           </div>
           <button 
             className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save ? 'opacity-50 cursor-not-allowed' : ''}`} 
@@ -597,7 +582,7 @@ const SipTrunkPage = () => {
           >
             Add New
           </button>
-        </div>
+        </div> 
         
         <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
           <span>{registers.length} items Total</span>
@@ -660,6 +645,8 @@ const SipTrunkPage = () => {
         >
           <div className="flex flex-col gap-2 w-full">
             {SIP_TRUNK_FIELDS.map(field => {
+              // id is auto-assigned by API; no need to expose it in the form
+              if (field.name === 'index') return null;
               // Skip rendering "Working Period Text" as a separate field - it's handled within "Working Period"
               if (field.name === 'working_period_text') return null;
               

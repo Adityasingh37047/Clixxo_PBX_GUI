@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Alert,
   Button,
@@ -7,11 +7,18 @@ import {
   Select as MuiSelect,
   Checkbox,
   TextField,
+  CircularProgress,
 } from "@mui/material";
 import {
   SIP_SETTINGS_FIELDS,
   SIP_SETTINGS_NOTE,
-} from "./constants/SipSipConstants"; // Update path if needed
+} from "./constants/SipSipConstants";
+import {
+  listFxsSipSettings,
+  saveFxsSipSettings,
+  resetFxsSipSettings,
+  statusFxsSipSettings,
+} from "../../api/apiService";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -84,14 +91,76 @@ const getInitialState = () => {
   return state;
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 const FxsVoipSipPage = () => {
   const [form, setForm] = useState(getInitialState());
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [registrationMode, setRegistrationMode] = useState("local");
+  const [localModeMsg, setLocalModeMsg] = useState("");
+  const statusPollRef = useRef(null);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+    setTimeout(() => setMessage({ type: "", text: "" }), 6000);
   };
+
+  // Apply API data object to form state
+  const applyApiData = (data) => {
+    if (!data) return;
+    setForm((prev) => {
+      const next = { ...prev };
+      SIP_SETTINGS_FIELDS.forEach((f) => {
+        if (data[f.key] !== undefined) next[f.key] = data[f.key];
+      });
+      if (data.registerStatus !== undefined) next.registerStatus = data.registerStatus;
+      return next;
+    });
+  };
+
+  // ── On mount: load settings ─────────────────────────────────────────────────
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const settingsRes = await listFxsSipSettings().catch((e) => {
+          console.warn("Failed to load FXS SIP settings:", e);
+          return null;
+        });
+        if (!mounted) return;
+        if (settingsRes?.success) {
+          const mode = settingsRes.registrationMode || "local";
+          setRegistrationMode(mode);
+          if (mode === "local" && settingsRes.message) setLocalModeMsg(settingsRes.message);
+          applyApiData(settingsRes.data || {});
+        }
+      } catch (e) {
+        console.warn("Error during initial load:", e);
+      } finally {
+        if (mounted) setLoadingPage(false);
+      }
+    })();
+    return () => { mounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Poll register status every 30 s in remote mode ─────────────────────────
+  useEffect(() => {
+    if (statusPollRef.current) clearInterval(statusPollRef.current);
+    if (registrationMode === "remote") {
+      statusPollRef.current = setInterval(async () => {
+        try {
+          const res = await statusFxsSipSettings();
+          if (res?.success && res.registerStatus) {
+            setForm((prev) => ({ ...prev, registerStatus: res.registerStatus }));
+          }
+        } catch (_) {}
+      }, 30000);
+    }
+    return () => { if (statusPollRef.current) clearInterval(statusPollRef.current); };
+  }, [registrationMode]);
 
   const handleChange = (key, value) => {
     const fieldDef = SIP_SETTINGS_FIELDS.find((f) => f.key === key);
@@ -108,28 +177,48 @@ const FxsVoipSipPage = () => {
     setForm((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleSave = () => {
-    // API Call goes here
-    showMessage("success", "Settings saved successfully!");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await saveFxsSipSettings(form);
+      if (!res?.success) {
+        showMessage("error", res?.message || "Failed to save settings.");
+        return;
+      }
+      const mode = res.registrationMode || "local";
+      setRegistrationMode(mode);
+      setLocalModeMsg(mode === "local" && res.message ? res.message : "");
+      if (res.data) applyApiData(res.data);
+      if (res.registerStatus) setForm((prev) => ({ ...prev, registerStatus: res.registerStatus }));
+      showMessage("success", res.message || "Settings saved successfully!");
+    } catch (err) {
+      showMessage("error", err?.message || "Failed to save settings.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleReset = () => {
-    setForm(getInitialState());
+  const handleReset = async () => {
+    try {
+      const res = await resetFxsSipSettings();
+      if (res?.success && res.data) {
+        applyApiData(res.data);
+        showMessage("info", res.message || "Settings reset to defaults.");
+      } else {
+        setForm(getInitialState());
+      }
+    } catch (_) {
+      setForm(getInitialState());
+    }
   };
 
   // Check if field should be shown based on conditional logic
   const shouldShowField = (field) => {
     if (!field.conditional) return true;
-
     const conditionalValue = form[field.conditional];
-
-    if (field.conditionalValues) {
-      return field.conditionalValues.includes(conditionalValue);
-    } else if (field.conditionalValue !== undefined) {
-      return conditionalValue === field.conditionalValue;
-    } else {
-      return !!conditionalValue;
-    }
+    if (field.conditionalValues) return field.conditionalValues.includes(conditionalValue);
+    if (field.conditionalValue !== undefined) return conditionalValue === field.conditionalValue;
+    return !!conditionalValue;
   };
 
   return (
@@ -176,6 +265,25 @@ const FxsVoipSipPage = () => {
           </div>
         </div>
 
+        {/* Local-mode info banner */}
+        {registrationMode === "local" && localModeMsg && (
+          <div style={{
+            background: "#fffbeb",
+            border: "1px solid #fcd34d",
+            borderRadius: 6,
+            padding: "10px 16px",
+            marginBottom: 12,
+            fontSize: 12,
+            color: C.amber,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}>
+            <span style={{ fontWeight: 700 }}>ℹ Local PBX mode:</span>
+            <span>{localModeMsg}</span>
+          </div>
+        )}
+
         {/* Main Card */}
         <div
           style={{
@@ -186,6 +294,11 @@ const FxsVoipSipPage = () => {
             boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
+          {loadingPage ? (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: 60 }}>
+              <CircularProgress size={32} />
+            </div>
+          ) : (
           <div style={{ padding: "24px 28px" }}>
             <SectionHeading title="SIP Settings" />
 
@@ -257,17 +370,11 @@ const FxsVoipSipPage = () => {
                         <FormControl size="small" fullWidth>
                           <MuiSelect
                             value={form[field.key] || ""}
-                            onChange={(e) =>
-                              handleChange(field.key, e.target.value)
-                            }
+                            onChange={(e) => handleChange(field.key, e.target.value)}
                             sx={{ fontSize: 13 }}
                           >
                             {field.options.map((opt) => (
-                              <MenuItem
-                                key={opt}
-                                value={opt}
-                                sx={{ fontSize: 13 }}
-                              >
+                              <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                                 {opt}
                               </MenuItem>
                             ))}
@@ -326,6 +433,7 @@ const FxsVoipSipPage = () => {
               })}
             </div>
           </div>
+          )}
 
           {/* Bottom Actions Footer */}
           <div
@@ -342,6 +450,7 @@ const FxsVoipSipPage = () => {
             <Button
               variant="contained"
               onClick={handleSave}
+              disabled={saving || loadingPage}
               sx={{
                 background: "#1e2d42",
                 color: "#fff",
@@ -353,11 +462,17 @@ const FxsVoipSipPage = () => {
                 "&:hover": { background: "#0f172a" },
               }}
             >
-              Save Settings
+              {saving ? (
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <CircularProgress size={14} sx={{ color: "#fff" }} />
+                  Saving…
+                </span>
+              ) : "Save Settings"}
             </Button>
             <Button
               variant="outlined"
               onClick={handleReset}
+              disabled={saving || loadingPage}
               sx={{
                 color: "#1e293b",
                 borderColor: "#9ca3af",

@@ -53,8 +53,10 @@ const SignalingCapture = () => {
 
   // Data capture state
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const [captureProcessId, setCaptureProcessId] = useState(null);
   const [captureFileName, setCaptureFileName] = useState("");
+  const [captureStatus, setCaptureStatus] = useState("");
 
   // TS Recording state
   const [ts1Pcm, setTs1Pcm] = useState(SC_PCM_OPTIONS[0].value);
@@ -266,86 +268,134 @@ const SignalingCapture = () => {
 
   // Handle stop data capture
   const handleStopCapture = async () => {
+    if (isStopping) return;
+    setIsStopping(true);
+    const gzFile = captureFileName ? `${captureFileName}.gz` : "";
+
+    const cleanup = async () => {
+      try {
+        await postLinuxCmd({
+          cmd: `rm -f '${captureFileName}' '${gzFile}' /mnt/data/tcpdump_capture.log 2>/dev/null || true`,
+        });
+      } catch (_) {}
+    };
+
     try {
-      // Kill by saved PID + fallback pkill to ensure nothing keeps running
-      if (captureProcessId) {
-        await postLinuxCmd({ cmd: `kill ${captureProcessId} 2>/dev/null || true` });
-      }
-      await postLinuxCmd({ cmd: `pkill -f 'tcpdump.*signaling_capture' 2>/dev/null || true` });
+      // ── Step 1: Kill tcpdump in ONE server-side command ─────────────────────
+      // TERM → 2 s grace → KILL → sync. One API call, no polling loop.
+      setCaptureStatus("Stopping capture…");
+      const pidTerm  = captureProcessId ? `kill -TERM ${captureProcessId} 2>/dev/null; ` : "";
+      const pidKill  = captureProcessId ? `kill -KILL ${captureProcessId} 2>/dev/null; ` : "";
+      await postLinuxCmd({
+        cmd: `${pidTerm}pkill -TERM -f 'tcpdump.*signaling_capture' 2>/dev/null; sleep 2; ${pidKill}pkill -KILL -f 'tcpdump.*signaling_capture' 2>/dev/null; sync`,
+      });
 
-      // Wait for process to fully stop and flush file
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      await postLinuxCmd({ cmd: "sync" });
-
-      // Check if file exists and get its size
-      const checkFileCmd = `ls -la ${captureFileName} 2>/dev/null || echo "FILE_NOT_FOUND"`;
-      const fileResponse = await postLinuxCmd({ cmd: checkFileCmd });
-      const fileInfo = String(fileResponse?.responseData || "").trim();
-
-      if (fileInfo.includes("FILE_NOT_FOUND")) {
+      // ── Step 2: verify file exists and has packets ──────────────────────────
+      const checkRes = await postLinuxCmd({
+        cmd: `ls -la '${captureFileName}' 2>/dev/null || echo FILE_NOT_FOUND`,
+      });
+      if (String(checkRes?.responseData || "").includes("FILE_NOT_FOUND")) {
         window.alert("Capture file not found on server.");
-      } else {
-        // Sanity check: does the pcap contain at least one packet?
-        const pktCountCmd = `tcpdump -n -q -r ${captureFileName} -c 1 2>/dev/null | wc -l`;
-        const pktRes = await postLinuxCmd({ cmd: pktCountCmd });
-        const pktCount =
-          parseInt(String(pktRes?.responseData || "0").trim(), 10) || 0;
-        if (pktCount === 0) {
-          // No packets in the pcap – nothing useful to download
-          window.alert(
-            "Data capture stopped but no packets were recorded. Try selecting All LAN, disable Syslog filter, and let it run 10–20 seconds while generating traffic.",
-          );
-        } else {
-          window.alert("Data capture stopped!");
-
-          // Download the file (transfer as base64 to preserve binary integrity)
-          try {
-            const downloadCmd = `base64 ${captureFileName}`;
-            const downloadResponse = await postLinuxCmd({ cmd: downloadCmd });
-
-            if (downloadResponse?.responseData) {
-              const b64 = downloadResponse.responseData.replace(/\s+/g, "");
-              const byteCharacters = atob(b64);
-              const byteNumbers = new Array(byteCharacters.length);
-              for (let i = 0; i < byteCharacters.length; i += 1) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-              }
-              const byteArray = new Uint8Array(byteNumbers);
-              const blob = new Blob([byteArray], {
-                type: "application/vnd.tcpdump.pcap",
-              });
-
-              const url = window.URL.createObjectURL(blob);
-              const link = document.createElement("a");
-              link.href = url;
-              const downloadDate = new Date()
-                .toISOString()
-                .split("T")[0]
-                .replace(/-/g, "_");
-              link.download = `signaling_capture_${downloadDate}.pcap`;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              window.URL.revokeObjectURL(url);
-              // Clean up pcap + log from device after download
-              await postLinuxCmd({ cmd: `rm -f '${captureFileName}' /mnt/data/tcpdump_capture.log 2>/dev/null || true` });
-            } else {
-              window.alert("Failed to download capture file.");
-            }
-          } catch (downloadError) {
-            console.error("Error downloading file:", downloadError);
-            window.alert("Error downloading capture file. Please try again.");
-          }
-        }
+        return;
       }
 
-      // Reset capture state
+      const pktRes = await postLinuxCmd({
+        cmd: `tcpdump -n -q -r '${captureFileName}' -c 1 2>/dev/null | wc -l`,
+      });
+      const pktCount = parseInt(String(pktRes?.responseData || "0").trim(), 10) || 0;
+      if (pktCount === 0) {
+        window.alert(
+          "Capture stopped but no packets were recorded.\nTry: All LAN, disable Syslog filter, generate traffic, then capture again.",
+        );
+        await cleanup();
+        return;
+      }
+
+      // ── Step 3: compress — check success explicitly ─────────────────────────
+      setCaptureStatus("Compressing capture file…");
+      const gzRes = await postLinuxCmd({
+        cmd: `gzip -c '${captureFileName}' > '${gzFile}' 2>/dev/null && echo OK || echo FAILED`,
+      });
+      if (!String(gzRes?.responseData || "").includes("OK")) {
+        window.alert("Failed to compress capture file. Please try again.");
+        await cleanup();
+        return;
+      }
+
+      const sizeRes = await postLinuxCmd({
+        cmd: `wc -c < '${gzFile}' 2>/dev/null || echo 0`,
+      });
+      const fileSize = parseInt(String(sizeRes?.responseData || "0").trim(), 10) || 0;
+      if (fileSize === 0) {
+        window.alert("Compressed file is empty. Please try again.");
+        await cleanup();
+        return;
+      }
+
+      // ── Step 4: chunked base64 transfer (200 KB chunks) ────────────────────
+      // Decode each chunk to binary immediately — base64-joining padded chunks
+      // produces invalid base64. Iterate exactly numChunks (derived from file
+      // size) so an empty API response is treated as an error, not silent EOF.
+      const CHUNK_BYTES = 200 * 1024;
+      const numChunks = Math.ceil(fileSize / CHUNK_BYTES);
+      const binaryParts = [];
+
+      for (let i = 0; i < numChunks; i++) {
+        setCaptureStatus(`Downloading… ${Math.round(((i + 1) / numChunks) * 100)}%`);
+        const chunkRes = await postLinuxCmd({
+          cmd: `dd if='${gzFile}' bs=${CHUNK_BYTES} skip=${i} count=1 2>/dev/null | base64`,
+        });
+        const chunkB64 = String(chunkRes?.responseData || "").replace(/\s+/g, "");
+        if (!chunkB64) {
+          // Only acceptable on the very last chunk when file size is an exact multiple
+          if (i === numChunks - 1) break;
+          throw new Error(`Download interrupted at chunk ${i + 1}/${numChunks}. Please try again.`);
+        }
+        const raw = atob(chunkB64);
+        const bytes = new Uint8Array(raw.length);
+        for (let j = 0; j < raw.length; j++) bytes[j] = raw.charCodeAt(j);
+        binaryParts.push(bytes);
+      }
+
+      if (binaryParts.length === 0) {
+        throw new Error("No data received from device during download.");
+      }
+
+      // ── Step 5: merge and trigger browser download ──────────────────────────
+      setCaptureStatus("Saving file…");
+      const totalSize = binaryParts.reduce((sum, p) => sum + p.length, 0);
+      const byteArray = new Uint8Array(totalSize);
+      let offset = 0;
+      for (const part of binaryParts) { byteArray.set(part, offset); offset += part.length; }
+      const blob = new Blob([byteArray], { type: "application/gzip" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "_");
+      link.download = `signaling_capture_${dateStr}.pcap.gz`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // ── Step 6: clean up files from device ─────────────────────────────────
+      await cleanup();
+      setCaptureStatus("");
+      window.alert("Download complete! Open the .pcap.gz file directly in Wireshark.");
+
+    } catch (error) {
+      console.error("Error stopping data capture:", error);
+      setCaptureStatus("");
+      try {
+        await postLinuxCmd({ cmd: `pkill -KILL -f 'tcpdump.*signaling_capture' 2>/dev/null || true` });
+        await cleanup();
+      } catch (_) {}
+      window.alert(`Error during stop/download: ${error.message || "Please try again."}`);
+    } finally {
+      setIsStopping(false);
       setIsCapturing(false);
       setCaptureProcessId(null);
       setCaptureFileName("");
-    } catch (error) {
-      console.error("Error stopping data capture:", error);
-      window.alert("Error stopping data capture. Please try again.");
     }
   };
 
@@ -432,23 +482,52 @@ const SignalingCapture = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex gap-3 justify-center lg:justify-start lg:ml-4">
-                <Button
-                  variant="contained"
-                  sx={blueButtonSx}
-                  onClick={handleStartCapture}
-                  disabled={isCapturing}
-                >
-                  {SC_BUTTONS.start}
-                </Button>
-                <Button
-                  variant="contained"
-                  sx={blueButtonSx}
-                  onClick={handleStopCapture}
-                  disabled={!isCapturing}
-                >
-                  {SC_BUTTONS.stop}
-                </Button>
+              <div className="flex flex-col items-center gap-2 lg:ml-4">
+                <div className="flex gap-3 justify-center">
+                  <Button
+                    variant="contained"
+                    sx={blueButtonSx}
+                    onClick={handleStartCapture}
+                    disabled={isCapturing || isStopping}
+                  >
+                    {SC_BUTTONS.start}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={blueButtonSx}
+                    onClick={handleStopCapture}
+                    disabled={!isCapturing || isStopping}
+                  >
+                    {isStopping ? "Please wait…" : SC_BUTTONS.stop}
+                  </Button>
+                </div>
+                {captureStatus && (
+                  <div style={{
+                    fontSize: 12,
+                    color: "#1d4ed8",
+                    fontWeight: 600,
+                    background: "#eff6ff",
+                    border: "1px solid #bfdbfe",
+                    borderRadius: 6,
+                    padding: "4px 12px",
+                    whiteSpace: "nowrap",
+                  }}>
+                    {captureStatus}
+                  </div>
+                )}
+                {isCapturing && !isStopping && (
+                  <div style={{
+                    fontSize: 11,
+                    color: "#15803d",
+                    fontWeight: 600,
+                    background: "#f0fdf4",
+                    border: "1px solid #bbf7d0",
+                    borderRadius: 6,
+                    padding: "3px 10px",
+                  }}>
+                    ● Capturing…
+                  </div>
+                )}
               </div>
             </div>
           </div>

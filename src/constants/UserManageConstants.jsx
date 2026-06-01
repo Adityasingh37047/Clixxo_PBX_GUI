@@ -311,7 +311,7 @@ export const PAGE_PERMISSION_GROUPS = [
         id: 'userPermission',
         label: 'User Permission',
         pages: [
-          { id: 'userList',      label: 'User Permission' },
+          // { id: 'userList',      label: 'User Permission' },
           { id: 'accountManage', label: 'Account Manage'  },
           { id: 'changePassword',label: 'Change Password' },
         ],

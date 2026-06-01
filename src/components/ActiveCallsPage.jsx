@@ -116,16 +116,32 @@ function callPairKey(ch) {
 }
 
 /**
+ * Extract the dialed number from ARI app_data when app_name is "Dial".
+ * e.g. "PJSIP/07309377930@bsnl,30,..." → "07309377930"
+ */
+function extractDialedFromAppData(appName, appData) {
+  if (appName !== "Dial" || !appData) return null;
+  const m = String(appData).match(/^(?:PJSIP|SIP)\/(\+?\d+)[@,\/]/i);
+  return m ? m[1] : null;
+}
+
+/**
  * Merge channels that share the same two endpoints (reciprocal legs).
  * Uses earliest creationtime across legs so duration starts from first leg, not second.
+ * "Down" state channels are helper subroutines (e.g. set-pai) and are filtered out first.
  */
 function mergeCallLegs(list) {
-  if (!Array.isArray(list) || list.length <= 1) return list;
+  if (!Array.isArray(list)) return [];
+  // Filter out "Down" channels — these are completed helper subroutines, not real call legs
+  const active = list.filter(
+    (ch) => String(ch.state || "").toLowerCase() !== "down",
+  );
+  if (active.length <= 1) return active.map((ch) => ({ ...ch, _allLegs: [ch] }));
 
   const byKey = new Map();
   const noKey = [];
 
-  for (const ch of list) {
+  for (const ch of active) {
     const key = callPairKey(ch);
     if (!key) {
       noKey.push(ch);
@@ -138,7 +154,7 @@ function mergeCallLegs(list) {
   const merged = [];
   for (const [, group] of byKey) {
     if (group.length === 1) {
-      merged.push(group[0]);
+      merged.push({ ...group[0], _allLegs: group });
       continue;
     }
     // Same pair, multiple legs → one logical call
@@ -153,6 +169,7 @@ function mergeCallLegs(list) {
     merged.push({
       ...primary,
       _mergedChannelIds: channelIds,
+      _allLegs: group,
       _mergedCreationTime: earliest
         ? earliest.d
         : parseCreationTime(primary.creationtime),
@@ -160,6 +177,90 @@ function mergeCallLegs(list) {
   }
 
   return [...merged, ...noKey];
+}
+
+/** Returns true if the string is a real number (not ARI placeholder "s") */
+function isRealNumber(n) {
+  if (!n || typeof n !== "string") return false;
+  const t = n.trim();
+  return t.length > 0 && t !== "s" && t !== "unknown" && t !== "anonymous";
+}
+
+/** Extract endpoint id from ARI channel name, e.g. "PJSIP/1002-00000094" → "1002" */
+function extractEndpointFromName(name) {
+  const m = String(name || "").match(/^(?:PJSIP|SIP)\/([^-\/]+)/i);
+  return m ? m[1] : null;
+}
+
+/** True if string looks like a phone number or extension (digits only, 3+) */
+function isNumberLike(s) {
+  return /^\d{3,}$/.test(s || "");
+}
+
+/**
+ * Resolve the real caller and callee from a (possibly merged) channel.
+ *
+ * Strategy:
+ *  - Originating leg: app_name !== "AppDial" (the leg that placed the call)
+ *  - Destination leg: app_name === "AppDial" (the leg that was dialed)
+ *
+ * Caller  → originating leg's caller.number (if real) or extract from its name
+ * Callee  → destination leg's channel name endpoint (best for ext→ext / inbound PSTN)
+ *           then originating leg's connected.number (best for outbound ext→PSTN)
+ */
+function resolveCallerCallee(ch) {
+  const legs = ch._allLegs || [ch];
+
+  const origLeg =
+    legs.find((l) => l.dialplan?.app_name !== "AppDial") ?? legs[0];
+  const destLeg =
+    legs.find((l) => l.dialplan?.app_name === "AppDial") ?? null;
+
+  const rawCallerNum = origLeg?.caller?.number;
+  const rawConnectedNum = origLeg?.connected?.number;
+  // When caller.number === connected.number both sides carry the DID/caller-ID,
+  // not the real endpoint — fall back to extracting from the channel name.
+  const sameOnBothSides =
+    isRealNumber(rawCallerNum) && rawCallerNum === rawConnectedNum;
+
+  // --- Caller ---
+  let caller = null;
+  if (!sameOnBothSides && isRealNumber(rawCallerNum)) caller = rawCallerNum;
+  if (!caller && !sameOnBothSides && isRealNumber(origLeg?.caller?.name))
+    caller = origLeg.caller.name;
+  // Always try channel name as fallback (gives extension id like "1001")
+  if (!caller) {
+    const ep = extractEndpointFromName(origLeg?.name);
+    if (ep && isNumberLike(ep)) caller = ep;
+  }
+
+  // --- Callee ---
+  let callee = null;
+  // 1. Dialed number from app_data ("PJSIP/07309377930@bsnl,...") — best for outbound
+  const fromAppData = extractDialedFromAppData(
+    origLeg?.dialplan?.app_name,
+    origLeg?.dialplan?.app_data,
+  );
+  if (fromAppData) callee = fromAppData;
+  // 2. Numeric endpoint from destination leg name (inbound PSTN→ext, ext→ext)
+  if (!callee && destLeg) {
+    const ep = extractEndpointFromName(destLeg.name);
+    if (ep && isNumberLike(ep)) callee = ep;
+  }
+  // 3. connected number — only if it differs from caller (not a DID-mirror)
+  if (!callee && isRealNumber(rawConnectedNum) && rawConnectedNum !== rawCallerNum)
+    callee = rawConnectedNum;
+  if (
+    !callee &&
+    isRealNumber(origLeg?.connected?.name) &&
+    origLeg.connected.name !== rawCallerNum
+  )
+    callee = origLeg.connected.name;
+  // 4. destLeg's caller number
+  if (!callee && destLeg && isRealNumber(destLeg?.caller?.number))
+    callee = destLeg.caller.number;
+
+  return { caller: caller || "—", callee: callee || "—" };
 }
 
 /**
@@ -354,10 +455,8 @@ const ActiveCallsPage = () => {
           {!error && channels.length > 0 && (
             <div className={`grid gap-3 ${gridClass}`}>
               {channels.map((ch) => {
-                const callerNum = ch.caller?.number || "";
-                const connectedNum = ch.connected?.number || "";
-                const callerName = ch.caller?.name || "";
-                const connectedName = ch.connected?.name || "";
+                const { caller: callerNum, callee: connectedNum } =
+                  resolveCallerCallee(ch);
                 const instanceKey = callInstanceKey(ch);
                 const isUp = String(ch.state || "").toLowerCase() === "up";
                 // Talking: elapsed since we first saw Up (avoids 15s+ offset from creationtime)
@@ -382,9 +481,8 @@ const ActiveCallsPage = () => {
                 const status = stateLabel(ch.state);
                 const topLine = channelDisplayLine(ch);
 
-                // SS layout: icon left | external_wan line + number + arrow+ext | Talking→ + duration + icons
-                const mainNumber = callerNum || callerName || "—";
-                const extNumber = connectedNum || connectedName || "";
+                const mainNumber = callerNum;
+                const extNumber = connectedNum;
 
                 return (
                   <div

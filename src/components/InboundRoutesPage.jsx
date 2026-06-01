@@ -37,6 +37,8 @@ const DESTINATION_OPTIONS = [
   'Fax To Mail',
   'IVR Menus',
   'Ring Groups',
+  'Trunks',
+  'Outbound',
   'Voicemails',
   'Extension_Range',
   'Other',
@@ -54,6 +56,8 @@ const DEST_TYPE_TO_UI = {
   call_queue: 'Call Queue',
   callbacks: 'CallBacks',
   disa: 'DISA',
+  trunk: 'Trunks',
+  outbound_route: 'Outbound',
 };
 
 const UI_TO_DEST_TYPE = {
@@ -68,6 +72,8 @@ const UI_TO_DEST_TYPE = {
   'Call Queue': 'call_queue',
   CallBacks: 'callbacks',
   DISA: 'disa',
+  Trunks: 'trunk',
+  Outbound: 'outbound_route',
 };
 
 const OTHER_DESTINATION_OPTIONS = ['Hangup', 'Hold Music'];
@@ -82,6 +88,8 @@ const DESTINATION_NEEDS_TARGET = new Set([
   'Call Queue',
   'CallBacks',
   'DISA',
+  'Trunks',
+  'Outbound',
   'Other',
 ]);
 const SELECT_MENU_PROPS = {
@@ -380,6 +388,8 @@ const InboundRoutesPage = () => {
     'Call Queue': 'CallQueue',
     CallBacks: 'Callbacks',
     DISA: 'DISA',
+    Trunks: 'Trunks',
+    Outbound: 'Outbound',
     Other: 'Other',
   };
 

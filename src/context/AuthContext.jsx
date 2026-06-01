@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { fetchLogin } from '../api/apiService';
+import { canWrite as canWriteUser, isReadOnlyUser } from '../utils/permissions';
 
 // Create the context
 const AuthContext = createContext();
@@ -30,7 +31,7 @@ export const AuthProvider = ({ children }) => {
       ip === "localhost" || ip === "127.0.0.1" || ip === "0.0.0.0";
   
     if (isLocalhost) {
-    let testIp='192.168.0.99';
+    let testIp='192.168.0.91';
       // Local development → backend usually runs on 5000
       return `https://${testIp}:443/api`;
     } else {
@@ -158,6 +159,34 @@ useEffect(() => {
     sessionStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // Global read-only toast
+  const [readOnlyToast, setReadOnlyToast] = useState(false);
+  const readOnlyToastTimer = React.useRef(null);
+
+  const showReadOnlyToast = () => {
+    setReadOnlyToast(true);
+    if (readOnlyToastTimer.current) clearTimeout(readOnlyToastTimer.current);
+    readOnlyToastTimer.current = setTimeout(() => setReadOnlyToast(false), 4000);
+  };
+
+  // Listen for read-only flag from API interceptor
+  useEffect(() => {
+    const handler = () => {
+      setUser(prev => {
+        if (!prev || prev.read_only) return prev;
+        const updated = { ...prev, read_only: true };
+        sessionStorage.setItem('user', JSON.stringify(updated));
+        return updated;
+      });
+      showReadOnlyToast();
+    };
+    window.addEventListener('pbx:read-only', handler);
+    return () => {
+      window.removeEventListener('pbx:read-only', handler);
+      if (readOnlyToastTimer.current) clearTimeout(readOnlyToastTimer.current);
+    };
+  }, []);
+
   const value = {
     isAuthenticated,
     user,
@@ -168,12 +197,58 @@ useEffect(() => {
     BASE_URL,
     setBASE_URL,
     getBaseURL,
-    
+    isReadOnly: isReadOnlyUser(user),
+    canWrite: canWriteUser(user),
+    showReadOnlyToast,
   };
 
   return (
     <AuthContext.Provider value={value}>
       {children}
+
+      {/* Global read-only toast — shown whenever any API call returns read_only: true */}
+      {readOnlyToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 99999,
+          background: '#1e293b',
+          color: '#fff',
+          padding: '12px 24px',
+          borderRadius: 10,
+          fontSize: 14,
+          fontWeight: 600,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.28)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          minWidth: 320,
+          maxWidth: '90vw',
+          borderLeft: '4px solid #f59e0b',
+          animation: 'pbx-slide-up 0.25s ease',
+        }}>
+          <span style={{ fontSize: 18 }}>🔒</span>
+          <div>
+            <div style={{ fontWeight: 700, marginBottom: 2 }}>Read-Only Access</div>
+            <div style={{ fontSize: 12, fontWeight: 400, color: '#94a3b8' }}>
+              You do not have permission to make changes.
+            </div>
+          </div>
+          <button
+            onClick={() => setReadOnlyToast(false)}
+            style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}
+          >×</button>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes pbx-slide-up {
+          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
     </AuthContext.Provider>
   );
 }; 

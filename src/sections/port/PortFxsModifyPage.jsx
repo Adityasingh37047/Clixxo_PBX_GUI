@@ -3,7 +3,10 @@ import { Alert } from "@mui/material";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ROUTE_PATHS } from '../../constants/routeConstatns';
 import { PORT_FXS_TOTAL_PORTS } from './constants/PortFxsPageConstants';
-// import { fetchFxsPorts, updateFxsPort } from './controller';
+import { fetchFxsPorts, saveFxsPort } from '../../api/apiService';
+
+const FWD_TYPE_TO_UI   = { no_reply: 'No Reply', unconditional: 'Unconditional', busy: 'Busy' };
+const FWD_TYPE_TO_API  = { 'No Reply': 'no_reply', 'Unconditional': 'unconditional', 'Busy': 'busy' };
 
 const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
   const navigate = useNavigate();
@@ -29,6 +32,7 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
     callForward: false,
     forwardType: 'Unconditional',
     forwardNumber: '',
+    noAnswerDelayTime: '0',
     advancedConfiguration: false,
     ringingParameter: '',
     feedVoltageParameter: '',
@@ -49,32 +53,30 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
       setLoading(true);
       try {
         const res = await fetchFxsPorts();
-        const list = res && res.data ? res.data : (res || []);
-        const p = list.find(item => String(item.port_number ?? item.port ?? item.id) === String(initialPort));
+        const list = Array.isArray(res?.data) ? res.data : [];
+        const p = list.find(item => String(item.port ?? item.id) === String(initialPort));
         if (p && mounted) {
           setForm(prev => ({
             ...prev,
-            startingPort: String(p.port_number ?? p.port ?? p.id),
-            endingPort: String(p.port_number ?? p.port ?? p.id),
-            registerPort: p.register_port ?? 'No',
-            startingSipAccount: p.sip_account ?? '',
-            startingDisplayName: p.starting_display_name ?? p.display_name ?? '',
-            displayNamePreferred: !!p.display_name_preferred,
-            autoDialNumber: p.auto_dial_number_value ?? '',
-            waitTimeBeforeAutoDial: String(p.wait_time_before_auto_dial ?? 0),
-            inputGain: String(p.input_gain ?? p.input_gain_db ?? 0),
-            outputGain: String(p.output_gain ?? p.output_gain_db ?? 0),
-            echoCanceller: !!p.echo_canceller,
-            cid: !!p.cid_enable,
-            callWaiting: !!p.call_waiting,
-            dnd: !!p.dnd_do_not_disturb,
-            callForward: !!p.call_forward,
-            forwardType: p.forward_type ?? 'Unconditional',
-            forwardNumber: p.forward_number ?? '',
-            advancedConfiguration: !!p.advanced_configuration,
-            ringingParameter: p.ringing_parameter ?? '',
-            feedVoltageParameter: p.feed_voltage_parameter ?? '',
-            impedanceParameter: p.impedance_parameter ?? '',
+            startingPort: String(p.port ?? p.id),
+            endingPort: String(p.port ?? p.id),
+            registerPort: p.enabled ? 'Yes' : 'No',
+            startingSipAccount: p.sipAccount ?? '',
+            startingDisplayName: p.displayName ?? '',
+            startingAuthPassword: '',
+            displayNamePreferred: !!p.displayNamePreferred,
+            autoDialNumber: p.autoDialNumber ?? '',
+            waitTimeBeforeAutoDial: String(p.autoDialWaitSec ?? 0),
+            inputGain: String(p.inputGain ?? 0),
+            outputGain: String(p.outputGain ?? 0),
+            echoCanceller: !!p.echoCanceller,
+            cid: !!p.cidEnabled,
+            callWaiting: !!p.callWaiting,
+            dnd: !!p.dnd,
+            callForward: !!p.callForwardEnabled,
+            forwardType: FWD_TYPE_TO_UI[p.forwardType] ?? 'Unconditional',
+            forwardNumber: p.forwardNumber ?? '',
+            noAnswerDelayTime: String(p.noReplyDelaySec ?? 0),
           }));
         }
       } catch (err) {
@@ -101,30 +103,31 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
     setSaving(true);
     try {
       const payload = {
-        portNumber: Number(form.startingPort),
-        type: 'FXS',
-        registerPort: form.registerPort,
+        port: Number(form.startingPort),
+        enabled: form.registerPort === 'Yes',
         sipAccount: form.startingSipAccount,
         displayName: form.startingDisplayName,
-        password: form.startingAuthPassword,
+        authPassword: form.startingAuthPassword,
         displayNamePreferred: !!form.displayNamePreferred,
-        autoDialNumber: form.autoDialNumber,
-        waitTimeBeforeAutoDial: Number(form.waitTimeBeforeAutoDial) || 0,
-        inputGainDb: Number(form.inputGain) || 0,
-        outputGainDb: Number(form.outputGain) || 0,
+        autoDialEnabled: !!form.autoDialNumber,
+        autoDialNumber: form.autoDialNumber || '',
+        autoDialWaitSec: Number(form.waitTimeBeforeAutoDial) || 0,
+        inputGain: Number(form.inputGain) || 0,
+        outputGain: Number(form.outputGain) || 0,
+        cidEnabled: !!form.cid,
         echoCanceller: !!form.echoCanceller,
-        cid: !!form.cid,
         callWaiting: !!form.callWaiting,
-        dndDoNotDisturb: !!form.dnd,
-        callForward: !!form.callForward,
-        forwardType: form.forwardType,
-        forwardNumber: form.forwardNumber,
+        dnd: !!form.dnd,
+        callForwardEnabled: !!form.callForward,
+        forwardType: FWD_TYPE_TO_API[form.forwardType] ?? 'unconditional',
+        forwardNumber: form.forwardNumber || '',
+        noReplyDelaySec: Number(form.noAnswerDelayTime) || 0,
       };
 
-      const res = await updateFxsPort(payload);
-      // notify parent to reload ports list so UI shows authoritative data
+      const res = await saveFxsPort(payload);
+      if (!res?.success) throw new Error(res?.message || 'Save failed');
       if (typeof onSaved === 'function') await onSaved();
-      showMessage('success', res?.message || 'Modify saved successfully!');
+      showMessage('success', res?.message || 'Port saved successfully!');
       if (typeof onClose === 'function') onClose();
       else navigate(ROUTE_PATHS.PORT_FXS);
     } catch (err) {

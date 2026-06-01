@@ -2,6 +2,7 @@ import axiosInstance from "./axiosInstance";
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import axios from "axios";
+import { data } from "react-router-dom";
 
 // User Permission API
 export const fetchUserPermissionGroups = async () => {
@@ -2376,6 +2377,19 @@ export const listGlobalSipSettings = async () => {
   }
 };
 
+export const createGlobalSipSettings = async (settings) => {
+  try {
+    const response = await axiosInstance.post('/global-sip', {
+      type: 'create',
+      data: { settings },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating global SIP settings:', error.message);
+    throw error;
+  }
+};
+
 export const updateGlobalSipSettings = async (settings) => {
   try {
     const response = await axiosInstance.post('/global-sip', {
@@ -2388,6 +2402,21 @@ export const updateGlobalSipSettings = async (settings) => {
     throw error;
   }
 };
+
+export const deleteGlobalSipSettings = async (id) => {
+  try {
+    const response = await axiosInstance.post('/global-sip', {
+      type: 'delete',
+      data: { id },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting global SIP settings:', error.message);
+    throw error;
+  }
+};
+
+
 
 // Config File API Services
 export const fetchHostsFile = async () => {
@@ -3473,6 +3502,80 @@ export const deleteCustomPrompt = async ({ filename }) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting custom prompt:', error.message);
+    throw error;
+  }
+};
+
+// ── FXS SIP Settings API ─────────────────────────────────────────────────────
+
+export const listFxsSipSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/fxs/sip', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching FXS SIP settings:', error.message);
+    throw error;
+  }
+};
+
+export const saveFxsSipSettings = async (data) => {
+  try {
+    const response = await axiosInstance.post('/fxs/sip', { type: 'save', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving FXS SIP settings:', error.message);
+    throw error;
+  }
+};
+
+export const resetFxsSipSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/fxs/sip', { type: 'reset' });
+    return response.data;
+  } catch (error) {
+    console.error('Error resetting FXS SIP settings:', error.message);
+    throw error;
+  }
+};
+
+export const statusFxsSipSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/fxs/sip', { type: 'status' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching FXS SIP status:', error.message);
+    throw error;
+  }
+};
+
+// ── FXS Port API ─────────────────────────────────────────────────────────────
+
+export const fetchFxsPorts = async () => {
+  try {
+    const response = await axiosInstance.post('/fxs', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching FXS ports:', error.message);
+    throw error;
+  }
+};
+
+export const saveFxsPort = async (data) => {
+  try {
+    const response = await axiosInstance.post('/fxs', { type: 'save-port', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving FXS port:', error.message);
+    throw error;
+  }
+};
+
+export const saveFxsBatch = async (data) => {
+  try {
+    const response = await axiosInstance.post('/fxs', { type: 'save-batch', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving FXS batch:', error.message);
     throw error;
   }
 };
