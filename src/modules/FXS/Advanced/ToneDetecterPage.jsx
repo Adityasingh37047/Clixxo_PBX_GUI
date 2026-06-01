@@ -511,7 +511,7 @@ const ToneDetecterPage = () => {
           style={{
             background: C.cardBg,
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            borderRadius: 10,
             overflow: "hidden",
             boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
@@ -561,6 +561,8 @@ const ToneDetecterPage = () => {
                   background: "#DCE6F2",
                   flexWrap: "wrap",
                   gap: 8,
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

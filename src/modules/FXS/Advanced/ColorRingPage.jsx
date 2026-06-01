@@ -505,9 +505,9 @@ const ColorRingPage = () => {
           style={{
             background: C.cardBg,
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            borderRadius: 10,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {rules.length === 0 ? (
@@ -556,6 +556,8 @@ const ColorRingPage = () => {
                   background: "#DCE6F2",
                   flexWrap: "wrap",
                   gap: 8,
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
                 }}
               >
                 {/* Left Toolbar Info */}

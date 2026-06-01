@@ -1,5 +1,5 @@
 import React from "react";
-import { tdStyle } from "../route/routeSharedUi";
+import { tdStyle } from "../fxs/fxsSharedUi";
 
 export {
   C,
@@ -15,7 +15,7 @@ export {
   numManipulatePaginationStyle,
   routeTableMinWidthForZoom,
   getBrowserZoomPercent,
-} from "../route/routeSharedUi";
+} from "../fxs/fxsSharedUi";
 
 export const routeTdStyle = {
   ...tdStyle,

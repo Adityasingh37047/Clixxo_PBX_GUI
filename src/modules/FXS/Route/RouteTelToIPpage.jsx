@@ -30,7 +30,7 @@ import {
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
   routeTableMinWidthForZoom,
-} from "../../../sections/route/routeSharedUi";
+} from "../../../sections/fxs/fxsSharedUi";
 
 /** Compact table text — original FXS route sizing (not enlarged shared defaults) */
 const routeTdStyle = {
@@ -276,9 +276,7 @@ const RoutePstnToIPPage = () => {
       callerIdPrefix: formData.callerIdPrefix,
       calleeIdPrefix: formData.calleeIdPrefix,
       routeSelf: formData.routeSelf,
-      destinationAddress: formData.routeSelf
-        ? ""
-        : formData.destinationAddress,
+      destinationAddress: formData.routeSelf ? "" : formData.destinationAddress,
       destinationPort: formData.routeSelf ? "5060" : formData.destinationPort,
       id: editIndex !== null ? rules[editIndex].id : Date.now(),
     };
@@ -543,146 +541,142 @@ const RoutePstnToIPPage = () => {
                   minWidth: tableMinWidth,
                 }}
               >
-                    <thead>
-                      <tr>
-                        <TH
+                <thead>
+                  <tr>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        ...routeThExtra,
+                      }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={
+                          rules.length > 0 && selected.length === rules.length
+                        }
+                        indeterminate={
+                          selected.length > 0 && selected.length < rules.length
+                        }
+                        onChange={(e) => {
+                          if (e.target.checked) handleCheckAll();
+                          else handleUncheckAll();
+                        }}
+                        sx={checkboxSx}
+                      />
+                    </TH>
+                    {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
+                      <TH key={col.key} style={routeThExtra}>
+                        {col.label}
+                      </TH>
+                    ))}
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        ...routeThExtra,
+                      }}
+                    >
+                      Modify
+                    </TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedRules.map((item, idx) => {
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRules.length - 1;
+                    const rowBg = isSelected
+                      ? "#f0f9ff"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+
+                    return (
+                      <tr
+                        key={realIdx}
+                        style={{
+                          background: rowBg,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f1f5f9";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
-                            width: 40,
-                            padding: 0,
+                            ...routeTdStyle,
+                            background: rowBg,
                             borderLeft: "none",
-                            ...routeThExtra,
+                            width: 36,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <Checkbox
                             size="small"
-                            checked={
-                              rules.length > 0 &&
-                              selected.length === rules.length
-                            }
-                            indeterminate={
-                              selected.length > 0 &&
-                              selected.length < rules.length
-                            }
-                            onChange={(e) => {
-                              if (e.target.checked) handleCheckAll();
-                              else handleUncheckAll();
-                            }}
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(idx)}
                             sx={checkboxSx}
                           />
-                        </TH>
+                        </td>
                         {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
-                          <TH key={col.key} style={routeThExtra}>
-                            {col.label}
-                          </TH>
-                        ))}
-                        <TH
-                          style={{
-                            width: 70,
-                            borderRight: "none",
-                            ...routeThExtra,
-                          }}
-                        >
-                          Modify
-                        </TH>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pagedRules.map((item, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        const isSelected = selected.includes(realIdx);
-                        const isLastRow = idx === pagedRules.length - 1;
-                        const rowBg = isSelected
-                          ? "#f0f9ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
-                        const lastRowCellStyle = isLastRow
-                          ? { borderBottom: "none" }
-                          : {};
-
-                        return (
-                          <tr
-                            key={realIdx}
+                          <td
+                            key={col.key}
                             style={{
+                              ...routeTdStyle,
                               background: rowBg,
-                              transition: "background 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = "#f1f5f9";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = rowBg;
+                              ...lastRowCellStyle,
                             }}
                           >
-                            <td
+                            {formatDisplayValue(col.key, item[col.key])}
+                          </td>
+                        ))}
+                        <td
+                          style={{
+                            ...routeTdStyle,
+                            background: rowBg,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
                               style={{
-                                ...routeTdStyle,
-                                background: rowBg,
-                                borderLeft: "none",
-                                width: 36,
-                                ...lastRowCellStyle,
+                                cursor: "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: 0.7,
+                                transition: "opacity 0.15s ease",
                               }}
-                            >
-                              <Checkbox
-                                size="small"
-                                checked={isSelected}
-                                onChange={() => handleSelectRow(idx)}
-                                sx={checkboxSx}
-                              />
-                            </td>
-                            {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
-                              <td
-                                key={col.key}
-                                style={{
-                                  ...routeTdStyle,
-                                  background: rowBg,
-                                  ...lastRowCellStyle,
-                                }}
-                              >
-                                {formatDisplayValue(col.key, item[col.key])}
-                              </td>
-                            ))}
-                            <td
-                              style={{
-                                ...routeTdStyle,
-                                background: rowBg,
-                                borderRight: "none",
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <EditDocumentIcon
-                                  titleAccess="Edit"
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "#2563eb",
-                                    fontSize: 22,
-                                    opacity: 0.7,
-                                    transition: "opacity 0.15s ease",
-                                  }}
-                                  onClick={() =>
-                                    handleOpenModal(item, realIdx)
-                                  }
-                                  onMouseEnter={(e) =>
-                                    (e.currentTarget.style.opacity = "1")
-                                  }
-                                  onMouseLeave={(e) =>
-                                    (e.currentTarget.style.opacity = "0.7")
-                                  }
-                                />
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
+                              onClick={() => handleOpenModal(item, realIdx)}
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.style.opacity = "1")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.style.opacity = "0.7")
+                              }
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
               </table>
             )}
           </div>

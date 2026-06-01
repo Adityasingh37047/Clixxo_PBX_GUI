@@ -309,7 +309,7 @@ const DialingTimeoutPage = () => {
         <div
           style={{
             background: "#ffffff",
-            borderRadius: 22,
+            borderRadius: 10,
             overflow: "hidden",
             border: `1px solid ${C.cardBorder}`,
             boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
