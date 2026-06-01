@@ -1585,13 +1585,20 @@ const DisaPage = () => {
             {loading.save ? "Saving..." : editId != null ? "Update DISA" : "Create DISA"}
           </Btn>
           <Btn
-            variant="cancel"
-            onClick={handleCloseModal}
-            disabled={loading.save || loading.get}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
-          >
-            Cancel
-          </Btn>
+  variant="cancel"
+  onClick={handleCloseModal}
+  disabled={loading.save || loading.get}
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Cancel
+</Btn>  
         </DialogActions>
       </Dialog>
     </div>

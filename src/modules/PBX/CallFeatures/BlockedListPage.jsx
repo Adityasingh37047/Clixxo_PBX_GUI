@@ -695,18 +695,24 @@ const BlockedListPage = () => {
                 <thead>
                   <tr>
                     <TH style={{ width: 36 }}>
-                      <Checkbox
-                        size="small"
-                        checked={allPageSelected}
-                        indeterminate={somePageSelected}
-                        onChange={handleToggleAll}
-                        sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
-                        }}
-                      />
+                     <Checkbox
+  size="small"
+  checked={allPageSelected}
+  indeterminate={somePageSelected}
+  onChange={handleToggleAll}
+  sx={{
+    padding: "1px",
+    color: "#64748b",
+
+    "&.Mui-checked": {
+      color: "#0284c7",
+    },
+
+    "&.MuiCheckbox-indeterminate": {
+      color: "#0284c7",
+    },
+  }}
+/>
                     </TH>
                     <TH style={{ width: 40 }}>ID</TH>
                     <TH>Name</TH>
@@ -771,15 +777,22 @@ const BlockedListPage = () => {
                             }}
                           >
                             <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                              sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
-                            />
+  size="small"
+  checked={isSelected}
+  onChange={() => handleToggleRow(realIdx)}
+  sx={{
+    padding: "1px",
+    color: "#64748b",
+
+    "&.Mui-checked": {
+      color: "#0284c7",
+    },
+
+    "&.MuiCheckbox-indeterminate": {
+      color: "#0284c7",
+    },
+  }}
+/>
                           </td>
                           <td
                             style={{
@@ -1281,19 +1294,21 @@ const BlockedListPage = () => {
                 ? "Update Entry"
                 : "Create"}
           </Btn>
-          <Btn
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            variant="outline"
-            style={{
-              background: "#cbd5e1",
-              color: "#374151",
-              border: "1px solid #cbd5e1",
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            Cancel
-          </Btn>
+         <Btn
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="outline"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Cancel
+</Btn>
         </DialogActions>
       </Dialog>
 

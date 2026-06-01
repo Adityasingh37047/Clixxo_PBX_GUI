@@ -420,17 +420,24 @@ const OriginateCallPage = () => {
                           gap: 8,
                         }}
                       >
-                        <Checkbox
-                          id="fixedApp"
-                          checked={useFixedApp}
-                          onChange={(e) => setUseFixedApp(e.target.checked)}
-                          size="small"
-                          sx={{
-                            p: 0,
-                            color: C.accent,
-                            "&.Mui-checked": { color: C.accent },
-                          }}
-                        />
+                       <Checkbox
+  id="fixedApp"
+  checked={useFixedApp}
+  onChange={(e) => setUseFixedApp(e.target.checked)}
+  size="small"
+  sx={{
+    p: 0,
+    color: "#64748b",
+
+    "&.Mui-checked": {
+      color: "#0284c7",
+    },
+
+    "&.MuiCheckbox-indeterminate": {
+      color: "#0284c7",
+    },
+  }}
+/>
                         <label
                           htmlFor="fixedApp"
                           style={{
