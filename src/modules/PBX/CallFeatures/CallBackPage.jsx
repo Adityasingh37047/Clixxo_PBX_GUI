@@ -31,19 +31,20 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-
-  accent: "#2563eb",
-
+    accent: "#3E5475",
+  strongText: "#0f172a",
+    amber: "#dc2626",
   successGreen: "#22c55e",
   errorRed: "#ef4444",
 
-  purple: "#8b5cf6",
+ 
 };
+
+const CARD_RADIUS = 20;
 
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
@@ -55,15 +56,21 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
+     background: C.cardBg,
+  color: C.valueText,
+  border: "1px solid #9ca3af",
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
       border: `0.5px solid ${C.cardBorder}`,
     },
+    primary: {
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
+  border: "1px solid #5A6F8F",
+},
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
@@ -82,16 +89,17 @@ const Btn = ({
       disabled={disabled}
       style={{
         ...s,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
-        padding: "5px 14px",
+        height: 30,
+        padding: "6px 14px",
         borderRadius: 6,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
+        gap: 6,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
         ...extraStyle,
@@ -112,14 +120,14 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+    background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -129,6 +137,23 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
+
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -479,24 +504,27 @@ const CallBackPage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: "#ffffff",
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 22,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+           background: "#ffffff",
+borderRadius: 10,
+overflow: "hidden",
+border: `1.5px solid ${C.cardBorder}`,
+boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "14px 18px",
-              borderBottom: "1px solid #e2e8f0",
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 10,
+             display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div
@@ -668,7 +696,10 @@ const CallBackPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ overflowX: "auto",
+            overflowY: "auto",
+            flex: 1,
+          }}>
             {loading.fetch ? (
               <div
                 style={{
@@ -683,40 +714,48 @@ const CallBackPage = () => {
             ) : (
               <table
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  tableLayout: "auto",
-                  minWidth: 900,
+                 width: "100%",
+borderCollapse: "separate",
+borderSpacing: 0,
+tableLayout: "auto",
+minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH style={{    width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,}}>
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-}}
+                         sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>ID</TH>
-                    <TH>Name</TH>
-                    <TH>Delay (s)</TH>
-                    <TH>Strip</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH style={{ width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10, }}>ID</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Name</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Delay (s)</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Strip</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Prepend
                     </TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Destination
                     </TH>
-                    <TH>Through</TH>
-                    <TH style={{ width: 70 }}>Modify</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Through</TH>
+                    <TH style={{  width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,}}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -765,20 +804,14 @@ const CallBackPage = () => {
                         >
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 0",
-                              borderRight: "1px solid #f1f5f9",
+                             ...tdStyle, background: rowBg
                             }}
                           >
                             <Checkbox
                               size="small"
                               checked={isSelected}
                               onChange={() => handleToggleRow(realIdx)}
-                             sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-}}
+                           sx={checkboxSx}
                             />
                           </td>
                           <td
@@ -788,6 +821,7 @@ const CallBackPage = () => {
                               fontSize: 11,
                               color: C.mutedText,
                               borderRight: "1px solid #f1f5f9",
+                               ...tdStyle, background: rowBg
                             }}
                           >
                             {realIdx + 1}
@@ -800,6 +834,7 @@ const CallBackPage = () => {
                               fontWeight: 600,
                               color: C.valueText,
                               borderRight: "1px solid #f1f5f9",
+                               ...tdStyle, background: rowBg
                             }}
                           >
                             {row.name}
@@ -811,6 +846,7 @@ const CallBackPage = () => {
                               fontSize: 13,
                               color: C.valueText,
                               borderRight: "1px solid #f1f5f9",
+                               ...tdStyle, background: rowBg
                             }}
                           >
                             <span
@@ -832,42 +868,28 @@ const CallBackPage = () => {
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                               ...tdStyle, background: rowBg
                             }}
                           >
                             {row.strip || "—"}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              fontFamily: "monospace",
-                              color: C.labelText,
-                              borderRight: "1px solid #f1f5f9",
+                               ...tdStyle, background: rowBg
                             }}
                           >
                             {row.prepend || "—"}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              fontWeight: 500,
-                              color: C.labelText,
-                              borderRight: "1px solid #f1f5f9",
+                             ...tdStyle, background: rowBg
                             }}
                           >
                             {row.destination || "—"}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              borderRight: "1px solid #f1f5f9",
+                               ...tdStyle, background: rowBg
                             }}
                           >
                             <span
@@ -887,13 +909,14 @@ const CallBackPage = () => {
                                 alignItems: "center",
                                 justifyContent: "center",
                                 minWidth: 72,
+                                
                               }}
                             >
                               {renderThrough(row)}
                             </span>
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "7px 8px" }}
+                            style={{ textAlign: "center", padding: "7px 8px",...tdStyle, background: rowBg }}
                           >
                             <EditDocumentIcon
   className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"

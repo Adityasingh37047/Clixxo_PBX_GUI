@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
+  ROUTE_IP_PSTN_FIELDS,
   ROUTE_IP_PSTN_INITIAL_FORM,
   ROUTE_IP_PSTN_TABLE_COLUMNS,
 } from "../../../sections/route/constants/RouteIPtoPstnConstants";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Checkbox,
   Dialog,
@@ -14,61 +13,143 @@ import {
   Select as MuiSelect,
   MenuItem,
   FormControl,
-  TextField,
-  Alert,
 } from "@mui/material";
-import {
-  C,
-  CARD_RADIUS,
-  Btn,
-  TH,
-  tdStyle,
-  checkboxSx,
-  muiSelectSx,
-  muiTextFieldSx,
-  numManipulateCardStyle,
-  numManipulateToolbarStyle,
-  numManipulatePaginationStyle,
-  routeTableMinWidthForZoom,
-} from "../../../sections/route/routeSharedUi";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
-const routeTdStyle = {
-  ...tdStyle,
-  fontSize: 12,
-  padding: "7px 8px",
+// ── Color Palette (From Source) ───────────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  errorRed: "#dc2626",
 };
 
-const routeThExtra = {
-  fontSize: 10.5,
-  padding: "9px 8px",
-  letterSpacing: "0.04em",
+// ── Shared UI Components (From Source) ────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+  type = "button",
+}) => {
+  const styles = {
+    default: { background: C.cardBg, color: C.valueText, border: "1px solid #9ca3af" },
+    primary: {
+      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: { background: C.cardBg, color: C.labelText, border: `0.5px solid ${C.cardBorder}` },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = variant === "primary" ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)" : variant === "cancel" ? "#b6c2d3" : "#e2e8f0";
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 5,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.background = hoverBg; }}
+      onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.background = s.background; }}
+    >
+      {children}
+    </button>
+  );
 };
 
-const FieldRow = ({ label, children }) => (
-  <div
+const TH = ({ children, style: extra }) => (
+  <th
     style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 12,
+      background: "#f8fafc",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "12px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: "1px solid #f1f5f9",
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
     }}
   >
+    {children}
+  </th>
+);
+
+const FieldRow = ({ label, children, style }) => (
+  <div style={{ 
+    display: "flex", 
+    alignItems: "center", 
+    background: "#ffffff",
+    border: `1px solid #cbd5e1`,
+    borderRadius: 6,
+    padding: "6px 12px",
+    gap: 12, 
+    minHeight: 40,
+    ...style 
+  }}>
     <label
       style={{
         fontSize: 13,
         fontWeight: 600,
-        color: C.labelText,
-        width: 170,
+        color: "#1e293b",
+        width: 160,
         flexShrink: 0,
-        textAlign: "left",
       }}
     >
-      {label}
+      {label}:
     </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+    <div className="flex-1" style={{ maxWidth: 280 }}>{children}</div>
   </div>
 );
 
+const inputStyle = {
+  width: "100%",
+  fontSize: 13,
+  padding: "6px 8px",
+  border: "1px solid #cbd5e1",
+  borderRadius: 4,
+  outline: "none",
+  color: "#1e293b",
+  background: "#ffffff",
+};
+
+// ── Main Component ────────────────────────────────────────────────────────────
 const RouteIpPstnPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(ROUTE_IP_PSTN_INITIAL_FORM);
@@ -84,44 +165,12 @@ const RouteIpPstnPage = () => {
   ]);
   const [indexSelect, setIndexSelect] = useState("");
   const [editIndex, setEditIndex] = useState(null);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
-  const [tableMinWidth, setTableMinWidth] = useState("100%");
   const itemsPerPage = 20;
   const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
   const pagedRules = rules.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
-
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
-  };
-
-  const alert = (msg) => {
-    const isErr =
-      /error|failed|required|please|invalid|must|already exists/i.test(msg) &&
-      !/successfully/i.test(msg);
-    showToast(msg, isErr ? "error" : "success");
-  };
-
-  useEffect(() => {
-    const updateTableWidthForZoom = () => {
-      setTableMinWidth(routeTableMinWidthForZoom(1200));
-    };
-
-    updateTableWidthForZoom();
-    window.addEventListener("resize", updateTableWidthForZoom);
-    const vv = window.visualViewport;
-    vv?.addEventListener("resize", updateTableWidthForZoom);
-    vv?.addEventListener("scroll", updateTableWidthForZoom);
-
-    return () => {
-      window.removeEventListener("resize", updateTableWidthForZoom);
-      vv?.removeEventListener("resize", updateTableWidthForZoom);
-      vv?.removeEventListener("scroll", updateTableWidthForZoom);
-    };
-  }, []);
 
   const getAvailableIndices = (currentEditIndex = null) => {
     const currentIndex =
@@ -139,6 +188,14 @@ const RouteIpPstnPage = () => {
       .filter((idx) => !usedIndices.includes(idx) || idx === currentIndex)
       .map((idx) => ({ value: String(idx), label: String(idx) }));
   };
+
+  const tableScrollRef = useRef(null);
+  const [scrollState, setScrollState] = useState({
+    left: 0,
+    width: 0,
+    scrollWidth: 0,
+  });
+  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
 
   const handleOpenModal = (item = null, index = -1) => {
     if (item) {
@@ -307,6 +364,46 @@ const RouteIpPstnPage = () => {
     }));
   };
 
+  const handleTableScroll = (e) =>
+    setScrollState({
+      left: e.target.scrollLeft,
+      width: e.target.clientWidth,
+      scrollWidth: e.target.scrollWidth,
+    });
+
+  const handleScrollbarDrag = (e) => {
+    const track = e.target.parentNode;
+    if (!track) return;
+    const rect = track.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percent = Math.max(0, Math.min(1, x / rect.width));
+    if (tableScrollRef.current)
+      tableScrollRef.current.scrollLeft =
+        (scrollState.scrollWidth - scrollState.width) * percent;
+  };
+
+  const handleArrowClick = (dir) => {
+    if (tableScrollRef.current)
+      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
+  };
+
+  useEffect(() => {
+    const update = () => {
+      if (tableScrollRef.current) {
+        const el = tableScrollRef.current;
+        setScrollState({
+          left: el.scrollLeft,
+          width: el.clientWidth,
+          scrollWidth: el.scrollWidth,
+        });
+        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
+      }
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [rules, page]);
+
   const handlePageChange = (newPage) =>
     setPage(Math.max(1, Math.min(totalPages, newPage)));
 
@@ -397,24 +494,8 @@ const RouteIpPstnPage = () => {
         padding: 16,
       }}
     >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        {toast.msg && (
-          <Alert
-            severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            {toast.msg}
-          </Alert>
-        )}
-
+      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
         <div
           style={{
             fontSize: 12,
@@ -435,267 +516,430 @@ const RouteIpPstnPage = () => {
           </span>
         </div>
 
-        <div style={numManipulateCardStyle}>
-          <div style={numManipulateToolbarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
-                  {selected.length} selected
-                </span>
-              )}
+        {/* Main Card */}
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 22,
+            overflow: "hidden",
+            border: `1px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
+          {/* Toolbar */}
+     <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "14px 18px",
+    borderBottom: "1px solid #e2e8f0",
+    background: "#ffffff",
+    flexWrap: "wrap",
+    gap: 10,
+  }}
+>
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    {selected.length > 0 && (
+      <span
+        style={{
+          background: "#eff6ff",
+          color: C.accent,
+          fontSize: 11,
+          fontWeight: 700,
+          padding: "5px 12px",
+          borderRadius: 999,
+          border: `1px solid ${C.accent}`,
+        }}
+      >
+        {selected.length} selected
+      </span>
+    )}
+  </div>
+
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      flexWrap: "wrap",
+    }}
+  >
+{/* Common button sx */}
+{[
+  { label: "Check All", onClick: handleCheckAll },
+  { label: "Uncheck All", onClick: handleUncheckAll },
+  { label: "Inverse", onClick: handleInverse },
+].map((btn) => (
+  <Btn
+    key={btn.label}
+    onClick={btn.onClick}
+    sx={{
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+      "&:hover": {
+        background: "#cbd5e1",
+        color: "#374151",
+        border: "1px solid #cbd5e1",
+        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      },
+    }}
+  >
+    {btn.label}
+  </Btn>
+))}
+
+<Btn
+  onClick={handleDelete}
+  disabled={selected.length === 0}
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+    "&:hover": {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  }}
+>
+  🗑 Delete
+</Btn>
+
+<Btn
+  onClick={handleClearAll}
+  disabled={rules.length === 0}
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+    "&:hover": {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  }}
+>
+  Clear All
+</Btn>
+
+<Btn
+  onClick={() => handleOpenModal()}
+  variant="outline"
+  sx={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+
+    "&:hover": {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  }}
+>
+  + Add New
+</Btn>
+  </div>
+</div>
+          {/* Table Container with Custom Scrollbar preserved */}
+          <div
+            style={{ width: "100%", display: "flex", flexDirection: "column" }}
+          >
+            <div
+              ref={tableScrollRef}
+              onScroll={handleTableScroll}
+              style={{
+                overflowX: "auto",
+                overflowY: "auto",
+                maxHeight: 400,
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  minWidth: 1200,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH
+                      style={{
+                        width: 40,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Check
+                    </TH>
+                    {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
+                      <TH
+                        key={col.key}
+                        style={{ position: "sticky", top: 0, zIndex: 10 }}
+                      >
+                        {col.label}
+                      </TH>
+                    ))}
+                    <TH
+                      style={{
+                        width: 70,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rules.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={ROUTE_IP_PSTN_TABLE_COLUMNS.length + 2}
+                        style={{
+                          textAlign: "center",
+                          padding: "36px 0",
+                          color: C.mutedText,
+                          fontSize: 13,
+                        }}
+                      >
+                        No data. Click '+ Add New' to create one.
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedRules.map((item, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const rowBg = isSelected
+                        ? "#f0f9ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      return (
+                        <tr
+                          key={realIdx}
+                          style={{
+                            background: idx % 2 === 1 ? "#f8fafc" : "#ffffff",
+                            borderBottom: "1px solid #f1f5f9",
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                          }}
+                        >
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 8px",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleSelectRow(idx)}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
+                            />
+                          </td>
+                          {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
+                            <td
+                              key={col.key}
+                              style={{
+                                textAlign: "center",
+                                fontSize: 12,
+                                padding: "7px 8px",
+                                color: C.valueText,
+                                borderRight: "0.5px solid #edf2f7",
+                              }}
+                            >
+                              {formatDisplayValue(col.key, item[col.key])}
+                            </td>
+                          ))}
+                          <td
+                            style={{
+                              textAlign: "center",
+                              padding: "4px 8px",
+                              borderRight: "0.5px solid #edf2f7",
+                            }}
+                          >
+                            <Btn
+                              onClick={() => handleOpenModal(item, realIdx)}
+                              variant="outline"
+                              style={{
+                                fontSize: 10,
+                                padding: "3px 10px",
+                                margin: "0 auto",
+                              }}
+                            >
+                              <EditDocumentIcon
+                                style={{ fontSize: 12, marginRight: 2 }}
+                              />{" "}
+                              Edit
+                            </Btn>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
+
+            {/* Custom Scrollbar Retained but styled for the new theme */}
+            {(() => {
+              const thumbWidth =
+                scrollState.width && scrollState.scrollWidth
+                  ? Math.max(
+                      40,
+                      (scrollState.width / scrollState.scrollWidth) *
+                        (scrollState.width - 8),
+                    )
+                  : 40;
+              const thumbLeft =
+                scrollState.width &&
+                scrollState.scrollWidth &&
+                scrollState.scrollWidth > scrollState.width
+                  ? (scrollState.left /
+                      (scrollState.scrollWidth - scrollState.width)) *
+                    (scrollState.width - thumbWidth - 16)
+                  : 0;
+              return (
+                showCustomScrollbar && (
+                  <div
+                    style={{
+                      width: "100%",
+                      margin: "0 auto",
+                      background: "#f4f6fa",
+                      display: "flex",
+                      alignItems: "center",
+                      height: 24,
+                      borderBottom: `1px solid ${C.cardBorder}`,
+                      padding: "0 4px",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 18,
+                        height: 18,
+                        background: "#fff",
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: 4,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        color: C.mutedText,
+                        cursor: "pointer",
+                        userSelect: "none",
+                      }}
+                      onClick={() => handleArrowClick("left")}
+                    >
+                      &#9664;
+                    </div>
+                    <div
+                      style={{
+                        flex: 1,
+                        height: 12,
+                        background: "#eef2f7",
+                        borderRadius: 8,
+                        position: "relative",
+                        margin: "0 4px",
+                        overflow: "hidden",
+                      }}
+                      onClick={handleScrollbarDrag}
+                    >
+                      <div
+                        style={{
+                          position: "absolute",
+                          height: 12,
+                          background: C.cardBorder,
+                          borderRadius: 8,
+                          cursor: "pointer",
+                          top: 0,
+                          width: thumbWidth,
+                          left: thumbLeft,
+                        }}
+                        draggable
+                        onDrag={handleScrollbarDrag}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        width: 18,
+                        height: 18,
+                        background: "#fff",
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: 4,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        color: C.mutedText,
+                        cursor: "pointer",
+                        userSelect: "none",
+                      }}
+                      onClick={() => handleArrowClick("right")}
+                    >
+                      &#9654;
+                    </div>
+                  </div>
+                )
+              );
+            })()}
+          </div>
+
+          {/* Footer Pagination */}
+          {rules.length > 0 && (
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                background: "#f8fafc",
                 gap: 8,
                 flexWrap: "wrap",
               }}
             >
-              <Btn
-                variant="cancel"
-                onClick={handleInverse}
-                disabled={rules.length === 0}
-                style={{ height: 30 }}
-              >
-                Inverse
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleDelete}
-                disabled={selected.length === 0}
-                style={{ height: 30 }}
-              >
-                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleClearAll}
-                disabled={rules.length === 0}
-                style={{ height: 30 }}
-              >
-                Clear All
-              </Btn>
-              <Btn
-                variant="primary"
-                onClick={() => handleOpenModal()}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
-              >
-                + Add New
-              </Btn>
-            </div>
-          </div>
-
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
-            {rules.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
-                  }}
-                >
-                  No rules configured!
-                </div>
-                <Btn
-                  variant="cancel"
-                  onClick={() => handleOpenModal()}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New Rule
-                </Btn>
-              </div>
-            ) : (
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  minWidth: tableMinWidth,
-                }}
-              >
-                    <thead>
-                      <tr>
-                        <TH
-                          style={{
-                            width: 40,
-                            padding: 0,
-                            borderLeft: "none",
-                            ...routeThExtra,
-                          }}
-                        >
-                          <Checkbox
-                            size="small"
-                            checked={
-                              rules.length > 0 &&
-                              selected.length === rules.length
-                            }
-                            indeterminate={
-                              selected.length > 0 &&
-                              selected.length < rules.length
-                            }
-                            onChange={(e) => {
-                              if (e.target.checked) handleCheckAll();
-                              else handleUncheckAll();
-                            }}
-                            sx={checkboxSx}
-                          />
-                        </TH>
-                        {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
-                          <TH key={col.key} style={routeThExtra}>
-                            {col.label}
-                          </TH>
-                        ))}
-                        <TH
-                          style={{
-                            width: 70,
-                            borderRight: "none",
-                            ...routeThExtra,
-                          }}
-                        >
-                          Modify
-                        </TH>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pagedRules.map((item, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        const isSelected = selected.includes(realIdx);
-                        const isLastRow = idx === pagedRules.length - 1;
-                        const rowBg = isSelected
-                          ? "#f0f9ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
-                        const lastRowCellStyle = isLastRow
-                          ? { borderBottom: "none" }
-                          : {};
-
-                        return (
-                          <tr
-                            key={realIdx}
-                            style={{
-                              background: rowBg,
-                              transition: "background 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = "#f1f5f9";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = rowBg;
-                            }}
-                          >
-                            <td
-                              style={{
-                                ...routeTdStyle,
-                                background: rowBg,
-                                borderLeft: "none",
-                                width: 36,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              <Checkbox
-                                size="small"
-                                checked={isSelected}
-                                onChange={() => handleSelectRow(idx)}
-                                sx={checkboxSx}
-                              />
-                            </td>
-                            {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
-                              <td
-                                key={col.key}
-                                style={{
-                                  ...routeTdStyle,
-                                  background: rowBg,
-                                  ...lastRowCellStyle,
-                                }}
-                              >
-                                {formatDisplayValue(col.key, item[col.key])}
-                              </td>
-                            ))}
-                            <td
-                              style={{
-                                ...routeTdStyle,
-                                background: rowBg,
-                                borderRight: "none",
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <EditDocumentIcon
-                                  titleAccess="Edit"
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "#2563eb",
-                                    fontSize: 22,
-                                    opacity: 0.7,
-                                    transition: "opacity 0.15s ease",
-                                  }}
-                                  onClick={() =>
-                                    handleOpenModal(item, realIdx)
-                                  }
-                                  onMouseEnter={(e) =>
-                                    (e.currentTarget.style.opacity = "1")
-                                  }
-                                  onMouseLeave={(e) =>
-                                    (e.currentTarget.style.opacity = "0.7")
-                                  }
-                                />
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-              </table>
-            )}
-          </div>
-
-          {rules.length > 0 && (
-            <div style={numManipulatePaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRules.length} record
-                {pagedRules.length !== 1 ? "s" : ""} on page {page}
+                Showing {pagedRules.length} records of {rules.length} Total (
+                {itemsPerPage} / Page)
               </span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={() => handlePageChange(1)}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  First
+                </Btn>
                 <Btn
                   onClick={() => handlePageChange(page - 1)}
-                  disabled={page <= 1}
+                  disabled={page === 1}
                   variant="outline"
                 >
                   ← Prev
@@ -708,251 +952,270 @@ const RouteIpPstnPage = () => {
                     background: "#e0f2fe",
                     padding: "5px 14px",
                     borderRadius: 6,
-                    border: `1px solid ${C.cardBorder}`,
+                      border: `1px solid ${C.cardBorder}`,
                   }}
                 >
                   Page {page} of {totalPages}
                 </span>
                 <Btn
                   onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages}
+                  disabled={page === totalPages}
                   variant="outline"
                 >
                   Next →
                 </Btn>
+                <Btn
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={page === totalPages}
+                  variant="outline"
+                >
+                  Last
+                </Btn>
+                <span
+                    style={{ fontSize: 11, color: C.mutedText }}
+                >
+                    Go to
+                </span>
+                <select
+                  style={{
+                    fontSize: 11,
+                      padding: "3px 6px",
+                    borderRadius: 4,
+                    border: `1px solid ${C.cardBorder}`,
+                    background: "#fff",
+                    color: C.valueText,
+                    outline: "none",
+                  }}
+                  value={page}
+                  onChange={(e) => handlePageChange(Number(e.target.value))}
+                >
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           )}
         </div>
       </div>
 
+      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        PaperProps={{
-          sx: {
-            width: 600,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
-        }}
+        PaperProps={{ sx: { width: 550, maxWidth: "95vw", borderRadius: "12px", overflow: "hidden" } }}
         disableRestoreFocus
         disableEnforceFocus
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
-            color: "#ffffff",
+            color: "#fff",
             fontWeight: 600,
             fontSize: 16,
-            padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
+            padding: "16px 24px",
           }}
         >
-          {editIndex !== null
-            ? "Edit IP->Tel Routing Rule"
-            : "Add IP->Tel Routing Rule"}
+          IP-&gt;Tel Routing Rule
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
-            <FieldRow label="Index:">
-              <FormControl size="small" fullWidth>
-                <MuiSelect
-                  value={indexSelect || ""}
-                  onChange={(e) => handleIndexSelectChange(e.target.value)}
-                  displayEmpty
-                  sx={muiSelectSx}
-                >
-                  {getAvailableIndices(editIndex).map((opt) => (
-                    <MenuItem
-                      key={opt.value}
-                      value={opt.value}
-                      sx={{ fontSize: 13 }}
-                    >
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </MuiSelect>
-              </FormControl>
-            </FieldRow>
-
-            <FieldRow label="Description:">
-              <TextField
-                name="description"
-                value={formData.description || ""}
-                onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  style: {
-                    fontSize: 13,
-                    height: 32,
-                    padding: "0 8px",
-                    boxSizing: "border-box",
-                  },
-                }}
-                sx={muiTextFieldSx}
-              />
-            </FieldRow>
-
-            <FieldRow label="Source IP:">
-              <div style={{ width: "100%" }}>
-                <TextField
-                  name="sourceIP"
-                  value={formData.sourceIP || ""}
-                  onChange={handleInputChange}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  inputProps={{
-                    style: {
-                      fontSize: 13,
-                      height: 32,
-                      padding: "0 8px",
-                      boxSizing: "border-box",
-                    },
-                  }}
-                  sx={muiTextFieldSx}
-                />
-                <div style={{ color: C.amber, fontSize: 11, marginTop: 4 }}>
-                  We suggest you input Source IP here.
-                </div>
-              </div>
-            </FieldRow>
-
-            <FieldRow label="CallerID Prefix:">
-              <TextField
-                name="callerIdPrefix"
-                value={formData.callerIdPrefix || ""}
-                onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  style: {
-                    fontSize: 13,
-                    height: 32,
-                    padding: "0 8px",
-                    boxSizing: "border-box",
-                  },
-                }}
-                sx={muiTextFieldSx}
-              />
-            </FieldRow>
-
-            <FieldRow label="CalleeID Prefix:">
-              <TextField
-                name="calleeIdPrefix"
-                value={formData.calleeIdPrefix || ""}
-                onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  style: {
-                    fontSize: 13,
-                    height: 32,
-                    padding: "0 8px",
-                    boxSizing: "border-box",
-                  },
-                }}
-                sx={muiTextFieldSx}
-              />
-            </FieldRow>
-
-            <FieldRow label="Route by Number:">
-              <label
+        <DialogContent
+          style={{ padding: "20px 24px", backgroundColor: "#f8fafc" }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div
+              style={{
+                background: "#fff",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: 16,
+              }}
+            >
+              <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
                   fontSize: 13,
-                  color: C.valueText,
-                  cursor: "pointer",
+                  fontWeight: 700,
+                  color: C.strongText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
                 }}
               >
-                <Checkbox
-                  size="small"
-                  name="routeByNumber"
-                  checked={formData.routeByNumber || false}
-                  onChange={handleInputChange}
-                  sx={checkboxSx}
-                />
-                Enable
-              </label>
-            </FieldRow>
-
-            {formData.routeByNumber && (
-              <FieldRow label="Call Destination:">
-                <FormControl size="small" fullWidth>
-                  <MuiSelect
-                    value={formData.callDestination || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        callDestination: e.target.value,
-                      }))
-                    }
-                    displayEmpty
-                    sx={muiSelectSx}
-                  >
-                    {(pcmTrunkGroups || []).map((group) => {
-                      const groupId = group.group_id ?? group.id ?? group;
-                      return (
+                Configuration
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
+                <FieldRow label="Index">
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={indexSelect || ""}
+                      onChange={(e) => handleIndexSelectChange(e.target.value)}
+                      sx={{
+                        fontSize: 13,
+                        height: 32,
+                        backgroundColor: "#fff",
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: C.cardBorder,
+                        },
+                      }}
+                    >
+                      {getAvailableIndices(editIndex).map((opt) => (
                         <MenuItem
-                          key={String(groupId)}
-                          value={String(groupId)}
+                          key={opt.value}
+                          value={opt.value}
                           sx={{ fontSize: 13 }}
                         >
-                          PCM Trunk Group [{String(groupId)}]
+                          {opt.label}
                         </MenuItem>
-                      );
-                    })}
-                  </MuiSelect>
-                </FormControl>
-              </FieldRow>
-            )}
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </FieldRow>
+
+                <FieldRow label="Description">
+                  <input
+                    type="text"
+                    name="description"
+                    value={formData.description || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                  />
+                </FieldRow>
+
+                <FieldRow label="Source IP">
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      width: "100%",
+                    }}
+                  >
+                    <input
+                      type="text"
+                      name="sourceIP"
+                      value={formData.sourceIP || ""}
+                      onChange={handleInputChange}
+                      style={inputStyle}
+                    />
+                    <div style={{ color: C.errorRed, fontSize: 11 }}>
+                      We suggest you input Source IP here.
+                    </div>
+                  </div>
+                </FieldRow>
+
+                <FieldRow label="CallerID Prefix">
+                  <input
+                    type="text"
+                    name="callerIdPrefix"
+                    value={formData.callerIdPrefix || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                  />
+                </FieldRow>
+
+                <FieldRow label="CalleeID Prefix">
+                  <input
+                    type="text"
+                    name="calleeIdPrefix"
+                    value={formData.calleeIdPrefix || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                  />
+                </FieldRow>
+
+                <FieldRow label="Route by Number">
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: 13,
+                      color: C.valueText,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Checkbox
+                      size="small"
+                      name="routeByNumber"
+                      checked={formData.routeByNumber || false}
+                      onChange={handleInputChange}
+                      sx={{
+                        padding: "2px",
+                        marginRight: "6px",
+                        color: "#64748b",
+                        "&.Mui-checked": { color: "#0284c7" },
+                      }}
+                    />
+                    Enable
+                  </label>
+                </FieldRow>
+
+                {formData.routeByNumber && (
+                  <FieldRow label="Call Destination">
+                    <FormControl size="small" fullWidth>
+                      <MuiSelect
+                        value={formData.callDestination || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            callDestination: e.target.value,
+                          }))
+                        }
+                        sx={{
+                          fontSize: 13,
+                          height: 32,
+                          backgroundColor: "#fff",
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: C.cardBorder,
+                          },
+                        }}
+                      >
+                        {(pcmTrunkGroups || []).map((group) => {
+                          const groupId = group.group_id ?? group.id ?? group;
+                          return (
+                            <MenuItem
+                              key={String(groupId)}
+                              value={String(groupId)}
+                              sx={{ fontSize: 13 }}
+                            >
+                              PCM Trunk Group [{String(groupId)}]
+                            </MenuItem>
+                          );
+                        })}
+                      </MuiSelect>
+                    </FormControl>
+                  </FieldRow>
+                )}
+              </div>
+            </div>
           </div>
         </DialogContent>
         <DialogActions
           style={{
             padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
+                  background: "#f8fafc",
+                  borderTop: "1px solid #e2e8f0",
             justifyContent: "center",
             gap: 12,
           }}
         >
           <Btn
-            variant="primary"
             onClick={handleSave}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                  variant="primary"
+                  style={{ minWidth: 120, height: 36, fontSize: 14 }}
           >
             Save
           </Btn>
           <Btn
-            variant="cancel"
             onClick={handleCloseModal}
-            style={{ minWidth: 100, height: 33 }}
+                  variant="cancel"
+                  style={{ minWidth: 120, height: 36, fontSize: 14 }}
           >
-            Close
+            Cancel
           </Btn>
         </DialogActions>
       </Dialog>

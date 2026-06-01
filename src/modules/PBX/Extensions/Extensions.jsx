@@ -39,77 +39,120 @@ import {
   importSipAccountsCsv,
 } from "../../../api/apiService";
 
-// ── Color palette (matches CDR / CallCount page) ──────────────────────────────
+// ── Color palette (matches PCM PSTN page) ─────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
+  cardBorder: "#9CA3AF",
   cardBorderSoft: "#f1f5f9",
-  labelText: "#64748b",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#2563eb",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   successGreen: "#22c55e",
   errorRed: "#ef4444",
   purple: "#8b5cf6",
-  amber: "#d97706",
+  amber: "#dc2626",
 };
 
-// ── Shared: action button (identical to CDR Btn) ──────────────────────────────
+const CARD_RADIUS = 20;
+
+// ── Shared: action button (matches PCM PSTN Btn) ──────────────────────────────
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
+  type,
 }) => {
   const variants = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
+      background: C.cardBg,
+      color: C.valueText,
       border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
     danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
   };
   const s = variants[variant] || variants.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+      case "danger":
+      case "accent":
+        return "#b6c2d3";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
         gap: 5,
-        transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -139,18 +182,18 @@ const Pill = ({ text, bg, color }) => (
   </span>
 );
 
-// ── TH (identical to CDR TH) ──────────────────────────────────────────────────
+// ── TH (matches PCM PSTN TH) ──────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -160,6 +203,23 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 
 // ── Status style helper ───────────────────────────────────────────────────────
 const statusStyle = (s) => {
@@ -1119,7 +1179,7 @@ const SipAccountPage = () => {
       style={{
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 24,
+        padding: 16,
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
@@ -1151,9 +1211,19 @@ const SipAccountPage = () => {
           }}
         >
           {/* Breadcrumb */}
-          <div style={{ fontSize: 11, color: C.mutedText }}>
+          <div
+            style={{
+              fontSize: 12,
+              color: C.mutedText,
+              marginBottom: 16,
+              fontWeight: 400,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
             PBX &rsaquo; Extensions &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+            <span style={{ color: C.strongText, fontWeight: 600 }}>
               Extensions
             </span>
           </div>
@@ -1161,34 +1231,45 @@ const SipAccountPage = () => {
 
         {/* ── Main card ── */}
         <div
-  style={{
-    background: "#ffffff",
-    borderRadius: 22,
-    overflow: "hidden",
-    border: `1px solid ${C.cardBorder}`,
-    boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  }}
->
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* ── Toolbar ── */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
-              borderBottom: "1px solid #e2e8f0",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
             {/* Left: page info + selection count */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               
               {selected.length > 0 && (
                 <span
                   style={{
-                    background:  "#eff6ff",
+                    background: "#eff6ff",
                     color: C.accent,
                     fontSize: 11,
                     fontWeight: 700,
@@ -1217,12 +1298,14 @@ const SipAccountPage = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  background: "#ffffff",
+                  background: C.cardBg,
                   border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 999,
-                  padding: "7px 14px",
+                  borderRadius: 10,
+                  padding: "5px 12px",
                   transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-                  boxShadow: searchFocused ? "0 0 0 4px rgba(37,99,235,0.08)" : "none",
+                  boxShadow: searchFocused
+                    ? "0 0 0 3px rgba(62,84,117,0.10)"
+                    : "none",
                 }}
               >
                 <span
@@ -1301,10 +1384,6 @@ const SipAccountPage = () => {
   variant="danger"
   style={{
     minWidth: 84,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
 >
   {loading.delete ? (
@@ -1334,13 +1413,7 @@ const SipAccountPage = () => {
     setImportFile(null);
   }}
   disabled={loading.fetch}
-  variant="outline"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+  variant="accent"
 >
   ⬇ Import
 </Btn>
@@ -1349,25 +1422,13 @@ const SipAccountPage = () => {
   onClick={handleExport}
   disabled={loading.fetch}
   variant="accent"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
 >
   ⬆ Export
 </Btn>
 <Btn
   onClick={openBulkModal}
   disabled={loading.fetch || loading.save}
-  variant="outline"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+  variant="accent"
 >
   + Bulk Add
 </Btn>
@@ -1375,12 +1436,12 @@ const SipAccountPage = () => {
  <Btn
   onClick={() => handleOpenModal()}
   disabled={loading.fetch || loading.save}
-  variant="outline"
+  variant="primary"
   style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    height: 30,
+    padding: "6px 14px",
+    fontSize: 12,
+    borderRadius: 10,
   }}
 >
   + Add New
@@ -1389,7 +1450,13 @@ const SipAccountPage = () => {
           </div>
 
           {/* ── Table ── */}
-          <div style={{ overflowX: "auto" }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {loading.fetch ? (
               <div
                 style={{
@@ -1405,7 +1472,8 @@ const SipAccountPage = () => {
               <table
                 style={{
                   width: "100%",
-                  borderCollapse: "collapse",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                   tableLayout: "auto",
                   minWidth: 900,
                 }}
@@ -1413,27 +1481,53 @@ const SipAccountPage = () => {
                 <thead>
                   <tr>
                     {/* Select-all checkbox */}
-                    <TH style={{ width: 36 }}>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={{
-                          padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-                        }}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36 }}>ID</TH>
-                    <TH>Extension</TH>
-                    <TH>Context</TH>
-                    <TH>Codecs</TH>
-                    <TH>Password</TH>
-                    <TH>Status</TH>
-                    <TH style={{ width: 60 }}>Modify</TH>
+                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>
+                      ID
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Extension
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Context
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Codecs
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Password
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Status
+                    </TH>
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1458,23 +1552,26 @@ const SipAccountPage = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBg = isSelected
-                        ? "#e0f2fe"
+                        ? "#f0f9ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
                       const ss = statusStyle(item.status);
+                      const isLastRow = idx === pagedAccounts.length - 1;
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
 
                       return (
                         <tr
                           key={realIdx}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
+                              e.currentTarget.style.background = "#f1f5f9";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -1484,9 +1581,14 @@ const SipAccountPage = () => {
                           {/* Checkbox */}
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 0",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              width: 36,
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
+                              ...(isLastRow
+                                ? { borderBottomLeftRadius: CARD_RADIUS }
+                                : {}),
                             }}
                           >
                             <Checkbox
@@ -1494,23 +1596,17 @@ const SipAccountPage = () => {
                               checked={isSelected}
                               onChange={() => handleToggleRow(realIdx)}
                               disabled={loading.delete}
-                              sx={{
-                                padding: "1px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: "#0284c7" },
-                              }}
+                              sx={checkboxSx}
                             />
                           </td>
 
                           {/* Row number */}
                           <td
                             style={{
-                             padding: "10px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {realIdx + 1}
@@ -1519,12 +1615,10 @@ const SipAccountPage = () => {
                           {/* Extension */}
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {item.extension || (
@@ -1535,12 +1629,10 @@ const SipAccountPage = () => {
                           {/* Context */}
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {item.context || (
@@ -1551,12 +1643,10 @@ const SipAccountPage = () => {
                           {/* Codecs */}
                           <td
                             style={{
-                             padding: "10px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {item.allow_codecs || (
@@ -1567,12 +1657,10 @@ const SipAccountPage = () => {
                           {/* Password (masked) */}
                           <td
                             style={{
-                            padding: "10px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {"•".repeat(
@@ -1583,9 +1671,9 @@ const SipAccountPage = () => {
                           {/* Status pill */}
                           <td
                             style={{
-                              padding: "10px 14px",
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {item.status ? (
@@ -1601,16 +1689,47 @@ const SipAccountPage = () => {
 
                           {/* Edit */}
                           <td
-                            style={{ padding: "7px 8px", textAlign: "center" }}
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
+                              ...(isLastRow
+                                ? { borderBottomRightRadius: CARD_RADIUS }
+                                : {}),
+                            }}
                           >
-                            <EditDocumentIcon
-                              className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                              titleAccess="Edit"
-                              onClick={() => {
-                                if (!loading.delete)
-                                  handleOpenModal(item, realIdx);
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
                               }}
-                            />
+                            >
+                              <EditDocumentIcon
+                                titleAccess="Edit"
+                                onClick={() => {
+                                  if (!loading.delete)
+                                    handleOpenModal(item, realIdx);
+                                }}
+                                style={{
+                                  cursor: loading.delete
+                                    ? "not-allowed"
+                                    : "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: loading.delete ? 0.4 : 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "0.7";
+                                }}
+                              />
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1628,9 +1747,13 @@ const SipAccountPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
+                flexWrap: "wrap",
+                gap: 8,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
@@ -1658,10 +1781,10 @@ const SipAccountPage = () => {
                     fontSize: 11,
                     fontWeight: 600,
                     color: C.accent,
-                    background: "#e0f2fe",
+                    background: "#eff6ff",
                     padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   Page {page}
@@ -1687,7 +1810,7 @@ const SipAccountPage = () => {
                   style={{
                     fontSize: 11,
                     borderRadius: 4,
-                    border: `0.5px solid ${C.cardBorder}`,
+                    border: `1px solid ${C.cardBorder}`,
                     padding: "3px 6px",
                     color: C.labelText,
                     background: "#fff",
@@ -3441,17 +3564,18 @@ const SipAccountPage = () => {
             borderTop: `1px solid ${C.cardBorder}`,
           }}
         >
-          <Btn
+        <Btn
   onClick={
     formMode === "single"
       ? handleSave
       : handleBulkSave
   }
   disabled={loading.save}
-  variant="default"
+  variant="primary"
   style={{
     padding: "8px 28px",
     fontSize: 13,
+    height: 36,
     background:
       "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
     color: "#fff",
@@ -3459,21 +3583,16 @@ const SipAccountPage = () => {
     boxShadow: "0 2px 8px #3E5475",
   }}
 >
-  {loading.save && (
-    <CircularProgress
-      size={13}
-      style={{ color: "#fff" , height: 36, padding: "0 24px", fontSize: 13, }}
-    />
-  )}
-
   {loading.save ? "Saving..." : "Save"}
 </Btn>
          <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
-  variant="outline"
+  variant="cancel"
   style={{
-    height: 36, padding: "0 24px", fontSize: 13,
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
     background: "#cbd5e1",
     color: "#374151",
     border: "1px solid #cbd5e1",

@@ -37,7 +37,7 @@ const DEFAULT_CALLER_CONVERSION = { strip: "", front: "", suffix: "" };
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
+  cardBorder: "#9CA3AF",
 
   labelText: "#64748b",
   valueText: "#0f172a",
@@ -165,14 +165,14 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -182,6 +182,16 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
 
 const OutboundRoutesPage = () => {
   const [rows, setRows] = useState([]);
@@ -934,8 +944,8 @@ const OutboundRoutesPage = () => {
         <div
           style={{
             background: "#ffffff",
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 22,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: 10,
             overflow: "hidden",
             boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
@@ -945,11 +955,12 @@ const OutboundRoutesPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
-              borderBottom: "1px solid #e2e8f0",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
             }}
           >
             <div
@@ -957,7 +968,8 @@ const OutboundRoutesPage = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                flexWrap: "wrap",
+                flex: 1,
+                minWidth: 0,
               }}
             >
               {selected.length > 0 && (
@@ -1056,24 +1068,31 @@ const OutboundRoutesPage = () => {
               >
                 ⬆ Export
               </Btn>
-              <Btn
-                onClick={handleOpenAddModal}
-                disabled={loading.save || loading.list}
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                + Add New
-              </Btn>
+             <Btn
+  onClick={handleOpenAddModal}
+  disabled={loading.save || loading.list}
+  variant="primary"
+  hoverBehavior="opacity"
+  style={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + Add New
+</Btn>
             </div>
           </div>
 
-          <div style={{ overflowX: "auto" }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {loading.list ? (
               <div
                 style={{
@@ -1089,14 +1108,24 @@ const OutboundRoutesPage = () => {
               <table
                 style={{
                   width: "100%",
-                  borderCollapse: "collapse",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                   tableLayout: "auto",
                   minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allRowsSelected}
@@ -1104,26 +1133,53 @@ const OutboundRoutesPage = () => {
                         onChange={() =>
                           allRowsSelected ? handleUncheckAll() : handleCheckAll()
                         }
-                       sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-}}
+                        sx={{
+                          padding: "1px",
+                          color: "#64748b",
+                          "&.Mui-checked": { color: "#0284c7" },
+                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+                        }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>ID</TH>
-                    <TH>Name</TH>
-                    <TH>Priority</TH>
-                    <TH>Enabled</TH>
-                    <TH>Password</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Name
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Priority
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Enabled
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Password
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Member Extensions
                     </TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Member Trunks
                     </TH>
-                    <TH style={{ width: 70 }}>Modify</TH>
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1146,32 +1202,36 @@ const OutboundRoutesPage = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBg = isSelected
-                        ? "#e0f2fe"
+                        ? "#f0f9ff"
                         : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
+                        ? "#f8fafc"
+                        : "#ffffff";
+                      const lastRowCellStyle =
+                        idx === pagedRows.length - 1 ? { borderBottom: "none" } : {};
                       return (
                         <tr
                           key={row.id}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
+                            if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
                           }}
                           onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            if (!isSelected) e.currentTarget.style.background = rowBg;
                           }}
                         >
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 0",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              width: 36,
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
+                              ...(idx === pagedRows.length - 1
+                                ? { borderBottomLeftRadius: 10 }
+                                : {}),
                             }}
                           >
                             <Checkbox
@@ -1179,52 +1239,45 @@ const OutboundRoutesPage = () => {
                               checked={isSelected}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={loading.delete}
-                             sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-}}
+                              sx={{
+                                padding: "1px",
+                                color: "#64748b",
+                                "&.Mui-checked": { color: "#0284c7" },
+                              }}
                             />
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 6px",
-                              fontSize: 11,
-                              color: C.mutedText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              textAlign: "center",
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              textAlign: "center",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.priority}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             <span
@@ -1248,11 +1301,9 @@ const OutboundRoutesPage = () => {
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              textAlign: "center",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.passwordType === "Single Pin"
@@ -1261,10 +1312,9 @@ const OutboundRoutesPage = () => {
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                               wordBreak: "break-all",
                             }}
                           >
@@ -1278,11 +1328,14 @@ const OutboundRoutesPage = () => {
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
                               wordBreak: "break-all",
+                              ...(idx === pagedRows.length - 1
+                                ? { borderBottomRightRadius: 10 }
+                                : {}),
                             }}
                           >
                             {row.memberTrunks?.length > 0 ? (
@@ -1292,14 +1345,32 @@ const OutboundRoutesPage = () => {
                             )}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "7px 8px" }}
+                            style={{
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              background: rowBg,
+                              ...lastRowCellStyle,
+                            }}
                           >
+                            <div style={{ display: "flex", justifyContent: "center" }}>
                               <EditDocumentIcon
-  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-  titleAccess="Edit"
-  onClick={() => handleOpenEditModal(row)}
-/>
-
+                                titleAccess="Edit"
+                                onClick={() => handleOpenEditModal(row)}
+                                style={{
+                                  cursor: "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.opacity = "1")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.opacity = "0.7")
+                                }
+                              />
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1316,10 +1387,11 @@ const OutboundRoutesPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
-                gap: 8,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
               }}
             >
               <span
