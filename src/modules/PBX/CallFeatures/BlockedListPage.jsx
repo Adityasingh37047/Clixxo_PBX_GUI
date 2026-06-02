@@ -27,7 +27,7 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
+  cardBorder: "#9CA3AF",
 
   labelText: "#64748b",
   valueText: "#0f172a",
@@ -107,14 +107,14 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -124,6 +124,16 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -468,8 +478,8 @@ const BlockedListPage = () => {
         <div
           style={{
             background: "#ffffff",
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 22,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: 10,
             overflow: "hidden",
             boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
@@ -480,11 +490,12 @@ const BlockedListPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
-              borderBottom: "1px solid #e2e8f0",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
-              gap: 10,
+              gap: 12,
             }}
           >
             <div
@@ -671,7 +682,13 @@ const BlockedListPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {loading.fetch ? (
               <div
                 style={{
@@ -687,14 +704,24 @@ const BlockedListPage = () => {
               <table
                 style={{
                   width: "100%",
-                  borderCollapse: "collapse",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                   tableLayout: "auto",
                   minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        background: "#ffffff",
+                        borderLeft: "none",
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
@@ -702,21 +729,91 @@ const BlockedListPage = () => {
                         onChange={handleToggleAll}
                         sx={{
                           padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          color: "#64748b",
+                          "&.Mui-checked": {
+                            color: "#0284c7",
+                          },
+                          "&.MuiCheckbox-indeterminate": {
+                            color: "#0284c7",
+                          },
                         }}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>ID</TH>
-                    <TH>Name</TH>
-                    <TH>Match Mode</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH
+                      style={{
+                        width: 40,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        background: "#ffffff",
+                      }}
+                    >
+                      ID
+                    </TH>
+                    <TH
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        background: "#ffffff",
+                      }}
+                    >
+                      Name
+                    </TH>
+                    <TH
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        background: "#ffffff",
+                      }}
+                    >
+                      Match Mode
+                    </TH>
+                    <TH
+                      style={{
+                        textAlign: "left",
+                        paddingLeft: "16px",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        background: "#ffffff",
+                      }}
+                    >
                       Blocked List Number
                     </TH>
-                    <TH>Direction</TH>
-                    <TH>Enable</TH>
-                    <TH style={{ width: 70 }}>Modify</TH>
+                    <TH
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        background: "#ffffff",
+                      }}
+                    >
+                      Direction
+                    </TH>
+                    <TH
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        background: "#ffffff",
+                      }}
+                    >
+                      Enable
+                    </TH>
+                    <TH
+                      style={{
+                        width: 70,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                        background: "#ffffff",
+                        borderRight: "none",
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -746,71 +843,78 @@ const BlockedListPage = () => {
                           ? "#f8fafc"
                           : "#ffffff";
 
+                      const lastRowCellStyle =
+                        idx === pagedRows.length - 1 ? { borderBottom: "none" } : {};
+
                       return (
                         <tr
                           key={row.id || realIdx}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
+                            if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
                           }}
                           onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            if (!isSelected) e.currentTarget.style.background = rowBg;
                           }}
                         >
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 0",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              width: 36,
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
+                              ...(idx === pagedRows.length - 1
+                                ? { borderBottomLeftRadius: 10 }
+                                : {}),
                             }}
                           >
                             <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                              sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
-                            />
+  size="small"
+  checked={isSelected}
+  onChange={() => handleToggleRow(realIdx)}
+  sx={{
+    padding: "1px",
+    color: "#64748b",
+
+    "&.Mui-checked": {
+      color: "#0284c7",
+    },
+
+    "&.MuiCheckbox-indeterminate": {
+      color: "#0284c7",
+    },
+  }}
+/>
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 6px",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                               fontSize: 11,
                               color: C.mutedText,
-                              borderRight: "1px solid #f1f5f9",
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              textAlign: "center",
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             <span
@@ -832,20 +936,20 @@ const BlockedListPage = () => {
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontFamily: "monospace",
                               color: C.labelText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.blockedNumber}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             <span
@@ -873,9 +977,9 @@ const BlockedListPage = () => {
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             <span
@@ -898,19 +1002,32 @@ const BlockedListPage = () => {
                             </span>
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "7px 8px" }}
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
+                            }}
                           >
-                            <Btn
-                              onClick={() => handleOpenEditModal(row)}
-                              variant="outline"
-                              style={{
-                                fontSize: 10,
-                                padding: "3px 10px",
-                                margin: "0 auto",
-                              }}
-                            >
-                              Edit
-                            </Btn>
+                            <div style={{ display: "flex", justifyContent: "center" }}>
+                              <EditDocumentIcon
+                                titleAccess="Edit"
+                                onClick={() => handleOpenEditModal(row)}
+                                style={{
+                                  cursor: "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.opacity = "1")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.opacity = "0.7")
+                                }
+                              />
+                            </div>
                           </td>
                         </tr>
                       );
@@ -928,10 +1045,11 @@ const BlockedListPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
-                gap: 8,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
@@ -1281,19 +1399,21 @@ const BlockedListPage = () => {
                 ? "Update Entry"
                 : "Create"}
           </Btn>
-          <Btn
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            variant="outline"
-            style={{
-              background: "#cbd5e1",
-              color: "#374151",
-              border: "1px solid #cbd5e1",
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            Cancel
-          </Btn>
+         <Btn
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="outline"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  Cancel
+</Btn>
         </DialogActions>
       </Dialog>
 

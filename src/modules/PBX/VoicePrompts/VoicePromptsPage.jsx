@@ -1623,19 +1623,34 @@ const VoicePromptsPage = () => {
           }}
         >
           <Btn
-            onClick={handleSaveRecordedPrompt}
-            variant="default"
-            style={{ padding: "8px 24px" }}
-          >
-            RECORD
-          </Btn>
-          <Btn
-            onClick={() => setRecordModalOpen(false)}
-            variant="outline"
-            style={{ padding: "8px 24px" }}
-          >
-            CANCEL
-          </Btn>
+  onClick={handleSaveRecordedPrompt}
+  variant="default"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  RECORD
+</Btn>
+       <Btn
+  onClick={() => setRecordModalOpen(false)}
+  variant="outline"
+  style={{
+    padding: "8px 28px",
+    fontSize: 13,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+>
+  CANCEL
+</Btn>
         </DialogActions>
       </Dialog>
     </div>

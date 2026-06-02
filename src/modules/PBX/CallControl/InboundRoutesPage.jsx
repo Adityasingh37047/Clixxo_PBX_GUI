@@ -136,19 +136,15 @@ const resolveRingGroupDestValue = (rawDestValue, ringGroupRows) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-
-  accent: "#2563eb",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
+const CARD_RADIUS = 20;
 
 const Btn = ({
   children,
@@ -178,9 +174,10 @@ const Btn = ({
       border: `0.5px solid ${C.errorRed}`,
     },
     cancel: {
-      background: "#f1f5f9",
-      color: "#64748b",
-      border: "1px solid #cbd5e1",
+       background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     outline: {
       background: C.cardBg,
@@ -211,6 +208,7 @@ const Btn = ({
         return "#e2e8f0";
     }
   })();
+  
 
   const baseBg = extraStyle?.background || s.background;
 
@@ -282,14 +280,14 @@ const TableBtn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+          background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -299,6 +297,22 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 
 const FieldRow = ({ label, children }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -925,24 +939,27 @@ const InboundRoutesPage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 20,
-            overflow: "hidden",
-            boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+           background: "#ffffff",
+borderRadius: 10,
+overflow: "hidden",
+border: `1.5px solid ${C.cardBorder}`,
+boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "10px 18px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: C.cardBg,
-              flexWrap: "wrap",
-              gap: 8,
+             display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1020,25 +1037,28 @@ const InboundRoutesPage = () => {
                 ⬆ Export
               </TableBtn>
               
-              <TableBtn
-                onClick={handleOpenAddModal}
-                disabled={loading.save}
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                + Add New
-              </TableBtn>
+             <TableBtn
+  onClick={handleOpenAddModal}
+  disabled={loading.save}
+  variant="primary"
+  hoverBehavior="opacity"
+  style={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + Add New
+</TableBtn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ overflowX: "auto",
+overflowY: "auto",
+flex: 1, }}>
             {loading.list ? (
               <div
                 style={{
@@ -1053,39 +1073,41 @@ const InboundRoutesPage = () => {
             ) : (
               <table
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  tableLayout: "auto",
-                  minWidth: 980,
+                width: "100%",
+borderCollapse: "separate",
+borderSpacing: 0,
+tableLayout: "auto",
+minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH style={{ width: 36,position: "sticky",
+                        top: 0,
+                        zIndex: 10, }}>
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
                         disabled={loading.delete}
-                        sx={{
-                          padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-                        }}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>ID</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: 16 }}>Name</TH>
-                    <TH>DID Pattern</TH>
-                    <TH>Caller ID Pattern</TH>
-                    <TH>Destination</TH>
-                    <TH>Enabled</TH>
+                    <TH style={{width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
+                    <TH style={{  position: "sticky", top: 0, zIndex: 10}}>Name</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>DID Pattern</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Caller ID Pattern</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Destination</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Enabled</TH>
                     <TH style={{ textAlign: "left", paddingLeft: 16 }}>
                       Member Trunks
                     </TH>
-                    <TH style={{ width: 70 }}>Modify</TH>
+                    <TH style={{width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10, }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1138,9 +1160,7 @@ const InboundRoutesPage = () => {
                         >
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 0",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle, background: rowBg ,
                             }}
                           >
                             <Checkbox
@@ -1148,78 +1168,52 @@ const InboundRoutesPage = () => {
                               checked={isSelected}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={loading.delete}
-                              sx={{
-                                padding: "1px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: "#0284c7" },
-                              }}
+                              sx={checkboxSx}
                             />
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 6px",
-                              fontSize: 12,
-                              color: C.mutedText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle, background: rowBg ,
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                            ...tdStyle, background: rowBg ,
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                            ...tdStyle, background: rowBg ,
                             }}
                           >
                             {row.didPattern || "—"}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                             ...tdStyle, background: rowBg ,
                             }}
                           >
                             {row.callerIdPattern || "—"}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle, background: rowBg ,
                             }}
                           >
                             {destinationStr || "—"}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              borderRight: "1px solid #f1f5f9",
+                            ...tdStyle, background: rowBg ,
                             }}
                           >
                             <span
                               style={{
-                                
+                                ...tdStyle, background: rowBg ,
                                 color:
                                   row.enabled === "Yes" ? "#15803d" : "#475569",
                                 padding: "2px 8px",
@@ -1233,6 +1227,7 @@ const InboundRoutesPage = () => {
                           </td>
                           <td
                             style={{
+                              ...tdStyle, background: rowBg ,
                               padding: "10px 14px",
                               fontSize: 13,
                               color: C.labelText,
@@ -1244,11 +1239,11 @@ const InboundRoutesPage = () => {
                             {row.memberTrunks?.length > 0 ? (
                               row.memberTrunks.map(getTrunkLabel).join(", ")
                             ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
+                              <span style={{ ...tdStyle, background: rowBg ,}}>—</span>
                             )}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "7px 8px" }}
+                            style={{ textAlign: "center", padding: "7px 8px",...tdStyle, background: rowBg , }}
                           >
                             <EditDocumentIcon
                               className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"

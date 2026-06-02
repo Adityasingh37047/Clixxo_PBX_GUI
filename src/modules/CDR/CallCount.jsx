@@ -20,18 +20,19 @@ const columns = [
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
+  cardBorder: "#9CA3AF",
   cardBorderSoft: "#f1f5f9",
-  labelText: "#64748b",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#2563eb",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   successGreen: "#22c55e",
   errorRed: "#ef4444",
   purple: "#8b5cf6",
-  amber: "#d97706",
+  amber: "#dc2626",
 };
-
+const CARD_RADIUS = 20;
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const normalizeValue = (value) => String(value || "").toLowerCase().trim();
 
@@ -374,12 +375,25 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
+  type = "button",
 }) => {
   const variants = {
     default: {
-      background: C.pageBg,
+      background: C.cardBg,
       color: C.valueText,
-      border: `1px solid ${C.cardBorder}`,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     outline: {
       background: C.cardBg,
@@ -387,41 +401,53 @@ const Btn = ({
       border: `1px solid ${C.cardBorder}`,
     },
     danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: "1px solid #fecaca",
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     accent: {
-      background: "#eff6ff",
-      color: C.accent,
-      border: `1px solid ${C.cardBorder}`,
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
   };
   const s = variants[variant] || variants.default;
+  const baseBg = s.background;
+  const hoverBg =
+    variant === "primary"
+      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
+      : variant === "default" || variant === "outline"
+        ? "#e2e8f0"
+        : "#b6c2d3";
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       style={{
         ...s,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
+        padding: "6px 14px",
+        borderRadius: 10,
+        height: 30,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
-        gap: 5,
+        justifyContent: "center",
+        gap: 6,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -563,16 +589,17 @@ const GhostBtn = ({ children, onClick, disabled }) => (
 const TH = ({ children, style: extra, align = "center" }) => (
   <th
     style={{
-      background: "#f8fafc",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "14px 12px",
-      textAlign: align,
-      borderBottom: "1px solid #f1f5f9",
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.08em",
+     background: "#F8FAFC",
+color: C.labelText,
+fontWeight: 700,
+fontSize: 11,
+padding: "9px 14px",
+textAlign: align,
+borderBottom: `1px solid ${C.cardBorder}`,
+borderRight: `1px solid ${C.cardBorder}`,
+whiteSpace: "nowrap",
+textTransform: "uppercase",
+letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -580,6 +607,22 @@ const TH = ({ children, style: extra, align = "center" }) => (
   </th>
 );
 
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CallCount = () => {
@@ -745,7 +788,7 @@ const CallCount = () => {
       style={{
         background: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 24,
+        padding: 16,
         fontFamily: "Inter, sans-serif",
       }}
     >
@@ -777,7 +820,7 @@ const CallCount = () => {
         )}
 
      {/* Breadcrumb + last updated (PbxMonitor-style header) */}
-<div style={{ marginBottom: 24 }}>
+<div style={{ marginBottom: 16 }}>
   <div
     style={{
       display: "flex",
@@ -826,11 +869,11 @@ const CallCount = () => {
         <div
           style={{
             background: "#ffffff",
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 14,
-            boxShadow: "0 2px 12px rgba(15,23,42,0.05)",
-            padding: "18px 20px",
-            marginBottom: 20,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: 10,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+            padding: "7px 14px",
+            marginBottom: 16,
           }}
         >
           <div
@@ -838,7 +881,7 @@ const CallCount = () => {
               display: "flex",
               flexWrap: "wrap",
               alignItems: "flex-end",
-              gap: 14,
+              gap: 12,
             }}
           >
             
@@ -904,7 +947,7 @@ const CallCount = () => {
             <div
               style={{
                 marginTop: 14,
-                paddingTop: 12,
+                paddingTop: 7,
                 borderTop: `1px solid ${C.cardBorderSoft}`,
                 fontSize: 12,
                 color: C.mutedText,
@@ -934,27 +977,30 @@ const CallCount = () => {
           )}
         </div>
 
-        {/* Main card — PbxMonitor main white shell */}
+        {/* Main card */}
         <div
           style={{
             background: "#ffffff",
-            borderRadius: 20,
+            borderRadius: 10,
             overflow: "hidden",
-            border: `1px solid ${C.cardBorder}`,
-            boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
-          {/* Toolbar (tab bar–like strip) */}
+          {/* Toolbar */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: 12,
-              borderBottom: "1px solid #f1f5f9",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
               background: "#ffffff",
               flexWrap: "wrap",
               gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -996,10 +1042,10 @@ const CallCount = () => {
                 flexWrap: "wrap",
               }}
             >
-            <Btn
+           <Btn
   onClick={() => loadCdr(page)}
   disabled={loading}
-  variant="default"
+  variant="danger"
   style={{
     background: "#cbd5e1",
     color: "#374151",
@@ -1038,7 +1084,13 @@ const CallCount = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {loading ? (
               <div
                 style={{
@@ -1054,9 +1106,10 @@ const CallCount = () => {
               <table
                 style={{
                   width: "100%",
-                  borderCollapse: "collapse",
-                  tableLayout: "fixed",
-                  minWidth: 1100,
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <colgroup>
@@ -1068,23 +1121,48 @@ const CallCount = () => {
                 </colgroup>
                 <thead>
                   <tr>
-                    <TH style={{ width: 36, padding: "10px 8px" }}>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                     sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-}}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 32 }}>#</TH>
-                    {columns.map((col) => (
-                      <TH key={col.key}>{col.label}</TH>
+                    <TH
+                      style={{
+                        width: 32,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      #
+                    </TH>
+                    {columns.map((col, colIdx) => (
+                      <TH
+                        key={col.key}
+                        style={{
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                          ...(colIdx === columns.length - 1
+                            ? { borderRight: "none" }
+                            : {}),
+                        }}
+                      >
+                        {col.label}
+                      </TH>
                     ))}
                   </tr>
                 </thead>
@@ -1100,7 +1178,7 @@ const CallCount = () => {
                           padding: "40px 16px",
                           color: C.mutedText,
                           fontSize: 14,
-                          borderBottom: "1px solid #f1f5f9",
+                          borderBottom: "none",
                         }}
                       >
                         {hasActiveFilters
@@ -1110,10 +1188,14 @@ const CallCount = () => {
                     </tr>
                   ) : (
                     filteredData.map((row, idx) => {
+                      const isLastRow = idx === filteredData.length - 1;
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
                       const isSelected =
                         row.uniqueid && selectedIds.includes(row.uniqueid);
                       const rowBg = isSelected
-                        ? "#eff6ff"
+                        ? "#f0f9ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -1123,12 +1205,11 @@ const CallCount = () => {
                           key={getRowKey(row, idx)}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
-                            transition: "background 0.1s ease",
+                            transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
+                              e.currentTarget.style.background = "#f1f5f9";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -1137,9 +1218,14 @@ const CallCount = () => {
                         >
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "12px 8px",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              width: 36,
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
+                              ...(isLastRow
+                                ? { borderBottomLeftRadius: CARD_RADIUS }
+                                : {}),
                             }}
                           >
                             <Checkbox
@@ -1150,21 +1236,17 @@ const CallCount = () => {
                                 selectedIds.includes(row.uniqueid)
                               }
                               onChange={() => handleToggleRow(row.uniqueid)}
-                              sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-}}
+                              sx={checkboxSx}
                             />
                           </td>
 
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "12px 8px",
+                              ...tdStyle,
+                              background: rowBg,
                               fontSize: 12,
                               color: C.mutedText,
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {(page - 1) * limit + idx + 1}
@@ -1172,13 +1254,11 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
+                              ...tdStyle,
+                              background: rowBg,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {formatDate(row.calldate)}
@@ -1186,15 +1266,12 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontWeight: 500,
-                              color: C.valueText,
-                              textAlign: "center",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.src || (
@@ -1204,15 +1281,13 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               color: C.accent,
                               fontFamily: "monospace, monospace",
-                              textAlign: "center",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.src_ip || (
@@ -1222,15 +1297,12 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontWeight: 500,
-                              color: C.valueText,
-                              textAlign: "center",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.dst || (
@@ -1240,15 +1312,13 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               color: C.accent,
                               fontFamily: "monospace, monospace",
-                              textAlign: "center",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.dst_ip || (
@@ -1258,9 +1328,9 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {(() => {
@@ -1278,9 +1348,9 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.disposition ? (
@@ -1301,13 +1371,11 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               fontFamily: "monospace, monospace",
                               fontWeight: 600,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {formatDuration(row.billsec)}
@@ -1315,13 +1383,12 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               color: C.labelText,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              borderRight: "1px solid #f1f5f9",
+                              ...lastRowCellStyle,
                             }}
                             title={row.hangup_cause || ""}
                           >
@@ -1332,12 +1399,16 @@ const CallCount = () => {
 
                           <td
                             style={{
-                              padding: "12px 14px",
-                              fontSize: 13,
+                              ...tdStyle,
+                              background: rowBg,
                               color: C.labelText,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
+                              borderRight: "none",
+                              ...lastRowCellStyle,
+                              ...(isLastRow
+                                ? { borderBottomRightRadius: CARD_RADIUS }
+                                : {}),
                             }}
                             title={row.dcontext || ""}
                           >
@@ -1360,9 +1431,13 @@ const CallCount = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      padding: "14px 18px",
-      borderTop: "1px solid #f1f5f9",
+      padding: "7px 14px",
+      borderTop: `1px solid ${C.cardBorder}`,
       background: "#ffffff",
+      borderBottomLeftRadius: CARD_RADIUS,
+      borderBottomRightRadius: CARD_RADIUS,
+      flexWrap: "wrap",
+      gap: 8,
     }}
   >
     <span style={{ fontSize: 12, color: C.mutedText }}>
@@ -1371,7 +1446,7 @@ const CallCount = () => {
       {hasActiveFilters ? ` (filtered from ${rows.length})` : ""}
     </span>
 
-    <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
       <Btn
         onClick={handlePrev}
         disabled={loading || page <= 1}
@@ -1386,9 +1461,9 @@ const CallCount = () => {
           fontWeight: 600,
           color: C.accent,
           background: "#eff6ff",
-          padding: "6px 14px",
-          borderRadius: 10,
-          border: `1px solid ${C.cardBorder}`,
+          padding: "5px 14px",
+          borderRadius: 999,
+          border: `1px solid ${C.accent}`,
         }}
       >
         Page {page}
@@ -1414,8 +1489,8 @@ const CallCount = () => {
     display: "flex",
     justifyContent: "center",
     marginTop: 20,
-    marginBottom: 10,
-    fontSize: 15,
+    marginBottom: 0,
+     fontSize: 15,
     fontWeight: 700,
     color: "#dc2626",
   }}

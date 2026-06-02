@@ -138,19 +138,15 @@ const normalizeDestinationOptions = (list) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-
-  accent: "#2563eb",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
+const CARD_RADIUS = 20;
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const Btn = ({
@@ -162,10 +158,16 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
+      background: C.cardBg,
+  color: C.valueText,
+  border: "1px solid #9ca3af",
     },
+    primary: {
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
+  border: "1px solid #5A6F8F",
+},
     outline: {
       background: C.cardBg,
       color: C.labelText,
@@ -190,16 +192,17 @@ const Btn = ({
       disabled={disabled}
       style={{
         ...s,
-        fontSize: 11,
+        fontSize: 12,
+        height: 30,
         fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
+        padding: "6px 14px",
+        borderRadius: 10,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
+        gap: 6,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
         ...extraStyle,
@@ -219,24 +222,33 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+         background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
       ...extra,
+
     }}
   >
     {children}
   </th>
 );
-
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
 const FieldRow = ({ label, children, required }) => (
   <div
     style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}

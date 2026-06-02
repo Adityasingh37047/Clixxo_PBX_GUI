@@ -47,15 +47,18 @@ import {
 
 // ── Color palette ────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
+
+const CARD_RADIUS = 20;
 
 const TABLE_C = {
   pageBg: "#f8fafc",
@@ -71,10 +74,45 @@ const TABLE_C = {
 
 const Btn = ({ children, onClick, disabled, variant = "default", style: extraStyle }) => {
   const variants = {
-    default: { background: "#1e293b", color: "#fff", border: "1px solid #9ca3af" },
-    outline: { background: C.cardBg, color: C.labelText, border: `0.5px solid ${C.cardBorder}` },
-    danger: { background: "#fef2f2", color: C.errorRed, border: "0.5px solid #fecaca" },
-    accent: { background: C.cardBg, color: C.accent, border: `0.5px solid ${C.cardBorder}` },
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    accent: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",  
+  },
   };
   const s = variants[variant] || variants.default;
   return (
@@ -82,9 +120,9 @@ const Btn = ({ children, onClick, disabled, variant = "default", style: extraSty
       onClick={onClick}
       disabled={disabled}
       style={{
-        ...s, fontSize: 11, fontWeight: 600, padding: "5px 14px", borderRadius: 6,
+        ...s, fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 10, height: 30,
         cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1,
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
         transition: "opacity 0.15s ease", whiteSpace: "nowrap", ...extraStyle,
       }}
       onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.opacity = "0.82"; }}
@@ -97,14 +135,39 @@ const Btn = ({ children, onClick, disabled, variant = "default", style: extraSty
 
 const TH = ({ children, style: extra }) => (
   <th style={{
-    background: "#f8fafc", color: TABLE_C.labelText, fontWeight: 700, fontSize: 11,
-    padding: "12px 14px", textAlign: "center", borderBottom: `1px solid ${TABLE_C.cardBorder}`,
-    borderRight: "1px solid #f1f5f9", whiteSpace: "nowrap",
-    textTransform: "uppercase", letterSpacing: "0.14em", ...extra,
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
   }}>
     {children}
   </th>
 );
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 
 const TableBtn = ({ children, onClick, disabled, variant = "default", style: extraStyle }) => {
   const variants = {
@@ -1597,28 +1660,67 @@ const SipRegisterPage = () => {
         </div>
 
         {/* Main card */}
-        <div style={{ background: "#ffffff", border: `1px solid ${TABLE_C.cardBorder}`, borderRadius: 22, overflow: "hidden", boxShadow: "0 10px 30px rgba(15,23,42,0.06)" }}>
-
-          {/* Toolbar */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid #e2e8f0", background: "#ffffff", flexWrap: "wrap", gap: 10 }}>
-            {/* Left: page info + selected count */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            
-              {selectedIds.length > 0 && (
-                <span style={{ background: "#eff6ff", color: TABLE_C.accent, fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 999, border: `1px solid ${TABLE_C.accent}` }}>
-                  {selectedIds.length} selected
+          <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
+        {/* ── Toolbar ── */}
+          <div
+            style={{
+             display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
+            {/* Left: page info + selection count */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
                 </span>
               )}
             </div>
-            {/* Right: action buttons */}
-<div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-  }}
->
+              {/* Right: search + buttons */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
 
 
 
@@ -1720,35 +1822,40 @@ const SipRegisterPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ overflowX: "auto",
+overflowY: "auto",
+flex: 1, }}>
             {loading.fetch ? (
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: 48 }}>
                 <CircularProgress size={28} style={{ color: TABLE_C.accent }} />
               </div>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "auto", minWidth: 1200 }}>
+              <table style={{ width: "100%",
+borderCollapse: "separate",
+borderSpacing: 0,
+tableLayout: "auto",
+minWidth: 900, }}>
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH style={{ width: 36,
+                      position: "sticky",
+top: 0,
+zIndex: 10,
+                     }}>
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                         sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-}}
+                         sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36 }}>ID</TH>
+                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>ID</TH>
                     {sipRegisterFields.filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name)).map((field) => (
                       <TH key={field.name}>{field.label}</TH>
                     ))}
-                    <TH>Status</TH>
-                    <TH style={{ width: 60 }}>Modify</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Status</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1781,20 +1888,17 @@ const SipRegisterPage = () => {
                           onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "#f8fafc"; }}
                           onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = rowBg; }}
                         >
-                          <td style={{ textAlign: "center", padding: "10px 0", borderRight: "1px solid #f1f5f9" }}>
+                          <td style={{ ...tdStyle, background: rowBg, textAlign: "center", padding: "10px 0", borderRight: "1px solid #f1f5f9" }}>
                             <Checkbox
                               size="small"
                               disabled={!trunk.trunk_id}
                               checked={!!trunk.trunk_id && selectedIds.includes(trunk.trunk_id)}
                               onChange={() => handleToggleRow(trunk.trunk_id)}
-                             sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-}}
+                             sx={checkboxSx}
+
                             />
                           </td>
-                          <td style={{ textAlign: "center", padding: "10px 6px", fontSize: 11, color: TABLE_C.mutedText, borderRight: "1px solid #f1f5f9" }}>
+                          <td style={{ ...tdStyle, background: rowBg,textAlign: "center", padding: "10px 6px", fontSize: 11, color: TABLE_C.mutedText, borderRight: "1px solid #f1f5f9" }}>
                             {(page - 1) * itemsPerPage + idx + 1}
                           </td>
                           {sipRegisterFields.filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name)).map((field) => {
@@ -1803,12 +1907,12 @@ const SipRegisterPage = () => {
                             const displayValue = hasValue && SIP_PREFIX_FIELDS.includes(field.name)
                               ? `sip:${value}` : hasValue ? value : "—";
                             return (
-                              <td key={field.name} style={{ padding: "10px 14px", fontSize: 13, color: TABLE_C.valueText, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRight: "1px solid #f1f5f9", fontWeight: field.name === "trunk_id" ? 600 : 400 }}>
+                              <td key={field.name} style={{ ...tdStyle, background: rowBg,padding: "10px 14px", fontSize: 13, color: TABLE_C.valueText, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRight: "1px solid #f1f5f9", fontWeight: field.name === "trunk_id" ? 600 : 400 }}>
                                 {displayValue}
                               </td>
                             );
                           })}
-                          <td style={{ textAlign: "center", padding: "10px 14px", borderRight: "1px solid #f1f5f9" }}>
+                          <td style={{ ...tdStyle, background: rowBg, textAlign: "center", padding: "10px 14px", borderRight: "1px solid #f1f5f9" }}>
                             {trunk.registerStatus ? (
                               <Pill
                                 text={trunk.registerStatus}
@@ -1819,7 +1923,7 @@ const SipRegisterPage = () => {
                               <span style={{ color: TABLE_C.mutedText }}>—</span>
                             )}
                           </td>
-                          <td style={{ textAlign: "center", padding: "7px 8px" }}>
+                          <td style={{ ...tdStyle, background: rowBg, textAlign: "center", padding: "7px 8px" }}>
                            <IconButton
   size="small"
   disabled={loading.delete}
@@ -2108,7 +2212,7 @@ const SipRegisterPage = () => {
                               />
                             }
                             label=""
-                            sx={{ margin: 0 }}
+                            sx={checkboxSx}
                           />
                         </div>
                       </div>
@@ -2254,7 +2358,7 @@ const SipRegisterPage = () => {
                               />
                             }
                             label=""
-                            sx={{ margin: 0 }}
+                            sx={checkboxSx}
                           />
                         </div>
                       </div>
@@ -2519,7 +2623,7 @@ const SipRegisterPage = () => {
                                   />
                                 }
                                 label=""
-                                sx={{ margin: 0 }}
+                                sx={checkboxSx}
                               />
                             </div>
                           </div>
@@ -3027,7 +3131,7 @@ const SipRegisterPage = () => {
                               />
                             }
                             label=""
-                            sx={{ margin: 0 }}
+                            sx={checkboxSx}
                           />
                         </div>
                       </div>
@@ -3104,7 +3208,7 @@ const SipRegisterPage = () => {
                               />
                             }
                             label=""
-                            sx={{ margin: 0 }}
+                            sx={checkboxSx}
                           />
                         </div>
                       </div>

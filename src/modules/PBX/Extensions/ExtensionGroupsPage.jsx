@@ -24,18 +24,15 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  cardBorderSoft: "#f1f5f9",
-  labelText: "#64748b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#2563eb",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
-  amber: "#d97706",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
-
+const CARD_RADIUS = 20;
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -46,24 +43,30 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
-    },
-    outline: {
       background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+  color: C.valueText,
+  border: "1px solid #9ca3af",
+    },
+    primary: {
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
+  border: "1px solid #5A6F8F",
+},
+    outline: {
+     background: C.cardBg,
+  color: C.labelText,
+  border: `1px solid ${C.cardBorder}`,
     },
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
-      border: `0.5px solid #fecaca`,
+      border: `1px solid #fecaca`,
     },
     accent: {
       background: C.cardBg,
       color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
   const s = variants[variant] || variants.default;
@@ -73,16 +76,17 @@ const Btn = ({
       disabled={disabled}
       style={{
         ...s,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
+        padding: "6px 14px",
+        borderRadius: 10,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
+        gap: 6,
+        height: 32,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
         ...extraStyle,
@@ -103,14 +107,14 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
+     background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "12px 14px",
+      padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -120,7 +124,21 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
-
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ExtensionGroupsPage = () => {
@@ -381,24 +399,27 @@ const ExtensionGroupsPage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
-            borderRadius: 22,
-            overflow: "hidden",
-            border: `1px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          background: "#ffffff",
+borderRadius: 10,
+overflow: "hidden",
+border: `1.5px solid ${C.cardBorder}`,
+boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "14px 18px",
-              borderBottom: "1px solid #e2e8f0",
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 10,
+             display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS,
             }}
           >
             {/* Left Toolbar Info */}
@@ -528,15 +549,16 @@ const ExtensionGroupsPage = () => {
 >
   🗑 Delete
 </Btn>
-            <Btn
+          <Btn
   onClick={handleOpenAddModal}
   disabled={loading.fetch}
-  variant="accent"
+  variant="primary"
   style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
   }}
 >
   + Add New
@@ -545,7 +567,9 @@ const ExtensionGroupsPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ overflowX: "auto",
+overflowY: "auto",
+flex: 1, }}>
             {loading.fetch ? (
               <div
                 style={{
@@ -560,32 +584,36 @@ const ExtensionGroupsPage = () => {
             ) : (
               <table
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  tableLayout: "auto",
-                  minWidth: 900,
+                 width: "100%",
+borderCollapse: "separate",
+borderSpacing: 0,
+tableLayout: "auto",
+minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH style={{ width: 40 , position: "sticky",
+top: 0,
+zIndex: 10,}}>
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                     sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-}}
+                     sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36 }}>ID</TH>
-                    <TH>Group Name</TH>
-                    <TH>Extensions</TH>
-                    <TH style={{ width: 80 }}>Modify</TH>
+                    <TH style={{  width: 36, position: "sticky", top: 0, zIndex: 10}}>ID</TH>
+                    <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Group Name</TH>
+                    <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Extensions</TH>
+                    <TH  style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -610,6 +638,7 @@ const ExtensionGroupsPage = () => {
                   ) : (
                     pagedGroups.map((row, idx) => {
                       const isSelected = selectedIds.includes(row.id);
+                 
                       const rowBg = isSelected
                         ? "#e0f2fe"
                         : idx % 2 === 1
@@ -645,17 +674,15 @@ const ExtensionGroupsPage = () => {
                               color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
                             }}
                           >
                             <Checkbox
                               size="small"
                               checked={isSelected}
                               onChange={() => handleToggleRow(row.id)}
-                              sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-}}
+                              sx={checkboxSx}
                             />
                           </td>
                           <td
@@ -666,6 +693,8 @@ const ExtensionGroupsPage = () => {
                               color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
                             }}
                           >
                             {realIndex}
@@ -678,6 +707,8 @@ const ExtensionGroupsPage = () => {
                               color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
                             }}
                           >
                             {row.name}
@@ -690,16 +721,19 @@ const ExtensionGroupsPage = () => {
                               color: C.valueText,
                               textAlign: "center",
                               borderRight: "1px solid #f1f5f9",
+                              ...tdStyle,
+                              background: rowBg,
                             }}
                           >
                             {row.extensions?.length > 0 ? (
                               row.extensions.join(", ")
                             ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
+                              <span style={{ color: C.mutedText }}></span>
                             )}
                           </td>
                           <td
-                            style={{ padding: "7px 8px", textAlign: "center" }}
+                            style={{ padding: "7px 8px", textAlign: "center", ...tdStyle,
+                              background: rowBg, }}
                           >
                            <EditDocumentIcon
   className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
@@ -932,13 +966,14 @@ const ExtensionGroupsPage = () => {
             gap: 12,
           }}
         >
-         <Btn
+        <Btn
   onClick={handleSaveGroup}
   disabled={loading.save}
-  variant="default"
+  variant="primary"
   style={{
-    padding: "8px 24px",
+    padding: "8px 28px",
     fontSize: 13,
+    height: 36,
     background:
       "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
     color: "#fff",
@@ -948,7 +983,7 @@ const ExtensionGroupsPage = () => {
 >
   {loading.save ? (
     <CircularProgress
-      size={14}
+      size={13}
       style={{ color: "#fff", marginRight: 8 }}
     />
   ) : null}
@@ -958,14 +993,15 @@ const ExtensionGroupsPage = () => {
        <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
-  variant="outline"
+  variant="primary"
   style={{
     padding: "8px 24px",
     fontSize: 13,
+    height: 36,
     background: "#cbd5e1",
     color: "#374151",
     border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08)",
   }}
 >
   Cancel

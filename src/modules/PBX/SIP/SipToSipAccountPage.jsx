@@ -788,7 +788,7 @@ const SipToSipAccountPage = () => {
                   {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
                     <TH key={col.key}>{col.label}</TH>
                   ))}
-                  <TH style={{ width: 70 }}>Actions</TH>
+                  <TH style={{ width: 70 }}>Modify</TH>
                 </tr>
               </thead>
               <tbody>
