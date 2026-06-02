@@ -679,19 +679,23 @@ borderTopRightRadius: CARD_RADIUS,
                 )}
               </Btn> */}
              
-              <Btn
-                onClick={handleOpenAddModal}
-                disabled={loading.fetch}
-                variant="accent"
-                   style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                + Add New
-              </Btn>
+             <Btn
+  onClick={handleOpenAddModal}
+  disabled={loading.fetch}
+  variant="primary"
+  style={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+
+    color: "#fff",
+
+    border: "1px solid #5A6F8F",
+
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + Add New
+</Btn>
             </div>
           </div>
 
@@ -779,6 +783,7 @@ minWidth: 900,
                     pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRows.length - 1;
                       const rowBg = isSelected
                         ? "#e0f2fe"
                         : idx % 2 === 1
@@ -804,7 +809,9 @@ minWidth: 900,
                         >
                           <td
                             style={{
-                             ...tdStyle, background: rowBg
+                             ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <Checkbox
@@ -816,37 +823,27 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 6px",
-                              fontSize: 11,
-                              color: C.mutedText,
-                              borderRight: "1px solid #f1f5f9",
-                               ...tdStyle, background: rowBg
+                                 ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              textAlign: "center",
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
-                               ...tdStyle, background: rowBg
+                               ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              color: C.valueText,
-                              borderRight: "1px solid #f1f5f9",
-                               ...tdStyle, background: rowBg
+                                ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <span
@@ -868,28 +865,36 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                               ...tdStyle, background: rowBg
+                                 ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.strip || "—"}
                           </td>
                           <td
                             style={{
-                               ...tdStyle, background: rowBg
+                               ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.prepend || "—"}
                           </td>
                           <td
                             style={{
-                             ...tdStyle, background: rowBg
+                              ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.destination || "—"}
                           </td>
                           <td
                             style={{
-                               ...tdStyle, background: rowBg
+                               ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <span
@@ -916,7 +921,9 @@ minWidth: 900,
                             </span>
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "7px 8px",...tdStyle, background: rowBg }}
+                            style={{   ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom, }}
                           >
                             <EditDocumentIcon
   className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"

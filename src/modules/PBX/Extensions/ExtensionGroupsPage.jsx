@@ -21,16 +21,17 @@ import {
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
 // ── Color palette (matches PBX / CDR) ────────────────────────────────────────
+
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
+pageBg: "#f8fafc",
+cardBg: "#ffffff",
+cardBorder: "#9CA3AF",
+labelText: "#3E5475",
+valueText: "#0f172a",
+mutedText: "#94a3b8",
+strongText: "#0f172a",
+accent: "#3E5475",
+amber: "#dc2626",
 };
 const CARD_RADIUS = 20;
 // ── Shared: Action Button ────────────────────────────────────────────────────
@@ -52,6 +53,12 @@ const Btn = ({
     "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
   color: "#fff",
   border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 },
     outline: {
      background: C.cardBg,
@@ -86,7 +93,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         gap: 6,
-        height: 32,
+        height: 30,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
         ...extraStyle,
@@ -107,18 +114,18 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-     background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
+   background: "#F8FAFC",
+color: C.labelText,
+fontWeight: 700,
+fontSize: 11,
+padding: "9px 14px",
+textAlign: "center",
+borderBottom: `1px solid ${C.cardBorder}`,
+borderRight: `1px solid ${C.cardBorder}`,
+whiteSpace: "nowrap",
+textTransform: "uppercase",
+letterSpacing: "0.14em",
+...extra,
     }}
   >
     {children}
@@ -399,7 +406,7 @@ const ExtensionGroupsPage = () => {
         {/* Main Card */}
         <div
           style={{
-          background: "#ffffff",
+         background: "#ffffff",
 borderRadius: 10,
 overflow: "hidden",
 border: `1.5px solid ${C.cardBorder}`,
@@ -409,7 +416,7 @@ boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           {/* Toolbar */}
           <div
             style={{
-             display: "flex",
+            display: "flex",
 alignItems: "center",
 justifyContent: "space-between",
 minHeight: 44,
@@ -584,7 +591,7 @@ flex: 1, }}>
             ) : (
               <table
                 style={{
-                 width: "100%",
+                width: "100%",
 borderCollapse: "separate",
 borderSpacing: 0,
 tableLayout: "auto",
@@ -593,9 +600,12 @@ minWidth: 900,
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 40 , position: "sticky",
-top: 0,
-zIndex: 10,}}>
+                    <TH style={{  width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,}}>
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
@@ -608,7 +618,7 @@ zIndex: 10,}}>
                     <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Group Name</TH>
                     <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Extensions</TH>
                     <TH  style={{
-                        width: 70,
+                       width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
@@ -668,14 +678,7 @@ zIndex: 10,}}>
                         >
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
-                              ...tdStyle,
-                              background: rowBg,
+                             ...tdStyle, background: rowBg 
                             }}
                           >
                             <Checkbox
@@ -687,42 +690,21 @@ zIndex: 10,}}>
                           </td>
                           <td
                             style={{
-                            padding: "10px 14px",
-                              fontSize: 13,
-                              fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
-                              ...tdStyle,
-                              background: rowBg,
+                           ...tdStyle, background: rowBg 
                             }}
                           >
                             {realIndex}
                           </td>
                           <td
                             style={{
-                             padding: "10px 14px",
-                              fontSize: 13,
-                              fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
-                              ...tdStyle,
-                              background: rowBg,
+                            ...tdStyle, background: rowBg 
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
-                              ...tdStyle,
-                              background: rowBg,
+                              ...tdStyle, background: rowBg 
                             }}
                           >
                             {row.extensions?.length > 0 ? (
@@ -929,11 +911,7 @@ zIndex: 10,}}>
                             checked={selectedExtensions.includes(extension)}
                             onChange={() => toggleExtension(extension)}
                             size="small"
-                            sx={{
-                              padding: "2px 8px",
-                              color: C.accent,
-                              "&.Mui-checked": { color: C.accent },
-                            }}
+                            sx={checkboxSx} 
                           />
                         }
                         label={

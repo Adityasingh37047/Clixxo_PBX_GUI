@@ -1130,7 +1130,8 @@ minWidth: 900,
                     pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
-                      const rowBg = isSelected
+                      const isLastRow = idx === pagedRows.length - 1;
+                      const rowBg = isSelected 
                         ? "#f0f9ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
@@ -1146,7 +1147,6 @@ minWidth: 900,
                           key={row.id}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
                             transition: "background 0.1s ease",
                           }}
                           onMouseEnter={(e) => {
@@ -1160,7 +1160,9 @@ minWidth: 900,
                         >
                           <td
                             style={{
-                              ...tdStyle, background: rowBg ,
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <Checkbox
@@ -1173,47 +1175,59 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                              ...tdStyle, background: rowBg ,
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                            ...tdStyle, background: rowBg ,
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                            ...tdStyle, background: rowBg ,
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.didPattern || "—"}
                           </td>
                           <td
                             style={{
-                             ...tdStyle, background: rowBg ,
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.callerIdPattern || "—"}
                           </td>
                           <td
                             style={{
-                              ...tdStyle, background: rowBg ,
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {destinationStr || "—"}
                           </td>
                           <td
                             style={{
-                            ...tdStyle, background: rowBg ,
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <span
                               style={{
-                                ...tdStyle, background: rowBg ,
+                              
                                 color:
                                   row.enabled === "Yes" ? "#15803d" : "#475569",
                                 padding: "2px 8px",
@@ -1227,11 +1241,13 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                              ...tdStyle, background: rowBg ,
+                              ...tdStyle,
+                              background: rowBg,
                               padding: "10px 14px",
                               fontSize: 13,
                               color: C.labelText,
                               borderRight: "1px solid #f1f5f9",
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                               whiteSpace: "normal",
                               wordBreak: "break-all",
                             }}
@@ -1243,7 +1259,13 @@ minWidth: 900,
                             )}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "7px 8px",...tdStyle, background: rowBg , }}
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            }}
                           >
                             <EditDocumentIcon
                               className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"

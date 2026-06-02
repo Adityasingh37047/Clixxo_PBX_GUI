@@ -25,21 +25,18 @@ import {
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-
-  accent: "#2563eb",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
+pageBg: "#f8fafc",
+cardBg: "#ffffff",
+cardBorder: "#9CA3AF",
+labelText: "#3E5475",
+valueText: "#0f172a",
+mutedText: "#94a3b8",
+strongText: "#0f172a",
+accent: "#3E5475",
+amber: "#dc2626",
 };
+
+const CARD_RADIUS = 20;
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -50,15 +47,27 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
-    },
-    outline: {
       background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+color: C.valueText,
+border: "1px solid #9ca3af",
     },
+    primary: {
+background:
+"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+color: "#fff",
+border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+},
+    outline: {
+     background: C.cardBg,
+color: C.labelText,
+border: `1px solid ${C.cardBorder}`,
+},
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
@@ -77,16 +86,17 @@ const Btn = ({
       disabled={disabled}
       style={{
         ...s,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
+        padding: "6px 14px",
+        borderRadius: 10,
+        height: 30,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
+        gap: 6,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
         ...extraStyle,
@@ -108,17 +118,17 @@ const TH = ({ children, style: extra }) => (
   <th
     style={{
       background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
+color: C.labelText,
+fontWeight: 700,
+fontSize: 11,
+padding: "9px 14px",
+textAlign: "center",
+borderBottom: `1px solid ${C.cardBorder}`,
+borderRight: `1px solid ${C.cardBorder}`,
+whiteSpace: "nowrap",
+textTransform: "uppercase",
+letterSpacing: "0.14em",
+...extra,
     }}
   >
     {children}
@@ -135,6 +145,12 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
+const checkboxSx = {
+padding: "1px",
+color: "#3E5475",
+"&.Mui-checked": { color: "#0284c7" },
+"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BlockedListPage = () => {
@@ -477,25 +493,27 @@ const BlockedListPage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: "#ffffff",
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+        background: "#ffffff",
+borderRadius: 10,
+overflow: "hidden",
+border: `1.5px solid ${C.cardBorder}`,
+boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
+           display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div
@@ -506,19 +524,7 @@ const BlockedListPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
-                  color: C.labelText,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {filteredRows.length} records
-              </span>
+              
               {selected.length > 0 && (
                 <span
                   style={{
@@ -665,19 +671,20 @@ const BlockedListPage = () => {
               >
                 🗑 Delete
               </Btn>
-              <Btn
-                onClick={handleOpenAddModal}
-                disabled={loading.fetch}
-                variant="accent"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                + Add New
-              </Btn>
+             <Btn
+  onClick={handleOpenAddModal}
+  disabled={loading.fetch}
+  variant="primary"
+  style={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  + Add New
+</Btn>
             </div>
           </div>
 
@@ -714,12 +721,12 @@ const BlockedListPage = () => {
                   <tr>
                     <TH
                       style={{
-                        width: 36,
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
                         position: "sticky",
                         top: 0,
                         zIndex: 10,
-                        background: "#ffffff",
-                        borderLeft: "none",
                       }}
                     >
                       <Checkbox
@@ -727,89 +734,46 @@ const BlockedListPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={{
-                          padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": {
-                            color: "#0284c7",
-                          },
-                          "&.MuiCheckbox-indeterminate": {
-                            color: "#0284c7",
-                          },
-                        }}
+                        sx={checkboxSx} 
                       />
                     </TH>
                     <TH
-                      style={{
-                        width: 40,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                        background: "#ffffff",
-                      }}
+                      style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}
                     >
                       ID
                     </TH>
                     <TH
-                      style={{
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                        background: "#ffffff",
-                      }}
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
                     >
                       Name
                     </TH>
                     <TH
-                      style={{
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                        background: "#ffffff",
-                      }}
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
                     >
                       Match Mode
                     </TH>
                     <TH
-                      style={{
-                        textAlign: "left",
-                        paddingLeft: "16px",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                        background: "#ffffff",
-                      }}
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
                     >
                       Blocked List Number
                     </TH>
                     <TH
-                      style={{
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                        background: "#ffffff",
-                      }}
+                     style={{ position: "sticky", top: 0, zIndex: 10 }}
                     >
                       Direction
                     </TH>
                     <TH
-                      style={{
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                        background: "#ffffff",
-                      }}
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
                     >
                       Enable
                     </TH>
                     <TH
                       style={{
-                        width: 70,
+                       width: 70,
+                        borderRight: "none",
                         position: "sticky",
                         top: 0,
                         zIndex: 10,
-                        background: "#ffffff",
-                        borderRight: "none",
                       }}
                     >
                       Modify
@@ -837,6 +801,7 @@ const BlockedListPage = () => {
                     pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRows.length - 1;
                       const rowBg = isSelected
                         ? "#e0f2fe"
                         : idx % 2 === 1
@@ -862,41 +827,23 @@ const BlockedListPage = () => {
                         >
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              width: 36,
-                              borderLeft: "none",
-                              ...lastRowCellStyle,
-                              ...(idx === pagedRows.length - 1
-                                ? { borderBottomLeftRadius: 10 }
-                                : {}),
+                        ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <Checkbox
   size="small"
   checked={isSelected}
   onChange={() => handleToggleRow(realIdx)}
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-  }}
+  sx={checkboxSx}
 />
                           </td>
                           <td
                             style={{
                               ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
-                              fontSize: 11,
-                              color: C.mutedText,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {realIdx + 1}
@@ -904,17 +851,19 @@ const BlockedListPage = () => {
                           <td
                             style={{
                               ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
+                            ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                             
                             }}
                           >
                             <span
@@ -936,20 +885,20 @@ const BlockedListPage = () => {
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontFamily: "monospace",
-                              color: C.labelText,
-                              ...lastRowCellStyle,
+                             ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                             
                             }}
                           >
                             {row.blockedNumber}
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
+                             ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            
                             }}
                           >
                             <span
@@ -979,7 +928,7 @@ const BlockedListPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              ...lastRowCellStyle,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <span
@@ -1005,8 +954,7 @@ const BlockedListPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              borderRight: "none",
-                              ...lastRowCellStyle,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <div style={{ display: "flex", justifyContent: "center" }}>
@@ -1373,42 +1321,49 @@ const BlockedListPage = () => {
             gap: 12,
           }}
         >
-          <Btn
-            onClick={handleSave}
-            disabled={loading.save}
-            variant="default"
-            style={{
-              padding: "8px 28px",
-              fontSize: 13,
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-              color: "#fff",
-              border: "1px solid #5A6F8F",
-              boxShadow: "0 2px 8px #3E5475",
-            }}
-          >
-            {loading.save ? (
-              <CircularProgress
-                size={14}
-                style={{ color: "#fff", marginRight: 8 }}
-              />
-            ) : null}
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update Entry"
-                : "Create"}
-          </Btn>
+        <Btn
+  onClick={handleSave}
+  disabled={loading.save}
+  variant="primary"
+  style={{
+    height: 36,
+    padding: "0 24px",
+    fontSize: 13,
+
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
+>
+  {loading.save ? (
+    <CircularProgress
+      size={13}
+      style={{ color: "#fff", marginRight: 8 }}
+    />
+  ) : null}
+
+  {loading.save
+    ? "Saving..."
+    : editId != null
+      ? "Update Entry"
+      : "Create"}
+</Btn>
          <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
-  variant="outline"
+  variant="cancel"
   style={{
-    padding: "8px 28px",
+    height: 36,
+    padding: "0 24px",
     fontSize: 13,
+
     background: "#cbd5e1",
     color: "#374151",
     border: "1px solid #cbd5e1",
+
     boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
 >
