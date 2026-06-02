@@ -15,21 +15,19 @@ import { listMediaSettings, updateMediaSettings } from "../../../api/apiService"
 
 // ── Design System ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-
-  accent: "#2563eb",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
+pageBg: "#f8fafc",
+cardBg: "#ffffff",
+cardBorder: "#9CA3AF",
+labelText: "#3E5475",
+valueText: "#0f172a",
+mutedText: "#94a3b8",
+strongText: "#0f172a",
+accent: "#3E5475",
+amber: "#dc2626",
 };
+
+
+const CARD_RADIUS = 20;
 
 const SectionHeading = ({ title }) => (
   <div style={{ margin: "16px 0 24px 0", position: "relative" }}>

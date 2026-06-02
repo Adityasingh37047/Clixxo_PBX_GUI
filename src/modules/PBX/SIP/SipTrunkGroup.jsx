@@ -33,19 +33,18 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#0284c7",
-  primary: "#2563eb",
-  errorRed: "#dc2626",
+pageBg: "#f8fafc",
+cardBg: "#ffffff",
+cardBorder: "#9CA3AF",
+labelText: "#3E5475",
+valueText: "#0f172a",
+mutedText: "#94a3b8",
+strongText: "#0f172a",
+accent: "#3E5475",
+amber: "#dc2626",
 };
+
+const CARD_RADIUS = 20;
 
 const Btn = ({
   children,
@@ -58,10 +57,10 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
-    },
+      background: C.cardBg,
+color: C.valueText,
+border: "1px solid #9ca3af",
+},
     outline: {
       background: C.cardBg,
       color: C.labelText,
@@ -116,23 +115,38 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "12px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
+     background: "#F8FAFC",
+color: C.labelText,
+fontWeight: 700,
+fontSize: 11,
+padding: "9px 14px",
+textAlign: "center",
+borderBottom: `1px solid ${C.cardBorder}`,
+borderRight: `1px solid ${C.cardBorder}`,
+whiteSpace: "nowrap",
+textTransform: "uppercase",
+letterSpacing: "0.14em",
+...extra,
     }}
   >
     {children}
   </th>
 );
+const tdStyle = {
+padding: "7px 14px",
+fontSize: 13,
+color: C.valueText,
+textAlign: "center",
+borderBottom: `1px solid ${C.cardBorder}`,
+borderRight: `1px solid ${C.cardBorder}`,
+whiteSpace: "nowrap",
+};
+const checkboxSx = {
+padding: "1px",
+color: "#3E5475",
+"&.Mui-checked": { color: "#0284c7" },
+"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 const SipTrunkGroup = () => {
   const [formData, setFormData] = useState(SIP_TRUNK_GROUP_INITIAL_FORM);
   const [groups, setGroups] = useState([]);
@@ -549,24 +563,27 @@ const SipTrunkGroup = () => {
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 22,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+           background: "#ffffff",
+borderRadius: 10,
+overflow: "hidden",
+border: `1.5px solid ${C.cardBorder}`,
+boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "14px 18px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 8,
+            display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -673,17 +690,26 @@ const SipTrunkGroup = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div style={{overflowX: "auto",
+overflowY: "auto",
+flex: 1,}}>
             <table
               style={{
                 width: "100%",
-                borderCollapse: "collapse",
-                minWidth: 600,
+borderCollapse: "separate",
+borderSpacing: 0,
+tableLayout: "auto",
+minWidth: 900,
               }}
             >
               <thead>
                 <tr>
-                  <TH style={{ width: 36 }}>
+                  <TH style={{width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10, }}>
                     <Checkbox
                       size="small"
                       checked={
@@ -698,11 +724,7 @@ const SipTrunkGroup = () => {
                           : handleCheckAll
                       }
                       disabled={loading.delete}
-                      sx={{
-                        padding: "1px",
-                        color: "#64748b",
-                        "&.Mui-checked": { color: C.accent },
-                      }}
+                      sx={checkboxSx} 
                     />
                   </TH>
                   {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
@@ -710,7 +732,11 @@ const SipTrunkGroup = () => {
                   ).map((col) => (
                     <TH key={col.key}>{col.label}</TH>
                   ))}
-                  <TH style={{ width: 70 }}>Actions</TH>
+                  <TH style={{ width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,}}>Actions</TH>
                 </tr>
               </thead>
               <tbody>
@@ -741,6 +767,7 @@ const SipTrunkGroup = () => {
                   pagedGroups.map((item, idx) => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSel = selected.includes(realIdx);
+                    const isLastRow = idx === pagedGroups.length - 1;
                     const rowBg = isSel
                       ? "#f0f9ff"
                       : idx % 2 === 1
@@ -751,7 +778,6 @@ const SipTrunkGroup = () => {
                         key={realIdx}
                         style={{
                           background: rowBg,
-                          borderBottom: "1px solid #f1f5f9",
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -763,9 +789,9 @@ const SipTrunkGroup = () => {
                       >
                         <td
                           style={{
-                            textAlign: "center",
-                            padding: "10px 0",
-                            borderRight: "1px solid #f1f5f9",
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                           }}
                         >
                           <Checkbox
@@ -773,11 +799,7 @@ const SipTrunkGroup = () => {
                             checked={isSel}
                             onChange={() => handleSelectRow(realIdx)}
                             disabled={loading.delete}
-                            sx={{
-                              padding: "1px",
-                              color: "#64748b",
-                              "&.Mui-checked": { color: C.accent },
-                            }}
+                            sx={checkboxSx}
                           />
                         </td>
                         {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
@@ -789,11 +811,9 @@ const SipTrunkGroup = () => {
                             <td
                               key={col.key}
                               style={{
-                                textAlign: "center",
-                                padding: "10px 14px",
-                                fontSize: 13,
-                                color: C.valueText,
-                                borderRight: "1px solid #f1f5f9",
+                                ...tdStyle,
+                                background: rowBg,
+                                borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                               }}
                             >
                               {value !== undefined &&
@@ -804,7 +824,13 @@ const SipTrunkGroup = () => {
                             </td>
                           );
                         })}
-                        <td style={{ textAlign: "center", padding: "7px 8px" }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                          }}
+                        >
                           <EditDocumentIcon
                             className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
                             titleAccess="Edit"

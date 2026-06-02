@@ -22,22 +22,18 @@ import {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-
-  accent: "#2563eb",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
+pageBg: "#f8fafc",
+cardBg: "#ffffff",
+cardBorder: "#9CA3AF",
+labelText: "#3E5475",
+valueText: "#0f172a",
+mutedText: "#94a3b8",
+strongText: "#0f172a",
+accent: "#3E5475",
+amber: "#dc2626",
 };
 
+const CARD_RADIUS = 10; 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -48,10 +44,10 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
-    },
+      background: C.cardBg,
+color: C.valueText,
+border: "1px solid #9ca3af",
+},
     outline: {
       background: C.cardBg,
       color: C.labelText,
@@ -76,16 +72,17 @@ const Btn = ({
       disabled={disabled}
       style={{
         ...s,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
+        padding: "6px 14px",
+        borderRadius: 10,
+        height:30,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
+        gap: 6,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
         ...extraStyle,
@@ -105,23 +102,40 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f8fafc",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "12px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: "1px solid #f1f5f9",
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
+    background: "#F8FAFC",
+color: C.labelText,
+fontWeight: 700,
+fontSize: 11,
+padding: "9px 14px",
+textAlign: "center",
+borderBottom: `1px solid ${C.cardBorder}`,
+borderRight: `1px solid ${C.cardBorder}`,
+whiteSpace: "nowrap",
+textTransform: "uppercase",
+letterSpacing: "0.14em",
+...extra,
     }}
   >
     {children}
   </th>
 );
+
+const tdStyle = {
+padding: "7px 14px",
+fontSize: 13,
+color: C.valueText,
+textAlign: "center",
+borderBottom: `1px solid ${C.cardBorder}`,
+borderRight: `1px solid ${C.cardBorder}`,
+whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+padding: "1px",
+color: "#3E5475",
+"&.Mui-checked": { color: "#0284c7" },
+"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 
 const FieldRow = ({ label, children, required, align = "center" }) => (
   <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
@@ -489,26 +503,25 @@ const SpeedDialPage = () => {
 
         {/* Main Card */}
         <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
+          style={{ background: "#ffffff",
+borderRadius: 10,
+overflow: "hidden",
+border: `1.5px solid ${C.cardBorder}`,
+boxShadow: "0 10px 30px rgba(15,23,42,0.06)",}}
         >
           {/* Toolbar */}
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "10px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 8,
-            }}
+           style={{ display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS, }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             
@@ -595,24 +608,30 @@ const SpeedDialPage = () => {
               </Btn> */}
               
               <Btn
-                onClick={handleOpenAddModal}
-                disabled={loading.list}
-                variant="accent"
-                style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  onClick={handleOpenAddModal}
+  disabled={loading.list}
+  variant="primary"
+  style={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+
+    color: "#fff",
+
+    border: "1px solid #5A6F8F",
+
+    boxShadow: "0 2px 8px #3E5475",
   }}
-              >
-                + Add New
-              </Btn>
+>
+  + Add New
+</Btn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ 
+overflowX: "auto",
+overflowY: "auto",
+flex: 1,}}>
             {loading.list ? (
               <div
                 style={{
@@ -627,35 +646,40 @@ const SpeedDialPage = () => {
             ) : (
               <table
                 style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  tableLayout: "auto",
-                  minWidth: 900,
+                 width: "100%",
+borderCollapse: "separate",
+borderSpacing: 0,
+tableLayout: "auto",
+minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH style={{ width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10, }}>
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-}}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>ID</TH>
-                    <TH>
+                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Name
                     </TH>
-                    <TH>Speed Dial Number</TH>
-                    <TH>Destination</TH>
-                    <TH style={{ width: 60 }}>Modify</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Speed Dial Number</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Destination</TH>
+                    <TH style={{width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10}}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -679,6 +703,7 @@ const SpeedDialPage = () => {
                     pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRows.length - 1;
                       const rowBgColor = isSelected
                         ? "#e0f2fe"
                         : idx % 2 === 1
@@ -704,52 +729,38 @@ const SpeedDialPage = () => {
                         >
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle, background: rowBgColor,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <Checkbox
                               size="small"
                               checked={isSelected}
                               onChange={() => handleToggleRow(realIdx)}
-                         sx={{
-  padding: "1px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-}}
+                         sx={checkboxSx}
                             />
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 4px",
-                              fontSize: 11,
-                              color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle, background: rowBgColor,
+                               borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              padding: "7px 16px",
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle, background: rowBgColor,
+                               borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
-                              fontFamily: "monospace",
-                              color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                           ...tdStyle, background: rowBgColor,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <span
@@ -766,17 +777,14 @@ const SpeedDialPage = () => {
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
-                              color: C.labelText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle, background: rowBgColor,
+                               borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.destination}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "4px 8px" }}
+                            style={{ textAlign: "center", padding: "4px 8px" ,  ...tdStyle, background: rowBgColor, borderBottom: isLastRow ? "none" : tdStyle.borderBottom,}}
                           >
                            <EditDocumentIcon
   className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
@@ -943,39 +951,69 @@ const SpeedDialPage = () => {
             gap: 12,
           }}
         >
-          <Button
-            onClick={handleSave}
-            disabled={loading.save}
-            variant="contained"
-            style={{
-    padding: "8px 28px",
+      <Button
+  onClick={handleSave}
+  disabled={loading.save}
+  variant="contained"
+  style={{
+    height: 36,
+    padding: "0 24px",
     fontSize: 13,
+
     background:
       "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+
     color: "#fff",
     border: "1px solid #5A6F8F",
+
     boxShadow: "0 2px 8px #3E5475",
   }}
-            sx={{
-              background: "#1e2d42",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 120,
-              "&:hover": { background: "#0f172a" },
-            }}
-          >
-            {loading.save ? (
-              <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
-            ) : null}
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update Speed Dial"
-                : "Create Speed Dial"}
-          </Button>
+  sx={{
+    height: 36,
+    padding: "0 24px",
+
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+
+    color: "#fff",
+
+    fontWeight: 600,
+    fontSize: 13,
+
+    textTransform: "none",
+
+    minWidth: "unset",
+    width: "auto",
+
+    border: "1px solid #5A6F8F",
+
+    boxShadow: "0 2px 8px #3E5475",
+
+    "&:hover": {
+      background:
+        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
+    },
+
+    "&:disabled": {
+      background: "#94a3b8",
+      color: "#e2e8f0",
+      border: "1px solid #94a3b8",
+    },
+  }}
+>
+  {loading.save ? (
+    <CircularProgress
+      size={13}
+      sx={{ color: "#fff", mr: 1 }}
+    />
+  ) : null}
+
+  {loading.save
+    ? "Saving..."
+    : editId != null
+      ? "Update Speed Dial"
+      : "Create Speed Dial"}
+</Button>
           <Button
             onClick={handleCloseModal}
             disabled={loading.save}

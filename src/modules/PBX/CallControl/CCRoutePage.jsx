@@ -732,6 +732,7 @@ minWidth: 900,
                     pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRows.length - 1;
                       const rowBg = isSelected
                         ? "#e0f2fe"
                         : idx % 2 === 1
@@ -742,7 +743,6 @@ minWidth: 900,
                           key={row.id}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
@@ -756,7 +756,9 @@ minWidth: 900,
                         >
                           <td
                             style={{
-                              ...tdStyle, background: rowBg
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <Checkbox
@@ -768,35 +770,45 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                              ...tdStyle, background: rowBg
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                            ...tdStyle, background: rowBg
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {getCcIntervalLabel(row.ccIntervalTime)}
                           </td>
                           <td
                             style={{
-                             ...tdStyle, background: rowBg
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.through}
                           </td>
                           <td
                             style={{
-                              ...tdStyle, background: rowBg
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.recordKeepTime}
                           </td>
                           <td
                             style={{
-                             ...tdStyle, background: rowBg
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <span
@@ -809,7 +821,9 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                             ...tdStyle, background: rowBg
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             {row.memberExtensions?.length > 0 ? (
@@ -821,7 +835,13 @@ minWidth: 900,
                             )}
                           </td>
                           <td
-                            style={{...tdStyle, background: rowBg, textAlign: "center", padding: "7px 8px" }}
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            }}
                           >
                             <EditDocumentIcon
   className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
