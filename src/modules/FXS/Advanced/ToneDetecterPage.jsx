@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TONE_DETECTER_FIELDS,
   TONE_DETECTER_TABLE_COLUMNS,
   TONE_DETECTER_INITIAL_FORM,
-} from "../../../sections/advanced/constants/ToneDetecterConstants"; // Adjust path
+} from "../../../sections/advanced/constants/ToneDetecterConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  Button,
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -15,154 +15,41 @@ import {
   Select as MuiSelect,
   MenuItem,
   FormControl,
-  CircularProgress,
-  Checkbox,
+  Alert,
 } from "@mui/material";
+import {
+  C,
+  Btn,
+  TH,
+  muiSelectSx,
+  muiTextFieldSx,
+  numManipulateCardStyle,
+  numManipulateToolbarStyle,
+  numManipulatePaginationStyle,
+  tdStyle,
+  AdvancedBreadcrumb,
+  AdvancedPageShell,
+  FieldRow,
+  advancedModalPaperSx,
+  advancedModalTitleStyle,
+  advancedModalContentStyle,
+  advancedModalFooterStyle,
+  advancedFormPanelStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
 const LOCAL_STORAGE_KEY = "toneDetectorRules";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-
-  accent: "#2e2f31",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
+const DATA_COLUMNS = TONE_DETECTER_TABLE_COLUMNS.filter(
+  (c) => c.key !== "check" && c.key !== "modify",
+);
+const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
+const PCM_TRUNK_GROUP_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
+const PCM_TRUNK_GROUP_CHECKBOX_SX = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-}) => {
-  const variants = {
-    default: {
-      background: "#1e2d42",
-      color: "#fff",
-      border: "1px solid #162233",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#f3f4f6",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 220,
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 const ToneDetecterPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -170,35 +57,26 @@ const ToneDetecterPage = () => {
   const [rules, setRules] = useState([]);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
-  const [message, setMessage] = useState({ type: "", text: "" });
-
   const itemsPerPage = 20;
   const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
   const pagedRules = rules.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
-
   const [loading, setLoading] = useState({
     fetch: false,
     save: false,
     delete: false,
   });
   const [editIndex, setEditIndex] = useState(null);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
 
-  const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
+  // Load data from localStorage on mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -207,20 +85,23 @@ const ToneDetecterPage = () => {
         setRules(Array.isArray(parsed) ? parsed : []);
       }
     } catch (error) {
+      console.error("Error loading tone detector data:", error);
       setRules([]);
     }
   }, []);
 
+  // Save to localStorage whenever rules change
   useEffect(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(rules));
     } catch (error) {
-      console.error("Error saving data:", error);
+      console.error("Error saving tone detector data:", error);
     }
   }, [rules]);
 
   const handleOpenModal = (item = null, index = -1) => {
     if (item) {
+      // Editing existing item
       setFormData({
         ...item,
         index: item.index !== undefined ? String(item.index) : "0",
@@ -249,11 +130,15 @@ const ToneDetecterPage = () => {
       });
       setEditIndex(index);
     } else {
+      // Adding new item - set next index
       const nextIndex =
         rules.length > 0
           ? Math.max(...rules.map((r) => Number(r.index) || 0)) + 1
           : 0;
-      setFormData({ ...TONE_DETECTER_INITIAL_FORM, index: String(nextIndex) });
+      setFormData({
+        ...TONE_DETECTER_INITIAL_FORM,
+        index: String(nextIndex),
+      });
       setEditIndex(null);
     }
     setIsModalOpen(true);
@@ -262,12 +147,24 @@ const ToneDetecterPage = () => {
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSave = () => {
-    if (!formData.tone) return showMessage("error", "Tone is required.");
-    if (!formData.first_mid_frequency)
-      return showMessage("error", "The 1st Mid-frequency is required.");
-    if (!formData.duration_error)
-      return showMessage("error", "Duration Error is required.");
+    // Validation
+    if (!formData.tone) {
+      showToast("Tone is required.", "error");
+      return;
+    }
+    if (
+      formData.first_mid_frequency === "" ||
+      formData.first_mid_frequency == null
+    ) {
+      showToast("The 1st Mid-frequency is required.", "error");
+      return;
+    }
+    if (formData.duration_error === "" || formData.duration_error == null) {
+      showToast("Duration Error at ON/OFF State is required.", "error");
+      return;
+    }
 
+    // Normalize numeric fields
     const normalized = {
       ...formData,
       index: String(formData.index || "0"),
@@ -277,31 +174,36 @@ const ToneDetecterPage = () => {
       duration_off_state: String(formData.duration_off_state || "0"),
       period_count: String(formData.period_count || "0"),
       duration_error: String(formData.duration_error || "20"),
-      id: editIndex !== null ? rules[editIndex].id : Date.now(),
+      id: editIndex !== null ? rules[editIndex].id : Date.now(), // Use existing id or create new
     };
 
-    setLoading((p) => ({ ...p, save: true }));
+    setLoading((prev) => ({ ...prev, save: true }));
     try {
       if (editIndex !== null) {
+        // Update existing
         setRules((prev) =>
           prev.map((rule, idx) => (idx === editIndex ? normalized : rule)),
         );
-        showMessage("success", "Tone parameter updated successfully!");
+        showToast("Tone parameter updated successfully!");
       } else {
+        // Create new
         setRules((prev) => [...prev, normalized]);
-        showMessage("success", "Tone parameter created successfully!");
+        showToast("Tone parameter created successfully!");
       }
+
       handleCloseModal();
-    } catch (err) {
-      showMessage("error", "Failed to save.");
+    } catch (error) {
+      console.error("Error saving tone parameter:", error);
+      showToast(error.message || "Failed to save tone parameter", "error");
     } finally {
-      setLoading((p) => ({ ...p, save: false }));
+      setLoading((prev) => ({ ...prev, save: false }));
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === "tone") {
+      // When tone changes, update other fields based on tone type
       const toneDefaults = {
         "Dial Tone": {
           first_mid_frequency: "450",
@@ -344,18 +246,19 @@ const ToneDetecterPage = () => {
           duration_error: "20",
         },
       };
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        ...(toneDefaults[value] || {}),
-      }));
+
+      const defaults = toneDefaults[value] || {};
+      setFormData((prev) => ({ ...prev, [name]: value, ...defaults }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handlePageChange = (newPage) =>
+  const handlePageChange = (newPage) => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
+    setSelected([]);
+  };
+
   const handleSelectRow = (idx) => {
     const realIdx = (page - 1) * itemsPerPage + idx;
     setSelected((sel) =>
@@ -364,737 +267,465 @@ const ToneDetecterPage = () => {
         : [...sel, realIdx],
     );
   };
-  const handleCheckAll = () => setSelected(rules.map((_, idx) => idx));
+
+  const handleCheckAll = () => {
+    const allIndices = pagedRules.map(
+      (_, idx) => (page - 1) * itemsPerPage + idx,
+    );
+    setSelected(allIndices);
+  };
   const handleUncheckAll = () => setSelected([]);
   const handleInverse = () =>
     setSelected(
-      rules.map((_, idx) => idx).filter((i) => !selected.includes(i)),
+      pagedRules
+        .map((_, idx) => (page - 1) * itemsPerPage + idx)
+        .filter((i) => !selected.includes(i)),
     );
 
   const handleDelete = () => {
-    if (selected.length === 0)
-      return showMessage("error", "Please select items to delete");
-    if (!window.confirm(`Delete ${selected.length} item(s)?`)) return;
-    setLoading((p) => ({ ...p, delete: true }));
-    setRules((prev) => prev.filter((_, idx) => !selected.includes(idx)));
-    setSelected([]);
-    showMessage("success", "Deleted successfully");
-    setLoading((p) => ({ ...p, delete: false }));
+    if (selected.length === 0) {
+      showToast("Please select at least one item to delete.", "error");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${selected.length} selected item(s)?`,
+    );
+    if (!confirmed) return;
+
+    setLoading((prev) => ({ ...prev, delete: true }));
+    try {
+      setRules((prev) => prev.filter((_, idx) => !selected.includes(idx)));
+      setSelected([]);
+      showToast(`${selected.length} item(s) deleted successfully`);
+    } catch (error) {
+      console.error("Error deleting selected items:", error);
+      showToast(error.message || "Failed to delete selected items", "error");
+    } finally {
+      setLoading((prev) => ({ ...prev, delete: false }));
+    }
   };
 
   const handleClearAll = () => {
-    if (rules.length === 0) return showMessage("error", "No data to clear");
-    if (!window.confirm("Delete ALL tone parameters?")) return;
-    setLoading((p) => ({ ...p, delete: true }));
-    setRules([]);
-    setSelected([]);
-    setPage(1);
-    showMessage("success", "Cleared all successfully");
-    setLoading((p) => ({ ...p, delete: false }));
+    if (rules.length === 0) {
+      showToast("No data to clear", "error");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        "Are you sure you want to delete ALL tone parameters? This action cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    setLoading((prev) => ({ ...prev, delete: true }));
+    try {
+      setRules([]);
+      setSelected([]);
+      setPage(1);
+      showToast(`All ${rules.length} item(s) deleted successfully`);
+    } catch (error) {
+      console.error("Error clearing all items:", error);
+      showToast(error.message || "Failed to clear all items", "error");
+    } finally {
+      setLoading((prev) => ({ ...prev, delete: false }));
+    }
   };
 
   const handleRefresh = () => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-    setRules(stored ? JSON.parse(stored) : []);
-    showMessage("success", "Data Refreshed");
-  };
-
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const percent = Math.max(
-      0,
-      Math.min(1, (e.clientX - rect.left) / rect.width),
-    );
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setRules(Array.isArray(parsed) ? parsed : []);
+      } else {
+        setRules([]);
       }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [rules, page]);
+    } catch (error) {
+      console.error("Error refreshing tone detector data:", error);
+    }
+  };
 
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
+  const pagedSelectedCount = pagedRules.filter((_, idx) =>
+    selected.includes((page - 1) * itemsPerPage + idx),
+  ).length;
+  const allPagedChecked =
+    pagedRules.length > 0 && pagedSelectedCount === pagedRules.length;
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Banner */}
-        {message.text && (
-          <div
-            style={{
-              background: message.type === "error" ? "#fef2f2" : "#f0fdf4",
-              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : "#4ade80"}`,
-              color: message.type === "error" ? "#b91c1c" : "#166534",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 12,
-              fontSize: 13,
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            <span>{message.text}</span>
-            <span
-              onClick={() => setMessage({ type: "", text: "" })}
-              style={{ cursor: "pointer", fontSize: 16 }}
-            >
-              ✕
-            </span>
-          </div>
-        )}
-
-        {/* Breadcrumb */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+    <AdvancedPageShell fullWidth>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Advanced &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              Tone Detector
-            </span>
-          </div>
-        </div>
-
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          {rules.length === 0 ? (
+          {toast.msg}
+        </Alert>
+      )}
+      <AdvancedBreadcrumb current="Tone Detector" />
+      <div style={numManipulateCardStyle}>
+          <div style={numManipulateToolbarStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
             <div
               style={{
-                padding: "60px 20px",
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
+                gap: 8,
+                flexWrap: "wrap",
               }}
             >
-              <div
-                style={{ fontSize: 14, color: C.mutedText, marginBottom: 16 }}
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete || rules.length === 0}
+                style={{ height: 30 }}
               >
-                No available tone detector parameter!
-              </div>
-             <Btn
-  onClick={() => handleOpenModal()}
-  variant="accent"
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  + Add New
-</Btn>
+                Inverse
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={loading.delete || selected.length === 0}
+                style={{ height: 30 }}
+              >
+                {loading.delete ? "Deleting..." : "Delete"}
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={loading.delete || rules.length === 0}
+                style={{ height: 30 }}
+              >
+                {loading.delete ? "Clearing..." : "Clear All"}
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                disabled={loading.save}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+              >
+                {loading.save ? "Saving..." : "+ Add New"}
+              </Btn>
             </div>
-          ) : (
-            <>
-              {/* Toolbar */}
+          </div>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
+            {rules.length === 0 ? (
               <div
                 style={{
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 14px",
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  background: "#DCE6F2",
-                  flexWrap: "wrap",
-                  gap: 8,
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 20,
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span
-                    style={{
-                      background: "#f1f5f9",
-                      border: `0.5px solid ${C.cardBorder}`,
-                      color: "#475569",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      padding: "3px 12px",
-                      borderRadius: 20,
-                    }}
-                  >
-                    Page {page} · {rules.length} items
-                  </span>
-                  {selected.length > 0 && (
-                    <span
-                      style={{
-                        background: "#e0f2fe",
-                        color: C.accent,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: "3px 10px",
-                        borderRadius: 20,
-                        border: `0.5px solid ${C.accent}`,
-                      }}
-                    >
-                      {selected.length} selected
-                    </span>
-                  )}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Btn
-                    onClick={handleCheckAll}
-                    variant="outline"
-                    style={{ fontSize: 10 }}
-                  >
-                    Check All
-                  </Btn>
-                  <Btn
-                    onClick={handleUncheckAll}
-                    variant="outline"
-                    style={{ fontSize: 10 }}
-                  >
-                    Uncheck All
-                  </Btn>
-                  <Btn
-                    onClick={handleInverse}
-                    variant="outline"
-                    style={{ fontSize: 10 }}
-                  >
-                    Inverse
-                  </Btn>
-                  <Btn
-                    onClick={handleDelete}
-                    variant="danger"
-                    disabled={selected.length === 0}
-                  >
-                    Delete
-                  </Btn>
-                  <Btn
-                    onClick={handleClearAll}
-                    variant="danger"
-                    disabled={rules.length === 0}
-                  >
-                    Clear All
-                  </Btn>
-                  <Btn onClick={handleRefresh} variant="outline">
-                    Refresh
-                  </Btn>
-                  <Btn onClick={() => handleOpenModal()} variant="accent">
-                    + Add New
-                  </Btn>
-                </div>
-              </div>
-
-              {/* Table */}
-              <div
-                ref={tableScrollRef}
-                onScroll={handleTableScroll}
-                style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  maxHeight: 400,
-                  scrollbarWidth: "none",
-                }}
-              >
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    tableLayout: "auto",
-                    minWidth: 1400,
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <TH style={{ width: 50 }}>Edit</TH>
-                      <TH style={{ width: 50 }}>Select</TH>
-                      {TONE_DETECTER_TABLE_COLUMNS.map((c) => (
-                        <TH key={c.key}>{c.label}</TH>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagedRules.map((item, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      return (
-                        <tr
-                          key={realIdx}
-                          style={{
-                            background: isSelected
-                              ? "#f0f9ff"
-                              : idx % 2 === 1
-                                ? "#f8fafc"
-                                : "#fff",
-                            borderBottom: "0.5px solid #9ca3af",
-                          }}
-                        >
-                          <td
-                            style={{
-                              textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
-                            }}
-                          >
-                            <EditDocumentIcon
-                              style={{
-                                cursor: "pointer",
-                                color: "#0284c7",
-                                fontSize: 18,
-                              }}
-                              onClick={() => handleOpenModal(item, realIdx)}
-                            />
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
-                            }}
-                          >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleSelectRow(idx)}
-                              sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
-                            />
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
-                            }}
-                          >
-                            {item.index}
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {item.tone}
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
-                            }}
-                          >
-                            {item.first_mid_frequency}
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
-                            }}
-                          >
-                            {item.second_mid_frequency}
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
-                            }}
-                          >
-                            {item.duration_on_state}
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
-                            }}
-                          >
-                            {item.duration_off_state}
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "center",
-                              fontSize: 12,
-                              borderRight: "0.5px solid #edf2f7",
-                            }}
-                          >
-                            {item.period_count}
-                          </td>
-                          <td style={{ textAlign: "center", fontSize: 12 }}>
-                            {item.duration_error}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Scrollbar */}
-              {showCustomScrollbar && (
                 <div
                   style={{
-                    width: "100%",
-                    background: "#f4f6fa",
-                    display: "flex",
-                    alignItems: "center",
-                    height: 24,
-                    padding: "0 4px",
-                    borderTop: `1px solid ${C.cardBorder}`,
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
                   }}
                 >
-                  <div
-                    style={{
-                      width: 18,
-                      height: 18,
-                      background: "#e3e7ef",
-                      border: "1px solid #bbb",
-                      borderRadius: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 16,
-                      color: "#888",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleArrowClick("left")}
-                  >
-                    &#9664;
-                  </div>
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 12,
-                      background: "#e3e7ef",
-                      borderRadius: 8,
-                      position: "relative",
-                      margin: "0 4px",
-                      overflow: "hidden",
-                    }}
-                    onClick={handleScrollbarDrag}
-                  >
-                    <div
-                      style={{
-                        position: "absolute",
-                        height: 12,
-                        background: "#888",
-                        borderRadius: 8,
-                        top: 0,
-                        width: thumbWidth,
-                        left: thumbLeft,
-                      }}
-                      draggable
-                      onDrag={handleScrollbarDrag}
-                    />
-                  </div>
-                  <div
-                    style={{
-                      width: 18,
-                      height: 18,
-                      background: "#e3e7ef",
-                      border: "1px solid #bbb",
-                      borderRadius: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 16,
-                      color: "#888",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleArrowClick("right")}
-                  >
-                    &#9654;
-                  </div>
+                  No available tone detector parameter!
                 </div>
-              )}
-
-              {/* Footer Pagination */}
-              <div
+                <Btn
+                  variant="cancel"
+                  onClick={() => handleOpenModal()}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New
+                </Btn>
+              </div>
+            ) : (
+              <table
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 14px",
-                  borderTop: `1px solid ${C.cardBorder}`,
-                  background: "#f8fafc",
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                 }}
               >
-                <span style={{ fontSize: 11, color: C.mutedText }}>
-                  Showing {pagedRules.length} items on page {page}
-                </span>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <Btn
-                    onClick={() => handlePageChange(1)}
-                    disabled={page === 1}
-                    variant="outline"
-                  >
-                    First
-                  </Btn>
-                  <Btn
-                    onClick={() => handlePageChange(page - 1)}
-                    disabled={page === 1}
-                    variant="outline"
-                  >
-                    Prev
-                  </Btn>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: C.accent,
-                      background: "#e0f2fe",
-                      padding: "5px 14px",
-                      borderRadius: 6,
-                      border: `0.5px solid ${C.accent}`,
-                    }}
-                  >
-                    {page} / {totalPages}
-                  </span>
-                  <Btn
-                    onClick={() => handlePageChange(page + 1)}
-                    disabled={page === totalPages}
-                    variant="outline"
-                  >
-                    Next
-                  </Btn>
-                  <Btn
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={page === totalPages}
-                    variant="outline"
-                  >
-                    Last
-                  </Btn>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+                <thead>
+                  <tr>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                      }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={allPagedChecked}
+                        indeterminate={pagedSelectedCount > 0 && !allPagedChecked}
+                        onChange={(e) => {
+                          if (e.target.checked) handleCheckAll();
+                          else handleUncheckAll();
+                        }}
+                        sx={PCM_TRUNK_GROUP_CHECKBOX_SX}
+                      />
+                    </TH>
+                    {DATA_COLUMNS.map((col) => (
+                      <TH key={col.key} style={PCM_TRUNK_GROUP_TH_GAP}>
+                        {col.label}
+                      </TH>
+                    ))}
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        ...PCM_TRUNK_GROUP_TH_GAP,
+                      }}
+                    >
+                      Modify
+                    </TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedRules.map((item, idx) => {
+                  const realIdx = (page - 1) * itemsPerPage + idx;
+                  const isSelected = selected.includes(realIdx);
+                  const isLastRow = idx === pagedRules.length - 1;
+                  const rowBg = isSelected
+                    ? "#f0f9ff"
+                    : idx % 2 === 1
+                      ? "#f8fafc"
+                      : "#ffffff";
+                  const lastRowCellStyle = isLastRow
+                    ? { borderBottom: `1px solid ${C.cardBorder}` }
+                    : {};
 
-      {/* Modal */}
+                    return (
+                    <tr key={realIdx} style={{ background: rowBg }}>
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...PCM_TRUNK_GROUP_TD_GAP,
+                          background: rowBg,
+                          borderLeft: "none",
+                          width: 36,
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={isSelected}
+                          onChange={() => handleSelectRow(idx)}
+                          sx={PCM_TRUNK_GROUP_CHECKBOX_SX}
+                        />
+                      </td>
+                      {DATA_COLUMNS.map((col) => (
+                        <td
+                          key={col.key}
+                          style={{
+                            ...tdStyle,
+                            ...PCM_TRUNK_GROUP_TD_GAP,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {item[col.key]}
+                        </td>
+                      ))}
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...PCM_TRUNK_GROUP_TD_GAP,
+                          background: rowBg,
+                          borderRight: "none",
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <EditDocumentIcon
+                            titleAccess="Edit"
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
+                            onClick={() => handleOpenModal(item, realIdx)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+          {rules.length > 0 && (
+            <div style={numManipulatePaginationStyle}>
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRules.length} record
+                {pagedRules.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `1px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
+          )}
+      </div>
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 560, maxWidth: "95vw", borderRadius: 2 } }}
+        className="z-50"
+        PaperProps={{ sx: advancedModalPaperSx }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
+        <DialogTitle style={advancedModalTitleStyle}>
           {editIndex !== null ? "Edit Tone Parameters" : "Add Tone Parameters"}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#fff",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
-              }}
-            >
-              <SectionHeading title="General Settings" />
-              {TONE_DETECTER_FIELDS.map((f) => (
-                <FieldRow
-                  key={f.name}
-                  label={f.label}
-                  required={
-                    f.name === "tone" || f.name === "first_mid_frequency"
-                  }
-                >
-                  {f.type === "select" ? (
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        name={f.name}
-                        value={formData[f.name] || ""}
-                        onChange={handleInputChange}
-                        sx={{ fontSize: 13 }}
-                      >
-                        {f.options.map((o) => (
-                          <MenuItem
-                            // key={opt.value}
-                            value={o.value}
-                            sx={{ fontSize: 13 }}
-                          >
-                            {o.label}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  ) : (
-                    <TextField
-                      name={f.name}
-                      value={formData[f.name] || ""}
-                      onChange={handleInputChange}
-                      fullWidth
-                      size="small"
-                      // Number type enable kiya hai taaki increaser/decreaser arrows aa jayein
-                      type={f.name === "tone" ? "text" : "number"}
-                      inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px", step: "1" },
-                        // CSS to ensure spinners (up/down arrows) are always visible
-                        "&::-webkit-outer-spin-button, &::-webkit-inner-spin-button":
-                          {
-                            display: "block",
-                            opacity: 1,
-                            cursor: "pointer",
-                          },
-                        // For Firefox support
-                        MozAppearance: "textfield",
-                      }}
-                    />
-                  )}
-                </FieldRow>
-              ))}
-            </div>
+        <DialogContent style={advancedModalContentStyle}>
+          <div style={advancedFormPanelStyle}>
+            {TONE_DETECTER_FIELDS.map((field) => (
+              <FieldRow
+                key={field.name}
+                label={field.label}
+                labelWidth={field.name === "duration_error" ? 220 : 180}
+              >
+                {field.type === "select" ? (
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={formData[field.name] || ""}
+                      onChange={(e) =>
+                        handleInputChange({
+                          target: { name: field.name, value: e.target.value },
+                        })
+                      }
+                      sx={muiSelectSx}
+                    >
+                      {field.options.map((opt) => (
+                        <MenuItem
+                          key={opt.value}
+                          value={opt.value}
+                          sx={{ fontSize: 13 }}
+                        >
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                ) : (
+                  <TextField
+                    type={field.type || "text"}
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={handleInputChange}
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    sx={muiTextFieldSx}
+                    inputProps={{
+                      style: { fontSize: 13, padding: "6px 8px" },
+                    }}
+                  />
+                )}
+              </FieldRow>
+            ))}
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
-         <Button
-  onClick={handleSave}
-  disabled={loading.save}
-  variant="contained"
-  sx={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-
-    height: 36,
-    padding: "0 28px",
-    borderRadius: "6px",
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-      opacity: 0.85,
-    },
-
-    "&:disabled": {
-      background: "#94a3b8",
-      color: "#e2e8f0",
-      border: "1px solid #94a3b8",
-    },
-  }}
->
-  {loading.save ? "Saving..." : "Save"}
-</Button>
-          <Button
-  onClick={handleCloseModal}
-  variant="outlined"
-  sx={{
-    height: 36,
-    padding: "0 18px",
-    fontSize: 13,
-    textTransform: "none",
-
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-
-    "&:hover": {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-    },
-
-    "&:disabled": {
-      background: "#e2e8f0",
-      color: "#94a3b8",
-      border: "1px solid #e2e8f0",
-    },
-  }}
->
-  Cancel
-</Button>
+        <DialogActions style={advancedModalFooterStyle}>
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading.save}
+            style={{ minWidth: 100, height: 34, fontSize: 13 }}
+          >
+            Save
+          </Btn>
+          <Btn
+            variant="cancel"
+            onClick={handleCloseModal}
+            style={{ minWidth: 100, height: 34 }}
+          >
+            Close
+          </Btn>
         </DialogActions>
       </Dialog>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

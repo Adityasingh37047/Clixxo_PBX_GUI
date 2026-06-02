@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { RINGING_SCHEME_INITIAL_FORM } from "../../../sections/advanced/constants/RingingSchemeConstants";
 import {
+  Alert,
   TextField,
   Select as MuiSelect,
   MenuItem,
@@ -8,21 +9,53 @@ import {
 } from "@mui/material";
 import {
   Btn,
+  C,
   muiSelectSx,
   muiTextFieldSx,
-  numManipulateCardStyle,
+  AdvancedPageShell,
+  AdvancedFormCard,
   AdvancedBreadcrumb,
   FieldRow,
-  SectionHeading,
   advancedFormPanelStyle,
-  advancedFormActionsStyle,
-  advancedPageWrapStyle,
-  advancedPageInnerStyle,
+  advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
+
+const RINGING_SCHEME_SECTION_HEADING_COLOR = "#30415A";
+
+const RingingSchemeSectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: RINGING_SCHEME_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 const RingingSchemePage = () => {
   const [formData, setFormData] = useState(RINGING_SCHEME_INITIAL_FORM);
   const [changeTime, setChangeTime] = useState(0);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const alert = (msg) => {
+    const isSuccess = /successfully/i.test(String(msg));
+    showToast(msg, isSuccess ? "success" : "error");
+  };
 
   // --- API / FUNCTIONALITY (UNTOUCHED) ---
   const handleInputChange = (field, value) => {
@@ -304,13 +337,17 @@ const RingingSchemePage = () => {
     const isCallerId = formData.ringScheme === "0";
     return (
       <div key={n} style={{ marginBottom: 24 }}>
-        <SectionHeading title={`Scheme ${n}`} />
+        <RingingSchemeSectionHeading title={`Scheme ${n}`} />
         <div
           style={{
             ...advancedFormPanelStyle,
+            border: "none",
+            boxShadow: "none",
+            background: "transparent",
+            padding: 0,
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "16px 40px",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: "16px 24px",
           }}
         >
           <FieldRow label={isCallerId ? "CallerID" : "Alert-Info Value"}>
@@ -360,14 +397,58 @@ const RingingSchemePage = () => {
   };
 
   return (
-    <div style={advancedPageWrapStyle}>
-      <div style={advancedPageInnerStyle}>
-        <AdvancedBreadcrumb current="Ringing Scheme" />
-
-        <div style={numManipulateCardStyle}>
-          <div style={{ padding: 24 }}>
-            <SectionHeading title="General Configuration" />
-            <div style={{ ...advancedFormPanelStyle, marginBottom: 24 }}>
+    <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+      <AdvancedBreadcrumb current="Ringing Scheme" />
+      <AdvancedFormCard
+        title="Ringing Scheme"
+        fullWidthContent
+        footer={
+          <>
+            <Btn
+              variant="primary"
+              onClick={handleSave}
+              style={advancedFormBtnStyle}
+            >
+              Save
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={handleReset}
+              style={advancedFormBtnStyle}
+            >
+              Reset
+            </Btn>
+          </>
+        }
+      >
+          <div>
+            <div
+              style={{
+                ...advancedFormPanelStyle,
+                border: "none",
+                boxShadow: "none",
+                background: "transparent",
+                padding: 0,
+                marginBottom: 24,
+              }}
+            >
               <FieldRow label="Matching Scheme">
                 <FormControl size="small" sx={{ width: "100%" }}>
                   <MuiSelect
@@ -388,26 +469,8 @@ const RingingSchemePage = () => {
 
             {[1, 2, 3, 4].map((n) => renderSchemeContent(n))}
           </div>
-
-          <div style={advancedFormActionsStyle}>
-            <Btn
-              variant="primary"
-              onClick={handleSave}
-              style={{ height: 33, minWidth: 100 }}
-            >
-              Save
-            </Btn>
-            <Btn
-              variant="cancel"
-              onClick={handleReset}
-              style={{ height: 33, minWidth: 100 }}
-            >
-              Reset
-            </Btn>
-          </div>
-        </div>
-      </div>
-    </div>
+      </AdvancedFormCard>
+    </AdvancedPageShell>
   );
 };
 

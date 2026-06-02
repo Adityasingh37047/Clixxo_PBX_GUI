@@ -18,7 +18,8 @@ import {
 export { C, Btn, TH, tdStyle, checkboxSx, muiSelectSx, muiTextFieldSx };
 
 export const FXS_CARD_RADIUS = 10;
-export const FXS_HEADER_RADIUS = 20;
+/** System Tools use 10px on card header corners (same as card) */
+export const FXS_HEADER_RADIUS = 10;
 
 /** @deprecated Use FXS_CARD_RADIUS — kept for imports that use CARD_RADIUS */
 export const CARD_RADIUS = FXS_CARD_RADIUS;

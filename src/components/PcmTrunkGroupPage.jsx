@@ -969,6 +969,8 @@ const PcmTrunkGroupPage = () => {
                 minHeight: 240,
                 padding: 24,
                 textAlign: "center",
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
               }}
             >
               <div
@@ -976,10 +978,19 @@ const PcmTrunkGroupPage = () => {
                   color: "#3E5475",
                   fontSize: 13,
                   fontWeight: 600,
+                  marginBottom: 16,
                 }}
               >
                 No PCM Trunk Groups found.
               </div>
+              <Btn
+                variant="cancel"
+                onClick={() => handleOpenModal()}
+                disabled={isLoadingSpans}
+                style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+              >
+                + Add New
+              </Btn>
             </div>
           ) : (
             <>

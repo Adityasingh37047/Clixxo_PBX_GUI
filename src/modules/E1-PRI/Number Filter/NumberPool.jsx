@@ -287,12 +287,20 @@ const NumberPool = () => {
 
   const handleSave = async () => {
     // Final validation before saving
+    if (!form.numberRangeStart || !form.numberRangeEnd) {
+      const msg = "Please fill the range.";
+      setValidationError(msg);
+      showToast(msg, "error");
+      return;
+    }
+
     const error = validateNumberRange(
       form.numberRangeStart,
       form.numberRangeEnd,
     );
     if (error) {
       setValidationError(error);
+      showToast(error, "error");
       return;
     }
 
@@ -308,12 +316,18 @@ const NumberPool = () => {
 
     try {
       setLoading(true);
+      const isEdit =
+        editIndex !== null && rows[editIndex] && Boolean(rows[editIndex].id);
+      let didUpdate = false;
+
       if (editIndex !== null && rows[editIndex]?.id) {
         await updateNumberPool(rows[editIndex].id, apiData);
+        didUpdate = Boolean(isEdit);
       } else {
         await createNumberPool(apiData);
       }
       await refreshNumberPoolWithRetry();
+      showToast(didUpdate ? "Updated successfully" : "Saved successfully");
       closeModal();
     } catch (e) {
       console.error("Save Number Pool failed:", e);
@@ -911,11 +925,11 @@ const NumberPool = () => {
               </div>
             </div>
 
-            {validationError && (
+            {/* {validationError && (
               <Alert severity="error" sx={{ fontSize: 12, py: 0, mt: 1 }}>
                 {validationError}
               </Alert>
-            )}
+            )} */}
           </div>
         </DialogContent>
         <DialogActions

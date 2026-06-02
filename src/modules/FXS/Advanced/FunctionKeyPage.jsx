@@ -3,35 +3,60 @@ import {
   FUNCTION_KEY_FIELDS,
   getInitialFormState,
 } from "../../../sections/advanced/constants/FunctionKeyConstants";
+import { Alert, Checkbox, TextField } from "@mui/material";
 import {
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
-  Checkbox,
-} from "@mui/material";
-import {
-  C,
   Btn,
+  C,
   checkboxSx,
-  muiSelectSx,
   muiTextFieldSx,
-  numManipulateCardStyle,
   AdvancedBreadcrumb,
-  SectionHeading,
-  advancedFormPanelStyle,
-  advancedFormActionsStyle,
-  advancedPageWrapStyle,
-  advancedPageInnerStyle,
+  AdvancedPageShell,
+  AdvancedFormCard,
+  advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
+
+const labelCellStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+  verticalAlign: "middle",
+};
+
+const FUNCTION_KEY_SECTION_HEADING_COLOR = "#30415A";
+
+const FunctionKeySectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: FUNCTION_KEY_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 const FunctionKeyPage = () => {
   const [formData, setFormData] = useState(getInitialFormState());
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [toast, setToast] = useState({ msg: "", type: "success" });
 
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const alert = (msg) => {
+    const isSuccess = /successfully/i.test(String(msg));
+    showToast(msg, isSuccess ? "success" : "error");
   };
 
   const handleEnableChange = (field) => {
@@ -41,9 +66,10 @@ const FunctionKeyPage = () => {
       newData[field.enableKey] = enabled;
 
       if (!enabled) {
-        // Keeps value, but disables fields (handled in render)
+        // When disabled, mode should also be disabled (but keep value)
+        // Function key field will be disabled
       } else if (prev[field.modeKey] === "0") {
-        // If enabled and mode is Default, reset to default value
+        // If enabled and mode is Default, set default value
         newData[field.functionKeyKey] = field.defaultValue;
       }
       return newData;
@@ -56,9 +82,10 @@ const FunctionKeyPage = () => {
       newData[field.modeKey] = value;
 
       if (value === "0") {
-        // Default mode: reset to default value
+        // Default mode: set to default value (input will be disabled)
         newData[field.functionKeyKey] = field.defaultValue;
       }
+      // If User-defined, input will be enabled and user can edit
       return newData;
     });
   };
@@ -101,15 +128,15 @@ const FunctionKeyPage = () => {
       if (mode === "1" && !pattern.test(functionKey)) {
         const errorMsg = field.isReboot
           ? `Please input the function key for '${field.name}' in the right format, like *#88921532*#`
-          : `Please input the function key for '${field.name}' in the right format, like ${field.defaultValue}`;
-        showMessage("error", errorMsg);
+          : `Please input the function key for '${field.name}', in the right format, like ${field.defaultValue}`;
+        alert(errorMsg);
         document.getElementById(field.functionKeyKey)?.focus();
         return false;
       }
 
       // Check for duplicates
       if (functionKey && funkeyArr.includes(functionKey)) {
-        showMessage("error", `Function key repeated for '${field.name}'!`);
+        alert("Function key repeated!");
         document.getElementById(field.functionKeyKey)?.focus();
         return false;
       }
@@ -123,8 +150,12 @@ const FunctionKeyPage = () => {
 
   const handleSave = () => {
     if (validateForm()) {
-      showMessage("success", "Settings saved successfully!");
+      alert("Settings saved successfully!");
     }
+  };
+
+  const handleReset = () => {
+    setFormData(getInitialFormState());
   };
 
   const groupedFields = FUNCTION_KEY_FIELDS.reduce((acc, field) => {
@@ -135,234 +166,168 @@ const FunctionKeyPage = () => {
     return acc;
   }, {});
 
+  const selectStyle = (enabled) => ({
+    height: 32,
+    width: "100%",
+    maxWidth: 130,
+    fontSize: 13,
+    borderRadius: 4,
+    border: `1px solid ${C.cardBorder}`,
+    backgroundColor: enabled ? "#fff" : "#f8fafc",
+    color: enabled ? C.valueText : C.mutedText,
+    padding: "0 8px",
+    boxSizing: "border-box",
+  });
+
   return (
-    <div style={advancedPageWrapStyle}>
-      <div style={advancedPageInnerStyle}>
-        {message.text && (
-          <div
-            style={{
-              background:
-                message.type === "error"
-                  ? "#fef2f2"
-                  : message.type === "success"
-                    ? "#f0fdf4"
-                    : "#eff6ff",
-              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
-              color:
-                message.type === "error"
-                  ? "#b91c1c"
-                  : message.type === "success"
-                    ? "#166534"
-                    : "#1e40af",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 12,
-              fontSize: 13,
-              display: "flex",
-              justifyContent: "space-between",
-            }}
+    <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+      <AdvancedBreadcrumb current="Function Key" />
+      <AdvancedFormCard
+        title="Function Key"
+        fullWidthContent
+        footer={
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            style={advancedFormBtnStyle}
           >
-            <span>{message.text}</span>
-            <span
-              onClick={() => setMessage({ type: "", text: "" })}
-              style={{ cursor: "pointer", fontSize: 16 }}
-            >
-              ✕
-            </span>
-          </div>
-        )}
+            Save
+          </Btn>
+        }
+      >
+          <div style={{ width: "100%", maxWidth: 700, margin: "0 auto" }}>
+            <div style={{ width: "100%" }}>
+              <table
+                style={{ tableLayout: "fixed", width: "100%" }}
+              >
+                <colgroup>
+                  <col style={{ width: "50%" }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "19%" }} />
+                  <col style={{ width: "19%" }} />
+                </colgroup>
+                <tbody>
+                  {/* Table Headers */}
+                  <tr>
+                    <td style={{ ...labelCellStyle, paddingLeft: 0 }}>
+                      Function
+                    </td>
+                    <td style={{ ...labelCellStyle, textAlign: "center" }}>
+                      Enable
+                    </td>
+                    <td style={labelCellStyle}>Function Key</td>
+                    <td style={labelCellStyle}>Mode</td>
+                  </tr>
+                  <tr>
+                    <td colSpan={4} style={{ height: "8px" }}></td>
+                  </tr>
 
-        <AdvancedBreadcrumb current="Function Key" />
+                  {/* Sections */}
+                  {Object.entries(groupedFields).map(
+                    ([sectionName, fields]) => (
+                      <React.Fragment key={sectionName}>
+                        {/* Section Header */}
+                        <tr>
+                          <td colSpan={4} style={{ padding: "12px 0 4px" }}>
+                            <FunctionKeySectionHeading title={sectionName} />
+                          </td>
+                        </tr>
 
-        <div style={numManipulateCardStyle}>
-          <div style={{ padding: 24 }}>
-            {Object.entries(groupedFields).map(
-              ([sectionName, fields], sIdx) => (
-                <div
-                  key={sectionName}
-                  style={{
-                    marginBottom:
-                      sIdx === Object.entries(groupedFields).length - 1
-                        ? 0
-                        : 32,
-                  }}
-                >
-                  <SectionHeading title={sectionName} />
+                        {/* Fields */}
+                        {fields.map((field) => {
+                          const enabled = formData[field.enableKey];
+                          const mode = formData[field.modeKey];
+                          const functionKey = formData[field.functionKeyKey];
+                          const isDefaultMode = mode === "0";
+                          const maxLength = field.isReboot ? 12 : 7;
 
-                  <div style={advancedFormPanelStyle}>
-                    {/* Pseudo Table Header for visual alignment */}
-                    {sIdx === 0 && (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          borderBottom: `1px solid ${C.cardBorder}`,
-                          paddingBottom: 8,
-                          marginBottom: 8,
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 280,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: C.mutedText,
-                          }}
-                        >
-                          FUNCTION
-                        </div>
-                        <div
-                          style={{
-                            width: 80,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: C.mutedText,
-                            textAlign: "center",
-                          }}
-                        >
-                          ENABLE
-                        </div>
-                        <div
-                          style={{
-                            width: 160,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: C.mutedText,
-                            paddingLeft: 16,
-                          }}
-                        >
-                          FUNCTION KEY
-                        </div>
-                        <div
-                          style={{
-                            flex: 1,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: C.mutedText,
-                          }}
-                        >
-                          MODE
-                        </div>
-                      </div>
-                    )}
-
-                    {fields.map((field) => {
-                      const enabled = formData[field.enableKey];
-                      const mode = formData[field.modeKey];
-                      const functionKey = formData[field.functionKeyKey];
-                      const isDefaultMode = mode === "0";
-                      const maxLength = field.isReboot ? 12 : 7;
-
-                      return (
-                        <div
-                          key={field.id}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            padding: "4px 0",
-                            borderBottom: "0.5px solid #edf2f7",
-                          }}
-                        >
-                          {/* Function Name */}
-                          <div
-                            style={{
-                              width: 280,
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: C.labelText,
-                            }}
-                          >
-                            {field.name}
-                          </div>
-
-                          {/* Enable Checkbox */}
-                          <div
-                            style={{
-                              width: 80,
-                              display: "flex",
-                              justifyContent: "center",
-                            }}
-                          >
-                          <Checkbox
-                            checked={enabled}
-                            onChange={() => handleEnableChange(field)}
-                            size="small"
-                            sx={checkboxSx}
-                          />
-                          </div>
-
-                          {/* Function Key Text Input */}
-                          <div style={{ width: 160, paddingLeft: 16 }}>
-                            <TextField
-                              id={field.functionKeyKey}
-                              size="small"
-                              fullWidth
-                              value={functionKey || ""}
-                              onChange={(e) =>
-                                handleFunctionKeyChange(field, e.target.value)
-                              }
-                              onKeyPress={handleKeyPress}
-                              disabled={!enabled || isDefaultMode}
-                              sx={muiTextFieldSx}
-                              inputProps={{
-                                maxLength,
-                                style: {
-                                  fontSize: 13,
-                                  padding: "6px 8px",
-                                  background:
-                                    !enabled || isDefaultMode
-                                      ? "#f1f5f9"
-                                      : "#fff",
-                                  color: C.valueText,
-                                },
-                              }}
-                            />
-                          </div>
-
-                          {/* Mode Select */}
-                          <div style={{ flex: 1, paddingLeft: 16 }}>
-                            <FormControl size="small" sx={{ width: 160 }}>
-                              <MuiSelect
-                                value={mode || "0"}
-                                onChange={(e) =>
-                                  handleModeChange(field, e.target.value)
-                                }
-                                disabled={!enabled}
-                                sx={{
-                                  ...muiSelectSx,
-                                  background: !enabled ? "#f1f5f9" : "#fff",
-                                }}
+                          return (
+                            <tr key={field.id} style={{ height: "26px" }}>
+                              <td style={{ ...labelCellStyle, paddingLeft: 0 }}>
+                                {field.name}
+                              </td>
+                              <td style={{ textAlign: "center" }}>
+                                <Checkbox
+                                  size="small"
+                                  checked={enabled}
+                                  onChange={() => handleEnableChange(field)}
+                                  sx={checkboxSx}
+                                />
+                              </td>
+                              <td
+                                style={{ paddingLeft: "0px", textAlign: "center" }}
                               >
-                                <MenuItem value="0" sx={{ fontSize: 13 }}>
-                                  Default
-                                </MenuItem>
-                                <MenuItem value="1" sx={{ fontSize: 13 }}>
-                                  User-defined
-                                </MenuItem>
-                              </MuiSelect>
-                            </FormControl>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ),
-            )}
+                                <TextField
+                                  id={field.functionKeyKey}
+                                  value={functionKey}
+                                  onChange={(e) =>
+                                    handleFunctionKeyChange(
+                                      field,
+                                      e.target.value,
+                                    )
+                                  }
+                                  onKeyPress={handleKeyPress}
+                                  disabled={!enabled || isDefaultMode}
+                                  inputProps={{
+                                    maxLength,
+                                    style: { fontSize: 14, padding: "4px 8px" },
+                                  }}
+                                  sx={{
+                                    width: "100%",
+                                    maxWidth: 145,
+                                    ...muiTextFieldSx,
+                                  }}
+                                  variant="outlined"
+                                  size="small"
+                                />
+                              </td>
+                              <td
+                                style={{ paddingLeft: "0px", textAlign: "center" }}
+                              >
+                                <select
+                                  value={mode}
+                                  onChange={(e) =>
+                                    handleModeChange(field, e.target.value)
+                                  }
+                                  disabled={!enabled}
+                                  style={selectStyle(enabled)}
+                                >
+                                  <option value="0">Default</option>
+                                  <option value="1">User-defined</option>
+                                </select>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        <tr>
+                          <td colSpan={4} style={{ height: "8px" }}></td>
+                        </tr>
+                      </React.Fragment>
+                    ),
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-
-          <div style={advancedFormActionsStyle}>
-            <Btn
-              variant="primary"
-              onClick={handleSave}
-              style={{ height: 33, minWidth: 100 }}
-            >
-              Save Settings
-            </Btn>
-          </div>
-        </div>
-      </div>
-    </div>
+      </AdvancedFormCard>
+    </AdvancedPageShell>
   );
 };
 

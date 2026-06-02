@@ -138,11 +138,15 @@ export const tdStyle = {
   whiteSpace: "nowrap",
 };
 
+/** MUI checkbox — same on FXS Advanced tables and forms (System Tools kit) */
 export const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
+  padding: "4px",
+  color: "#64748b",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  "& .MuiSvgIcon-root": {
+    fontSize: 18,
+  },
 };
 
 export const muiSelectSx = {
@@ -173,6 +177,10 @@ export const muiTextFieldSx = {
       borderColor: "#64748b",
     },
     "&.Mui-focused fieldset": {
+      borderColor: "#0284c7",
+      borderWidth: 1,
+    },
+    "&.Mui-focused:hover fieldset": {
       borderColor: "#0284c7",
       borderWidth: 1,
     },

@@ -1,88 +1,38 @@
 import React, { useState } from "react";
+import { Checkbox } from "@mui/material";
 import {
-  Alert,
-  FormControl,
-  MenuItem,
-  Select as MuiSelect,
-  Checkbox,
-  TextField,
-  Button,
-} from "@mui/material";
+  C,
+  Btn,
+  checkboxSx,
+  AdvancedPageShell,
+  AdvancedBreadcrumb,
+  advancedTableContainerStyle,
+  advancedBlueBarStyle,
+  nativeFieldInteraction,
+  nativeFieldInputStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#2563eb",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
-};
-// ── Shared UI Components ──────────────────────────────────────────────────────
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#f3f4f6",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 8px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
+const CODEC_PRIORITY_HEADING_COLOR = "#30415A";
 
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 220,
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
+const CodecPrioritySectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: "#fff",
+        background: C.cardBg,
         paddingRight: 8,
         fontSize: 13,
         fontWeight: 600,
-        color: C.mutedText,
+        color: CODEC_PRIORITY_HEADING_COLOR,
       }}
     >
       {title}
     </span>
   </div>
 );
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 const FxsVoipMediaPage = () => {
   // Media Parameters state
@@ -106,13 +56,6 @@ const FxsVoipMediaPage = () => {
     { enabled: true, codec: "4", packingTime: "30", bitRate: "1" }, // Priority 6: G723
   ]);
 
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -131,18 +74,23 @@ const FxsVoipMediaPage = () => {
     // Reset packing time and bit rate based on new CODEC
     const codec = parseInt(value);
     if (codec === 7 || codec === 6) {
+      // G711A/U
       newCodecData[index].packingTime = "20";
       newCodecData[index].bitRate = "0";
     } else if (codec === 131) {
+      // G729
       newCodecData[index].packingTime = "20";
       newCodecData[index].bitRate = "0";
     } else if (codec === 98) {
+      // iLBC
       newCodecData[index].packingTime = "30";
       newCodecData[index].bitRate = "0";
     } else if (codec === 96) {
+      // AMR
       newCodecData[index].packingTime = "20";
       newCodecData[index].bitRate = "0";
     } else if (codec === 4) {
+      // G723
       newCodecData[index].packingTime = "30";
       newCodecData[index].bitRate = "1";
     }
@@ -156,17 +104,11 @@ const FxsVoipMediaPage = () => {
 
     // Validation for GSM and G723
     if (codec === 49 && value === "30") {
-      showMessage(
-        "error",
-        "Please don't set coder=GSM and PktTime=30 at the same time!",
-      );
+      alert("Please don't set coder=GSM and PktTime=30 at the same time!");
       return;
     }
     if (codec === 4 && value === "20") {
-      showMessage(
-        "error",
-        "Please don't set coder=G723 and PktTime=20 at the same time!",
-      );
+      alert("Please don't set coder=G723 and PktTime=20 at the same time!");
       return;
     }
 
@@ -193,14 +135,19 @@ const FxsVoipMediaPage = () => {
   const getPackingTimeOptions = (codecValue) => {
     const codec = parseInt(codecValue);
     if (codec === 7 || codec === 6) {
+      // G711A/U: 10, 20, 30, 40, 50, 60
       return ["10", "20", "30", "40", "50", "60"];
     } else if (codec === 131) {
+      // G729: 10, 20, 30, 40, 50, 60
       return ["10", "20", "30", "40", "50", "60"];
     } else if (codec === 98) {
+      // iLBC: 20, 30
       return ["20", "30"];
     } else if (codec === 96) {
+      // AMR: 20
       return ["20"];
     } else if (codec === 4) {
+      // G723: 30
       return ["30"];
     }
     return [];
@@ -209,110 +156,113 @@ const FxsVoipMediaPage = () => {
   const getBitRateOptions = (codecValue, packingTime) => {
     const codec = parseInt(codecValue);
     if (codec === 7 || codec === 6) {
+      // G711A/U: 64
       return [{ value: "0", label: "64" }];
     } else if (codec === 131) {
+      // G729: 8
       return [{ value: "0", label: "8" }];
     } else if (codec === 98) {
+      // iLBC: 13.3 or 15.2 based on packing time
       if (packingTime === "30") {
         return [{ value: "0", label: "13.3" }];
       } else {
         return [{ value: "1", label: "15.2" }];
       }
     } else if (codec === 96) {
+      // AMR: 12.20
       return [{ value: "0", label: "12.20" }];
     } else if (codec === 4) {
+      // G723: 6.3
       return [{ value: "1", label: "6.3" }];
     }
     return [];
   };
 
   const validateForm = () => {
+    // Validate RFC2833 Payload
     if (!formData.rfc2833Payload) {
-      showMessage("error", "Please enter a RFC2833 load!");
+      alert("Please enter a RFC2833 load!");
       return false;
     }
     const rfc2833 = parseInt(formData.rfc2833Payload);
     if (rfc2833 < 90 || rfc2833 >= 128) {
-      showMessage("error", "The value range of 'RFC2833 Load' is 90~127!");
+      alert("The value range of 'RFC2833 Load' is 90~127!");
       return false;
     }
 
+    // Validate RTP Port Range
     if (!formData.rtpPortRange) {
-      showMessage("error", "Please enter a RTP port range!");
+      alert("Please enter a RTP port range!");
       return false;
     }
     const portParts = formData.rtpPortRange.split(",");
     if (portParts.length !== 2) {
-      showMessage("error", "Invalid RTP port range!");
+      alert("Invalid RTP port range!");
       return false;
     }
     const startPort = parseInt(portParts[0]);
     const endPort = parseInt(portParts[1]);
     if (isNaN(startPort) || isNaN(endPort)) {
-      showMessage("error", "'RTP Port' must be numbers!");
+      alert("'RTP Port' must be numbers!");
       return false;
     }
     if (startPort < 2000 || endPort > 60000) {
-      showMessage("error", "The value range of 'RTP Port' is 2000~60000!");
+      alert("The value range of 'RTP Port' is 2000~60000!");
       return false;
     }
     if (5060 >= startPort && 5060 <= endPort) {
-      showMessage(
-        "error",
-        "The SIP port value 5060 cannot be within the port range!",
-      );
+      alert("The SIP port value 5060 cannot be within the port range!");
       return false;
     }
     if (startPort % 2 !== 0) {
-      showMessage("error", "The starting port number must be an even!");
+      alert("The starting port number must be an even!");
       return false;
     }
     if (endPort - startPort < 480) {
-      showMessage(
-        "error",
+      alert(
         "The difference between the latter 'RTP Port' and the former should be no less than 480!",
       );
       return false;
     }
 
+    // Validate JitterBuffer
     if (formData.jitterMode === "0") {
       if (!formData.jitterBuffer) {
-        showMessage("error", "Please enter a JitterBuffer value!");
+        alert("Please enter a JitterBuffer value!");
         return false;
       }
       const jitterBuffer = parseInt(formData.jitterBuffer);
       if (jitterBuffer < 20 || jitterBuffer > 200) {
-        showMessage("error", "The value range of 'JitterBuffer' is 20~200!");
+        alert("The value range of 'JitterBuffer' is 20~200!");
         return false;
       }
     }
 
+    // Validate Voice Gain Output
     const voiceGain = parseInt(formData.voiceGainOutput);
     if (isNaN(voiceGain) || voiceGain < -24 || voiceGain > 24) {
-      showMessage(
-        "error",
-        "The value range of 'Voice Gain Output from IP' is -24~24!",
-      );
+      alert("The value range of 'Voice Gain Output from IP' is -24~24!");
       return false;
     }
     if (voiceGain % 3 !== 0) {
-      showMessage(
-        "error",
+      alert(
         "The value of 'Voice Gain Output from IP' must be a multiple of 3!",
       );
       return false;
     }
 
+    // Validate at least one CODEC is selected
     const enabledCodecs = codecData.filter((item) => item.enabled);
     if (enabledCodecs.length === 0) {
-      showMessage("error", "Please select a CODEC!");
+      alert("Please select a CODEC!");
       return false;
     }
 
+    // Validate no duplicate CODECs
     const codecValues = enabledCodecs.map((item) => item.codec);
     const uniqueCodecs = new Set(codecValues);
     if (uniqueCodecs.size !== codecValues.length) {
-      showMessage("error", "Please choose a different CODEC!");
+      alert("Please choose a different CODEC!");
       return false;
     }
 
@@ -321,7 +271,7 @@ const FxsVoipMediaPage = () => {
 
   const handleSave = () => {
     if (validateForm()) {
-      showMessage("success", "Settings saved successfully!");
+      alert("Settings saved successfully!");
     }
   };
 
@@ -347,6 +297,7 @@ const FxsVoipMediaPage = () => {
 
   const handleKeyPress = (e, type) => {
     const key = e.keyCode || e.which;
+    // Allow digits (48-57), comma (44), minus (45), backspace (8)
     if (type === "number") {
       if (!((key > 47 && key < 58) || key === 8)) {
         e.preventDefault();
@@ -362,554 +313,324 @@ const FxsVoipMediaPage = () => {
     }
   };
 
+  const fieldStyle = {
+    ...nativeFieldInputStyle,
+    width: 220,
+  };
+
+  const getFieldInteraction = (disabled = false) =>
+    disabled ? {} : nativeFieldInteraction;
+
+  const codecSelectStyle = (enabled, width) => ({
+    ...nativeFieldInputStyle,
+    width,
+    backgroundColor: enabled ? "#ffffff" : "#e5e7eb",
+    cursor: enabled ? "pointer" : "not-allowed",
+    color: enabled ? C.valueText : "#6b7280",
+  });
+
+  const labelColStyle = {
+    fontSize: 13,
+    fontWeight: 600,
+    color: C.labelText,
+    flex: "0 0 48%",
+    maxWidth: "48%",
+    paddingRight: 24,
+    textAlign: "left",
+    lineHeight: 1.35,
+  };
+
+  const valueColStyle = {
+    flex: "1 1 52%",
+    minWidth: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  };
+
+  const controlSlotStyle = {
+    width: 220,
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+  };
+
+  const mediaParameterRows = [
+    {
+      label: "DTMF Transmit Mode",
+      type: "select",
+      name: "dtmfTransmitMode",
+      options: [
+        { value: "0", label: "RFC2833" },
+        { value: "1", label: "SIP INFO" },
+        { value: "2", label: "In-band" },
+      ],
+    },
+    {
+      label: "RFC2833 Payload",
+      type: "text",
+      name: "rfc2833Payload",
+      keyPress: "number",
+    },
+    {
+      label: "RTP Port Range",
+      type: "text",
+      name: "rtpPortRange",
+      keyPress: "number-comma",
+    },
+    {
+      label: "Silence Suppression",
+      type: "select",
+      name: "silenceSuppression",
+      options: [
+        { value: "0", label: "Disable" },
+        { value: "1", label: "Enable" },
+      ],
+    },
+    {
+      label: "JitterMode",
+      type: "select",
+      name: "jitterMode",
+      options: [{ value: "0", label: "Static Mode" }],
+    },
+    {
+      label: "JitterBuffer(ms)",
+      type: "text",
+      name: "jitterBuffer",
+      keyPress: "number",
+    },
+    {
+      label: "Voice Gain Output from IP (dB)",
+      type: "text",
+      name: "voiceGainOutput",
+      keyPress: "number-minus",
+    },
+  ];
+
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Error / Success Banner */}
-        {message.text && (
-          <Alert
-            severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
+    <AdvancedPageShell>
+      <AdvancedBreadcrumb current="Media Parameters" />
+      <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
+        <div style={advancedBlueBarStyle}>
+          <span>Media Parameters</span>
+        </div>
+        <div style={{ padding: "24px 32px 10px" }}>
+          <div
+            className="flex flex-col gap-3"
+            style={{
+              width: "100%",
+              maxWidth: 640,
+              margin: "0 auto",
             }}
           >
-            {message.text}
-          </Alert>
-        )}
+            {mediaParameterRows.map((row) => (
+              <div key={row.name} className="flex flex-row items-start w-full">
+                <label style={labelColStyle}>{row.label}</label>
+                <div style={valueColStyle}>
+                  <div style={controlSlotStyle}>
+                    {row.type === "select" ? (
+                      <select
+                        name={row.name}
+                        value={formData[row.name]}
+                        onChange={handleInputChange}
+                        style={fieldStyle}
+                        {...nativeFieldInteraction}
+                      >
+                        {row.options.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        name={row.name}
+                        value={formData[row.name]}
+                        onChange={handleInputChange}
+                        onKeyPress={(e) =>
+                          handleKeyPress(e, row.keyPress || "number")
+                        }
+                        style={fieldStyle}
+                        {...nativeFieldInteraction}
+                        maxLength="31"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
-        {/* Breadcrumb */}
+          {/* CODEC Priority Table */}
+          <div style={{ width: "100%", marginTop: 16 }}>
+            <CodecPrioritySectionHeading title="CODEC Priority" />
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <table
+                style={{
+                  tableLayout: "fixed",
+                  width: "100%",
+                  maxWidth: 860,
+                  fontSize: 13,
+                }}
+              >
+                <colgroup>
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "17%" }} />
+                  <col style={{ width: "17%" }} />
+                  <col style={{ width: "24%" }} />
+                  <col style={{ width: "24%" }} />
+                </colgroup>
+                <tbody>
+                  <tr
+                    style={{
+                      textAlign: "center",
+                      color: C.labelText,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <td>Check</td>
+                    <td>Priority</td>
+                    <td>CODEC</td>
+                    <td>Packing Time</td>
+                    <td>Bit Rate (kbs)</td>
+                  </tr>
+                  {codecData.map((item, index) => (
+                    <tr
+                      key={index}
+                      style={{ textAlign: "center", color: C.valueText }}
+                    >
+                      <td>
+                        <Checkbox
+                          size="small"
+                          checked={item.enabled}
+                          onChange={() => handleCodecCheckbox(index)}
+                          sx={checkboxSx}
+                        />
+                      </td>
+                      <td>{index + 1}</td>
+                      <td>
+                        <select
+                          value={item.codec}
+                          onChange={(e) =>
+                            handleCodecChange(index, e.target.value)
+                          }
+                          disabled={!item.enabled}
+                          style={codecSelectStyle(item.enabled, 120)}
+                          {...getFieldInteraction(!item.enabled)}
+                        >
+                          <option value="6">G711A</option>
+                          <option value="7">G711U</option>
+                          <option value="131">G729</option>
+                          <option value="98">iLBC</option>
+                          <option value="96">AMR</option>
+                          <option value="4">G723</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          value={item.packingTime}
+                          onChange={(e) =>
+                            handlePackingTimeChange(index, e.target.value)
+                          }
+                          disabled={!item.enabled}
+                          style={codecSelectStyle(item.enabled, 80)}
+                          {...getFieldInteraction(!item.enabled)}
+                        >
+                          {getPackingTimeOptions(item.codec).map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          value={item.bitRate}
+                          onChange={(e) =>
+                            handleBitRateChange(index, e.target.value)
+                          }
+                          disabled={!item.enabled}
+                          style={codecSelectStyle(item.enabled, 80)}
+                          {...getFieldInteraction(!item.enabled)}
+                        >
+                          {getBitRateOptions(item.codec, item.packingTime).map(
+                            (opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                  <tr style={{ height: 10 }} />
+                  <tr>
+                    <td
+                      colSpan="5"
+                      style={{ color: C.mutedText, fontSize: 11 }}
+                    >
+                      Note: At present, the maximum number of concurrent
+                      sessions supported by G723 encoding is 9. When the
+                      concurrent sessions are more than 9, the encoding of the
+                      next priority will be automatically used (it is
+                      recommended to configure G711A/U as the encoding of the
+                      next priority).
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan="5"
+                      style={{
+                        color: C.mutedText,
+                        fontSize: 11,
+                        paddingTop: 4,
+                      }}
+                    >
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The
+                      maximum number of concurrent sessions supported by
+                      AMR/iLBC encoding is 15. When the concurrent sessions are
+                      more than 15, the encoding of the next priority will be
+                      automatically used (it is recommended to configure G711A/U
+                      as the encoding of the next priority).
+                    </td>
+                  </tr>
+                  <tr style={{ height: 12 }} />
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            justifyContent: "center",
+            gap: 12,
+            padding: "12px 0 18px",
+            borderTop: `1px solid ${C.cardBorder}`,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; VoIP &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              Media Parameters
-            </span>
-          </div>
-        </div>
-
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ padding: "16px 28px 24px" }}>
-            {/* ── Media Settings Section ── */}
-            <SectionHeading title="Media Settings" />
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "16px 40px",
-              }}
-            >
-              {/* Left Column */}
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 16 }}
-              >
-                <FieldRow label="DTMF Transmit Mode">
-                  <FormControl size="small" fullWidth>
-                    <MuiSelect
-                      name="dtmfTransmitMode"
-                      value={formData.dtmfTransmitMode}
-                      onChange={handleInputChange}
-                      sx={{ fontSize: 13 }}
-                    >
-                      <MenuItem value="0" sx={{ fontSize: 13 }}>
-                        RFC2833
-                      </MenuItem>
-                      <MenuItem value="1" sx={{ fontSize: 13 }}>
-                        SIP INFO
-                      </MenuItem>
-                      <MenuItem value="2" sx={{ fontSize: 13 }}>
-                        In-band
-                      </MenuItem>
-                    </MuiSelect>
-                  </FormControl>
-                </FieldRow>
-
-                <FieldRow label="RFC2833 Payload">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    name="rfc2833Payload"
-                    value={formData.rfc2833Payload}
-                    onChange={handleInputChange}
-                    onKeyPress={(e) => handleKeyPress(e, "number")}
-                    inputProps={{
-                      style: { fontSize: 13, padding: "6px 8px" },
-                      maxLength: 31,
-                    }}
-                  />
-                </FieldRow>
-
-                <FieldRow label="RTP Port Range">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    name="rtpPortRange"
-                    value={formData.rtpPortRange}
-                    onChange={handleInputChange}
-                    onKeyPress={(e) => handleKeyPress(e, "number-comma")}
-                    inputProps={{
-                      style: { fontSize: 13, padding: "6px 8px" },
-                      maxLength: 31,
-                    }}
-                  />
-                </FieldRow>
-
-                <FieldRow label="Silence Suppression">
-                  <FormControl size="small" fullWidth>
-                    <MuiSelect
-                      name="silenceSuppression"
-                      value={formData.silenceSuppression}
-                      onChange={handleInputChange}
-                      sx={{ fontSize: 13 }}
-                    >
-                      <MenuItem value="0" sx={{ fontSize: 13 }}>
-                        Disable
-                      </MenuItem>
-                      <MenuItem value="1" sx={{ fontSize: 13 }}>
-                        Enable
-                      </MenuItem>
-                    </MuiSelect>
-                  </FormControl>
-                </FieldRow>
-              </div>
-
-              {/* Right Column */}
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 16 }}
-              >
-                <FieldRow label="JitterMode">
-                  <FormControl size="small" fullWidth>
-                    <MuiSelect
-                      name="jitterMode"
-                      value={formData.jitterMode}
-                      onChange={handleInputChange}
-                      sx={{ fontSize: 13 }}
-                    >
-                      <MenuItem value="0" sx={{ fontSize: 13 }}>
-                        Static Mode
-                      </MenuItem>
-                    </MuiSelect>
-                  </FormControl>
-                </FieldRow>
-
-                <FieldRow label="JitterBuffer (ms)">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    name="jitterBuffer"
-                    value={formData.jitterBuffer}
-                    onChange={handleInputChange}
-                    onKeyPress={(e) => handleKeyPress(e, "number")}
-                    inputProps={{
-                      style: { fontSize: 13, padding: "6px 8px" },
-                      maxLength: 31,
-                    }}
-                  />
-                </FieldRow>
-
-                <FieldRow label="Voice Gain Output from IP (dB)">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    name="voiceGainOutput"
-                    value={formData.voiceGainOutput}
-                    onChange={handleInputChange}
-                    onKeyPress={(e) => handleKeyPress(e, "number-minus")}
-                    inputProps={{
-                      style: { fontSize: 13, padding: "6px 8px" },
-                      maxLength: 31,
-                    }}
-                  />
-                </FieldRow>
-              </div>
-            </div>
-
-            {/* ── CODEC Priority Section ── */}
-            <div style={{ marginTop: 24 }}>
-              <SectionHeading title="CODEC Priority" />
-
-              <div
-                style={{
-                  overflowX: "auto",
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 6,
-                }}
-              >
-    <table
-  style={{
-    width: "100%",
-    borderCollapse: "collapse",
-    minWidth: 700,
-  }}
->
-  <thead>
-    <tr>
-      <TH
-        style={{
-          width: 60,
-          background: "#ffffff",
-          borderRight: "1px solid #cbd5e1",
-        }}
-      >
-        Check
-      </TH>
-
-      <TH
-        style={{
-          width: 70,
-          background: "#ffffff",
-          borderRight: "1px solid #cbd5e1",
-        }}
-      >
-        Priority
-      </TH>
-
-      <TH
-        style={{
-          background: "#ffffff",
-          borderRight: "1px solid #cbd5e1",
-        }}
-      >
-        CODEC
-      </TH>
-
-      <TH
-        style={{
-          background: "#ffffff",
-          borderRight: "1px solid #cbd5e1",
-        }}
-      >
-        Packing Time
-      </TH>
-
-      <TH
-        style={{
-          background: "#ffffff",
-        }}
-      >
-        Bit Rate (kbs)
-      </TH>
-    </tr>
-  </thead>
-
-  <tbody>
-    {codecData.map((item, index) => {
-      const rowBg =
-        index % 2 === 0 ? "#f8fafc" : "#ffffff";
-
-      return (
-        <tr
-          key={index}
-          style={{
-            background: rowBg,
-            borderBottom: "1px solid #dbe4ee",
-            transition: "background 0.15s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#eef4fb";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = rowBg;
-          }}
-        >
-          {/* Checkbox */}
-          <td
-            style={{
-              textAlign: "center",
-              padding: "8px 0",
-              borderRight: "1px solid #dbe4ee",
-            }}
+          <Btn
+            type="button"
+            onClick={handleSave}
+            variant="primary"
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
-            <Checkbox
-              size="small"
-              checked={item.enabled}
-              onChange={() => handleCodecCheckbox(index)}
-              sx={{
-                padding: "1px",
-                color: "#64748b",
-                "&.Mui-checked": { color: "#0284c7" },
-                "&.MuiCheckbox-indeterminate": {
-                  color: "#0284c7",
-                },
-              }}
-            />
-          </td>
-
-          {/* Priority */}
-          <td
-            style={{
-              textAlign: "center",
-              padding: "8px 6px",
-              fontSize: 12,
-              color: C.mutedText,
-              borderRight: "1px solid #dbe4ee",
-            }}
+            Save
+          </Btn>
+          <Btn
+            type="button"
+            onClick={handleReset}
+            variant="cancel"
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
-            {index + 1}
-          </td>
-
-          {/* Codec */}
-          <td
-            style={{
-              padding: "8px 10px",
-              borderRight: "1px solid #dbe4ee",
-              textAlign: "center",
-            }}
-          >
-            <FormControl size="small" sx={{ width: 110 }}>
-              <MuiSelect
-                value={item.codec}
-                onChange={(e) =>
-                  handleCodecChange(index, e.target.value)
-                }
-                disabled={!item.enabled}
-                sx={{
-                  fontSize: 12,
-                  height: 30,
-                  borderRadius: "6px",
-                  background: item.enabled
-                    ? "#fff"
-                    : "#f1f5f9",
-
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                }}
-              >
-                <MenuItem value="6" sx={{ fontSize: 12 }}>
-                  G711A
-                </MenuItem>
-
-                <MenuItem value="7" sx={{ fontSize: 12 }}>
-                  G711U
-                </MenuItem>
-
-                <MenuItem value="131" sx={{ fontSize: 12 }}>
-                  G729
-                </MenuItem>
-
-                <MenuItem value="98" sx={{ fontSize: 12 }}>
-                  iLBC
-                </MenuItem>
-
-                <MenuItem value="96" sx={{ fontSize: 12 }}>
-                  AMR
-                </MenuItem>
-
-                <MenuItem value="4" sx={{ fontSize: 12 }}>
-                  G723
-                </MenuItem>
-              </MuiSelect>
-            </FormControl>
-          </td>
-
-          {/* Packing Time */}
-          <td
-            style={{
-              padding: "8px 10px",
-              borderRight: "1px solid #dbe4ee",
-              textAlign: "center",
-            }}
-          >
-            <FormControl size="small" sx={{ width: 95 }}>
-              <MuiSelect
-                value={item.packingTime}
-                onChange={(e) =>
-                  handlePackingTimeChange(index, e.target.value)
-                }
-                disabled={!item.enabled}
-                sx={{
-                  fontSize: 12,
-                  height: 30,
-                  borderRadius: "6px",
-                  background: item.enabled
-                    ? "#fff"
-                    : "#f1f5f9",
-
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                }}
-              >
-                {getPackingTimeOptions(item.codec).map((opt) => (
-                  <MenuItem
-                    key={opt}
-                    value={opt}
-                    sx={{ fontSize: 12 }}
-                  >
-                    {opt}
-                  </MenuItem>
-                ))}
-              </MuiSelect>
-            </FormControl>
-          </td>
-
-          {/* Bit Rate */}
-          <td
-            style={{
-              padding: "8px 10px",
-              textAlign: "center",
-            }}
-          >
-            <FormControl size="small" sx={{ width: 95 }}>
-              <MuiSelect
-                value={item.bitRate}
-                onChange={(e) =>
-                  handleBitRateChange(index, e.target.value)
-                }
-                disabled={!item.enabled}
-                sx={{
-                  fontSize: 12,
-                  height: 30,
-                  borderRadius: "6px",
-                  background: item.enabled
-                    ? "#fff"
-                    : "#f1f5f9",
-
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cbd5e1",
-                  },
-                }}
-              >
-                {getBitRateOptions(
-                  item.codec,
-                  item.packingTime,
-                ).map((opt) => (
-                  <MenuItem
-                    key={opt.value}
-                    value={opt.value}
-                    sx={{ fontSize: 12 }}
-                  >
-                    {opt.label}
-                  </MenuItem>
-                ))}
-              </MuiSelect>
-            </FormControl>
-          </td>
-        </tr>
-      );
-    })}
-  </tbody>
-</table>
-              </div>
-
-              {/* Notes */}
-              <div
-                style={{
-                  marginTop: 12,
-                  fontSize: 11,
-                  color: C.mutedText,
-                  lineHeight: 1.6,
-                }}
-              >
-                <div>
-                  <strong>Note:</strong> At present, the maximum number of
-                  concurrent sessions supported by G723 encoding is 9. When the
-                  concurrent sessions are more than 9, the encoding of the next
-                  priority will be automatically used (it is recommended to
-                  configure G711A/U as the encoding of the next priority).
-                </div>
-                <div style={{ paddingLeft: 34 }}>
-                  The maximum number of concurrent sessions supported by
-                  AMR/iLBC encoding is 15. When the concurrent sessions are more
-                  than 15, the encoding of the next priority will be
-                  automatically used (it is recommended to configure G711A/U as
-                  the encoding of the next priority).
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Actions Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              padding: "16px 24px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              background: "#f8fafc",
-            }}
-          >
-            <Button
-  variant="contained"
-  onClick={handleSave}
-  sx={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-    padding: "8px 28px",
-    minWidth: 120,
-    borderRadius: "6px",
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      opacity: 0.85,
-    },
-  }}
->
-  Save Parameters
-</Button>
-         <Button
-  variant="outlined"
-  onClick={handleReset}
-  sx={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-    padding: "8px 28px",
-    minWidth: 110,
-    borderRadius: "6px",
-    "&:hover": {
-      background: "#cbd5e1",
-      border: "1px solid #cbd5e1",
-      opacity: 0.85,
-    },
-  }}
->
-  Reset
-</Button>
-          </div>
+            Reset
+          </Btn>
         </div>
       </div>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

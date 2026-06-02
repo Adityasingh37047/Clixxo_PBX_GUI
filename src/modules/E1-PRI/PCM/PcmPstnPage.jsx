@@ -1235,6 +1235,36 @@ const PcmPstnPage = () => {
               >
                 <CircularProgress size={28} style={{ color: C.accent }} />
               </div>
+            ) : data.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No PSTN settings found.
+                </div>
+                <Btn
+                  variant="cancel"
+                  onClick={handleAddNew}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New
+                </Btn>
+              </div>
             ) : (
               <table
                 style={{
@@ -1318,24 +1348,8 @@ const PcmPstnPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={PCM_PSTN_TABLE_COLUMNS.length + 1}
-                        style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
-                        }}
-                      >
-                        No PSTN settings found.
-                      </td>
-                    </tr>
-                  ) : (
-                    data.map((row, idx) =>
-                      renderTableRow(row, idx, idx === data.length - 1),
-                    )
+                  {data.map((row, idx) =>
+                    renderTableRow(row, idx, idx === data.length - 1),
                   )}
                 </tbody>
               </table>

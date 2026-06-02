@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   COLOR_RING_TABLE_COLUMNS,
   COLOR_RING_INDEX_OPTIONS,
   COLOR_RING_INITIAL_FORM,
-} from "../../../sections/advanced/constants/ColorRingConstants"; // Adjust path if needed
+} from "../../../sections/advanced/constants/ColorRingConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  Button,
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -15,151 +15,41 @@ import {
   Select as MuiSelect,
   MenuItem,
   FormControl,
-  Checkbox,
+  Alert,
 } from "@mui/material";
+import {
+  C,
+  Btn,
+  TH,
+  muiSelectSx,
+  muiTextFieldSx,
+  numManipulateCardStyle,
+  numManipulateToolbarStyle,
+  numManipulatePaginationStyle,
+  tdStyle,
+  AdvancedBreadcrumb,
+  AdvancedPageShell,
+  FieldRow,
+  advancedModalPaperSx,
+  advancedModalTitleStyle,
+  advancedModalContentStyle,
+  advancedModalFooterStyle,
+  advancedFormPanelStyle,
+  wavFileNoteStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
+const DATA_COLUMNS = COLOR_RING_TABLE_COLUMNS.filter(
+  (c) => c.key !== "check" && c.key !== "modify",
+);
 
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-
-  accent: "#2e2f31",
-
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
+const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
+const PCM_TRUNK_GROUP_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
+const PCM_TRUNK_GROUP_CHECKBOX_SX = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-}) => {
-  const variants = {
-    default: {
-      background: "#1e2d42",
-      color: "#fff",
-      border: "1px solid #162233",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#f3f4f6",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 120,
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 const ColorRingPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -169,29 +59,19 @@ const ColorRingPage = () => {
   const [page, setPage] = useState(1);
   const [fileName, setFileName] = useState("No file chosen");
   const [editIndex, setEditIndex] = useState(null);
-
-  const [message, setMessage] = useState({ type: "", text: "" });
-
   const fileInputRef = useRef(null);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
   const itemsPerPage = 20;
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
   const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
   const pagedRules = rules.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
-
-  const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
 
   const handleOpenModal = (item = null, idx = -1) => {
     if (item) {
@@ -237,53 +117,50 @@ const ColorRingPage = () => {
   };
 
   const checkFileExt = (ext) => {
-    if (!ext.match(/.wav/i)) return false;
+    if (!ext.match(/.wav/i)) {
+      return false;
+    }
     return true;
   };
 
   const handleUpload = () => {
     if (!formData.description || formData.description.trim() === "") {
-      showMessage("error", "Please enter a description!");
+      showToast("Please enter a description!", "error");
       return;
     }
 
     const descriptionRegex = /^[^\%\&\~\!\|\(\)\;\"\'\=\\]*$/;
     if (!descriptionRegex.test(formData.description)) {
-      showMessage(
-        "error",
+      showToast(
         "The description cannot contain special characters like '~', '!', '&', '|' and '='!",
+        "error",
       );
       return;
     }
 
-    if (!formData.file && editIndex === null) {
-      showMessage("error", "Please select a file to upload!");
+    if (!formData.file) {
+      showToast("Please select a file to upload!", "error");
       return;
     }
 
-    if (formData.file) {
-      const fileExt = formData.file.name
-        .substring(formData.file.name.lastIndexOf("."))
-        .toLowerCase();
-      if (!checkFileExt(fileExt)) {
-        showMessage("error", "Only wav files can be uploaded!");
-        return;
-      }
-      if (formData.file.size > 200 * 1024) {
-        showMessage("error", "The size of the file must be less than 200KB!");
-        return;
-      }
+    const fileExt = formData.file.name
+      .substring(formData.file.name.lastIndexOf("."))
+      .toLowerCase();
+    if (!checkFileExt(fileExt)) {
+      showToast("Only wav files can be uploaded!", "error");
+      return;
+    }
+
+    if (formData.file.size > 200 * 1024) {
+      showToast("The size of the file must be less than 200KB!", "error");
+      return;
     }
 
     const newItem = {
       id: editIndex !== null ? rules[editIndex].id : Date.now(),
       index: parseInt(formData.index),
       description: formData.description.trim(),
-      fileName: formData.file
-        ? formData.file.name
-        : editIndex !== null
-          ? rules[editIndex].fileName
-          : "",
+      fileName: formData.file.name,
       file: formData.file,
     };
 
@@ -292,14 +169,16 @@ const ColorRingPage = () => {
         setRules((prev) =>
           prev.map((rule, idx) => (idx === editIndex ? newItem : rule)),
         );
-        showMessage("success", "Color ring updated successfully!");
+        showToast("Color ring updated successfully!");
       } else {
         setRules((prev) => [...prev, newItem]);
-        showMessage("success", "Color ring uploaded successfully!");
+        showToast("Color ring uploaded successfully!");
       }
+
       handleCloseModal();
     } catch (error) {
-      showMessage("error", error.message || "Failed to save color ring");
+      console.error("Error saving color ring:", error);
+      showToast(error.message || "Failed to save color ring", "error");
     }
   };
 
@@ -319,10 +198,6 @@ const ColorRingPage = () => {
     setSelected(allIndices);
   };
 
-  const handleUncheckAll = () => {
-    setSelected([]);
-  };
-
   const handleInverse = () => {
     const allIndices = pagedRules.map(
       (_, idx) => (page - 1) * itemsPerPage + idx,
@@ -332,7 +207,7 @@ const ColorRingPage = () => {
 
   const handleDelete = () => {
     if (selected.length === 0) {
-      showMessage("error", "Please select at least one item to delete.");
+      showToast("Please select at least one item to delete.", "error");
       return;
     }
 
@@ -352,27 +227,31 @@ const ColorRingPage = () => {
           ),
         );
       }
-      showMessage("success", `${selected.length} item(s) deleted successfully`);
+      showToast(`${selected.length} item(s) deleted successfully`);
     } catch (error) {
-      showMessage("error", error.message || "Failed to delete selected items");
+      console.error("Error deleting selected items:", error);
+      showToast(error.message || "Failed to delete selected items", "error");
     }
   };
 
   const handleClearAll = () => {
     if (rules.length === 0) {
-      showMessage("error", "No data to clear");
+      showToast("No data to clear", "error");
       return;
     }
 
-    if (!window.confirm("Are you sure to clear all color rings?")) return;
+    if (!window.confirm("Are you sure to clear all color rings?")) {
+      return;
+    }
 
     try {
       setRules([]);
       setSelected([]);
       setPage(1);
-      showMessage("success", `All color rings cleared successfully`);
+      showToast(`All color rings cleared successfully`);
     } catch (error) {
-      showMessage("error", error.message || "Failed to clear all items");
+      console.error("Error clearing all items:", error);
+      showToast(error.message || "Failed to clear all items", "error");
     }
   };
 
@@ -383,744 +262,411 @@ const ColorRingPage = () => {
     }
   };
 
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
-
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-      }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [rules, page]);
-
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
+  const pagedSelectedCount = pagedRules.filter((_, idx) =>
+    selected.includes((page - 1) * itemsPerPage + idx),
+  ).length;
+  const allPagedChecked =
+    pagedRules.length > 0 && pagedSelectedCount === pagedRules.length;
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Error / Success Banner */}
-        {message.text && (
-          <div
-            style={{
-              background:
-                message.type === "error"
-                  ? "#fef2f2"
-                  : message.type === "success"
-                    ? "#f0fdf4"
-                    : "#eff6ff",
-              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
-              color:
-                message.type === "error"
-                  ? "#b91c1c"
-                  : message.type === "success"
-                    ? "#166534"
-                    : "#1e40af",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 12,
-              fontSize: 13,
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            <span>{message.text}</span>
-            <span
-              onClick={() => setMessage({ type: "", text: "" })}
-              style={{ cursor: "pointer", fontSize: 16 }}
-            >
-              ✕
-            </span>
-          </div>
-        )}
-
-        {/* Breadcrumb */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+    <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; Advanced &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              Color Ring
-            </span>
-          </div>
-        </div>
+          {toast.msg}
+        </Alert>
+      )}
+      <AdvancedBreadcrumb current="Color Ring" />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {rules.length === 0 ? (
-            // Empty State
+      <div style={numManipulateCardStyle}>
+          <div style={numManipulateToolbarStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
             <div
               style={{
-                padding: "60px 20px",
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
+                gap: 8,
+                flexWrap: "wrap",
               }}
             >
-              <div
-                style={{ fontSize: 14, color: C.mutedText, marginBottom: 16 }}
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={rules.length === 0}
+                style={{ height: 30 }}
               >
-                No available color ring!
-              </div>
-             <Btn
-  onClick={() => handleOpenModal()}
-  variant="accent"
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  + Upload New Color Ring
-</Btn>
+                Inverse
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={selected.length === 0}
+                style={{ height: 30 }}
+              >
+                Delete
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={rules.length === 0}
+                style={{ height: 30 }}
+              >
+                Clear All
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+              >
+                + Add New
+              </Btn>
             </div>
-          ) : (
-            <>
-              {/* Toolbar - Placed on Top like ExtensionGroups */}
+          </div>
+
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+            {rules.length === 0 ? (
               <div
                 style={{
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 14px",
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  background: "#DCE6F2",
-                  flexWrap: "wrap",
-                  gap: 8,
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 20,
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
                 }}
               >
-                {/* Left Toolbar Info */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No available color ring!
+                </div>
+                <Btn
+                  variant="cancel"
+                  onClick={() => handleOpenModal()}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New
+                </Btn>
+              </div>
+            ) : (
+              <table
+              style={{
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+              }}
+            >
+              <thead>
+                <tr>
+                  <TH
                     style={{
-                      background: "#f1f5f9",
-                      border: `0.5px solid ${C.cardBorder}`,
-                      color: "#475569",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      padding: "3px 12px",
-                      borderRadius: 20,
+                      width: 40,
+                      padding: 0,
+                      borderLeft: "none",
+                      ...PCM_TRUNK_GROUP_TH_GAP,
                     }}
                   >
-                    Page {page} · {rules.length} items total
-                  </span>
-                  {selected.length > 0 && (
-                    <span
+                    <Checkbox
+                      size="small"
+                      checked={allPagedChecked}
+                      indeterminate={pagedSelectedCount > 0 && !allPagedChecked}
+                      onChange={(e) => {
+                        if (e.target.checked) handleCheckAll();
+                        else setSelected([]);
+                      }}
+                      sx={PCM_TRUNK_GROUP_CHECKBOX_SX}
+                    />
+                  </TH>
+                  {DATA_COLUMNS.map((col) => (
+                    <TH key={col.key} style={PCM_TRUNK_GROUP_TH_GAP}>
+                      {col.label}
+                    </TH>
+                  ))}
+                  <TH
+                    style={{
+                      width: 70,
+                      borderRight: "none",
+                      ...PCM_TRUNK_GROUP_TH_GAP,
+                    }}
+                  >
+                    Modify
+                  </TH>
+                </tr>
+              </thead>
+              <tbody>
+                {pagedRules.map((item, idx) => {
+                  const realIdx = (page - 1) * itemsPerPage + idx;
+                  const isSelected = selected.includes(realIdx);
+                  const isLastRow = idx === pagedRules.length - 1;
+                  const rowBg = isSelected
+                    ? "#f0f9ff"
+                    : idx % 2 === 1
+                      ? "#f8fafc"
+                      : "#ffffff";
+                  const lastRowCellStyle = isLastRow
+                    ? { borderBottom: "none" }
+                    : {};
+
+                  return (
+                    <tr
+                      key={realIdx}
                       style={{
-                        background: "#e0f2fe",
-                        color: C.accent,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: "3px 10px",
-                        borderRadius: 20,
-                        border: `0.5px solid ${C.accent}`,
+                        background: rowBg,
+                        transition: "background 0.15s ease",
                       }}
                     >
-                      {selected.length} selected
-                    </span>
-                  )}
-                </div>
-
-                {/* Right Toolbar Actions */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Btn
-                    onClick={handleCheckAll}
-                    variant="outline"
-                    style={{ fontSize: 10, padding: "4px 8px" }}
-                  >
-                    Check All
-                  </Btn>
-                  <Btn
-                    onClick={handleUncheckAll}
-                    variant="outline"
-                    style={{ fontSize: 10, padding: "4px 8px" }}
-                  >
-                    Uncheck All
-                  </Btn>
-                  <Btn
-                    onClick={handleInverse}
-                    variant="outline"
-                    style={{ fontSize: 10, padding: "4px 8px" }}
-                  >
-                    Inverse
-                  </Btn>
-
-                  <Btn
-                    onClick={handleDelete}
-                    disabled={selected.length === 0}
-                    variant="danger"
-                  >
-                    🗑 Delete
-                  </Btn>
-                  <Btn
-                    onClick={handleClearAll}
-                    disabled={rules.length === 0}
-                    variant="danger"
-                  >
-                    🗑 Clear All
-                  </Btn>
-                  <Btn onClick={() => handleOpenModal()} variant="accent">
-                    + Upload
-                  </Btn>
-                </div>
-              </div>
-
-              {/* Table */}
-              <div>
-                <div
-                  ref={tableScrollRef}
-                  onScroll={handleTableScroll}
-                  style={{
-                    overflowX: "auto",
-                    overflowY: "auto",
-                    maxHeight: 400,
-                    scrollbarWidth: "none",
-                    msOverflowStyle: "none",
-                  }}
-                >
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      tableLayout: "auto",
-                      minWidth: 800,
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        {COLOR_RING_TABLE_COLUMNS.map((c) => (
-                          <TH key={c.key}>{c.label}</TH>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pagedRules.map((item, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        const isSelected = selected.includes(realIdx);
-                        const rowBgColor = isSelected
-                          ? "#f0f9ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
-
-                        return (
-                          <tr
-                            key={realIdx}
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...PCM_TRUNK_GROUP_TD_GAP,
+                          background: rowBg,
+                          borderLeft: "none",
+                          width: 36,
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={isSelected}
+                          onChange={() => handleSelectRow(idx)}
+                          sx={PCM_TRUNK_GROUP_CHECKBOX_SX}
+                        />
+                      </td>
+                      {DATA_COLUMNS.map((col) => (
+                        <td
+                          key={col.key}
+                          style={{
+                            ...tdStyle,
+                            ...PCM_TRUNK_GROUP_TD_GAP,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {item[col.key]}
+                        </td>
+                      ))}
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...PCM_TRUNK_GROUP_TD_GAP,
+                          background: rowBg,
+                          borderRight: "none",
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <EditDocumentIcon
+                            titleAccess="Edit"
                             style={{
-                              background: rowBgColor,
-                              borderBottom: "0.5px solid #9ca3af",
-                              transition: "background 0.1s ease",
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
                             }}
                             onMouseEnter={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = "#f0f9ff";
+                              e.currentTarget.style.opacity = "1";
                             }}
                             onMouseLeave={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = rowBgColor;
+                              e.currentTarget.style.opacity = "0.7";
                             }}
-                          >
-                            <td
-                              style={{
-                                textAlign: "center",
-                                padding: "4px 0",
-                                borderRight: "0.5px solid #edf2f7",
-                              }}
-                            >
-                              <EditDocumentIcon
-                                style={{
-                                  cursor: "pointer",
-                                  color: "#0284c7",
-                                  fontSize: 18,
-                                  margin: "0 auto",
-                                  opacity: 0.8,
-                                }}
-                                onClick={() => handleOpenModal(item, realIdx)}
-                              />
-                            </td>
-                            <td
-                              style={{
-                                textAlign: "center",
-                                padding: "4px 0",
-                                borderRight: "0.5px solid #edf2f7",
-                              }}
-                            >
-                              <Checkbox
-                                size="small"
-                                checked={isSelected}
-                                onChange={() => handleSelectRow(idx)}
-                                sx={{
-                                  padding: "1px",
-                                  color: C.accent,
-                                  "&.Mui-checked": { color: C.accent },
-                                }}
-                              />
-                            </td>
-                            <td
-                              style={{
-                                textAlign: "center",
-                                padding: "7px 16px",
-                                fontSize: 12,
-                                color: C.valueText,
-                                borderRight: "0.5px solid #edf2f7",
-                              }}
-                            >
-                              {item.index}
-                            </td>
-                            <td
-                              style={{
-                                textAlign: "center",
-                                padding: "7px 16px",
-                                fontSize: 12,
-                                color: C.valueText,
-                                borderRight: "0.5px solid #edf2f7",
-                              }}
-                            >
-                              {item.description}
-                            </td>
-                            <td
-                              style={{
-                                textAlign: "center",
-                                padding: "7px 16px",
-                                fontSize: 12,
-                                fontFamily: "monospace",
-                                color: C.mutedText,
-                              }}
-                            >
-                              {item.fileName}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            onClick={() => handleOpenModal(item, realIdx)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            )}
+          </div>
 
-                {/* Custom scrollbar row below the table */}
-                {showCustomScrollbar && (
-                  <div
-                    style={{
-                      width: "100%",
-                      background: "#f4f6fa",
-                      display: "flex",
-                      alignItems: "center",
-                      height: 24,
-                      padding: "0 4px",
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                      onClick={() => handleArrowClick("left")}
-                    >
-                      &#9664;
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        height: 12,
-                        background: "#e3e7ef",
-                        borderRadius: 8,
-                        position: "relative",
-                        margin: "0 4px",
-                        overflow: "hidden",
-                      }}
-                      onClick={handleScrollbarDrag}
-                    >
-                      <div
-                        style={{
-                          position: "absolute",
-                          height: 12,
-                          background: "#888",
-                          borderRadius: 8,
-                          cursor: "pointer",
-                          top: 0,
-                          width: thumbWidth,
-                          left: thumbLeft,
-                        }}
-                        draggable
-                        onDrag={handleScrollbarDrag}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                      onClick={() => handleArrowClick("right")}
-                    >
-                      &#9654;
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom Footer Pagination */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 14px",
-                  borderTop: `0.5px solid ${C.cardBorder}`,
-                  background: "#f8fafc",
-                }}
-              >
-                <span style={{ fontSize: 11, color: C.mutedText }}>
-                  Showing {pagedRules.length} items ({itemsPerPage}/page)
+          {rules.length > 0 && (
+            <div style={numManipulatePaginationStyle}>
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRules.length} record
+                {pagedRules.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `1px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
                 </span>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <Btn
-                    onClick={() => handlePageChange(1)}
-                    disabled={page === 1}
-                    variant="outline"
-                  >
-                    First
-                  </Btn>
-                  <Btn
-                    onClick={() => handlePageChange(page - 1)}
-                    disabled={page === 1}
-                    variant="outline"
-                  >
-                    Prev
-                  </Btn>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: C.accent,
-                      background: "#e0f2fe",
-                      padding: "5px 14px",
-                      borderRadius: 6,
-                      border: `0.5px solid ${C.accent}`,
-                    }}
-                  >
-                    {page} / {totalPages}
-                  </span>
-                  <Btn
-                    onClick={() => handlePageChange(page + 1)}
-                    disabled={page === totalPages}
-                    variant="outline"
-                  >
-                    Next
-                  </Btn>
-                  <Btn
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={page === totalPages}
-                    variant="outline"
-                  >
-                    Last
-                  </Btn>
-                  <select
-                    style={{
-                      fontSize: 11,
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 4,
-                      padding: "4px 8px",
-                      outline: "none",
-                      background: "#fff",
-                    }}
-                    value={page}
-                    onChange={(e) => handlePageChange(Number(e.target.value))}
-                  >
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <Btn
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
               </div>
-            </>
+            </div>
           )}
-        </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
+        PaperProps={{ sx: advancedModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
-        PaperProps={{ sx: { width: 560, maxWidth: "95vw", borderRadius: 2 } }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          {editIndex !== null ? "Edit Color Ring" : "Upload Color Ring"}
+        <DialogTitle style={advancedModalTitleStyle}>
+          Color Ring-Upload
         </DialogTitle>
-
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#fff",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
-              }}
-            >
-              <SectionHeading title="General Settings" />
-
-              <FieldRow label="Index" required>
-                <FormControl size="small" fullWidth>
-                  <MuiSelect
-                    name="index"
-                    value={formData.index}
-                    onChange={(e) => handleInputChange(e)}
-                    sx={{ fontSize: 13 }}
-                  >
-                    {COLOR_RING_INDEX_OPTIONS.map((opt) => (
-                      <MenuItem
-                        key={opt.value}
-                        value={opt.value}
-                        sx={{ fontSize: 13 }}
-                      >
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </MuiSelect>
-                </FormControl>
-              </FieldRow>
-
-              <FieldRow label="Description" required>
-                <TextField
-                  name="description"
-                  value={formData.description || ""}
-                  onChange={handleInputChange}
-                  fullWidth
-                  size="small"
-                  inputProps={{
-                    maxLength: 23,
-                    style: { fontSize: 13, padding: "6px 8px" },
-                  }}
+        <DialogContent style={advancedModalContentStyle}>
+          <div style={advancedFormPanelStyle}>
+            <FieldRow label="Index">
+              <FormControl size="small" fullWidth>
+                <MuiSelect
+                  value={formData.index}
+                  onChange={(e) =>
+                    handleInputChange({
+                      target: { name: "index", value: e.target.value },
+                    })
+                  }
+                  sx={muiSelectSx}
+                >
+                  {COLOR_RING_INDEX_OPTIONS.map((opt) => (
+                    <MenuItem
+                      key={opt.value}
+                      value={opt.value}
+                      sx={{ fontSize: 13 }}
+                    >
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </MuiSelect>
+              </FormControl>
+            </FieldRow>
+            <FieldRow label="Description">
+              <TextField
+                name="description"
+                value={formData.description || ""}
+                onChange={handleInputChange}
+                size="small"
+                fullWidth
+                variant="outlined"
+                sx={muiTextFieldSx}
+                inputProps={{
+                  maxLength: 23,
+                  style: { fontSize: 13, padding: "6px 8px" },
+                }}
+              />
+            </FieldRow>
+            <FieldRow label="Color Ring" align="flex-start">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  width: "100%",
+                }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".wav"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
                 />
-              </FieldRow>
-
-              <FieldRow label="Color Ring" required>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".wav"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                  />
-                  <Btn
-                    onClick={() => fileInputRef.current?.click()}
-                    variant="outline"
-                  >
-                    Choose File
-                  </Btn>
-                  <span
-                    style={{
-                      fontSize: 12,
-                      color: C.mutedText,
-                      maxWidth: 180,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {fileName}
-                  </span>
-                </div>
-              </FieldRow>
-
-              <div style={{ fontSize: 11, color: C.mutedText, marginTop: 16 }}>
-                Note: The file should be a wav file with 8000Hz sampling rate,
-                16-bit mono, A-law formatted, and less than 200KB in size.
+                <Btn
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{ height: 30, fontSize: 12 }}
+                >
+                  Choose file
+                </Btn>
+                <span style={{ fontSize: 13, color: C.mutedText }}>
+                  {fileName}
+                </span>
               </div>
-            </div>
+            </FieldRow>
+            <p style={wavFileNoteStyle}>
+              Note: The file should be a wav file with 8000Hz sampling rate, 16-bit mono, A-law formatted, and less than 200KB in size.
+            </p>
           </div>
         </DialogContent>
-
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
-         <Button
-  onClick={handleUpload}
-  variant="contained"
-  sx={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-
-    padding: "8px 28px",
-    borderRadius: "6px",
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-      opacity: 0.85,
-    },
-
-    "&:disabled": {
-      background: "#94a3b8",
-      color: "#e2e8f0",
-      border: "1px solid #94a3b8",
-    },
-  }}
->
-  {editIndex !== null ? "Update" : "Upload"}
-</Button>
-          <Button
-  onClick={handleReturn}
-  variant="outlined"
-  sx={{
-    background: "#fff",
-    color: "#475569",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-
-    padding: "8px 24px",
-    borderRadius: "6px",
-
-    "&:hover": {
-      background: "#f8fafc",
-      border: "1px solid #94a3b8",
-      color: "#1e293b",
-    },
-
-    "&:disabled": {
-      background: "#f8fafc",
-      color: "#94a3b8",
-      border: "1px solid #e2e8f0",
-    },
-  }}
->
-  Cancel
-</Button>
+        <DialogActions style={advancedModalFooterStyle}>
+          <Btn
+            variant="primary"
+            onClick={handleUpload}
+            style={{ minWidth: 100, height: 34, fontSize: 13 }}
+          >
+            Upload
+          </Btn>
+          <Btn
+            variant="cancel"
+            onClick={handleReturn}
+            style={{ minWidth: 100, height: 34 }}
+          >
+            Return
+          </Btn>
         </DialogActions>
       </Dialog>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

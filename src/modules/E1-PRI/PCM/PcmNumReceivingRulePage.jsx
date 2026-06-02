@@ -719,6 +719,37 @@ const PcmNumReceivingRulePage = () => {
               >
                 <CircularProgress size={28} style={{ color: C.accent }} />
               </div>
+            ) : rules.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No Number-Receiving Rules found.
+                </div>
+                <Btn
+                  variant="cancel"
+                  onClick={() => handleOpenModal()}
+                  disabled={loading.save || loading.fetch}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New
+                </Btn>
+              </div>
             ) : (
               <table
                 style={{
@@ -787,22 +818,7 @@ const PcmNumReceivingRulePage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {rules.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={NUM_RECEIVING_RULE_TABLE_COLUMNS.length}
-                        style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
-                        }}
-                      >
-                        No Number-Receiving Rules found.
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedRules.map((item, idx) => {
+                  {pagedRules.map((item, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const globalIndex = realIdx + 1;
                       const isRowChecked = selected.includes(realIdx);
@@ -940,8 +956,7 @@ const PcmNumReceivingRulePage = () => {
                           })}
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
             )}
@@ -1000,17 +1015,19 @@ const PcmNumReceivingRulePage = () => {
         </div>
 
         {/* Rule note */}
-        <div
-          style={{
-            fontSize: 11,
-            color: C.amber,
-            marginTop: 12,
-            textAlign: "center",
-          }}
-        >
-          Rule: "x"(lowercase) indicates a random number, "*" indicates multiple
-          random characters.
-        </div>
+        {rules.length > 0 && (
+          <div
+            style={{
+              fontSize: 11,
+              color: C.amber,
+              marginTop: 12,
+              textAlign: "center",
+            }}
+          >
+            Rule: "x"(lowercase) indicates a random number, "*" indicates
+            multiple random characters.
+          </div>
+        )}
       </div>
 
       {/* Modal */}

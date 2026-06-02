@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import {
   DIALING_RULE_TABLE_COLUMNS,
   DIALING_RULE_INITIAL_FORM,
   DIALING_RULE_INITIAL_DATA,
-} from "../../../sections/advanced/constants/DialingRuleConstants"; // Adjust path if needed
+} from "../../../sections/advanced/constants/DialingRuleConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -14,27 +15,40 @@ import {
   Select as MuiSelect,
   MenuItem,
   FormControl,
-  Checkbox,
+  Alert,
 } from "@mui/material";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   C,
   Btn,
   TH,
-  checkboxSx,
   muiSelectSx,
   muiTextFieldSx,
   numManipulateCardStyle,
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
+  tdStyle,
   AdvancedBreadcrumb,
+  AdvancedPageShell,
   FieldRow,
-  SectionHeading,
-  advancedPageWrapStyle,
-  advancedPageInnerStyle,
-  routeTdStyle,
-  routeThExtra,
+  advancedModalPaperSx,
+  advancedModalTitleStyle,
+  advancedModalContentStyle,
+  advancedModalFooterStyle,
+  advancedFormPanelStyle,
 } from "../../../sections/advanced/advancedSharedUi";
+
+const DATA_COLUMNS = DIALING_RULE_TABLE_COLUMNS.filter(
+  (c) => c.key !== "check" && c.key !== "modify",
+);
+
+const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
+const PCM_TRUNK_GROUP_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
+const PCM_TRUNK_GROUP_CHECKBOX_SX = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 
 const DialingRulePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,32 +56,21 @@ const DialingRulePage = () => {
   const [rules, setRules] = useState(DIALING_RULE_INITIAL_DATA);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
-  const [message, setMessage] = useState({ type: "", text: "" });
-
   const itemsPerPage = 20;
   const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
   const pagedRules = rules.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
-
   const [editIndex, setEditIndex] = useState(null);
   const [indexSelect, setIndexSelect] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
 
-  const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
-  // Get available indices for dropdown (0-99 excluding used ones, but include current edit index)
   const getAvailableIndices = (currentEditIndex = null) => {
     const currentIndex =
       currentEditIndex !== null && rules[currentEditIndex]
@@ -125,58 +128,52 @@ const DialingRulePage = () => {
 
   const handleSave = () => {
     if (!formData.index || formData.index === "") {
-      showMessage("error", "Index is required.");
+      showToast("Index is required.", "error");
       return;
     }
 
     const indexNum = parseInt(formData.index);
     if (isNaN(indexNum) || indexNum < 0 || indexNum > 99) {
-      showMessage("error", "Index must be between 0 and 99.");
+      showToast("Index must be between 0 and 99.", "error");
       return;
     }
 
     if (editIndex === null) {
       if (rules.some((r) => r.index === indexNum)) {
-        showMessage(
-          "error",
-          "Index already exists. Please choose a different index.",
-        );
+        showToast("Index already exists. Please choose a different index.", "error");
         return;
       }
     } else {
       if (rules.some((r, idx) => idx !== editIndex && r.index === indexNum)) {
-        showMessage(
-          "error",
-          "Index already exists. Please choose a different index.",
-        );
+        showToast("Index already exists. Please choose a different index.", "error");
         return;
       }
     }
 
     if (!formData.dialingRule || formData.dialingRule.trim() === "") {
-      showMessage("error", "Dialing Rule is required.");
+      showToast("Dialing Rule is required.", "error");
       return;
     }
 
     const dialingRuleRegex = /^[0-9A-Za-z.*#\[\]\-,]{1,128}$/;
     if (!dialingRuleRegex.test(formData.dialingRule)) {
-      showMessage(
-        "error",
+      showToast(
         "The Dialing Rule can consist only of 0~9, A~Z, a-z, '.', '#', '*' and special characters like '[', ']', ',', '-'!",
+        "error",
       );
       return;
     }
 
     if (!formData.description || formData.description.trim() === "") {
-      showMessage("error", "Description is required.");
+      showToast("Description is required.", "error");
       return;
     }
 
     const descriptionRegex = /^[^\%\&\~\!\|\(\)\;\"\'\=\\]*$/;
     if (!descriptionRegex.test(formData.description)) {
-      showMessage(
-        "error",
+      showToast(
         "The Description cannot contain special characters like '~', '!', '&', '|' and '='!",
+        "error",
       );
       return;
     }
@@ -192,14 +189,16 @@ const DialingRulePage = () => {
         setRules((prev) =>
           prev.map((rule, idx) => (idx === editIndex ? normalized : rule)),
         );
-        showMessage("success", "Dialing rule updated successfully!");
+        showToast("Dialing rule updated successfully!");
       } else {
         setRules((prev) => [...prev, normalized]);
-        showMessage("success", "Dialing rule created successfully!");
+        showToast("Dialing rule created successfully!");
       }
+
       handleCloseModal();
     } catch (error) {
-      showMessage("error", error.message || "Failed to save dialing rule");
+      console.error("Error saving dialing rule:", error);
+      showToast(error.message || "Failed to save dialing rule", "error");
     }
   };
 
@@ -232,7 +231,7 @@ const DialingRulePage = () => {
 
   const handleDelete = () => {
     if (selected.length === 0) {
-      showMessage("error", "Please select at least one item to delete.");
+      showToast("Please select at least one item to delete.", "error");
       return;
     }
 
@@ -252,27 +251,31 @@ const DialingRulePage = () => {
           ),
         );
       }
-      showMessage("success", `${selected.length} item(s) deleted successfully`);
+      showToast(`${selected.length} item(s) deleted successfully`);
     } catch (error) {
-      showMessage("error", error.message || "Failed to delete selected items");
+      console.error("Error deleting selected items:", error);
+      showToast(error.message || "Failed to delete selected items", "error");
     }
   };
 
   const handleClearAll = () => {
     if (rules.length === 0) {
-      showMessage("error", "No data to clear");
+      showToast("No data to clear", "error");
       return;
     }
 
-    if (!window.confirm("Are you sure to clear all dialing rules?")) return;
+    if (!window.confirm("Are you sure to clear all dialing rules?")) {
+      return;
+    }
 
     try {
       setRules([]);
       setSelected([]);
       setPage(1);
-      showMessage("success", `All dialing rules cleared successfully`);
+      showToast(`All dialing rules cleared successfully`);
     } catch (error) {
-      showMessage("error", error.message || "Failed to clear all items");
+      console.error("Error clearing all items:", error);
+      showToast(error.message || "Failed to clear all items", "error");
     }
   };
 
@@ -283,112 +286,110 @@ const DialingRulePage = () => {
     }
   };
 
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
-
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-      }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [rules, page]);
-
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
+  const pagedSelectedCount = pagedRules.filter((_, idx) =>
+    selected.includes((page - 1) * itemsPerPage + idx),
+  ).length;
+  const allPagedChecked =
+    pagedRules.length > 0 && pagedSelectedCount === pagedRules.length;
 
   return (
-    <div style={advancedPageWrapStyle}>
-      <div style={advancedPageInnerStyle}>
-        {/* Error / Success Banner */}
-        {message.text && (
+    <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+      <AdvancedBreadcrumb current="Dialing Rule" />
+
+      <div style={numManipulateCardStyle}>
+        <div style={numManipulateToolbarStyle}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {selected.length > 0 && (
+              <span
+                style={{
+                  background: "#eff6ff",
+                  color: C.accent,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "5px 12px",
+                  borderRadius: 999,
+                  border: `1px solid ${C.accent}`,
+                }}
+              >
+                {selected.length} selected
+              </span>
+            )}
+          </div>
           <div
             style={{
-              background:
-                message.type === "error"
-                  ? "#fef2f2"
-                  : message.type === "success"
-                    ? "#f0fdf4"
-                    : "#eff6ff",
-              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
-              color:
-                message.type === "error"
-                  ? "#b91c1c"
-                  : message.type === "success"
-                    ? "#166534"
-                    : "#1e40af",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 12,
-              fontSize: 13,
               display: "flex",
-              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
             }}
           >
-            <span>{message.text}</span>
-            <span
-              onClick={() => setMessage({ type: "", text: "" })}
-              style={{ cursor: "pointer", fontSize: 16 }}
+            <Btn
+              variant="cancel"
+              onClick={handleInverse}
+              disabled={rules.length === 0}
+              style={{ height: 30 }}
             >
-              ✕
-            </span>
+              Inverse
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={handleDelete}
+              disabled={selected.length === 0}
+              style={{ height: 30 }}
+            >
+              Delete
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={handleClearAll}
+              disabled={rules.length === 0}
+              style={{ height: 30 }}
+            >
+              Clear All
+            </Btn>
+            <Btn
+              variant="primary"
+              onClick={() => handleOpenModal()}
+              style={{
+                height: 30,
+                padding: "6px 14px",
+                fontSize: 12,
+                borderRadius: 10,
+              }}
+            >
+              + Add New
+            </Btn>
           </div>
-        )}
+        </div>
 
-        <AdvancedBreadcrumb current="Dialing Rule" />
-
-        <div style={{ ...numManipulateCardStyle, display: "flex", flexDirection: "column" }}>
+        <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
           {rules.length === 0 ? (
-            // Empty State
             <div
               style={{
-                padding: "60px 20px",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
+                minHeight: 240,
+                padding: 24,
+                textAlign: "center",
               }}
             >
               <div
@@ -410,530 +411,273 @@ const DialingRulePage = () => {
               </Btn>
             </div>
           ) : (
-            <>
-              <div style={numManipulateToolbarStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  {selected.length > 0 && (
-                    <span
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+              }}
+            >
+              <thead>
+                <tr>
+                  <TH
+                    style={{
+                      width: 40,
+                      padding: 0,
+                      borderLeft: "none",
+                      ...PCM_TRUNK_GROUP_TH_GAP,
+                    }}
+                  >
+                    <Checkbox
+                      size="small"
+                      checked={allPagedChecked}
+                      indeterminate={
+                        pagedSelectedCount > 0 && !allPagedChecked
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) handleCheckAll();
+                        else handleUncheckAll();
+                      }}
+                      sx={PCM_TRUNK_GROUP_CHECKBOX_SX}
+                    />
+                  </TH>
+                  {DATA_COLUMNS.map((col) => (
+                    <TH key={col.key} style={PCM_TRUNK_GROUP_TH_GAP}>
+                      {col.label}
+                    </TH>
+                  ))}
+                  <TH
+                    style={{
+                      width: 70,
+                      borderRight: "none",
+                      ...PCM_TRUNK_GROUP_TH_GAP,
+                    }}
+                  >
+                    Modify
+                  </TH>
+                </tr>
+              </thead>
+              <tbody>
+                {pagedRules.map((item, idx) => {
+                  const realIdx = (page - 1) * itemsPerPage + idx;
+                  const isSelected = selected.includes(realIdx);
+                  const isLastRow = idx === pagedRules.length - 1;
+                  const rowBg = isSelected
+                    ? "#f0f9ff"
+                    : idx % 2 === 1
+                      ? "#f8fafc"
+                      : "#ffffff";
+                  const lastRowCellStyle = isLastRow
+                    ? { borderBottom: "none" }
+                    : {};
+
+                  return (
+                    <tr
+                      key={realIdx}
                       style={{
-                        background: "#eff6ff",
-                        color: C.accent,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        padding: "5px 12px",
-                        borderRadius: 999,
-                        border: `1px solid ${C.accent}`,
+                        background: rowBg,
+                        transition: "background 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected)
+                          e.currentTarget.style.background = "#f1f5f9";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected)
+                          e.currentTarget.style.background = rowBg;
                       }}
                     >
-                      {selected.length} selected
-                    </span>
-                  )}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Btn
-                    variant="cancel"
-                    onClick={handleInverse}
-                    disabled={rules.length === 0}
-                    style={{ height: 30 }}
-                  >
-                    Inverse
-                  </Btn>
-                  <Btn
-                    variant="cancel"
-                    onClick={handleDelete}
-                    disabled={selected.length === 0}
-                    style={{ height: 30 }}
-                  >
-                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
-                  </Btn>
-                  <Btn
-                    variant="cancel"
-                    onClick={handleClearAll}
-                    disabled={rules.length === 0}
-                    style={{ height: 30 }}
-                  >
-                    Clear All
-                  </Btn>
-                  <Btn
-                    variant="primary"
-                    onClick={() => handleOpenModal()}
-                    style={{
-                      height: 30,
-                      padding: "6px 14px",
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                  >
-                    + Add New
-                  </Btn>
-                </div>
-              </div>
-
-              {/* Table */}
-              <div>
-                <div
-                  ref={tableScrollRef}
-                  onScroll={handleTableScroll}
-                  style={{
-                    overflowX: "auto",
-                    overflowY: "auto",
-                    maxHeight: 400,
-                    scrollbarWidth: "none",
-                    msOverflowStyle: "none",
-                  }}
-                >
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      tableLayout: "auto",
-                      minWidth: 800,
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        {DIALING_RULE_TABLE_COLUMNS.map((col) => {
-                          if (col.key === "check") {
-                            return (
-                              <TH
-                                key={col.key}
-                                style={{
-                                  width: 40,
-                                  padding: 0,
-                                  ...routeThExtra,
-                                }}
-                              >
-                                <Checkbox
-                                  size="small"
-                                  checked={
-                                    rules.length > 0 &&
-                                    selected.length === rules.length
-                                  }
-                                  indeterminate={
-                                    selected.length > 0 &&
-                                    selected.length < rules.length
-                                  }
-                                  onChange={(e) => {
-                                    if (e.target.checked) handleCheckAll();
-                                    else handleUncheckAll();
-                                  }}
-                                  sx={checkboxSx}
-                                />
-                              </TH>
-                            );
-                          }
-                          if (col.key === "modify") {
-                            return (
-                              <TH
-                                key={col.key}
-                                style={{
-                                  width: 70,
-                                  borderRight: "none",
-                                  ...routeThExtra,
-                                }}
-                              >
-                                {col.label}
-                              </TH>
-                            );
-                          }
-                          return (
-                            <TH key={col.key} style={routeThExtra}>
-                              {col.label}
-                            </TH>
-                          );
-                        })}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pagedRules.map((item, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        const isSelected = selected.includes(realIdx);
-                        const rowBg = isSelected
-                          ? "#f0f9ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
-
-                        return (
-                          <tr
-                            key={realIdx}
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...PCM_TRUNK_GROUP_TD_GAP,
+                          background: rowBg,
+                          borderLeft: "none",
+                          width: 36,
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={isSelected}
+                          onChange={() => handleSelectRow(idx)}
+                          sx={PCM_TRUNK_GROUP_CHECKBOX_SX}
+                        />
+                      </td>
+                      {DATA_COLUMNS.map((col) => (
+                        <td
+                          key={col.key}
+                          style={{
+                            ...tdStyle,
+                            ...PCM_TRUNK_GROUP_TD_GAP,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {item[col.key]}
+                        </td>
+                      ))}
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...PCM_TRUNK_GROUP_TD_GAP,
+                          background: rowBg,
+                          borderRight: "none",
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <EditDocumentIcon
+                            titleAccess="Edit"
                             style={{
-                              background: rowBg,
-                              transition: "background 0.15s ease",
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
                             }}
                             onMouseEnter={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = "#f1f5f9";
+                              e.currentTarget.style.opacity = "1";
                             }}
                             onMouseLeave={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = rowBg;
+                              e.currentTarget.style.opacity = "0.7";
                             }}
-                          >
-                            {DIALING_RULE_TABLE_COLUMNS.map((col) => {
-                              if (col.key === "check") {
-                                return (
-                                  <td
-                                    key={col.key}
-                                    style={{
-                                      ...routeTdStyle,
-                                      background: rowBg,
-                                      width: 36,
-                                    }}
-                                  >
-                                    <Checkbox
-                                      size="small"
-                                      checked={isSelected}
-                                      onChange={() => handleSelectRow(idx)}
-                                      sx={checkboxSx}
-                                    />
-                                  </td>
-                                );
-                              }
-                              if (col.key === "modify") {
-                                return (
-                                  <td
-                                    key={col.key}
-                                    style={{
-                                      ...routeTdStyle,
-                                      background: rowBg,
-                                      borderRight: "none",
-                                    }}
-                                  >
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        justifyContent: "center",
-                                      }}
-                                    >
-                                      <EditDocumentIcon
-                                        titleAccess="Edit"
-                                        style={{
-                                          cursor: "pointer",
-                                          color: "#2563eb",
-                                          fontSize: 22,
-                                          opacity: 0.7,
-                                          transition: "opacity 0.15s ease",
-                                        }}
-                                        onClick={() =>
-                                          handleOpenModal(item, realIdx)
-                                        }
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.opacity = "1";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.opacity = "0.7";
-                                        }}
-                                      />
-                                    </div>
-                                  </td>
-                                );
-                              }
-                              return (
-                                <td
-                                  key={col.key}
-                                  style={{
-                                    ...routeTdStyle,
-                                    background: rowBg,
-                                    fontFamily:
-                                      col.key === "dialingRule"
-                                        ? "monospace"
-                                        : undefined,
-                                    color:
-                                      col.key === "description"
-                                        ? C.mutedText
-                                        : C.valueText,
-                                  }}
-                                >
-                                  {item[col.key]}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Custom scrollbar row below the table */}
-                {showCustomScrollbar && (
-                  <div
-                    style={{
-                      width: "100%",
-                      background: "#f4f6fa",
-                      display: "flex",
-                      alignItems: "center",
-                      height: 24,
-                      padding: "0 4px",
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                      onClick={() => handleArrowClick("left")}
-                    >
-                      &#9664;
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        height: 12,
-                        background: "#e3e7ef",
-                        borderRadius: 8,
-                        position: "relative",
-                        margin: "0 4px",
-                        overflow: "hidden",
-                      }}
-                      onClick={handleScrollbarDrag}
-                    >
-                      <div
-                        style={{
-                          position: "absolute",
-                          height: 12,
-                          background: "#888",
-                          borderRadius: 8,
-                          cursor: "pointer",
-                          top: 0,
-                          width: thumbWidth,
-                          left: thumbLeft,
-                        }}
-                        draggable
-                        onDrag={handleScrollbarDrag}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: "#e3e7ef",
-                        border: "1px solid #bbb",
-                        borderRadius: 8,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: "#888",
-                        cursor: "pointer",
-                        userSelect: "none",
-                      }}
-                      onClick={() => handleArrowClick("right")}
-                    >
-                      &#9654;
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom Footer Pagination */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 14px",
-                  borderTop: `0.5px solid ${C.cardBorder}`,
-                  background: "#f8fafc",
-                }}
-              >
-                <span style={{ fontSize: 11, color: C.mutedText }}>
-                  Showing {pagedRules.length} items ({itemsPerPage}/page)
-                </span>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <Btn
-                    onClick={() => handlePageChange(1)}
-                    disabled={page === 1}
-                    variant="outline"
-                  >
-                    First
-                  </Btn>
-                  <Btn
-                    onClick={() => handlePageChange(page - 1)}
-                    disabled={page === 1}
-                    variant="outline"
-                  >
-                    Prev
-                  </Btn>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: C.accent,
-                      background: "#e0f2fe",
-                      padding: "5px 14px",
-                      borderRadius: 6,
-                      border: `0.5px solid ${C.accent}`,
-                    }}
-                  >
-                    {page} / {totalPages}
-                  </span>
-                  <Btn
-                    onClick={() => handlePageChange(page + 1)}
-                    disabled={page === totalPages}
-                    variant="outline"
-                  >
-                    Next
-                  </Btn>
-                  <Btn
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={page === totalPages}
-                    variant="outline"
-                  >
-                    Last
-                  </Btn>
-                  <select
-                    style={{
-                      fontSize: 11,
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 4,
-                      padding: "4px 8px",
-                      outline: "none",
-                      background: "#fff",
-                    }}
-                    value={page}
-                    onChange={(e) => handlePageChange(Number(e.target.value))}
-                  >
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </>
+                            onClick={() => handleOpenModal(item, realIdx)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           )}
         </div>
+
+        {rules.length > 0 && (
+          <div style={numManipulatePaginationStyle}>
+            <span style={{ fontSize: 11, color: C.mutedText }}>
+              Showing {pagedRules.length} record
+              {pagedRules.length !== 1 ? "s" : ""} on page {page}
+            </span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Btn
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page <= 1}
+                variant="outline"
+              >
+                ← Prev
+              </Btn>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: C.accent,
+                  background: "#e0f2fe",
+                  padding: "5px 14px",
+                  borderRadius: 6,
+                  border: `1px solid ${C.cardBorder}`,
+                }}
+              >
+                Page {page} of {totalPages}
+              </span>
+              <Btn
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= totalPages}
+                variant="outline"
+              >
+                Next →
+              </Btn>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
+        PaperProps={{ sx: advancedModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
-        PaperProps={{ sx: { width: 500, maxWidth: "95vw", borderRadius: 2 } }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
+        <DialogTitle style={advancedModalTitleStyle}>
           {editIndex !== null ? "Edit Dialing Rule" : "Add Dialing Rule"}
         </DialogTitle>
-
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#fff",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
-              }}
-            >
-              <SectionHeading title="General Settings" />
-
-              <FieldRow label="Index" required>
-                <FormControl size="small" fullWidth>
-                  <MuiSelect
-                    value={indexSelect || ""}
-                    onChange={(e) => handleIndexSelectChange(e.target.value)}
-                    sx={{ fontSize: 13 }}
-                  >
-                    {getAvailableIndices(editIndex).map((opt) => (
-                      <MenuItem
-                        key={opt.value}
-                        value={opt.value}
-                        sx={{ fontSize: 13 }}
-                      >
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </MuiSelect>
-                </FormControl>
-              </FieldRow>
-
-              <FieldRow label="Description" required>
-                <TextField
-                  name="description"
-                  value={formData.description || ""}
-                  onChange={handleInputChange}
-                  fullWidth
-                  size="small"
-                  inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-                />
-              </FieldRow>
-
-              <FieldRow label="Dialing Rule" required>
-                <TextField
-                  name="dialingRule"
-                  value={formData.dialingRule || ""}
-                  onChange={handleInputChange}
-                  fullWidth
-                  size="small"
-                  inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-                />
-              </FieldRow>
-            </div>
+        <DialogContent style={advancedModalContentStyle}>
+          <div style={advancedFormPanelStyle}>
+            <FieldRow label="Index:">
+              <FormControl size="small" fullWidth>
+                <MuiSelect
+                  value={indexSelect || ""}
+                  onChange={(e) => handleIndexSelectChange(e.target.value)}
+                  sx={muiSelectSx}
+                >
+                  {getAvailableIndices(editIndex).map((opt) => (
+                    <MenuItem
+                      key={opt.value}
+                      value={opt.value}
+                      sx={{ fontSize: 13 }}
+                    >
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </MuiSelect>
+              </FormControl>
+            </FieldRow>
+            <FieldRow label="Description:">
+              <TextField
+                name="description"
+                value={formData.description || ""}
+                onChange={handleInputChange}
+                size="small"
+                fullWidth
+                variant="outlined"
+                sx={muiTextFieldSx}
+                inputProps={{
+                  style: { fontSize: 13, padding: "6px 8px" },
+                }}
+              />
+            </FieldRow>
+            <FieldRow label="Dialing Rule:">
+              <TextField
+                name="dialingRule"
+                value={formData.dialingRule || ""}
+                onChange={handleInputChange}
+                size="small"
+                fullWidth
+                variant="outlined"
+                sx={muiTextFieldSx}
+                inputProps={{
+                  style: { fontSize: 13, padding: "6px 8px" },
+                }}
+              />
+            </FieldRow>
           </div>
         </DialogContent>
-
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={advancedModalFooterStyle}>
           <Btn
-            onClick={handleSave}
             variant="primary"
-            style={{ minWidth: 120, height: 36, fontSize: 14 }}
+            onClick={handleSave}
+            style={{ minWidth: 100, height: 34, fontSize: 13 }}
           >
-            {editIndex !== null ? "Update" : "Save"}
+            Save
           </Btn>
           <Btn
-            onClick={handleCloseModal}
             variant="cancel"
-            style={{ minWidth: 120, height: 36, fontSize: 14 }}
+            onClick={handleCloseModal}
+            style={{ minWidth: 100, height: 34 }}
           >
-            Cancel
+            Close
           </Btn>
         </DialogActions>
       </Dialog>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

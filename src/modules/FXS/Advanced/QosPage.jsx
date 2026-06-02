@@ -1,63 +1,45 @@
 import React, { useState } from "react";
+import { Alert, TextField } from "@mui/material";
 import { QOS_INITIAL_FORM } from "../../../sections/advanced/constants/QosConstants";
-import { TextField, Checkbox } from "@mui/material";
 import {
-  C,
   Btn,
-  checkboxSx,
   muiTextFieldSx,
-  numManipulateCardStyle,
   AdvancedBreadcrumb,
+  AdvancedPageShell,
+  AdvancedFormCard,
   FieldRow,
-  SectionHeading,
-  advancedFormPanelStyle,
-  advancedFormActionsStyle,
-  advancedPageWrapStyle,
-  advancedPageInnerStyle,
+  AdvancedCheckboxRow,
+  advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const QosPage = () => {
   const [formData, setFormData] = useState(QOS_INITIAL_FORM);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [toast, setToast] = useState({ msg: "", type: "success" });
 
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
-  const handleCheckboxChange = () => {
-    setFormData((prev) => ({ ...prev, qosEnabled: !prev.qosEnabled }));
-  };
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleKeyPressInteger = (e) => {
-    const key = e.keyCode || e.which;
-    if (!((key >= 48 && key <= 57) || key === 8)) {
-      e.preventDefault();
-    }
+  const alert = (msg) => {
+    const isSuccess = /successfully/i.test(String(msg));
+    showToast(msg, isSuccess ? "success" : "error");
   };
 
   const handleSave = () => {
     if (formData.qosEnabled) {
-      const mediaQos = parseInt(formData.mediaPremiumQos);
-      if (isNaN(mediaQos) || mediaQos < 0 || mediaQos > 63) {
-        showMessage("error", "The range of 'Media Premium QoS' is 0~63!");
-        document.getElementById("mediaPremiumQos")?.focus();
+      const mediaQos = parseInt(formData.mediaPremiumQos, 10);
+      if (Number.isNaN(mediaQos) || mediaQos < 0 || mediaQos > 63) {
+        alert("The range of 'Media Premium QoS' is 0~63!");
         return;
       }
-
-      const controlQos = parseInt(formData.controlPremiumQos);
-      if (isNaN(controlQos) || controlQos < 0 || controlQos > 63) {
-        showMessage("error", "The range of 'Control Premium QoS' is 0~63!");
-        document.getElementById("controlPremiumQos")?.focus();
+      const controlQos = parseInt(formData.controlPremiumQos, 10);
+      if (Number.isNaN(controlQos) || controlQos < 0 || controlQos > 63) {
+        alert("The range of 'Control Premium QoS' is 0~63!");
         return;
       }
     }
-
-    showMessage("success", "Settings saved successfully!");
+    alert("Settings saved successfully!");
   };
 
   const handleReset = () => {
@@ -65,135 +47,97 @@ const QosPage = () => {
   };
 
   return (
-    <div style={advancedPageWrapStyle}>
-      <div style={advancedPageInnerStyle}>
-        {message.text && (
-          <div
-            style={{
-              background:
-                message.type === "error"
-                  ? "#fef2f2"
-                  : message.type === "success"
-                    ? "#f0fdf4"
-                    : "#eff6ff",
-              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
-              color:
-                message.type === "error"
-                  ? "#b91c1c"
-                  : message.type === "success"
-                    ? "#166534"
-                    : "#1e40af",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 12,
-              fontSize: 13,
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            <span>{message.text}</span>
-            <span
-              onClick={() => setMessage({ type: "", text: "" })}
-              style={{ cursor: "pointer", fontSize: 16 }}
-            >
-              ✕
-            </span>
-          </div>
-        )}
-
-        <AdvancedBreadcrumb current="QoS" />
-
-        <div style={numManipulateCardStyle}>
-          <div style={{ padding: 24 }}>
-            <SectionHeading title="QoS Configuration" />
-
-            <div style={advancedFormPanelStyle}>
-              <FieldRow label="QoS">
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Checkbox
-                    checked={!!formData.qosEnabled}
-                    onChange={handleCheckboxChange}
-                    size="small"
-                    sx={checkboxSx}
-                  />
-                  <span
-                    style={{
-                      fontSize: 13,
-                      color: C.valueText,
-                      cursor: "pointer",
-                    }}
-                    onClick={handleCheckboxChange}
-                  >
-                    Enable
-                  </span>
-                </div>
-              </FieldRow>
-
-              {formData.qosEnabled && (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "16px 40px",
-                  }}
-                >
-                  <FieldRow label="Media Premium QoS">
-                    <TextField
-                      id="mediaPremiumQos"
-                      size="small"
-                      fullWidth
-                      value={formData.mediaPremiumQos || ""}
-                      onChange={(e) =>
-                        handleInputChange("mediaPremiumQos", e.target.value)
-                      }
-                      onKeyPress={handleKeyPressInteger}
-                      sx={muiTextFieldSx}
-                      inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
-                      }}
-                    />
-                  </FieldRow>
-
-                  <FieldRow label="Control Premium QoS">
-                    <TextField
-                      id="controlPremiumQos"
-                      size="small"
-                      fullWidth
-                      value={formData.controlPremiumQos || ""}
-                      onChange={(e) =>
-                        handleInputChange("controlPremiumQos", e.target.value)
-                      }
-                      onKeyPress={handleKeyPressInteger}
-                      sx={muiTextFieldSx}
-                      inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
-                      }}
-                    />
-                  </FieldRow>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div style={advancedFormActionsStyle}>
+    <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+      <AdvancedBreadcrumb current="QoS" />
+      <AdvancedFormCard
+        title="QoS"
+        footer={
+          <>
             <Btn
               variant="primary"
               onClick={handleSave}
-              style={{ height: 33, minWidth: 100 }}
+              style={advancedFormBtnStyle}
             >
               Save
             </Btn>
             <Btn
               variant="cancel"
               onClick={handleReset}
-              style={{ height: 33, minWidth: 100 }}
+              style={advancedFormBtnStyle}
             >
               Reset
             </Btn>
-          </div>
-        </div>
-      </div>
-    </div>
+          </>
+        }
+      >
+        <AdvancedCheckboxRow
+          id="qosEnabled"
+          label="QoS"
+          checked={formData.qosEnabled}
+          onChange={() =>
+            setFormData((prev) => ({
+              ...prev,
+              qosEnabled: !prev.qosEnabled,
+            }))
+          }
+        />
+        {formData.qosEnabled && (
+          <>
+            <FieldRow label="Media Premium QoS">
+              <TextField
+                id="mediaPremiumQos"
+                fullWidth
+                size="small"
+                value={formData.mediaPremiumQos || ""}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "");
+                  setFormData((prev) => ({ ...prev, mediaPremiumQos: v }));
+                }}
+                sx={muiTextFieldSx}
+                inputProps={{
+                  style: { fontSize: 13, padding: "6px 8px" },
+                  maxLength: 2,
+                }}
+              />
+            </FieldRow>
+            <FieldRow label="Control Premium QoS">
+              <TextField
+                id="controlPremiumQos"
+                fullWidth
+                size="small"
+                value={formData.controlPremiumQos || ""}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "");
+                  setFormData((prev) => ({ ...prev, controlPremiumQos: v }));
+                }}
+                sx={muiTextFieldSx}
+                inputProps={{
+                  style: { fontSize: 13, padding: "6px 8px" },
+                  maxLength: 2,
+                }}
+              />
+            </FieldRow>
+          </>
+        )}
+      </AdvancedFormCard>
+    </AdvancedPageShell>
   );
 };
 

@@ -88,6 +88,25 @@ const PortFxsBatchModifyPage = ({
     }
   };
 
+  const fieldInteraction = {
+    onFocus: (e) => {
+      e.target.style.borderColor = "#0284c7";
+    },
+    onBlur: (e) => {
+      e.target.style.borderColor = "#9CA3AF";
+    },
+    onMouseEnter: (e) => {
+      if (document.activeElement !== e.target) {
+        e.target.style.borderColor = "#64748b";
+      }
+    },
+    onMouseLeave: (e) => {
+      if (document.activeElement !== e.target) {
+        e.target.style.borderColor = "#9CA3AF";
+      }
+    },
+  };
+
   const [form, setForm] = useState(() => {
     // Prefer propInitialPorts when provided, else use navigation state
     const initialPorts = propInitialPorts || location.state || null;
@@ -320,7 +339,7 @@ const PortFxsBatchModifyPage = ({
       style={{ backgroundColor: "#dde0e4" }}
     >
       <div className="flex justify-center" style={{ padding: "0 20px" }}>
-        <div style={{ width: "62%", maxWidth: "1000px", minWidth: "700px" }}>
+        <div style={{ width: "56%", maxWidth: "860px", minWidth: "620px" }}>
           {/* Error / Success Banner */}
           {message.text && (
             <Alert
@@ -432,6 +451,9 @@ const PortFxsBatchModifyPage = ({
                                         height: "22px",
                                         width: "200px",
                                         fontSize: "12px",
+                                        borderColor: "#9CA3AF",
+                                        transition: "border-color 0.2s ease",
+                                        outline: "none",
                                       }}
                                       maxLength={field.maxLength || 31}
                                       onKeyDown={
@@ -445,6 +467,7 @@ const PortFxsBatchModifyPage = ({
                                               ? handleAutoDialKey
                                               : handleRestrictedChars
                                       }
+                                      {...fieldInteraction}
                                     />
                                   )}
 
@@ -461,8 +484,12 @@ const PortFxsBatchModifyPage = ({
                                         height: "22px",
                                         width: "200px",
                                         fontSize: "12px",
+                                        borderColor: "#9CA3AF",
+                                        transition: "border-color 0.2s ease",
+                                        outline: "none",
                                       }}
                                       maxLength={field.maxLength || 63}
+                                      {...fieldInteraction}
                                     />
                                   )}
 
@@ -480,7 +507,11 @@ const PortFxsBatchModifyPage = ({
                                           ? "280px"
                                           : "200px",
                                         fontSize: "12px",
+                                        borderColor: "#9CA3AF",
+                                        transition: "border-color 0.2s ease",
+                                        outline: "none",
                                       }}
+                                      {...fieldInteraction}
                                     >
                                       {field.options.map((opt) => (
                                         <option key={opt} value={opt}>

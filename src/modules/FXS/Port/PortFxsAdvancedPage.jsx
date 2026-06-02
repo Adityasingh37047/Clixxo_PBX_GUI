@@ -447,21 +447,26 @@ const PortFxsAdvancedPage = () => {
       <div
         style={{
           marginTop: 24,
-          padding: 16,
-          background: "#fef2f2",
-          borderRadius: 6,
-          border: "1px dashed #fecaca",
+          padding: "0 4px",
           fontSize: 12,
           color: "#dc2626",
+          textAlign: "center",
         }}
       >
-        <ul style={{ margin: 0, paddingLeft: 16 }}>
-          {PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES.map((note, idx) => (
-            <li key={idx} style={{ marginBottom: 4 }}>
-              {note}
-            </li>
-          ))}
-        </ul>
+        <div
+          style={{
+            lineHeight: 1.6,
+            display: "inline-grid",
+            gridTemplateColumns: "40px auto",
+            textAlign: "left",
+            columnGap: 0,
+          }}
+        >
+          <div>Note:</div>
+          <div>{PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES[0].replace(/^Note:/, "")}</div>
+          <div></div>
+          <div>{PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES[1]}</div>
+        </div>
       </div>
     </form>
   );

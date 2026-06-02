@@ -1,119 +1,90 @@
 import React, { useState } from "react";
+import { Alert, Select as MuiSelect, MenuItem, FormControl } from "@mui/material";
 import {
   AREA_OPTIONS,
   AREA_SELECT_INITIAL_FORM,
 } from "../../../sections/advanced/constants/AreaSelectConstants";
-import { Select as MuiSelect, MenuItem, FormControl } from "@mui/material";
 import {
   Btn,
   muiSelectSx,
-  numManipulateCardStyle,
   AdvancedBreadcrumb,
+  AdvancedPageShell,
+  AdvancedFormCard,
   FieldRow,
-  SectionHeading,
-  advancedFormPanelStyle,
-  advancedFormActionsStyle,
-  advancedPageWrapStyle,
-  advancedPageInnerStyle,
+  advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const AreaSelectPage = () => {
   const [formData, setFormData] = useState(AREA_SELECT_INITIAL_FORM);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [toast, setToast] = useState({ msg: "", type: "success" });
 
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
   const handleSave = () => {
-    showMessage("success", "Settings saved successfully!");
+    showToast("Settings saved successfully!");
   };
 
   return (
-    <div style={advancedPageWrapStyle}>
-      <div style={advancedPageInnerStyle}>
-        {message.text && (
-          <div
-            style={{
-              background:
-                message.type === "error"
-                  ? "#fef2f2"
-                  : message.type === "success"
-                    ? "#f0fdf4"
-                    : "#eff6ff",
-              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
-              color:
-                message.type === "error"
-                  ? "#b91c1c"
-                  : message.type === "success"
-                    ? "#166534"
-                    : "#1e40af",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 12,
-              fontSize: 13,
-              display: "flex",
-              justifyContent: "space-between",
-            }}
+    <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+      <AdvancedBreadcrumb current="Area Select" />
+      <AdvancedFormCard
+        title="Select Area for Parameters"
+        footer={
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            style={advancedFormBtnStyle}
           >
-            <span>{message.text}</span>
-            <span
-              onClick={() => setMessage({ type: "", text: "" })}
-              style={{ cursor: "pointer", fontSize: 16 }}
+            Save
+          </Btn>
+        }
+      >
+        <FieldRow label="Area Parameters">
+          <FormControl size="small" fullWidth>
+            <MuiSelect
+              value={formData.areaSelect}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  areaSelect: e.target.value,
+                }))
+              }
+              sx={muiSelectSx}
             >
-              ✕
-            </span>
-          </div>
-        )}
-
-        <AdvancedBreadcrumb current="Area Select" />
-
-        <div style={numManipulateCardStyle}>
-          <div style={{ padding: 24 }}>
-            <SectionHeading title="Select Area for Parameters" />
-
-            <div style={advancedFormPanelStyle}>
-              <FieldRow label="Area Parameters">
-                <FormControl size="small" sx={{ width: "100%" }}>
-                  <MuiSelect
-                    value={formData.areaSelect}
-                    onChange={(e) =>
-                      handleInputChange("areaSelect", e.target.value)
-                    }
-                    sx={muiSelectSx}
-                  >
-                    {AREA_OPTIONS.map((opt) => (
-                      <MenuItem
-                        key={opt.value}
-                        value={opt.value}
-                        sx={{ fontSize: 13 }}
-                      >
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </MuiSelect>
-                </FormControl>
-              </FieldRow>
-            </div>
-          </div>
-
-          <div style={advancedFormActionsStyle}>
-            <Btn
-              variant="primary"
-              onClick={handleSave}
-              style={{ height: 33, minWidth: 100 }}
-            >
-              Save
-            </Btn>
-          </div>
-        </div>
-      </div>
-    </div>
+              {AREA_OPTIONS.map((opt) => (
+                <MenuItem
+                  key={opt.value}
+                  value={opt.value}
+                  sx={{ fontSize: 13 }}
+                >
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </MuiSelect>
+          </FormControl>
+        </FieldRow>
+      </AdvancedFormCard>
+    </AdvancedPageShell>
   );
 };
 

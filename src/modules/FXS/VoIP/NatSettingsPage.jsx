@@ -1,71 +1,46 @@
 import React, { useState } from "react";
-import {
-  Button,
-  FormControl,
-  MenuItem,
-  Select as MuiSelect,
-  Checkbox,
-  TextField,
-} from "@mui/material";
+import { Checkbox } from "@mui/material";
 import {
   NAT_SETTINGS_FIELDS,
   NAT_SETTINGS_NOTE,
-} from "../../../sections/voip/constants/NatSettingsConstants"; // Adjust path if needed
+} from "../../../sections/voip/constants/NatSettingsConstants";
+import {
+  C,
+  Btn,
+  checkboxSx,
+  AdvancedPageShell,
+  AdvancedBreadcrumb,
+  advancedTableContainerStyle,
+  advancedBlueBarStyle,
+  nativeFieldInteraction,
+} from "../../../sections/advanced/advancedSharedUi";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#111111",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
-};
+const NAT_SETTINGS_SECTION_HEADING_COLOR = "#30415A";
 
-// ── Shared UI Components ──────────────────────────────────────────────────────
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 220, // Sufficient width for NAT setting labels
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
+const NatSettingsSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+    }}
+  >
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: "#fff",
+        background: C.cardBg,
         paddingRight: 8,
         fontSize: 13,
         fontWeight: 600,
-        color: C.mutedText,
+        color: NAT_SETTINGS_SECTION_HEADING_COLOR,
       }}
     >
       {title}
     </span>
   </div>
 );
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 const getInitialState = () => {
   const state = {};
@@ -85,12 +60,6 @@ const getInitialState = () => {
 
 const NatSettingsPage = () => {
   const [form, setForm] = useState(getInitialState());
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
 
   const handleChange = (key, value) => {
     const fieldDef = NAT_SETTINGS_FIELDS.find((f) => f.key === key);
@@ -123,7 +92,7 @@ const NatSettingsPage = () => {
   };
 
   const handleSave = () => {
-    showMessage("success", "Settings saved successfully!");
+    alert("Settings saved successfully!");
   };
 
   const handleReset = () => {
@@ -163,380 +132,201 @@ const NatSettingsPage = () => {
     return acc;
   }, {});
 
-  return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Error / Success Banner */}
-        {message.text && (
-          <div
-            style={{
-              background:
-                message.type === "error"
-                  ? "#fef2f2"
-                  : message.type === "success"
-                    ? "#f0fdf4"
-                    : "#eff6ff",
-              borderLeft: `3px solid ${message.type === "error" ? "#f87171" : message.type === "success" ? "#4ade80" : "#60a5fa"}`,
-              color:
-                message.type === "error"
-                  ? "#b91c1c"
-                  : message.type === "success"
-                    ? "#166534"
-                    : "#1e40af",
-              padding: "10px 14px",
-              borderRadius: 6,
-              marginBottom: 12,
-              fontSize: 13,
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            <span>{message.text}</span>
-            <span
-              onClick={() => setMessage({ type: "", text: "" })}
-              style={{ cursor: "pointer", fontSize: 16 }}
-            >
-              ✕
-            </span>
-          </div>
-        )}
+  const fieldInputStyle = {
+    height: 28,
+    width: 220,
+    padding: "0 8px",
+    fontSize: 13,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 4,
+    outline: "none",
+    backgroundColor: "#fff",
+    color: C.valueText,
+    boxSizing: "border-box",
+  };
 
-        {/* Breadcrumb */}
+  const renderFieldControl = (field) => {
+    if (field.type === "readonly") {
+      return (
         <div
+          style={{
+            ...fieldInputStyle,
+            lineHeight: "28px",
+            backgroundColor: "#e5e7eb",
+          }}
+        >
+          {form[field.key] || field.default || ""}
+        </div>
+      );
+    }
+    if (field.type === "text") {
+      return (
+        <input
+          type="text"
+          value={form[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          style={fieldInputStyle}
+          {...nativeFieldInteraction}
+        />
+      );
+    }
+    if (field.type === "select") {
+      return (
+        <select
+          value={form[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          style={fieldInputStyle}
+          {...nativeFieldInteraction}
+        >
+          {field.options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      );
+    }
+    if (field.type === "checkbox") {
+      const disabled =
+        field.key === "autoDetectNatIp" && !form.learnNat;
+      return (
+        <label
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            gap: 8,
+            cursor: disabled ? "not-allowed" : "pointer",
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; VoIP &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              NAT Settings
-            </span>
-          </div>
-        </div>
+          <Checkbox
+            size="small"
+            checked={!!form[field.key]}
+            onChange={() => handleCheckbox(field.key)}
+            disabled={disabled}
+            sx={{
+              ...checkboxSx,
+              ...(disabled
+                ? { opacity: 0.6, cursor: "not-allowed" }
+                : { cursor: "pointer" }),
+            }}
+          />
+          <span
+            style={{
+              color: C.valueText,
+              fontSize: 13,
+              opacity: disabled ? 0.6 : 1,
+            }}
+          >
+            Enable
+          </span>
+        </label>
+      );
+    }
+    return null;
+  };
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ padding: "24px 28px" }}>
+  return (
+    <AdvancedPageShell>
+      <AdvancedBreadcrumb current="NAT Settings" />
+      <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
+        <div style={advancedBlueBarStyle}>
+          <span>NAT Settings</span>
+        </div>
+        <div style={{ padding: "24px 32px" }}>
+          <div className="flex flex-col gap-8 w-full">
             {Object.entries(groupedFields).map(
               ([sectionName, methods], sectionIdx) => (
-                <div key={sectionName} style={{ marginBottom: 32 }}>
-                  {/* Line-Cut Section Heading */}
-                  <SectionHeading title={sectionName} />
+                <div key={sectionName} className="flex flex-col gap-4 w-full">
+                  <NatSettingsSectionHeading
+                    title={sectionName}
+                    isFirst={sectionIdx === 0}
+                  />
 
-                  {Object.entries(methods).map(
-                    ([methodName, fields], methodIdx) => (
-                      <div
-                        key={`${sectionName}-${methodName}`}
-                        style={{
-                          marginBottom: methodName !== "no-method" ? 24 : 0,
-                        }}
-                      >
-                        {/* Method Sub-Heading (if applicable) */}
-                        {methodName !== "no-method" && (
-                          <div
-                            style={{
-                              fontSize: 13,
-                              fontWeight: 700,
-                              color: C.accent,
-                              marginBottom: 16,
-                              borderBottom: `1px dashed ${C.cardBorder}`,
-                              paddingBottom: 4,
-                            }}
-                          >
-                            {methodName}
-                          </div>
-                        )}
-
-                        {/* 2-Column Grid Layout for Fields */}
+                  <div
+                    className="flex flex-col gap-4 w-full"
+                    style={{ maxWidth: 640, margin: "0 auto" }}
+                  >
+                  {Object.entries(methods).map(([methodName, fields]) => (
+                    <div
+                      key={`${sectionName}-${methodName}`}
+                      className="flex flex-col gap-4"
+                    >
+                      {methodName !== "no-method" && (
                         <div
                           style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr",
-                            gap: "16px 40px",
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.labelText,
                           }}
                         >
-                          {fields.map((field) => {
-                            const isDisabledCheckbox =
-                              field.key === "autoDetectNatIp" && !form.learnNat;
-
-                            return (
-                              <div
-                                key={field.key}
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                }}
-                              >
-                                <FieldRow
-                                  label={field.label}
-                                  align={
-                                    field.type === "checkbox"
-                                      ? "center"
-                                      : "flex-start"
-                                  }
-                                >
-                                  {/* Readonly Field */}
-                                  {field.type === "readonly" && (
-                                    <TextField
-                                      size="small"
-                                      fullWidth
-                                      disabled
-                                      value={
-                                        form[field.key] || field.default || ""
-                                      }
-                                      inputProps={{
-                                        style: {
-                                          fontSize: 13,
-                                          padding: "6px 8px",
-                                          background: "#f1f5f9",
-                                          color: C.valueText,
-                                        },
-                                      }}
-                                    />
-                                  )}
-
-                                  {/* Text / Number Input */}
-                                  {field.type === "text" && (
-                                    <TextField
-                                      size="small"
-                                      fullWidth
-                                      value={form[field.key] || ""}
-                                      onChange={(e) =>
-                                        handleChange(field.key, e.target.value)
-                                      }
-                                      inputProps={{
-                                        style: {
-                                          fontSize: 13,
-                                          padding: "6px 8px",
-                                        },
-                                      }}
-                                    />
-                                  )}
-
-                                  {/* Select Dropdown */}
-                                  {field.type === "select" && (
-                                    <FormControl size="small" fullWidth>
-                                      <MuiSelect
-                                        value={form[field.key] || ""}
-                                        onChange={(e) =>
-                                          handleChange(
-                                            field.key,
-                                            e.target.value,
-                                          )
-                                        }
-                                        sx={{ fontSize: 13 }}
-                                      >
-                                        {field.options.map((opt) => (
-                                          <MenuItem
-                                            key={opt}
-                                            value={opt}
-                                            sx={{ fontSize: 13 }}
-                                          >
-                                            {opt}
-                                          </MenuItem>
-                                        ))}
-                                      </MuiSelect>
-                                    </FormControl>
-                                  )}
-
-                                  {/* Checkbox */}
-                                  {field.type === "checkbox" && (
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 8,
-                                      }}
-                                    >
-                                    <Checkbox
-  checked={!!form[field.key]}
-  onChange={() => handleCheckbox(field.key)}
-  disabled={isDisabledCheckbox}
-  size="small"
-  sx={{
-    padding: "1px",
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-
-    "&.Mui-disabled": {
-      color: "#cbd5e1",
-    },
-
-    "&:hover": {
-      backgroundColor: "transparent",
-    },
-  }}
-/>
-                                      <span
-                                        style={{
-                                          fontSize: 13,
-                                          color: C.valueText,
-                                          cursor: isDisabledCheckbox
-                                            ? "not-allowed"
-                                            : "pointer",
-                                          opacity: isDisabledCheckbox ? 0.6 : 1,
-                                        }}
-                                        onClick={() => {
-                                          if (!isDisabledCheckbox)
-                                            handleCheckbox(field.key);
-                                        }}
-                                      >
-                                        Enable
-                                      </span>
-                                    </div>
-                                  )}
-
-                                  {/* Helper Text */}
-                                  {field.helper && (
-                                    <div
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.errorRed,
-                                        marginTop: 6,
-                                        lineHeight: 1.4,
-                                      }}
-                                    >
-                                      {field.helper}
-                                    </div>
-                                  )}
-                                </FieldRow>
-                              </div>
-                            );
-                          })}
+                          {methodName}
                         </div>
+                      )}
+
+                      <div
+                        className="flex flex-col gap-4"
+                        style={{
+                          paddingLeft: methodName !== "no-method" ? 24 : 0,
+                        }}
+                      >
+                        {fields.map((field) => (
+                          <div
+                            key={field.key}
+                            className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2 sm:gap-4"
+                          >
+                            <label
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: C.labelText,
+                                width: "100%",
+                                maxWidth: 220,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {field.label}
+                            </label>
+                            <div className="flex-1 w-full max-w-[280px]">
+                              {renderFieldControl(field)}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ),
-                  )}
+                    </div>
+                  ))}
+                  </div>
                 </div>
               ),
             )}
 
-            {/* Note Section */}
-            {NAT_SETTINGS_NOTE && (
+            <div className="flex flex-col gap-2 w-full">
+              <NatSettingsSectionHeading title="Note:" />
               <div
                 style={{
-                  marginTop: 24,
-                  fontSize: 12,
                   color: C.mutedText,
-                  lineHeight: 1.6,
+                  fontSize: 11,
                   whiteSpace: "pre-line",
-                  background: "#f8fafc",
-                  padding: "12px 16px",
-                  borderRadius: 6,
-                  border: `1px solid #e2e8f0`,
+                  lineHeight: 1.45,
+                  maxWidth: 640,
+                  margin: "0 auto",
+                  width: "100%",
                 }}
               >
-                <span style={{ fontWeight: 600, color: C.labelText }}>
-                  Note:
-                </span>
-                <br />
                 {NAT_SETTINGS_NOTE}
               </div>
-            )}
-          </div>
-
-          {/* Bottom Actions Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              padding: "16px 24px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              background: "#f8fafc",
-            }}
-          >
-          <Button
-  variant="contained"
-  onClick={handleSave}
-  sx={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-
-    padding: "8px 24px",
-    height: 36,
-    borderRadius: "6px",
-    minWidth: 120,
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-      opacity: 0.85,
-    },
-
-    "&:disabled": {
-      background: "#94a3b8",
-      color: "#e2e8f0",
-      border: "1px solid #94a3b8",
-    },
-  }}
->
-  Save
-</Button>
-       <Button
-  variant="outlined"
-  onClick={handleReset}
-  sx={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-
-    fontWeight: 600,
-    fontSize: 13,
-    textTransform: "none",
-
-    padding: "8px 24px",
-    height: 36,
-    minWidth: 120,
-    borderRadius: "6px",
-
-    "&:hover": {
-      background: "#cbd5e1",
-      border: "1px solid #cbd5e1",
-      opacity: 0.85,
-    },
-  }}
->
-  Reset
-</Button>
+            </div>
           </div>
         </div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 12, padding: "12px 0 18px", borderTop: `1px solid ${C.cardBorder}` }}>
+          <Btn type="button" onClick={handleSave} variant="primary" style={{ minWidth: 110, height: 34, fontSize: 13 }}>
+            Save
+          </Btn>
+          <Btn type="button" onClick={handleReset} variant="cancel" style={{ minWidth: 110, height: 34, fontSize: 13 }}>
+            Reset
+          </Btn>
+          </div>
       </div>
-    </div>
+    </AdvancedPageShell>
   );
 };
 
