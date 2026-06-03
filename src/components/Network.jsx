@@ -197,41 +197,41 @@ const Network = () => {
       if (data && data.data) {
         if (Array.isArray(data.data.interfaces)) {
           const allIfaces = data.data.interfaces;
+
           const filteredInterfaces = allIfaces
             .filter((iface) => {
-              const interfaceName = iface.interface || "";
-              return interfaceName === "eth0" || interfaceName === "eth1";
+              const kn = (iface.interface || "").toLowerCase();
+              // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
+              return /^eth\d+$/.test(kn) || /^enp\d+s\d+$/.test(kn);
             })
-            .map((iface) => {
-              const withType = {
-                ...iface,
-                ipv4Type: iface.ipv4Type || "Static",
-              };
-              if (withType.interface === "eth0") {
-                return { ...withType, name: "LAN 1" };
-              } else if (withType.interface === "eth1") {
-                return { ...withType, name: "LAN 2" };
-              }
-              return withType;
-            })
+            // Assign sequential "LAN 1", "LAN 2", … — ignore API name field which
+            // may reflect a different device numbering (e.g. "LAN 6", "LAN 7")
+            .map((iface, seqIdx) => ({
+              ...iface,
+              name: `LAN ${seqIdx + 1}`,
+              ipv4Type: iface.ipv4Type || "Static",
+            }))
             .sort((a, b) => {
-              const order = { "LAN 1": 1, "LAN 2": 2 };
-              const aOrder = order[a.name] || 99;
-              const bOrder = order[b.name] || 99;
-              return aOrder - bOrder;
+              // Sort LAN 1, LAN 2, … in numeric order; unknown interfaces last
+              const lanNum = (n) => {
+                const m = String(n).match(/^LAN\s*(\d+)$/i);
+                return m ? parseInt(m[1], 10) : 99;
+              };
+              return lanNum(a.name) - lanNum(b.name);
             });
 
           setLanInterfaces(filteredInterfaces);
           setOriginalLanSnapshot(normalizeLanArray(filteredInterfaces));
 
-          const lan1 =
-            filteredInterfaces.find(
-              (l) => l.name === "LAN 1" || l.interface === "eth0",
-            ) || {};
+          const lan1 = filteredInterfaces[0] || {};
+          // Detect VLAN sub-interfaces (e.g. enp4s0.100, eth0.100) using the
+          // primary interface's actual kernel name as the parent
+          const primaryKernelName = lan1.interface || "eth0";
           const vlanIface = allIfaces.find(
             (i) =>
               typeof i.interface === "string" &&
-              /^eth0\.[0-9]+$/.test(i.interface),
+              i.interface.startsWith(`${primaryKernelName}.`) &&
+              /\.\d+$/.test(i.interface),
           );
           const hasVlan = Boolean(vlanIface);
 
@@ -806,8 +806,8 @@ const Network = () => {
             const vlanMask = String(vlanForm.vlan1Mask || "").trim();
             const vlanGw = String(vlanForm.vlan1Gw || "").trim();
             const cidr = subnetMaskToCidr(vlanMask);
-            // Parent interface: user confirmed eth0
-            const parentIface = "eth0";
+            // Use actual kernel name of first LAN interface as VLAN parent
+            const parentIface = lanInterfaces[0]?.interface || "eth0";
             if (vlanId && vlanIp && cidr !== null) {
               const iface = `${parentIface}.${vlanId}`;
               const yaml = `network:\n  version: 2\n  renderer: networkd\n  ethernets:\n    ${parentIface}:\n      dhcp4: no\n  vlans:\n    ${iface}:\n      id: ${vlanId}\n      link: ${parentIface}\n      addresses: [${vlanIp}/${cidr}]${vlanGw ? `\n      routes:\n        - to: 0.0.0.0/0\n          via: ${vlanGw}` : ""}\n`;
@@ -856,8 +856,8 @@ const Network = () => {
               }
             }
           } else {
-            // VLAN disabled: remove any ${parentIface}.* VLAN interfaces and persistent configs
-            const parentIface = "eth0";
+            // VLAN disabled: remove any VLAN sub-interfaces of the primary LAN interface
+            const parentIface = lanInterfaces[0]?.interface || "eth0";
             const removeCmd = [
               // Runtime removal of VLAN links
               `for i in $(ip -o link | awk -F\": \" '/^\\\d+: ${parentIface}\\\.[0-9]+/ {print $2}'); do ip link set dev \"$i\" down 2>/dev/null || ifconfig \"$i\" down 2>/dev/null || true; ip link del \"$i\" 2>/dev/null || vconfig rem \"$i\" 2>/dev/null || true; done`,
@@ -1248,12 +1248,7 @@ const Network = () => {
                             onChange={() => {
                               // Prefill VLAN base with current LAN 1 values from fetched network settings
                               try {
-                                const lan1 =
-                                  (lanInterfaces || []).find(
-                                    (l) =>
-                                      l.name === "LAN 1" ||
-                                      l.interface === "eth0",
-                                  ) || {};
+                                const lan1 = (lanInterfaces || [])[0] || {};
                                 setVlanForm((prev) => ({
                                   ...prev,
                                   lan1Ip: lan1.ipAddress || prev.lan1Ip || "",

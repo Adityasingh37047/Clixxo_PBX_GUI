@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  postTracerttest,
-  fetchSystemInfo,
-  postLinuxCmd,
-} from "../api/apiService";
+import { postTracerttest, fetchNetwork } from "../api/apiService";
 import {
   TRACERT_TITLE,
   TRACERT_LABELS,
@@ -75,199 +71,54 @@ const TRACERTTest = () => {
     }
   }, [alertMsg]);
 
-  // Fetch system info to get LAN IP addresses
   useEffect(() => {
-    const fetchSystemData = async () => {
+    const loadSourceOptions = async () => {
       try {
         setLoadingSource(true);
-        const sysInfo = await fetchSystemInfo();
+        const netData = await fetchNetwork();
+        const allIfaces = netData?.data?.interfaces || [];
 
-        if (sysInfo?.success) {
-          const details = sysInfo.details || {};
-          const lanInterfaces =
-            details.LAN_INTERFACES || details.lan_interfaces || null;
+        // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
+        const lanIfaces = allIfaces.filter((i) => {
+          const kn = (i.interface || "").toLowerCase();
+          return /^eth\d+$/.test(kn) || /^enp\d+s\d+$/.test(kn);
+        });
 
-          // Debug: Log system info to see VPN data structure
-          console.log("SystemInfo for VPN detection:", sysInfo);
-          console.log("LAN Interfaces:", lanInterfaces);
+        // Sequential "LAN 1", "LAN 2", … — never rely on the API name field
+        const options = lanIfaces
+          .filter((i) => i.ipAddress)
+          .map((iface, idx) => ({
+            value: iface.ipAddress,
+            label: `LAN ${idx + 1}:${iface.ipAddress}`,
+          }));
 
-          // Extract IP addresses from LAN interfaces
-          const getIpFromInterfaceObject = (obj) => {
-            if (!obj || typeof obj !== "object") return null;
-            if (Array.isArray(obj["IP Address"]) && obj["IP Address"][0])
-              return obj["IP Address"][0];
-            if (Array.isArray(obj["Ip Address"]) && obj["Ip Address"][0])
-              return obj["Ip Address"][0];
-            if (Array.isArray(obj["ip_address"]) && obj["ip_address"][0])
-              return obj["ip_address"][0];
-            // Also check for direct IP string
-            if (typeof obj["IP Address"] === "string") return obj["IP Address"];
-            if (typeof obj["Ip Address"] === "string") return obj["Ip Address"];
-            if (typeof obj["ip_address"] === "string") return obj["ip_address"];
-            return null;
-          };
-
-          const interfacesArray = Array.isArray(lanInterfaces)
-            ? lanInterfaces
-            : lanInterfaces && typeof lanInterfaces === "object"
-              ? Object.entries(lanInterfaces).map(([name, data]) => ({
-                  name,
-                  data,
-                }))
-              : [];
-
-          let lan1Ip = null;
-          let lan2Ip = null;
-          let vpnOpenVpnIp = null;
-          let vpnSoftEtherIp = null;
-          let vlanIp = null;
-          let vlanId = null;
-
-          interfacesArray.forEach((iface) => {
-            const name = String(iface.name || iface.Name || "").toLowerCase();
-            if (
-              name.includes("eth0") ||
-              name.includes("lan 1") ||
-              name.includes("lan1")
-            ) {
-              lan1Ip = lan1Ip || getIpFromInterfaceObject(iface.data || iface);
-            }
-            if (
-              name.includes("eth1") ||
-              name.includes("lan 2") ||
-              name.includes("lan2")
-            ) {
-              lan2Ip = lan2Ip || getIpFromInterfaceObject(iface.data || iface);
-            }
-            // Check for VPN interfaces (OpenVPN/SoftEther use tap0, tun0, vpn_vpn)
-            if (
-              name.includes("tap0") ||
-              name === "tap0" ||
-              name.includes("tun0") ||
-              name === "tun0"
-            ) {
-              vpnOpenVpnIp =
-                vpnOpenVpnIp || getIpFromInterfaceObject(iface.data || iface);
-            }
-            if (name.includes("vpn_vpn") || name === "vpn_vpn") {
-              vpnSoftEtherIp =
-                vpnSoftEtherIp || getIpFromInterfaceObject(iface.data || iface);
-            }
-          });
-
-          // Fallback to direct network object access
-          if (!lan1Ip)
-            lan1Ip =
-              getIpFromInterfaceObject(sysInfo?.network?.eth0) ||
-              getIpFromInterfaceObject(sysInfo?.eth0);
-          if (!lan2Ip)
-            lan2Ip =
-              getIpFromInterfaceObject(sysInfo?.network?.eth1) ||
-              getIpFromInterfaceObject(sysInfo?.eth1);
-
-          // Check multiple possible locations for VPN interfaces (tap0, tun0, vpn_vpn)
-          if (!vpnOpenVpnIp) {
-            vpnOpenVpnIp =
-              getIpFromInterfaceObject(sysInfo?.network?.tap0) ||
-              getIpFromInterfaceObject(sysInfo?.tap0) ||
-              getIpFromInterfaceObject(details?.network?.tap0) ||
-              getIpFromInterfaceObject(details?.tap0) ||
-              getIpFromInterfaceObject(sysInfo?.network?.tun0) ||
-              getIpFromInterfaceObject(sysInfo?.tun0) ||
-              getIpFromInterfaceObject(details?.network?.tun0) ||
-              getIpFromInterfaceObject(details?.tun0);
+        // VLAN sub-interfaces of the first physical interface
+        const primaryKernel = lanIfaces[0]?.interface || "eth0";
+        for (const iface of allIfaces) {
+          const kn = (iface.interface || "").toString();
+          if (kn.startsWith(`${primaryKernel}.`) && /\.\d+$/.test(kn) && iface.ipAddress) {
+            const vlanId = kn.split(".")[1] || "";
+            options.push({ value: iface.ipAddress, label: `VLAN ${vlanId}:${iface.ipAddress}` });
           }
-          if (!vpnSoftEtherIp) {
-            vpnSoftEtherIp =
-              getIpFromInterfaceObject(sysInfo?.network?.vpn_vpn) ||
-              getIpFromInterfaceObject(sysInfo?.vpn_vpn) ||
-              getIpFromInterfaceObject(details?.network?.vpn_vpn) ||
-              getIpFromInterfaceObject(details?.vpn_vpn);
-          }
+        }
 
-          // Detect VLAN IP from /etc/network/interfaces.d/vlan.cfg (address line)
-          try {
-            const vlanIdCmd = `grep -E '^auto[[:space:]]+eth0\\.[0-9]+' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}' | cut -d'.' -f2`;
-            const vlanIdRes = await postLinuxCmd({ cmd: vlanIdCmd });
-            const vlanIdOut = (vlanIdRes?.responseData || "").toString().trim();
-            if (vlanIdOut) {
-              vlanId = vlanIdOut;
-            }
-            const vlanIpCmd = `grep -E '^[[:space:]]*address[[:space:]]' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}'`;
-            const vlanIpRes = await postLinuxCmd({ cmd: vlanIpCmd });
-            const vlanIpOut = (vlanIpRes?.responseData || "").toString().trim();
-            if (vlanIpOut && isValidIp(vlanIpOut)) {
-              vlanIp = vlanIpOut;
-            }
-          } catch (e) {
-            console.warn(
-              "Failed to detect VLAN IP for tracert source options:",
-              e,
-            );
-          }
-
-          // Debug log what we found
-          console.log(
-            "Detected IPs - LAN1:",
-            lan1Ip,
-            "LAN2:",
-            lan2Ip,
-            "OpenVPN:",
-            vpnOpenVpnIp,
-            "SoftEther:",
-            vpnSoftEtherIp,
-          );
-
-          // Build source options array
-          const options = [];
-          if (lan1Ip) {
-            options.push({ value: lan1Ip, label: `LAN 1:${lan1Ip}` });
-          }
-          if (lan2Ip) {
-            options.push({ value: lan2Ip, label: `LAN 2:${lan2Ip}` });
-          }
-          if (vpnOpenVpnIp) {
-            options.push({
-              value: vpnOpenVpnIp,
-              label: `VPN (tap0):${vpnOpenVpnIp}`,
-            });
-          }
-          if (vpnSoftEtherIp) {
-            options.push({
-              value: vpnSoftEtherIp,
-              label: `VPN SoftEther (vpn_vpn):${vpnSoftEtherIp}`,
-            });
-          }
-          if (vlanIp) {
-            options.push({
-              value: vlanIp,
-              label: vlanId ? `VLAN ${vlanId}:${vlanIp}` : `VLAN:${vlanIp}`,
-            });
-          }
-
-          // Fallback to default if no IPs found
-          if (options.length === 0) {
-            options.push({ value: "lan1", label: "LAN 1:192.168.1.101" });
-          }
-
+        if (options.length > 0) {
           setSourceOptions(options);
           setSourceIp(options[0].value);
         } else {
-          // Fallback to default options
           setSourceOptions(TRACERT_SOURCE_OPTIONS);
-          setSourceIp(TRACERT_SOURCE_OPTIONS[0].value);
+          setSourceIp(TRACERT_SOURCE_OPTIONS[0]?.value || "");
         }
       } catch (error) {
-        console.error("Error fetching system info:", error);
-        // Fallback to default options
+        console.error("Error fetching network interfaces:", error);
         setSourceOptions(TRACERT_SOURCE_OPTIONS);
-        setSourceIp(TRACERT_SOURCE_OPTIONS[0].value);
+        setSourceIp(TRACERT_SOURCE_OPTIONS[0]?.value || "");
       } finally {
         setLoadingSource(false);
       }
     };
 
-    fetchSystemData();
+    loadSourceOptions();
   }, []);
 
   const startTracert = async () => {

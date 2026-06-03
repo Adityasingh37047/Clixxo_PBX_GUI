@@ -63,7 +63,7 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
             registerPort: p.enabled ? 'Yes' : 'No',
             startingSipAccount: p.sipAccount ?? '',
             startingDisplayName: p.displayName ?? '',
-            startingAuthPassword: '',
+            startingAuthPassword: p.authPassword ?? '',
             displayNamePreferred: !!p.displayNamePreferred,
             autoDialNumber: p.autoDialNumber ?? '',
             waitTimeBeforeAutoDial: String(p.autoDialWaitSec ?? 0),
@@ -105,6 +105,7 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
       const payload = {
         port: Number(form.startingPort),
         enabled: form.registerPort === 'Yes',
+        registerPort: form.registerPort === 'Yes' ? 'yes' : 'no',
         sipAccount: form.startingSipAccount,
         displayName: form.startingDisplayName,
         authPassword: form.startingAuthPassword,
