@@ -1115,7 +1115,7 @@ minWidth: 900,
                       borderRadius: 4,
                       padding: 8,
                       fontSize: 13,
-                      background: "#f8fafc",
+                     
                     }}
                   >
                     {availableList.map((item) => (

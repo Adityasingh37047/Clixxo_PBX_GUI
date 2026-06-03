@@ -36,8 +36,6 @@ import {
   Checkbox,
   Radio,
   RadioGroup,
-  Tabs,
-  Tab,
 } from "@mui/material";
 import {
   fetchSipAccounts,
@@ -2036,93 +2034,141 @@ minWidth: 900, }}>
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
+        className="z-50"
+        sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: 8 } }}
+      PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle
-          sx={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            py: 1.5,
-          }}
-        >
-          {editIndex !== null ? "Edit SIP Register" : "Add Trunk"}
-        </DialogTitle>
-        <DialogContent
-          sx={{
-            p: "12px 8px 0 8px",
-            backgroundColor: C.pageBg,
-            border: "1px solid #9ca3af",
-            borderTop: "none",
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 6,
-              minHeight: 38,
-            },
-            "& .MuiOutlinedInput-input": {
-              padding: "10px 12px",
-              fontSize: 14,
-            },
-            "& .MuiSelect-select": {
-              padding: "10px 12px",
-              fontSize: 14,
-            },
-            "& .MuiInputBase-root": {
-              fontSize: 14,
-            },
-          }}
-        >
-          <div
-            style={{
-              borderBottom: "1px solid #f1f5f9",
-              marginBottom: 8,
-              background: "#f1f3f6",
-              borderRadius: "4px 4px 0 0",
-            }}
-          >
-            <Tabs
-              value={modalTab}
-              onChange={(_, value) => setModalTab(value)}
-              variant="fullWidth"
-              textColor="inherit"
-              TabIndicatorProps={{
-                style: { backgroundColor: C.accent, height: 3 },
-              }}
-            >
-              <Tab
-                label="BASIC"
-                value="basic"
-                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-              />
-              <Tab
-                label="CODEC"
-                value="codec"
-                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-              />
-              <Tab
-                label="ADVANCE"
-                value="advance"
-                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-              />
-              <Tab
-                label="DOD"
-                value="dod"
-                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-              />
-              <Tab
-                label="ADAPT CALLER ID"
-                value="adapt"
-                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-              />
-            </Tabs>
-          </div>
-          <div style={{ background: C.pageBg }}>
-            <div style={{ padding: 12 }}>
+      <DialogTitle
+  className="text-white text-center font-semibold p-0"
+  sx={{
+    background: "#1e2d42",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: 15,
+    textAlign: "center",
+    py: 1,
+    minHeight: 48,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  {editIndex !== null ? "Edit SIP Register" : "Add Trunk"}
+</DialogTitle>
+
+<DialogContent
+  style={{
+    padding: "12px 20px 20px",
+    backgroundColor: "#ffffff",
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      width: "100%",
+    }}
+  >
+    <div
+  style={{
+    borderBottom: "1px solid #e5e7eb",
+    marginBottom: 6,
+    borderRadius: "4px 4px 0 0",
+    display: "flex",
+    width: "100%",
+    background: "#fff",
+  }}
+>
+  {[
+    { id: "basic", label: "BASIC" },
+    { id: "codec", label: "CODEC" },
+    { id: "advance", label: "ADVANCE" },
+    { id: "dod", label: "DOD" },
+    { id: "adapt", label: "ADAPT CALLER ID" },
+  ].map((t) => (
+    <button
+      key={t.id}
+      type="button"
+      onClick={() => setModalTab(t.id)}
+      style={{
+        flex: 1,
+        height: 44,
+        fontSize: 12,
+        fontWeight: 700,
+        border: "none",
+        borderBottom:
+          modalTab === t.id
+            ? "2px solid #3E5475"
+            : "2px solid transparent",
+        color:
+          modalTab === t.id
+            ? "#3E5475"
+            : "#6b7280",
+        background: "transparent",
+        cursor: "pointer",
+        textAlign: "center",
+        transition: "all 0.2s ease",
+      }}
+    >
+      {t.label}
+    </button>
+  ))}
+</div>
+
+    <style>
+      {`
+        .sip-reg .MuiOutlinedInput-root,
+        .sip-reg .MuiSelect-root,
+        .sip-reg .MuiSelect-select,
+        .sip-reg .MuiInputBase-root input {
+          background: #ffffff !important;
+          border-radius: 6px !important;
+        }
+
+        .sip-reg .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+          border-color: ${C.cardBorder} !important;
+          border-width: 1px !important;
+        }
+
+        .sip-reg .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+          border-color: #64748b !important;
+        }
+
+        .sip-reg .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+          border-color: #0284c7 !important;
+        }
+
+        .sip-reg .MuiSelect-root {
+          border: 1px solid ${C.cardBorder} !important;
+        }
+
+        .sip-reg .MuiSelect-root:hover {
+          border-color: #64748b !important;
+        }
+
+        .sip-reg .MuiSelect-root.Mui-focused {
+          border-color: #0284c7 !important;
+        }
+      `}
+    </style>
+
+    <div
+      className="sip-reg"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+        width: "100%",
+        background: C.pageBg,
+        border: `1px solid ${C.cardBorder}`,
+        borderRadius: 8,
+        padding: 16,
+      }}
+    >
               {modalTab === "basic" && (
-                <div className="bg-white border border-gray-200 rounded-md p-3 sm:p-5 shadow-sm">
+                <div className="p-3 sm:p-5">
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
                     <div className="space-y-0.5">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
@@ -2689,7 +2735,7 @@ minWidth: 900, }}>
               )}
 
               {modalTab === "codec" && (
-                <div className="bg-white border border-gray-200 rounded-md p-3 sm:p-5 shadow-sm">
+                <div className="p-3 sm:p-5">
                   <p className="text-sm text-gray-600 mb-3">
                     Select codecs allowed on this trunk (required).
                   </p>
@@ -2722,7 +2768,7 @@ minWidth: 900, }}>
               )}
 
               {modalTab === "advance" && (
-                <div className="bg-white border border-gray-200 rounded-md p-3 sm:p-5 shadow-sm space-y-6">
+                <div className="p-3 sm:p-5 space-y-6">
                   <div className="hidden">
                     <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
                       SIP registration
@@ -3366,7 +3412,7 @@ minWidth: 900, }}>
               )}
 
               {modalTab === "dod" && (
-                <div className="bg-white border border-gray-200 rounded-md p-3 sm:p-5 shadow-sm">
+                <div className="p-3 sm:p-5">
                   <div className="flex flex-wrap gap-2 mb-3">
                     {["ADD", "DELETE", "IMPORT", "EXPORT"].map((lbl) => (
                       <button
@@ -3685,7 +3731,7 @@ minWidth: 900, }}>
               )}
 
               {modalTab === "adapt" && (
-                <div className="bg-white border border-gray-200 rounded-md p-3 sm:p-5 shadow-sm">
+                <div className="p-3 sm:p-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold text-gray-800">
                       Adapt Caller ID
@@ -3769,36 +3815,37 @@ minWidth: 900, }}>
         </DialogContent>
 
         <DialogActions
-          sx={{
-            justifyContent: "center",
-            gap: 2,
-            py: 2,
-            px: 3,
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-          }}
-        >
-          <Btn
-            variant="primary"
-            onClick={handleSave}
-            disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
-          >
-            {loading.save ? "Saving..." : "Save"}
-          </Btn>
+  sx={{
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 2,
+    padding: 2,
+  }}
+>
+  <Btn
+    variant="primary"
+    onClick={handleSave}
+    disabled={loading.save}
+    startIcon={
+      loading.save && (
+        <CircularProgress size={20} color="inherit" />
+      )
+    }
+    style={{ minWidth: 100, height: 33, fontSize: 13 }}
+  >
+    {loading.save ? "Saving..." : "Save"}
+  </Btn>
 
-          <Btn
-            variant="cancel"
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
-          >
-            Close
-          </Btn>
-        </DialogActions>
+  <Btn
+    variant="cancel"
+    onClick={handleCloseModal}
+    disabled={loading.save}
+    style={{ minWidth: 100, height: 33 }}
+  >
+    Close
+  </Btn>
+</DialogActions>                  
       </Dialog>
     </div>
   );

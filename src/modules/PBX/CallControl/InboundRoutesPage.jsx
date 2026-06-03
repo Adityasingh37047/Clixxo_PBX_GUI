@@ -154,48 +154,37 @@ const Btn = ({
   style: extraStyle,
 }) => {
   const variants = {
-    default: {
-      background: "#1e293b",
-      color: "#fff",
-
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-
-      border: "1px solid #9ca3af",
-
-    },
-    outline: {
+     default: {
       background: C.cardBg,
-      color: C.labelText,
-
-      border: `1px solid ${C.cardBorder}`,
+  color: C.valueText,
+  border: "1px solid #9ca3af",
     },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-
-      border: `0.5px solid ${C.cardBorder}`,
+    primary: {
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
+  border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+},
+    outline: {
+     background: C.cardBg,
+  color: C.labelText,
+  border: `1px solid ${C.cardBorder}`,
     },
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
-      border: "0.5px solid #fecaca",
-
+      border: `1px solid #fecaca`,
     },
     accent: {
       background: C.cardBg,
       color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
   const s = variants[variant] || variants.default;
@@ -935,30 +924,7 @@ const InboundRoutesPage = () => {
                 flexWrap: "wrap",
               }}
             >
-<<<<<<< HEAD
-              <TableBtn
-                onClick={handleDelete}
-                disabled={
-                  loading.delete || loading.list || selected.length === 0
-                }
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                {loading.delete && (
-                  <CircularProgress size={11} style={{ color: "#374151" }} />
-                )}   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
-              </TableBtn>
-              <TableBtn
-=======
               <Btn
->>>>>>> ef999c0df033c1acde3dd1dfcab5d424ace07ca1
                 onClick={() => {
                   setImportFile(null);
                   setShowImportModal(true);
@@ -969,24 +935,6 @@ const InboundRoutesPage = () => {
               </Btn>
               <Btn onClick={handleExport} variant="outline">
                 ⬆ Export
-<<<<<<< HEAD
-              </TableBtn>
-              
-             <TableBtn
-  onClick={handleOpenAddModal}
-  disabled={loading.save}
-  variant="primary"
- 
-   style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
->
-  + Add New
-</TableBtn>
-=======
               </Btn>
               <Btn
                 onClick={handleDelete}
@@ -1004,10 +952,15 @@ const InboundRoutesPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.save}
                 variant="accent"
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
               >
                 + Add New
               </Btn>
->>>>>>> ef999c0df033c1acde3dd1dfcab5d424ace07ca1
             </div>
           </div>
 
@@ -1934,11 +1887,7 @@ const InboundRoutesPage = () => {
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-<<<<<<< HEAD
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
-=======
             style={{ minWidth: 110, padding: "8px 24px", fontSize: 13 }}
->>>>>>> ef999c0df033c1acde3dd1dfcab5d424ace07ca1
           >
             {loading.save ? (
               <>
@@ -1952,12 +1901,8 @@ const InboundRoutesPage = () => {
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
-<<<<<<< HEAD
-           style={{ minWidth: 100, height: 33 }}
-=======
             variant="outline"
             style={{ minWidth: 110, padding: "8px 24px", fontSize: 13 }}
->>>>>>> ef999c0df033c1acde3dd1dfcab5d424ace07ca1
           >
             Close
           </Btn>
