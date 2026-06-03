@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Checkbox } from "@mui/material";
+import { Alert, Checkbox } from "@mui/material";
 import {
   C,
   Btn,
@@ -10,6 +10,8 @@ import {
   advancedBlueBarStyle,
   nativeFieldInteraction,
   nativeFieldInputStyle,
+  advancedFormBtnStyle,
+  advancedFormInlineFooterStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const CODEC_PRIORITY_HEADING_COLOR = "#30415A";
@@ -55,6 +57,18 @@ const FxsVoipMediaPage = () => {
     { enabled: true, codec: "96", packingTime: "20", bitRate: "0" }, // Priority 5: AMR
     { enabled: true, codec: "4", packingTime: "30", bitRate: "1" }, // Priority 6: G723
   ]);
+
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const alert = (msg) => {
+    const isSuccess = /successfully/i.test(String(msg));
+    showToast(msg, isSuccess ? "success" : "error");
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -410,12 +424,29 @@ const FxsVoipMediaPage = () => {
 
   return (
     <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
       <AdvancedBreadcrumb current="Media Parameters" />
       <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
         <div style={advancedBlueBarStyle}>
           <span>Media Parameters</span>
         </div>
-        <div style={{ padding: "24px 32px 10px" }}>
+        <div style={{ padding: "24px 32px 0" }}>
           <div
             className="flex flex-col gap-3"
             style={{
@@ -603,29 +634,11 @@ const FxsVoipMediaPage = () => {
             </div>
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 12,
-            padding: "12px 0 18px",
-            borderTop: `1px solid ${C.cardBorder}`,
-          }}
-        >
-          <Btn
-            type="button"
-            onClick={handleSave}
-            variant="primary"
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
+        <div style={advancedFormInlineFooterStyle}>
+          <Btn type="button" onClick={handleSave} variant="primary" style={advancedFormBtnStyle}>
             Save
           </Btn>
-          <Btn
-            type="button"
-            onClick={handleReset}
-            variant="cancel"
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
+          <Btn type="button" onClick={handleReset} variant="cancel" style={advancedFormBtnStyle}>
             Reset
           </Btn>
         </div>

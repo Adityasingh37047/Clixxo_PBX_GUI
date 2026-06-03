@@ -9,7 +9,7 @@ import {
   AdvancedPageShell,
   advancedTableContainerStyle,
   advancedBlueBarStyle,
-  advancedFormActionsStyle,
+  advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
@@ -181,7 +181,7 @@ const ToneGeneratorPage = () => {
           <span>Tone Generator</span>
         </div>
 
-        <div style={{ padding: "16px 20px 8px", background: C.cardBg }}>
+        <div style={{ padding: "16px 20px 0", background: C.cardBg }}>
           <div
             style={{
               display: "flex",
@@ -272,7 +272,7 @@ const ToneGeneratorPage = () => {
           </div>
         </div>
 
-        <div style={advancedFormActionsStyle}>
+        <div style={advancedFormInlineFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Alert } from "@mui/material";
 import { SIP_COMPATIBILITY_FIELDS } from "../../../sections/voip/constants/SipCompatibilityConstants";
 import {
   C,
@@ -9,6 +10,8 @@ import {
   advancedTableContainerStyle,
   advancedBlueBarStyle,
   nativeFieldInteraction,
+  advancedFormBtnStyle,
+  advancedFormInlineFooterStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const getInitialState = () => {
@@ -27,6 +30,17 @@ const getInitialState = () => {
 
 const SipCompatibilityPage = () => {
   const [form, setForm] = useState(getInitialState());
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const alert = (msg) => {
+    const isSuccess = /successfully/i.test(String(msg));
+    showToast(msg, isSuccess ? "success" : "error");
+  };
 
   const handleChange = (key, value) => {
     const fieldDef = SIP_COMPATIBILITY_FIELDS.find((f) => f.key === key);
@@ -115,12 +129,29 @@ const SipCompatibilityPage = () => {
 
   return (
     <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
       <AdvancedBreadcrumb current="SIP Compatibility" />
       <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
         <div style={advancedBlueBarStyle}>
           <span>SIP Compatibility</span>
         </div>
-        <div style={{ padding: "24px 32px 10px" }}>
+        <div style={{ padding: "24px 32px 0" }}>
           <div
             className="flex flex-col gap-3"
             style={{
@@ -206,14 +237,14 @@ const SipCompatibilityPage = () => {
             })}
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 12, padding: "12px 0 18px", borderTop: `1px solid ${C.cardBorder}` }}>
-          <Btn type="button" onClick={handleSave} variant="primary" style={{ minWidth: 110, height: 34, fontSize: 13 }}>
+        <div style={advancedFormInlineFooterStyle}>
+          <Btn type="button" onClick={handleSave} variant="primary" style={advancedFormBtnStyle}>
             Save
           </Btn>
-          <Btn type="button" onClick={handleReset} variant="cancel" style={{ minWidth: 110, height: 34, fontSize: 13 }}>
+          <Btn type="button" onClick={handleReset} variant="cancel" style={advancedFormBtnStyle}>
             Reset
           </Btn>
-          </div>
+        </div>
       </div>
     </AdvancedPageShell>
   );

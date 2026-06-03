@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   Alert,
+  Button,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -134,17 +135,15 @@ const resolveRingGroupDestValue = (rawDestValue, ringGroupRows) => {
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
+  pageBg: "#eef2f7",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
+  cardBorder: "#9ca3af",
+  labelText: "#1e293b",
+  valueText: "#1e293b",
   mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
+  accent: "#1e293b",
+  errorRed: "#dc2626",
 };
-const CARD_RADIUS = 20;
 
 const Btn = ({
   children,
@@ -152,106 +151,55 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
-  title,
-  type,
-  hoverBehavior = "background",
 }) => {
   const variants = {
     default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background: "#1e293b",
       color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-    cancel: {
-       background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      border: "1px solid #9ca3af",
     },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `0.5px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: "0.5px solid #fecaca",
     },
     accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
     },
   };
-
   const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#e2e8f0";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-  
-
-  const baseBg = extraStyle?.background || s.background;
-
   return (
     <button
-      type={type}
       onClick={onClick}
       disabled={disabled}
-      title={title}
       style={{
-        display: "inline-flex",
+        ...s,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "5px 14px",
+        borderRadius: 6,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
+        gap: 5,
+        transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
-        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.opacity = "1";
       }}
     >
       {children}
@@ -259,60 +207,26 @@ const Btn = ({
   );
 };
 
-const TableBtn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-}) => (
-  <Btn
-    onClick={onClick}
-    disabled={disabled}
-    variant={variant}
-    style={extraStyle}
-    hoverBehavior="opacity"
-  >
-    {children}
-  </Btn>
-);
-
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-          background: "#F8FAFC",
-      color: C.labelText,
+      background: "#f3f4f6",
+      color: "#1e293b",
       fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
+      fontSize: 10.5,
+      padding: "9px 8px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: "1px solid #9ca3af",
+      borderRight: "0.5px solid #9ca3af",
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.14em",
+      letterSpacing: "0.04em",
       ...extra,
     }}
   >
     {children}
   </th>
 );
-
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  whiteSpace: "nowrap",
-};
-const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
 
 const FieldRow = ({ label, children }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -757,9 +671,9 @@ const InboundRoutesPage = () => {
 
   const inputStyle = {
     width: "100%",
-    border: "1px solid #d1d5db",
+    border: `1px solid ${C.cardBorder}`,
     borderRadius: 4,
-    padding: "4px 8px",
+    padding: "6px 8px",
     fontSize: 13,
     outline: "none",
     color: C.valueText,
@@ -939,41 +853,50 @@ const InboundRoutesPage = () => {
         {/* Main Card */}
         <div
           style={{
-           background: "#ffffff",
-borderRadius: 10,
-overflow: "hidden",
-border: `1.5px solid ${C.cardBorder}`,
-boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+            background: C.cardBg,
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
           {/* Toolbar */}
           <div
             style={{
-             display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-minHeight: 44,
-padding: "7px 14px",
-borderBottom: `1px solid ${C.cardBorder}`,
-background: "#ffffff",
-flexWrap: "wrap",
-gap: 12,
-borderTopLeftRadius: CARD_RADIUS,
-borderTopRightRadius: CARD_RADIUS,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#DCE6F2",
+              flexWrap: "wrap",
+              gap: 8,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              
+              <span
+                style={{
+                  background: "#f1f5f9",
+                  border: `0.5px solid ${C.cardBorder}`,
+                  color: "#475569",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 12px",
+                  borderRadius: 20,
+                }}
+              >
+                Page {page} · {rows.length} records
+              </span>
               {selected.length > 0 && (
                 <span
                   style={{
                     background: "#e0f2fe",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
+                    fontWeight: 600,
+                    padding: "3px 10px",
                     borderRadius: 20,
-                    border: `1px solid ${C.accent}`,
+                    border: `0.5px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
@@ -988,77 +911,42 @@ borderTopRightRadius: CARD_RADIUS,
                 flexWrap: "wrap",
               }}
             >
-              <TableBtn
-                onClick={handleDelete}
-                disabled={
-                  loading.delete || loading.list || selected.length === 0
-                }
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                {loading.delete && (
-                  <CircularProgress size={11} style={{ color: "#374151" }} />
-                )}
-                Delete
-              </TableBtn>
-              <TableBtn
+              <Btn
                 onClick={() => {
                   setImportFile(null);
                   setShowImportModal(true);
                 }}
                 variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
               >
                 ⬇ Import
-              </TableBtn>
-              <TableBtn
-                onClick={handleExport}
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
+              </Btn>
+              <Btn onClick={handleExport} variant="outline">
                 ⬆ Export
-              </TableBtn>
-              
-             <TableBtn
-  onClick={handleOpenAddModal}
-  disabled={loading.save}
-  variant="primary"
-  hoverBehavior="opacity"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  + Add New
-</TableBtn>
+              </Btn>
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.list || selected.length === 0
+                }
+                variant="danger"
+              >
+                {loading.delete && (
+                  <CircularProgress size={11} style={{ color: C.errorRed }} />
+                )}
+                🗑 Delete
+              </Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.save}
+                variant="accent"
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto",
-overflowY: "auto",
-flex: 1, }}>
+          <div style={{ overflowX: "auto" }}>
             {loading.list ? (
               <div
                 style={{
@@ -1073,41 +961,39 @@ flex: 1, }}>
             ) : (
               <table
                 style={{
-                width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36,position: "sticky",
-                        top: 0,
-                        zIndex: 10, }}>
+                    <TH style={{ width: 36 }}>
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
                         disabled={loading.delete}
-                        sx={checkboxSx}
+                        sx={{
+                          padding: "1px",
+                          color: C.accent,
+                          "&.Mui-checked": { color: C.accent },
+                          "&.MuiCheckbox-indeterminate": { color: C.accent },
+                        }}
                       />
                     </TH>
-                    <TH style={{width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
-                    <TH style={{  position: "sticky", top: 0, zIndex: 10}}>Name</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>DID Pattern</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Caller ID Pattern</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Destination</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Enabled</TH>
+                    <TH style={{ width: 40 }}>#</TH>
+                    <TH style={{ textAlign: "left", paddingLeft: 16 }}>Name</TH>
+                    <TH>DID Pattern</TH>
+                    <TH>Caller ID Pattern</TH>
+                    <TH>Destination</TH>
+                    <TH>Enabled</TH>
                     <TH style={{ textAlign: "left", paddingLeft: 16 }}>
                       Member Trunks
                     </TH>
-                    <TH style={{width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10, }}>Modify</TH>
+                    <TH style={{ width: 70 }}>Actions</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1130,8 +1016,7 @@ minWidth: 900,
                     pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const rowBg = isSelected 
+                      const rowBg = isSelected
                         ? "#f0f9ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
@@ -1147,6 +1032,7 @@ minWidth: 900,
                           key={row.id}
                           style={{
                             background: rowBg,
+                            borderBottom: "0.5px solid #9ca3af",
                             transition: "background 0.1s ease",
                           }}
                           onMouseEnter={(e) => {
@@ -1160,9 +1046,9 @@ minWidth: 900,
                         >
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              textAlign: "center",
+                              padding: "4px 0",
+                              borderRight: "0.5px solid #edf2f7",
                             }}
                           >
                             <Checkbox
@@ -1170,69 +1056,84 @@ minWidth: 900,
                               checked={isSelected}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={loading.delete}
-                              sx={checkboxSx}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
                             />
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              textAlign: "center",
+                              padding: "7px 4px",
+                              fontSize: 11,
+                              color: C.mutedText,
+                              borderRight: "0.5px solid #edf2f7",
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              padding: "7px 16px",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              fontSize: 12,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
                             }}
                           >
                             {row.didPattern || "—"}
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              fontSize: 12,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
                             }}
                           >
                             {row.callerIdPattern || "—"}
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              fontSize: 12,
+                              color: C.valueText,
+                              borderRight: "0.5px solid #edf2f7",
                             }}
                           >
                             {destinationStr || "—"}
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              textAlign: "center",
+                              padding: "7px 8px",
+                              borderRight: "0.5px solid #edf2f7",
                             }}
                           >
                             <span
                               style={{
-                              
+                                background:
+                                  row.enabled === "Yes" ? "#dcfce7" : "#f1f5f9",
                                 color:
                                   row.enabled === "Yes" ? "#15803d" : "#475569",
                                 padding: "2px 8px",
                                 borderRadius: 10,
-                                fontSize: 11,
+                                fontSize: 10,
                                 fontWeight: 600,
                               }}
                             >
@@ -1241,13 +1142,10 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              padding: "10px 14px",
-                              fontSize: 13,
+                              padding: "7px 16px",
+                              fontSize: 12,
                               color: C.labelText,
-                              borderRight: "1px solid #f1f5f9",
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              borderRight: "0.5px solid #edf2f7",
                               whiteSpace: "normal",
                               wordBreak: "break-all",
                             }}
@@ -1255,23 +1153,23 @@ minWidth: 900,
                             {row.memberTrunks?.length > 0 ? (
                               row.memberTrunks.map(getTrunkLabel).join(", ")
                             ) : (
-                              <span style={{ ...tdStyle, background: rowBg ,}}>—</span>
+                              <span style={{ color: C.mutedText }}>—</span>
                             )}
                           </td>
                           <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              textAlign: "center",
-                              padding: "7px 8px",
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
+                            style={{ textAlign: "center", padding: "4px 8px" }}
                           >
-                            <EditDocumentIcon
-                              className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                              titleAccess="Edit"
+                            <Btn
                               onClick={() => handleOpenEditModal(row)}
-                            />
+                              variant="outline"
+                              style={{
+                                fontSize: 10,
+                                padding: "3px 10px",
+                                margin: "0 auto",
+                              }}
+                            >
+                              Edit
+                            </Btn>
                           </td>
                         </tr>
                       );
@@ -1290,7 +1188,7 @@ minWidth: 900,
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "10px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
+                borderTop: `0.5px solid ${C.cardBorder}`,
                 background: "#f8fafc",
                 flexWrap: "wrap",
                 gap: 8,
@@ -1333,7 +1231,7 @@ minWidth: 900,
                     border: `0.5px solid ${C.cardBorder}`,
                   }}
                 >
-                  Page {page}
+                  Page {page} of {totalPages}
                 </span>
                 <Btn
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
@@ -1349,6 +1247,27 @@ minWidth: 900,
                 >
                   Last
                 </Btn>
+                <select
+                  value={page}
+                  onChange={(e) => setPage(Number(e.target.value))}
+                  style={{
+                    fontSize: 11,
+                    borderRadius: 4,
+                    border: `0.5px solid ${C.cardBorder}`,
+                    padding: "3px 6px",
+                    color: C.labelText,
+                    background: "#fff",
+                  }}
+                >
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  {rows.length} total
+                </span>
               </div>
             </div>
           )}
@@ -1380,7 +1299,7 @@ minWidth: 900,
           Import Inbound Routes
         </DialogTitle>
         <DialogContent
-          style={{ backgroundColor: "#dde0e4", padding: "20px 24px 12px" }}
+          style={{ backgroundColor: C.pageBg, padding: "20px 24px 12px" }}
         >
           <div className="flex flex-col gap-4 pt-1">
             <p className="text-[13px] text-gray-600">
@@ -1414,29 +1333,25 @@ minWidth: 900,
         </DialogContent>
         <DialogActions
           style={{
-            backgroundColor: "#dde0e4",
+            backgroundColor: C.pageBg,
             justifyContent: "center",
             gap: 16,
             padding: "12px 24px 16px",
           }}
         >
           <Btn
-            variant="primary"
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
           >
-            {importLoading && <CircularProgress size={16} color="inherit" />}
             {importLoading ? "Importing..." : "Import"}
           </Btn>
           <Btn
-            variant="cancel"
             onClick={() => {
               setShowImportModal(false);
               setImportFile(null);
             }}
             disabled={importLoading}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+            variant="outline"
           >
             Cancel
           </Btn>
@@ -1465,15 +1380,15 @@ minWidth: 900,
           {editId != null ? "Edit Inbound Route" : "Add Inbound Route"}
         </DialogTitle>
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#dde0e4" }}
+          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Route Settings */}
             <div
               style={{
                 background: "#fff",
-                border: "1px solid #d1d5db",
-                borderRadius: 8,
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
                 padding: 16,
               }}
             >
@@ -1481,9 +1396,9 @@ minWidth: 900,
                 style={{
                   fontSize: 13,
                   fontWeight: 700,
-                  color: "#374151",
+                  color: C.labelText,
                   marginBottom: 14,
-                  borderBottom: "1px solid #d1d5db",
+                  borderBottom: `1px solid ${C.cardBorder}`,
                   paddingBottom: 6,
                 }}
               >
@@ -1508,7 +1423,7 @@ minWidth: 900,
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{ fontSize: 13, background: "#fff" }}
+                      sx={{ fontSize: 13 }}
                     >
                       {ENABLE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1548,7 +1463,7 @@ minWidth: 900,
                       onChange={(e) =>
                         setEnableMobilityExtension(e.target.value)
                       }
-                      sx={{ fontSize: 13, background: "#fff" }}
+                      sx={{ fontSize: 13 }}
                     >
                       {MOBILITY_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1571,7 +1486,7 @@ minWidth: 900,
                     <Select
                       value={sendRingTone}
                       onChange={(e) => setSendRingTone(e.target.value)}
-                      sx={{ fontSize: 13, background: "#fff" }}
+                      sx={{ fontSize: 13 }}
                     >
                       {SEND_RINGTONE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1587,7 +1502,7 @@ minWidth: 900,
                     <Select
                       value={enableT38}
                       onChange={(e) => setEnableT38(e.target.value)}
-                      sx={{ fontSize: 13, background: "#fff" }}
+                      sx={{ fontSize: 13 }}
                     >
                       {T38_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1602,7 +1517,7 @@ minWidth: 900,
                     <Select
                       value={enableTimeCondition}
                       onChange={(e) => setEnableTimeCondition(e.target.value)}
-                      sx={{ fontSize: 13, background: "#fff" }}
+                      sx={{ fontSize: 13 }}
                     >
                       {TIME_CONDITION_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1616,7 +1531,7 @@ minWidth: 900,
                 <div
                   style={{
                     gridColumn: "1 / -1",
-                    borderTop: "1px solid #d1d5db",
+                    borderTop: `1px solid ${C.cardBorder}`,
                     margin: "4px 0",
                   }}
                 />
@@ -1632,7 +1547,7 @@ minWidth: 900,
                       }}
                       displayEmpty
                       MenuProps={SELECT_MENU_PROPS}
-                      sx={{ fontSize: 13, background: "#fff" }}
+                      sx={{ fontSize: 13 }}
                     >
                       <MenuItem value="">
                         <em>Select</em>
@@ -1663,7 +1578,7 @@ minWidth: 900,
                         onChange={(e) => setDestinationTarget(e.target.value)}
                         displayEmpty
                         MenuProps={SELECT_MENU_PROPS}
-                        sx={{ fontSize: 13, background: "#fff" }}
+                        sx={{ fontSize: 13 }}
                       >
                         <MenuItem
                           value=""
@@ -1699,8 +1614,8 @@ minWidth: 900,
             <div
               style={{
                 background: "#fff",
-                border: "1px solid #d1d5db",
-                borderRadius: 8,
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
                 padding: 16,
               }}
             >
@@ -1708,9 +1623,9 @@ minWidth: 900,
                 style={{
                   fontSize: 13,
                   fontWeight: 700,
-                  color: "#374151",
+                  color: C.labelText,
                   marginBottom: 14,
-                  borderBottom: "1px solid #d1d5db",
+                  borderBottom: `1px solid ${C.cardBorder}`,
                   paddingBottom: 6,
                 }}
               >
@@ -1749,7 +1664,7 @@ minWidth: 900,
                     style={{
                       width: "100%",
                       height: 160,
-                      border: "1px solid #d1d5db",
+                      border: `1px solid ${C.cardBorder}`,
                       background: "#fff",
                       borderRadius: 4,
                       padding: "4px 8px",
@@ -1833,7 +1748,7 @@ minWidth: 900,
                     style={{
                       width: "100%",
                       height: 160,
-                      border: "1px solid #d1d5db",
+                      border: `1px solid ${C.cardBorder}`,
                       background: "#fff",
                       borderRadius: 4,
                       padding: "4px 8px",
@@ -1862,7 +1777,7 @@ minWidth: 900,
                 >
                   <button
                     type="button"
-                    className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                    className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
                     title="Move to bottom"
                     onClick={moveTrunkToBottom}
                   >
@@ -1887,7 +1802,7 @@ minWidth: 900,
                   </button>
                   <button
                     type="button"
-                    className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                    className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
                     title="Move up"
                     onClick={moveTrunkUp}
                   >
@@ -1903,7 +1818,7 @@ minWidth: 900,
                   </button>
                   <button
                     type="button"
-                    className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                    className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
                     title="Move down"
                     onClick={moveTrunkDown}
                   >
@@ -1919,7 +1834,7 @@ minWidth: 900,
                   </button>
                   <button
                     type="button"
-                    className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                    className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
                     title="Move to top"
                     onClick={moveTrunkToTop}
                   >
@@ -1948,26 +1863,27 @@ minWidth: 900,
           </div>
         </DialogContent>
         <DialogActions
-          style={{
-            justifyContent: "center",
-            gap: 12,
-            padding: 16,
-          }}
+          style={{ padding: "16px 24px", justifyContent: "center", gap: 16 }}
         >
           <Btn
-            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+            style={{ minWidth: 110, padding: "8px 24px", fontSize: 13 }}
           >
-            {loading.save && <CircularProgress size={20} color="inherit" />}
-            {loading.save ? "Saving..." : "Save"}
+            {loading.save ? (
+              <>
+                <CircularProgress size={14} style={{ color: "#fff" }} />{" "}
+                Saving...
+              </>
+            ) : (
+              "Save"
+            )}
           </Btn>
           <Btn
-            variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+            variant="outline"
+            style={{ minWidth: 110, padding: "8px 24px", fontSize: 13 }}
           >
             Close
           </Btn>

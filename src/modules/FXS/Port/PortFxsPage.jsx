@@ -3,10 +3,9 @@ import {
   PORT_FXS_TABLE_COLUMNS,
   PORT_FXS_ITEMS_PER_PAGE,
   PORT_FXS_TOTAL_PORTS,
-  PORT_FXS_INITIAL_DATA,
   PORT_FXS_PAGE_TITLE,
 } from "../../../sections/port/constants/PortFxsPageConstants";
-// import { fetchFxsPorts, initializeFxsPorts } from './controller';
+import { fetchFxsPorts } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import PortFxsBatchModifyPage from "./PortFxsBatchModifyPage";
 import PortFxsModifyPage from "./PortFxsModifyPage";
@@ -57,7 +56,6 @@ const thStyle = {
   lineHeight: "18px",
 };
 
-
 const tdStyle = {
   border: "1px solid #bbb",
   padding: "3px 4px",
@@ -106,27 +104,10 @@ const paginationLinkStyle = {
   textDecoration: "underline",
 };
 
-// Initialize port data
-const initializePortData = () => {
-  return Array.from({ length: PORT_FXS_TOTAL_PORTS }, (_, i) => ({
-    ...PORT_FXS_INITIAL_DATA,
-    port: i + 1,
-  }));
-};
-
-// Initialize batch modify form
-const getInitialBatchForm = () => {
-  const form = {};
-  PORT_FXS_BATCH_MODIFY_FIELDS.forEach((field) => {
-    if (field.type === "select") {
-      form[field.key] = field.options[0] || field.default || "";
-    } else if (field.type === "checkbox") {
-      form[field.key] = field.default || false;
-    } else {
-      form[field.key] = field.default || "";
-    }
-  });
-  return form;
+const FWD_TYPE_TO_UI = {
+  no_reply: "No Reply",
+  unconditional: "Unconditional",
+  busy: "Busy",
 };
 
 const PortFxsPage = () => {
@@ -134,6 +115,7 @@ const PortFxsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [batchInitialPorts, setBatchInitialPorts] = useState(null);
+  const [maxPorts, setMaxPorts] = useState(PORT_FXS_TOTAL_PORTS);
   const [page, setPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -147,54 +129,42 @@ const PortFxsPage = () => {
   );
 
   // Map API port object to UI row object
-  const mapApiPortToRow = (item) => {
-    return {
-      port: item.port_number ?? item.port ?? item.id,
-      type: item.type ?? "FXS",
-      sipAccount:
-        item.sip_account || item.starting_authentication_username || "---",
-      displayName: item.display_name || item.starting_display_name || "---",
-      autoDialNum: item.auto_dial_number_value || item.auto_dial || "---",
-      dnd: item.dnd_do_not_disturb ? "Enable" : "Disable",
-      forward: item.call_forward ? "Enable" : "Disable",
-      fwdType: item.forward_type || "---",
-      fwdNumber: item.forward_number || "---",
-      cid: item.cid_enable ? "Enable" : "Disable",
-      callWaiting: item.call_waiting ? "Enable" : "Disable",
-      regStatus: item.ing_mode || item.status || "---",
-      echoCanceller: item.echo_canceller ? "Enable" : "Disable",
-      colorRing: item.color_ring ? "Enable" : "Disable",
-      colorRingIndex:
-        item.color_ring_index ?? item.color_ring_index_status ?? "---",
-      inputGain: item.input_gain ?? item.input_gain_db ?? 0,
-      outputGain: item.output_gain ?? item.output_gain_db ?? 0,
-      raw: item,
-    };
-  };
+  const mapApiPortToRow = (item) => ({
+    port: item.port ?? item.id,
+    type: "FXS",
+    sipAccount: item.sipAccount || "---",
+    displayName: item.displayName || "---",
+    autoDialNum: item.autoDialNumber || "---",
+    dnd: item.dnd ? "Enable" : "Disable",
+    forward: item.callForwardEnabled ? "Enable" : "Disable",
+    fwdType: FWD_TYPE_TO_UI[item.forwardType] || item.forwardType || "---",
+    fwdNumber: item.forwardNumber || "---",
+    cid: item.cidEnabled ? "Enable" : "Disable",
+    callWaiting: item.callWaiting ? "Enable" : "Disable",
+    regStatus: item.enabled ? "Registered" : "Unregistered",
+    echoCanceller: item.echoCanceller ? "Enable" : "Disable",
+    colorRing: "---",
+    colorRingIndex: "---",
+    inputGain: item.inputGain ?? 0,
+    outputGain: item.outputGain ?? 0,
+    raw: item,
+  });
 
-  // Fetch ports from API, initialize if empty
+  // Fetch ports — backend auto-seeds if DB is empty
   const loadPorts = async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetchFxsPorts();
-      const data = res && res.data ? res.data : res || [];
-      if (!Array.isArray(data) || data.length === 0) {
-        // initialize then refetch
-        await initializeFxsPorts();
-        const retry = await fetchFxsPorts();
-        const retryData = retry && retry.data ? retry.data : retry || [];
-        setPorts(retryData.map(mapApiPortToRow));
-        setRefreshKey(Date.now());
-      } else {
-        setPorts(data.map(mapApiPortToRow));
-        setRefreshKey(Date.now());
-      }
+      const data = Array.isArray(res?.data) ? res.data : [];
+      // Use maxPorts from API response; fall back to actual data length, then constant
+      const apiMaxPorts = res?.maxPorts || data.length || PORT_FXS_TOTAL_PORTS;
+      setMaxPorts(apiMaxPorts);
+      setPorts(data.map(mapApiPortToRow));
+      setRefreshKey(Date.now());
     } catch (err) {
       console.error("Error loading FXS ports:", err);
       setError(err.message || "Failed to load ports");
-      // fallback to default initialization data
-      setPorts(initializePortData());
     } finally {
       setLoading(false);
     }
@@ -308,17 +278,37 @@ const PortFxsPage = () => {
                       <td style={tdStyle}>{port.type}</td>
                       <td style={tdStyle}>{port.sipAccount}</td>
                       <td style={tdStyle}>{port.displayName}</td>
-                      <td style={tdStyle}>{port.autoDialNum}</td>
                       <td style={tdStyle}>{port.dnd}</td>
                       <td style={tdStyle}>{port.forward}</td>
-                      <td style={tdStyle}>{port.fwdType}</td>
-                      <td style={tdStyle}>{port.fwdNumber}</td>
-                      <td style={tdStyle}>{port.cid}</td>
                       <td style={tdStyle}>{port.callWaiting}</td>
-                      <td style={tdStyle}>{port.regStatus}</td>
+                      <td style={tdStyle}>
+                        {(() => {
+                          const s = String(port.regStatus || "").toLowerCase();
+                          const registered = s === "registered";
+                          const unregistered =
+                            s === "unregistered" ||
+                            s === "rejected" ||
+                            s === "";
+                          return (
+                            <span
+                              style={{
+                                display: "inline-block",
+                                padding: "1px 10px",
+                                borderRadius: 10,
+                                fontSize: 11,
+                                fontWeight: 600,
+                                background: registered ? "#dcfce7" : "#f3f4f6",
+                                color: registered ? "#15803d" : "#6b7280",
+                                border: `1px solid ${registered ? "#86efac" : "#d1d5db"}`,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {port.regStatus || "—"}
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td style={tdStyle}>{port.echoCanceller}</td>
-                      <td style={tdStyle}>{port.colorRing}</td>
-                      <td style={tdStyle}>{port.colorRingIndex}</td>
                       <td style={tdStyle}>{port.inputGain}</td>
                       <td style={tdStyle}>{port.outputGain}</td>
                     </tr>
@@ -332,6 +322,7 @@ const PortFxsPage = () => {
         {showBatchModify && (
           <PortFxsBatchModifyPage
             initialPorts={batchInitialPorts}
+            maxPorts={maxPorts}
             onSaved={async () => {
               await loadPorts();
               setShowBatchModify(false);

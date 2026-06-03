@@ -23,20 +23,18 @@ import Checkbox from "@mui/material/Checkbox";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#3E5475",
+  accent: "#0284c7",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
-
-const CARD_RADIUS = 20;
 
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
@@ -60,6 +58,8 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
+      borderRadius: 6,
+      boxShadow: "0 2px 8px #3E5475",
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -151,7 +151,7 @@ const modalOverlayStyle = {
   justifyContent: "center",
 };
 const modalStyle = {
-  background: "#ffffff",
+  background: "#f8fafc",
   border: `none`,
   borderRadius: 8,
   width: 500,
@@ -175,37 +175,38 @@ const modalHeaderStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 const modalBodyStyle = {
-  padding: "24px",
+  padding: "20px 24px",
   display: "flex",
   flexDirection: "column",
-  gap: 14,
-  backgroundColor: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  gap: 12,
+  backgroundColor: "#f8fafc",
 };
 const modalRowStyle = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "center",
-  padding: "0",
+  background: "#ffffff",
+  border: `1px solid #cbd5e1`,
+  borderRadius: 6,
+  padding: "6px 12px",
   marginBottom: 0,
+  minHeight: 40,
   gap: 12,
 };
 const modalLabelStyle = {
-  width: 170,
+  width: 160,
   fontSize: 13,
   fontWeight: 600,
-  color: C.labelText,
+  color: "#1e293b",
   textAlign: "left",
   marginRight: 0,
   whiteSpace: "nowrap",
 };
 const modalInputStyle = {
-  width: "min(100%, 320px)",
+  flex: 1,
+  maxWidth: 280,
   fontSize: 13,
-  height: 32,
-  padding: "0 8px",
-  boxSizing: "border-box",
-  border: `1px solid ${C.cardBorder}`,
+  padding: "6px 8px",
+  border: "1px solid #cbd5e1",
   borderRadius: 4,
   outline: "none",
   color: "#1e293b",
@@ -213,24 +214,24 @@ const modalInputStyle = {
 };
 
 const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
+  onFocus: (e) => (e.target.style.borderColor = "#1e2d42"),
+  onBlur: (e) => (e.target.style.borderColor = "#cbd5e1"),
   onMouseEnter: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
+      e.target.style.borderColor = "#94a3b8";
   },
   onMouseLeave: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
+      e.target.style.borderColor = "#cbd5e1";
   },
 };
 const modalFooterStyle = {
   display: "flex",
   justifyContent: "center",
-  gap: 12,
-  padding: "10px 16px",
+  gap: 16,
+  padding: "16px 24px",
   background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
+  borderTop: "1px solid #e2e8f0",
   borderBottomLeftRadius: 8,
   borderBottomRightRadius: 8,
 };
@@ -239,8 +240,8 @@ const tableContainerStyle = {
   maxWidth: "100%",
   margin: "0 auto",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 20,
   boxShadow: C.cardShadow,
   overflow: "hidden",
 };
@@ -248,56 +249,41 @@ const blueBarStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
   display: "flex",
   flexWrap: "wrap",
   gap: 12,
+  marginLeft: 6,
+
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "7px 14px",
+  padding: "10px 14px",
   fontWeight: 700,
   fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  color: C.strongText,
+  borderBottom: `1px solid ${C.divider}`,
 };
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
+const thStyle = {
+  background: C.pageBg,
+  color: C.labelText,
+  fontWeight: 700,
+  fontSize: 11,
+  borderBottom: `1px solid ${C.divider}`,
+  padding: "10px 18px",
+  whiteSpace: "nowrap",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+};
 const tdStyle = {
-  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  padding: "8px 18px",
   fontSize: 13,
+  fontWeight: 500,
+  background: C.cardBg,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
-};
-
-const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 // const tableButtonSx = {
 //   background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
@@ -330,7 +316,7 @@ const ITEMS_PER_PAGE = 20;
 // ConfirmDialog removed in favor of window.confirm
 
 const AccountManage = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, canWrite, showReadOnlyToast } = useAuth();
   const [accounts, setAccounts] = useState([]);
   const [selected, setSelected] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -858,27 +844,11 @@ const AccountManage = () => {
             ...tableContainerStyle,
             background: C.cardBg,
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 10,
+            borderRadius: 20,
           }}
         >
           <div style={blueBarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
-                  {selected.length} selected
-                </span>
-              )}
-            </div>
+            <span>Info</span>
             <div
               style={{
                 display: "flex",
@@ -905,7 +875,13 @@ const AccountManage = () => {
               </Btn>
               <Btn
                 variant="cancel"
-                onClick={handleDelete}
+                onClick={() => {
+                  if (!canWrite) {
+                    showReadOnlyToast();
+                    return;
+                  }
+                  handleDelete();
+                }}
                 disabled={loading || selected.length === 0}
                 style={{ height: 30 }}
               >
@@ -914,7 +890,13 @@ const AccountManage = () => {
               </Btn>
               <Btn
                 variant="primary"
-                onClick={() => handleOpenModal()}
+                onClick={() => {
+                  if (!canWrite) {
+                    showReadOnlyToast();
+                    return;
+                  }
+                  handleOpenModal();
+                }}
                 disabled={loading}
                 style={{
                   height: 30,
@@ -932,43 +914,31 @@ const AccountManage = () => {
               style={{
                 width: "100%",
                 minWidth: 600,
-                borderCollapse: "separate",
-                borderSpacing: 0,
+                borderCollapse: "collapse",
               }}
             >
               <thead>
                 <tr>
-                  {ACCOUNT_MANAGE_TABLE_COLUMNS.map((col, colIdx) => {
-                    const isFirst = colIdx === 0;
-                    const isLast =
-                      colIdx === ACCOUNT_MANAGE_TABLE_COLUMNS.length - 1;
-                    return (
-                      <TH
-                        key={col.key}
-                        style={{
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                          ...(isFirst
-                            ? { width: 40, padding: 0, borderLeft: "none" }
-                            : {}),
-                          ...(isLast ? { width: 70, borderRight: "none" } : {}),
-                        }}
-                      >
-                        {col.key === "choose" ? (
-                          <Checkbox
-                            size="small"
-                            checked={allPageSelected}
-                            indeterminate={somePageSelected}
-                            onChange={handleToggleAll}
-                            sx={checkboxSx}
-                          />
-                        ) : (
-                          col.label
-                        )}
-                      </TH>
-                    );
-                  })}
+                  {ACCOUNT_MANAGE_TABLE_COLUMNS.map((col) => (
+                    <th key={col.key} style={thStyle}>
+                      {col.key === "choose" ? (
+                        <Checkbox
+                          size="small"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={handleToggleAll}
+                          sx={{
+                            padding: "1px",
+                            color: C.accent,
+                            "&.Mui-checked": { color: C.accent },
+                            "&.MuiCheckbox-indeterminate": { color: C.accent },
+                          }}
+                        />
+                      ) : (
+                        col.label
+                      )}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -976,15 +946,7 @@ const AccountManage = () => {
                   <tr>
                     <td
                       colSpan={ACCOUNT_MANAGE_TABLE_COLUMNS.length}
-                      style={{
-                        ...tdStyle,
-                        padding: "32px 14px",
-                        borderRight: "none",
-                        borderLeft: "none",
-                        borderBottom: "none",
-                        color: C.labelText,
-                        fontWeight: 600,
-                      }}
+                      style={tdStyle}
                     >
                       {loading ? "Loading..." : "No data"}
                     </td>
@@ -992,128 +954,66 @@ const AccountManage = () => {
                 ) : (
                   combinedAccounts.map((item, idx) => {
                     const realIdx = idx;
-                    const isSelected = selected.includes(realIdx);
-                    const isLastRow = idx === combinedAccounts.length - 1;
-                    const rowBg = isSelected
-                      ? "#f0f9ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
-                    const lastRowCellStyle = isLastRow
-                      ? { borderBottom: "none" }
-                      : {};
                     return (
                       <tr
                         key={realIdx}
                         style={{
-                          background: rowBg,
+                          background: C.cardBg,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          if (!isSelected)
-                            e.currentTarget.style.background = "#f1f5f9";
+                          e.currentTarget.style.background = C.pageBg;
                         }}
                         onMouseLeave={(e) => {
-                          if (!isSelected)
-                            e.currentTarget.style.background = rowBg;
+                          e.currentTarget.style.background = C.cardBg;
                         }}
                       >
                         {/* Choose */}
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderLeft: "none",
-                            width: 40,
-                            ...lastRowCellStyle,
-                          }}
-                        >
+                        <td style={tdStyle}>
                           {!item.isAdmin && (
                             <Checkbox
                               size="small"
-                              checked={isSelected}
+                              checked={selected.includes(realIdx)}
                               onChange={() => handleSelectRow(realIdx)}
-                              sx={checkboxSx}
+                              sx={{
+                                padding: "1px",
+                                color: C.accent,
+                                "&.Mui-checked": { color: C.accent },
+                              }}
                             />
                           )}
                         </td>
                         {/* Id */}
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            color: C.mutedText,
-                            fontWeight: 500,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {realIdx + 1}
-                        </td>
+                        <td style={tdStyle}>{realIdx + 1}</td>
                         {/* Username */}
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            fontWeight: 500,
-                            textAlign: "left",
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {item.username}
-                        </td>
+                        <td style={tdStyle}>{item.username}</td>
                         {/* Authority */}
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            fontWeight: 500,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {item.authority ?? "-"}
-                        </td>
+                        <td style={tdStyle}>{item.authority ?? "-"}</td>
                         {/* Modify */}
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderRight: "none",
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          <div
+                        <td style={tdStyle}>
+                          <EditDocumentIcon
+                            className="transition-opacity"
+                            titleAccess="Edit"
                             style={{
-                              display: "flex",
-                              justifyContent: "center",
+                              cursor: canWrite ? "pointer" : "not-allowed",
+                              opacity: canWrite ? 0.7 : 0.3,
+                              color: "#2563eb",
                             }}
-                          >
-                            <EditDocumentIcon
-                              titleAccess="Edit"
-                              style={{
-                                cursor: "pointer",
-                                color: "#2563eb",
-                                fontSize: 22,
-                                opacity: 0.7,
-                                transition: "opacity 0.15s ease",
-                              }}
-                              onClick={() => {
-                                if (item.isAdmin) {
-                                  showToast(
-                                    "Admin user cannot be modified.",
-                                    "error",
-                                  );
-                                  return;
-                                }
-                                handleOpenModal(item, realIdx);
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.opacity = "1";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.opacity = "0.7";
-                              }}
-                            />
-                          </div>
+                            onClick={() => {
+                              if (!canWrite) {
+                                showReadOnlyToast();
+                                return;
+                              }
+                              if (item.isAdmin) {
+                                showToast(
+                                  "Admin user cannot be modified.",
+                                  "error",
+                                );
+                                return;
+                              }
+                              handleOpenModal(item, realIdx);
+                            }}
+                          />
                         </td>
                       </tr>
                     );
@@ -1122,106 +1022,72 @@ const AccountManage = () => {
               </tbody>
             </table>
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "7px 14px",
-              background: "#ffffff",
-              borderTop: `1px solid ${C.cardBorder}`,
-              borderBottomLeftRadius: CARD_RADIUS,
-              borderBottomRightRadius: CARD_RADIUS,
-            }}
-          >
-            <span style={{ fontSize: 11, color: C.mutedText }}>
-              Showing {combinedAccounts.length} record
-              {combinedAccounts.length !== 1 ? "s" : ""}
-            </span>
-          </div>
         </div>
         {/* Table Buttons (removed as they are now in the top bar) */}
         <div style={{ padding: 0 }} />
       </div>
       {/* Modal */}
       {isModalOpen && (
-        <div
-          style={modalOverlayStyle}
-          onClick={() => {
-            if (!loading) handleCloseModal();
-          }}
-        >
-          <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+        <div style={modalOverlayStyle}>
+          <div style={modalStyle}>
             <div style={modalHeaderStyle}>User Information</div>
             <div style={modalBodyStyle}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                  background: "#f8fafc",
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 8,
-                  padding: 20,
-                }}
-              >
-                {ACCOUNT_MANAGE_MODAL_FIELDS.map((field) => (
-                  <div key={field.name} style={modalRowStyle}>
-                    <label style={modalLabelStyle}>{field.label}:</label>
-                    {field.type === "select" ? (
-                      <select
-                        name={field.name}
-                        value={formData[field.name]}
-                        onChange={handleInputChange}
-                        style={{
-                          ...modalInputStyle,
-                          ...(field.disabled
-                            ? {
-                                backgroundColor: "#f1f5f9",
-                                color: "#94a3b8",
-                                cursor: "not-allowed",
-                              }
-                            : {}),
-                        }}
-                        disabled={field.disabled}
-                        {...(field.disabled ? {} : inputInteraction)}
-                      >
-                        {field.options.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type={field.type}
-                        name={field.name}
-                        value={formData[field.name]}
-                        onChange={handleInputChange}
-                        style={{
-                          ...modalInputStyle,
-                          ...(field.disabled
-                            ? {
-                                backgroundColor: "#f1f5f9",
-                                color: "#94a3b8",
-                                cursor: "not-allowed",
-                              }
-                            : {}),
-                        }}
-                        disabled={field.disabled}
-                        {...(field.disabled ? {} : inputInteraction)}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+              {ACCOUNT_MANAGE_MODAL_FIELDS.map((field) => (
+                <div key={field.name} style={modalRowStyle}>
+                  <label style={modalLabelStyle}>{field.label}:</label>
+                  {field.type === "select" ? (
+                    <select
+                      name={field.name}
+                      value={formData[field.name]}
+                      onChange={handleInputChange}
+                      style={{
+                        ...modalInputStyle,
+                        ...(field.disabled
+                          ? {
+                              backgroundColor: "#f1f5f9",
+                              color: "#94a3b8",
+                              cursor: "not-allowed",
+                            }
+                          : {}),
+                      }}
+                      disabled={field.disabled}
+                      {...(field.disabled ? {} : inputInteraction)}
+                    >
+                      {field.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={formData[field.name]}
+                      onChange={handleInputChange}
+                      style={{
+                        ...modalInputStyle,
+                        ...(field.disabled
+                          ? {
+                              backgroundColor: "#f1f5f9",
+                              color: "#94a3b8",
+                              cursor: "not-allowed",
+                            }
+                          : {}),
+                      }}
+                      disabled={field.disabled}
+                      {...(field.disabled ? {} : inputInteraction)}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
             <div style={modalFooterStyle}>
               <Btn
                 variant="primary"
                 onClick={handleSave}
                 disabled={loading}
-                style={{ minWidth: 100, height: 33 }}
+                style={{ minWidth: 110, height: 34 }}
               >
                 {loading ? "Saving..." : ACCOUNT_MANAGE_BUTTONS.save}
               </Btn>
@@ -1229,7 +1095,7 @@ const AccountManage = () => {
                 variant="cancel"
                 onClick={handleCloseModal}
                 disabled={loading}
-                style={{ minWidth: 100, height: 33 }}
+                style={{ minWidth: 110, height: 34, borderRadius: 6 }}
               >
                 {ACCOUNT_MANAGE_BUTTONS.close}
               </Btn>

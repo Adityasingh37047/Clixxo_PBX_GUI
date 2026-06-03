@@ -94,7 +94,7 @@ export const advancedBlueBarStyle = {
 };
 
 export const advancedFormBodyStyle = {
-  padding: "12px 20px 8px",
+  padding: "12px 20px 0",
 };
 
 export const advancedFormPanelStyle = {
@@ -116,7 +116,32 @@ export const advancedFormActionsStyle = {
   background: C.cardBg,
 };
 
-export const advancedFormBtnStyle = { minWidth: 110, height: 34, fontSize: 13 };
+/** Inline footer inside AdvancedFormCard body — border spans full card width */
+export const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "calc(100% + 40px)",
+  marginLeft: -20,
+  marginRight: -20,
+  marginTop: 0,
+  marginBottom: 0,
+  padding: "10px 20px 10px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+export const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
 
 export const advancedToolbarBtnStyle = { height: 30 };
 
@@ -287,7 +312,12 @@ export const AdvancedFormCard = ({
     <div style={advancedBlueBarStyle}>
       <span>{title}</span>
     </div>
-    <div style={advancedFormBodyStyle}>
+    <div
+      style={{
+        ...advancedFormBodyStyle,
+        paddingBottom: footer ? 0 : 12,
+      }}
+    >
       <div
         style={{
           display: "flex",
@@ -300,8 +330,10 @@ export const AdvancedFormCard = ({
       >
         {children}
       </div>
+      {footer ? (
+        <div style={advancedFormInlineFooterStyle}>{footer}</div>
+      ) : null}
     </div>
-    {footer ? <div style={advancedFormActionsStyle}>{footer}</div> : null}
   </div>
 );
 

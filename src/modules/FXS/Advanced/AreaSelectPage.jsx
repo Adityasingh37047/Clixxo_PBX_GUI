@@ -59,30 +59,42 @@ const AreaSelectPage = () => {
           </Btn>
         }
       >
-        <FieldRow label="Area Parameters">
-          <FormControl size="small" fullWidth>
-            <MuiSelect
-              value={formData.areaSelect}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  areaSelect: e.target.value,
-                }))
-              }
-              sx={muiSelectSx}
-            >
-              {AREA_OPTIONS.map((opt) => (
-                <MenuItem
-                  key={opt.value}
-                  value={opt.value}
-                  sx={{ fontSize: 13 }}
-                >
-                  {opt.label}
-                </MenuItem>
-              ))}
-            </MuiSelect>
-          </FormControl>
-        </FieldRow>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            width: "100%",
+            maxWidth: 560,
+            margin: "0 auto",
+            paddingBottom: 16,
+          }}
+        >
+          <FieldRow label="Area Parameters">
+            <FormControl size="small" fullWidth>
+              <MuiSelect
+                value={formData.areaSelect}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    areaSelect: e.target.value,
+                  }))
+                }
+                sx={muiSelectSx}
+              >
+                {AREA_OPTIONS.map((opt) => (
+                  <MenuItem
+                    key={opt.value}
+                    value={opt.value}
+                    sx={{ fontSize: 13 }}
+                  >
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </FieldRow>
+        </div>
       </AdvancedFormCard>
     </AdvancedPageShell>
   );

@@ -8,7 +8,6 @@ import { Select, MenuItem, FormControl } from "@mui/material";
 import {
   listSipSettings,
   updateSipSettings,
-  fetchSystemInfo,
   postLinuxCmd,
   fetchNetwork,
 } from "../api/apiService";
@@ -170,159 +169,53 @@ const SipSipPage = () => {
     const fetchSettings = async () => {
       try {
         setLoading(true);
-        const [sysInfo, listRes, netData] = await Promise.all([
-          fetchSystemInfo(),
+        const [listRes, netData] = await Promise.all([
           listSipSettings(),
           fetchNetwork().catch(() => null),
         ]);
         try {
-          const getIpFromInterfaceObject = (obj) => {
-            if (!obj || typeof obj !== "object") return null;
-            if (Array.isArray(obj["IP Address"]) && obj["IP Address"][0])
-              return obj["IP Address"][0];
-            if (Array.isArray(obj["Ip Address"]) && obj["Ip Address"][0])
-              return obj["Ip Address"][0];
-            if (Array.isArray(obj["ip_address"]) && obj["ip_address"][0])
-              return obj["ip_address"][0];
-            return null;
-          };
-          // Prefer details payload like SystemInfo page
-          const details = sysInfo?.details || {};
-          const lanInterfaces =
-            details.LAN_INTERFACES || details.lan_interfaces || null;
-          const interfacesArray = Array.isArray(lanInterfaces)
-            ? lanInterfaces
-            : lanInterfaces && typeof lanInterfaces === "object"
-              ? Object.entries(lanInterfaces).map(([name, data]) => ({
-                  name,
-                  data,
-                }))
-              : [];
+          const allIfaces = netData?.data?.interfaces || [];
 
-          let lan1Ip = null;
-          let lan2Ip = null;
-          interfacesArray.forEach((iface) => {
-            const name = String(iface.name || iface.Name || "").toLowerCase();
-            if (
-              name.includes("eth0") ||
-              name.includes("lan 1") ||
-              name.includes("lan1")
-            ) {
-              lan1Ip = lan1Ip || getIpFromInterfaceObject(iface.data || iface);
-            }
-            if (
-              name.includes("eth1") ||
-              name.includes("lan 2") ||
-              name.includes("lan2")
-            ) {
-              lan2Ip = lan2Ip || getIpFromInterfaceObject(iface.data || iface);
-            }
+          // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
+          const lanIfaces = allIfaces.filter((i) => {
+            const kn = (i.interface || "").toLowerCase();
+            return /^eth\d+$/.test(kn) || /^enp\d+s\d+$/.test(kn);
           });
-          // Direct known shapes if not found in details
-          if (!lan1Ip)
-            lan1Ip =
-              getIpFromInterfaceObject(sysInfo?.network?.eth0) ||
-              getIpFromInterfaceObject(sysInfo?.eth0);
-          if (!lan2Ip)
-            lan2Ip =
-              getIpFromInterfaceObject(sysInfo?.network?.eth1) ||
-              getIpFromInterfaceObject(sysInfo?.eth1);
-          // Generic walk that prefers objects labeled eth0/eth1
-          const walkFor = (root, iface) => {
-            const needle = iface.toLowerCase();
-            let out = null;
-            const walk = (node, pathKey) => {
-              if (!node || typeof node !== "object" || out) return;
-              if (Array.isArray(node)) {
-                node.forEach((n) => walk(n, pathKey));
-                return;
-              }
-              const name = (node.Name || node.name || node.iface || "")
-                .toString()
-                .toLowerCase();
-              const keyHit = (pathKey || "").toLowerCase().includes(needle);
-              const nameHit = name.includes(needle);
-              if (keyHit || nameHit) {
-                const ip = getIpFromInterfaceObject(node);
-                if (ip) {
-                  out = ip;
-                  return;
-                }
-              }
-              for (const [k, v] of Object.entries(node)) {
-                if (k === "IP Address" && (keyHit || nameHit)) {
-                  if (Array.isArray(v) && v[0]) {
-                    out = v[0];
-                    return;
-                  }
-                }
-                walk(v, k);
-                if (out) return;
-              }
-            };
-            walk(root, "");
-            return out;
-          };
-          if (!lan1Ip)
-            lan1Ip = walkFor(sysInfo, "eth0") || walkFor(sysInfo, "lan1");
-          if (!lan2Ip)
-            lan2Ip = walkFor(sysInfo, "eth1") || walkFor(sysInfo, "lan2");
-          // Final fallback using regex over stringified object
-          const ipRegex = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
-          if (!lan1Ip) {
-            const str = JSON.stringify(
-              sysInfo?.network?.eth0 || sysInfo?.eth0 || "",
-            );
-            lan1Ip = (str.match(ipRegex) || [])[0] || null;
-          }
-          if (!lan2Ip) {
-            const str = JSON.stringify(
-              sysInfo?.network?.eth1 || sysInfo?.eth1 || "",
-            );
-            lan2Ip = (str.match(ipRegex) || [])[0] || null;
-          }
-          lan1Ip = lan1Ip || "Unknown";
-          lan2Ip = lan2Ip || "Unknown";
 
-          const wanOpts = [
-            { value: "1", label: `Lan 1:${lan1Ip}` },
-            { value: "2", label: `Lan 2:${lan2Ip}` },
-          ];
+          // Sequential "LAN 1", "LAN 2", … — never trust the API name field
+          const wanOpts = lanIfaces.map((iface, idx) => ({
+            value: String(idx + 1),
+            label: `LAN ${idx + 1}:${iface.ipAddress || ""}`,
+          }));
 
-          // Try to detect VLAN interface (e.g., eth0.100) from network data
-          try {
-            const netIfaces = netData?.data?.interfaces || [];
-            const vlanIface = netIfaces.find((i) => {
-              const ifaceName = (i.interface || i.name || "").toString();
-              return /^eth0\.[0-9]+$/.test(ifaceName);
-            });
-            if (vlanIface && vlanIface.ipAddress) {
-              const ifaceName = (
-                vlanIface.interface ||
-                vlanIface.name ||
-                ""
-              ).toString();
-              const vlanId = ifaceName.split(".")[1] || "";
+          // Add VLAN sub-interfaces as extra options
+          const primaryKernel = lanIfaces[0]?.interface || "eth0";
+          allIfaces
+            .filter((i) => {
+              const kn = (i.interface || "").toString();
+              return kn.startsWith(`${primaryKernel}.`) && /\.\d+$/.test(kn);
+            })
+            .forEach((vlanIface) => {
+              const vlanId = (vlanIface.interface || "").split(".")[1] || "";
               wanOpts.push({
-                value: "3",
-                label: `VLAN ${vlanId}:${vlanIface.ipAddress}`,
+                value: String(wanOpts.length + 1),
+                label: `VLAN ${vlanId}:${vlanIface.ipAddress || ""}`,
               });
-            }
-          } catch (e) {
-            console.error(
-              "Failed to detect VLAN interface for SIP WAN options:",
-              e,
-            );
-          }
+            });
+
           setSipWanOptions(wanOpts);
+
+          // Cache LAN 1 / LAN 2 IPs for other components that read localStorage
           try {
+            const lan1Ip = lanIfaces[0]?.ipAddress || "";
+            const lan2Ip = lanIfaces[1]?.ipAddress || "";
             localStorage.setItem(
               "lanIps",
               JSON.stringify({ lan1: lan1Ip, lan2: lan2Ip }),
             );
           } catch (_) {}
         } catch (e) {
-          console.error("Failed to fetch System Info for LAN IPs:", e);
+          console.error("Failed to build SIP WAN options:", e);
         }
 
         // Check current default route to determine which interface is active

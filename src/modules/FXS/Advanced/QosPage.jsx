@@ -87,55 +87,70 @@ const QosPage = () => {
           </>
         }
       >
-        <AdvancedCheckboxRow
-          id="qosEnabled"
-          label="QoS"
-          checked={formData.qosEnabled}
-          onChange={() =>
-            setFormData((prev) => ({
-              ...prev,
-              qosEnabled: !prev.qosEnabled,
-            }))
-          }
-        />
-        {formData.qosEnabled && (
-          <>
-            <FieldRow label="Media Premium QoS">
-              <TextField
-                id="mediaPremiumQos"
-                fullWidth
-                size="small"
-                value={formData.mediaPremiumQos || ""}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "");
-                  setFormData((prev) => ({ ...prev, mediaPremiumQos: v }));
-                }}
-                sx={muiTextFieldSx}
-                inputProps={{
-                  style: { fontSize: 13, padding: "6px 8px" },
-                  maxLength: 2,
-                }}
-              />
-            </FieldRow>
-            <FieldRow label="Control Premium QoS">
-              <TextField
-                id="controlPremiumQos"
-                fullWidth
-                size="small"
-                value={formData.controlPremiumQos || ""}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "");
-                  setFormData((prev) => ({ ...prev, controlPremiumQos: v }));
-                }}
-                sx={muiTextFieldSx}
-                inputProps={{
-                  style: { fontSize: 13, padding: "6px 8px" },
-                  maxLength: 2,
-                }}
-              />
-            </FieldRow>
-          </>
-        )}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            width: "100%",
+            maxWidth: 560,
+            margin: "0 auto",
+            paddingBottom: 16,
+          }}
+        >
+          <AdvancedCheckboxRow
+            id="qosEnabled"
+            label="QoS"
+            checked={formData.qosEnabled}
+            onChange={() =>
+              setFormData((prev) => ({
+                ...prev,
+                qosEnabled: !prev.qosEnabled,
+              }))
+            }
+          />
+          {formData.qosEnabled && (
+            <>
+              <FieldRow label="Media Premium QoS">
+                <TextField
+                  id="mediaPremiumQos"
+                  fullWidth
+                  size="small"
+                  value={formData.mediaPremiumQos || ""}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "");
+                    setFormData((prev) => ({ ...prev, mediaPremiumQos: v }));
+                  }}
+                  sx={muiTextFieldSx}
+                  inputProps={{
+                    style: { fontSize: 13, padding: "6px 8px" },
+                    maxLength: 2,
+                  }}
+                />
+              </FieldRow>
+              <FieldRow label="Control Premium QoS">
+                <TextField
+                  id="controlPremiumQos"
+                  fullWidth
+                  size="small"
+                  value={formData.controlPremiumQos || ""}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "");
+                    setFormData((prev) => ({
+                      ...prev,
+                      controlPremiumQos: v,
+                    }));
+                  }}
+                  sx={muiTextFieldSx}
+                  inputProps={{
+                    style: { fontSize: 13, padding: "6px 8px" },
+                    maxLength: 2,
+                  }}
+                />
+              </FieldRow>
+            </>
+          )}
+        </div>
       </AdvancedFormCard>
     </AdvancedPageShell>
   );

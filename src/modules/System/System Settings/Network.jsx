@@ -20,170 +20,82 @@ import {
 } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
 
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#30415A",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
-  errorRed: "#dc2626",
-};
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  startIcon,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    error: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `1px solid ${C.errorRed}`,
-    },
-  };
-
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "error":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {startIcon && (
-        <span style={{ display: "flex", alignItems: "center" }}>
-          {startIcon}
-        </span>
-      )}
-      {children}
-    </button>
-  );
-};
-
-const inputStyle = {
-  width: "100%",
-  maxWidth: "280px",
-  fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1.5px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
-  outline: "none",
-  transition: "border-color 0.2s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
+const blueButtonSx = {
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
+  fontWeight: 600,
+  fontSize: 16,
+  borderRadius: 1.5,
+  minWidth: 120,
+  boxShadow: "0 2px 8px #3E5475",
+  textTransform: "none",
+  px: 3,
+  py: 1.5,
+  padding: "6px 28px",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    color: "#fff",
   },
 };
 
-const disabledInputStyle = {
-  ...inputStyle,
-  background: "#f1f5f9",
-  color: "#94a3b8",
-  cursor: "not-allowed",
-  borderColor: "#e2e8f0",
+const grayButtonSx = {
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 15,
+  borderRadius: 1.5,
+  minWidth: 120,
+  boxShadow: "0 2px 8px #3E5475",
+  textTransform: "none",
+  px: 3,
+  py: 1.5,
+  padding: "6px 28px",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    color: "#ffffff",
+  },
 };
 
-const SectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
+// Unified input sizing to keep all fields consistent (32px height)
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    height: "32px",
+    minHeight: "32px",
+    "& fieldset": { borderColor: "#bbb", borderWidth: "1px" },
+    "&:hover fieldset": { borderColor: "#999" },
+    "&.Mui-focused fieldset": { borderColor: "#666" },
+  },
+  "& .MuiInputBase-input": {
+    fontSize: "14px",
+    padding: "6px 8px",
+    height: "20px",
+    lineHeight: "20px",
+  },
+};
+
+const select32Sx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff !important",
+    height: "32px",
+    minHeight: "32px",
+    "& fieldset": { borderColor: "#bbb", borderWidth: "1px" },
+    "&:hover fieldset": { borderColor: "#999" },
+    "&.Mui-focused fieldset": { borderColor: "#666" },
+  },
+  "& .MuiSelect-select": {
+    backgroundColor: "#fff !important",
+    fontSize: "14px",
+    padding: "6px 8px",
+    height: "20px",
+    lineHeight: "20px",
+    display: "flex",
+    alignItems: "center",
+  },
+  "& .MuiSelect-icon": { color: "#666", right: "8px" },
+};
 
 const Network = () => {
   const [lanInterfaces, setLanInterfaces] = useState([]);
@@ -285,41 +197,41 @@ const Network = () => {
       if (data && data.data) {
         if (Array.isArray(data.data.interfaces)) {
           const allIfaces = data.data.interfaces;
+
           const filteredInterfaces = allIfaces
             .filter((iface) => {
-              const interfaceName = iface.interface || "";
-              return interfaceName === "eth0" || interfaceName === "eth1";
+              const kn = (iface.interface || "").toLowerCase();
+              // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
+              return /^eth\d+$/.test(kn) || /^enp\d+s\d+$/.test(kn);
             })
-            .map((iface) => {
-              const withType = {
-                ...iface,
-                ipv4Type: iface.ipv4Type || "Static",
-              };
-              if (withType.interface === "eth0") {
-                return { ...withType, name: "LAN 1" };
-              } else if (withType.interface === "eth1") {
-                return { ...withType, name: "LAN 2" };
-              }
-              return withType;
-            })
+            // Assign sequential "LAN 1", "LAN 2", … — ignore API name field which
+            // may reflect a different device numbering (e.g. "LAN 6", "LAN 7")
+            .map((iface, seqIdx) => ({
+              ...iface,
+              name: `LAN ${seqIdx + 1}`,
+              ipv4Type: iface.ipv4Type || "Static",
+            }))
             .sort((a, b) => {
-              const order = { "LAN 1": 1, "LAN 2": 2 };
-              const aOrder = order[a.name] || 99;
-              const bOrder = order[b.name] || 99;
-              return aOrder - bOrder;
+              // Sort LAN 1, LAN 2, … in numeric order; unknown interfaces last
+              const lanNum = (n) => {
+                const m = String(n).match(/^LAN\s*(\d+)$/i);
+                return m ? parseInt(m[1], 10) : 99;
+              };
+              return lanNum(a.name) - lanNum(b.name);
             });
 
           setLanInterfaces(filteredInterfaces);
           setOriginalLanSnapshot(normalizeLanArray(filteredInterfaces));
 
-          const lan1 =
-            filteredInterfaces.find(
-              (l) => l.name === "LAN 1" || l.interface === "eth0",
-            ) || {};
+          const lan1 = filteredInterfaces[0] || {};
+          // Detect VLAN sub-interfaces (e.g. enp4s0.100, eth0.100) using the
+          // primary interface's actual kernel name as the parent
+          const primaryKernelName = lan1.interface || "eth0";
           const vlanIface = allIfaces.find(
             (i) =>
               typeof i.interface === "string" &&
-              /^eth0\.[0-9]+$/.test(i.interface),
+              i.interface.startsWith(`${primaryKernelName}.`) &&
+              /\.\d+$/.test(i.interface),
           );
           const hasVlan = Boolean(vlanIface);
 
@@ -894,8 +806,8 @@ const Network = () => {
             const vlanMask = String(vlanForm.vlan1Mask || "").trim();
             const vlanGw = String(vlanForm.vlan1Gw || "").trim();
             const cidr = subnetMaskToCidr(vlanMask);
-            // Parent interface: user confirmed eth0
-            const parentIface = "eth0";
+            // Use actual kernel name of first LAN interface as VLAN parent
+            const parentIface = lanInterfaces[0]?.interface || "eth0";
             if (vlanId && vlanIp && cidr !== null) {
               const iface = `${parentIface}.${vlanId}`;
               const yaml = `network:\n  version: 2\n  renderer: networkd\n  ethernets:\n    ${parentIface}:\n      dhcp4: no\n  vlans:\n    ${iface}:\n      id: ${vlanId}\n      link: ${parentIface}\n      addresses: [${vlanIp}/${cidr}]${vlanGw ? `\n      routes:\n        - to: 0.0.0.0/0\n          via: ${vlanGw}` : ""}\n`;
@@ -944,8 +856,8 @@ const Network = () => {
               }
             }
           } else {
-            // VLAN disabled: remove any ${parentIface}.* VLAN interfaces and persistent configs
-            const parentIface = "eth0";
+            // VLAN disabled: remove any VLAN sub-interfaces of the primary LAN interface
+            const parentIface = lanInterfaces[0]?.interface || "eth0";
             const removeCmd = [
               // Runtime removal of VLAN links
               `for i in $(ip -o link | awk -F\": \" '/^\\\d+: ${parentIface}\\\.[0-9]+/ {print $2}'); do ip link set dev \"$i\" down 2>/dev/null || ifconfig \"$i\" down 2>/dev/null || true; ip link del \"$i\" 2>/dev/null || vconfig rem \"$i\" 2>/dev/null || true; done`,
@@ -1023,782 +935,661 @@ const Network = () => {
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
+      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
+      style={{ backgroundColor: "#dde0e4" }}
     >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {/* Alerts */}
-        {error && (
-          <Alert
-            severity="error"
-            onClose={() => setError("")}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500,
-              wordBreak: "break-word",
-              boxShadow: 3,
-            }}
-          >
-            {error}
-          </Alert>
-        )}
-
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
+      {/* Message Display */}
+      {error && (
+        <Alert
+          severity="error"
+          onClose={() => setError("")}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
           }}
         >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>Network</span>
+          {error}
+        </Alert>
+      )}
+
+      <div className="w-full max-w-6xl mx-auto md:p-2">
+        {/* Blue header bar */}
+        <div
+          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+          style={{
+            background: "linear-gradient(#3E5475 100%)",
+            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          }}
+        >
+          Network Settings
         </div>
-
-        {/* Main Card */}
+        {/* Main content container */}
         <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
+          className="rounded-b-lg  w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
+          style={{ backgroundColor: "#dde0e4" }}
         >
-          {/* Card Header */}
-          <div
-            style={{
-              minHeight: 44,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: C.cardBg,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.labelText,
-                letterSpacing: "0.02em",
-              }}
-            >
-              Network Settings
-            </span>
-          </div>
-
-          {/* Card Body */}
-          <div style={{ padding: "24px 32px" }}>
-            {loading ? (
-              <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <CircularProgress size={40} sx={{ color: C.primary }} />
-                <div
-                  style={{ marginTop: 12, color: C.mutedText, fontSize: 13 }}
-                >
+          {loading ? (
+            <div className="rounded-b-lg flex items-center justify-center min-h-[500px] bg-white">
+              <div className="text-center">
+                <CircularProgress size={40} sx={{ color: "#0e8fd6" }} />
+                <div className="mt-3 text-gray-600">
                   Loading network settings...
                 </div>
               </div>
-            ) : (
-              <form onSubmit={handleSave} className="flex flex-col gap-8">
-                {/* Dynamically render LAN sections */}
-                {!vlanEnabled &&
-                  lanInterfaces.map((lan, idx) => (
-                    <div key={lan.name || idx} className="flex flex-col gap-4">
-                      <SectionHeading
-                        title={lan.name || `LAN ${idx + 1}`}
-                        isFirst={idx === 0}
-                      />
+            </div>
+          ) : (
+            <div className="w-full flex flex-col overflow-hidden">
+              <div className="p-4">
+                <form onSubmit={handleSave} className="space-y-4">
+                  {/* Dynamically render LAN sections */}
+                  {!vlanEnabled &&
+                    lanInterfaces.map((lan, idx) => (
+                      <div key={lan.name || idx} className="space-y-2">
+                        <h3
+                          className="text-[12px] text-gray-600 font-medium mb-2"
+                          style={{ paddingLeft: "20px" }}
+                        >
+                          {lan.name || `LAN ${idx + 1}`}
+                        </h3>
 
-                      <div
-                        className="flex flex-col gap-4 w-full"
-                        style={{ maxWidth: 640, margin: "0 auto" }}
-                      >
                         {/* IPV4 Network Type */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                          <label
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: C.labelText,
-                              width: "100%",
-                              maxWidth: 220,
-                              flexShrink: 0,
-                            }}
+                        <div
+                          className="flex items-center justify-center"
+                          style={{ minHeight: 32 }}
+                        >
+                          <div
+                            className="flex items-center"
+                            style={{ width: "560px" }}
                           >
-                            IPV4 Network Type (M):
-                          </label>
-                          <div className="flex-1 w-full max-w-[280px]">
-                            <select
-                              value={lan.ipv4Type || "Static"}
-                              onChange={(e) =>
-                                handleLanChange(idx, "ipv4Type", e.target.value)
-                              }
-                              style={inputStyle}
-                              onFocus={inputInteraction.onFocus}
-                              onBlur={inputInteraction.onBlur}
-                              onMouseEnter={inputInteraction.onMouseEnter}
-                              onMouseLeave={inputInteraction.onMouseLeave}
+                            <label
+                              className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                              style={{ width: 220, marginRight: 60 }}
                             >
-                              <option value="Static">Static</option>
-                              <option value="DHCP">DHCP</option>
-                            </select>
+                              IPV4 Network Type (M):
+                            </label>
+                            <div style={{ width: 320 }}>
+                              <Select
+                                value={lan.ipv4Type || "Static"}
+                                onChange={(e) =>
+                                  handleLanChange(
+                                    idx,
+                                    "ipv4Type",
+                                    e.target.value,
+                                  )
+                                }
+                                size="small"
+                                variant="outlined"
+                                fullWidth
+                                sx={select32Sx}
+                              >
+                                <MenuItem value="Static">Static</MenuItem>
+                                <MenuItem value="DHCP">DHCP</MenuItem>
+                              </Select>
+                            </div>
                           </div>
                         </div>
 
                         {(lan.ipv4Type || "Static") === "Static" && (
                           <>
                             {/* IP Address */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
+                            <div
+                              className="flex items-center justify-center"
+                              style={{ minHeight: 32 }}
+                            >
+                              <div
+                                className="flex items-center"
+                                style={{ width: "560px" }}
                               >
-                                IP Address (I):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.ipAddress || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "ipAddress",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={{
-                                    ...inputStyle,
-                                    borderColor: ipErrors[idx]
-                                      ? C.errorRed
-                                      : C.cardBorder,
-                                  }}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                                {ipErrors[idx] && (
-                                  <div
-                                    style={{
-                                      fontSize: 11,
-                                      color: C.errorRed,
-                                      marginTop: 4,
-                                    }}
-                                  >
-                                    {ipErrors[idx]}
-                                  </div>
-                                )}
+                                <label
+                                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                                  style={{ width: 220, marginRight: 60 }}
+                                >
+                                  IP Address (I):
+                                </label>
+                                <div style={{ width: 320 }}>
+                                  <TextField
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    value={lan.ipAddress || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "ipAddress",
+                                        e.target.value,
+                                      )
+                                    }
+                                    sx={inputSx}
+                                  />
+                                  {ipErrors[idx] && (
+                                    <div className="text-red-600 text-sm mt-1">
+                                      {ipErrors[idx]}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
                             {/* Subnet Mask */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
+                            <div
+                              className="flex items-center justify-center"
+                              style={{ minHeight: 32 }}
+                            >
+                              <div
+                                className="flex items-center"
+                                style={{ width: "560px" }}
                               >
-                                Subnet Mask (U):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.subnetMask || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "subnetMask",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={{
-                                    ...inputStyle,
-                                    borderColor: subnetErrors[idx]
-                                      ? C.errorRed
-                                      : C.cardBorder,
-                                  }}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                                {subnetErrors[idx] && (
-                                  <div
-                                    style={{
-                                      fontSize: 11,
-                                      color: C.errorRed,
-                                      marginTop: 4,
-                                    }}
-                                  >
-                                    {subnetErrors[idx]}
-                                  </div>
-                                )}
+                                <label
+                                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                                  style={{ width: 220, marginRight: 60 }}
+                                >
+                                  Subnet Mask (U):
+                                </label>
+                                <div style={{ width: 320 }}>
+                                  <TextField
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    value={lan.subnetMask || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "subnetMask",
+                                        e.target.value,
+                                      )
+                                    }
+                                    sx={inputSx}
+                                  />
+                                  {subnetErrors[idx] && (
+                                    <div className="text-red-600 text-sm mt-1">
+                                      {subnetErrors[idx]}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
                             {/* Default Gateway */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
+                            <div
+                              className="flex items-center justify-center"
+                              style={{ minHeight: 32 }}
+                            >
+                              <div
+                                className="flex items-center"
+                                style={{ width: "560px" }}
                               >
-                                Default Gateway (D):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.defaultGateway || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "defaultGateway",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={{
-                                    ...inputStyle,
-                                    borderColor: gatewayErrors[idx]
-                                      ? C.errorRed
-                                      : C.cardBorder,
-                                  }}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                                {gatewayErrors[idx] && (
-                                  <div
-                                    style={{
-                                      fontSize: 11,
-                                      color: C.errorRed,
-                                      marginTop: 4,
-                                    }}
-                                  >
-                                    {gatewayErrors[idx]}
-                                  </div>
-                                )}
+                                <label
+                                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                                  style={{ width: 220, marginRight: 60 }}
+                                >
+                                  Default Gateway (D):
+                                </label>
+                                <div style={{ width: 320 }}>
+                                  <TextField
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    value={lan.defaultGateway || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "defaultGateway",
+                                        e.target.value,
+                                      )
+                                    }
+                                    sx={inputSx}
+                                  />
+                                  {gatewayErrors[idx] && (
+                                    <div className="text-red-600 text-sm mt-1">
+                                      {gatewayErrors[idx]}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
                             {/* IPV6 Address */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
+                            <div
+                              className="flex items-center justify-center"
+                              style={{ minHeight: 32 }}
+                            >
+                              <div
+                                className="flex items-center"
+                                style={{ width: "560px" }}
                               >
-                                IPV6 Address (I):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.ipv6Address || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "ipv6Address",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={inputStyle}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
+                                <label
+                                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                                  style={{ width: 220, marginRight: 60 }}
+                                >
+                                  IPV6 Address (I):
+                                </label>
+                                <div style={{ width: 320 }}>
+                                  <TextField
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    value={lan.ipv6Address || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "ipv6Address",
+                                        e.target.value,
+                                      )
+                                    }
+                                    sx={inputSx}
+                                  />
+                                </div>
                               </div>
                             </div>
 
                             {/* IPV6 Address Prefix */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
+                            <div
+                              className="flex items-center justify-center"
+                              style={{ minHeight: 32 }}
+                            >
+                              <div
+                                className="flex items-center"
+                                style={{ width: "560px" }}
                               >
-                                IPV6 Address Prefix (U):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.ipv6Prefix || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "ipv6Prefix",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={inputStyle}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
+                                <label
+                                  className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                                  style={{ width: 220, marginRight: 60 }}
+                                >
+                                  IPV6 Address Prefix (U):
+                                </label>
+                                <div style={{ width: 320 }}>
+                                  <TextField
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    value={lan.ipv6Prefix || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "ipv6Prefix",
+                                        e.target.value,
+                                      )
+                                    }
+                                    sx={inputSx}
+                                  />
+                                </div>
                               </div>
                             </div>
                           </>
                         )}
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                {/* VLAN Enable */}
-                <div className="flex flex-col gap-4">
-                  <SectionHeading
-                    title="VLAN Configuration"
-                    isFirst={vlanEnabled}
-                  />
-                  <div
-                    className="flex flex-col gap-4 w-full"
-                    style={{ maxWidth: 640, margin: "0 auto" }}
-                  >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: "100%",
-                          maxWidth: 220,
-                          flexShrink: 0,
-                        }}
+                  {/* VLAN Enable toggle (between LAN and DNS) */}
+                  <div className="space-y-2">
+                    <h3
+                      className="text-[12px] text-gray-600 font-medium mb-2"
+                      style={{ paddingLeft: "20px" }}
+                    >
+                      VLAN Enable:
+                    </h3>
+                    <div
+                      className="flex items-center justify-center"
+                      style={{ minHeight: 32 }}
+                    >
+                      <div
+                        className="flex items-center gap-6"
+                        style={{ width: "460px" }}
                       >
-                        VLAN Enable:
-                      </label>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <div className="flex items-center gap-6">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="vlanEnable"
-                              checked={vlanEnabled}
-                              onChange={() => {
-                                try {
-                                  const lan1 =
-                                    (lanInterfaces || []).find(
-                                      (l) =>
-                                        l.name === "LAN 1" ||
-                                        l.interface === "eth0",
-                                    ) || {};
-                                  setVlanForm((prev) => ({
-                                    ...prev,
-                                    lan1Ip: lan1.ipAddress || prev.lan1Ip || "",
-                                    lan1Mask:
-                                      lan1.subnetMask || prev.lan1Mask || "",
-                                    lan1Gw:
-                                      lan1.defaultGateway || prev.lan1Gw || "",
-                                  }));
-                                } catch (_) {}
-                                setVlanEnabled(true);
-                                setHasChanges(true);
-                              }}
-                              style={{ accentColor: C.primary }}
-                            />
-                            <span style={{ fontSize: 13, color: C.valueText }}>
-                              Yes
-                            </span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="vlanEnable"
-                              checked={!vlanEnabled}
-                              onChange={() => {
-                                setVlanEnabled(false);
-                                setHasChanges(true);
-                              }}
-                              style={{ accentColor: C.primary }}
-                            />
-                            <span style={{ fontSize: 13, color: C.valueText }}>
-                              No
-                            </span>
-                          </label>
-                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="vlanEnable"
+                            checked={vlanEnabled}
+                            onChange={() => {
+                              // Prefill VLAN base with current LAN 1 values from fetched network settings
+                              try {
+                                const lan1 = (lanInterfaces || [])[0] || {};
+                                setVlanForm((prev) => ({
+                                  ...prev,
+                                  lan1Ip: lan1.ipAddress || prev.lan1Ip || "",
+                                  lan1Mask:
+                                    lan1.subnetMask || prev.lan1Mask || "",
+                                  lan1Gw:
+                                    lan1.defaultGateway || prev.lan1Gw || "",
+                                }));
+                              } catch (_) {}
+                              setVlanEnabled(true);
+                              setHasChanges(true);
+                            }}
+                          />
+                          <span className="text-[14px] text-gray-700">Yes</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="vlanEnable"
+                            checked={!vlanEnabled}
+                            onChange={() => {
+                              setVlanEnabled(false);
+                              setHasChanges(true);
+                            }}
+                          />
+                          <span className="text-[14px] text-gray-700">No</span>
+                        </label>
                       </div>
                     </div>
+                  </div>
 
-                    {vlanEnabled && (
-                      <>
-                        {/* LAN 1 base */}
-                        {[
-                          { label: "LAN 1 IP Address (I):", key: "lan1Ip" },
-                          { label: "LAN 1 Subnet Mask (U):", key: "lan1Mask" },
-                          {
-                            label: "LAN 1 Default Gateway (D):",
-                            key: "lan1Gw",
-                          },
-                        ].map((f) => (
+                  {/* VLAN fields when enabled (hide LAN1/LAN2) */}
+                  {vlanEnabled && (
+                    <div className="space-y-2">
+                      <h3
+                        className="text-[12px] text-gray-600 font-medium mb-2"
+                        style={{ paddingLeft: "20px" }}
+                      >
+                        VLAN Configuration
+                      </h3>
+                      {/* LAN 1 base */}
+                      {[
+                        { label: "LAN 1 IP Address (I):", key: "lan1Ip" },
+                        { label: "LAN 1 Subnet Mask (U):", key: "lan1Mask" },
+                        { label: "LAN 1 Default Gateway (D):", key: "lan1Gw" },
+                      ].map((f) => (
+                        <div
+                          key={f.key}
+                          className="flex items-center justify-center"
+                          style={{ minHeight: 32 }}
+                        >
                           <div
-                            key={f.key}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+                            className="flex items-center"
+                            style={{ width: "520px" }}
                           >
                             <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
+                              className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                              style={{ width: 220, marginRight: 60 }}
                             >
                               {f.label}
                             </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <input
-                                type="text"
+                            <div style={{ width: 320 }}>
+                              <TextField
+                                variant="outlined"
+                                size="small"
+                                fullWidth
                                 value={vlanForm[f.key] || ""}
                                 onChange={(e) =>
                                   handleVlanChange(f.key, e.target.value)
                                 }
-                                style={inputStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
+                                sx={inputSx}
                               />
                             </div>
                           </div>
-                        ))}
-                        {/* VLAN 1 */}
-                        {[
-                          { l: "Vlan 1 Vlan ID (D):", k: "vlan1Id" },
-                          { l: "Vlan 1 IP Address (I):", k: "vlan1Ip" },
-                          { l: "Vlan 1 Subnet Mask (U):", k: "vlan1Mask" },
-                          { l: "Vlan 1 Default Gateway (D):", k: "vlan1Gw" },
-                        ].map((f) => (
+                        </div>
+                      ))}
+                      {/* VLAN 1 */}
+                      {[
+                        { l: "Vlan 1 Vlan ID (D):", k: "vlan1Id" },
+                        { l: "Vlan 1 IP Address (I):", k: "vlan1Ip" },
+                        { l: "Vlan 1 Subnet Mask (U):", k: "vlan1Mask" },
+                        { l: "Vlan 1 Default Gateway (D):", k: "vlan1Gw" },
+                      ].map((f) => (
+                        <div
+                          key={f.k}
+                          className="flex items-center justify-center"
+                          style={{ minHeight: 32 }}
+                        >
                           <div
-                            key={f.k}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+                            className="flex items-center"
+                            style={{ width: "520px" }}
                           >
                             <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
+                              className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                              style={{ width: 220, marginRight: 60 }}
                             >
                               {f.l}
                             </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <input
-                                type="text"
+                            <div style={{ width: 320 }}>
+                              <TextField
+                                variant="outlined"
+                                size="small"
+                                fullWidth
                                 value={vlanForm[f.k] || ""}
                                 onChange={(e) =>
                                   handleVlanChange(f.k, e.target.value)
                                 }
-                                style={inputStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
+                                sx={inputSx}
                               />
                             </div>
                           </div>
-                        ))}
-                        {/* VLAN 2 */}
-                        {[
-                          { l: "Vlan 2 Vlan ID (D):", k: "vlan2Id" },
-                          { l: "Vlan 2 IP Address (I):", k: "vlan2Ip" },
-                          { l: "Vlan 2 Subnet Mask (U):", k: "vlan2Mask" },
-                          { l: "Vlan 2 Default Gateway (D):", k: "vlan2Gw" },
-                        ].map((f) => (
+                        </div>
+                      ))}
+                      {/* VLAN 2 */}
+                      {[
+                        { l: "Vlan 2 Vlan ID (D):", k: "vlan2Id" },
+                        { l: "Vlan 2 IP Address (I):", k: "vlan2Ip" },
+                        { l: "Vlan 2 Subnet Mask (U):", k: "vlan2Mask" },
+                        { l: "Vlan 2 Default Gateway (D):", k: "vlan2Gw" },
+                      ].map((f) => (
+                        <div
+                          key={f.k}
+                          className="flex items-center justify-center"
+                          style={{ minHeight: 32 }}
+                        >
                           <div
-                            key={f.k}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+                            className="flex items-center"
+                            style={{ width: "520px" }}
                           >
                             <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
+                              className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                              style={{ width: 220, marginRight: 60 }}
                             >
                               {f.l}
                             </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <input
-                                type="text"
+                            <div style={{ width: 320 }}>
+                              <TextField
+                                variant="outlined"
+                                size="small"
+                                fullWidth
                                 value={vlanForm[f.k] || ""}
                                 onChange={(e) =>
                                   handleVlanChange(f.k, e.target.value)
                                 }
-                                style={inputStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
+                                sx={inputSx}
                               />
                             </div>
                           </div>
-                        ))}
-                        {/* VLAN 3 */}
-                        {[
-                          { l: "Vlan 3 Vlan ID (D):", k: "vlan3Id" },
-                          { l: "Vlan 3 IP Address (I):", k: "vlan3Ip" },
-                          { l: "Vlan 3 Subnet Mask (U):", k: "vlan3Mask" },
-                          { l: "Vlan 3 Default Gateway (D):", k: "vlan3Gw" },
-                        ].map((f) => (
+                        </div>
+                      ))}
+                      {/* VLAN 3 */}
+                      {[
+                        { l: "Vlan 3 Vlan ID (D):", k: "vlan3Id" },
+                        { l: "Vlan 3 IP Address (I):", k: "vlan3Ip" },
+                        { l: "Vlan 3 Subnet Mask (U):", k: "vlan3Mask" },
+                        { l: "Vlan 3 Default Gateway (D):", k: "vlan3Gw" },
+                      ].map((f) => (
+                        <div
+                          key={f.k}
+                          className="flex items-center justify-center"
+                          style={{ minHeight: 32 }}
+                        >
                           <div
-                            key={f.k}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+                            className="flex items-center"
+                            style={{ width: "520px" }}
                           >
                             <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
+                              className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                              style={{ width: 220, marginRight: 60 }}
                             >
                               {f.l}
                             </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <input
-                                type="text"
+                            <div style={{ width: 320 }}>
+                              <TextField
+                                variant="outlined"
+                                size="small"
+                                fullWidth
                                 value={vlanForm[f.k] || ""}
                                 onChange={(e) =>
                                   handleVlanChange(f.k, e.target.value)
                                 }
-                                style={inputStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
+                                sx={inputSx}
                               />
                             </div>
                           </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                {/* DNS Server Set */}
-                <div className="flex flex-col gap-4">
-                  <SectionHeading title="DNS Server Set" />
-                  <div
-                    className="flex flex-col gap-4 w-full"
-                    style={{ maxWidth: 640, margin: "0 auto" }}
-                  >
+                  {/* DNS Server Set */}
+                  <div className="space-y-2">
+                    <h3
+                      className="text-[12px] text-gray-600 font-medium mb-2"
+                      style={{ paddingLeft: "20px" }}
+                    >
+                      DNS Server Set
+                    </h3>
+
                     {/* Preferred DNS Server */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: "100%",
-                          maxWidth: 220,
-                          flexShrink: 0,
-                        }}
+                    <div
+                      className="flex items-center justify-center"
+                      style={{ minHeight: 32 }}
+                    >
+                      <div
+                        className="flex items-center"
+                        style={{ width: "460px" }}
                       >
-                        Preferred DNS Server (P):
-                      </label>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <input
-                          type="text"
-                          value={dnsServers[0] || ""}
-                          onChange={(e) => handleDnsChange(0, e.target.value)}
-                          style={{
-                            ...inputStyle,
-                            borderColor: dnsErrors[0]
-                              ? C.errorRed
-                              : C.cardBorder,
-                          }}
-                          onFocus={inputInteraction.onFocus}
-                          onBlur={inputInteraction.onBlur}
-                          onMouseEnter={inputInteraction.onMouseEnter}
-                          onMouseLeave={inputInteraction.onMouseLeave}
-                        />
-                        {dnsErrors[0] && (
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: C.errorRed,
-                              marginTop: 4,
-                            }}
-                          >
-                            {dnsErrors[0]}
-                          </div>
-                        )}
+                        <label
+                          className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                          style={{ width: 160, marginRight: 40 }}
+                        >
+                          Preferred DNS Server (P):
+                        </label>
+                        <div style={{ width: 300 }}>
+                          <TextField
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={dnsServers[0] || ""}
+                            onChange={(e) => handleDnsChange(0, e.target.value)}
+                            sx={inputSx}
+                          />
+                          {dnsErrors[0] && (
+                            <div className="text-red-600 text-sm mt-1">
+                              {dnsErrors[0]}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     {/* Standby DNS Server */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: "100%",
-                          maxWidth: 220,
-                          flexShrink: 0,
-                        }}
+                    <div
+                      className="flex items-center justify-center"
+                      style={{ minHeight: 32 }}
+                    >
+                      <div
+                        className="flex items-center"
+                        style={{ width: "460px" }}
                       >
-                        Standby DNS Server (P):
-                      </label>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <input
-                          type="text"
-                          value={dnsServers[1] || ""}
-                          onChange={(e) => handleDnsChange(1, e.target.value)}
-                          style={{
-                            ...inputStyle,
-                            borderColor: dnsErrors[1]
-                              ? C.errorRed
-                              : C.cardBorder,
-                          }}
-                          onFocus={inputInteraction.onFocus}
-                          onBlur={inputInteraction.onBlur}
-                          onMouseEnter={inputInteraction.onMouseEnter}
-                          onMouseLeave={inputInteraction.onMouseLeave}
-                        />
-                        {dnsErrors[1] && (
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: C.errorRed,
-                              marginTop: 4,
-                            }}
-                          >
-                            {dnsErrors[1]}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ARP Mode */}
-                <div className="flex flex-col gap-4">
-                  <SectionHeading title="ARP Mode" />
-                  <div
-                    className="flex flex-col gap-4 w-full"
-                    style={{ maxWidth: 640, margin: "0 auto" }}
-                  >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: "100%",
-                          maxWidth: 220,
-                          flexShrink: 0,
-                        }}
-                      >
-                        Default Mode:
-                      </label>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <select
-                          value={arpMode}
-                          onChange={handleArpChange}
-                          style={{
-                            ...inputStyle,
-                            borderColor: arpError ? C.errorRed : C.cardBorder,
-                          }}
-                          onFocus={inputInteraction.onFocus}
-                          onBlur={inputInteraction.onBlur}
-                          onMouseEnter={inputInteraction.onMouseEnter}
-                          onMouseLeave={inputInteraction.onMouseLeave}
+                        <label
+                          className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                          style={{ width: 160, marginRight: 40 }}
                         >
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                        </select>
-                        {arpError && (
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: C.errorRed,
-                              marginTop: 4,
-                            }}
-                          >
-                            {arpError}
-                          </div>
-                        )}
+                          Standby DNS Server (P):
+                        </label>
+                        <div style={{ width: 300 }}>
+                          <TextField
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={dnsServers[1] || ""}
+                            onChange={(e) => handleDnsChange(1, e.target.value)}
+                            sx={inputSx}
+                          />
+                          {dnsErrors[1] && (
+                            <div className="text-red-600 text-sm mt-1">
+                              {dnsErrors[1]}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </form>
-            )}
-          </div>
+
+                  {/* ARP Mode */}
+                  <div className="space-y-2">
+                    <h3
+                      className="text-[12px] text-gray-600 font-medium mb-2"
+                      style={{ paddingLeft: "20px" }}
+                    >
+                      ARP Mode
+                    </h3>
+
+                    {/* Default Mode */}
+                    <div
+                      className="flex items-center justify-center"
+                      style={{ minHeight: 32 }}
+                    >
+                      <div
+                        className="flex items-center"
+                        style={{ width: "560px" }}
+                      >
+                        <label
+                          className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
+                          style={{ width: 220, marginRight: 60 }}
+                        >
+                          Default Mode:
+                        </label>
+                        <div style={{ width: 320 }}>
+                          <Select
+                            value={arpMode}
+                            onChange={handleArpChange}
+                            size="small"
+                            variant="outlined"
+                            fullWidth
+                            sx={select32Sx}
+                          >
+                            <MenuItem value="1">1</MenuItem>
+                            <MenuItem value="2">2</MenuItem>
+                          </Select>
+                          {arpError && (
+                            <div className="text-red-600 text-sm mt-1">
+                              {arpError}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 w-full">
-          <Btn
-            variant="primary"
+          <Button
+            type="submit"
+            variant="contained"
+            sx={blueButtonSx}
             onClick={handleSave}
+            className="sm:w-auto"
             disabled={loading || resetting || networkRestarting}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {loading && !resetting ? "Saving..." : "Save"}
-          </Btn>
-          <Btn
-            variant="cancel"
+          </Button>
+          <Button
+            type="button"
+            variant="contained"
             onClick={handleReset}
+            sx={grayButtonSx}
+            className="sm:w-auto"
             disabled={resetting || networkRestarting}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {resetting ? "Resetting..." : "Reset"}
-          </Btn>
+          </Button>
         </div>
       </div>
-
       {networkRestarting && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-md shadow-xl px-10 py-6 flex flex-col items-center gap-4 max-w-sm text-center">

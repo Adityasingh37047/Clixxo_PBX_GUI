@@ -73,38 +73,50 @@ const ActionUrlPage = () => {
           </>
         }
       >
-        <FieldRow label="Channel Pick up">
-          <TextField
-            fullWidth
-            size="small"
-            value={formData.chPickUpActionUrl || ""}
-            onChange={(e) =>
-              handleInputChange("chPickUpActionUrl", e.target.value)
-            }
-            placeholder="Enter URL to report pick up state"
-            sx={muiTextFieldSx}
-            inputProps={{
-              style: { fontSize: 13, padding: "6px 8px" },
-              maxLength: 256,
-            }}
-          />
-        </FieldRow>
-        <FieldRow label="Channel Hang up">
-          <TextField
-            fullWidth
-            size="small"
-            value={formData.chHangUpActionUrl || ""}
-            onChange={(e) =>
-              handleInputChange("chHangUpActionUrl", e.target.value)
-            }
-            placeholder="Enter URL to report hang up state"
-            sx={muiTextFieldSx}
-            inputProps={{
-              style: { fontSize: 13, padding: "6px 8px" },
-              maxLength: 256,
-            }}
-          />
-        </FieldRow>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            width: "100%",
+            maxWidth: 560,
+            margin: "0 auto",
+            paddingBottom: 16,
+          }}
+        >
+          <FieldRow label="Channel Pick up">
+            <TextField
+              fullWidth
+              size="small"
+              value={formData.chPickUpActionUrl || ""}
+              onChange={(e) =>
+                handleInputChange("chPickUpActionUrl", e.target.value)
+              }
+              placeholder="Enter URL to report pick up state"
+              sx={muiTextFieldSx}
+              inputProps={{
+                style: { fontSize: 13, padding: "6px 8px" },
+                maxLength: 256,
+              }}
+            />
+          </FieldRow>
+          <FieldRow label="Channel Hang up">
+            <TextField
+              fullWidth
+              size="small"
+              value={formData.chHangUpActionUrl || ""}
+              onChange={(e) =>
+                handleInputChange("chHangUpActionUrl", e.target.value)
+              }
+              placeholder="Enter URL to report hang up state"
+              sx={muiTextFieldSx}
+              inputProps={{
+                style: { fontSize: 13, padding: "6px 8px" },
+                maxLength: 256,
+              }}
+            />
+          </FieldRow>
+        </div>
       </AdvancedFormCard>
     </AdvancedPageShell>
   );
