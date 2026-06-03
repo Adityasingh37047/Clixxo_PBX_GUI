@@ -16,6 +16,7 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import AddIcon from "@mui/icons-material/Add";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Button,
   Dialog,
@@ -35,6 +36,8 @@ import {
   Checkbox,
   Radio,
   RadioGroup,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   fetchSipAccounts,
@@ -74,17 +77,21 @@ const TABLE_C = {
 
 const Btn = ({ children, onClick, disabled, variant = "default", style: extraStyle }) => {
   const variants = {
-    default: {
+   default: {
       background: C.cardBg,
       color: C.valueText,
       border: "1px solid #9ca3af",
     },
-  primary: {
-background:
-"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-color: "#fff",
-border: "1px solid #5A6F8F",
-},
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
@@ -96,18 +103,17 @@ border: "1px solid #5A6F8F",
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    
     danger: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
     },
     accent: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",  
-  },
+    background: C.cardBg,
+  color: C.labelText,
+  border: `1px solid ${C.cardBorder}`,
+    },
   };
   const s = variants[variant] || variants.default;
   return (
@@ -1766,8 +1772,9 @@ borderTopRightRadius: CARD_RADIUS,
       boxShadow:
         "0 1px 2px rgba(15, 23, 42, 0.08)",
     }}
-  >
-    🗑 Delete
+  > <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} /> 
+
+     Delete
   </TableBtn>
     <TableBtn
     onClick={() => {
@@ -1799,20 +1806,19 @@ borderTopRightRadius: CARD_RADIUS,
     ⬆ Export
   </TableBtn>
 
-  <TableBtn
+  <Btn
     onClick={() => handleOpenModal()}
     disabled={loading.fetch}
-    variant="accent"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
+   variant="primary"
+       style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
   >
     + Add New
-  </TableBtn>
+  </Btn>
 </div>
           </div>
 
@@ -2030,69 +2036,91 @@ minWidth: 900, }}>
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: {
-            width: 960,
-            maxWidth: "98vw",
-            mx: "auto",
-            p: 0,
-            // Allow height to shrink/expand per tab while keeping the modal anchored
-            // so it doesn't look like it "jumps" position.
-            alignSelf: "flex-start",
-            mt: "6vh",
-            mb: "6vh",
-            transition: "height 180ms ease",
-          },
-        }}
+        PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
         disableRestoreFocus
         disableEnforceFocus
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-0 text-base h-22"
-          style={{
-             background: "rgb(30, 45, 62)",
-            borderBottom: "1px solid #444444",
+          sx={{
+            background: "#1e2d42",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 16,
+            textAlign: "center",
+            py: 1.5,
           }}
         >
-          {/* <div className="bg-gradient-to-b from-\[#b3e0ff] via-\[#6ec1f7] to-\[#3b8fd6] text-center text-lg font-semibold text-white py-3"> */}
           {editIndex !== null ? "Edit SIP Register" : "Add Trunk"}
-          {/* </div> */}
-          <div className="flex flex-wrap gap-0 px-1 sm:px-2 bg-white border-t border-gray-100">
-            {/* <div> */}
-            {[
-              { id: "basic", label: "BASIC" },
-              { id: "codec", label: "CODEC" },
-              { id: "advance", label: "ADVANCE" },
-              { id: "dod", label: "DOD" },
-              { id: "adapt", label: "ADAPT CALLER ID" },
-            ].map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setModalTab(t.id)}
-                className={`px-2 sm:px-4 py-2.5 text-[11px] sm:text-sm font-semibold tracking-wide border-b-2 -mb-px transition-colors ${
-                  modalTab === t.id
-                    ? "text-[#3E5475] border-[#3E5475]"
-                    : "text-gray-500 border-transparent hover:text-gray-700"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
+          sx={{
+            p: "12px 8px 0 8px",
+            backgroundColor: C.pageBg,
+            border: "1px solid #9ca3af",
             borderTop: "none",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 6,
+              minHeight: 38,
+            },
+            "& .MuiOutlinedInput-input": {
+              padding: "10px 12px",
+              fontSize: 14,
+            },
+            "& .MuiSelect-select": {
+              padding: "10px 12px",
+              fontSize: 14,
+            },
+            "& .MuiInputBase-root": {
+              fontSize: 14,
+            },
           }}
         >
-          <div className="bg-gray-100">
-            <div className="p-3 sm:p-3">
+          <div
+            style={{
+              borderBottom: "1px solid #f1f5f9",
+              marginBottom: 8,
+              background: "#f1f3f6",
+              borderRadius: "4px 4px 0 0",
+            }}
+          >
+            <Tabs
+              value={modalTab}
+              onChange={(_, value) => setModalTab(value)}
+              variant="fullWidth"
+              textColor="inherit"
+              TabIndicatorProps={{
+                style: { backgroundColor: C.accent, height: 3 },
+              }}
+            >
+              <Tab
+                label="BASIC"
+                value="basic"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+              <Tab
+                label="CODEC"
+                value="codec"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+              <Tab
+                label="ADVANCE"
+                value="advance"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+              <Tab
+                label="DOD"
+                value="dod"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+              <Tab
+                label="ADAPT CALLER ID"
+                value="adapt"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+            </Tabs>
+          </div>
+          <div style={{ background: C.pageBg }}>
+            <div style={{ padding: 12 }}>
               {modalTab === "basic" && (
                 <div className="bg-white border border-gray-200 rounded-md p-3 sm:p-5 shadow-sm">
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
@@ -3740,78 +3768,36 @@ minWidth: 900, }}>
           </div>
         </DialogContent>
 
-        <DialogActions className="p-4 justify-center gap-5">
-      <Button
-  variant="contained"
-  onClick={handleSave}
-  disabled={loading.save}
-  startIcon={
-    loading.save && (
-      <CircularProgress size={20} color="inherit" />
-    )
-  }
-  sx={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-    color: "#fff",
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+            gap: 2,
+            py: 2,
+            px: 3,
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+          }}
+        >
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading.save}
+            startIcon={
+              loading.save && <CircularProgress size={20} color="inherit" />
+            }
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save ? "Saving..." : "Save"}
+          </Btn>
 
-    padding: "8px 24px",
-    height: 36,
-    fontSize: 13,
-    borderRadius: "6px",
-
-    boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-    textTransform: "none",
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-      color: "#fff",
-      opacity: 0.85,
-    },
-
-    "&:disabled": {
-      background: "#cbd5e1",
-      color: "#64748b",
-    },
-  }}
->
-  {loading.save ? "Saving..." : "Save"}
-</Button>
-  <Button
-  variant="contained"
-  onClick={handleCloseModal}
-  disabled={loading.save}
-  sx={{
-    padding: "8px 24px",
-    fontSize: 13,
-    height: 36,
-    borderRadius: "6px",
-
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-
-    fontWeight: 600,
-    textTransform: "none",
-
-    "&:hover": {
-      background: "#cbd5e1",
-      border: "1px solid #cbd5e1",
-      opacity: 0.85,
-      color: "#374151",
-    },
-
-    "&:disabled": {
-      background: "#e2e8f0",
-      color: "#94a3b8",
-      border: "1px solid #e2e8f0",
-    },
-  }}
->
-  Close
-</Button>
+          <Btn
+            variant="cancel"
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            style={{ minWidth: 100, height: 33 }}
+          >
+            Close
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

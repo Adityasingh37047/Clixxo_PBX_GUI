@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { CircularProgress, Checkbox } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Column definitions ────────────────────────────────────────────────────────
 const columns = [
@@ -1070,7 +1071,8 @@ const CallCount = () => {
     boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
               >
-                🗑 Delete
+                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                 Delete
               </Btn>
               <Btn onClick={handleDownload} disabled={loading} variant="accent" style={{
     background: "#cbd5e1",

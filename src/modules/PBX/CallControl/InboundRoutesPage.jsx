@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Alert,
   Checkbox,
@@ -167,22 +168,26 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     danger: {
       background: C.errorRed,
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
-    },
-    cancel: {
-       background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
     },
     accent: {
       background:
@@ -1004,7 +1009,7 @@ borderTopRightRadius: CARD_RADIUS,
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
-                )}
+                )}   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </TableBtn>
               <TableBtn
@@ -1041,14 +1046,13 @@ borderTopRightRadius: CARD_RADIUS,
   onClick={handleOpenAddModal}
   disabled={loading.save}
   variant="primary"
-  hoverBehavior="opacity"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+ 
+   style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </TableBtn>
@@ -1958,7 +1962,7 @@ minWidth: 900,
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save && <CircularProgress size={20} color="inherit" />}
             {loading.save ? "Saving..." : "Save"}
@@ -1967,7 +1971,7 @@ minWidth: 900,
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+           style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

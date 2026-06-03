@@ -4,6 +4,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
 import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Alert,
   Button,
@@ -57,25 +58,36 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: C.cardBg,
+     background: C.cardBg,
 color: C.valueText,
 border: "1px solid #9ca3af",
 },
+primary: {
+background:
+"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+color: "#fff",
+border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+},
     outline: {
       background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+color: C.labelText,
+border: `1px solid ${C.cardBorder}`,
     },
-    
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
-      border: `0.5px solid #fecaca`,
+      border: `1px solid #fecaca`,
     },
     accent: {
       background: C.cardBg,
       color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
   const s = variants[variant] || variants.default;
@@ -701,22 +713,19 @@ const Paging = () => {
       "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
               >
-                🗑 Delete
+                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
   onClick={handleOpenAddModal}
   disabled={loading.list}
   variant="primary"
   style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-
-    border: "1px solid #5A6F8F",
-
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </Btn>
@@ -1300,75 +1309,34 @@ const Paging = () => {
             gap: 12,
           }}
         >
-        <Button
+       <Btn
+  variant="primary"
   onClick={handleSave}
   disabled={loading.save}
-  variant="contained"
-  sx={{
-    padding: "8px 28px",
-    fontSize: 13,
-    borderRadius: "6px",
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-
-    fontWeight: 600,
-    textTransform: "none",
-    minWidth: 120,
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-      opacity: 0.85,
-    },
-
-    "&:disabled": {
-      background: "#94a3b8",
-      color: "#e2e8f0",
-      border: "1px solid #94a3b8",
-    },
-  }}
+ style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? (
-    <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
-  ) : null}
-
-  {loading.save
-    ? "Saving..."
-    : editId != null
-      ? "Update Group"
-      : "Create Group"}
-</Button>
-          <Button
+    <>
+      <CircularProgress
+        size={14}
+        sx={{ color: "#fff", mr: 1 }}
+      />
+      Saving...
+    </>
+  ) : editId != null ? (
+    "Update Group"
+  ) : (
+    "Create Group"
+  )}
+</Btn>
+          <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
-  variant="outlined"
-  sx={{
-    padding: "8px 28px",
-    fontSize: 13,
-    minWidth: 120,
-    borderRadius: "6px",
-
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-
-    fontWeight: 600,
-    textTransform: "none",
-
-    "&:hover": {
-      background: "#cbd5e1",
-      border: "1px solid #cbd5e1",
-      opacity: 0.85,
-    },
-  }}
+  variant="cancel"
+  style={{ minWidth: 100, height: 33 }}
 >
   Cancel
-</Button>
+</Btn>
         </DialogActions>
       </Dialog>
     </div>

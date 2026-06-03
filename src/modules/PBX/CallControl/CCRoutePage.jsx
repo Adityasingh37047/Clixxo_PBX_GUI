@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Alert,
   Button,
@@ -122,22 +123,33 @@ const Btn = ({
   title,
 }) => {
   const variants = {
-    default: {
-     background: C.cardBg,
-  color: C.valueText,
-  border: "1px solid #9ca3af",
+      default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
     },
     primary: {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  border: "1px solid #5A6F8F",
-},
-    outline: {
-   background: C.cardBg,
-  color: C.labelText,
-  border: `1px solid ${C.cardBorder}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+    
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
@@ -637,20 +649,20 @@ borderTopRightRadius: CARD_RADIUS,
       style={{ color: "#374151" }}
     />
   )}{" "}
-  🗑 Delete
+   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+Delete
 </Btn>
 
 <Btn
   onClick={handleOpenAddModal}
   disabled={loading.save || loading.fetch}
   variant="primary"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+ style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </Btn>
@@ -1298,31 +1310,16 @@ minWidth: 900,
           <Btn
   onClick={handleSave}
   disabled={loading.save}
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+  variant="primary"
+ style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? "Saving..." : "Save"}
 </Btn>
           <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
-  variant="outline"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+  variant="cancel"
+   style={{ minWidth: 100, height: 33 }}
 >
   Close
 </Btn>

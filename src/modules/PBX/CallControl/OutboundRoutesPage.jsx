@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Checkbox,
   CircularProgress,
@@ -1007,7 +1008,7 @@ const OutboundRoutesPage = () => {
                   border: "1px solid #cbd5e1",
                   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
                 }}
-              >
+              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
               <Btn
@@ -1072,14 +1073,13 @@ const OutboundRoutesPage = () => {
   onClick={handleOpenAddModal}
   disabled={loading.save || loading.list}
   variant="primary"
-  hoverBehavior="opacity"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+ 
+     style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </Btn>
@@ -2069,7 +2069,7 @@ const OutboundRoutesPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+          style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save && <CircularProgress size={20} color="inherit" />}
             {loading.save ? "Saving..." : "Save"}
@@ -2078,7 +2078,7 @@ const OutboundRoutesPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+              style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

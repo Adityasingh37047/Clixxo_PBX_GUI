@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Button,
   CircularProgress,
@@ -44,24 +45,36 @@ const Btn = ({
 }) => {
   const variants = {
     default: {
-      background: C.cardBg,
+     background: C.cardBg,
 color: C.valueText,
 border: "1px solid #9ca3af",
 },
+primary: {
+background:
+"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+color: "#fff",
+border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+},
     outline: {
       background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+color: C.labelText,
+border: `1px solid ${C.cardBorder}`,
     },
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
-      border: `0.5px solid #fecaca`,
+      border: `1px solid #fecaca`,
     },
     accent: {
       background: C.cardBg,
       color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
   const s = variants[variant] || variants.default;
@@ -563,8 +576,8 @@ borderTopRightRadius: CARD_RADIUS, }}
     boxShadow:
       "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
-              >
-                🗑 Delete
+              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+              Delete
               </Btn>
               <Btn
                 onClick={() => {
@@ -612,15 +625,11 @@ borderTopRightRadius: CARD_RADIUS, }}
   disabled={loading.list}
   variant="primary"
   style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-
-    border: "1px solid #5A6F8F",
-
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </Btn>
@@ -951,55 +960,11 @@ minWidth: 900,
             gap: 12,
           }}
         >
-      <Button
+      <Btn
   onClick={handleSave}
   disabled={loading.save}
-  variant="contained"
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-
-    boxShadow: "0 2px 8px #3E5475",
-  }}
-  sx={{
-    height: 36,
-    padding: "0 24px",
-
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-
-    fontWeight: 600,
-    fontSize: 13,
-
-    textTransform: "none",
-
-    minWidth: "unset",
-    width: "auto",
-
-    border: "1px solid #5A6F8F",
-
-    boxShadow: "0 2px 8px #3E5475",
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-    },
-
-    "&:disabled": {
-      background: "#94a3b8",
-      color: "#e2e8f0",
-      border: "1px solid #94a3b8",
-    },
-  }}
+  variant="primary"
+   style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? (
     <CircularProgress
@@ -1013,31 +978,15 @@ minWidth: 900,
     : editId != null
       ? "Update Speed Dial"
       : "Create Speed Dial"}
-</Button>
-          <Button
+</Btn>
+          <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
-            variant="outlined"
-            style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
-            sx={{
-              color: "#1e293b",
-              borderColor: "#9ca3af",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 100,
-              "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
-            }}
+            variant="cancel"
+           style={{ minWidth: 100, height: 33 }}
           >
             Cancel
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
 
@@ -1269,48 +1218,29 @@ minWidth: 900,
             gap: 12,
           }}
         >
-          <Button
+          <Btn
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
-            variant="contained"
-            sx={{
-              background: "#1e2d42",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 120,
-              "&:hover": { background: "#0f172a" },
-              "&:disabled": { background: "#cbd5e1", color: "#64748b" },
-            }}
+            variant="primary"
+             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {importLoading ? (
               <CircularProgress size={14} sx={{ color: "#64748b", mr: 1 }} />
             ) : null}
             {importLoading ? "Importing..." : "Import"}
-          </Button>
-          <Button
+          </Btn>
+          <Btn
             onClick={() => {
               setShowImportModal(false);
               setImportFile(null);
               setImportResult(null);
             }}
             disabled={importLoading}
-            variant="outlined"
-            sx={{
-              color: "#1e293b",
-              borderColor: "#9ca3af",
-              fontWeight: 600,
-              fontSize: 13,
-              textTransform: "none",
-              padding: "6px 24px",
-              minWidth: 100,
-              "&:hover": { borderColor: "#1e293b", background: "#f8fafc" },
-            }}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

@@ -14,6 +14,8 @@ import {
   TextField,
   Tooltip,
   Alert,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
@@ -27,6 +29,8 @@ import {
   listRingBackOptions,
   fetchExtensionGroups,
 } from "../../../api/apiService";
+
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const YES_NO_OPTIONS = ["Yes", "No"];
@@ -957,21 +961,19 @@ borderTopRightRadius: CARD_RADIUS,
     boxShadow:
       "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
-              >
-                🗑 Delete
+              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+             Delete
               </Btn>
             <Btn
   onClick={handleOpenAddModal}
   disabled={loading.list}
   variant="primary"
   style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </Btn>
@@ -1235,55 +1237,68 @@ minWidth: 900,
         PaperProps={{ sx: { width: 880, maxWidth: "96vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          style={{
+          sx={{
             background: "#1e2d42",
             color: "#fff",
             fontWeight: 700,
             fontSize: 16,
             textAlign: "center",
-            padding: "14px 24px 0",
+            py: 1.5,
           }}
         >
           {editId != null ? "Edit Conference" : "Add Conference"}
-
-          {/* Tabs */}
-          <div
-            style={{
-              display: "flex",
-              gap: 4,
-              justifyContent: "center",
-              marginTop: 14,
-            }}
-          >
-            {[
-              { id: "basic", label: "BASIC" },
-              { id: "advanced", label: "ADVANCED SETTINGS" },
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id)}
-                style={{
-                  background: activeTab === t.id ? C.pageBg : "transparent",
-                  color: activeTab === t.id ? C.accent : "#9ca3af",
-                  border: "none",
-                  padding: "8px 16px",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  borderRadius: "6px 6px 0 0",
-                  cursor: "pointer",
-                  letterSpacing: "0.04em",
-                  transition: "all 0.2s",
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          sx={{
+            p: "12px 8px 0 8px",
+            backgroundColor: C.pageBg,
+            border: "1px solid #9ca3af",
+            borderTop: "none",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 6,
+            },
+            "& .MuiOutlinedInput-input": {
+              padding: "10px 12px",
+              fontSize: 13,
+            },
+            "& .MuiSelect-select": {
+              padding: "10px 12px",
+              fontSize: 13,
+            },
+          }}
         >
+          <div
+            style={{
+              borderBottom: "1px solid #f1f5f9",
+              marginBottom: 8,
+              background: "#f1f3f6",
+              borderRadius: "4px 4px 0 0",
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={(_, value) => setActiveTab(value)}
+              variant="fullWidth"
+              textColor="inherit"
+              TabIndicatorProps={{
+                style: { backgroundColor: C.accent, height: 3 },
+              }}
+            >
+              <Tab
+                label="BASIC"
+                value="basic"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+              <Tab
+                label="ADVANCED SETTINGS"
+                value="advanced"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+            </Tabs>
+          </div>
+          <div style={{ background: C.pageBg }}>
+            <div style={{ padding: 12 }}>
           {/* ── BASIC TAB ── */}
           {activeTab === "basic" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -1707,58 +1722,45 @@ minWidth: 900,
               </div>
             </div>
           )}
+            </div>
+          </div>
         </DialogContent>
         <DialogActions
-          style={{
-            padding: "16px 24px",
+          sx={{
+            justifyContent: "center",
+            gap: 2,
+            py: 2,
+            px: 3,
             background: C.pageBg,
             borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
           }}
         >
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-            variant="default"
-           style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <CircularProgress
-                size={14}
+                size={13}
                 style={{ color: "#fff", marginRight: 8 }}
               />
             ) : null}
             {loading.save
               ? "Saving..."
               : editId != null
-                ? "Update Conference"
-                : "Create Conference"}
+              ? "Update Conference"
+              : "Create Conference"}
           </Btn>
           <Btn
-  onClick={handleCloseModal}
-  disabled={loading.save}
-  variant="outline"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  Cancel
-</Btn>
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
+          >
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

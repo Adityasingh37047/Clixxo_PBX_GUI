@@ -37,15 +37,17 @@ const getInitialState = () => {
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
-};
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+};  
+
 
 const SipSipPage = () => {
   const [form, setForm] = useState(getInitialState());

@@ -19,6 +19,7 @@ import {
   deleteExtensionGroup,
 } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color palette (matches PBX / CDR) ────────────────────────────────────────
 
@@ -553,8 +554,8 @@ borderTopRightRadius: CARD_RADIUS,
     boxShadow:
       "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
->
-  🗑 Delete
+>    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+   Delete
 </Btn>
           <Btn
   onClick={handleOpenAddModal}
@@ -565,7 +566,7 @@ borderTopRightRadius: CARD_RADIUS,
       "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
     color: "#fff",
     border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
+    
   }}
 >
   + Add New
@@ -948,21 +949,11 @@ minWidth: 900,
   onClick={handleSaveGroup}
   disabled={loading.save}
   variant="primary"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    height: 36,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+  style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? (
     <CircularProgress
-      size={13}
-      style={{ color: "#fff", marginRight: 8 }}
+    
     />
   ) : null}
 
@@ -971,16 +962,8 @@ minWidth: 900,
        <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
-  variant="primary"
-  style={{
-    padding: "8px 24px",
-    fontSize: 13,
-    height: 36,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08)",
-  }}
+  variant="cancel"
+  style={{ minWidth: 100, height: 33 }}
 >
   Cancel
 </Btn>

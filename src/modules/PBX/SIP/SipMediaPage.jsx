@@ -30,6 +30,7 @@ amber: "#dc2626",
 };
 
 
+
 const CARD_RADIUS = 20;
 
 const SectionHeading = ({ title }) => (

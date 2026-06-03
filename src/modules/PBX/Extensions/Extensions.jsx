@@ -7,6 +7,7 @@ import {
 } from "../../../constants/SipAccountConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Button,
   Dialog,
@@ -1394,7 +1395,7 @@ const SipAccountPage = () => {
   ) : (
     "🗑"
   )}
-
+  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
   Delete
 </Btn>
               {/* <Btn
@@ -3572,16 +3573,7 @@ const SipAccountPage = () => {
   }
   disabled={loading.save}
   variant="primary"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    height: 36,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+ style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? "Saving..." : "Save"}
 </Btn>
@@ -3589,15 +3581,7 @@ const SipAccountPage = () => {
   onClick={handleCloseModal}
   disabled={loading.save}
   variant="cancel"
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+  style={{ minWidth: 100, height: 33 }}
 >
   Close
 </Btn>

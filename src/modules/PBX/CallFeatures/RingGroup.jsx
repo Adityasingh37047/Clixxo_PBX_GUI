@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Alert,
   Button,
@@ -844,23 +845,19 @@ borderTopRightRadius: CARD_RADIUS,
     boxShadow:
       "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
-              >
-                🗑 Delete
+              > <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                 Delete
               </Btn>
               <Btn
   onClick={handleOpenAddModal}
   disabled={loading.list}
   variant="primary"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-
-    border: "1px solid #5A6F8F",
-
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+   style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </Btn>
@@ -1617,65 +1614,31 @@ minWidth: 900,
             gap: 12,
           }}
         >
-        <Button
+       <Btn
+  variant="primary"
   onClick={handleSave}
   disabled={loading.save}
-  variant="contained"
-  sx={{
-    padding: "8px 28px",
-    fontSize: 13,
-    borderRadius: "6px",
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-    fontWeight: 600,
-    textTransform: "none",
-    minWidth: "unset",
-    width: "auto",
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-      opacity: 0.85,
-    },
-
-    "&:disabled": {
-      background: "#94a3b8",
-      color: "#e2e8f0",
-      border: "1px solid #94a3b8",
-    },
-  }}
+ style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? (
-    <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
-  ) : null}
-
-  {loading.save
-    ? "Saving..."
-    : editId != null
-      ? "Update Group"
-      : "Create Group"}
-</Button>
+    <>
+      <CircularProgress
+        size={14}
+        sx={{ color: "#fff", mr: 1 }}
+      />
+      Saving...
+    </>
+  ) : editId != null ? (
+    "Update Group"
+  ) : (
+    "Create Group"
+  )}
+</Btn>
           <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
   variant="cancel"
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-
-    borderRadius: 6,
-
-    background: "#cbd5e1",
-    color: "#374151",
-
-    border: "1px solid #cbd5e1",
-
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+   style={{ minWidth: 100, height: 33 }}
 >
   Cancel
 </Btn>
