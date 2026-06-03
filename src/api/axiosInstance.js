@@ -39,13 +39,23 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor → auto-logout on 401/403
+// Response interceptor → auto-logout on 401/403, fire read-only event
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.data?.read_only === true) {
+      window.dispatchEvent(new CustomEvent('pbx:read-only'));
+    }
+    return response;
+  },
   (error) => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      sessionStorage.clear();
-      window.location.href = "/login";
+    if (error.response) {
+      if (error.response.status === 401 || error.response.status === 403) {
+        sessionStorage.clear();
+        window.location.href = "/login";
+      }
+      if (error.response.data?.read_only === true) {
+        window.dispatchEvent(new CustomEvent('pbx:read-only'));
+      }
     }
     return Promise.reject(error);
   }

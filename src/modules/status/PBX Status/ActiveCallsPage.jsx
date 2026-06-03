@@ -4,87 +4,13 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import HeadsetMicIcon from "@mui/icons-material/HeadsetMic";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { IconButton, CircularProgress, Tooltip } from "@mui/material";
 import { fetchAriChannels, ariHangup } from "../../../api/apiService";
 
 // 1s poll so "Talking" timer starts within ~1s of answer (was ~3s with 3s poll)
 const POLL_MS = 1000;
 const TICK_MS = 1000;
-
-/** Align with IP→PSTN Routing Rule / PbxMonitor palette */
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  cardBorderSoft: "#f1f5f9",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
-  errorRed: "#ef4444",
-};
-
-const CARD_RADIUS = 10;
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg = variant === "cancel" ? "#b6c2d3" : "#e2e8f0";
-  const baseBg = s.background;
-
-  return (
-    <button
-      type={type || "button"}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
 
 /**
  * Phone often shows 1s less than our timer (we mark Up slightly before phone counts,
@@ -190,16 +116,33 @@ function callPairKey(ch) {
 }
 
 /**
+ * Extract the dialed number from ARI app_data when app_name is "Dial".
+ * e.g. "PJSIP/07309377930@bsnl,30,..." → "07309377930"
+ */
+function extractDialedFromAppData(appName, appData) {
+  if (appName !== "Dial" || !appData) return null;
+  const m = String(appData).match(/^(?:PJSIP|SIP)\/(\+?\d+)[@,\/]/i);
+  return m ? m[1] : null;
+}
+
+/**
  * Merge channels that share the same two endpoints (reciprocal legs).
  * Uses earliest creationtime across legs so duration starts from first leg, not second.
+ * "Down" state channels are helper subroutines (e.g. set-pai) and are filtered out first.
  */
 function mergeCallLegs(list) {
-  if (!Array.isArray(list) || list.length <= 1) return list;
+  if (!Array.isArray(list)) return [];
+  // Filter out "Down" channels — these are completed helper subroutines, not real call legs
+  const active = list.filter(
+    (ch) => String(ch.state || "").toLowerCase() !== "down",
+  );
+  if (active.length <= 1)
+    return active.map((ch) => ({ ...ch, _allLegs: [ch] }));
 
   const byKey = new Map();
   const noKey = [];
 
-  for (const ch of list) {
+  for (const ch of active) {
     const key = callPairKey(ch);
     if (!key) {
       noKey.push(ch);
@@ -212,7 +155,7 @@ function mergeCallLegs(list) {
   const merged = [];
   for (const [, group] of byKey) {
     if (group.length === 1) {
-      merged.push(group[0]);
+      merged.push({ ...group[0], _allLegs: group });
       continue;
     }
     // Same pair, multiple legs → one logical call
@@ -227,6 +170,7 @@ function mergeCallLegs(list) {
     merged.push({
       ...primary,
       _mergedChannelIds: channelIds,
+      _allLegs: group,
       _mergedCreationTime: earliest
         ? earliest.d
         : parseCreationTime(primary.creationtime),
@@ -234,6 +178,93 @@ function mergeCallLegs(list) {
   }
 
   return [...merged, ...noKey];
+}
+
+/** Returns true if the string is a real number (not ARI placeholder "s") */
+function isRealNumber(n) {
+  if (!n || typeof n !== "string") return false;
+  const t = n.trim();
+  return t.length > 0 && t !== "s" && t !== "unknown" && t !== "anonymous";
+}
+
+/** Extract endpoint id from ARI channel name, e.g. "PJSIP/1002-00000094" → "1002" */
+function extractEndpointFromName(name) {
+  const m = String(name || "").match(/^(?:PJSIP|SIP)\/([^-\/]+)/i);
+  return m ? m[1] : null;
+}
+
+/** True if string looks like a phone number or extension (digits only, 3+) */
+function isNumberLike(s) {
+  return /^\d{3,}$/.test(s || "");
+}
+
+/**
+ * Resolve the real caller and callee from a (possibly merged) channel.
+ *
+ * Strategy:
+ *  - Originating leg: app_name !== "AppDial" (the leg that placed the call)
+ *  - Destination leg: app_name === "AppDial" (the leg that was dialed)
+ *
+ * Caller  → originating leg's caller.number (if real) or extract from its name
+ * Callee  → destination leg's channel name endpoint (best for ext→ext / inbound PSTN)
+ *           then originating leg's connected.number (best for outbound ext→PSTN)
+ */
+function resolveCallerCallee(ch) {
+  const legs = ch._allLegs || [ch];
+
+  const origLeg =
+    legs.find((l) => l.dialplan?.app_name !== "AppDial") ?? legs[0];
+  const destLeg = legs.find((l) => l.dialplan?.app_name === "AppDial") ?? null;
+
+  const rawCallerNum = origLeg?.caller?.number;
+  const rawConnectedNum = origLeg?.connected?.number;
+  // When caller.number === connected.number both sides carry the DID/caller-ID,
+  // not the real endpoint — fall back to extracting from the channel name.
+  const sameOnBothSides =
+    isRealNumber(rawCallerNum) && rawCallerNum === rawConnectedNum;
+
+  // --- Caller ---
+  let caller = null;
+  if (!sameOnBothSides && isRealNumber(rawCallerNum)) caller = rawCallerNum;
+  if (!caller && !sameOnBothSides && isRealNumber(origLeg?.caller?.name))
+    caller = origLeg.caller.name;
+  // Always try channel name as fallback (gives extension id like "1001")
+  if (!caller) {
+    const ep = extractEndpointFromName(origLeg?.name);
+    if (ep && isNumberLike(ep)) caller = ep;
+  }
+
+  // --- Callee ---
+  let callee = null;
+  // 1. Dialed number from app_data ("PJSIP/07309377930@bsnl,...") — best for outbound
+  const fromAppData = extractDialedFromAppData(
+    origLeg?.dialplan?.app_name,
+    origLeg?.dialplan?.app_data,
+  );
+  if (fromAppData) callee = fromAppData;
+  // 2. Numeric endpoint from destination leg name (inbound PSTN→ext, ext→ext)
+  if (!callee && destLeg) {
+    const ep = extractEndpointFromName(destLeg.name);
+    if (ep && isNumberLike(ep)) callee = ep;
+  }
+  // 3. connected number — only if it differs from caller (not a DID-mirror)
+  if (
+    !callee &&
+    isRealNumber(rawConnectedNum) &&
+    rawConnectedNum !== rawCallerNum
+  )
+    callee = rawConnectedNum;
+  if (
+    !callee &&
+    isRealNumber(origLeg?.connected?.name) &&
+    origLeg.connected.name !== rawCallerNum
+  )
+    callee = origLeg.connected.name;
+  // 4. destLeg's caller number
+  if (!callee && destLeg && isRealNumber(destLeg?.caller?.number))
+    callee = destLeg.caller.number;
+
+  return { caller: caller || "—", callee: callee || "—" };
 }
 
 /**
@@ -258,13 +289,11 @@ function channelDisplayLine(channel) {
 
 const ActiveCallsPage = () => {
   const [channels, setChannels] = useState([]);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tick, setTick] = useState(0);
   const [hangupChannelId, setHangupChannelId] = useState(null);
   const mounted = useRef(true);
-  const silentRefreshRef = useRef(false);
   /** When we first saw this call as Up — creationtime is dial start, not answer */
   const talkingStartedAtRef = useRef(new Map());
 
@@ -299,26 +328,19 @@ const ActiveCallsPage = () => {
         showAlert(hardFailure);
         return;
       }
-      await loadChannels(true);
+      await loadChannels();
     } catch (e) {
       if (!isChannelAlreadyGone(e)) {
         showAlert(e?.message || String(e) || "Hangup failed.");
       } else {
-        await loadChannels(true);
+        await loadChannels();
       }
     } finally {
       setHangupChannelId(null);
     }
   };
 
-  const loadChannels = useCallback(async (silent = false) => {
-    if (silent) {
-      if (silentRefreshRef.current) return;
-      silentRefreshRef.current = true;
-    } else {
-      setIsRefreshing(true);
-    }
-
+  const loadChannels = useCallback(async () => {
     try {
       const res = await fetchAriChannels();
       if (!mounted.current) return;
@@ -354,26 +376,19 @@ const ActiveCallsPage = () => {
       saveTalkingStartsPersisted(persisted);
       setChannels(merged);
       setError(null);
-      setHasLoaded(true);
     } catch (e) {
       if (!mounted.current) return;
-      if (!silent) {
-        setError(e?.message || "Failed to load active calls");
-        setChannels([]);
-      }
+      setError(e?.message || "Failed to load active calls");
+      setChannels([]);
     } finally {
-      if (silent) {
-        silentRefreshRef.current = false;
-      } else {
-        setIsRefreshing(false);
-      }
+      if (mounted.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     mounted.current = true;
-    loadChannels(false);
-    const pollId = setInterval(() => loadChannels(true), POLL_MS);
+    loadChannels();
+    const pollId = setInterval(loadChannels, POLL_MS);
     return () => {
       mounted.current = false;
       clearInterval(pollId);
@@ -386,316 +401,184 @@ const ActiveCallsPage = () => {
     return () => clearInterval(id);
   }, []);
 
-  // Always reserve two columns on desktop so one card keeps same size
+  const handleRefresh = () => {
+    setLoading(true);
+    loadChannels();
+  };
+
+  const panelBg = "#fff";
+  const titleColor = "#c62828";
+  // Light green card like SS (slightly warmer green, soft border)
+  const cardBg = "#f1f8f4";
+  const cardBorder = "#b8d4c0";
+
+  // Always reserve two columns on desktop so one card keeps the same size
+  // as a two-call layout: call2 right of call1, call3 below call1, etc.
   const gridClass = "grid-cols-1 md:grid-cols-2";
 
   return (
-    <div
-      className="min-h-full w-full flex flex-col justify-start"
-      style={{
-        background: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>Status</span>
-          <span>&gt;</span>
-          <span>PBX Status</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
+    <div className="min-h-full w-full flex flex-col justify-start px-4 py-4 md:px-6 md:p-2 ">
+      <div
+        className="w-full max-w-full rounded-lg shadow border border-gray-200 overflow-hidden"
+        style={{ backgroundColor: panelBg }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+          <h1 className="text-xl font-bold m-0" style={{ color: titleColor }}>
             Active Calls
-          </span>
+          </h1>
+          <Tooltip title="Refresh">
+            <span>
+              <IconButton
+                size="small"
+                onClick={handleRefresh}
+                disabled={loading}
+                aria-label="Refresh"
+              >
+                {loading ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  <RefreshIcon fontSize="small" />
+                )}
+              </IconButton>
+            </span>
+          </Tooltip>
         </div>
 
-        {/* Main card */}
-        <div
-          className="w-full max-w-full overflow-hidden"
-          style={{
-            backgroundColor: C.cardBg,
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: CARD_RADIUS,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {hasLoaded && channels.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
-                  {channels.length} active
-                </span>
-              )}
+        <div className="px-5 pb-6 pt-2 min-h-[200px]">
+          {error && (
+            <div className="text-center text-red-600 text-sm py-8">{error}</div>
+          )}
+
+          {!error && !loading && channels.length === 0 && (
+            <div className="flex items-center justify-center py-16 text-gray-500 text-sm">
+              No Active Calls
             </div>
-            <Btn
-              variant="cancel"
-              onClick={() => loadChannels(false)}
-              disabled={isRefreshing}
-              style={{ height: 30 }}
-            >
-              {isRefreshing ? (
-                <>
-                  <CircularProgress size={14} sx={{ color: "inherit" }} />
-                  Refreshing...
-                </>
-              ) : (
-                "Refresh"
-              )}
-            </Btn>
-          </div>
+          )}
 
-          {/* Body */}
-          <div
-            className="min-h-[200px]"
-            style={{ padding: "14px 16px 16px" }}
-          >
-            {error && (
-              <div
-                style={{
-                  textAlign: "center",
-                  color: C.errorRed,
-                  fontSize: 13,
-                  padding: "32px 0",
-                }}
-              >
-                {error}
-              </div>
-            )}
+          {!error && channels.length > 0 && (
+            <div className={`grid gap-3 ${gridClass}`}>
+              {channels.map((ch) => {
+                const { caller: callerNum, callee: connectedNum } =
+                  resolveCallerCallee(ch);
+                const instanceKey = callInstanceKey(ch);
+                const isUp = String(ch.state || "").toLowerCase() === "up";
+                // Talking: elapsed since we first saw Up (avoids 15s+ offset from creationtime)
+                const talkingStartMs =
+                  isUp && instanceKey
+                    ? talkingStartedAtRef.current.get(instanceKey)
+                    : null;
+                const duration = isUp
+                  ? formatDuration(
+                      talkingStartMs ??
+                        ch._mergedCreationTime ??
+                        parseCreationTime(ch.creationtime),
+                      TALKING_DISPLAY_OFFSET_SEC,
+                    )
+                  : "0:00:00";
+                const hangupIds = ch._mergedChannelIds?.length
+                  ? ch._mergedChannelIds
+                  : ch.id
+                    ? [ch.id]
+                    : [];
+                const hangupKey = hangupIds.join(",");
+                const status = stateLabel(ch.state);
+                const topLine = channelDisplayLine(ch);
 
-            {/* Empty state */}
-            {!error && hasLoaded && channels.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="text-5xl mb-4">📞</div>
-                <div
-                  className="text-lg font-semibold"
-                  style={{ color: C.valueText }}
-                >
-                  No Active Calls
-                </div>
-                <div className="text-sm mt-1" style={{ color: C.mutedText }}>
-                  No ongoing calls right now
-                </div>
-              </div>
-            )}
+                const mainNumber = callerNum;
+                const extNumber = connectedNum;
 
-            {/* Initial load */}
-            {!error && !hasLoaded && channels.length === 0 && (
-              <div className="flex justify-center py-12">
-                <CircularProgress size={32} sx={{ color: C.accent }} />
-              </div>
-            )}
-
-            {/* Active calls */}
-            {!error && channels.length > 0 && (
-          <div className={`grid gap-4 ${gridClass}`}>
-            {channels.map((ch) => {
-              const callerNum = ch.caller?.number || "";
-              const connectedNum = ch.connected?.number || "";
-              const callerName = ch.caller?.name || "";
-              const connectedName = ch.connected?.name || "";
-
-              const instanceKey = callInstanceKey(ch);
-
-              const isUp =
-                String(ch.state || "").toLowerCase() === "up";
-
-              const talkingStartMs =
-                isUp && instanceKey
-                  ? talkingStartedAtRef.current.get(instanceKey)
-                  : null;
-
-              const duration = isUp
-                ? formatDuration(
-                    talkingStartMs ??
-                      ch._mergedCreationTime ??
-                      parseCreationTime(ch.creationtime),
-                    TALKING_DISPLAY_OFFSET_SEC
-                  )
-                : "0:00:00";
-
-              const hangupIds = ch._mergedChannelIds?.length
-                ? ch._mergedChannelIds
-                : ch.id
-                ? [ch.id]
-                : [];
-
-              const hangupKey = hangupIds.join(",");
-
-              const status = stateLabel(ch.state);
-
-              const topLine = channelDisplayLine(ch);
-
-              const mainNumber =
-                callerNum || callerName || "—";
-
-              const extNumber =
-                connectedNum || connectedName || "";
-
-              return (
-                <div
-                  key={
-                    hangupKey ||
-                    ch.id ||
-                    ch.protocol_id ||
-                    Math.random()
-                  }
-                  className="flex items-stretch min-w-0 overflow-hidden"
-                  style={{
-                    backgroundColor: C.cardBg,
-                    borderRadius: CARD_RADIUS,
-                    border: `1px solid ${C.cardBorder}`,
-                    boxShadow: "0 2px 10px rgba(15,23,42,0.04)",
-                  }}
-                >
-                  {/* Left Icon */}
-                  <div className="flex items-center pl-4 pr-3 py-4 shrink-0">
-                    <PersonOutlineIcon
-                      sx={{ color: C.mutedText }}
-                      style={{ fontSize: 38 }}
-                    />
-                  </div>
-
-                  {/* Center Content */}
-                  <div className="flex-1 min-w-0 py-4 pr-3 flex flex-col justify-center gap-1">
-                    <div
-                      className="text-sm leading-snug break-all"
-                      style={{ color: C.valueText }}
-                    >
-                      {topLine}
-                    </div>
-
-                    <div
-                      className="text-sm font-semibold truncate"
-                      style={{ color: C.accent }}
-                    >
-                      {mainNumber}
-                    </div>
-
-                    <div className="flex items-center gap-1 mt-1">
-                      <KeyboardArrowDownIcon
-                        sx={{ color: C.labelText }}
-                        className="shrink-0"
-                        style={{ fontSize: 18 }}
-                      />
-
-                      <span className="text-sm" style={{ color: C.valueText }}>
-                        {extNumber || "—"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Right Section */}
+                return (
                   <div
-                    className="flex flex-col items-end justify-between py-4 pl-3 pr-4 min-w-[110px] shrink-0 border-l"
-                    style={{ borderColor: C.cardBorderSoft }}
+                    key={hangupKey || ch.id || ch.protocol_id || Math.random()}
+                    className="rounded-lg border flex items-stretch min-w-0 overflow-hidden"
+                    style={{
+                      backgroundColor: cardBg,
+                      borderColor: cardBorder,
+                      borderWidth: 1,
+                    }}
                   >
-                    <div
-                      className="flex items-center gap-1 text-sm font-semibold"
-                      style={{ color: C.accent }}
-                    >
-                      <span className="text-sm font-semibold">
-                        {status}
-                      </span>
-
-                      <ArrowForwardIcon
-                        style={{ fontSize: 16 }}
+                    {/* Person icon – left edge like SS */}
+                    <div className="flex items-center pl-3 pr-2 py-3 shrink-0">
+                      <PersonOutlineIcon
+                        className="text-gray-400"
+                        style={{ fontSize: 36 }}
                       />
                     </div>
 
-                    <div
-                      className="text-sm font-mono my-1"
-                      style={{ color: C.valueText }}
-                    >
-                      {duration}
-                    </div>
-
-                    <div className="flex items-center gap-1 mt-auto">
-                      <HeadsetMicIcon
-                        sx={{ color: C.labelText }}
-                        style={{ fontSize: 20 }}
-                      />
-
-                      <Tooltip title="Hang up">
-                        <span>
-                          <IconButton
-                            size="small"
-                            aria-label="Hang up"
-                            disabled={
-                              hangupIds.length === 0 ||
-                              hangupChannelId === hangupKey
-                            }
-                            onClick={() =>
-                              handleHangup(hangupIds)
-                            }
-                            sx={{
-                              color: C.errorRed,
-                              padding: "2px",
-                            }}
-                          >
-                            {hangupChannelId ===
-                            hangupKey ? (
-                              <CircularProgress
-                                size={18}
-                                sx={{
-                                  color: C.errorRed,
-                                }}
-                              />
-                            ) : (
-                              <CallEndIcon
-                                style={{ fontSize: 20 }}
-                              />
-                            )}
-                          </IconButton>
+                    {/* Center: external_wan line, number, arrow + extension */}
+                    <div className="flex-1 min-w-0 py-3 pr-2 flex flex-col justify-center gap-0.5">
+                      <div className="text-gray-900 text-sm leading-snug break-all">
+                        {topLine}
+                      </div>
+                      <div className="text-blue-600 text-sm font-medium truncate">
+                        {mainNumber}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <KeyboardArrowDownIcon
+                          className="text-gray-500 shrink-0"
+                          style={{ fontSize: 18 }}
+                        />
+                        <span className="text-gray-900 text-sm">
+                          {extNumber || "—"}
                         </span>
-                      </Tooltip>
+                      </div>
+                    </div>
+
+                    {/* Right: Talking + arrow (top), duration, headset + hangup (bottom) */}
+                    <div className="flex flex-col items-end justify-between py-3 pl-2 pr-3 min-w-[100px] shrink-0 border-l border-gray-300/40">
+                      <div className="flex items-center gap-0.5 text-blue-600">
+                        <span className="text-sm font-medium">{status}</span>
+                        <ArrowForwardIcon style={{ fontSize: 16 }} />
+                      </div>
+                      <div className="text-gray-800 text-sm font-mono my-1">
+                        {duration}
+                      </div>
+                      <div className="flex items-center gap-1 mt-auto">
+                        <HeadsetMicIcon
+                          className="text-gray-600"
+                          style={{ fontSize: 20 }}
+                        />
+                        <Tooltip title="Hang up">
+                          <span>
+                            <IconButton
+                              size="small"
+                              aria-label="Hang up"
+                              disabled={
+                                hangupIds.length === 0 ||
+                                hangupChannelId === hangupKey
+                              }
+                              onClick={() => handleHangup(hangupIds)}
+                              sx={{ color: "#c62828", padding: "2px" }}
+                            >
+                              {hangupChannelId === hangupKey ? (
+                                <CircularProgress
+                                  size={18}
+                                  sx={{ color: "#c62828" }}
+                                />
+                              ) : (
+                                <CallEndIcon style={{ fontSize: 20 }} />
+                              )}
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-            )}
-          </div>
+                );
+              })}
+            </div>
+          )}
+
+          {loading && channels.length === 0 && !error && (
+            <div className="flex justify-center py-12">
+              <CircularProgress size={32} />
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
+
 export default ActiveCallsPage;

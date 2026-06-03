@@ -517,7 +517,6 @@ const PortFxsAdvancedPage = () => {
               overflowX: "auto",
               overflowY: "auto",
               width: "100%",
-              borderBottom: ports.length > 0 ? `1px solid ${C.cardBorder}` : undefined,
             }}
           >
             <table
@@ -548,6 +547,10 @@ const PortFxsAdvancedPage = () => {
               <tbody>
                 {pagedPorts.map((port, idx) => {
                   const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                  const isLastRow = idx === pagedPorts.length - 1;
+                  const lastRowCellStyle = isLastRow
+                    ? { borderBottom: "none" }
+                    : {};
                   return (
                     <tr
                       key={port.port}
@@ -571,6 +574,7 @@ const PortFxsAdvancedPage = () => {
                                 ...routeTdStyle,
                                 background: rowBg,
                                 borderRight: "none",
+                                ...lastRowCellStyle,
                               }}
                             >
                               <div style={{ display: "flex", justifyContent: "center" }}>
@@ -598,7 +602,11 @@ const PortFxsAdvancedPage = () => {
                         return (
                           <td
                             key={col.key}
-                            style={{ ...routeTdStyle, background: rowBg }}
+                            style={{
+                              ...routeTdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
+                            }}
                           >
                             {port[col.key]}
                           </td>
@@ -612,7 +620,7 @@ const PortFxsAdvancedPage = () => {
           </div>
 
           {ports.length > 0 && (
-            <div style={{ ...numManipulatePaginationStyle, borderTop: "none" }}>
+            <div style={numManipulatePaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedPorts.length} record{pagedPorts.length !== 1 ? "s" : ""} on
                 page {page}

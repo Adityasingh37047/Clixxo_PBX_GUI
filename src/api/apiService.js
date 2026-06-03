@@ -3505,3 +3505,77 @@ export const deleteCustomPrompt = async ({ filename }) => {
     throw error;
   }
 };
+
+// ── FXS SIP Settings API ─────────────────────────────────────────────────────
+
+export const listFxsSipSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/fxs/sip', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching FXS SIP settings:', error.message);
+    throw error;
+  }
+};
+
+export const saveFxsSipSettings = async (data) => {
+  try {
+    const response = await axiosInstance.post('/fxs/sip', { type: 'save', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving FXS SIP settings:', error.message);
+    throw error;
+  }
+};
+
+export const resetFxsSipSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/fxs/sip', { type: 'reset' });
+    return response.data;
+  } catch (error) {
+    console.error('Error resetting FXS SIP settings:', error.message);
+    throw error;
+  }
+};
+
+export const statusFxsSipSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/fxs/sip', { type: 'status' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching FXS SIP status:', error.message);
+    throw error;
+  }
+};
+
+// ── FXS Port API ─────────────────────────────────────────────────────────────
+
+export const fetchFxsPorts = async () => {
+  try {
+    const response = await axiosInstance.post('/fxs', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching FXS ports:', error.message);
+    throw error;
+  }
+};
+
+export const saveFxsPort = async (data) => {
+  try {
+    const response = await axiosInstance.post('/fxs', { type: 'save-port', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving FXS port:', error.message);
+    throw error;
+  }
+};
+
+export const saveFxsBatch = async (data) => {
+  try {
+    const response = await axiosInstance.post('/fxs', { type: 'save-batch', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving FXS batch:', error.message);
+    throw error;
+  }
+};

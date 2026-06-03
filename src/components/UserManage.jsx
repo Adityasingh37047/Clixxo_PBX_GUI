@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Checkbox, Alert } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/Delete";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   PAGE_PERMISSION_GROUPS,
   INITIAL_PERMISSIONS,
@@ -12,19 +12,20 @@ import {
   updateUserAccess,
   deleteUser,
 } from "../api/apiService";
+import { useAuth } from "../context/AuthContext";
 
 // ── Color palette (matches CallCount) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
+  cardBorder: "#e2e8f0",
+  divider: "#f1f5f9",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#64748b",
+  valueText: "#1e293b",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#3E5475",
+  accent: "#0284c7",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   successGreen: "#16a34a",
@@ -137,17 +138,16 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: C.pageBg,
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      padding: "14px 18px",
+      textAlign: "left",
+      borderBottom: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.14em",
+      letterSpacing: "0.08em",
       ...extra,
     }}
   >
@@ -155,22 +155,11 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  whiteSpace: "nowrap",
-};
-
 const cbSx = {
   p: 0,
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  color: C.accent,
+  "&.Mui-checked": { color: C.accent },
+  "&.MuiCheckbox-indeterminate": { color: C.accent },
   "& .MuiSvgIcon-root": { fontSize: 16 },
 };
 
@@ -189,15 +178,15 @@ const inputStyle = {
 };
 
 const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = "#cbd5e1"),
+  onFocus: (e) => (e.target.style.borderColor = C.accent),
+  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
   onMouseEnter: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
+      e.target.style.borderColor = "#94a3b8";
   },
   onMouseLeave: (e) => {
     if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#cbd5e1";
+      e.target.style.borderColor = C.cardBorder;
   },
 };
 
@@ -462,6 +451,7 @@ function PermissionTree({ permissions, setPermissions }) {
 
 // ── Main Component ───────────────────────────────────────────────────────────
 export default function UserManage() {
+  const { canWrite, showReadOnlyToast } = useAuth();
   const [users, setUsers] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [listError, setListError] = useState("");
@@ -706,11 +696,10 @@ export default function UserManage() {
         <div
           style={{
             background: C.cardBg,
-            borderRadius: 10,
+            borderRadius: 20,
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
           }}
         >
           {/* Card Toolbar */}
@@ -722,7 +711,7 @@ export default function UserManage() {
               gap: 12,
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "7px 14px",
+              padding: "10px 14px",
               borderBottom: `1px solid ${C.divider}`,
             }}
           >
@@ -749,7 +738,13 @@ export default function UserManage() {
               )}
               {mode === null && (
                 <button
-                  onClick={openAdd}
+                  onClick={() => {
+                    if (!canWrite) {
+                      showReadOnlyToast();
+                      return;
+                    }
+                    openAdd();
+                  }}
                   style={{
                     background:
                       "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
@@ -758,17 +753,20 @@ export default function UserManage() {
                     borderRadius: 10,
                     padding: "6px 14px",
                     height: 30,
-                    cursor: "pointer",
+                    cursor: !canWrite ? "not-allowed" : "pointer",
                     fontWeight: 600,
                     fontSize: 12,
+                    opacity: !canWrite ? 0.5 : 1,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background =
-                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+                    if (canWrite)
+                      e.currentTarget.style.background =
+                        "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background =
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
+                    if (canWrite)
+                      e.currentTarget.style.background =
+                        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
                   }}
                 >
                   + Add User
@@ -815,66 +813,22 @@ export default function UserManage() {
                 style={{
                   width: "100%",
                   minWidth: 600,
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
+                  borderCollapse: "collapse",
+                  fontSize: 13,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH
-                      style={{
-                        width: 50,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      ID
-                    </TH>
-                    <TH
-                      style={{
-                        width: 180,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      Username
-                    </TH>
-                    <TH
-                      style={{
-                        width: 140,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
+                    <TH style={{ width: 50, textAlign: "center" }}>#</TH>
+                    <TH style={{ width: 180 }}>Username</TH>
+                    <TH style={{ width: 140, textAlign: "center" }}>
                       Access Type
                     </TH>
-                    <TH
-                      style={{
-                        width: 160,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
+                    <TH style={{ width: 160, textAlign: "center" }}>
                       Role Permission
                     </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Sections
-                    </TH>
-                    <TH
-                      style={{
-                        width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      Actions
-                    </TH>
+                    <TH>Sections</TH>
+                    <TH style={{ width: 160, textAlign: "center" }}>Actions</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -884,52 +838,49 @@ export default function UserManage() {
                       access.access_type ?? user.access_type ?? user.role ?? "";
                     const isSuperAdmin =
                       accessType === "superadmin" || accessType === "admin";
-                    const isLastRow = i === users.length - 1;
-                    const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
-                    const lastRowCellStyle = isLastRow
-                      ? { borderBottom: "none" }
-                      : {};
                     return (
                       <tr
                         key={user.id}
                         style={{
-                          background: rowBg,
+                          background: C.cardBg,
+                          borderBottom: `1px solid ${C.divider}`,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#f1f5f9";
+                          e.currentTarget.style.background = C.pageBg;
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = rowBg;
+                          e.currentTarget.style.background = C.cardBg;
                         }}
                       >
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBg,
+                            padding: "16px 18px",
                             color: C.mutedText,
+                            textAlign: "center",
+                            fontSize: 13,
                             fontWeight: 500,
-                            ...lastRowCellStyle,
+                            borderBottom: `1px solid ${C.divider}`,
                           }}
                         >
                           {i + 1}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBg,
+                            padding: "16px 18px",
                             fontWeight: 500,
-                            textAlign: "left",
-                            ...lastRowCellStyle,
+                            color: C.valueText,
+                            fontSize: 13,
+                            borderBottom: `1px solid ${C.divider}`,
                           }}
                         >
                           {user.username}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
+                            padding: "16px 18px",
+                            textAlign: "center",
+                            borderBottom: `1px solid ${C.divider}`,
                           }}
                         >
                           <span
@@ -946,10 +897,12 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBg,
+                            padding: "16px 18px",
+                            color: C.valueText,
+                            fontSize: 13,
+                            textAlign: "center",
                             fontWeight: 500,
-                            ...lastRowCellStyle,
+                            borderBottom: `1px solid ${C.divider}`,
                           }}
                         >
                           {access.role_permission ??
@@ -958,14 +911,15 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBg,
+                            padding: "16px 18px",
+                            color: C.valueText,
+                            fontSize: 13,
                             fontWeight: 500,
                             maxWidth: 220,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
-                            textAlign: "left",
-                            ...lastRowCellStyle,
+                            whiteSpace: "nowrap",
+                            borderBottom: `1px solid ${C.divider}`,
                           }}
                         >
                           {isSuperAdmin ? (
@@ -988,10 +942,9 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderRight: "none",
-                            ...lastRowCellStyle,
+                            padding: "16px 18px",
+                            textAlign: "center",
+                            borderBottom: `1px solid ${C.divider}`,
                           }}
                         >
                           <div
@@ -1003,39 +956,37 @@ export default function UserManage() {
                           >
                             {!isSuperAdmin && (
                               <EditDocumentIcon
+                                className="transition-opacity"
                                 titleAccess="Edit"
+                                onClick={() => {
+                                  if (!canWrite) {
+                                    showReadOnlyToast();
+                                    return;
+                                  }
+                                  openEdit(user);
+                                }}
                                 style={{
-                                  cursor: "pointer",
+                                  cursor: canWrite ? "pointer" : "not-allowed",
+                                  opacity: canWrite ? 0.7 : 0.3,
                                   color: "#2563eb",
-                                  fontSize: 22,
-                                  opacity: 0.7,
-                                  transition: "opacity 0.15s ease",
-                                }}
-                                onClick={() => openEdit(user)}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.opacity = "1";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.opacity = "0.7";
                                 }}
                               />
                             )}
                             {!isSuperAdmin && (
                               <DeleteOutlineOutlinedIcon
+                                className="transition-opacity"
                                 titleAccess="Delete"
+                                onClick={() => {
+                                  if (!canWrite) {
+                                    showReadOnlyToast();
+                                    return;
+                                  }
+                                  handleDelete(user);
+                                }}
                                 style={{
-                                  cursor: "pointer",
+                                  cursor: canWrite ? "pointer" : "not-allowed",
+                                  opacity: canWrite ? 0.7 : 0.3,
                                   color: "#dc2626",
-                                  fontSize: 22,
-                                  opacity: 0.7,
-                                  transition: "opacity 0.15s ease",
-                                }}
-                                onClick={() => handleDelete(user)}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.opacity = "1";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.opacity = "0.7";
                                 }}
                               />
                             )}
@@ -1056,12 +1007,11 @@ export default function UserManage() {
             <div
               style={{
                 background: C.cardBg,
-                borderRadius: 10,
+                borderRadius: 20,
                 overflow: "hidden",
                 boxShadow: C.cardShadow,
                 marginTop: 24,
                 marginBottom: 24,
-                border: `1.5px solid ${C.cardBorder}`,
               }}
             >
               {/* Card Header */}
@@ -1189,12 +1139,11 @@ export default function UserManage() {
             <div
               style={{
                 background: C.cardBg,
-                borderRadius: 10,
+                borderRadius: 20,
                 overflow: "hidden",
                 boxShadow: C.cardShadow,
                 marginTop: 24,
                 marginBottom: 0,
-                border: `1.5px solid ${C.cardBorder}`,
               }}
             >
               {/* Card Header */}
@@ -1247,7 +1196,13 @@ export default function UserManage() {
               style={{ marginTop: 20, marginBottom: 24 }}
             >
               <button
-                onClick={handleSave}
+                onClick={() => {
+                  if (!canWrite) {
+                    showReadOnlyToast();
+                    return;
+                  }
+                  handleSave();
+                }}
                 disabled={saving}
                 style={{
                   background:
@@ -1257,18 +1212,18 @@ export default function UserManage() {
                   borderRadius: 12,
                   padding: "10px 28px",
                   minWidth: 110,
-                  cursor: saving ? "not-allowed" : "pointer",
+                  cursor: saving || !canWrite ? "not-allowed" : "pointer",
                   fontWeight: 600,
                   fontSize: 13,
-                  opacity: saving ? 0.6 : 1,
+                  opacity: saving || !canWrite ? 0.5 : 1,
                 }}
                 onMouseEnter={(e) => {
-                  if (!saving)
+                  if (!saving && canWrite)
                     e.currentTarget.style.background =
                       "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
                 }}
                 onMouseLeave={(e) => {
-                  if (!saving)
+                  if (!saving && canWrite)
                     e.currentTarget.style.background =
                       "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
                 }}

@@ -25,8 +25,14 @@ const labelCellStyle = {
 
 const FUNCTION_KEY_SECTION_HEADING_COLOR = "#30415A";
 
-const FunctionKeySectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+const FunctionKeySectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
@@ -44,6 +50,12 @@ const FunctionKeySectionHeading = ({ title }) => (
     </span>
   </div>
 );
+
+const centeredTableWrapStyle = {
+  width: "100%",
+  maxWidth: 700,
+  margin: "0 auto",
+};
 
 const FunctionKeyPage = () => {
   const [formData, setFormData] = useState(getInitialFormState());
@@ -166,6 +178,8 @@ const FunctionKeyPage = () => {
     return acc;
   }, {});
 
+  const sectionEntries = Object.entries(groupedFields);
+
   const selectStyle = (enabled) => ({
     height: 32,
     width: "100%",
@@ -178,6 +192,69 @@ const FunctionKeyPage = () => {
     padding: "0 8px",
     boxSizing: "border-box",
   });
+
+  const tableColgroup = (
+    <colgroup>
+      <col style={{ width: "50%" }} />
+      <col style={{ width: "12%" }} />
+      <col style={{ width: "19%" }} />
+      <col style={{ width: "19%" }} />
+    </colgroup>
+  );
+
+  const renderFieldRows = (fields) =>
+    fields.map((field) => {
+      const enabled = formData[field.enableKey];
+      const mode = formData[field.modeKey];
+      const functionKey = formData[field.functionKeyKey];
+      const isDefaultMode = mode === "0";
+      const maxLength = field.isReboot ? 12 : 7;
+
+      return (
+        <tr key={field.id} style={{ height: "26px" }}>
+          <td style={{ ...labelCellStyle, paddingLeft: 0 }}>{field.name}</td>
+          <td style={{ textAlign: "center" }}>
+            <Checkbox
+              size="small"
+              checked={enabled}
+              onChange={() => handleEnableChange(field)}
+              sx={checkboxSx}
+            />
+          </td>
+          <td style={{ paddingLeft: "0px", textAlign: "center" }}>
+            <TextField
+              id={field.functionKeyKey}
+              value={functionKey}
+              onChange={(e) => handleFunctionKeyChange(field, e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={!enabled || isDefaultMode}
+              inputProps={{
+                maxLength,
+                style: { fontSize: 14, padding: "4px 8px" },
+              }}
+              sx={{
+                width: "100%",
+                maxWidth: 145,
+                ...muiTextFieldSx,
+              }}
+              variant="outlined"
+              size="small"
+            />
+          </td>
+          <td style={{ paddingLeft: "0px", textAlign: "center" }}>
+            <select
+              value={mode}
+              onChange={(e) => handleModeChange(field, e.target.value)}
+              disabled={!enabled}
+              style={selectStyle(enabled)}
+            >
+              <option value="0">Default</option>
+              <option value="1">User-defined</option>
+            </select>
+          </td>
+        </tr>
+      );
+    });
 
   return (
     <AdvancedPageShell>
@@ -212,120 +289,48 @@ const FunctionKeyPage = () => {
           </Btn>
         }
       >
-          <div style={{ width: "100%", maxWidth: 700, margin: "0 auto" }}>
-            <div style={{ width: "100%" }}>
-              <table
-                style={{ tableLayout: "fixed", width: "100%" }}
-              >
-                <colgroup>
-                  <col style={{ width: "50%" }} />
-                  <col style={{ width: "12%" }} />
-                  <col style={{ width: "19%" }} />
-                  <col style={{ width: "19%" }} />
-                </colgroup>
-                <tbody>
-                  {/* Table Headers */}
-                  <tr>
-                    <td style={{ ...labelCellStyle, paddingLeft: 0 }}>
-                      Function
-                    </td>
-                    <td style={{ ...labelCellStyle, textAlign: "center" }}>
-                      Enable
-                    </td>
-                    <td style={labelCellStyle}>Function Key</td>
-                    <td style={labelCellStyle}>Mode</td>
-                  </tr>
-                  <tr>
-                    <td colSpan={4} style={{ height: "8px" }}></td>
-                  </tr>
+        <div style={{ width: "100%", paddingBottom: 16 }}>
+          <div style={centeredTableWrapStyle}>
+            <table style={{ tableLayout: "fixed", width: "100%" }}>
+              {tableColgroup}
+              <tbody>
+                <tr>
+                  <td style={{ ...labelCellStyle, paddingLeft: 0 }}>Function</td>
+                  <td style={{ ...labelCellStyle, textAlign: "center" }}>
+                    Enable
+                  </td>
+                  <td style={labelCellStyle}>Function Key</td>
+                  <td style={labelCellStyle}>Mode</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-                  {/* Sections */}
-                  {Object.entries(groupedFields).map(
-                    ([sectionName, fields]) => (
-                      <React.Fragment key={sectionName}>
-                        {/* Section Header */}
-                        <tr>
-                          <td colSpan={4} style={{ padding: "12px 0 4px" }}>
-                            <FunctionKeySectionHeading title={sectionName} />
-                          </td>
-                        </tr>
-
-                        {/* Fields */}
-                        {fields.map((field) => {
-                          const enabled = formData[field.enableKey];
-                          const mode = formData[field.modeKey];
-                          const functionKey = formData[field.functionKeyKey];
-                          const isDefaultMode = mode === "0";
-                          const maxLength = field.isReboot ? 12 : 7;
-
-                          return (
-                            <tr key={field.id} style={{ height: "26px" }}>
-                              <td style={{ ...labelCellStyle, paddingLeft: 0 }}>
-                                {field.name}
-                              </td>
-                              <td style={{ textAlign: "center" }}>
-                                <Checkbox
-                                  size="small"
-                                  checked={enabled}
-                                  onChange={() => handleEnableChange(field)}
-                                  sx={checkboxSx}
-                                />
-                              </td>
-                              <td
-                                style={{ paddingLeft: "0px", textAlign: "center" }}
-                              >
-                                <TextField
-                                  id={field.functionKeyKey}
-                                  value={functionKey}
-                                  onChange={(e) =>
-                                    handleFunctionKeyChange(
-                                      field,
-                                      e.target.value,
-                                    )
-                                  }
-                                  onKeyPress={handleKeyPress}
-                                  disabled={!enabled || isDefaultMode}
-                                  inputProps={{
-                                    maxLength,
-                                    style: { fontSize: 14, padding: "4px 8px" },
-                                  }}
-                                  sx={{
-                                    width: "100%",
-                                    maxWidth: 145,
-                                    ...muiTextFieldSx,
-                                  }}
-                                  variant="outlined"
-                                  size="small"
-                                />
-                              </td>
-                              <td
-                                style={{ paddingLeft: "0px", textAlign: "center" }}
-                              >
-                                <select
-                                  value={mode}
-                                  onChange={(e) =>
-                                    handleModeChange(field, e.target.value)
-                                  }
-                                  disabled={!enabled}
-                                  style={selectStyle(enabled)}
-                                >
-                                  <option value="0">Default</option>
-                                  <option value="1">User-defined</option>
-                                </select>
-                              </td>
-                            </tr>
-                          );
-                        })}
+          {sectionEntries.map(([sectionName, fields], sectionIdx) => {
+            const isLastSection = sectionIdx === sectionEntries.length - 1;
+            return (
+              <React.Fragment key={sectionName}>
+                <FunctionKeySectionHeading
+                  title={sectionName}
+                  isFirst={sectionIdx === 0}
+                />
+                <div style={centeredTableWrapStyle}>
+                  <table style={{ tableLayout: "fixed", width: "100%" }}>
+                    {tableColgroup}
+                    <tbody>
+                      {renderFieldRows(fields)}
+                      {!isLastSection && (
                         <tr>
                           <td colSpan={4} style={{ height: "8px" }}></td>
                         </tr>
-                      </React.Fragment>
-                    ),
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
       </AdvancedFormCard>
     </AdvancedPageShell>
   );

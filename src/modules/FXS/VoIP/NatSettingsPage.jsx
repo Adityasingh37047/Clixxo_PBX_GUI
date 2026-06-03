@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Checkbox } from "@mui/material";
+import { Alert, Checkbox } from "@mui/material";
 import {
   NAT_SETTINGS_FIELDS,
   NAT_SETTINGS_NOTE,
@@ -13,6 +13,8 @@ import {
   advancedTableContainerStyle,
   advancedBlueBarStyle,
   nativeFieldInteraction,
+  advancedFormBtnStyle,
+  advancedFormInlineFooterStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const NAT_SETTINGS_SECTION_HEADING_COLOR = "#30415A";
@@ -60,6 +62,17 @@ const getInitialState = () => {
 
 const NatSettingsPage = () => {
   const [form, setForm] = useState(getInitialState());
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const alert = (msg) => {
+    const isSuccess = /successfully/i.test(String(msg));
+    showToast(msg, isSuccess ? "success" : "error");
+  };
 
   const handleChange = (key, value) => {
     const fieldDef = NAT_SETTINGS_FIELDS.find((f) => f.key === key);
@@ -145,6 +158,34 @@ const NatSettingsPage = () => {
     boxSizing: "border-box",
   };
 
+  const fieldLabelStyle = {
+    width: 220,
+    flexShrink: 0,
+    fontSize: 13,
+    fontWeight: 600,
+    color: C.labelText,
+    textAlign: "left",
+  };
+
+  const fieldControlStyle = {
+    width: 220,
+    flexShrink: 0,
+  };
+
+  const renderFieldRow = (field) => (
+    <div
+      key={field.key}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+      }}
+    >
+      <label style={fieldLabelStyle}>{field.label}</label>
+      <div style={fieldControlStyle}>{renderFieldControl(field)}</div>
+    </div>
+  );
+
   const renderFieldControl = (field) => {
     if (field.type === "readonly") {
       return (
@@ -227,12 +268,29 @@ const NatSettingsPage = () => {
 
   return (
     <AdvancedPageShell>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
       <AdvancedBreadcrumb current="NAT Settings" />
       <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
         <div style={advancedBlueBarStyle}>
           <span>NAT Settings</span>
         </div>
-        <div style={{ padding: "24px 32px" }}>
+        <div style={{ padding: "24px 32px 0" }}>
           <div className="flex flex-col gap-8 w-full">
             {Object.entries(groupedFields).map(
               ([sectionName, methods], sectionIdx) => (
@@ -243,9 +301,13 @@ const NatSettingsPage = () => {
                   />
 
                   <div
-                    className="flex flex-col gap-4 w-full"
-                    style={{ maxWidth: 640, margin: "0 auto" }}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      width: "100%",
+                    }}
                   >
+                    <div className="flex flex-col gap-4" style={{ width: "fit-content", maxWidth: "100%" }}>
                   {Object.entries(methods).map(([methodName, fields]) => (
                     <div
                       key={`${sectionName}-${methodName}`}
@@ -254,9 +316,10 @@ const NatSettingsPage = () => {
                       {methodName !== "no-method" && (
                         <div
                           style={{
-                            fontSize: 12,
+                            fontSize: 13,
                             fontWeight: 600,
                             color: C.labelText,
+                            paddingLeft: methodName.endsWith("-") ? 0 : 24,
                           }}
                         >
                           {methodName}
@@ -269,31 +332,11 @@ const NatSettingsPage = () => {
                           paddingLeft: methodName !== "no-method" ? 24 : 0,
                         }}
                       >
-                        {fields.map((field) => (
-                          <div
-                            key={field.key}
-                            className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-2 sm:gap-4"
-                          >
-                            <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {field.label}
-                            </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              {renderFieldControl(field)}
-                            </div>
-                          </div>
-                        ))}
+                        {fields.map((field) => renderFieldRow(field))}
                       </div>
                     </div>
                   ))}
+                    </div>
                   </div>
                 </div>
               ),
@@ -303,28 +346,48 @@ const NatSettingsPage = () => {
               <NatSettingsSectionHeading title="Note:" />
               <div
                 style={{
-                  color: C.mutedText,
-                  fontSize: 11,
-                  whiteSpace: "pre-line",
-                  lineHeight: 1.45,
-                  maxWidth: 640,
-                  margin: "0 auto",
+                  display: "flex",
+                  justifyContent: "center",
                   width: "100%",
                 }}
               >
-                {NAT_SETTINGS_NOTE}
+                <div
+                  style={{
+                    width: "max-content",
+                    maxWidth: "100%",
+                    textAlign: "left",
+                  }}
+                >
+                  {NAT_SETTINGS_NOTE.split("\n")
+                    .filter(Boolean)
+                    .map((line, index) => (
+                      <p
+                        key={index}
+                        style={{
+                          margin: 0,
+                          color: C.mutedText,
+                          fontSize: 11,
+                          lineHeight: 1.45,
+                          whiteSpace: "nowrap",
+                          textAlign: "left",
+                        }}
+                      >
+                        {line}
+                      </p>
+                    ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 12, padding: "12px 0 18px", borderTop: `1px solid ${C.cardBorder}` }}>
-          <Btn type="button" onClick={handleSave} variant="primary" style={{ minWidth: 110, height: 34, fontSize: 13 }}>
+        <div style={advancedFormInlineFooterStyle}>
+          <Btn type="button" onClick={handleSave} variant="primary" style={advancedFormBtnStyle}>
             Save
           </Btn>
-          <Btn type="button" onClick={handleReset} variant="cancel" style={{ minWidth: 110, height: 34, fontSize: 13 }}>
+          <Btn type="button" onClick={handleReset} variant="cancel" style={advancedFormBtnStyle}>
             Reset
           </Btn>
-          </div>
+        </div>
       </div>
     </AdvancedPageShell>
   );

@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Alert,
 } from "@mui/material";
 import {
   PORT_GROUP_TOTAL_PORTS,
@@ -122,6 +123,20 @@ const PortGroupPage = () => {
   const [form, setForm] = useState(initialFormState());
   const [checkedRows, setCheckedRows] = useState({});
   const [tableMinWidth, setTableMinWidth] = useState("100%");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const alert = (msg) => {
+    const isErr =
+      /error|failed|required|please|invalid|must|choose|select|no port groups/i.test(
+        msg,
+      ) && !/successfully/i.test(msg);
+    showToast(msg, isErr ? "error" : "success");
+  };
 
   useEffect(() => {
     const updateTableWidthForZoom = () => {
@@ -235,6 +250,11 @@ const PortGroupPage = () => {
 
     setGroups((prev) => [...prev, newGroup]);
     handleCloseModal();
+    alert(
+      editingGroupId !== null
+        ? "Port group updated successfully!"
+        : "Port group added successfully!",
+    );
   };
 
   const handleRowCheck = (id) => {
@@ -273,7 +293,7 @@ const PortGroupPage = () => {
   const handleDelete = () => {
     const selectedIds = groups.filter((g) => checkedRows[g.id]);
     if (selectedIds.length === 0) {
-      window.alert("Please select at least one item to delete.");
+      alert("Please select at least one item to delete.");
       return;
     }
     const confirmed = window.confirm(
@@ -282,11 +302,12 @@ const PortGroupPage = () => {
     if (!confirmed) return;
     setGroups((prev) => prev.filter((g) => !checkedRows[g.id]));
     setCheckedRows({});
+    alert("Selected port group(s) deleted successfully!");
   };
 
   const handleClearAll = () => {
     if (groups.length === 0) {
-      window.alert("No port groups to clear.");
+      alert("No port groups to clear.");
       return;
     }
     const confirmed = window.confirm(
@@ -295,6 +316,7 @@ const PortGroupPage = () => {
     if (!confirmed) return;
     setGroups([]);
     setCheckedRows({});
+    alert("All port groups cleared successfully!");
   };
 
   const selectedCount = Object.values(checkedRows).filter(Boolean).length;
@@ -873,6 +895,23 @@ const PortGroupPage = () => {
       }}
     >
       <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
+
         <div
           style={{
             fontSize: 12,

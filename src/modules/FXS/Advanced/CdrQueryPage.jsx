@@ -152,7 +152,6 @@ const CdrQueryPage = () => {
       <AdvancedBreadcrumb current="CDR Query" />
       <AdvancedFormCard
         title="CDR Query"
-        fullWidthContent
         footer={
           <Btn
             variant="primary"
@@ -168,7 +167,8 @@ const CdrQueryPage = () => {
             display: "flex",
             justifyContent: "center",
             width: "100%",
-            padding: "8px 0 4px",
+            paddingTop: 8,
+            paddingBottom: 16,
           }}
         >
           <div

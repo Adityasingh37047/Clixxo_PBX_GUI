@@ -7,165 +7,38 @@ import {
   SC_BUTTONS,
   SC_NOTE,
 } from "../../../constants/SignalingCaptureConstants";
-import { Alert, CircularProgress, Checkbox } from "@mui/material";
+import { Button } from "@mui/material";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 
-// ── Color palette (same as UserManage) ────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
-  valueText: "#3E5475",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#0284c7",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
-  errorRed: "#dc2626",
-};
+const blueBar = (title) => (
+  <div
+    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+    style={{
+      background: "linear-gradient(#3E5475 100%)",
+      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+    }}
+  >
+    {title}
+  </div>
+);
 
-// ── Button Component (same as UserManage) ────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    edit: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #bbf7d0",
-    },
-    delete: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fecaca",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-  };
-
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "edit":
-        return "#bbf7d0";
-      case "delete":
-        return "#fecaca";
-      case "danger":
-        return "#b91c1c";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-  background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 10,
-  boxShadow: C.cardShadow,
-  overflow: "hidden",
-  marginBottom: 24,
-};
-
-const blueBarStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
-  marginBottom: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start", // Left alignment as requested
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  color: "#3E5475",
-  borderBottom: `1px solid ${C.divider}`,
-};
-
-const inputStyle = {
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: "6px 12px",
+const blueButtonSx = {
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
+  fontWeight: 600,
   fontSize: 14,
-  color: C.valueText,
-  background: C.cardBg,
-  outline: "none",
-  transition: "border-color 0.15s ease",
+  borderRadius: 1,
+  minWidth: 80,
+  boxShadow: "0 2px 8px #3E5475",
+  textTransform: "none",
+  px: 2,
+  py: 1,
+  padding: "4px 16px",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    color: "#fff",
+  },
 };
 
 const SignalingCapture = () => {
@@ -180,11 +53,10 @@ const SignalingCapture = () => {
 
   // Data capture state
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const [captureProcessId, setCaptureProcessId] = useState(null);
   const [captureFileName, setCaptureFileName] = useState("");
-
-  // Toast alert
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [captureStatus, setCaptureStatus] = useState("");
 
   // TS Recording state
   const [ts1Pcm, setTs1Pcm] = useState(SC_PCM_OPTIONS[0].value);
@@ -197,28 +69,6 @@ const SignalingCapture = () => {
   const [e1aSlot, setE1aSlot] = useState(SC_TS_OPTIONS[2].value);
   const [e1bPcm, setE1bPcm] = useState(SC_PCM_OPTIONS[0].value);
   const [e1bSlot, setE1bSlot] = useState(SC_TS_OPTIONS[3].value);
-
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
-  };
-
-  const inputInteraction = {
-    onFocus: (e) => {
-      if (!e.target.disabled) e.target.style.borderColor = "#0284c7";
-    },
-    onBlur: (e) => {
-      if (!e.target.disabled) e.target.style.borderColor = C.cardBorder;
-    },
-    onMouseEnter: (e) => {
-      if (!e.target.disabled && document.activeElement !== e.target)
-        e.target.style.borderColor = "#64748b";
-    },
-    onMouseLeave: (e) => {
-      if (!e.target.disabled && document.activeElement !== e.target)
-        e.target.style.borderColor = C.cardBorder;
-    },
-  };
 
   // Fetch system info and populate network options
   useEffect(() => {
@@ -327,6 +177,7 @@ const SignalingCapture = () => {
   // Handle start data capture
   const handleStartCapture = async () => {
     try {
+      // Determine interface for tcpdump
       let interfaceName = "";
       if (network === "all") {
         interfaceName = "any";
@@ -338,25 +189,33 @@ const SignalingCapture = () => {
         interfaceName = network;
       }
 
+      // Create capture file with readable date
       const now = new Date();
-      const dateStr = now.toISOString().split("T")[0].replace(/-/g, "_");
+      const dateStr = now.toISOString().split("T")[0].replace(/-/g, "_"); // YYYY_MM_DD format
       const fileName = `/mnt/data/signaling_capture_${dateStr}.pcap`;
       setCaptureFileName(fileName);
 
+      // Build tcpdump command
+      // -U: packet-buffered (flushes packets to file quickly to reduce truncation risk)
+      // Important: BPF filter (if any) must be passed as a single trailing argument, without a leading 'and'
       const dest = syslogDest.trim();
       const filterExpr =
         syslogEnabled && dest
           ? `host ${dest} and (udp port 514 or tcp port 514)`
           : "";
       const tcpdumpCmd = `tcpdump -U -i ${interfaceName} -s 0 -w '${fileName}' ${filterExpr ? `'${filterExpr}'` : ""}`;
+
       const logPath = "/mnt/data/tcpdump_capture.log";
 
+      // Step 1: kill any existing capture (separate call so backend doesn't see "sleep")
       await postLinuxCmd({
         cmd: `pkill -f 'tcpdump.*signaling_capture' 2>/dev/null || true`,
       });
       await new Promise((r) => setTimeout(r, 800));
 
+      // Step 2: start new capture
       const cmd = `sh -c "mkdir -p /mnt/data; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; ${tcpdumpCmd} > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
+
       const response = await postLinuxCmd({ cmd });
 
       if (response?.response === false) {
@@ -364,9 +223,8 @@ const SignalingCapture = () => {
           cmd: `tail -n 5 ${logPath} 2>/dev/null || true`,
         });
         const logTail = String(logTailRes?.responseData || "").trim();
-        showToast(
+        window.alert(
           `Failed to start capture: ${response?.message || "Unknown error"}${logTail ? `\n\nLog:\n${logTail}` : ""}`,
-          "error",
         );
         return;
       }
@@ -374,6 +232,7 @@ const SignalingCapture = () => {
       const pid = String(response?.responseData || "").trim();
 
       if (pid && /^\d+$/.test(pid)) {
+        // Quick health check: ensure process exists and no immediate tcpdump error in log
         await new Promise((r) => setTimeout(r, 400));
         const health = await postLinuxCmd({
           cmd: `ps -p ${pid} >/dev/null 2>&1 && echo RUNNING || echo NOT_RUNNING`,
@@ -384,15 +243,15 @@ const SignalingCapture = () => {
         });
         const logTail = String(logTailRes?.responseData || "").trim();
         if (status !== "RUNNING") {
-          showToast(
+          window.alert(
             `Failed to start capture. tcpdump not running.\n${logTail ? `\nLog:\n${logTail}` : ""}`,
-            "error",
           );
           return;
         }
         setCaptureProcessId(pid);
         setIsCapturing(true);
 
+        // Show success alert
         const lanDisplay =
           network === "all"
             ? "All LAN"
@@ -401,430 +260,451 @@ const SignalingCapture = () => {
               : network === "eth1"
                 ? "LAN 2"
                 : network;
-        showToast(`Started data capture on ${lanDisplay}!`, "success");
+        window.alert(`Start data capture on ${lanDisplay}!`);
       } else {
-        showToast(
+        window.alert(
           `Failed to start data capture. Response: ${pid || "(no output)"}`,
-          "error",
         );
       }
     } catch (error) {
       console.error("Error starting data capture:", error);
-      showToast("Error starting data capture. Please try again.", "error");
+      window.alert("Error starting data capture. Please try again.");
     }
   };
 
   // Handle stop data capture
   const handleStopCapture = async () => {
-    try {
-      if (captureProcessId) {
+    if (isStopping) return;
+    setIsStopping(true);
+    const gzFile = captureFileName ? `${captureFileName}.gz` : "";
+
+    const cleanup = async () => {
+      try {
         await postLinuxCmd({
-          cmd: `kill ${captureProcessId} 2>/dev/null || true`,
+          cmd: `rm -f '${captureFileName}' '${gzFile}' /mnt/data/tcpdump_capture.log 2>/dev/null || true`,
         });
-      }
+      } catch (_) {}
+    };
+
+    try {
+      // ── Step 1: Kill tcpdump in ONE server-side command ─────────────────────
+      // TERM → 2 s grace → KILL → sync. One API call, no polling loop.
+      setCaptureStatus("Stopping capture…");
+      const pidTerm = captureProcessId
+        ? `kill -TERM ${captureProcessId} 2>/dev/null; `
+        : "";
+      const pidKill = captureProcessId
+        ? `kill -KILL ${captureProcessId} 2>/dev/null; `
+        : "";
       await postLinuxCmd({
-        cmd: `pkill -f 'tcpdump.*signaling_capture' 2>/dev/null || true`,
+        cmd: `${pidTerm}pkill -TERM -f 'tcpdump.*signaling_capture' 2>/dev/null; sleep 2; ${pidKill}pkill -KILL -f 'tcpdump.*signaling_capture' 2>/dev/null; sync`,
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      await postLinuxCmd({ cmd: "sync" });
-
-      const checkFileCmd = `ls -la ${captureFileName} 2>/dev/null || echo "FILE_NOT_FOUND"`;
-      const fileResponse = await postLinuxCmd({ cmd: checkFileCmd });
-      const fileInfo = String(fileResponse?.responseData || "").trim();
-
-      if (fileInfo.includes("FILE_NOT_FOUND")) {
-        showToast("Capture file not found on server.", "error");
-      } else {
-        const pktCountCmd = `tcpdump -n -q -r ${captureFileName} -c 1 2>/dev/null | wc -l`;
-        const pktRes = await postLinuxCmd({ cmd: pktCountCmd });
-        const pktCount =
-          parseInt(String(pktRes?.responseData || "0").trim(), 10) || 0;
-        if (pktCount === 0) {
-          showToast(
-            "Data capture stopped but no packets were recorded.",
-            "warning",
-          );
-        } else {
-          showToast("Data capture stopped! Downloading...", "success");
-
-          try {
-            const downloadCmd = `base64 ${captureFileName}`;
-            const downloadResponse = await postLinuxCmd({ cmd: downloadCmd });
-
-            if (downloadResponse?.responseData) {
-              const b64 = downloadResponse.responseData.replace(/\s+/g, "");
-              const byteCharacters = atob(b64);
-              const byteNumbers = new Array(byteCharacters.length);
-              for (let i = 0; i < byteCharacters.length; i += 1) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-              }
-              const byteArray = new Uint8Array(byteNumbers);
-              const blob = new Blob([byteArray], {
-                type: "application/vnd.tcpdump.pcap",
-              });
-
-              const url = window.URL.createObjectURL(blob);
-              const link = document.createElement("a");
-              link.href = url;
-              const downloadDate = new Date()
-                .toISOString()
-                .split("T")[0]
-                .replace(/-/g, "_");
-              link.download = `signaling_capture_${downloadDate}.pcap`;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              window.URL.revokeObjectURL(url);
-              await postLinuxCmd({
-                cmd: `rm -f '${captureFileName}' /mnt/data/tcpdump_capture.log 2>/dev/null || true`,
-              });
-            } else {
-              showToast("Failed to download capture file.", "error");
-            }
-          } catch (downloadError) {
-            console.error("Error downloading file:", downloadError);
-            showToast(
-              "Error downloading capture file. Please try again.",
-              "error",
-            );
-          }
-        }
+      // ── Step 2: verify file exists and has packets ──────────────────────────
+      const checkRes = await postLinuxCmd({
+        cmd: `ls -la '${captureFileName}' 2>/dev/null || echo FILE_NOT_FOUND`,
+      });
+      if (String(checkRes?.responseData || "").includes("FILE_NOT_FOUND")) {
+        window.alert("Capture file not found on server.");
+        return;
       }
 
+      const pktRes = await postLinuxCmd({
+        cmd: `tcpdump -n -q -r '${captureFileName}' -c 1 2>/dev/null | wc -l`,
+      });
+      const pktCount =
+        parseInt(String(pktRes?.responseData || "0").trim(), 10) || 0;
+      if (pktCount === 0) {
+        window.alert(
+          "Capture stopped but no packets were recorded.\nTry: All LAN, disable Syslog filter, generate traffic, then capture again.",
+        );
+        await cleanup();
+        return;
+      }
+
+      // ── Step 3: compress — check success explicitly ─────────────────────────
+      setCaptureStatus("Compressing capture file…");
+      const gzRes = await postLinuxCmd({
+        cmd: `gzip -c '${captureFileName}' > '${gzFile}' 2>/dev/null && echo OK || echo FAILED`,
+      });
+      if (!String(gzRes?.responseData || "").includes("OK")) {
+        window.alert("Failed to compress capture file. Please try again.");
+        await cleanup();
+        return;
+      }
+
+      const sizeRes = await postLinuxCmd({
+        cmd: `wc -c < '${gzFile}' 2>/dev/null || echo 0`,
+      });
+      const fileSize =
+        parseInt(String(sizeRes?.responseData || "0").trim(), 10) || 0;
+      if (fileSize === 0) {
+        window.alert("Compressed file is empty. Please try again.");
+        await cleanup();
+        return;
+      }
+
+      // ── Step 4: chunked base64 transfer (200 KB chunks) ────────────────────
+      // Decode each chunk to binary immediately — base64-joining padded chunks
+      // produces invalid base64. Iterate exactly numChunks (derived from file
+      // size) so an empty API response is treated as an error, not silent EOF.
+      const CHUNK_BYTES = 200 * 1024;
+      const numChunks = Math.ceil(fileSize / CHUNK_BYTES);
+      const binaryParts = [];
+
+      for (let i = 0; i < numChunks; i++) {
+        setCaptureStatus(
+          `Downloading… ${Math.round(((i + 1) / numChunks) * 100)}%`,
+        );
+        const chunkRes = await postLinuxCmd({
+          cmd: `dd if='${gzFile}' bs=${CHUNK_BYTES} skip=${i} count=1 2>/dev/null | base64`,
+        });
+        const chunkB64 = String(chunkRes?.responseData || "").replace(
+          /\s+/g,
+          "",
+        );
+        if (!chunkB64) {
+          // Only acceptable on the very last chunk when file size is an exact multiple
+          if (i === numChunks - 1) break;
+          throw new Error(
+            `Download interrupted at chunk ${i + 1}/${numChunks}. Please try again.`,
+          );
+        }
+        const raw = atob(chunkB64);
+        const bytes = new Uint8Array(raw.length);
+        for (let j = 0; j < raw.length; j++) bytes[j] = raw.charCodeAt(j);
+        binaryParts.push(bytes);
+      }
+
+      if (binaryParts.length === 0) {
+        throw new Error("No data received from device during download.");
+      }
+
+      // ── Step 5: merge and trigger browser download ──────────────────────────
+      setCaptureStatus("Saving file…");
+      const totalSize = binaryParts.reduce((sum, p) => sum + p.length, 0);
+      const byteArray = new Uint8Array(totalSize);
+      let offset = 0;
+      for (const part of binaryParts) {
+        byteArray.set(part, offset);
+        offset += part.length;
+      }
+      const blob = new Blob([byteArray], { type: "application/gzip" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "_");
+      link.download = `signaling_capture_${dateStr}.pcap.gz`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // ── Step 6: clean up files from device ─────────────────────────────────
+      await cleanup();
+      setCaptureStatus("");
+      window.alert(
+        "Download complete! Open the .pcap.gz file directly in Wireshark.",
+      );
+    } catch (error) {
+      console.error("Error stopping data capture:", error);
+      setCaptureStatus("");
+      try {
+        await postLinuxCmd({
+          cmd: `pkill -KILL -f 'tcpdump.*signaling_capture' 2>/dev/null || true`,
+        });
+        await cleanup();
+      } catch (_) {}
+      window.alert(
+        `Error during stop/download: ${error.message || "Please try again."}`,
+      );
+    } finally {
+      setIsStopping(false);
       setIsCapturing(false);
       setCaptureProcessId(null);
       setCaptureFileName("");
-    } catch (error) {
-      console.error("Error stopping data capture:", error);
-      showToast("Error stopping data capture. Please try again.", "error");
     }
   };
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
+      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border md:p-2"
+      style={{ backgroundColor: "#dde0e4" }}
     >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {/* ── Breadcrumb ── */}
+      {/* Data Capture Section */}
+      <div className="w-full max-w-5xl mx-auto mb-12">
+        {blueBar(SC_SECTIONS[0])}
         <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
+          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
+          style={{ backgroundColor: "#dde0e4" }}
         >
-          <span>Maintenance</span>
-          <span>&gt;</span>
-          <span>System Tool</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Signaling Capture
-          </span>
-        </div>
-
-        {/* Alerts */}
-        {toast.msg && (
-          <Alert
-            severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            {toast.msg}
-          </Alert>
-        )}
-
-        {/* Data Capture Section */}
-        <div style={tableContainerStyle}>
-          <div style={blueBarStyle}>
-            <span>{SC_SECTIONS[0]}</span>
-          </div>
-          <div className="flex flex-col p-6 gap-6">
-            <div className="flex flex-col gap-6">
-              {/* Network Interface Row exactly like TS Recording rows */}
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
+          <div className="p-6">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+              <div className="flex-1 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
                     {SC_LABELS.networkInterface}
                   </label>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <select
-                      style={{ ...inputStyle, width: "100%", minWidth: 220 }}
-                      value={network}
-                      onChange={(e) => setNetwork(e.target.value)}
-                      disabled={loading || isCapturing}
-                      {...inputInteraction}
+                  <select
+                    className={`border border-gray-300 rounded px-3 py-1 text-sm w-full sm:w-48 ${
+                      isCapturing
+                        ? "text-gray-500 bg-gray-100 cursor-not-allowed"
+                        : "text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    }`}
+                    value={network}
+                    onChange={(e) => setNetwork(e.target.value)}
+                    disabled={loading || isCapturing}
+                  >
+                    {loading ? (
+                      <option value="">Loading...</option>
+                    ) : (
+                      networkOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
+                    {SC_LABELS.captureSyslog}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={syslogEnabled}
+                      onChange={(e) => setSyslogEnabled(e.target.checked)}
+                      className={`w-4 h-4 accent-blue-500 ${isCapturing ? "cursor-not-allowed" : ""}`}
+                      id="syslog-enable"
+                      disabled={isCapturing}
+                    />
+                    <label
+                      htmlFor="syslog-enable"
+                      className="text-sm text-gray-800 select-none"
                     >
-                      {loading ? (
-                        <option value="">Loading...</option>
-                      ) : (
-                        networkOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))
-                      )}
-                    </select>
+                      {SC_LABELS.enable}
+                    </label>
                   </div>
                 </div>
-                <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
-                  <Btn
-                    variant="primary"
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
+                    {SC_LABELS.syslogDest}
+                  </label>
+                  <input
+                    type="text"
+                    value={syslogDest}
+                    onChange={(e) => setSyslogDest(e.target.value)}
+                    disabled={!syslogEnabled || isCapturing}
+                    className={`border border-gray-300 rounded px-3 py-1 text-sm w-full sm:w-48 ${
+                      !syslogEnabled || isCapturing
+                        ? "text-gray-500 bg-gray-100 cursor-not-allowed"
+                        : "text-gray-800 bg-white cursor-text"
+                    }`}
+                  />
+                </div>
+                <div className="mt-2">
+                  <span className="text-sm text-red-600 font-medium">
+                    {SC_NOTE}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-2 lg:ml-4">
+                <div className="flex gap-3 justify-center">
+                  <Button
+                    variant="contained"
+                    sx={blueButtonSx}
                     onClick={handleStartCapture}
-                    disabled={isCapturing}
-                    style={{ minWidth: 100, height: 32, fontSize: 12 }}
+                    disabled={isCapturing || isStopping}
                   >
                     {SC_BUTTONS.start}
-                  </Btn>
-                  <Btn
-                    variant="cancel"
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={blueButtonSx}
                     onClick={handleStopCapture}
-                    disabled={!isCapturing}
-                    style={{ minWidth: 100, height: 32, fontSize: 12 }}
+                    disabled={!isCapturing || isStopping}
                   >
-                    {SC_BUTTONS.stop}
-                  </Btn>
+                    {isStopping ? "Please wait…" : SC_BUTTONS.stop}
+                  </Button>
                 </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
-                  {SC_LABELS.captureSyslog}
-                </label>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    size="small"
-                    checked={syslogEnabled}
-                    onChange={(e) => setSyslogEnabled(e.target.checked)}
-                    id="syslog-enable"
-                    disabled={isCapturing}
-                    sx={{
-                      padding: "4px",
-                      color: "#64748b",
-                      "&.Mui-checked": { color: C.accent },
-                      cursor: isCapturing ? "not-allowed" : "pointer",
-                    }}
-                  />
-                  <label
-                    htmlFor="syslog-enable"
+                {captureStatus && (
+                  <div
                     style={{
-                      fontSize: 14,
-                      color: C.valueText,
-                      cursor: isCapturing ? "not-allowed" : "pointer",
+                      fontSize: 12,
+                      color: "#1d4ed8",
+                      fontWeight: 600,
+                      background: "#eff6ff",
+                      border: "1px solid #bfdbfe",
+                      borderRadius: 6,
+                      padding: "4px 12px",
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {SC_LABELS.enable}
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
-                  {SC_LABELS.syslogDest}
-                </label>
-                <input
-                  type="text"
-                  value={syslogDest}
-                  onChange={(e) => setSyslogDest(e.target.value)}
-                  disabled={!syslogEnabled || isCapturing}
-                  style={{
-                    ...inputStyle,
-                    width: "100%",
-                    maxWidth: 220,
-                    opacity: !syslogEnabled || isCapturing ? 0.6 : 1,
-                    cursor:
-                      !syslogEnabled || isCapturing ? "not-allowed" : "text",
-                  }}
-                  {...inputInteraction}
-                />
-              </div>
-
-              <div className="mt-2 text-center">
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: C.errorRed,
-                    fontWeight: 500,
-                  }}
-                >
-                  {SC_NOTE}
-                </span>
+                    {captureStatus}
+                  </div>
+                )}
+                {isCapturing && !isStopping && (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#15803d",
+                      fontWeight: 600,
+                      background: "#f0fdf4",
+                      border: "1px solid #bbf7d0",
+                      borderRadius: 6,
+                      padding: "3px 10px",
+                    }}
+                  >
+                    ● Capturing…
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* TS Recording Section */}
-        <div style={tableContainerStyle}>
-          <div style={blueBarStyle}>
-            <span>{SC_SECTIONS[1]}</span>
-          </div>
-          <div className="p-6 flex flex-col gap-6">
-            {[0, 1].map((i) => (
-              <div
-                key={i}
-                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 last:pb-0"
-                style={{
-                  borderBottom: i === 0 ? `1px solid ${C.divider}` : "none",
-                }}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
-                    {SC_LABELS.pcmTs}
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <select
-                      style={{ ...inputStyle, minWidth: 100 }}
-                      value={i === 0 ? ts1Pcm : ts2Pcm}
-                      onChange={(e) =>
-                        i === 0
-                          ? setTs1Pcm(e.target.value)
-                          : setTs2Pcm(e.target.value)
-                      }
-                      {...inputInteraction}
-                    >
-                      {SC_PCM_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      style={{ ...inputStyle, minWidth: 180 }}
-                      value={i === 0 ? ts1Slot : ts2Slot}
-                      onChange={(e) =>
-                        i === 0
-                          ? setTs1Slot(e.target.value)
-                          : setTs2Slot(e.target.value)
-                      }
-                      {...inputInteraction}
-                    >
-                      {SC_TS_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
+      {/* TS Recording Section */}
+      <div className="w-full max-w-5xl mx-auto mb-12">
+        {blueBar(SC_SECTIONS[1])}
+        <div
+          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
+          style={{ backgroundColor: "#dde0e4" }}
+        >
+          <div className="p-6">
+            <div className="space-y-4">
+              {[0, 1].map((i) => (
+                <div
+                  key={i}
+                  className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                    <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
+                      {SC_LABELS.pcmTs}
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                      <select
+                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 bg-white w-full sm:w-24"
+                        value={i === 0 ? ts1Pcm : ts2Pcm}
+                        onChange={(e) =>
+                          i === 0
+                            ? setTs1Pcm(e.target.value)
+                            : setTs2Pcm(e.target.value)
+                        }
+                      >
+                        {SC_PCM_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 bg-white w-full sm:w-48"
+                        value={i === 0 ? ts1Slot : ts2Slot}
+                        onChange={(e) =>
+                          i === 0
+                            ? setTs1Slot(e.target.value)
+                            : setTs2Slot(e.target.value)
+                        }
+                      >
+                        {SC_TS_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 justify-end lg:justify-start">
+                    <Button variant="contained" sx={blueButtonSx}>
+                      {SC_BUTTONS.start}
+                    </Button>
+                    <Button variant="contained" sx={blueButtonSx}>
+                      {SC_BUTTONS.stop}
+                    </Button>
                   </div>
                 </div>
-                <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
-                  <Btn
-                    variant="primary"
-                    style={{ minWidth: 100, height: 33, fontSize: 12 }}
-                  >
-                    {SC_BUTTONS.start}
-                  </Btn>
-                  <Btn
-                    variant="cancel"
-                    style={{ minWidth: 100, height: 33, fontSize: 12 }}
-                  >
-                    {SC_BUTTONS.stop}
-                  </Btn>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* E1 Two-way Recording Section */}
-        <div style={tableContainerStyle}>
-          <div style={blueBarStyle}>
-            <span>{SC_SECTIONS[2]}</span>
-          </div>
-          <div className="p-6 flex flex-col gap-6">
-            {[0, 1].map((i) => (
-              <div
-                key={i}
-                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 last:pb-0"
-                style={{
-                  borderBottom: i === 0 ? `1px solid ${C.divider}` : "none",
-                }}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label className="text-[14px] font-semibold text-[#3E5475] sm:w-[280px] whitespace-nowrap">
-                    {SC_LABELS.pcmTs}
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <select
-                      style={{ ...inputStyle, minWidth: 100 }}
-                      value={i === 0 ? e1aPcm : e1bPcm}
-                      onChange={(e) =>
-                        i === 0
-                          ? setE1aPcm(e.target.value)
-                          : setE1bPcm(e.target.value)
-                      }
-                      {...inputInteraction}
-                    >
-                      {SC_PCM_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      style={{ ...inputStyle, minWidth: 180 }}
-                      value={i === 0 ? e1aSlot : e1bSlot}
-                      onChange={(e) =>
-                        i === 0
-                          ? setE1aSlot(e.target.value)
-                          : setE1bSlot(e.target.value)
-                      }
-                      {...inputInteraction}
-                    >
-                      {SC_TS_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
+      {/* E1 Two-way Recording Section */}
+      <div className="w-full max-w-5xl mx-auto mb-12">
+        {blueBar(SC_SECTIONS[2])}
+        <div
+          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
+          style={{ backgroundColor: "#dde0e4" }}
+        >
+          <div className="p-6">
+            <div className="space-y-4">
+              {[0, 1].map((i) => (
+                <div
+                  key={i}
+                  className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                    <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
+                      {SC_LABELS.pcmTs}
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                      <select
+                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 bg-white w-full sm:w-24"
+                        value={i === 0 ? e1aPcm : e1bPcm}
+                        onChange={(e) =>
+                          i === 0
+                            ? setE1aPcm(e.target.value)
+                            : setE1bPcm(e.target.value)
+                        }
+                      >
+                        {SC_PCM_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 bg-white w-full sm:w-48"
+                        value={i === 0 ? e1aSlot : e1bSlot}
+                        onChange={(e) =>
+                          i === 0
+                            ? setE1aSlot(e.target.value)
+                            : setE1bSlot(e.target.value)
+                        }
+                      >
+                        {SC_TS_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 justify-end lg:justify-start">
+                    <Button variant="contained" sx={blueButtonSx}>
+                      {SC_BUTTONS.start}
+                    </Button>
+                    <Button variant="contained" sx={blueButtonSx}>
+                      {SC_BUTTONS.stop}
+                    </Button>
                   </div>
                 </div>
-                <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
-                  <Btn
-                    variant="primary"
-                    style={{ minWidth: 100, height: 33, fontSize: 12 }}
-                  >
-                    {SC_BUTTONS.start}
-                  </Btn>
-                  <Btn
-                    variant="cancel"
-                    style={{ minWidth: 100, height: 33, fontSize: 12 }}
-                  >
-                    {SC_BUTTONS.stop}
-                  </Btn>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Buttons */}
-        <div className="flex justify-center items-center gap-6 mt-4 mb-12 flex-wrap">
-          <Btn
-            variant="primary"
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
-            {SC_BUTTONS.clean}
-          </Btn>
-          <Btn
-            variant="cancel"
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
-            {SC_BUTTONS.download}
-          </Btn>
-        </div>
+      {/* Bottom Buttons */}
+      <div className="w-full max-w-7xl flex justify-center items-center gap-6 mt-8 mb-8">
+        <Button variant="contained" sx={blueButtonSx}>
+          {SC_BUTTONS.clean}
+        </Button>
+        <Button variant="contained" sx={blueButtonSx}>
+          {SC_BUTTONS.download}
+        </Button>
       </div>
     </div>
   );

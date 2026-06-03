@@ -4,9 +4,16 @@ import {
   PORT_FXS_BATCH_MODIFY_FIELDS,
   PORT_FXS_BATCH_MODIFY_NOTE,
   PORT_FXS_BATCH_MODIFY_TITLE,
+  PORT_FXS_TOTAL_PORTS,
 } from "../../../sections/port/constants/PortFxsPageConstants";
-// import { postBatchModifyFxs } from './controller';
+import { saveFxsBatch } from "../../../api/apiService";
 import { Alert, Checkbox } from "@mui/material";
+
+const FWD_TYPE_TO_API = {
+  "No Reply": "no_reply",
+  Unconditional: "unconditional",
+  Busy: "busy",
+};
 import { ROUTE_PATHS } from "../../../constants/routeConstatns";
 
 // Initialize batch modify form
@@ -37,9 +44,15 @@ const getInitialBatchForm = (initialPorts = null) => {
 
 const PortFxsBatchModifyPage = ({
   initialPorts: propInitialPorts,
+  maxPorts,
   onClose,
   onSaved,
 } = {}) => {
+  // Dynamic port options — use API-reported maxPorts if available
+  const portOptions = Array.from(
+    { length: maxPorts || PORT_FXS_TOTAL_PORTS },
+    (_, i) => String(i + 1),
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -86,25 +99,6 @@ const PortFxsBatchModifyPage = ({
     ) {
       e.preventDefault();
     }
-  };
-
-  const fieldInteraction = {
-    onFocus: (e) => {
-      e.target.style.borderColor = "#0284c7";
-    },
-    onBlur: (e) => {
-      e.target.style.borderColor = "#9CA3AF";
-    },
-    onMouseEnter: (e) => {
-      if (document.activeElement !== e.target) {
-        e.target.style.borderColor = "#64748b";
-      }
-    },
-    onMouseLeave: (e) => {
-      if (document.activeElement !== e.target) {
-        e.target.style.borderColor = "#9CA3AF";
-      }
-    },
   };
 
   const [form, setForm] = useState(() => {
@@ -209,14 +203,20 @@ const PortFxsBatchModifyPage = ({
       // Allow empty starting SIP account (user may intentionally clear it).
       // Only validate SIP step size when a starting SIP account is provided.
       if (form.startingSipAccount && !form.sipAccountBatchStepSize) {
-        showMessage("error", "Please enter the batch step size of SIP account!");
+        showMessage(
+          "error",
+          "Please enter the batch step size of SIP account!",
+        );
         return;
       }
       if (
         form.displayNameBatchRule !== "All Same" &&
         !form.displayNameBatchStepSize
       ) {
-        showMessage("error", "Please enter the batch step size of display name!");
+        showMessage(
+          "error",
+          "Please enter the batch step size of display name!",
+        );
         return;
       }
       if (form.registerPort === "Yes" && form.batchRegister) {
@@ -228,7 +228,10 @@ const PortFxsBatchModifyPage = ({
           form.authPasswordBatchRule !== "All Same" &&
           !form.authPasswordBatchStepSize
         ) {
-          showMessage("error", "Please enter the batch step size of authentication password!");
+          showMessage(
+            "error",
+            "Please enter the batch step size of authentication password!",
+          );
           return;
         }
       }
@@ -261,56 +264,54 @@ const PortFxsBatchModifyPage = ({
       }
     }
 
-    // Build payload
+    // Build payload matching save-batch API spec exactly
     const payload = {
       startingPort: parseInt(form.startingPort, 10),
       endingPort: parseInt(form.endingPort, 10),
-      batchRegisterEnable: !!form.batchRegister,
-      registerPort: form.registerPort,
-      batchAccountEnable: !!form.batchAccount,
+      batchRegisterEnabled: !!form.batchRegister,
+      registerPort: form.registerPort === "Yes" ? "yes" : "no",
+      batchAccountEnabled: !!form.batchAccount,
       startingSipAccount: form.startingSipAccount,
       startingDisplayName: form.startingDisplayName,
       startingAuthenticationPassword: form.startingAuthPassword,
       displayNamePreferred: !!form.displayNamePreferred,
       sipAccountBatchRule: form.sipAccountBatchRule
         ? String(form.sipAccountBatchRule).toLowerCase()
-        : form.sipAccountBatchRule,
-      sipAccountBatchStepSize: Number(form.sipAccountBatchStepSize) || 0,
+        : "increase",
+      sipAccountBatchStepSize: Number(form.sipAccountBatchStepSize) || 1,
       displayNameBatchRule: form.displayNameBatchRule
         ? String(form.displayNameBatchRule).toLowerCase()
-        : form.displayNameBatchRule,
-      displayNameBatchStepSize: Number(form.displayNameBatchStepSize) || 0,
-      authenticationPasswordBatchRule: form.authPasswordBatchRule
+        : "increase",
+      displayNameBatchStepSize: Number(form.displayNameBatchStepSize) || 1,
+      authPasswordBatchRule: form.authPasswordBatchRule
         ? String(form.authPasswordBatchRule).toLowerCase()
-        : form.authPasswordBatchRule,
-      authenticationPasswordBatchStepSize:
-        Number(form.authPasswordBatchStepSize) || 0,
-      batchConfigureEnable: !!form.batchConfigure,
-      autoDialNumberEnable: !!form.autoDialNumberEnable,
-      autoDialNumberValue: form.autoDialNumber,
-      waitTimeBeforeAutoDial: Number(form.waitTimeBeforeAutoDial) || 0,
-      inputGainDb: Number(form.inputGain) || 0,
-      outputGainDb: Number(form.outputGain) || 0,
-      cidEnable: !!form.cid,
+        : "increase",
+      authPasswordBatchStepSize: Number(form.authPasswordBatchStepSize) || 1,
+      batchConfigureEnabled: !!form.batchConfigure,
+      autoDialEnabled: !!form.autoDialNumberEnable,
+      autoDialNumber: form.autoDialNumber || "",
+      autoDialWaitSec: Number(form.waitTimeBeforeAutoDial) || 0,
+      inputGain: Number(form.inputGain) || 0,
+      outputGain: Number(form.outputGain) || 0,
+      cidEnabled: !!form.cid,
       echoCanceller: !!form.echoCanceller,
       callWaiting: !!form.callWaiting,
-      dndDoNotDisturb: !!form.dnd,
-      callForward: !!form.callForward,
-      forwardType: form.forwardType,
-      forwardNumber: form.forwardNumber,
-      advancedConfiguration: !!form.advancedConfiguration,
-      ringingParameter: form.ringingParameter,
-      feedVoltageParameter: form.feedVoltageParameter,
-      impedanceParameter: form.impedanceParameter,
+      dnd: !!form.dnd,
+      callForwardEnabled: !!form.callForward,
+      forwardType: FWD_TYPE_TO_API[form.forwardType] ?? "unconditional",
+      forwardNumber: form.forwardNumber || "",
+      noReplyDelaySec: Number(form.noAnswerDelayTime) || 0,
     };
 
     // Call API
     (async () => {
       try {
-        console.debug("Sending batch modify payload:", payload);
-        const res = await postBatchModifyFxs(payload);
-        console.debug("Batch modify response:", res);
-        showMessage("success", "Batch modify settings saved successfully!");
+        const res = await saveFxsBatch(payload);
+        if (!res?.success) throw new Error(res?.message || "Batch save failed");
+        showMessage(
+          "success",
+          res?.message || "Batch modify settings saved successfully!",
+        );
         if (typeof onSaved === "function") {
           await onSaved();
         } else if (typeof onClose === "function") {
@@ -320,7 +321,10 @@ const PortFxsBatchModifyPage = ({
         }
       } catch (err) {
         console.error("Batch modify API failed:", err);
-        showMessage("error", err?.message || "Failed to save batch modify settings");
+        showMessage(
+          "error",
+          err?.message || "Failed to save batch modify settings",
+        );
       }
     })();
   };
@@ -339,11 +343,17 @@ const PortFxsBatchModifyPage = ({
       style={{ backgroundColor: "#dde0e4" }}
     >
       <div className="flex justify-center" style={{ padding: "0 20px" }}>
-        <div style={{ width: "56%", maxWidth: "860px", minWidth: "620px" }}>
+        <div style={{ width: "62%", maxWidth: "1000px", minWidth: "700px" }}>
           {/* Error / Success Banner */}
           {message.text && (
             <Alert
-              severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
+              severity={
+                message.type === "error"
+                  ? "error"
+                  : message.type === "success"
+                    ? "success"
+                    : "info"
+              }
               onClose={() => setMessage({ type: "", text: "" })}
               sx={{
                 position: "fixed",
@@ -451,9 +461,6 @@ const PortFxsBatchModifyPage = ({
                                         height: "22px",
                                         width: "200px",
                                         fontSize: "12px",
-                                        borderColor: "#9CA3AF",
-                                        transition: "border-color 0.2s ease",
-                                        outline: "none",
                                       }}
                                       maxLength={field.maxLength || 31}
                                       onKeyDown={
@@ -467,7 +474,6 @@ const PortFxsBatchModifyPage = ({
                                               ? handleAutoDialKey
                                               : handleRestrictedChars
                                       }
-                                      {...fieldInteraction}
                                     />
                                   )}
 
@@ -484,12 +490,8 @@ const PortFxsBatchModifyPage = ({
                                         height: "22px",
                                         width: "200px",
                                         fontSize: "12px",
-                                        borderColor: "#9CA3AF",
-                                        transition: "border-color 0.2s ease",
-                                        outline: "none",
                                       }}
                                       maxLength={field.maxLength || 63}
-                                      {...fieldInteraction}
                                     />
                                   )}
 
@@ -507,13 +509,13 @@ const PortFxsBatchModifyPage = ({
                                           ? "280px"
                                           : "200px",
                                         fontSize: "12px",
-                                        borderColor: "#9CA3AF",
-                                        transition: "border-color 0.2s ease",
-                                        outline: "none",
                                       }}
-                                      {...fieldInteraction}
                                     >
-                                      {field.options.map((opt) => (
+                                      {(field.key === "startingPort" ||
+                                      field.key === "endingPort"
+                                        ? portOptions
+                                        : field.options
+                                      ).map((opt) => (
                                         <option key={opt} value={opt}>
                                           {opt}
                                         </option>

@@ -11,94 +11,30 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { C, Btn } from "../../../sections/route/routeSharedUi";
+import {
+  C,
+  CARD_RADIUS,
+  Btn,
+  muiSelectSx,
+  muiTextFieldSx,
+  numManipulateCardStyle,
+} from "../../../sections/route/routeSharedUi";
 
-const muiOutlinedFieldSx = {
-  backgroundColor: C.cardBg,
-  "& .MuiOutlinedInput-root": {
-    height: 36,
-    fontSize: 13,
-    backgroundColor: C.cardBg,
-    transition: "border-color 0.2s ease",
-    "&.Mui-focused": { boxShadow: "none" },
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      borderWidth: "1px",
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover:not(.Mui-focused):not(.Mui-disabled) fieldset": {
-      borderColor: "#64748b !important",
-      borderWidth: "1px !important",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7 !important",
-      borderWidth: "1px !important",
-    },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: `${C.cardBorder} !important`,
-    borderWidth: "1px !important",
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover:not(.Mui-focused):not(.Mui-disabled) fieldset": {
-    borderColor: "#64748b !important",
-    borderWidth: "1px !important",
-  },
-  "&:hover:not(.Mui-focused):not(.Mui-disabled) .MuiOutlinedInput-notchedOutline":
-    {
-      borderColor: "#64748b !important",
-      borderWidth: "1px !important",
-    },
-  "& .MuiOutlinedInput-root:hover:not(.Mui-focused):not(.Mui-disabled) .MuiOutlinedInput-notchedOutline":
-    {
-      borderColor: "#64748b !important",
-      borderWidth: "1px !important",
-    },
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7 !important",
-    borderWidth: "1px !important",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7 !important",
-    borderWidth: "1px !important",
-  },
-  "& .MuiSelect-select": {
-    fontSize: 13,
-    color: C.valueText,
-    padding: "6px 10px",
-    display: "flex",
-    alignItems: "center",
-  },
-  "& .MuiInputBase-input": {
-    fontSize: 13,
-    color: C.valueText,
-    padding: "6px 10px",
-  },
+const saveBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  letterSpacing: "0.2px",
 };
 
-const CARD_RADIUS = 10;
-const HEADER_RADIUS = 20;
-
-const tableContainerStyle = {
+const cardHeaderStyle = {
   width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
+  minHeight: 44,
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  overflow: "hidden",
-};
-
-const blueBarStyle = {
-  width: "100%",
-  height: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: HEADER_RADIUS,
-  borderTopRightRadius: HEADER_RADIUS,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  justifyContent: "space-between",
   padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
@@ -106,11 +42,36 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
 };
 
-const saveBtnStyle = {
-  minWidth: 110,
-  height: 34,
+const fieldLabelStyle = {
+  width: "auto",
+  minWidth: 130,
   fontSize: 13,
-  letterSpacing: "0.2px",
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+  marginRight: 10,
+  whiteSpace: "nowrap",
+  flexShrink: 0,
+};
+
+const fieldControlSx = {
+  ...muiSelectSx,
+  width: 240,
+};
+
+const routeCheckPeriodFieldSx = {
+  ...muiTextFieldSx,
+  width: 240,
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    height: 32,
+  },
+  "& .MuiInputBase-input": {
+    fontSize: 13,
+    padding: "6px 10px",
+    height: "auto",
+    boxSizing: "border-box",
+  },
 };
 
 const RouteRoutingParameterPage = () => {
@@ -197,28 +158,13 @@ const RouteRoutingParameterPage = () => {
           </span>
         </div>
 
-        <div style={tableContainerStyle}>
-          <div style={blueBarStyle}>Routing Parameters</div>
+        <div style={numManipulateCardStyle}>
+          <div style={cardHeaderStyle}>Routing Parameters</div>
 
           <div className="w-full px-5 pt-3 pb-2">
             <div className="space-y-4 w-full max-w-[500px] mx-auto">
               <div className="flex items-center justify-between">
-                <label
-                  className="text-sm font-semibold text-left whitespace-nowrap"
-                  style={{
-                    width: "auto",
-                    minWidth: 130,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    textAlign: "left",
-                    marginRight: 10,
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                  }}
-                >
-                  IP-&gt;TEL
-                </label>
+                <label style={fieldLabelStyle}>IP-&gt;TEL</label>
                 <FormControl size="small">
                   <Select
                     name="ipInRouteMode"
@@ -227,7 +173,7 @@ const RouteRoutingParameterPage = () => {
                       handleInputChange("ipInRouteMode", e.target.value)
                     }
                     variant="outlined"
-                    sx={{ ...muiOutlinedFieldSx, width: 240 }}
+                    sx={fieldControlSx}
                   >
                     {ROUTE_MODE_OPTIONS.map((opt) => (
                       <MenuItem
@@ -243,22 +189,7 @@ const RouteRoutingParameterPage = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <label
-                  className="text-sm font-semibold text-left whitespace-nowrap"
-                  style={{
-                    width: "auto",
-                    minWidth: 130,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    textAlign: "left",
-                    marginRight: 10,
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                  }}
-                >
-                  TEL-&gt;IP
-                </label>
+                <label style={fieldLabelStyle}>TEL-&gt;IP</label>
                 <FormControl size="small">
                   <Select
                     name="pstnToIPRouteMode"
@@ -267,7 +198,7 @@ const RouteRoutingParameterPage = () => {
                       handleInputChange("pstnToIPRouteMode", e.target.value)
                     }
                     variant="outlined"
-                    sx={{ ...muiOutlinedFieldSx, width: 240 }}
+                    sx={fieldControlSx}
                   >
                     {ROUTE_MODE_OPTIONS.map((opt) => (
                       <MenuItem
@@ -283,22 +214,7 @@ const RouteRoutingParameterPage = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <label
-                  className="text-sm font-semibold text-left whitespace-nowrap"
-                  style={{
-                    width: "auto",
-                    minWidth: 130,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    textAlign: "left",
-                    marginRight: 10,
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                  }}
-                >
-                  Route Detection Cycle (s)
-                </label>
+                <label style={fieldLabelStyle}>Route Detection Cycle (s)</label>
                 <TextField
                   id="RouteCheckPeriod"
                   value={formData.routeCheckPeriod || ""}
@@ -309,7 +225,7 @@ const RouteRoutingParameterPage = () => {
                   inputProps={{ maxLength: 31 }}
                   variant="outlined"
                   size="small"
-                  sx={{ ...muiOutlinedFieldSx, width: 240 }}
+                  sx={routeCheckPeriodFieldSx}
                   autoComplete="off"
                 />
               </div>

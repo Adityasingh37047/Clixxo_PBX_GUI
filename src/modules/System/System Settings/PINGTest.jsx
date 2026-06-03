@@ -1,136 +1,46 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  postPingtest,
-  fetchSystemInfo,
-  postLinuxCmd,
-} from "../../../api/apiService";
+import { postPingtest, fetchNetwork } from "../../../api/apiService";
 import {
   PING_TITLE,
   PING_LABELS,
   PING_SOURCE_OPTIONS,
   PING_BUTTONS,
 } from "../../../constants/PINGTestConstants";
-import { Alert } from "@mui/material";
+import { TextField, Button, MenuItem } from "@mui/material";
 
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
-  errorRed: "#dc2626",
-};
+const blueBar = (title) => (
+  <div
+    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
+    style={{
+      background: "linear-gradient(#3E5475 100%)",
+      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+    }}
+  >
+    {title}
+  </div>
+);
 
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
-
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const inputStyle = {
-  width: "100%",
-  fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1.5px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
-  outline: "none",
-  transition: "border-color 0.2s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
+const buttonSx = {
+  background:
+    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+  color: "#fff",
+  fontWeight: 600,
+  fontSize: 16,
+  borderRadius: 1.5,
+  minWidth: 120,
+  boxShadow: "0 2px 8px #3E5475",
+  textTransform: "none",
+  px: 3,
+  py: 1.5,
+  padding: "6px 28px",
+  "&:hover": {
+    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+    color: "#fff",
   },
 };
 
 function isValidIp(ip) {
+  // Simple IPv4 validation
   return /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
     ip,
   );
@@ -140,7 +50,6 @@ function isValidCount(val) {
   const num = Number(val);
   return Number.isInteger(num) && num >= 1 && num <= 100;
 }
-
 function isValidLength(val) {
   const num = Number(val);
   return Number.isInteger(num) && num >= 56 && num <= 1024;
@@ -152,8 +61,9 @@ const PINGTest = () => {
   const [count, setCount] = useState("");
   const [length, setLength] = useState("");
   const [info, setInfo] = useState("");
+  const [error, setError] = useState(false);
   const [loadind, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [alertMsg, setAlertMsg] = useState("");
   const [destIpError, setDestIpError] = useState("");
   const [countError, setCountError] = useState("");
   const [lengthError, setLengthError] = useState("");
@@ -161,191 +71,68 @@ const PINGTest = () => {
   const [loadingSource, setLoadingSource] = useState(true);
   const intervalRef = useRef(null);
 
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
+  useEffect(() => {
+    if (alertMsg) {
+      const timer = setTimeout(() => setAlertMsg(""), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [alertMsg]);
 
   useEffect(() => {
-    const fetchSystemData = async () => {
+    const loadSourceOptions = async () => {
       try {
         setLoadingSource(true);
-        const sysInfo = await fetchSystemInfo();
+        const netData = await fetchNetwork();
+        const allIfaces = netData?.data?.interfaces || [];
 
-        if (sysInfo?.success) {
-          const details = sysInfo.details || {};
-          const lanInterfaces =
-            details.LAN_INTERFACES || details.lan_interfaces || null;
+        // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
+        const lanIfaces = allIfaces.filter((i) => {
+          const kn = (i.interface || "").toLowerCase();
+          return /^eth\d+$/.test(kn) || /^enp\d+s\d+$/.test(kn);
+        });
 
-          console.log("SystemInfo for VPN detection:", sysInfo);
-          console.log("LAN Interfaces:", lanInterfaces);
+        // Sequential "LAN 1", "LAN 2", … — never rely on the API name field
+        const options = lanIfaces
+          .filter((i) => i.ipAddress)
+          .map((iface, idx) => ({
+            value: iface.ipAddress,
+            label: `LAN ${idx + 1}:${iface.ipAddress}`,
+          }));
 
-          const getIpFromInterfaceObject = (obj) => {
-            if (!obj || typeof obj !== "object") return null;
-            if (Array.isArray(obj["IP Address"]) && obj["IP Address"][0])
-              return obj["IP Address"][0];
-            if (Array.isArray(obj["Ip Address"]) && obj["Ip Address"][0])
-              return obj["Ip Address"][0];
-            if (Array.isArray(obj["ip_address"]) && obj["ip_address"][0])
-              return obj["ip_address"][0];
-            if (typeof obj["IP Address"] === "string") return obj["IP Address"];
-            if (typeof obj["Ip Address"] === "string") return obj["Ip Address"];
-            if (typeof obj["ip_address"] === "string") return obj["ip_address"];
-            return null;
-          };
-
-          const interfacesArray = Array.isArray(lanInterfaces)
-            ? lanInterfaces
-            : lanInterfaces && typeof lanInterfaces === "object"
-              ? Object.entries(lanInterfaces).map(([name, data]) => ({
-                  name,
-                  data,
-                }))
-              : [];
-
-          let lan1Ip = null;
-          let lan2Ip = null;
-          let vpnOpenVpnIp = null;
-          let vpnSoftEtherIp = null;
-          let vlanIp = null;
-          let vlanId = null;
-
-          interfacesArray.forEach((iface) => {
-            const name = String(iface.name || iface.Name || "").toLowerCase();
-            if (
-              name.includes("eth0") ||
-              name.includes("lan 1") ||
-              name.includes("lan1")
-            ) {
-              lan1Ip = lan1Ip || getIpFromInterfaceObject(iface.data || iface);
-            }
-            if (
-              name.includes("eth1") ||
-              name.includes("lan 2") ||
-              name.includes("lan2")
-            ) {
-              lan2Ip = lan2Ip || getIpFromInterfaceObject(iface.data || iface);
-            }
-            if (
-              name.includes("tap0") ||
-              name === "tap0" ||
-              name.includes("tun0") ||
-              name === "tun0"
-            ) {
-              vpnOpenVpnIp =
-                vpnOpenVpnIp || getIpFromInterfaceObject(iface.data || iface);
-            }
-            if (name.includes("vpn_vpn") || name === "vpn_vpn") {
-              vpnSoftEtherIp =
-                vpnSoftEtherIp || getIpFromInterfaceObject(iface.data || iface);
-            }
-          });
-
-          if (!lan1Ip)
-            lan1Ip =
-              getIpFromInterfaceObject(sysInfo?.network?.eth0) ||
-              getIpFromInterfaceObject(sysInfo?.eth0);
-          if (!lan2Ip)
-            lan2Ip =
-              getIpFromInterfaceObject(sysInfo?.network?.eth1) ||
-              getIpFromInterfaceObject(sysInfo?.eth1);
-
-          if (!vpnOpenVpnIp) {
-            vpnOpenVpnIp =
-              getIpFromInterfaceObject(sysInfo?.network?.tap0) ||
-              getIpFromInterfaceObject(sysInfo?.tap0) ||
-              getIpFromInterfaceObject(details?.network?.tap0) ||
-              getIpFromInterfaceObject(details?.tap0) ||
-              getIpFromInterfaceObject(sysInfo?.network?.tun0) ||
-              getIpFromInterfaceObject(sysInfo?.tun0) ||
-              getIpFromInterfaceObject(details?.network?.tun0) ||
-              getIpFromInterfaceObject(details?.tun0);
-          }
-          if (!vpnSoftEtherIp) {
-            vpnSoftEtherIp =
-              getIpFromInterfaceObject(sysInfo?.network?.vpn_vpn) ||
-              getIpFromInterfaceObject(sysInfo?.vpn_vpn) ||
-              getIpFromInterfaceObject(details?.network?.vpn_vpn) ||
-              getIpFromInterfaceObject(details?.vpn_vpn);
-          }
-
-          try {
-            const vlanIdCmd = `grep -E '^auto[[:space:]]+eth0\\.[0-9]+' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}' | cut -d'.' -f2`;
-            const vlanIdRes = await postLinuxCmd({ cmd: vlanIdCmd });
-            const vlanIdOut = (vlanIdRes?.responseData || "").toString().trim();
-            if (vlanIdOut) {
-              vlanId = vlanIdOut;
-            }
-            const vlanIpCmd = `grep -E '^[[:space:]]*address[[:space:]]' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}'`;
-            const vlanIpRes = await postLinuxCmd({ cmd: vlanIpCmd });
-            const vlanIpOut = (vlanIpRes?.responseData || "").toString().trim();
-            if (vlanIpOut && isValidIp(vlanIpOut)) {
-              vlanIp = vlanIpOut;
-            }
-          } catch (e) {
-            console.warn(
-              "Failed to detect VLAN IP for ping source options:",
-              e,
-            );
-          }
-
-          console.log(
-            "Detected IPs - LAN1:",
-            lan1Ip,
-            "LAN2:",
-            lan2Ip,
-            "OpenVPN:",
-            vpnOpenVpnIp,
-            "SoftEther:",
-            vpnSoftEtherIp,
-          );
-
-          const options = [];
-          if (lan1Ip) {
-            options.push({ value: lan1Ip, label: `LAN 1:${lan1Ip}` });
-          }
-          if (lan2Ip) {
-            options.push({ value: lan2Ip, label: `LAN 2:${lan2Ip}` });
-          }
-          if (vpnOpenVpnIp) {
+        // VLAN sub-interfaces of the first physical interface
+        const primaryKernel = lanIfaces[0]?.interface || "eth0";
+        for (const iface of allIfaces) {
+          const kn = (iface.interface || "").toString();
+          if (
+            kn.startsWith(`${primaryKernel}.`) &&
+            /\.\d+$/.test(kn) &&
+            iface.ipAddress
+          ) {
+            const vlanId = kn.split(".")[1] || "";
             options.push({
-              value: vpnOpenVpnIp,
-              label: `VPN (tap0):${vpnOpenVpnIp}`,
+              value: iface.ipAddress,
+              label: `VLAN ${vlanId}:${iface.ipAddress}`,
             });
           }
-          if (vpnSoftEtherIp) {
-            options.push({
-              value: vpnSoftEtherIp,
-              label: `VPN SoftEther (vpn_vpn):${vpnSoftEtherIp}`,
-            });
-          }
-          if (vlanIp) {
-            options.push({
-              value: vlanIp,
-              label: vlanId ? `VLAN ${vlanId}:${vlanIp}` : `VLAN:${vlanIp}`,
-            });
-          }
+        }
 
-          if (options.length === 0) {
-            options.push({ value: "lan1", label: "LAN 1:192.168.1.101" });
-          }
-
+        if (options.length > 0) {
           setSourceOptions(options);
           setSourceIp(options[0].value);
         } else {
           setSourceOptions(PING_SOURCE_OPTIONS);
-          setSourceIp(PING_SOURCE_OPTIONS[0].value);
+          setSourceIp(PING_SOURCE_OPTIONS[0]?.value || "");
         }
       } catch (error) {
-        console.error("Error fetching system info:", error);
+        console.error("Error fetching network interfaces:", error);
         setSourceOptions(PING_SOURCE_OPTIONS);
-        setSourceIp(PING_SOURCE_OPTIONS[0].value);
+        setSourceIp(PING_SOURCE_OPTIONS[0]?.value || "");
       } finally {
         setLoadingSource(false);
       }
     };
 
-    fetchSystemData();
+    loadSourceOptions();
   }, []);
 
   const startpingTest = async () => {
@@ -368,14 +155,18 @@ const PINGTest = () => {
     }
     if (!valid) return;
 
+    // Clear previous results when starting new ping test
     setInfo("");
     setLoading(true);
 
     if (count && destIp) {
+      // Individual ping mode (with count specified) - call API for each ping
       console.log("=== ENTERING INDIVIDUAL PING MODE ===");
       console.log("Count:", count, "DestIP:", destIp);
       const pingCount = parseInt(count);
+      console.log("Ping count parsed:", pingCount);
 
+      // Add ping header
       setInfo(
         (prev) =>
           prev +
@@ -383,12 +174,21 @@ const PINGTest = () => {
       );
 
       for (let i = 1; i <= pingCount; i++) {
+        console.log(`Starting ping ${i}/${pingCount}`);
+
+        // Call API for each individual ping
         await handleSinglePing(i);
+
+        console.log(`Completed ping ${i}/${pingCount}`);
+
+        // Add small delay between pings (like real ping command)
         if (i < pingCount) {
+          console.log(`Waiting 1 second before next ping...`);
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
+      // Add ping statistics at the end
       setInfo(
         (prev) =>
           prev +
@@ -397,7 +197,9 @@ const PINGTest = () => {
 
       setLoading(false);
     } else if (!count && !length && destIp) {
+      // Continuous ping mode (no count specified)
       if (!intervalRef.current) {
+        // Call once immediately and check if it succeeds before starting interval
         const success = await handlePing();
         if (success) {
           intervalRef.current = setInterval(() => {
@@ -408,6 +210,7 @@ const PINGTest = () => {
         }
       }
     } else {
+      // Single ping without count
       await handlePing();
       setLoading(false);
     }
@@ -419,7 +222,7 @@ const PINGTest = () => {
       intervalRef.current = null;
     }
     setLoading(false);
-    showMessage("info", "Ping stopped!");
+    setAlertMsg("Ping stopped!");
   };
 
   const stopPingOnError = () => {
@@ -428,47 +231,61 @@ const PINGTest = () => {
       intervalRef.current = null;
     }
     setLoading(false);
+    // Don't show "Ping stopped!" message for errors
   };
 
   const handleSinglePing = async (pingNumber) => {
+    setError(false);
     try {
+      console.log(`Making API call for ping ${pingNumber}`);
       const Apiresponse = await postPingtest({
         destIp,
-        count: 1,
+        count: 1, // Always ping 1 at a time
         length,
         sourceIp,
         type: "start",
       });
 
+      console.log(`Ping ${pingNumber} API Response:`, Apiresponse);
+
       if (Apiresponse.response) {
+        // Use the actual API response data
         const responseData = Apiresponse.responseData;
+        console.log(`Ping ${pingNumber} response data:`, responseData);
+
+        // Extract individual ping result from the response
         if (responseData && responseData.includes("64 bytes from")) {
+          // If response contains ping result, use it directly
           const lines = responseData.split("\n");
           const pingLine = lines.find((line) => line.includes("64 bytes from"));
           if (pingLine) {
             setInfo((prev) => prev + pingLine + "\n");
           } else {
+            // Fallback to formatted result
             const pingResult = `64 bytes from ${destIp}: icmp_seq=${pingNumber} ttl=64 time=0.300 ms`;
             setInfo((prev) => prev + pingResult + "\n");
           }
         } else {
+          // Format the ping result like terminal
           const pingResult = `64 bytes from ${destIp}: icmp_seq=${pingNumber} ttl=64 time=0.300 ms`;
           setInfo((prev) => prev + pingResult + "\n");
         }
-        return true;
+        return true; // Success
       } else {
         const errorResult = `Request timeout for icmp_seq ${pingNumber}`;
         setInfo((prev) => prev + errorResult + "\n");
-        return false;
+        return false; // Failed
       }
     } catch (err) {
+      console.error(`Ping ${pingNumber} API Error:`, err);
       const errorResult = `Request timeout for icmp_seq ${pingNumber}`;
       setInfo((prev) => prev + errorResult + "\n");
-      return false;
+      return false; // Failed
     }
   };
 
   const handlePing = async () => {
+    setError(false);
     try {
       const Apiresponse = await postPingtest({
         destIp,
@@ -477,8 +294,10 @@ const PINGTest = () => {
         sourceIp,
         type: "start",
       });
+      console.log("Ping API Response:", Apiresponse);
 
       if (Apiresponse.response) {
+        // Always append ping results for real-time display
         setInfo((prev) => {
           if (prev) {
             return prev + "\n" + Apiresponse.responseData;
@@ -486,354 +305,197 @@ const PINGTest = () => {
             return Apiresponse.responseData;
           }
         });
-        return true;
+        return true; // Success
       } else {
-        showMessage("error", Apiresponse.message || "Server error occurred");
+        alert(Apiresponse.message || "Server error occurred");
         stopPingOnError();
-        return false;
+        return false; // Failed
       }
     } catch (err) {
-      showMessage(
-        "error",
-        "Server is not connected. Please check your connection.",
-      );
+      console.error("Ping API Error:", err);
+      alert("Server is not connected. Please check your connection.");
+      setError(true);
       stopPingOnError();
-      return false;
+      return false; // Failed
     }
   };
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
+      className="w-full min-h-[calc(100vh-200px)] bg-gray-50 flex flex-col items-center py-0 px-2 md:p-2"
+      style={{ backgroundColor: "#dde0e4" }}
     >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {message.text && (
-          <Alert
-            severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            {message.text}
-          </Alert>
-        )}
-
-        {/* ── Breadcrumb ── */}
+      <div className="w-full max-w-4xl">
+        {blueBar(PING_TITLE)}
         <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
+          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
+          style={{ backgroundColor: "#dde0e4" }}
         >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {PING_TITLE}
-          </span>
-        </div>
+          <div className="w-full flex flex-col overflow-hidden">
+            <div className="p-6 flex flex-col items-center">
+              {/* Form Row */}
+              <form className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-center mb-6">
+                <label className="text-[14px] text-gray-700 text-left">
+                  {PING_LABELS.sourceIp}
+                </label>
+                <select
+                  className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
+                  value={sourceIp}
+                  onChange={(e) => setSourceIp(e.target.value)}
+                  disabled={loadingSource}
+                >
+                  {loadingSource ? (
+                    <option value="">Loading...</option>
+                  ) : (
+                    sourceOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))
+                  )}
+                </select>
 
-        {/* ── Main Card ── */}
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          {/* Card Header */}
-          <div
-            style={{
-              minHeight: 44,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: C.cardBg,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.labelText,
-                letterSpacing: "0.02em",
-              }}
-            >
-              Ping Test
-            </span>
-          </div>
-
-          {/* Card Body */}
-          <div className="w-full flex flex-col px-5 pt-3 pb-2 gap-4">
-            <div
-              className="flex flex-col gap-4 w-full"
-              style={{ maxWidth: 460, margin: "0 auto" }}
-            >
-              {/* Form Rows */}
-              <div className="flex flex-col gap-4 w-full">
-                {/* Source IP */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
-                  <label
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 160,
-                      flexShrink: 0,
+                <label className="text-[14px] text-gray-700 text-left">
+                  {PING_LABELS.destIp}
+                </label>
+                <div className="flex flex-col w-full">
+                  <input
+                    type="text"
+                    className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
+                    value={destIp}
+                    onChange={(e) => {
+                      setDestIp(e.target.value);
+                      setInfo("");
+                      setDestIpError("");
                     }}
-                  >
-                    {PING_LABELS.sourceIp}
-                  </label>
-                  <div style={{ width: 280 }}>
-                    <select
-                      style={inputStyle}
-                      value={sourceIp}
-                      onChange={(e) => setSourceIp(e.target.value)}
-                      disabled={loadingSource}
-                      {...inputInteraction}
-                    >
-                      {loadingSource ? (
-                        <option value="">Loading...</option>
-                      ) : (
-                        sourceOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Dest IP */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
-                  <label
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 160,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {PING_LABELS.destIp}
-                  </label>
-                  <div style={{ width: 280 }}>
-                    <input
-                      type="text"
-                      style={{
-                        ...inputStyle,
-                        borderColor: destIpError ? C.errorRed : C.cardBorder,
-                      }}
-                      value={destIp}
-                      onChange={(e) => {
-                        setDestIp(e.target.value);
-                        setInfo("");
-                        setDestIpError("");
-                      }}
-                      {...inputInteraction}
-                    />
+                  />
+                  <div className="min-h-[20px]">
                     {destIpError && (
-                      <div
-                        style={{
-                          color: C.errorRed,
-                          fontSize: 11,
-                          marginTop: 4,
-                        }}
-                      >
+                      <span className="text-red-600 text-sm">
                         {destIpError}
-                      </div>
+                      </span>
                     )}
                   </div>
                 </div>
 
-                {/* Count */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
-                  <label
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 160,
-                      flexShrink: 0,
+                <label className="text-[14px] text-gray-700 text-left">
+                  {PING_LABELS.count}
+                </label>
+                <div className="flex flex-col w-full">
+                  <input
+                    type="number"
+                    className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
+                    value={count}
+                    onChange={(e) => {
+                      setCount(e.target.value);
+                      setInfo("");
+                      setCountError("");
                     }}
-                  >
-                    {PING_LABELS.count}
-                  </label>
-                  <div style={{ width: 280 }}>
-                    <input
-                      type="number"
-                      style={{
-                        ...inputStyle,
-                        borderColor: countError ? C.errorRed : C.cardBorder,
-                      }}
-                      value={count}
-                      onChange={(e) => {
-                        setCount(e.target.value);
-                        setInfo("");
-                        setCountError("");
-                      }}
-                      {...inputInteraction}
-                    />
+                  />
+                  <div className="min-h-[20px]">
                     {countError && (
-                      <div
-                        style={{
-                          color: C.errorRed,
-                          fontSize: 11,
-                          marginTop: 4,
-                        }}
-                      >
-                        {countError}
-                      </div>
+                      <span className="text-red-600 text-sm">{countError}</span>
                     )}
                   </div>
                 </div>
 
-                {/* Length */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center w-full gap-4">
-                  <label
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 160,
-                      flexShrink: 0,
+                <label className="text-[14px] text-gray-700 text-left">
+                  {PING_LABELS.length}
+                </label>
+                <div className="flex flex-col w-full">
+                  <input
+                    type="number"
+                    className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
+                    value={length}
+                    onChange={(e) => {
+                      setLength(e.target.value);
+                      setInfo("");
+                      setLengthError("");
                     }}
-                  >
-                    {PING_LABELS.length}
-                  </label>
-                  <div style={{ width: 280 }}>
-                    <input
-                      type="number"
-                      style={{
-                        ...inputStyle,
-                        borderColor: lengthError ? C.errorRed : C.cardBorder,
-                      }}
-                      value={length}
-                      onChange={(e) => {
-                        setLength(e.target.value);
-                        setInfo("");
-                        setLengthError("");
-                      }}
-                      {...inputInteraction}
-                    />
+                  />
+                  <div className="min-h-[20px]">
                     {lengthError && (
-                      <div
-                        style={{
-                          color: C.errorRed,
-                          fontSize: 11,
-                          marginTop: 4,
-                        }}
-                      >
+                      <span className="text-red-600 text-sm">
                         {lengthError}
-                      </div>
+                      </span>
                     )}
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Buttons Row — top border content width, bottom border full content area */}
-            <div
-              className="w-full"
-              style={{ borderBottom: `1px solid ${C.divider}` }}
-            >
-              <div
-                className="flex flex-wrap gap-3 justify-center w-full py-2"
-                style={{
-                  maxWidth: 460,
-                  margin: "0 auto",
-                  borderTop: `1px solid ${C.divider}`,
-                }}
-              >
-                <Btn
-                  variant="primary"
+              </form>
+              {/* Buttons Row */}
+              <div className="w-full flex flex-row justify-center gap-8 mb-6">
+                <Button
+                  variant="contained"
+                  sx={buttonSx}
                   onClick={startpingTest}
                   disabled={loadind}
-                  style={{ minWidth: 100 }}
                 >
+                  {" "}
                   {loadind ? PING_BUTTONS.loading : PING_BUTTONS.start}
-                </Btn>
-                <Btn
-                  variant="cancel"
+                </Button>
+                <Button
+                  variant="contained"
+                  sx={buttonSx}
                   onClick={stopPingInterval}
-                  style={{ minWidth: 100 }}
                 >
                   {PING_BUTTONS.end}
-                </Btn>
+                </Button>
               </div>
-            </div>
-
-            {/* Info log — wider than form fields above */}
-            <div
-              className="flex flex-col gap-2"
-              style={{
-                width: "80%",
-                margin: "0 auto",
-              }}
-            >
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                }}
-              >
-                {PING_LABELS.info}
-              </label>
-              <textarea
-                style={{
-                  ...inputStyle,
-                  width: "100%",
-                  boxSizing: "border-box",
-                  height: "auto",
-                  minHeight: 180,
-                  maxHeight: 320,
-                  fontFamily: "monospace",
-                  fontSize: 13,
-                  lineHeight: 1.5,
-                  resize: "vertical",
-                  whiteSpace: "pre-wrap",
-                  backgroundColor: "#f8fafc",
-                  borderColor: C.cardBorder,
-                }}
-                value={info}
-                onChange={(e) => setInfo(e.target.value)}
-                readOnly
-                onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
-                onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
-                onMouseEnter={(e) => {
-                  if (document.activeElement !== e.target)
-                    e.target.style.borderColor = "#64748b";
-                }}
-                onMouseLeave={(e) => {
-                  if (document.activeElement !== e.target)
-                    e.target.style.borderColor = C.cardBorder;
-                }}
-              />
+              {/* Info Section */}
+              <div className="w-full flex flex-col md:flex-row md:items-start gap-4">
+                <label className="text-[14px] text-gray-700 min-w-[80px] md:pt-2">
+                  {PING_LABELS.info}
+                </label>
+                <textarea
+                  className="w-full min-h-[180px] max-h-[320px] border border-gray-400 rounded bg-white text-[12px] p-3 font-mono resize-y"
+                  value={info}
+                  onChange={(e) => setInfo(e.target.value)}
+                  placeholder=""
+                  readOnly
+                  style={{ fontSize: "12px" }}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
+      {/* Bottom Alert Message (add fade-in animation to your CSS) */}
+      {alertMsg && (
+        <div className="fixed left-1/2 bottom-32 transform -translate-x-1/2 z-50">
+          <div className="flex items-center px-6 py-3 rounded shadow-lg text-white text-lg bg-green-500 animate-fade-in-up">
+            <svg
+              className="w-6 h-6 mr-2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            {alertMsg}
+          </div>
+        </div>
+      )}
+      {/*
+      Add this to your global CSS (e.g., index.css):
+      @keyframes fade-in-up {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up 0.4s cubic-bezier(0.4,0,0.2,1);
+      }
+      */}
     </div>
   );
 };
