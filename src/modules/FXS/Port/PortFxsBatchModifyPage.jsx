@@ -15,6 +15,48 @@ const FWD_TYPE_TO_API = {
   Busy: "busy",
 };
 import { ROUTE_PATHS } from "../../../constants/routeConstatns";
+import { C, Btn, checkboxSx } from "../../../sections/fxs/fxsSharedUi";
+
+const dialogFieldStyle = {
+  height: 32,
+  width: "200px",
+  fontSize: 13,
+  padding: "0 8px",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 4,
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+};
+
+const legacyFieldStyle = {
+  height: "22px",
+  width: "200px",
+  fontSize: "12px",
+};
+
+const BATCH_LABEL_WIDTH = 240;
+const BATCH_FORM_TABLE_WIDTH = BATCH_LABEL_WIDTH + 280;
+
+const batchLabelCellStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+  verticalAlign: "middle",
+  width: BATCH_LABEL_WIDTH,
+  minWidth: BATCH_LABEL_WIDTH,
+  maxWidth: BATCH_LABEL_WIDTH,
+  padding: "6px 16px 6px 0",
+  whiteSpace: "nowrap",
+};
+
+const batchValueCellStyle = {
+  fontSize: 13,
+  textAlign: "left",
+  verticalAlign: "middle",
+  padding: "6px 0",
+};
 
 // Initialize batch modify form
 const getInitialBatchForm = (initialPorts = null) => {
@@ -47,6 +89,8 @@ const PortFxsBatchModifyPage = ({
   maxPorts,
   onClose,
   onSaved,
+  inDialog = false,
+  formId = "fxs-batch-modify-form",
 } = {}) => {
   // Dynamic port options — use API-reported maxPorts if available
   const portOptions = Array.from(
@@ -337,56 +381,81 @@ const PortFxsBatchModifyPage = ({
     }
   };
 
-  return (
-    <div
-      className="bg-gray-50 min-h-[calc(100vh-128px)] py-1"
-      style={{ backgroundColor: "#dde0e4" }}
-    >
-      <div className="flex justify-center" style={{ padding: "0 20px" }}>
-        <div style={{ width: "62%", maxWidth: "1000px", minWidth: "700px" }}>
-          {/* Error / Success Banner */}
-          {message.text && (
-            <Alert
-              severity={
-                message.type === "error"
-                  ? "error"
-                  : message.type === "success"
-                    ? "success"
-                    : "info"
-              }
-              onClose={() => setMessage({ type: "", text: "" })}
-              sx={{
-                position: "fixed",
-                top: 20,
-                right: 20,
-                zIndex: 9999,
-                minWidth: 300,
-                boxShadow: 3,
-              }}
-            >
-              {message.text}
-            </Alert>
-          )}
-          {/* Page Title Bar */}
-          <div className="rounded-t-lg w-full h-8 bg-[#3E5475] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
-            <span>{PORT_FXS_BATCH_MODIFY_TITLE}</span>
-          </div>
+  const fieldStyle = inDialog
+    ? dialogFieldStyle
+    : { ...dialogFieldStyle, ...legacyFieldStyle };
+  const wideFieldStyle = inDialog
+    ? { ...dialogFieldStyle, width: "280px" }
+    : { ...dialogFieldStyle, ...legacyFieldStyle, width: "280px" };
+  const fieldClassName = inDialog
+    ? undefined
+    : "border border-gray-400 rounded-sm px-1 bg-white";
 
-          {/* Main Card */}
-          <form onSubmit={handleSave}>
-            <div className="bg-[#dde0e4] border-2 rounded-b-lg border-gray-400 border-t-0 shadow-sm py-2 text-xs">
-              <div className="flex justify-center pl-4">
+  const formBody = (
+    <>
+      {message.text && (
+        <Alert
+          severity={
+            message.type === "error"
+              ? "error"
+              : message.type === "success"
+                ? "success"
+                : "info"
+          }
+          onClose={() => setMessage({ type: "", text: "" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {message.text}
+        </Alert>
+      )}
+
+      <form id={formId} onSubmit={handleSave}>
+        <div
+          style={
+            inDialog
+              ? {
+                  background: "#f8fafc",
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 8,
+                  padding: 20,
+                }
+              : undefined
+          }
+          className={
+            inDialog
+              ? undefined
+              : "bg-[#dde0e4] border-2 rounded-b-lg border-gray-400 border-t-0 shadow-sm py-2 text-xs"
+          }
+        >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  width: "100%",
+                  paddingLeft: 4,
+                  paddingRight: 4,
+                }}
+              >
                 <table
-                  width="100%"
                   cellSpacing="0"
                   cellPadding="0"
-                  style={{ tableLayout: "fixed" }}
+                  style={{
+                    width: BATCH_FORM_TABLE_WIDTH,
+                    maxWidth: "100%",
+                    tableLayout: "fixed",
+                    textAlign: "left",
+                  }}
                 >
                   <colgroup>
-                    <col style={{ width: "10%" }} />
-                    <col style={{ width: "3%" }} />
-                    <col style={{ width: "37%" }} />
-                    <col style={{ width: "50%" }} />
+                    <col style={{ width: BATCH_LABEL_WIDTH }} />
+                    <col />
                   </colgroup>
                   <tbody>
                     {PORT_FXS_BATCH_MODIFY_FIELDS.map((field, idx) => {
@@ -410,26 +479,34 @@ const PortFxsBatchModifyPage = ({
                           {/* Spacer row between sections */}
                           {needsSpacer && (
                             <tr>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
-                              <td>&nbsp;</td>
+                              <td colSpan={2} style={{ height: 10 }} />
                             </tr>
                           )}
 
                           <tr>
-                            <td style={{ height: "22px" }}>&nbsp;</td>
-                            {field.type === "checkbox" ? (
-                              <>
-                                <td colSpan="2" style={{ fontSize: "12px" }}>
-                                  {field.label}
-                                </td>
-                                <td style={{ fontSize: "12px" }}>
-                                  <input
-                                    type="checkbox"
+                            <td style={batchLabelCellStyle}>{field.label}</td>
+                            <td style={batchValueCellStyle}>
+                              {field.type === "checkbox" ? (
+                                <label
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    fontSize: 13,
+                                    color: C.valueText,
+                                    cursor:
+                                      field.key === "dnd" && form.callForward
+                                        ? "not-allowed"
+                                        : field.key === "callForward" &&
+                                            form.dnd
+                                          ? "not-allowed"
+                                          : "pointer",
+                                  }}
+                                >
+                                  <Checkbox
+                                    size="small"
                                     checked={!!form[field.key]}
                                     onChange={() => handleCheckbox(field.key)}
-                                    style={{ marginRight: "4px" }}
                                     disabled={
                                       field.key === "dnd"
                                         ? !!form.callForward
@@ -437,94 +514,67 @@ const PortFxsBatchModifyPage = ({
                                           ? !!form.dnd
                                           : false
                                     }
+                                    sx={checkboxSx}
                                   />
                                   Enable
-                                </td>
-                              </>
-                            ) : (
-                              <>
-                                <td>&nbsp;</td>
-                                <td colSpan="1" style={{ fontSize: "12px" }}>
-                                  {field.label}
-                                </td>
-                                <td>
-                                  {/* Text input */}
-                                  {field.type === "text" && (
-                                    <input
-                                      type="text"
-                                      value={form[field.key]}
-                                      onChange={(e) =>
-                                        handleChange(field.key, e.target.value)
-                                      }
-                                      className="border border-gray-400 rounded-sm px-1 bg-white"
-                                      style={{
-                                        height: "22px",
-                                        width: "200px",
-                                        fontSize: "12px",
-                                      }}
-                                      maxLength={field.maxLength || 31}
-                                      onKeyDown={
-                                        // Attach appropriate key handlers based on validation or key name
-                                        field.validation === "integer"
-                                          ? handleDigitsOnly
-                                          : field.key === "inputGain" ||
-                                              field.key === "outputGain"
-                                            ? handleDigitsHyphen
-                                            : field.key === "autoDialNumber"
-                                              ? handleAutoDialKey
-                                              : handleRestrictedChars
-                                      }
-                                    />
-                                  )}
-
-                                  {/* Password input */}
-                                  {field.type === "password" && (
-                                    <input
-                                      type="password"
-                                      value={form[field.key]}
-                                      onChange={(e) =>
-                                        handleChange(field.key, e.target.value)
-                                      }
-                                      className="border border-gray-400 rounded-sm px-1 bg-white"
-                                      style={{
-                                        height: "22px",
-                                        width: "200px",
-                                        fontSize: "12px",
-                                      }}
-                                      maxLength={field.maxLength || 63}
-                                    />
-                                  )}
-
-                                  {/* Select dropdown */}
-                                  {field.type === "select" && (
-                                    <select
-                                      value={form[field.key]}
-                                      onChange={(e) =>
-                                        handleChange(field.key, e.target.value)
-                                      }
-                                      className="border border-gray-400 rounded-sm px-1 bg-white"
-                                      style={{
-                                        height: "22px",
-                                        width: field.key.includes("Parameter")
-                                          ? "280px"
-                                          : "200px",
-                                        fontSize: "12px",
-                                      }}
-                                    >
-                                      {(field.key === "startingPort" ||
-                                      field.key === "endingPort"
-                                        ? portOptions
-                                        : field.options
-                                      ).map((opt) => (
-                                        <option key={opt} value={opt}>
-                                          {opt}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  )}
-                                </td>
-                              </>
-                            )}
+                                </label>
+                              ) : field.type === "text" ? (
+                                <input
+                                  type="text"
+                                  value={form[field.key]}
+                                  onChange={(e) =>
+                                    handleChange(field.key, e.target.value)
+                                  }
+                                  className={fieldClassName}
+                                  style={fieldStyle}
+                                  maxLength={field.maxLength || 31}
+                                  onKeyDown={
+                                    field.validation === "integer"
+                                      ? handleDigitsOnly
+                                      : field.key === "inputGain" ||
+                                          field.key === "outputGain"
+                                        ? handleDigitsHyphen
+                                        : field.key === "autoDialNumber"
+                                          ? handleAutoDialKey
+                                          : handleRestrictedChars
+                                  }
+                                />
+                              ) : field.type === "password" ? (
+                                <input
+                                  type="password"
+                                  value={form[field.key]}
+                                  onChange={(e) =>
+                                    handleChange(field.key, e.target.value)
+                                  }
+                                  className={fieldClassName}
+                                  style={fieldStyle}
+                                  maxLength={field.maxLength || 63}
+                                />
+                              ) : field.type === "select" ? (
+                                <select
+                                  value={form[field.key]}
+                                  onChange={(e) =>
+                                    handleChange(field.key, e.target.value)
+                                  }
+                                  className={fieldClassName}
+                                  style={
+                                    field.key.includes("Parameter")
+                                      ? wideFieldStyle
+                                      : fieldStyle
+                                  }
+                                >
+                                  {(field.key === "startingPort" ||
+                                  field.key === "endingPort"
+                                    ? portOptions
+                                    : field.options
+                                  ).map((opt) => (
+                                    <option key={opt} value={opt}>
+                                      {opt}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : null}
+                            </td>
                           </tr>
                         </React.Fragment>
                       );
@@ -532,93 +582,71 @@ const PortFxsBatchModifyPage = ({
 
                     {/* Spacer at the end */}
                     <tr>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
+                      <td colSpan={2} style={{ height: 8 }} />
                     </tr>
                   </tbody>
                 </table>
               </div>
-            </div>
+        </div>
 
-            {/* Note */}
-            <div className="text-center mt-4">
-              <div
-                className="text-gray-600 text-sm"
-                style={{ maxWidth: "1000px", margin: "0 auto" }}
-              >
-                {PORT_FXS_BATCH_MODIFY_NOTE}
-              </div>
-            </div>
+        <div
+          style={{
+            marginTop: 16,
+            textAlign: "center",
+            fontSize: 12,
+            color: inDialog ? C.mutedText : "#4b5563",
+            width: "100%",
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+          }}
+        >
+          {PORT_FXS_BATCH_MODIFY_NOTE}
+        </div>
 
-            {/* Buttons - Outside the bordered box */}
-            <div className="flex justify-center gap-6 py-6">
-              <button
-                type="button"
-                onClick={handleSave}
-                style={{
-                  background:
-                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: "16px",
-                  borderRadius: "6px",
-                  minWidth: "100px",
-                  height: "42px",
-                  textTransform: "none",
-                  padding: "6px 24px",
-                  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                  border: "1px solid #cbd5e1",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)";
-                  e.target.style.color = "#fff";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)";
-                  e.target.style.color = "#fff";
-                }}
-              >
-                Save
-              </button>
+        {!inDialog && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 12,
+              padding: "24px 0",
+            }}
+          >
+            <Btn
+              variant="primary"
+              type="button"
+              onClick={handleSave}
+              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            >
+              Save
+            </Btn>
+            <Btn
+              variant="cancel"
+              type="button"
+              onClick={handleCancel}
+              style={{ minWidth: 100, height: 33 }}
+            >
+              Close
+            </Btn>
+          </div>
+        )}
+      </form>
+    </>
+  );
 
-              <button
-                type="button"
-                onClick={handleCancel}
-                style={{
-                  background:
-                    "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-                  color: "#3E5475",
-                  fontWeight: 600,
-                  fontSize: "16px",
-                  borderRadius: "6px",
-                  minWidth: "100px",
-                  height: "42px",
-                  textTransform: "none",
-                  padding: "6px 24px",
-                  boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-                  border: "1px solid #cbd5e1",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)";
-                  e.target.style.color = "#2f405c";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)";
-                  e.target.style.color = "#3E5475";
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+  if (inDialog) return formBody;
+
+  return (
+    <div
+      className="bg-gray-50 min-h-[calc(100vh-128px)] py-1"
+      style={{ backgroundColor: "#dde0e4" }}
+    >
+      <div className="flex justify-center" style={{ padding: "0 20px" }}>
+        <div style={{ width: "62%", maxWidth: "1000px", minWidth: "700px" }}>
+          <div className="rounded-t-lg w-full h-8 bg-[#3E5475] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
+            <span>{PORT_FXS_BATCH_MODIFY_TITLE}</span>
+          </div>
+          {formBody}
         </div>
       </div>
     </div>

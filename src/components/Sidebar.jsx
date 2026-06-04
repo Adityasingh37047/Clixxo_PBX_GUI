@@ -137,8 +137,19 @@ const Sidebar = ({
   const mainMenuRef = useRef(null);
   const subMenuRef = useRef(null);
 
+  // First section with submenu — default when right panel is always open (desktop)
+  const defaultOpenSectionId =
+    sidebarSections.find((s) => s.hasSubmenu)?.id ??
+    sidebarSections[0]?.id ??
+    null;
+
   // Derived: activeMenu wins; hoveredMenu fills when nothing clicked
-  const activeSection = activeMenu || (canHover ? hoveredMenu : null);
+  // const activeSection = activeMenu || (canHover ? hoveredMenu : null);
+
+  // Desktop: right submenu always open (clicked section, else default)
+  const activeSection = isMobile
+    ? activeMenu
+    : activeMenu ?? defaultOpenSectionId;
 
   // ─── Notify Layout on EVERY width change (hover + click both) ─────────────
   useEffect(() => {
@@ -147,7 +158,8 @@ const Sidebar = ({
     } else {
       // Submenu visible (either hovered or clicked) → full width
       // Submenu hidden → left panel only
-      onWidthChange(activeSection ? LEFT_W + RIGHT_W : LEFT_W);
+      // onWidthChange(activeSection ? LEFT_W + RIGHT_W : LEFT_W);
+      onWidthChange(LEFT_W + RIGHT_W);
     }
   }, [activeSection, isMobile, LEFT_W, RIGHT_W, onWidthChange]);
 
@@ -179,7 +191,10 @@ const Sidebar = ({
 
   const isActive = (path) => location.pathname === path;
 
-  // ─── Hover handlers with 80ms delay (prevents flicker) ───────────────────
+  // ─── Hover handlers with 80ms delay (prevents flicker) — kept, not wired in JSX ──
+  // onMouseEnter={() => handleLeftItemMouseEnter(section.id)}
+  // onMouseLeave={handleLeftItemMouseLeave}
+  // onMouseEnter={handleSubmenuMouseEnter} onMouseLeave={handleSubmenuMouseLeave}
   const handleLeftItemMouseEnter = (sectionId) => {
     if (!canHover) return;
     clearTimeout(hoverLeaveTimer.current);
@@ -208,7 +223,9 @@ const Sidebar = ({
       handleNavigation(section.path);
       setActiveMenu(section.id);
     } else {
-      setActiveMenu((prev) => (prev === section.id ? null : section.id));
+      // Click-to-toggle close (disabled — right menu always open on desktop)
+      // setActiveMenu((prev) => (prev === section.id ? null : section.id));
+      setActiveMenu(section.id);
     }
   };
 
@@ -483,8 +500,6 @@ const Sidebar = ({
           e.stopPropagation();
           handleMainItemClick(section);
         }}
-        onMouseEnter={() => handleLeftItemMouseEnter(section.id)}
-        onMouseLeave={handleLeftItemMouseLeave}
         sx={{
           cursor: "pointer",
           backgroundColor: isCurrentActive ? "#29a8e0" : "transparent",
@@ -549,9 +564,8 @@ const Sidebar = ({
   const sidebarLeft = isMobile ? (sidebarOpen ? 0 : "-100%") : 0;
   const sidebarWidth = isMobile
     ? "100%"
-    : activeSection
-      ? LEFT_W + RIGHT_W
-      : LEFT_W;
+    : // activeSection ? LEFT_W + RIGHT_W : LEFT_W;
+      LEFT_W + RIGHT_W;
 
   return (
     <>
@@ -607,12 +621,10 @@ const Sidebar = ({
           </List>
         </div>
 
-        {/* RIGHT MENU — same behavior for hover and click, always in flow */}
-        {activeSection && (
+        {/* RIGHT MENU — always open on desktop; click switches section (mobile: when active) */}
+        {(isMobile ? activeSection : activeSection != null) && (
           <div
             ref={subMenuRef}
-            onMouseEnter={handleSubmenuMouseEnter}
-            onMouseLeave={handleSubmenuMouseLeave}
             style={{
               width: isMobile ? `calc(100vw - ${LEFT_W}px)` : RIGHT_W,
               background: "#f0f4f8",

@@ -1,9 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { Alert } from "@mui/material";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
+import { Alert, Checkbox } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../constants/routeConstatns";
-import { PORT_FXS_TOTAL_PORTS } from "../../../sections/port/constants/PortFxsPageConstants";
+import {
+  PORT_FXS_BATCH_MODIFY_FIELDS,
+  PORT_FXS_BATCH_MODIFY_NOTE,
+  PORT_FXS_MODIFY_FIELDS,
+  PORT_FXS_TOTAL_PORTS,
+} from "../../../sections/port/constants/PortFxsPageConstants";
 import { fetchFxsPorts, saveFxsPort } from "../../../api/apiService";
+import { C, Btn, checkboxSx } from "../../../sections/fxs/fxsSharedUi";
 
 const FWD_TYPE_TO_UI = {
   no_reply: "No Reply",
@@ -16,39 +28,128 @@ const FWD_TYPE_TO_API = {
   Busy: "busy",
 };
 
-const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
+const dialogFieldStyle = {
+  height: 32,
+  width: "200px",
+  fontSize: 13,
+  padding: "0 8px",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 4,
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+};
+
+const legacyFieldStyle = {
+  height: "22px",
+  width: "200px",
+  fontSize: "12px",
+};
+
+const FORM_LABEL_WIDTH = 240;
+const FORM_TABLE_WIDTH = FORM_LABEL_WIDTH + 280;
+
+const labelCellStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+  verticalAlign: "middle",
+  width: FORM_LABEL_WIDTH,
+  minWidth: FORM_LABEL_WIDTH,
+  maxWidth: FORM_LABEL_WIDTH,
+  padding: "6px 16px 6px 0",
+  whiteSpace: "nowrap",
+};
+
+const valueCellStyle = {
+  fontSize: 13,
+  textAlign: "left",
+  verticalAlign: "middle",
+  padding: "6px 0",
+};
+
+const getInitialModifyForm = (port = "1") => {
+  const form = {};
+  PORT_FXS_BATCH_MODIFY_FIELDS.forEach((field) => {
+    if (field.type === "select") {
+      form[field.key] = field.default ?? field.options?.[0] ?? "";
+    } else if (field.type === "checkbox") {
+      form[field.key] = field.default ?? false;
+    } else {
+      form[field.key] = field.default ?? "";
+    }
+  });
+  form.batchRegister = true;
+  form.batchAccount = true;
+  form.batchConfigure = true;
+  form.startingPort = port;
+  form.endingPort = port;
+  return form;
+};
+
+const mapPortToForm = (p, base) => ({
+  ...base,
+  startingPort: String(p.port ?? p.id),
+  endingPort: String(p.port ?? p.id),
+  registerPort: p.enabled ? "Yes" : "No",
+  startingSipAccount: p.sipAccount ?? "",
+  startingDisplayName: p.displayName ?? "",
+  startingAuthPassword: p.authPassword ?? "",
+  displayNamePreferred: !!p.displayNamePreferred,
+  autoDialNumberEnable: !!(p.autoDialEnabled ?? p.autoDialNumber),
+  autoDialNumber: p.autoDialNumber ?? "",
+  waitTimeBeforeAutoDial: String(p.autoDialWaitSec ?? 0),
+  inputGain: String(p.inputGain ?? 0),
+  outputGain: String(p.outputGain ?? 0),
+  echoCanceller: !!p.echoCanceller,
+  cid: !!p.cidEnabled,
+  callWaiting: !!p.callWaiting,
+  dnd: !!p.dnd,
+  callForward: !!p.callForwardEnabled,
+  forwardType: FWD_TYPE_TO_UI[p.forwardType] ?? "Unconditional",
+  forwardNumber: p.forwardNumber ?? "",
+  noAnswerDelayTime: String(p.noReplyDelaySec ?? 0),
+  advancedConfiguration: !!p.advancedConfiguration,
+  ringingParameter: p.ringingParameter ?? "RING_ABS120V_DEF",
+  feedVoltageParameter: p.feedVoltageParameter ?? "DCFEED_48V_21MA_DEF",
+  impedanceParameter: p.impedanceParameter ?? "ZSYN_200_680_100_30_0",
+  batchRegister: true,
+  batchAccount: true,
+  batchConfigure: true,
+});
+
+const PortFxsModifyPage = forwardRef(({
+  port: propPort,
+  initialPortData,
+  onSaved,
+  onClose,
+  inDialog = false,
+  formId = "fxs-modify-form",
+  maxPorts: propMaxPorts,
+  onSavingChange,
+}, ref) => {
+  const portCount = propMaxPorts || PORT_FXS_TOTAL_PORTS;
   const navigate = useNavigate();
   const location = useLocation();
   const initialPort =
     propPort ||
     (location.state && location.state.port ? String(location.state.port) : "1");
 
-  const [form, setForm] = useState({
-    startingPort: initialPort,
-    endingPort: initialPort,
-    registerPort: "No",
-    startingSipAccount: "",
-    startingDisplayName: "",
-    startingAuthPassword: "",
-    displayNamePreferred: false,
-    autoDialNumber: "",
-    waitTimeBeforeAutoDial: "0",
-    inputGain: "0",
-    outputGain: "0",
-    echoCanceller: true,
-    cid: true,
-    callWaiting: false,
-    dnd: false,
-    callForward: false,
-    forwardType: "Unconditional",
-    forwardNumber: "",
-    noAnswerDelayTime: "0",
-    advancedConfiguration: false,
-    ringingParameter: "",
-    feedVoltageParameter: "",
-    impedanceParameter: "",
-  });
-  const [loading, setLoading] = useState(true);
+  const portOptions = Array.from({ length: portCount }, (_, i) =>
+    String(i + 1),
+  );
+
+  const buildFormState = useCallback(
+    (portData) => {
+      const base = getInitialModifyForm(initialPort);
+      return portData ? mapPortToForm(portData, base) : base;
+    },
+    [initialPort],
+  );
+
+  const [form, setForm] = useState(() => buildFormState(initialPortData));
+  const [loading, setLoading] = useState(() => !inDialog);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -57,53 +158,82 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await fetchFxsPorts();
-        const list = Array.isArray(res?.data) ? res.data : [];
-        const p = list.find(
-          (item) => String(item.port ?? item.id) === String(initialPort),
-        );
-        if (p && mounted) {
-          setForm((prev) => ({
-            ...prev,
-            startingPort: String(p.port ?? p.id),
-            endingPort: String(p.port ?? p.id),
-            registerPort: p.enabled ? "Yes" : "No",
-            startingSipAccount: p.sipAccount ?? "",
-            startingDisplayName: p.displayName ?? "",
-            startingAuthPassword: p.authPassword ?? "",
-            displayNamePreferred: !!p.displayNamePreferred,
-            autoDialNumber: p.autoDialNumber ?? "",
-            waitTimeBeforeAutoDial: String(p.autoDialWaitSec ?? 0),
-            inputGain: String(p.inputGain ?? 0),
-            outputGain: String(p.outputGain ?? 0),
-            echoCanceller: !!p.echoCanceller,
-            cid: !!p.cidEnabled,
-            callWaiting: !!p.callWaiting,
-            dnd: !!p.dnd,
-            callForward: !!p.callForwardEnabled,
-            forwardType: FWD_TYPE_TO_UI[p.forwardType] ?? "Unconditional",
-            forwardNumber: p.forwardNumber ?? "",
-            noAnswerDelayTime: String(p.noReplyDelaySec ?? 0),
-          }));
-        }
-      } catch (err) {
-        console.warn("Failed to load port data for modify:", err);
-      } finally {
-        if (mounted) setLoading(false);
+  const loadPortData = useCallback(async () => {
+    if (!inDialog) setLoading(true);
+    try {
+      const res = await fetchFxsPorts();
+      const list = Array.isArray(res?.data) ? res.data : [];
+      const p = list.find(
+        (item) => String(item.port ?? item.id) === String(initialPort),
+      );
+      if (p) {
+        setForm(mapPortToForm(p, getInitialModifyForm(String(p.port ?? p.id))));
       }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [initialPort]);
+    } catch (err) {
+      console.warn("Failed to load port data for modify:", err);
+    } finally {
+      if (!inDialog) setLoading(false);
+    }
+  }, [initialPort, inDialog]);
 
-  const handleChange = (key, value) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
+  useEffect(() => {
+    setForm(buildFormState(initialPortData));
+  }, [initialPortData, buildFormState]);
+
+  useEffect(() => {
+    if (inDialog && initialPortData) return;
+    loadPortData();
+  }, [loadPortData, inDialog, initialPortData]);
+
+  useImperativeHandle(ref, () => ({ reset: loadPortData }), [loadPortData]);
+
+  useEffect(() => {
+    if (inDialog && onSavingChange) onSavingChange(saving);
+  }, [saving, inDialog, onSavingChange]);
+
+  const handleRestrictedChars = (e) => {
+    const forbidden = /[%&~\|\(\);\\"'=\\\u007C]/;
+    if (forbidden.test(e.key)) e.preventDefault();
+  };
+
+  const handleDigitsOnly = (e) => {
+    if (
+      !/^[0-9]$/.test(e.key) &&
+      !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
+  };
+
+  const handleDigitsHyphen = (e) => {
+    if (
+      !/^[0-9-]$/.test(e.key) &&
+      !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
+  };
+
+  const handleAutoDialKey = (e) => {
+    if (
+      !/^[0-9abc#*]$/.test(e.key) &&
+      !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
+  };
+
+  const handleChange = (key, value) => {
+    const fieldDef = PORT_FXS_MODIFY_FIELDS.find((f) => f.key === key);
+    if (fieldDef?.validation === "integer") {
+      if (value === "" || /^-?\d+$/.test(value)) {
+        setForm((prev) => ({ ...prev, [key]: value }));
+      }
+    } else {
+      setForm((prev) => ({ ...prev, [key]: value }));
+    }
+  };
+
   const handleCheckbox = (key) => {
     setForm((prev) => {
       const next = { ...prev, [key]: !prev[key] };
@@ -113,8 +243,48 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
     });
   };
 
+  const shouldShowField = (field) => {
+    const view = {
+      ...form,
+      batchRegister: true,
+      batchAccount: true,
+      batchConfigure: true,
+    };
+    if (!field.conditional) return true;
+    const conditionalValue = view[field.conditional];
+    if (!conditionalValue) return false;
+    if (field.conditionalParent) {
+      const parentValue = view[field.conditionalParent];
+      if (field.conditionalParentValue !== undefined) {
+        if (Array.isArray(field.conditionalParentValue)) {
+          return field.conditionalParentValue.includes(parentValue);
+        }
+        return parentValue === field.conditionalParentValue;
+      }
+      return !!parentValue;
+    }
+    return true;
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
+    if (form.autoDialNumberEnable && !form.autoDialNumber) {
+      showMessage("error", "Please enter 'Auto Dial Number'!");
+      return;
+    }
+    if (form.autoDialNumberEnable && !form.waitTimeBeforeAutoDial) {
+      showMessage("error", "Please enter 'Wait Time before Auto Dial'!");
+      return;
+    }
+    if (form.callForward && !form.forwardNumber) {
+      showMessage("error", "Please enter an forward number!");
+      return;
+    }
+    if (form.forwardType === "No Reply" && !form.noAnswerDelayTime) {
+      showMessage("error", "Please enter a time threshold for 'No Reply'!");
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -125,7 +295,7 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
         displayName: form.startingDisplayName,
         authPassword: form.startingAuthPassword,
         displayNamePreferred: !!form.displayNamePreferred,
-        autoDialEnabled: !!form.autoDialNumber,
+        autoDialEnabled: !!form.autoDialNumberEnable,
         autoDialNumber: form.autoDialNumber || "",
         autoDialWaitSec: Number(form.waitTimeBeforeAutoDial) || 0,
         inputGain: Number(form.inputGain) || 0,
@@ -154,18 +324,288 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
     }
   };
 
-  const handleReset = () => {
-    // reset to last loaded values by re-running effect: simply reload port
-    setForm((prev) => ({ ...prev }));
-  };
+  const handleReset = () => loadPortData();
 
   const handleCancel = () => {
     if (typeof onClose === "function") onClose();
     else navigate(ROUTE_PATHS.PORT_FXS);
   };
 
-  if (loading)
+  if (loading && !inDialog)
     return <div style={{ padding: 20, textAlign: "center" }}>Loading...</div>;
+
+  const fieldStyle = inDialog
+    ? dialogFieldStyle
+    : { ...dialogFieldStyle, ...legacyFieldStyle };
+  const wideFieldStyle = inDialog
+    ? { ...dialogFieldStyle, width: "280px" }
+    : { ...dialogFieldStyle, ...legacyFieldStyle, width: "280px" };
+  const fieldClassName = inDialog ? undefined : "border border-gray-400 rounded-sm px-1 bg-white";
+
+  const formBody = (
+    <>
+      {message.text && (
+        <Alert
+          severity={
+            message.type === "error"
+              ? "error"
+              : message.type === "success"
+                ? "success"
+                : "info"
+          }
+          onClose={() => setMessage({ type: "", text: "" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {message.text}
+        </Alert>
+      )}
+
+      <form id={formId} onSubmit={handleSave}>
+        <div
+          style={
+            inDialog
+              ? {
+                  background: "#f8fafc",
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 8,
+                  padding: 20,
+                }
+              : undefined
+          }
+          className={
+            inDialog
+              ? undefined
+              : "bg-[#dde0e4] border-2 rounded-b-lg border-gray-400 border-t-0 shadow-sm py-2 text-xs"
+          }
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              paddingLeft: 4,
+              paddingRight: 4,
+            }}
+          >
+            <table
+              cellSpacing="0"
+              cellPadding="0"
+              style={{
+                width: FORM_TABLE_WIDTH,
+                maxWidth: "100%",
+                tableLayout: "fixed",
+                textAlign: "left",
+              }}
+            >
+              <colgroup>
+                <col style={{ width: FORM_LABEL_WIDTH }} />
+                <col />
+              </colgroup>
+              <tbody>
+                {PORT_FXS_MODIFY_FIELDS.map((field, idx) => {
+                  if (!shouldShowField(field)) return null;
+
+                  const prevField =
+                    idx > 0
+                      ? PORT_FXS_MODIFY_FIELDS.slice(0, idx)
+                          .reverse()
+                          .find((f) => shouldShowField(f))
+                      : null;
+                  const needsSpacer =
+                    prevField &&
+                    (prevField.key === "startingPort" ||
+                      prevField.key === "registerPort" ||
+                      prevField.key === "displayNamePreferred" ||
+                      prevField.key === "waitTimeBeforeAutoDial" ||
+                      prevField.key === "echoCanceller" ||
+                      prevField.key === "impedanceParameter");
+
+                  return (
+                    <React.Fragment key={field.key}>
+                      {needsSpacer && (
+                        <tr>
+                          <td colSpan={2} style={{ height: 10 }} />
+                        </tr>
+                      )}
+
+                      <tr>
+                        <td style={labelCellStyle}>{field.label}</td>
+                        <td style={valueCellStyle}>
+                          {field.type === "checkbox" ? (
+                            <label
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                fontSize: 13,
+                                color: C.valueText,
+                                cursor:
+                                  field.key === "dnd" && form.callForward
+                                    ? "not-allowed"
+                                    : field.key === "callForward" && form.dnd
+                                      ? "not-allowed"
+                                      : "pointer",
+                              }}
+                            >
+                              <Checkbox
+                                size="small"
+                                checked={!!form[field.key]}
+                                onChange={() => handleCheckbox(field.key)}
+                                disabled={
+                                  field.key === "dnd"
+                                    ? !!form.callForward
+                                    : field.key === "callForward"
+                                      ? !!form.dnd
+                                      : false
+                                }
+                                sx={checkboxSx}
+                              />
+                              Enable
+                            </label>
+                          ) : field.type === "text" ? (
+                            <input
+                              type="text"
+                              value={form[field.key]}
+                              onChange={(e) =>
+                                handleChange(field.key, e.target.value)
+                              }
+                              className={fieldClassName}
+                              style={fieldStyle}
+                              maxLength={field.maxLength || 31}
+                              onKeyDown={
+                                field.validation === "integer"
+                                  ? handleDigitsOnly
+                                  : field.key === "inputGain" ||
+                                      field.key === "outputGain"
+                                    ? handleDigitsHyphen
+                                    : field.key === "autoDialNumber"
+                                      ? handleAutoDialKey
+                                      : handleRestrictedChars
+                              }
+                            />
+                          ) : field.type === "password" ? (
+                            <input
+                              type="password"
+                              value={form[field.key]}
+                              onChange={(e) =>
+                                handleChange(field.key, e.target.value)
+                              }
+                              className={fieldClassName}
+                              style={fieldStyle}
+                              maxLength={field.maxLength || 63}
+                            />
+                          ) : field.type === "select" ? (
+                            <select
+                              value={form[field.key]}
+                              onChange={(e) =>
+                                handleChange(field.key, e.target.value)
+                              }
+                              className={fieldClassName}
+                              style={
+                                field.key.includes("Parameter")
+                                  ? wideFieldStyle
+                                  : fieldStyle
+                              }
+                            >
+                              {(field.key === "startingPort"
+                                ? portOptions
+                                : field.options
+                              ).map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          ) : null}
+                        </td>
+                      </tr>
+
+                      {field.key === "startingPort" && (
+                        <tr>
+                          <td style={labelCellStyle}>Type</td>
+                          <td style={valueCellStyle}>
+                            <input
+                              type="text"
+                              value="FXS"
+                              readOnly
+                              className={fieldClassName}
+                              style={fieldStyle}
+                            />
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+                <tr>
+                  <td colSpan={2} style={{ height: 8 }} />
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 16,
+            textAlign: "center",
+            fontSize: 12,
+            color: inDialog ? C.mutedText : "#4b5563",
+            width: "100%",
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+          }}
+        >
+          {PORT_FXS_BATCH_MODIFY_NOTE}
+        </div>
+
+        {!inDialog && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 12,
+              padding: "24px 0",
+            }}
+          >
+            <Btn
+              variant="primary"
+              type="submit"
+              disabled={saving}
+              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            >
+              {saving ? "Saving..." : "Modify"}
+            </Btn>
+            <Btn
+              variant="cancel"
+              type="button"
+              onClick={handleReset}
+              style={{ minWidth: 100, height: 33 }}
+            >
+              Reset
+            </Btn>
+            <Btn
+              variant="cancel"
+              type="button"
+              onClick={handleCancel}
+              style={{ minWidth: 100, height: 33 }}
+            >
+              Close
+            </Btn>
+          </div>
+        )}
+      </form>
+    </>
+  );
+
+  if (inDialog) return formBody;
 
   return (
     <div
@@ -174,615 +614,16 @@ const PortFxsModifyPage = ({ port: propPort, onSaved, onClose } = {}) => {
     >
       <div className="flex justify-center" style={{ padding: "0 20px" }}>
         <div style={{ width: "62%", maxWidth: "1000px", minWidth: "700px" }}>
-          {/* Error / Success Banner */}
-          {message.text && (
-            <Alert
-              severity={
-                message.type === "error"
-                  ? "error"
-                  : message.type === "success"
-                    ? "success"
-                    : "info"
-              }
-              onClose={() => setMessage({ type: "", text: "" })}
-              sx={{
-                position: "fixed",
-                top: 20,
-                right: 20,
-                zIndex: 9999,
-                minWidth: 300,
-                boxShadow: 3,
-              }}
-            >
-              {message.text}
-            </Alert>
-          )}
-          <div className="w-full h-8 bg-linear-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-gray-700 shadow mb-0">
+          <div className="w-full h-8 bg-[#3E5475] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
             <span>FXS-Modify</span>
           </div>
-
-          <form id="PortAdd" onSubmit={handleSave}>
-            <div className="bg-[#dde0e4] border-2 border-gray-400 border-t-0 shadow-sm py-2 text-xs">
-              <div className="flex justify-center pl-4">
-                <table
-                  width="100%"
-                  cellSpacing="0"
-                  cellPadding="0"
-                  className="context"
-                  style={{ tableLayout: "fixed" }}
-                >
-                  <colgroup>
-                    <col style={{ width: "10%" }} />
-                    <col style={{ width: "3%" }} />
-                    <col style={{ width: "37%" }} />
-                    <col style={{ width: "50%" }} />
-                  </colgroup>
-                  <tbody>
-                    <tr>
-                      <td style={{ height: "22px" }}>&nbsp;</td>
-                      <td colSpan="2">Port</td>
-                      <td>
-                        <select
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="Port"
-                          name="Port"
-                          value={form.startingPort}
-                          onChange={(e) =>
-                            handleChange("startingPort", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {Array.from(
-                            { length: PORT_FXS_TOTAL_PORTS },
-                            (_, i) => (
-                              <option key={i + 1} value={String(i + 1)}>
-                                {i + 1}
-                              </option>
-                            ),
-                          )}
-                        </select>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td style={{ height: "22px" }}>&nbsp;</td>
-                      <td colSpan="2">Type</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="PortType"
-                          name="PortType"
-                          maxLength="19"
-                          size="20"
-                          value="FXS"
-                          readOnly
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                    </tr>
-
-                    <tr>
-                      <td style={{ height: "22px" }}>&nbsp;</td>
-                      <td colSpan="2">Register Port</td>
-                      <td>
-                        <select
-                          id="registerPort"
-                          value={form.registerPort}
-                          onChange={(e) =>
-                            handleChange("registerPort", e.target.value)
-                          }
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        >
-                          <option value="No">No</option>
-                          <option value="Yes">Yes</option>
-                        </select>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td style={{ height: "22px" }}>&nbsp;</td>
-                      <td colSpan="2">SIP Account</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="Account"
-                          name="Account"
-                          value={form.startingSipAccount}
-                          onChange={(e) =>
-                            handleChange("startingSipAccount", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td style={{ height: "22px" }}>&nbsp;</td>
-                      <td colSpan="2">Display Name</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="DisplayName"
-                          name="DisplayName"
-                          value={form.startingDisplayName}
-                          onChange={(e) =>
-                            handleChange("startingDisplayName", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr
-                      id="idAuthPswd"
-                      style={{
-                        display: form.registerPort === "Yes" ? "" : "none",
-                      }}
-                    >
-                      <td style={{ height: "22px" }}>&nbsp;</td>
-                      <td colSpan="2">Password</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="AuthPswd"
-                          name="AuthPswd"
-                          type="password"
-                          value={form.startingAuthPassword}
-                          onChange={(e) =>
-                            handleChange("startingAuthPassword", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td style={{ height: "22px" }}>&nbsp;</td>
-                      <td colSpan="2">Display Name preferred</td>
-                      <td>
-                        <input
-                          id="DisplayNamePrior"
-                          name="DisplayNamePrior"
-                          type="checkbox"
-                          checked={!!form.displayNamePreferred}
-                          onChange={() =>
-                            handleCheckbox("displayNamePreferred")
-                          }
-                          style={{ marginRight: "4px" }}
-                        />{" "}
-                        Enable
-                      </td>
-                    </tr>
-
-                    <tr id="idSpace">
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">Auto Dial Number</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="OffhookAutodial"
-                          name="OffhookAutodial"
-                          maxLength="20"
-                          value={form.autoDialNumber}
-                          onChange={(e) =>
-                            handleChange("autoDialNumber", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>Wait Time before Auto Dial (s)</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="AutodialDelayTime"
-                          name="AutodialDelayTime"
-                          maxLength="2"
-                          value={form.waitTimeBeforeAutoDial}
-                          onChange={(e) =>
-                            handleChange(
-                              "waitTimeBeforeAutoDial",
-                              e.target.value,
-                            )
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">Input Gain (dB)</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="RxGainDb"
-                          name="RxGainDb"
-                          maxLength="3"
-                          value={form.inputGain}
-                          onChange={(e) =>
-                            handleChange("inputGain", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">Output Gain (dB)</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="TxGainDb"
-                          name="TxGainDb"
-                          maxLength="3"
-                          value={form.outputGain}
-                          onChange={(e) =>
-                            handleChange("outputGain", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">Echo Canceller</td>
-                      <td>
-                        <input
-                          id="EnableEchoCancellor"
-                          name="EnableEchoCancellor"
-                          type="checkbox"
-                          checked={!!form.echoCanceller}
-                          onChange={() => handleCheckbox("echoCanceller")}
-                          style={{ marginRight: "4px" }}
-                        />
-                        Enable
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">CID</td>
-                      <td>
-                        <input
-                          id="CallerIDEnable"
-                          name="CallerIDEnable"
-                          type="checkbox"
-                          checked={!!form.cid}
-                          onChange={() => handleCheckbox("cid")}
-                          style={{ marginRight: "4px" }}
-                        />
-                        Enable
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">Call Waiting</td>
-                      <td>
-                        <input
-                          id="CallWaitingEnable"
-                          name="CallWaitingEnable"
-                          type="checkbox"
-                          checked={!!form.callWaiting}
-                          onChange={() => handleCheckbox("callWaiting")}
-                          style={{ marginRight: "4px" }}
-                        />
-                        Enable
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">DND (Do Not Disturb)</td>
-                      <td>
-                        <input
-                          id="DNDEnable"
-                          name="DNDEnable"
-                          type="checkbox"
-                          checked={!!form.dnd}
-                          onChange={() => handleCheckbox("dnd")}
-                          style={{ marginRight: "4px" }}
-                          disabled={!!form.callForward}
-                        />
-                        Enable
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">Call Forward</td>
-                      <td>
-                        <input
-                          id="Forwarding"
-                          name="Forwarding"
-                          type="checkbox"
-                          checked={!!form.callForward}
-                          onChange={() => handleCheckbox("callForward")}
-                          style={{ marginRight: "4px" }}
-                          disabled={!!form.dnd}
-                        />
-                        Enable
-                      </td>
-                    </tr>
-
-                    <tr
-                      id="idForwardingType"
-                      style={{ display: form.callForward ? "" : "none" }}
-                    >
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>Forward Type</td>
-                      <td>
-                        <select
-                          id="ForwardingType"
-                          value={form.forwardType}
-                          onChange={(e) =>
-                            handleChange("forwardType", e.target.value)
-                          }
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        >
-                          <option value="Unconditional">Unconditional</option>
-                          <option value="Busy">Busy</option>
-                          <option value="No Reply">No Reply</option>
-                        </select>
-                      </td>
-                    </tr>
-
-                    <tr
-                      id="idForwardingNum"
-                      style={{ display: form.callForward ? "" : "none" }}
-                    >
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>Forward Number</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="ForwardingNum"
-                          name="ForwardingNum"
-                          maxLength="20"
-                          value={form.forwardNumber}
-                          onChange={(e) =>
-                            handleChange("forwardNumber", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr
-                      id="idNoAnswerDelayTime"
-                      style={{
-                        display:
-                          form.callForward && form.forwardType === "No Reply"
-                            ? ""
-                            : "none",
-                      }}
-                    >
-                      <td>&nbsp;</td>
-                      <td>&nbsp;</td>
-                      <td>Time for No Reply Forward (s)</td>
-                      <td>
-                        <input
-                          className="border border-gray-400 rounded-sm px-1 bg-white"
-                          id="NoAnswerDelayTime"
-                          name="NoAnswerDelayTime"
-                          maxLength="2"
-                          value={form.noAnswerDelayTime || "0"}
-                          onChange={(e) =>
-                            handleChange("noAnswerDelayTime", e.target.value)
-                          }
-                          style={{
-                            height: "22px",
-                            width: "200px",
-                            fontSize: "12px",
-                          }}
-                        />
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>&nbsp;</td>
-                      <td colSpan="2">Advanced Configuration</td>
-                      <td>
-                        <input
-                          id="Advanced"
-                          name="Advanced"
-                          type="checkbox"
-                          checked={!!form.advancedConfiguration}
-                          onChange={() =>
-                            handleCheckbox("advancedConfiguration")
-                          }
-                        />
-                        Enable
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="text-center mt-4">
-              <div
-                className="text-gray-600 text-sm"
-                style={{ maxWidth: "1000px", margin: "0 auto" }}
-              >
-                Note: 'Auto Dial Number' goes into effect only if no dialing
-                occurs during 'Wait Time before Auto Dial'.
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-6 py-6">
-              <button
-                type="submit"
-                disabled={saving}
-                style={{
-                  background:
-                    "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: "16px",
-                  borderRadius: "6px",
-                  minWidth: "100px",
-                  height: "42px",
-                  textTransform: "none",
-                  padding: "6px 24px",
-                  boxShadow: "0 2px 8px #b3e0ff",
-                  border: "1px solid #0e8fd6",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)";
-                }}
-              >
-                {saving ? "Saving..." : "Modify"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleReset}
-                style={{
-                  background:
-                    "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: "16px",
-                  borderRadius: "6px",
-                  minWidth: "100px",
-                  height: "42px",
-                  textTransform: "none",
-                  padding: "6px 24px",
-                  boxShadow: "0 2px 8px #b3e0ff",
-                  border: "1px solid #0e8fd6",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)";
-                }}
-              >
-                Reset
-              </button>
-
-              <button
-                type="button"
-                onClick={handleCancel}
-                style={{
-                  background:
-                    "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: "16px",
-                  borderRadius: "6px",
-                  minWidth: "100px",
-                  height: "42px",
-                  textTransform: "none",
-                  padding: "6px 24px",
-                  boxShadow: "0 2px 8px #b3e0ff",
-                  border: "1px solid #0e8fd6",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background =
-                    "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)";
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+          {formBody}
         </div>
       </div>
     </div>
   );
-};
+});
+
+PortFxsModifyPage.displayName = "PortFxsModifyPage";
 
 export default PortFxsModifyPage;

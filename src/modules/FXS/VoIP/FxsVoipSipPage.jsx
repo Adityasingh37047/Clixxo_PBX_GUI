@@ -1,80 +1,40 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Alert,
-  Button,
-  FormControl,
-  MenuItem,
-  Select as MuiSelect,
-  Checkbox,
-  TextField,
-  CircularProgress,
-} from "@mui/material";
+import { Alert, CircularProgress } from "@mui/material";
 import {
   SIP_SETTINGS_FIELDS,
   SIP_SETTINGS_NOTE,
 } from "../../../sections/voip/constants/SipSipConstants";
-
 import {
   listFxsSipSettings,
   saveFxsSipSettings,
   resetFxsSipSettings,
   statusFxsSipSettings,
 } from "../../../api/apiService";
+import {
+  C,
+  Btn,
+  FormEnableCheckbox,
+  AdvancedPageShell,
+  AdvancedBreadcrumb,
+  advancedTableContainerStyle,
+  advancedBlueBarStyle,
+  nativeFieldInteraction,
+  advancedFormBtnStyle,
+  advancedFormInlineFooterStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#eef2f7",
-  cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
-  mutedText: "#94a3b8",
-  accent: "#1e293b",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
+const LOCAL_PBX_REGISTER_STATUS_TEXT =
+  "Local PBX (registration not required)";
+
+/** Same width for all fill boxes (matches Register Status) */
+const CONTROL_FIELD_WIDTH = 238;
+
+const getRegisterStatusDisplay = (mode, status, localMsg) => {
+  if (mode === "local") {
+    return LOCAL_PBX_REGISTER_STATUS_TEXT;
+  }
+  return status || "";
 };
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 220, // Slightly wider for SIP setting labels
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 const getInitialState = () => {
   const state = {};
@@ -92,8 +52,6 @@ const getInitialState = () => {
   return state;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 const FxsVoipSipPage = () => {
   const [form, setForm] = useState(getInitialState());
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -108,7 +66,6 @@ const FxsVoipSipPage = () => {
     setTimeout(() => setMessage({ type: "", text: "" }), 6000);
   };
 
-  // Apply API data object to form state
   const applyApiData = (data) => {
     if (!data) return;
     setForm((prev) => {
@@ -122,7 +79,6 @@ const FxsVoipSipPage = () => {
     });
   };
 
-  // ── On mount: load settings ─────────────────────────────────────────────────
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -135,9 +91,18 @@ const FxsVoipSipPage = () => {
         if (settingsRes?.success) {
           const mode = settingsRes.registrationMode || "local";
           setRegistrationMode(mode);
-          if (mode === "local" && settingsRes.message)
-            setLocalModeMsg(settingsRes.message);
+          const localMsg =
+            mode === "local"
+              ? settingsRes.message || LOCAL_PBX_REGISTER_STATUS_TEXT
+              : "";
+          setLocalModeMsg(localMsg);
           applyApiData(settingsRes.data || {});
+          if (mode === "local") {
+            setForm((prev) => ({
+              ...prev,
+              registerStatus: LOCAL_PBX_REGISTER_STATUS_TEXT,
+            }));
+          }
         }
       } catch (e) {
         console.warn("Error during initial load:", e);
@@ -151,7 +116,6 @@ const FxsVoipSipPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Poll register status every 30 s in remote mode ─────────────────────────
   useEffect(() => {
     if (statusPollRef.current) clearInterval(statusPollRef.current);
     if (registrationMode === "remote") {
@@ -197,10 +161,20 @@ const FxsVoipSipPage = () => {
       }
       const mode = res.registrationMode || "local";
       setRegistrationMode(mode);
-      setLocalModeMsg(mode === "local" && res.message ? res.message : "");
+      const localMsg =
+        mode === "local"
+          ? res.message || LOCAL_PBX_REGISTER_STATUS_TEXT
+          : "";
+      setLocalModeMsg(localMsg);
       if (res.data) applyApiData(res.data);
-      if (res.registerStatus)
+      if (mode === "local") {
+        setForm((prev) => ({
+          ...prev,
+          registerStatus: LOCAL_PBX_REGISTER_STATUS_TEXT,
+        }));
+      } else if (res.registerStatus) {
         setForm((prev) => ({ ...prev, registerStatus: res.registerStatus }));
+      }
       showMessage("success", res.message || "Settings saved successfully!");
     } catch (err) {
       showMessage("error", err?.message || "Failed to save settings.");
@@ -223,7 +197,6 @@ const FxsVoipSipPage = () => {
     }
   };
 
-  // Check if field should be shown based on conditional logic
   const shouldShowField = (field) => {
     if (!field.conditional) return true;
     const conditionalValue = form[field.conditional];
@@ -234,298 +207,287 @@ const FxsVoipSipPage = () => {
     return !!conditionalValue;
   };
 
-  return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Error / Success Banner */}
-        {message.text && (
-          <Alert
-            severity={
-              message.type === "error"
-                ? "error"
-                : message.type === "success"
-                  ? "success"
-                  : "info"
-            }
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            {message.text}
-          </Alert>
-        )}
+  const fieldInputStyle = {
+    height: 28,
+    width: CONTROL_FIELD_WIDTH,
+    maxWidth: "100%",
+    padding: "0 8px",
+    fontSize: 13,
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 4,
+    outline: "none",
+    backgroundColor: "#fff",
+    color: C.valueText,
+    boxSizing: "border-box",
+  };
 
-        {/* Breadcrumb */}
+  const fieldReadonlyStyle = {
+    ...fieldInputStyle,
+    backgroundColor: "#e5e7eb",
+    lineHeight: 1.35,
+    minHeight: 28,
+    height: "auto",
+    padding: "4px 8px",
+    whiteSpace: "normal",
+    wordBreak: "break-word",
+  };
+
+  const labelColStyle = {
+    fontSize: 13,
+    fontWeight: 600,
+    color: C.labelText,
+    flex: "0 0 48%",
+    maxWidth: "48%",
+    paddingRight: 24,
+    textAlign: "left",
+    lineHeight: 1.35,
+  };
+
+  const valueColStyle = {
+    flex: "1 1 52%",
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+  };
+
+  const controlSlotStyle = {
+    width: CONTROL_FIELD_WIDTH,
+    maxWidth: "100%",
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+  };
+
+  return (
+    <AdvancedPageShell>
+      {message.text && (
+        <Alert
+          severity={
+            message.type === "error"
+              ? "error"
+              : message.type === "success"
+                ? "success"
+                : "info"
+          }
+          onClose={() => setMessage({ type: "", text: "" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {message.text}
+        </Alert>
+      )}
+
+      <AdvancedBreadcrumb current="SIP Settings" />
+
+      {registrationMode === "local" && localModeMsg && (
         <div
           style={{
+            background: "#fffbeb",
+            border: "1px solid #fcd34d",
+            borderRadius: 6,
+            padding: "10px 16px",
+            marginBottom: 12,
+            fontSize: 12,
+            color: C.amber,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
+            gap: 8,
           }}
         >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            FXS &rsaquo; VoIP &rsaquo;{" "}
-            <span style={{ color: C.valueText, fontWeight: 600 }}>
-              SIP Settings
-            </span>
-          </div>
+          <span style={{ fontWeight: 700 }}>ℹ Local PBX mode:</span>
+          <span>{localModeMsg}</span>
+        </div>
+      )}
+
+      <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
+        <div style={advancedBlueBarStyle}>
+          <span>SIP Settings</span>
         </div>
 
-        {/* Local-mode info banner */}
-        {registrationMode === "local" && localModeMsg && (
+        {loadingPage ? (
           <div
             style={{
-              background: "#fffbeb",
-              border: "1px solid #fcd34d",
-              borderRadius: 6,
-              padding: "10px 16px",
-              marginBottom: 12,
-              fontSize: 12,
-              color: C.amber,
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
-              gap: 8,
+              padding: 60,
             }}
           >
-            <span style={{ fontWeight: 700 }}>ℹ Local PBX mode:</span>
-            <span>{localModeMsg}</span>
+            <CircularProgress size={32} sx={{ color: C.accent }} />
           </div>
-        )}
-
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          {loadingPage ? (
+        ) : (
+          <div style={{ padding: "24px 32px 0" }}>
             <div
+              className="flex flex-col gap-3"
               style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 60,
+                width: "100%",
+                maxWidth: 640,
+                margin: "0 auto",
               }}
             >
-              <CircularProgress size={32} />
-            </div>
-          ) : (
-            <div style={{ padding: "24px 28px" }}>
-              <SectionHeading title="SIP Settings" />
+              {SIP_SETTINGS_FIELDS.map((field) => {
+                if (!shouldShowField(field)) return null;
 
-              {SIP_SETTINGS_NOTE && (
-                <div
-                  style={{ fontSize: 12, color: C.mutedText, marginBottom: 20 }}
-                >
-                  {SIP_SETTINGS_NOTE}
-                </div>
-              )}
-
-              {/* 2-Column Grid Layout for Form Fields */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px 40px",
-                }}
-              >
-                {SIP_SETTINGS_FIELDS.map((field) => {
-                  if (!shouldShowField(field)) return null;
-
-                  return (
-                    <div
-                      key={field.key}
-                      style={{ display: "flex", flexDirection: "column" }}
-                    >
-                      <FieldRow
-                        label={field.label}
-                        align={
-                          field.type === "checkbox" ? "center" : "flex-start"
-                        }
-                      >
-                        {/* Readonly Field */}
-                        {field.type === "readonly" && (
-                          <TextField
-                            size="small"
-                            fullWidth
-                            disabled
-                            value={form[field.key] || ""}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                background: "#f1f5f9",
-                                color: C.valueText,
-                              },
+                return (
+                  <div
+                    key={field.key}
+                    className="flex flex-row items-start w-full"
+                  >
+                    <label style={labelColStyle}>{field.label}</label>
+                    <div style={valueColStyle}>
+                      {field.type === "readonly" && (
+                        <div style={controlSlotStyle}>
+                          <div
+                            style={{
+                              ...fieldReadonlyStyle,
+                              width: "100%",
+                              ...(field.key === "registerStatus"
+                                ? {
+                                    whiteSpace: "nowrap",
+                                    lineHeight: "28px",
+                                    height: 28,
+                                    padding: "0 8px",
+                                    textAlign: "center",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }
+                                : {}),
                             }}
-                          />
-                        )}
+                          >
+                            {field.key === "registerStatus"
+                              ? getRegisterStatusDisplay(
+                                  registrationMode,
+                                  form.registerStatus,
+                                  localModeMsg,
+                                )
+                              : form[field.key]}
+                          </div>
+                        </div>
+                      )}
 
-                        {/* Text / Number Input */}
-                        {field.type === "text" && (
-                          <TextField
-                            size="small"
-                            fullWidth
+                      {field.type === "text" && (
+                        <div style={controlSlotStyle}>
+                          <input
+                            type="text"
                             value={form[field.key] || ""}
                             onChange={(e) =>
                               handleChange(field.key, e.target.value)
                             }
-                            inputProps={{
-                              style: { fontSize: 13, padding: "6px 8px" },
-                            }}
+                            style={fieldInputStyle}
+                            disabled={saving}
+                            {...nativeFieldInteraction}
                           />
-                        )}
+                        </div>
+                      )}
 
-                        {/* Select Dropdown */}
-                        {field.type === "select" && (
-                          <FormControl size="small" fullWidth>
-                            <MuiSelect
-                              value={form[field.key] || ""}
-                              onChange={(e) =>
-                                handleChange(field.key, e.target.value)
-                              }
-                              sx={{ fontSize: 13 }}
-                            >
-                              {field.options.map((opt) => (
-                                <MenuItem
-                                  key={opt}
-                                  value={opt}
-                                  sx={{ fontSize: 13 }}
-                                >
-                                  {opt}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        )}
-
-                        {/* Checkbox */}
-                        {field.type === "checkbox" && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                            }}
+                      {field.type === "select" && (
+                        <div style={controlSlotStyle}>
+                          <select
+                            value={form[field.key] || ""}
+                            onChange={(e) =>
+                              handleChange(field.key, e.target.value)
+                            }
+                            style={fieldInputStyle}
+                            disabled={saving}
+                            {...nativeFieldInteraction}
                           >
-                            <Checkbox
-                              checked={!!form[field.key]}
-                              onChange={() => handleCheckbox(field.key)}
-                              size="small"
-                              sx={{
-                                padding: "2px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
-                            />
-                            <span
-                              style={{
-                                fontSize: 13,
-                                color: C.valueText,
-                                cursor: "pointer",
-                              }}
-                              onClick={() => handleCheckbox(field.key)}
-                            >
-                              Enable
-                            </span>
-                          </div>
-                        )}
+                            {field.options.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
 
-                        {/* Helper Text */}
-                        {field.helper && (
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: C.errorRed,
-                              marginTop: 6,
-                              lineHeight: 1.4,
-                            }}
-                          >
-                            {field.helper}
-                          </div>
-                        )}
-                      </FieldRow>
+                      {field.type === "checkbox" && (
+                        <div style={controlSlotStyle}>
+                          <FormEnableCheckbox
+                            checked={!!form[field.key]}
+                            onChange={() => handleCheckbox(field.key)}
+                            name={field.key}
+                          />
+                        </div>
+                      )}
+
+                      {field.helper && (
+                        <div
+                          style={{
+                            width: CONTROL_FIELD_WIDTH,
+                            maxWidth: "100%",
+                            color: C.amber,
+                            fontSize: 11,
+                            marginTop: 4,
+                            wordWrap: "break-word",
+                            textAlign: "left",
+                          }}
+                        >
+                          {field.helper}
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-
-          {/* Bottom Actions Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              padding: "16px 24px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              background: "#f8fafc",
-            }}
-          >
-            <Button
-              variant="contained"
-              onClick={handleSave}
-              disabled={saving || loadingPage}
-              sx={{
-                background: "#1e2d42",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 120,
-                "&:hover": { background: "#0f172a" },
-              }}
-            >
-              {saving ? (
-                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <CircularProgress size={14} sx={{ color: "#fff" }} />
-                  Saving…
-                </span>
-              ) : (
-                "Save Settings"
-              )}
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handleReset}
-              disabled={saving || loadingPage}
-              sx={{
-                color: "#1e293b",
-                borderColor: "#9ca3af",
-                fontWeight: 600,
-                fontSize: 13,
-                textTransform: "none",
-                padding: "6px 32px",
-                minWidth: 100,
-                "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
-              }}
-            >
-              Reset
-            </Button>
+            {SIP_SETTINGS_NOTE ? (
+              <div
+                style={{
+                  fontSize: 11,
+                  color: C.amber,
+                  marginTop: 16,
+                  maxWidth: 640,
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  textAlign: "left",
+                  lineHeight: 1.45,
+                }}
+              >
+                {SIP_SETTINGS_NOTE}
+              </div>
+            ) : null}
           </div>
+        )}
+
+        <div style={advancedFormInlineFooterStyle}>
+          <Btn
+            type="button"
+            onClick={handleSave}
+            variant="primary"
+            disabled={saving || loadingPage}
+            style={advancedFormBtnStyle}
+          >
+            {saving ? (
+              <>
+                <CircularProgress size={14} sx={{ color: "inherit" }} />
+                Saving…
+              </>
+            ) : (
+              "Save"
+            )}
+          </Btn>
+          <Btn
+            type="button"
+            onClick={handleReset}
+            variant="cancel"
+            disabled={saving || loadingPage}
+            style={advancedFormBtnStyle}
+          >
+            Reset
+          </Btn>
         </div>
       </div>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

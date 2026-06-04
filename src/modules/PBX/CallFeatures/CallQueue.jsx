@@ -972,9 +972,28 @@ const CallQueue = () => {
                           className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
                           title="Move to bottom"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <polyline points="2,3 7,8 12,3" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <line x1="2" y1="11" x2="12" y2="11" stroke="#333" strokeWidth="2" strokeLinecap="round"/>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                          >
+                            <polyline
+                              points="2,3 7,8 12,3"
+                              stroke="#333"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <line
+                              x1="2"
+                              y1="11"
+                              x2="12"
+                              y2="11"
+                              stroke="#333"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
                           </svg>
                         </button>
                         {/* Move up */}
@@ -983,8 +1002,19 @@ const CallQueue = () => {
                           className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
                           title="Move up"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <polyline points="2,9 7,4 12,9" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                          >
+                            <polyline
+                              points="2,9 7,4 12,9"
+                              stroke="#333"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         </button>
                         {/* Move down */}
@@ -993,8 +1023,19 @@ const CallQueue = () => {
                           className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
                           title="Move down"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <polyline points="2,5 7,10 12,5" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                          >
+                            <polyline
+                              points="2,5 7,10 12,5"
+                              stroke="#333"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         </button>
                         {/* Move to top */}
@@ -1003,9 +1044,28 @@ const CallQueue = () => {
                           className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
                           title="Move to top"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <line x1="2" y1="3" x2="12" y2="3" stroke="#333" strokeWidth="2" strokeLinecap="round"/>
-                            <polyline points="2,11 7,6 12,11" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="none"
+                          >
+                            <line
+                              x1="2"
+                              y1="3"
+                              x2="12"
+                              y2="3"
+                              stroke="#333"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+                            <polyline
+                              points="2,11 7,6 12,11"
+                              stroke="#333"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         </button>
                       </div>

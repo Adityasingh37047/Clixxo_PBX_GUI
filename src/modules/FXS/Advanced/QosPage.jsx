@@ -3,14 +3,70 @@ import { Alert, TextField } from "@mui/material";
 import { QOS_INITIAL_FORM } from "../../../sections/advanced/constants/QosConstants";
 import {
   Btn,
+  C,
   muiTextFieldSx,
   AdvancedBreadcrumb,
   AdvancedPageShell,
   AdvancedFormCard,
-  FieldRow,
-  AdvancedCheckboxRow,
+  FormEnableCheckbox,
   advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
+
+const FIELD_LABEL_WIDTH = 170;
+const FIELD_GAP = 12;
+const QOS_INPUT_WIDTH = 160; // half of 320px control column
+
+const qosInputFieldSx = {
+  ...muiTextFieldSx,
+  width: QOS_INPUT_WIDTH,
+  maxWidth: "50%",
+};
+
+const qosLabelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  width: FIELD_LABEL_WIDTH,
+  flexShrink: 0,
+  textAlign: "left",
+};
+
+const qosControlColBase = {
+  width: "min(100%, 320px)",
+  flexShrink: 0,
+  boxSizing: "border-box",
+};
+
+/** Checkbox column — Enable control starts here */
+const qosCheckboxColStyle = {
+  ...qosControlColBase,
+  paddingLeft: 6,
+};
+
+/** Input column — left edge lines up with checkbox icon (6px col + 4px MUI checkbox padding) */
+const qosInputColStyle = {
+  ...qosControlColBase,
+  paddingLeft: 10,
+};
+
+const QosFieldRow = ({ label, labelFor, children, inputAlign = false }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-start",
+      gap: FIELD_GAP,
+      minHeight: 32,
+    }}
+  >
+    <label htmlFor={labelFor} style={qosLabelStyle}>
+      {label}
+    </label>
+    <div style={inputAlign ? qosInputColStyle : qosCheckboxColStyle}>
+      {children}
+    </div>
+  </div>
+);
 
 const QosPage = () => {
   const [formData, setFormData] = useState(QOS_INITIAL_FORM);
@@ -90,66 +146,83 @@ const QosPage = () => {
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            gap: 14,
+            justifyContent: "center",
             width: "100%",
-            maxWidth: 560,
-            margin: "0 auto",
             paddingBottom: 16,
           }}
         >
-          <AdvancedCheckboxRow
-            id="qosEnabled"
-            label="QoS"
-            checked={formData.qosEnabled}
-            onChange={() =>
-              setFormData((prev) => ({
-                ...prev,
-                qosEnabled: !prev.qosEnabled,
-              }))
-            }
-          />
-          {formData.qosEnabled && (
-            <>
-              <FieldRow label="Media Premium QoS">
-                <TextField
-                  id="mediaPremiumQos"
-                  fullWidth
-                  size="small"
-                  value={formData.mediaPremiumQos || ""}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, "");
-                    setFormData((prev) => ({ ...prev, mediaPremiumQos: v }));
-                  }}
-                  sx={muiTextFieldSx}
-                  inputProps={{
-                    style: { fontSize: 13, padding: "6px 8px" },
-                    maxLength: 2,
-                  }}
-                />
-              </FieldRow>
-              <FieldRow label="Control Premium QoS">
-                <TextField
-                  id="controlPremiumQos"
-                  fullWidth
-                  size="small"
-                  value={formData.controlPremiumQos || ""}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, "");
-                    setFormData((prev) => ({
-                      ...prev,
-                      controlPremiumQos: v,
-                    }));
-                  }}
-                  sx={muiTextFieldSx}
-                  inputProps={{
-                    style: { fontSize: 13, padding: "6px 8px" },
-                    maxLength: 2,
-                  }}
-                />
-              </FieldRow>
-            </>
-          )}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "fit-content",
+              maxWidth: "100%",
+            }}
+          >
+            <QosFieldRow label="QoS" labelFor="qosEnabled">
+              <FormEnableCheckbox
+                id="qosEnabled"
+                checked={formData.qosEnabled}
+                onChange={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    qosEnabled: !prev.qosEnabled,
+                  }))
+                }
+              />
+            </QosFieldRow>
+            {formData.qosEnabled && (
+              <>
+                <QosFieldRow
+                  label="Media Premium QoS"
+                  labelFor="mediaPremiumQos"
+                  inputAlign
+                >
+                  <TextField
+                    id="mediaPremiumQos"
+                    size="small"
+                    value={formData.mediaPremiumQos || ""}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, "");
+                      setFormData((prev) => ({
+                        ...prev,
+                        mediaPremiumQos: v,
+                      }));
+                    }}
+                    sx={qosInputFieldSx}
+                    inputProps={{
+                      style: { fontSize: 13, padding: "6px 8px" },
+                      maxLength: 2,
+                    }}
+                  />
+                </QosFieldRow>
+                <QosFieldRow
+                  label="Control Premium QoS"
+                  labelFor="controlPremiumQos"
+                  inputAlign
+                >
+                  <TextField
+                    id="controlPremiumQos"
+                    size="small"
+                    value={formData.controlPremiumQos || ""}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, "");
+                      setFormData((prev) => ({
+                        ...prev,
+                        controlPremiumQos: v,
+                      }));
+                    }}
+                    sx={qosInputFieldSx}
+                    inputProps={{
+                      style: { fontSize: 13, padding: "6px 8px" },
+                      maxLength: 2,
+                    }}
+                  />
+                </QosFieldRow>
+              </>
+            )}
+          </div>
         </div>
       </AdvancedFormCard>
     </AdvancedPageShell>

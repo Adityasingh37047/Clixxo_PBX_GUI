@@ -13,26 +13,28 @@ import {
 } from "@mui/material";
 import {
   C,
-  CARD_RADIUS,
   Btn,
   muiSelectSx,
   muiTextFieldSx,
-  numManipulateCardStyle,
 } from "../../../sections/route/routeSharedUi";
 
-const saveBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  letterSpacing: "0.2px",
+/** Match E1-PRI Route Routing Parameters card radii (10px, not table 20px kit). */
+const ROUTE_CARD_RADIUS = 10;
+
+const cardStyle = {
+  background: C.cardBg,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: ROUTE_CARD_RADIUS,
+  overflow: "hidden",
+  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
 };
 
 const cardHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  borderTopLeftRadius: ROUTE_CARD_RADIUS,
+  borderTopRightRadius: ROUTE_CARD_RADIUS,
   display: "flex",
   alignItems: "center",
   padding: "7px 14px",
@@ -40,6 +42,12 @@ const cardHeaderStyle = {
   fontSize: 13,
   color: C.labelText,
   borderBottom: `1px solid ${C.cardBorder}`,
+};
+
+const saveBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
 };
 
 const fieldLabelStyle = {
@@ -158,7 +166,7 @@ const RouteRoutingParameterPage = () => {
           </span>
         </div>
 
-        <div style={numManipulateCardStyle}>
+        <div style={cardStyle}>
           <div style={cardHeaderStyle}>Routing Parameters</div>
 
           <div className="w-full px-5 pt-3 pb-2">

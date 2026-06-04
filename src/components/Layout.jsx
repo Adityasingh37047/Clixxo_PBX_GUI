@@ -7,7 +7,7 @@ import Sidebar from "./Sidebar";
 const Layout = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(95); // tracks actual sidebar width (hover + click both)
+  const [sidebarWidth, setSidebarWidth] = useState(290); // desktop: left + right panel (95 + 195)
   const location = useLocation();
   const [refreshKey, setRefreshKey] = useState(0);
  
@@ -30,7 +30,7 @@ const Layout = () => {
  
   const NAVBAR_HEIGHT = isMobile ? 140 : 48;
  
-  // Content margin follows sidebar width on every change (hover + click)
+  // Content margin follows sidebar width (right panel always open on desktop)
   const contentMarginLeft = isMobile ? 0 : sidebarWidth;
   const contentWidth = isMobile ? "100%" : `calc(100% - ${sidebarWidth}px)`;
  
@@ -50,7 +50,7 @@ const Layout = () => {
         onWidthChange={setSidebarWidth} // fires on hover AND click
       />
  
-      {/* Main content shrinks on hover AND click, expands when both gone */}
+      {/* Main content margin matches sidebar width */}
       <main
         style={{
           marginLeft: contentMarginLeft,

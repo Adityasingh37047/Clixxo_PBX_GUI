@@ -2,7 +2,6 @@
 
 // Table columns
 export const PORT_FXS_TABLE_COLUMNS = [
-  { key: "modify", label: "Modify", width: "60px" },
   { key: "port", label: "Port", width: "60px" },
   { key: "type", label: "Type", width: "80px" },
   { key: "sipAccount", label: "SIP Account", width: "120px" },
@@ -12,8 +11,7 @@ export const PORT_FXS_TABLE_COLUMNS = [
   { key: "callWaiting", label: "Call Waiting", width: "100px" },
   { key: "regStatus", label: "Reg Status", width: "120px" },
   { key: "echoCanceller", label: "Echo Canceller", width: "120px" },
-  { key: "inputGain", label: "Input Gain", width: "100px" },
-  { key: "outputGain", label: "Output Gain", width: "100px" },
+  { key: "modify", label: "Modify", width: "60px" },
 ];
 
 // Items per page
@@ -344,6 +342,26 @@ export const PORT_FXS_BATCH_MODIFY_FIELDS = [
     conditionalParent: "advancedConfiguration",
   },
 ];
+
+/** Single-port modify — same fields as batch (without batch-only controls). */
+const PORT_FXS_MODIFY_EXCLUDE_KEYS = new Set([
+  "endingPort",
+  "batchRegister",
+  "batchAccount",
+  "batchConfigure",
+  "sipAccountBatchRule",
+  "sipAccountBatchStepSize",
+  "displayNameBatchRule",
+  "displayNameBatchStepSize",
+  "authPasswordBatchRule",
+  "authPasswordBatchStepSize",
+]);
+
+export const PORT_FXS_MODIFY_FIELDS = PORT_FXS_BATCH_MODIFY_FIELDS.filter(
+  (f) => !PORT_FXS_MODIFY_EXCLUDE_KEYS.has(f.key),
+).map((f) =>
+  f.key === "startingPort" ? { ...f, label: "Port" } : f,
+);
 
 // Batch Modify Note
 export const PORT_FXS_BATCH_MODIFY_NOTE =
