@@ -4,6 +4,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
 import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Button,
   CircularProgress,
@@ -76,37 +77,37 @@ const Btn = ({
   hoverBehavior = "background",
 }) => {
   const variants = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-    cancel: {
-      background: "#f1f5f9",
-      color: "#64748b",
-      border: "1px solid #cbd5e1",
-    },
+     default: {
+     background: C.cardBg,
+color: C.valueText,
+border: "1px solid #9ca3af",
+},
+primary: {
+background:
+"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+color: "#fff",
+border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+},
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+color: C.labelText,
+border: `1px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `1px solid #fecaca`,
     },
     accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
+      background: C.cardBg,
+      color: C.accent,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
 
@@ -756,24 +757,20 @@ const DisaPage = () => {
                   border: "1px solid #cbd5e1",
                   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
                 }}
-              >
+              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
               <Btn
   onClick={handleOpenAddModal}
   disabled={loading.list}
   variant="primary"
-  hoverBehavior="opacity"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-
-    border: "1px solid #5A6F8F",
-
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+  
+ style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </Btn>
@@ -1611,7 +1608,7 @@ const DisaPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save || loading.get}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save && <CircularProgress size={20} color="inherit" />}
             {loading.save ? "Saving..." : editId != null ? "Update DISA" : "Create DISA"}
@@ -1620,18 +1617,7 @@ const DisaPage = () => {
   variant="cancel"
   onClick={handleCloseModal}
   disabled={loading.save || loading.get}
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-
-    background: "#cbd5e1",
-    color: "#374151",
-
-    border: "1px solid #cbd5e1",
-
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+style={{ minWidth: 100, height: 33 }}
 >
   Cancel
 </Btn>

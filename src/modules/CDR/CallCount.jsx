@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { CircularProgress, Checkbox } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Column definitions ────────────────────────────────────────────────────────
 const columns = [
@@ -555,35 +556,39 @@ const FilterSearch = ({ value, onChange, onFocus, onBlur, focused }) => (
   />
 );
 
-const GhostBtn = ({ children, onClick, disabled }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
-    style={{
-      height: 38,
-      padding: "0 18px",
-      fontSize: 13,
-      fontWeight: 600,
-      borderRadius: 10,
-      border: `1px solid ${C.cardBorder}`,
-      background: "#ffffff",
-      color: C.labelText,
-      cursor: disabled ? "not-allowed" : "pointer",
-      opacity: disabled ? 0.55 : 1,
-      transition: "background 0.15s ease, border-color 0.15s ease",
-      whiteSpace: "nowrap",
-    }}
-    onMouseEnter={(e) => {
-      if (!disabled) e.currentTarget.style.background = "#f8fafc";
-    }}
-    onMouseLeave={(e) => {
-      if (!disabled) e.currentTarget.style.background = "#ffffff";
-    }}
-  >
-    {children}
-  </button>
-);
+const GhostBtn = ({ children, onClick, disabled, style: extraStyle = {}, hoverBackground = "#f8fafc" }) => {
+  const baseBackground = extraStyle.background || "#ffffff";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        height: 38,
+        padding: "0 18px",
+        fontSize: 13,
+        fontWeight: 600,
+        borderRadius: 10,
+        border: `1px solid ${C.cardBorder}`,
+        background: "#ffffff",
+        color: C.labelText,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.55 : 1,
+        transition: "background 0.15s ease, border-color 0.15s ease",
+        whiteSpace: "nowrap",
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBackground;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBackground;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
 
 // ── TH (matches PbxMonitor table header) ─────────────────────────────────────
 const TH = ({ children, style: extra, align = "center" }) => (
@@ -937,7 +942,16 @@ const CallCount = () => {
                 paddingBottom: 0,
               }}
             >
-              <GhostBtn onClick={handleResetFilters} disabled={loading}>
+              <GhostBtn
+                onClick={handleResetFilters}
+                disabled={loading}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                }}
+                hoverBackground="#b6c2d3"
+              >
                 Reset
               </GhostBtn>
             </div>
@@ -1070,7 +1084,8 @@ const CallCount = () => {
     boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
               >
-                🗑 Delete
+                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                 Delete
               </Btn>
               <Btn onClick={handleDownload} disabled={loading} variant="accent" style={{
     background: "#cbd5e1",

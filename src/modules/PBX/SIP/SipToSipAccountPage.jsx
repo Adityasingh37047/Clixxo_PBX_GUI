@@ -34,6 +34,7 @@ import {
   deleteSipIpTrunkAccount,
   listGroups,
 } from "../../../api/apiService";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
@@ -51,25 +52,37 @@ const CARD_RADIUS = 20;
 
 const Btn = ({ children, onClick, disabled, variant = "default", style: extraStyle, title }) => {
   const variants = {
-    default: {
-      background: C.cardBg,
+     default: {
+     background: C.cardBg,
 color: C.valueText,
 border: "1px solid #9ca3af",
 },
+primary: {
+background:
+"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+color: "#fff",
+border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+},
     outline: {
       background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
+color: C.labelText,
+border: `1px solid ${C.cardBorder}`,
     },
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
-      border: `0.5px solid #fecaca`,
+      border: `1px solid #fecaca`,
     },
     accent: {
-      background: "#1e293b",
-      color: "#fff",
-      border: "1px solid #9ca3af",
+      background: C.cardBg,
+      color: C.accent,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
   const s = variants[variant] || variants.default;
@@ -736,7 +749,8 @@ borderTopRightRadius: CARD_RADIUS,
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#dc2626" }} />
                 )}
-                🗑 Delete
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
                 onClick={handleClearAll}
@@ -755,16 +769,12 @@ borderTopRightRadius: CARD_RADIUS,
   onClick={() => handleOpenModal()}
   disabled={loading.fetch || loading.save}
   variant="primary"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-
-    border: "1px solid #5A6F8F",
-
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+    style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
 >
   + Add New
 </Btn>
@@ -1217,16 +1227,9 @@ minWidth: 900,
         >
           <Btn
             onClick={handleSave}
-            variant="contained"
+            variant="primary"
             disabled={loading.save}
-            style={{
-              padding: "8px 28px",
-              fontSize: 13,
-              background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-              color: "#fff",
-              border: "1px solid #5A6F8F",
-              boxShadow: "0 2px 8px #3E5475",
-            }}
+             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <CircularProgress size={14} style={{ color: "#fff", marginRight: 8 }} />
@@ -1235,16 +1238,9 @@ minWidth: 900,
           </Btn>
           <Btn
             onClick={handleCloseModal}
-            variant="outlined"
+            variant="cancel"
             disabled={loading.save}
-            style={{
-              background: "#cbd5e1",
-              color: "#374151",
-              border: "1px solid #cbd5e1",
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-              padding: "8px 28px",
-              fontSize: 13,
-            }}
+           style={{ minWidth: 100, height: 33 }}          
           >
             Close
           </Btn>

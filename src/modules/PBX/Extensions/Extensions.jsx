@@ -7,6 +7,7 @@ import {
 } from "../../../constants/SipAccountConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Button,
   Dialog,
@@ -1391,10 +1392,8 @@ const SipAccountPage = () => {
       size={11}
       style={{ color: "#374151" }}
     />
-  ) : (
-    "🗑"
-  )}
-
+  ) : null}
+  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
   Delete
 </Btn>
               {/* <Btn
@@ -1959,90 +1958,123 @@ const SipAccountPage = () => {
 
       {/* ══════════════════════════════════════════════════════════════════════
           ADD / EDIT / BULK MODAL  (same tab structure, CDR-styled shell)
-      ══════════════════════════════════════════════════════════════════════ */}
-      <Dialog
-        open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
-        maxWidth={false}
-        PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
-      >
-        <DialogTitle
+        ══════════════════════════════════════════════════════════════════════ */}
+        <Dialog
+          open={showModal}
+          onClose={loading.save ? null : handleCloseModal}
+          maxWidth={false}
           sx={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            py: 1.5,
+            "& .MuiDialog-container": {
+              alignItems: "flex-start",
+              pt: 8,
+            },
           }}
+          PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
         >
-          {formMode === "bulk"
-            ? "Bulk Add Extensions"
-            : editIndex !== null
-              ? "Edit Extension"
-              : "Add Extension"}
-        </DialogTitle>
-        <DialogContent
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: C.pageBg,
-            border: "1px solid #9ca3af",
-            borderTop: "none",
-          }}
-        >
-          <div
-            style={{ display: "flex", flexDirection: "column", width: "100%" }}
-          >
-            {/* Tab header */}
+          <DialogTitle
+  sx={{
+    background: "#1e2d42",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: 16,
+    textAlign: "center",
+    py: 1,
+    minHeight: 48,
+  }}
+>
+            {formMode === "bulk"
+              ? "Bulk Add Extensions"
+              : editIndex !== null
+                ? "Edit Extension"
+                : "Add Extension"}
+          </DialogTitle>
+         <DialogContent
+  style={{
+    padding: "12px 24px 20px",
+    backgroundColor: "#ffffff",
+  }}
+>
+            <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+              {/* Tab header */}
+              <div
+  style={{
+    borderBottom: "1px solid #f1f5f9",
+    marginBottom: 2,
+    borderRadius: "4px 4px 0 0",
+  }}
+>
+                <Tabs
+                  value={activeTab}
+                  onChange={(_, v) => setActiveTab(v)}
+                  variant="fullWidth"
+                  textColor="inherit"
+                  TabIndicatorProps={{
+                    style: { backgroundColor: C.accent, height: 3 },
+                  }}
+                >
+                  <Tab
+                    label="BASIC"
+                    value="basic"
+                     sx={{
+    color: "#3E5475",
+    fontWeight: 600,
+    textTransform: "none",
+    minHeight: 32,
+    py: 0.5,
+  }}
+                  />
+                  <Tab
+                    label="FEATURES"
+                    value="features"
+                      sx={{
+    color: "#3E5475",
+    fontWeight: 600,
+    textTransform: "none",
+    minHeight: 32,
+    py: 0.5,
+  }}
+                  />
+                  <Tab
+                    label="ADVANCED"
+                    value="advanced"
+                     sx={{
+    color: "#3E5475",
+    fontWeight: 600,
+    textTransform: "none",
+    minHeight: 32,
+    py: 0.5,
+  }}
+                  />
+                </Tabs>
+              </div>
+
+            {/* Tab content container matching PcmPstnPage styling */}
             <div
               style={{
-                borderBottom: "1px solid #f1f5f9",
-                marginBottom: 8,
-                background: "#f1f3f6",
-                borderRadius: "4px 4px 0 0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                width: "100%",
+                background: C.pageBg,
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 8,
+                padding: 20,
               }}
             >
-              <Tabs
-                value={activeTab}
-                onChange={(_, v) => setActiveTab(v)}
-                variant="fullWidth"
-                textColor="inherit"
-                TabIndicatorProps={{
-                  style: { backgroundColor: C.accent, height: 3 },
-                }}
-              >
-                <Tab
-                  label="BASIC"
-                  value="basic"
-                  sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-                />
-                <Tab
-                  label="FEATURES"
-                  value="features"
-                  sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-                />
-                <Tab
-                  label="ADVANCED"
-                  value="advanced"
-                  sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-                />
-              </Tabs>
-            </div>
-
-            {/* ── BASIC TAB ── */}
-            {activeTab === "basic" && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                  paddingBottom: 8,
-                }}
-              >
+              {/* ── BASIC TAB ── */}
+              {activeTab === "basic" && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                    paddingBottom: 8,
+                  }}
+                >
                 {/* General section */}
                 <div
                   style={{
-                    background: "#fff",
+                    
                     border: `1px solid ${C.cardBorder}`,
                     borderRadius: 6,
                     overflow: "hidden",
@@ -2352,7 +2384,7 @@ const SipAccountPage = () => {
                 {/* User Info section */}
                 <div
                   style={{
-                    background: "#fff",
+                   
                     border: `1px solid ${C.cardBorder}`,
                     borderRadius: 6,
                     overflow: "hidden",
@@ -3550,8 +3582,9 @@ const SipAccountPage = () => {
                     </FieldRow>
                   </div>
                 </SectionCard>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         </DialogContent>
 
@@ -3572,16 +3605,7 @@ const SipAccountPage = () => {
   }
   disabled={loading.save}
   variant="primary"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    height: 36,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+ style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? "Saving..." : "Save"}
 </Btn>
@@ -3589,15 +3613,7 @@ const SipAccountPage = () => {
   onClick={handleCloseModal}
   disabled={loading.save}
   variant="cancel"
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+  style={{ minWidth: 100, height: 33 }}
 >
   Close
 </Btn>
@@ -3645,11 +3661,11 @@ const SectionCard = ({ title, children }) => (
     <div
       style={{
         padding: "6px 12px",
-        borderBottom: "1px solid #9ca3af",
+        borderBottom: "1px solid #e2e8f0",
         fontSize: 12,
         fontWeight: 700,
         color: "#1e293b",
-        background: "#f5f7fa",
+        background: "#fff",
         textTransform: "uppercase",
         letterSpacing: "0.04em",
       }}

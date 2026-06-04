@@ -18,7 +18,10 @@ import {
   TextField,
   InputAdornment,
   Alert,
+  Tabs,
+  Tab,
 } from "@mui/material";
+  import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import {
   listIvrDestinations,
@@ -157,22 +160,28 @@ const Btn = ({
   style: extraStyle,
 }) => {
   const variants = {
-    default: {
+   default: {
       background: C.cardBg,
-  color: C.valueText,
-  border: "1px solid #9ca3af",
+color: C.valueText,
+border: "1px solid #9ca3af",
     },
     primary: {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  border: "1px solid #5A6F8F",
+background:
+"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+color: "#fff",
+border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 },
     outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
+     background: C.cardBg,
+color: C.labelText,
+border: `1px solid ${C.cardBorder}`,
+},
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
@@ -1361,7 +1370,8 @@ borderTopRightRadius: CARD_RADIUS,
                   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
                 }}
               >
-                🗑 Delete
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
                 onClick={() => {
@@ -1720,89 +1730,100 @@ minWidth: 900,
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{
-          sx: { width: 900, maxWidth: "96vw", borderRadius: 2 },
-        }}
+        PaperProps={{ sx: { width: 900, maxWidth: "96vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          style={{
+          sx={{
             background: "#1e2d42",
             color: "#fff",
             fontWeight: 700,
             fontSize: 16,
             textAlign: "center",
-            padding: "14px 24px 0",
+            py: 1.5,
           }}
         >
           {editId != null ? "Edit IVR" : "Add IVR"}
-
-          {/* Tabs */}
-          <div
-            style={{
-              display: "flex",
-              gap: 4,
-              justifyContent: "center",
-              marginTop: 14,
-            }}
-          >
-            {[
-              { id: "basic", label: "BASIC" },
-              { id: "keypress", label: "KEY PRESS EVENT" },
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id)}
-                style={{
-                  background: activeTab === t.id ? C.pageBg : "transparent",
-                  color: activeTab === t.id ? C.accent : "#9ca3af",
-                  border: "none",
-                  padding: "8px 16px",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  borderRadius: "6px 6px 0 0",
-                  cursor: "pointer",
-                  letterSpacing: "0.04em",
-                  transition: "all 0.2s",
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          sx={{
+            p: "12px 8px 0 8px",
+            backgroundColor: C.pageBg,
+            border: "1px solid #9ca3af",
+            borderTop: "none",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 6,
+            },
+            "& .MuiOutlinedInput-input": {
+              padding: "10px 12px",
+              fontSize: 13,
+            },
+            "& .MuiSelect-select": {
+              padding: "10px 12px",
+              fontSize: 13,
+            },
+          }}
         >
+          <div
+            style={{
+              borderBottom: "1px solid #f1f5f9",
+              marginBottom: 8,
+              background: "#f1f3f6",
+              borderRadius: "4px 4px 0 0",
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={(_, value) => setActiveTab(value)}
+              variant="fullWidth"
+              textColor="inherit"
+              TabIndicatorProps={{
+                style: { backgroundColor: C.accent, height: 3 },
+              }}
+            >
+              <Tab
+                label="BASIC"
+                value="basic"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+              <Tab
+                label="KEY PRESS EVENT"
+                value="keypress"
+                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
+              />
+            </Tabs>
+          </div>
+          <div style={{ background: C.pageBg }}>
+            <div style={{ padding: 12 }}>
           {/* ── BASIC TAB ── */}
           {activeTab === "basic" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div
-                style={{
-                  background: "#fff",
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: "20px 24px 16px",
-                }}
-              >
-                {/* ── Naya "Basic" Heading ── */}
-                <div style={{ marginBottom: 20, position: "relative" }}>
-                  <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: -10,
-                      left: 0,
-                      background: "#fff",
-                      paddingRight: 8,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.mutedText,
-                    }}
-                  >
-                    Basic
-                  </span>
-                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                  <div
+                                    style={{
+                                      background: "#fff",
+                                      border: `1px solid ${C.cardBorder}`,
+                                      borderRadius: 6,
+                                      padding: "20px 24px 16px",
+                                    }}
+                                  >
+                                    {/* ── Naya "Basic" Heading ── */}
+                                    <div style={{ marginBottom: 20, position: "relative" }}>
+                                      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+                                      <span
+                                        style={{
+                                          position: "absolute",
+                                          top: -10,
+                                          left: 0,
+                                          background: "#fff",
+                                          paddingRight: 8,
+                                          fontSize: 13,
+                                          fontWeight: 600,
+                                          color: C.mutedText,
+                                        }}
+                                      >
+                                        Basic
+                                      </span>
+                                    </div>
 
                 {/* 2-Column Grid for Basic fields */}
                 <div
@@ -2672,6 +2693,8 @@ minWidth: 900,
               </div>
             </div>
           )}
+            </div>
+          </div>
         </DialogContent>
         <DialogActions
           style={{
@@ -2682,65 +2705,32 @@ minWidth: 900,
             gap: 12,
           }}
         >
-      <Button
-  onClick={handleSave}
-  disabled={loading.save}
-  variant="contained"
-  sx={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-
-    color: "#fff",
-    textTransform: "none",
-
-    minWidth: "unset",
-    width: "auto",
-
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    },
-
-    "&:disabled": {
-      background: "#94a3b8",
-      color: "#e2e8f0",
-      border: "1px solid #94a3b8",
-    },
-  }}
->
-  {loading.save ? (
-    <CircularProgress size={13} sx={{ color: "#fff", mr: 1 }} />
-  ) : null}
-
-  {loading.save
-    ? "Saving..."
-    : editId != null
-      ? "Update IVR"
-      : "Create IVR"}
-</Button>
-       <Btn
-  onClick={handleCloseModal}
-  disabled={loading.save}
-  variant="cancel"
-  style={{
-    height: 36,
-    padding: "0 24px",
-    fontSize: 13,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  Cancel
-</Btn>
+          <Btn
+            onClick={handleSave}
+            disabled={loading.save}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save ? (
+              <CircularProgress
+                size={13}
+                style={{ color: "#fff", marginRight: 8 }}
+              />
+            ) : null}
+            {loading.save
+              ? "Saving..."
+              : editId != null
+              ? "Update IVR"
+              : "Create IVR"}
+          </Btn>
+          <Btn
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
+          >
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>
