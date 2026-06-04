@@ -881,12 +881,12 @@ minWidth: 900,
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px", backgroundColor:"#ffffff", }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#fff",
+                 background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: "20px 24px 16px",
@@ -913,7 +913,7 @@ minWidth: 900,
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff" },
                       }}
                     />
                   </FieldRow>
@@ -925,7 +925,7 @@ minWidth: 900,
                       value={speedDialNumber}
                       onChange={(e) => setSpeedDialNumber(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px", backgroundColor: "#fff" },
                       }}
                     />
                   </FieldRow>
@@ -942,7 +942,7 @@ minWidth: 900,
                       value={destination}
                       onChange={(e) => setDestination(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px", backgroundColor: "#fff"},
                       }}
                     />
                   </FieldRow>

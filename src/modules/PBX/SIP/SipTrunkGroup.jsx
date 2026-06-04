@@ -981,104 +981,132 @@ minWidth: 900,
         >
           {editIndex !== -1 ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#f8fafc" }}
+       <DialogContent
+  style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+>
+  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div
+      style={{
+        background: "#f5f7fa",
+        border: `1px solid ${C.cardBorder}`,
+        borderRadius: 6,
+        padding: 16,
+      }}
+    >
+      <h3
+        style={{
+          fontSize: 14,
+          fontWeight: 700,
+          color: C.labelText,
+          marginBottom: 12,
+          borderBottom: `1px solid ${C.cardBorder}`,
+          paddingBottom: 6,
+        }}
+      >
+        Trunk Group Info
+      </h3>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {/* SIP Trunk ID */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#fff",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
+          <label
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: C.labelText,
+              width: 120,
+              flexShrink: 0,
+            }}
+          >
+            SIP Trunk ID:
+          </label>
+
+          <div style={{ flex: 1 }}>
+            <Select
+              name="sip_trunk_id"
+              value={formData.sip_trunk_id}
+              onChange={handleInputChange}
+              size="small"
+              fullWidth
+              displayEmpty
+              sx={{
+                fontSize: 13,
+                backgroundColor: "#fff",
               }}
             >
-              <h3
-                style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 12,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Trunk Group Info
-              </h3>
+              <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                Select SIP Trunk ID
+              </MenuItem>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px 32px",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 120,
-                      flexShrink: 0,
-                    }}
+              {trunkIds.length === 0 ? (
+                <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                  No options
+                </MenuItem>
+              ) : (
+                trunkIds.map((opt) => (
+                  <MenuItem
+                    key={opt.value}
+                    value={opt.value}
+                    sx={{ fontSize: 13 }}
                   >
-                    SIP Trunk ID:
-                  </label>
-                  <div className="flex-1">
-                    <Select
-                      name="sip_trunk_id"
-                      value={formData.sip_trunk_id}
-                      onChange={handleInputChange}
-                      size="small"
-                      fullWidth
-                      displayEmpty
-                      sx={{ fontSize: 13 }}
-                    >
-                      <MenuItem value="" disabled sx={{ fontSize: 13 }}>Select SIP Trunk ID</MenuItem>
-                      {trunkIds.length === 0 ? (
-                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>No options</MenuItem>
-                      ) : (
-                        trunkIds.map((opt) => (
-                          <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: 13 }}>
-                            {opt.label}
-                          </MenuItem>
-                        ))
-                      )}
-                    </Select>
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 120,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Group ID:
-                  </label>
-                  <div className="flex-1">
-                    <TextField
-                      type="text"
-                      name="group_id"
-                      value={formData.group_id}
-                      onChange={handleInputChange}
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      placeholder="Enter Group ID"
-                      inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+                    {opt.label}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
           </div>
-        </DialogContent>
+        </div>
+
+        {/* Group ID */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <label
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: C.labelText,
+              width: 120,
+              flexShrink: 0,
+            }}
+          >
+            Group ID:
+          </label>
+
+          <div style={{ flex: 1 }}>
+            <TextField
+              type="text"
+              name="group_id"
+              value={formData.group_id}
+              onChange={handleInputChange}
+              size="small"
+              fullWidth
+              variant="outlined"
+              placeholder="Enter Group ID"
+              inputProps={{
+                style: {
+                  fontSize: 13,
+                  padding: "6px 8px",
+                  backgroundColor: "#fff",
+                },
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DialogContent>
         <DialogActions
           style={{
             padding: "16px 24px",

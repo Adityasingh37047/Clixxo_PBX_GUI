@@ -90,7 +90,7 @@ const Btn = ({ children, onClick, disabled, variant = "default", style: extraSty
       textTransform: "none",
       padding: "6px 28px",
     },
-    cancel: {
+     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -114,6 +114,20 @@ const Btn = ({ children, onClick, disabled, variant = "default", style: extraSty
     },
   };
   const s = variants[variant] || variants.default;
+    const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+      case "danger":
+      case "accent":
+        return "#b6c2d3";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
   return (
     <button
       onClick={onClick}
@@ -1774,46 +1788,18 @@ borderTopRightRadius: CARD_RADIUS,
 
      Delete
   </TableBtn>
-    <TableBtn
-    onClick={() => {
-      setImportFile(null);
-      setShowImportModal(true);
-    }}
-    variant="outline"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    ⬇ Import
-  </TableBtn>
-    <TableBtn
-    onClick={handleExport}
-    variant="outline"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    ⬆ Export
-  </TableBtn>
+   
 
   <Btn
     onClick={() => handleOpenModal()}
     disabled={loading.fetch}
    variant="primary"
-       style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+  style={{
+    height: 30,
+    padding: "6px 14px",
+    fontSize: 12,
+    borderRadius: 10,
+  }}
   >
     + Add New
   </Btn>
@@ -2036,87 +2022,82 @@ minWidth: 900, }}>
         maxWidth={false}
         className="z-50"
         sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: 8 } }}
-      PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
+        PaperProps={{
+          sx: {
+            width: 760,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
         disableRestoreFocus
         disableEnforceFocus
       >
       <DialogTitle
-  className="text-white text-center font-semibold p-0"
-  sx={{
-    background: "#1e2d42",
-    color: "#fff",
-    fontWeight: 700,
-    fontSize: 15,
-    textAlign: "center",
-    py: 1,
-    minHeight: 48,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
+        style={{
+          background: "#1e2d42",
+          color: "#ffffff",
+          fontWeight: 600,
+          fontSize: 16,
+          padding: "16px 24px",
+          textAlign: "center",
+          borderTopLeftRadius: 8,
+          borderTopRightRadius: 8,
+        }}
+      >
   {editIndex !== null ? "Edit SIP Register" : "Add Trunk"}
 </DialogTitle>
 
+      <div style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}>
+        <div style={{ display: "flex", width: "100%" }}>
+          {[
+            { id: "basic", label: "BASIC" },
+            { id: "codec", label: "CODEC" },
+            { id: "advance", label: "ADVANCE" },
+            { id: "dod", label: "DOD" },
+            { id: "adapt", label: "ADAPT CALLER ID" },
+          ].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setModalTab(t.id)}
+              style={{
+                flex: 1,
+                height: 48,
+                fontSize: 12,
+                fontWeight: 600,
+                border: "none",
+                borderBottom:
+                  modalTab === t.id
+                    ? "2px solid #3E5475"
+                    : "2px solid transparent",
+                color:
+                  modalTab === t.id
+                    ? "#3E5475"
+                    : "#374151",
+                background: "transparent",
+                cursor: "pointer",
+                textAlign: "center",
+                textTransform: "none",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
 <DialogContent
   style={{
-    padding: "12px 20px 20px",
+    padding: "24px",
     backgroundColor: "#ffffff",
   }}
 >
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      width: "100%",
-    }}
-  >
-    <div
-  style={{
-    borderBottom: "1px solid #e5e7eb",
-    marginBottom: 6,
-    borderRadius: "4px 4px 0 0",
-    display: "flex",
-    width: "100%",
-    background: "#fff",
-  }}
->
-  {[
-    { id: "basic", label: "BASIC" },
-    { id: "codec", label: "CODEC" },
-    { id: "advance", label: "ADVANCE" },
-    { id: "dod", label: "DOD" },
-    { id: "adapt", label: "ADAPT CALLER ID" },
-  ].map((t) => (
-    <button
-      key={t.id}
-      type="button"
-      onClick={() => setModalTab(t.id)}
-      style={{
-        flex: 1,
-        height: 44,
-        fontSize: 12,
-        fontWeight: 700,
-        border: "none",
-        borderBottom:
-          modalTab === t.id
-            ? "2px solid #3E5475"
-            : "2px solid transparent",
-        color:
-          modalTab === t.id
-            ? "#3E5475"
-            : "#6b7280",
-        background: "transparent",
-        cursor: "pointer",
-        textAlign: "center",
-        transition: "all 0.2s ease",
-      }}
-    >
-      {t.label}
-    </button>
-  ))}
-</div>
-
     <style>
       {`
         .sip-reg .MuiOutlinedInput-root,
@@ -2151,6 +2132,10 @@ minWidth: 900, }}>
         .sip-reg .MuiSelect-root.Mui-focused {
           border-color: #0284c7 !important;
         }
+
+        .sip-reg label {
+          text-align: left !important;
+        }
       `}
     </style>
 
@@ -2161,10 +2146,10 @@ minWidth: 900, }}>
         flexDirection: "column",
         gap: 14,
         width: "100%",
-        background: C.pageBg,
+        background: "#f8fafc",
         border: `1px solid ${C.cardBorder}`,
         borderRadius: 8,
-        padding: 16,
+        padding: 20,
       }}
     >
               {modalTab === "basic" && (
@@ -2414,69 +2399,9 @@ minWidth: 900, }}>
                           </FormControl>
                         </div>
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Show Outbound CallerID Name
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={!!form.ui_show_outbound_cid_name}
-                                onChange={(e) =>
-                                  handleChange(
-                                    "ui_show_outbound_cid_name",
-                                    e.target.checked,
-                                  )
-                                }
-                                size="small"
-                              />
-                            }
-                            label=""
-                            sx={checkboxSx}
-                          />
-                        </div>
-                      </div>
-                      {form.ui_show_outbound_cid_name && (
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                            Outbound CallerId Name
-                          </label>
-                          <div className="flex-1 min-w-0">
-                            <TextField
-                              size="small"
-                              fullWidth
-                              value={form.ui_outbound_cid_name}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_outbound_cid_name",
-                                  e.target.value,
-                                )
-                              }
-                              inputProps={{ style: { fontSize: 14 } }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Outbound CallerId Number
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.ui_outbound_cid_number}
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_outbound_cid_number",
-                                e.target.value,
-                              )
-                            }
-                            inputProps={{ style: { fontSize: 14 } }}
-                          />
-                        </div>
-                      </div>
+                    
+                      
+                      
                     </div>
                     <div className="space-y-0.5">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
@@ -2575,6 +2500,64 @@ minWidth: 900, }}>
                               )}
                             </div>
                           </div>
+                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
+                          Show Outbound CallerID Name
+                        </label>
+                        <div className="flex-1 min-w-0">
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={!!form.ui_show_outbound_cid_name}
+                                onChange={(e) =>
+                                  handleChange(
+                                    "ui_show_outbound_cid_name",
+                                    e.target.checked,
+                                  )
+                                }
+                                size="small"
+                              />
+                            }
+                            label=""
+                            sx={checkboxSx}
+                          />
+                        </div>
+                      </div>
+                          {form.ui_show_outbound_cid_name && (
+  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+    <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
+      Outbound CallerId Name
+    </label>
+    <div className="flex-1 min-w-0">
+      <TextField
+        size="small"
+        fullWidth
+        value={form.ui_outbound_cid_name}
+        onChange={(e) =>
+          handleChange("ui_outbound_cid_name", e.target.value)
+        }
+        inputProps={{ style: { fontSize: 14 } }}
+      />
+    </div>
+  </div>
+)}
+
+<div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+  <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
+    Outbound CallerId Number
+  </label>
+  <div className="flex-1 min-w-0">
+    <TextField
+      size="small"
+      fullWidth
+      value={form.ui_outbound_cid_number}
+      onChange={(e) =>
+        handleChange("ui_outbound_cid_number", e.target.value)
+      }
+      inputProps={{ style: { fontSize: 14 } }}
+    />
+  </div>
+</div>
 
                       {form.ui_register === "Yes" && (
                         <>
@@ -3811,16 +3794,18 @@ minWidth: 900, }}>
                 </div>
               )}
             </div>
-          </div>
         </DialogContent>
 
-        <DialogActions
-  sx={{
+          <DialogActions
+  style={{
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
-    gap: 2,
-    padding: 2,
+    gap: 16,
+    padding: "16px 24px",
+    background: "#f8fafc",
+    borderTop: "1px solid #e2e8f0",
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   }}
 >
   <Btn

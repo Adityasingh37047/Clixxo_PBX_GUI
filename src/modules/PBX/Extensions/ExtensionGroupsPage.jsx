@@ -562,11 +562,10 @@ borderTopRightRadius: CARD_RADIUS,
   disabled={loading.fetch}
   variant="primary"
   style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    
+    height: 30,
+    padding: "6px 14px",
+    fontSize: 12,
+    borderRadius: 10,
   }}
 >
   + Add New
@@ -937,19 +936,19 @@ minWidth: 900,
         </DialogContent>
 
         <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+           style={{
             justifyContent: "center",
             gap: 12,
+            padding: "12px 24px 16px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
           }}
         >
         <Btn
   onClick={handleSaveGroup}
   disabled={loading.save}
-  variant="primary"
-  style={{ minWidth: 100, height: 33, fontSize: 13 }}
+   variant="primary"
+ style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? (
     <CircularProgress
@@ -962,7 +961,7 @@ minWidth: 900,
        <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
-  variant="cancel"
+variant="cancel"
   style={{ minWidth: 100, height: 33 }}
 >
   Cancel

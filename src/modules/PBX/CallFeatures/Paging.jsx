@@ -1033,12 +1033,12 @@ const Paging = () => {
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px", backgroundColor:"#ffffff" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#fff",
+               background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: "20px 24px 16px",
@@ -1065,7 +1065,7 @@ const Paging = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",},
                       }}
                     />
                   </FieldRow>
@@ -1078,7 +1078,7 @@ const Paging = () => {
                       value={number}
                       onChange={(e) => setNumber(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" , backgroundColor: "#fff",},
                       }}
                     />
                   </FieldRow>
@@ -1093,7 +1093,7 @@ const Paging = () => {
                       <MuiSelect
                         value={pagingType}
                         onChange={(e) => setPagingType(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
                       >
                         {PAGING_TYPE_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1111,7 +1111,7 @@ const Paging = () => {
                       value={callerIdNamePrefix}
                       onChange={(e) => setCallerIdNamePrefix(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px", backgroundColor: "#fff", },
                       }}
                     />
                   </FieldRow>
@@ -1129,13 +1129,13 @@ const Paging = () => {
               >
                 <div>
                   <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.mutedText,
-                      marginBottom: 6,
-                      textAlign: "center",
-                    }}
+                   style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: C.accent,
+                        marginBottom: 6,
+                        textAlign: "center",
+                      }}
                   >
                     Available
                   </div>
@@ -1158,7 +1158,7 @@ const Paging = () => {
                       padding: 8,
                       fontSize: 13,
                       outline: "none",
-                      background: "#f8fafc",
+                      background: "#fff",
                     }}
                   >
                     {loading.extensions ? (

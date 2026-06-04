@@ -663,32 +663,7 @@ borderTopRightRadius: CARD_RADIUS,
               >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                  Delete
               </Btn>
-              <Btn
-                onClick={() => {
-                  setImportFile(null);
-                  setShowImportModal(true);
-                }}
-                variant="outline" 
-                style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
-              >
-                ⬇ Import
-              </Btn>
-              <Btn onClick={handleExport} variant="outline"
-              style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}>
-                ⬆ Export
-              </Btn>
+              
 
               
               <Btn
@@ -969,12 +944,12 @@ minWidth: 900,
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px",  backgroundColor:"#ffffff",}}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#fff",
+                 background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: "20px 24px 16px",
@@ -994,7 +969,7 @@ minWidth: 900,
                     fullWidth
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",} }}
                   />
                 </FieldRow>
 
@@ -1003,7 +978,7 @@ minWidth: 900,
                     <MuiSelect
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13,backgroundColor: "#fff", }}
                     >
                       <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                         Yes
@@ -1016,21 +991,22 @@ minWidth: 900,
                 </FieldRow>
               </div>
 
-              <SectionHeading title="Member Extensions" />
+              <SectionHeading title="Member Extensions"  />
 
               <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 40px 1fr",
                   gap: 12,
+                  
                 }}
               >
                 <div>
                   <div
-                    style={{
+                      style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      color: C.mutedText,
+                      color: C.accent,
                       marginBottom: 6,
                       textAlign: "center",
                     }}
@@ -1056,7 +1032,7 @@ minWidth: 900,
                       padding: 8,
                       fontSize: 13,
                       outline: "none",
-                      background: "#f8fafc",
+                      backgroundColor: "#fff",
                     }}
                   >
                     {loading.extensions ? (
