@@ -42,9 +42,6 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
-  title,
-  type,
-  hoverBehavior = "background",
 }) => {
   const variants = {
     default: {
@@ -57,13 +54,13 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
     },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -71,83 +68,55 @@ const Btn = ({
     },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },  
   };
-
   const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#e2e8f0";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = extraStyle?.background || s.background;
-
   return (
     <button
-      type={type}
       onClick={onClick}
       disabled={disabled}
-      title={title}
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
+        ...s,
         fontSize: 12,
         fontWeight: 600,
+        padding: "6px 14px",
+        borderRadius: 10,
         cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         gap: 6,
+        height: 30,
+        transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
-        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.opacity = "1";
       }}
     >
       {children}
     </button>
   );
 };
-
 
 // ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
@@ -598,14 +567,13 @@ borderTopRightRadius: CARD_RADIUS,
           <Btn
   onClick={handleOpenAddModal}
   disabled={loading.fetch}
-     variant="primary"
- 
-     style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+    variant="primary"
+  style={{
+    height: 30,
+    padding: "6px 14px",
+    fontSize: 12,
+    borderRadius: 10,
+  }}
 >
   + Add New
 </Btn>

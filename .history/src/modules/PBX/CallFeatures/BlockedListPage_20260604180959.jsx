@@ -13,40 +13,31 @@ import {
   MenuItem,
   FormControl,
   Checkbox,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
 } from "@mui/material";
 
 import {
-  fetchSipAccounts,
-  listTrunkIds,
-  fetchCallbackRules,
-  createCallbackRule,
-  updateCallbackRule,
-  deleteCallbackRule,
+  fetchBlockedList,
+  createBlockedEntry,
+  updateBlockedEntry,
+  deleteBlockedEntry,
+  listConferenceExtensions,
 } from "../../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-    accent: "#3E5475",
-  strongText: "#0f172a",
-    amber: "#dc2626",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-
- 
+pageBg: "#f8fafc",
+cardBg: "#ffffff",
+cardBorder: "#9CA3AF",
+labelText: "#3E5475",
+valueText: "#0f172a",
+mutedText: "#94a3b8",
+strongText: "#0f172a",
+accent: "#3E5475",
+amber: "#dc2626",
 };
 
 const CARD_RADIUS = 20;
-
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -54,105 +45,68 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
-  title,
-  type,
-  hoverBehavior = "background",
 }) => {
   const variants = {
     default: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+color: C.valueText,
+border: "1px solid #9ca3af",
     },
     primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-   cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
+background:
+"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+color: "#fff",
+border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+},
     outline: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+     background: C.cardBg,
+color: C.labelText,
+border: `1px solid ${C.cardBorder}`,
+},
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `0.5px solid #fecaca`,
     },
     accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
+      background: C.cardBg,
+      color: C.accent,
+      border: `0.5px solid ${C.cardBorder}`,
     },
   };
-
   const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#e2e8f0";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = extraStyle?.background || s.background;
-
   return (
     <button
-      type={type}
       onClick={onClick}
       disabled={disabled}
-      title={title}
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
+        ...s,
         fontSize: 12,
         fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
         height: 30,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         gap: 6,
+        transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
-        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.opacity = "1";
       }}
     >
       {children}
@@ -164,24 +118,23 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-    background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
+      background: "#F8FAFC",
+color: C.labelText,
+fontWeight: 700,
+fontSize: 11,
+padding: "9px 14px",
+textAlign: "center",
+borderBottom: `1px solid ${C.cardBorder}`,
+borderRight: `1px solid ${C.cardBorder}`,
+whiteSpace: "nowrap",
+textTransform: "uppercase",
+letterSpacing: "0.14em",
+...extra,
     }}
   >
     {children}
   </th>
 );
-
 
 const tdStyle = {
   padding: "7px 14px",
@@ -192,16 +145,16 @@ const tdStyle = {
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
-const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
 
+const checkboxSx = {
+padding: "1px",
+color: "#3E5475",
+"&.Mui-checked": { color: "#0284c7" },
+"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
-const CallBackPage = () => {
+const BlockedListPage = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -209,7 +162,6 @@ const CallBackPage = () => {
     fetch: false,
     delete: false,
     save: false,
-    extensions: false,
   });
   const [error, setError] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
@@ -224,16 +176,12 @@ const CallBackPage = () => {
   // Add/Edit modal state
   const [editId, setEditId] = useState(null);
   const [name, setName] = useState("");
-  const [delay, setDelay] = useState("10");
-  const [strip, setStrip] = useState("");
-  const [prepend, setPrepend] = useState("");
-  const [destination, setDestination] = useState("");
-  const [throughAuto, setThroughAuto] = useState(true);
-  const [throughFromComeIn, setThroughFromComeIn] = useState(false);
-  const [throughSelect, setThroughSelect] = useState(false);
-  const [extensionOptions, setExtensionOptions] = useState([]);
-  const [trunkOptions, setTrunkOptions] = useState([]);
-  const orderOptions = Array.from({ length: 21 }, (_, i) => i * 5);
+  const [matchMode, setMatchMode] = useState("Exact Match");
+  const [blockedNumber, setBlockedNumber] = useState("");
+  const [selectedExtension, setSelectedExtension] = useState("");
+  const [direction, setDirection] = useState("Inbound");
+  const [enabled, setEnabled] = useState("Yes");
+  const [availableExtensions, setAvailableExtensions] = useState([]);
 
   // Import modal
   const [showImportModal, setShowImportModal] = useState(false);
@@ -249,65 +197,61 @@ const CallBackPage = () => {
   const loadRows = async () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
     try {
-      const res = await fetchCallbackRules();
+      const res = await fetchBlockedList();
       const raw = res?.message ?? res?.data ?? res;
       const list = Array.isArray(raw) ? raw : [];
       setRows(
         list.map((item) => ({
           id: item.id,
           name: item.name || "",
-          delay: item.delay_sec != null ? String(item.delay_sec) : "10",
-          strip: item.strip_digits != null ? String(item.strip_digits) : "",
-          prepend: item.prepend || "",
-          destination: item.destination || "",
-          throughAuto: item.through_mode === "auto",
-          throughFromComeIn: item.through_mode === "from_in",
-          throughSelect: item.through_mode === "select",
+          matchMode:
+            item.match_mode === "regex"
+              ? "Regex Match"
+              : item.match_mode === "extension"
+                ? "Extension"
+                : "Exact Match",
+          blockedNumber: item.pattern || "",
+          direction: (() => {
+            const d = (item.direction || "").toLowerCase();
+            if (d === "outbound") return "Outbound";
+            if (d === "internal") return "Internal";
+            return "Inbound";
+          })(),
+          enabled:
+            item.enabled === false ||
+            String(item.enabled).toLowerCase() === "no"
+              ? "No"
+              : "Yes",
         })),
       );
       setLastUpdated(new Date());
     } catch (err) {
-      showAlert("error", err?.message || "Failed to load callbacks.");
+      showAlert("error", err?.message || "Failed to load blocked list.");
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
     }
   };
 
-  const loadExtensions = async () => {
-    setLoading((prev) => ({ ...prev, extensions: true }));
+  const loadAvailableExtensions = async () => {
     try {
-      const res = await fetchSipAccounts();
-      const list = Array.isArray(res?.message)
-        ? res.message
-        : Array.isArray(res)
-          ? res
+      const extRes = await listConferenceExtensions();
+      const extRaw = Array.isArray(extRes?.message)
+        ? extRes.message
+        : Array.isArray(extRes?.data)
+          ? extRes.data
           : [];
-      const exts = list
-        .map((item) => String(item.extension ?? ""))
-        .filter((x) => x)
-        .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
-      setExtensionOptions(exts);
+      const extList = extRaw
+        .filter((e) => e && e.extension)
+        .map((e) => ({
+          value: String(e.extension),
+          label: e.display_name
+            ? `${e.display_name} (${e.extension})`
+            : String(e.extension),
+        }));
+      setAvailableExtensions(extList);
     } catch (err) {
-      showAlert("error", err?.message || "Failed to load extensions.");
-      setExtensionOptions([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, extensions: false }));
-    }
-  };
-
-  const loadTrunks = async () => {
-    try {
-      const res = await listTrunkIds();
-      const raw = res?.message ?? res?.data ?? res;
-      const list = Array.isArray(raw) ? raw : [];
-      const trunks = list
-        .map((t) => t?.trunk_id || t?.id || t)
-        .filter(Boolean)
-        .map(String);
-      setTrunkOptions(trunks);
-    } catch (err) {
-      console.error("Failed to load trunk IDs for callback:", err);
-      setTrunkOptions([]);
+      console.error("Failed to load extensions for blocked list:", err);
+      setAvailableExtensions([]);
     }
   };
 
@@ -315,13 +259,14 @@ const CallBackPage = () => {
     if (!hasInitialLoadRef.current) {
       hasInitialLoadRef.current = true;
       loadRows();
+      loadAvailableExtensions();
     }
   }, []);
 
   // ── Search & Pagination Logic ──
   const filteredRows = searchQuery.trim()
     ? rows.filter((r) =>
-        [r.name, r.destination, r.delay].some((v) =>
+        [r.name, r.blockedNumber, r.matchMode].some((v) =>
           String(v || "")
             .toLowerCase()
             .includes(searchQuery.toLowerCase()),
@@ -386,7 +331,7 @@ const CallBackPage = () => {
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       const ids = selected.map((i) => filteredRows[i]?.id).filter(Boolean);
-      await Promise.all(ids.map((id) => deleteCallbackRule(id)));
+      await Promise.all(ids.map((id) => deleteBlockedEntry(id)));
       setSelected([]);
       setPage(1);
       await loadRows();
@@ -402,33 +347,29 @@ const CallBackPage = () => {
   const resetForm = () => {
     setEditId(null);
     setName("");
-    setDelay("10");
-    setStrip("");
-    setPrepend("");
-    setDestination("");
-    setThroughAuto(true);
-    setThroughFromComeIn(false);
-    setThroughSelect(false);
+    setMatchMode("Exact Match");
+    setBlockedNumber("");
+    setSelectedExtension("");
+    setDirection("Inbound");
+    setEnabled("Yes");
   };
 
-  const handleOpenAddModal = async () => {
+  const handleOpenAddModal = () => {
     resetForm();
     setShowModal(true);
-    await Promise.all([loadExtensions(), loadTrunks()]);
   };
 
-  const handleOpenEditModal = async (row) => {
+  const handleOpenEditModal = (row) => {
     setEditId(row.id);
     setName(row.name || "");
-    setDelay(row.delay ?? "");
-    setStrip(row.strip ?? "");
-    setPrepend(row.prepend ?? "");
-    setDestination(row.destination || "");
-    setThroughAuto(!!row.throughAuto);
-    setThroughFromComeIn(!!row.throughFromComeIn);
-    setThroughSelect(!!row.throughSelect);
+    setMatchMode(row.matchMode || "Exact Match");
+    setBlockedNumber(row.blockedNumber || "");
+    setSelectedExtension(
+      row.matchMode === "Extension" ? row.blockedNumber || "" : "",
+    );
+    setDirection(row.direction || "Inbound");
+    setEnabled(row.enabled || "Yes");
     setShowModal(true);
-    await Promise.all([loadExtensions(), loadTrunks()]);
   };
 
   const handleCloseModal = () => {
@@ -439,36 +380,47 @@ const CallBackPage = () => {
 
   const handleSave = async () => {
     const trimmedName = name.trim();
-    if (!trimmedName) return showAlert("error", "Please enter a Name.");
-    if (!delay) return showAlert("error", "Please enter Delay (s).");
-    if (!destination) return showAlert("error", "Please select Destination.");
+    const trimmedNumber = blockedNumber.trim();
+    const valueToBlock =
+      matchMode === "Extension"
+        ? String(selectedExtension || "").trim()
+        : trimmedNumber;
 
-    const delaySec = Number(delay) || 0;
-    const stripDigits = strip === "" ? 0 : Number(strip) || 0;
-
-    let through_mode = "auto";
-    if (throughSelect) through_mode = "select";
-    else if (throughFromComeIn) through_mode = "from_in";
+    if (!trimmedName) {
+      showAlert("error", "Please enter a Name.");
+      return;
+    }
+    if (!valueToBlock) {
+      showAlert(
+        "error",
+        matchMode === "Extension"
+          ? "Please select an Extension."
+          : "Please enter a Blocked List Number.",
+      );
+      return;
+    }
 
     const apiPayload = {
       name: trimmedName,
-      delay_sec: delaySec,
-      strip_digits: stripDigits,
-      prepend,
-      destination,
-      through_mode,
-      enabled: true,
-      trunks: [], // Logic kept exactly as original
+      match_mode:
+        matchMode === "Regex Match"
+          ? "regex"
+          : matchMode === "Extension"
+            ? "extension"
+            : "exact",
+      pattern: valueToBlock,
+      direction: direction.toLowerCase(),
+      enabled: enabled === "Yes",
     };
 
     setLoading((prev) => ({ ...prev, save: true }));
     try {
       if (editId != null) {
-        await updateCallbackRule({ id: editId, ...apiPayload });
-        showAlert("success", "Callback updated.");
+        await updateBlockedEntry({ id: editId, ...apiPayload });
+        showAlert("success", "Blocked entry updated.");
       } else {
-        await createCallbackRule(apiPayload);
-        showAlert("success", "Callback created.");
+        await createBlockedEntry(apiPayload);
+        showAlert("success", "Blocked entry created.");
       }
       await loadRows();
       handleCloseModal();
@@ -487,14 +439,6 @@ const CallBackPage = () => {
 
   const handleExport = () => {
     showAlert("info", "Export API not yet configured");
-  };
-
-  const renderThrough = (row) => {
-    const labels = [];
-    if (row.throughAuto) labels.push("Auto");
-    if (row.throughFromComeIn) labels.push("From Come in");
-    if (row.throughSelect) labels.push("Select");
-    return labels.join(", ") || "Auto";
   };
 
   return (
@@ -541,14 +485,16 @@ const CallBackPage = () => {
         >
           <div style={{ fontSize: 11, color: C.mutedText }}>
             PBX &rsaquo; Call Features &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>CallBack</span>
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+              Blocked List
+            </span>
           </div>
         </div>
 
         {/* Main Card */}
         <div
           style={{
-           background: "#ffffff",
+        background: "#ffffff",
 borderRadius: 10,
 overflow: "hidden",
 border: `1.5px solid ${C.cardBorder}`,
@@ -558,7 +504,7 @@ boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           {/* Toolbar */}
           <div
             style={{
-             display: "flex",
+           display: "flex",
 alignItems: "center",
 justifyContent: "space-between",
 minHeight: 44,
@@ -579,7 +525,7 @@ borderTopRightRadius: CARD_RADIUS,
                 flexWrap: "wrap",
               }}
             >
-            
+              
               {selected.length > 0 && (
                 <span
                   style={{
@@ -634,7 +580,7 @@ borderTopRightRadius: CARD_RADIUS,
                   }}
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
-                  placeholder="Search callbacks..."
+                  placeholder="Search blocked lists..."
                   style={{
                     border: "none",
                     background: "transparent",
@@ -672,23 +618,8 @@ borderTopRightRadius: CARD_RADIUS,
               >
                 Next →
               </Btn> */}
- <Btn
-                onClick={handleDelete}
-                disabled={
-                  loading.delete || loading.fetch || selected.length === 0
-                }
-                variant="danger"
-                   style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-               <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-               Delete
-              </Btn>
-            
+
+              
               {/* <Btn
                 onClick={loadRows}
                 disabled={loading.fetch}
@@ -700,12 +631,26 @@ borderTopRightRadius: CARD_RADIUS,
                   "Refresh"
                 )}
               </Btn> */}
-             
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="danger"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              > <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+           Delete
+              </Btn>
              <Btn
   onClick={handleOpenAddModal}
   disabled={loading.fetch}
   variant="primary"
-     style={{
+  style={{
                   height: 30,
                   padding: "6px 14px",
                   fontSize: 12,
@@ -718,10 +663,13 @@ borderTopRightRadius: CARD_RADIUS,
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto",
-            overflowY: "auto",
-            flex: 1,
-          }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {loading.fetch ? (
               <div
                 style={{
@@ -736,55 +684,81 @@ borderTopRightRadius: CARD_RADIUS,
             ) : (
               <table
                 style={{
-                 width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{    width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                         sx={checkboxSx}
+                        sx={checkboxSx} 
                       />
                     </TH>
-                    <TH style={{ width: 36,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10, }}>ID</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Name</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Delay (s)</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Strip</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Prepend
+                    <TH
+                      style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}
+                    >
+                      ID
                     </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Destination
+                    <TH
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
+                      Name
                     </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Through</TH>
-                    <TH style={{  width: 70,
+                    <TH
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
+                      Match Mode
+                    </TH>
+                    <TH
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
+                      Blocked List Number
+                    </TH>
+                    <TH
+                     style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
+                      Direction
+                    </TH>
+                    <TH
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
+                      Enable
+                    </TH>
+                    <TH
+                      style={{
+                       width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>Modify</TH>
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={8}
                         style={{
                           textAlign: "center",
                           padding: "36px 0",
@@ -794,7 +768,7 @@ minWidth: 900,
                       >
                         {searchQuery
                           ? `No results for "${searchQuery}"`
-                          : "No callbacks found. Click '+ Add New' to create one."}
+                          : "No blocked entries found. Click '+ Add New' to create one."}
                       </td>
                     </tr>
                   ) : (
@@ -808,40 +782,40 @@ minWidth: 900,
                           ? "#f8fafc"
                           : "#ffffff";
 
+                      const lastRowCellStyle =
+                        idx === pagedRows.length - 1 ? { borderBottom: "none" } : {};
+
                       return (
                         <tr
                           key={row.id || realIdx}
                           style={{
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
+                            if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
                           }}
                           onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            if (!isSelected) e.currentTarget.style.background = rowBg;
                           }}
                         >
                           <td
                             style={{
-                             ...tdStyle,
+                        ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
                           >
                             <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                           sx={checkboxSx}
-                            />
+  size="small"
+  checked={isSelected}
+  onChange={() => handleToggleRow(realIdx)}
+  sx={checkboxSx}
+/>
                           </td>
                           <td
                             style={{
-                                 ...tdStyle,
+                              ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
@@ -850,18 +824,20 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                               ...tdStyle,
+                              ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                                ...tdStyle,
+                            ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                             
                             }}
                           >
                             <span
@@ -878,50 +854,35 @@ minWidth: 900,
                                 justifyContent: "center",
                               }}
                             >
-                              {row.delay}
+                              {row.matchMode}
                             </span>
                           </td>
                           <td
                             style={{
-                                 ...tdStyle,
+                             ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                             
                             }}
                           >
-                            {row.strip || "—"}
+                            {row.blockedNumber}
                           </td>
                           <td
                             style={{
-                               ...tdStyle,
+                             ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.prepend || "—"}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.destination || "—"}
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            
                             }}
                           >
                             <span
                               style={{
-                                color: row.throughAuto
-                                  ? "#166534"
-                                  : row.throughFromComeIn
-                                    ? C.accent
-                                    : "#475569",
+                                color:
+                                  row.direction === "Inbound"
+                                    ? "#166534"
+                                    : row.direction === "Outbound"
+                                      ? C.accent
+                                      : "#475569",
                                 padding: "4px 11px",
                                 borderRadius: 999,
                                 fontSize: 11,
@@ -932,22 +893,63 @@ minWidth: 900,
                                 alignItems: "center",
                                 justifyContent: "center",
                                 minWidth: 72,
-                                
                               }}
                             >
-                              {renderThrough(row)}
+                              {row.direction}
                             </span>
                           </td>
                           <td
-                            style={{   ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom, }}
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            }}
                           >
-                            <EditDocumentIcon
-  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-  titleAccess="Edit"
-  onClick={() => handleOpenEditModal(row)}
-/>
+                            <span
+                              style={{
+                                color:
+                                  row.enabled === "Yes" ? "#166534" : "#475569",
+                                padding: "4px 11px",
+                                borderRadius: 999,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                letterSpacing: "0.01em",
+                                whiteSpace: "nowrap",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                minWidth: 72,
+                              }}
+                            >
+                              {row.enabled}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "center" }}>
+                              <EditDocumentIcon
+                                titleAccess="Edit"
+                                onClick={() => handleOpenEditModal(row)}
+                                style={{
+                                  cursor: "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.opacity = "1")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.opacity = "0.7")
+                                }
+                              />
+                            </div>
                           </td>
                         </tr>
                       );
@@ -965,10 +967,11 @@ minWidth: 900,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
-                gap: 8,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
@@ -1026,16 +1029,16 @@ minWidth: 900,
             padding: "14px 24px",
           }}
         >
-          {editId != null ? "Edit CallBack Rule" : "Add CallBack"}
+          {editId != null ? "Edit Blocked Entry" : "Add Blocked Entry"}
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor:"#ffffff", }}
+          style={{ padding: "20px 24px",  background: "#ffffff", }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#f5f7fa",
+                 background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1051,7 +1054,7 @@ minWidth: 900,
                   paddingBottom: 6,
                 }}
               >
-                CallBack Settings
+                Block Settings
               </h3>
 
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
@@ -1066,7 +1069,6 @@ minWidth: 900,
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  {/* Name */}
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
@@ -1075,11 +1077,12 @@ minWidth: 900,
                         fontSize: 13,
                         fontWeight: 600,
                         color: C.labelText,
-                        width: 90,
+                        width: 120,
                         flexShrink: 0,
+                        
                       }}
                     >
-                      Name <span style={{ color: C.labelText }}>:</span>
+                      Name <span style={{ color: C.errorRed }}>*</span>
                     </label>
                     <TextField
                       size="small"
@@ -1087,12 +1090,11 @@ minWidth: 900,
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff", },
+                        style: { fontSize: 13, padding: "6px 8px" ,  backgroundColor: "#fff",},
                       }}
                     />
                   </div>
 
-                  {/* Strip */}
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
@@ -1101,68 +1103,124 @@ minWidth: 900,
                         fontSize: 13,
                         fontWeight: 600,
                         color: C.labelText,
-                        width: 90,
+                        width: 120,
                         flexShrink: 0,
                       }}
                     >
-                      Strip :
-                    </label>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      type="number"
-                      value={strip}
-                      onChange={(e) => setStrip(e.target.value)}
-                      inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" , backgroundColor: "#fff",},
-                      }}
-                    />
-                  </div>
-
-                  {/* Destination */}
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 90,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Destination <span style={{ color: C.labelText }}>:</span>
+                      Match Mode <span style={{ color: C.errorRed }}>*</span>
                     </label>
                     <FormControl size="small" fullWidth>
                       <MuiSelect
-                        value={destination}
-                        onChange={(e) => setDestination(e.target.value)}
-                        displayEmpty
-                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
+                        value={matchMode}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setMatchMode(val);
+                          if (val === "Extension") setBlockedNumber("");
+                          else setSelectedExtension("");
+                        }}
+                        sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                       >
-                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                          <span style={{ color: C.mutedText }}>
-                            {loading.extensions
-                              ? "Loading..."
-                              : "Select Destination"}
-                          </span>
+                        <MenuItem
+                          value="Exact Match"
+                          sx={{ fontSize: 13, fontWeight: 400 }}
+                        >
+                          Exact Match
                         </MenuItem>
-                        {extensionOptions.map((ext) => (
-                          <MenuItem key={ext} value={ext} sx={{ fontSize: 13 }}>
-                            {ext}
-                          </MenuItem>
-                        ))}
+                        <MenuItem
+                          value="Regex Match"
+                          sx={{ fontSize: 13, fontWeight: 400 }}
+                        >
+                          Regex Match
+                        </MenuItem>
+                        <MenuItem
+                          value="Extension"
+                          sx={{ fontSize: 13, fontWeight: 400 }}
+                        >
+                          Extension
+                        </MenuItem>
+
+                        <MenuItem value="Extension" sx={{ fontSize: 13 }}>
+                          Extension
+                        </MenuItem>
                       </MuiSelect>
                     </FormControl>
                   </div>
+
+                  {matchMode === "Extension" ? (
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 12 }}
+                    >
+                      <label
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 120,
+                          flexShrink: 0,
+                        }}
+                      >
+                        Extension <span style={{ color: C.errorRed }}>*</span>
+                      </label>
+                      <FormControl size="small" fullWidth>
+                        <MuiSelect
+                          value={selectedExtension}
+                          onChange={(e) => setSelectedExtension(e.target.value)}
+                          displayEmpty
+                          sx={{ fontSize: 13 }}
+                        >
+                          <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                            <span style={{ color: C.mutedText }}>
+                              Select Extension
+                            </span>
+                          </MenuItem>
+                          {availableExtensions.map((ext) => (
+                            <MenuItem
+                              key={ext.value}
+                              value={ext.value}
+                              sx={{ fontSize: 13 }}
+                            >
+                              {ext.label}
+                            </MenuItem>
+                          ))}
+                        </MuiSelect>
+                      </FormControl>
+                    </div>
+                  ) : (
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 12 }}
+                    >
+                      <label
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          width: 120,
+                          flexShrink: 0,
+                        }}
+                      >
+                        Blocked List Number{" "}
+                        <span style={{ color: C.errorRed }}>*</span>
+                      </label>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={blockedNumber}
+                        onChange={(e) => setBlockedNumber(e.target.value)}
+                        inputProps={{
+                          style: { fontSize: 13, padding: "6px 8px",   backgroundColor: "#fff", },
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* ── RIGHT COLUMN ── */}
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  {/* Delay */}
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
@@ -1171,25 +1229,32 @@ minWidth: 900,
                         fontSize: 13,
                         fontWeight: 600,
                         color: C.labelText,
-                        width: 90,
+                        width: 120,
                         flexShrink: 0,
                       }}
                     >
-                      Delay (s) <span style={{ color: C.labelText }}>:</span>
+                      Blocked List Direction{" "}
+                      <span style={{ color: C.errorRed }}>*</span>
                     </label>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      type="number"
-                      value={delay}
-                      onChange={(e) => setDelay(e.target.value)}
-                      inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff", },
-                      }}
-                    />
+                    <FormControl size="small" fullWidth>
+                      <MuiSelect
+                        value={direction}
+                        onChange={(e) => setDirection(e.target.value)}
+                        sx={{ fontSize: 13 ,   backgroundColor: "#fff",}}
+                      >
+                        <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
+                          Inbound
+                        </MenuItem>
+                        <MenuItem value="Outbound" sx={{ fontSize: 13 }}>
+                          Outbound
+                        </MenuItem>
+                        <MenuItem value="Internal" sx={{ fontSize: 13 }}>
+                          Internal
+                        </MenuItem>
+                      </MuiSelect>
+                    </FormControl>
                   </div>
 
-                  {/* Prepend */}
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
@@ -1198,177 +1263,29 @@ minWidth: 900,
                         fontSize: 13,
                         fontWeight: 600,
                         color: C.labelText,
-                        width: 90,
+                        width: 120,
                         flexShrink: 0,
                       }}
                     >
-                      Prepend :
+                      Enable <span style={{ color: C.errorRed }}>*</span>
                     </label>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={prepend}
-                      onChange={(e) => setPrepend(e.target.value)}
-                      inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",},
-                      }}
-                    />
-                  </div>
-
-                  {/* Through Mode */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 12,
-                    }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 90,
-                        flexShrink: 0,
-                        marginTop: 4,
-                      }}
-                    >
-                      Through :
-                    </label>
-                    <RadioGroup
-                      value={
-                        throughSelect
-                          ? "select"
-                          : throughFromComeIn
-                            ? "from_in"
-                            : "auto"
-                      }
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setThroughAuto(val === "auto");
-                        setThroughFromComeIn(val === "from_in");
-                        setThroughSelect(val === "select");
-                      }}
-                      sx={{ display: "flex", flexDirection: "column", gap: 0 }}
-                    >
-                      <FormControlLabel
-                        value="auto"
-                        control={<Radio size="small" sx={{ p: 0.5 }} />}
-                        label={<span style={{ fontSize: 13 }}>Auto</span>}
-                        sx={{ m: 0 }}
-                      />
-                      <FormControlLabel
-                        value="from_in"
-                        control={<Radio size="small" sx={{ p: 0.5 }} />}
-                        label={
-                          <span style={{ fontSize: 13 }}>From come in</span>
-                        }
-                        sx={{ m: 0 }}
-                      />
-                      <FormControlLabel
-                        value="select"
-                        control={<Radio size="small" sx={{ p: 0.5 }} />}
-                        label={<span style={{ fontSize: 13 }}>Select</span>}
-                        sx={{ m: 0 }}
-                      />
-                    </RadioGroup>
+                    <FormControl size="small" fullWidth>
+                      <MuiSelect
+                        value={enabled}
+                        onChange={(e) => setEnabled(e.target.value)}
+                        sx={{ fontSize: 13,  backgroundColor: "#fff", }}
+                      >
+                        <MenuItem value="Yes" sx={{ fontSize: 13 }}>
+                          Yes
+                        </MenuItem>
+                        <MenuItem value="No" sx={{ fontSize: 13 }}>
+                          No
+                        </MenuItem>
+                      </MuiSelect>
+                    </FormControl>
                   </div>
                 </div>
               </div>
-
-              {/* Dynamic Select Trunks (Visible only if Through == Select) */}
-              {throughSelect && (
-                <div
-                  style={{
-                    marginTop: 16,
-                    paddingTop: 16,
-                    borderTop: `1px dashed ${C.cardBorder}`,
-                    
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 8,
-                      paddingLeft: 102,
-                      
-                    }}
-                  >
-                    <div
-                      style={{
-                        flex: 1,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.mutedText,
-                      }}
-                    >
-                      Trunk
-                    </div>
-                    <div
-                      style={{
-                        width: 80,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.mutedText,
-                        textAlign: "center",
-                        
-                      }}
-                    >
-                      Order
-                    </div>
-                  </div>
-                  {[0, 1, 2, 3, 4].map((idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        marginBottom: 8,
-                      }}
-                    >
-                      <div style={{ width: 90 }}></div>{" "}
-                      {/* spacer to align with labels */}
-                      <div style={{ flex: 1 }}>
-                        <FormControl size="small" fullWidth>
-                          <MuiSelect
-                            value=""
-                            displayEmpty
-                            sx={{ fontSize: 13 }}
-                          >
-                            <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                              {trunkOptions.length
-                                ? "Select trunk"
-                                : "No trunks"}
-                            </MenuItem>
-                            {trunkOptions.map((t) => (
-                              <MenuItem key={t} value={t} sx={{ fontSize: 13 }}>
-                                {t}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                      <div style={{ width: 80 }}>
-                        <FormControl size="small" fullWidth>
-                          <MuiSelect value={0} sx={{ fontSize: 13 }}>
-                            {orderOptions.map((val) => (
-                              <MenuItem
-                                key={val}
-                                value={val}
-                                sx={{ fontSize: 13 }}
-                              >
-                                {val}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </DialogContent>
@@ -1382,30 +1299,33 @@ minWidth: 900,
             gap: 12,
           }}
         >
-          <Btn
-            onClick={handleSave}
-            disabled={loading.save}
-            variant="primary"
-           style={{ minWidth: 100, height: 33, fontSize: 13 }}
-          >
-            {loading.save ? (
-              <CircularProgress
-              />
-            ) : null}
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update Rule"
-                : "Create"}
-          </Btn>
-          <Btn
-            onClick={handleCloseModal}
-            disabled={loading.save}
-            variant="cancel"
-             style={{ minWidth: 100, height: 33 }}
-          >
-            Cancel
-          </Btn>
+        <Btn
+  onClick={handleSave}
+  disabled={loading.save}
+  variant="primary"
+  style={{ minWidth: 100, height: 33, fontSize: 13 }}
+>
+  {loading.save ? (
+    <CircularProgress
+      size={13}
+      style={{ color: "#fff", marginRight: 8 }}
+    />
+  ) : null}
+
+  {loading.save
+    ? "Saving..."
+    : editId != null
+      ? "Update Entry"
+      : "Create"}
+</Btn>
+         <Btn
+  onClick={handleCloseModal}
+  disabled={loading.save}
+  variant="cancel"
+   style={{ minWidth: 100, height: 33 }}
+>
+  Cancel
+</Btn>
         </DialogActions>
       </Dialog>
 
@@ -1427,7 +1347,7 @@ minWidth: 900,
             padding: "14px 24px",
           }}
         >
-          Import Callbacks
+          Import Blocked List
         </DialogTitle>
         <DialogContent
           style={{ padding: "24px 16px", backgroundColor: C.pageBg }}
@@ -1474,18 +1394,18 @@ minWidth: 900,
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
             variant="primary"
-             style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             Import
           </Btn>
-          <Btn
+         <Btn
             onClick={() => {
               setShowImportModal(false);
               setImportFile(null);
             }}
             disabled={importLoading}
             variant="cancel"
-             style={{ minWidth: 100, height: 33 }}
+              style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>
@@ -1495,4 +1415,4 @@ minWidth: 900,
   );
 };
 
-export default CallBackPage;
+export default BlockedListPage;

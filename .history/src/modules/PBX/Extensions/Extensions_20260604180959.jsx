@@ -1412,7 +1412,7 @@ const SipAccountPage = () => {
     setImportFile(null);
   }}
   disabled={loading.fetch}
-  variant="accent" 
+  variant="accent"
 >
   ⬇ Import
 </Btn>

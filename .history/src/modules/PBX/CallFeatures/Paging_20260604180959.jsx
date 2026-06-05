@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
+import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Alert,
@@ -9,19 +13,25 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
+  FormControl,
+  MenuItem,
+  Select as MuiSelect,
   Checkbox,
+  TextField,
 } from "@mui/material";
 import {
-  createPickupGroup,
-  deletePickupGroup,
-  listPickupGroupExtensions,
-  listPickupGroups,
-  updatePickupGroup,
+  createPagingGroup,
+  deletePagingGroup,
+  fetchSipAccounts,
+  listPagingGroups,
+  updatePagingGroup,
 } from "../../../api/apiService";
-import { PICKUP_GROUP_ITEMS_PER_PAGE } from "../../../constants/PickupGroupConstants";
 
-// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
+// Verify this matches your actual import path
+const PAGING_ITEMS_PER_PAGE = 20;
+const PAGING_TYPE_OPTIONS = ["one-way", "two-way"];
+
+// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
 pageBg: "#f8fafc",
 cardBg: "#ffffff",
@@ -34,7 +44,10 @@ accent: "#3E5475",
 amber: "#dc2626",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
+
+
+
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -42,105 +55,69 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
-  title,
-  type,
-  hoverBehavior = "background",
 }) => {
   const variants = {
     default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-   cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
+     background: C.cardBg,
+color: C.valueText,
+border: "1px solid #9ca3af",
+},
+primary: {
+background:
+"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+color: "#fff",
+border: "1px solid #5A6F8F",
+},
+cancel: {
+background: "#cbd5e1",
+color: "#374151",
+border: "1px solid #cbd5e1",
+boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+},
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+color: C.labelText,
+border: `1px solid ${C.cardBorder}`,
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.errorRed,
+      border: `1px solid #fecaca`,
     },
     accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
+      background: C.cardBg,
+      color: C.accent,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
-
   const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#e2e8f0";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = extraStyle?.background || s.background;
-
   return (
     <button
-      type={type}
+      type="button"
       onClick={onClick}
       disabled={disabled}
-      title={title}
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
+        ...s,
         fontSize: 12,
         fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        padding: "6px 14px",
         height: 30,
+        borderRadius: 10,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         gap: 6,
+        transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
-        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.opacity = "0.82";
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.opacity = "1";
       }}
     >
       {children}
@@ -168,33 +145,42 @@ letterSpacing: "0.14em",
     {children}
   </th>
 );
+
 const tdStyle = {
-padding: "7px 14px",
-fontSize: 13,
-color: C.valueText,
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
 };
 
 const checkboxSx = {
-padding: "1px",
-color: "#3E5475",
-"&.Mui-checked": { color: "#0284c7" },
-"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-const FieldRow = ({ label, children, required }) => (
+
+
+const FieldRow = ({ label, children, required, align = "center" }) => (
   <div
-    style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
+    style={{
+      display: "flex",
+      alignItems: align,
+      gap: 12,
+      minHeight: 32,
+    }}
   >
     <label
       style={{
         fontSize: 13,
         fontWeight: 600,
         color: C.labelText,
-        width: 140,
+        width: 150,
         flexShrink: 0,
+        paddingTop: align === "flex-start" ? 8 : 0,
       }}
     >
       {label} {required && <span style={{ color: C.errorRed }}>*</span>}
@@ -203,9 +189,29 @@ const FieldRow = ({ label, children, required }) => (
   </div>
 );
 
+const SectionHeading = ({ title }) => (
+  <div style={{ margin: "16px 0 16px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PickupGroup = () => {
+const Paging = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -220,7 +226,7 @@ const PickupGroup = () => {
   const hasLoadedExtensionsRef = useRef(false);
 
   // Search & Pagination
-  const itemsPerPage = PICKUP_GROUP_ITEMS_PER_PAGE;
+  const itemsPerPage = PAGING_ITEMS_PER_PAGE || 20;
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -228,10 +234,13 @@ const PickupGroup = () => {
   // Modal State
   const [editId, setEditId] = useState(null);
   const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+  const [pagingType, setPagingType] = useState("one-way");
+  const [callerIdNamePrefix, setCallerIdNamePrefix] = useState("");
 
-  // Dual list state
-  const [availableExtensions, setAvailableExtensions] = useState([]);
-  const [memberExtensions, setMemberExtensions] = useState([]);
+  // Dual list state (Available vs Selected)
+  const [availableExtensions, setAvailableExtensions] = useState([]); // { value, label }
+  const [memberExtensions, setMemberExtensions] = useState([]); // string[] of extension values
   const [availableSelected, setAvailableSelected] = useState([]);
   const [chosenSelected, setChosenSelected] = useState([]);
 
@@ -240,7 +249,7 @@ const PickupGroup = () => {
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
-  const normalizePickupGroupList = (res) => {
+  const normalizePagingList = (res) => {
     const list = Array.isArray(res?.message)
       ? res.message
       : Array.isArray(res?.data)
@@ -248,24 +257,27 @@ const PickupGroup = () => {
         : [];
     return list.map((g) => ({
       id: g.id,
-      name: g.name,
+      name: g.name || "",
+      number: String(g.page_number ?? g.number ?? ""),
+      type: g.type || g.page_type || g.paging_type || "one-way",
+      callerIdNamePrefix: g.cid_name_prefix || g.callerIdNamePrefix || "",
       members: Array.isArray(g.members) ? g.members.map(String) : [],
     }));
   };
 
-  const refreshPickupGroups = async () => {
+  const refreshPagingGroups = async () => {
     setLoading((prev) => ({ ...prev, list: true }));
     try {
-      const res = await listPickupGroups();
+      const res = await listPagingGroups();
       if (res?.response === false) {
-        showMessage("error", res?.message || "Failed to list pickup groups.");
+        showMessage("error", res?.message || "Failed to load paging groups.");
         setRows([]);
         return;
       }
-      setRows(normalizePickupGroupList(res));
+      setRows(normalizePagingList(res));
       setLastUpdated(new Date());
     } catch (err) {
-      showMessage("error", err?.message || "Failed to list pickup groups.");
+      showMessage("error", err?.message || "Failed to load paging groups.");
       setRows([]);
     } finally {
       setLoading((prev) => ({ ...prev, list: false }));
@@ -273,28 +285,28 @@ const PickupGroup = () => {
   };
 
   useEffect(() => {
-    refreshPickupGroups();
+    refreshPagingGroups();
   }, []);
 
   const loadExtensions = async () => {
     setLoading((prev) => ({ ...prev, extensions: true }));
     try {
-      const res = await listPickupGroupExtensions();
+      const res = await fetchSipAccounts();
       if (res?.response === false) {
         showMessage("error", res?.message || "Failed to load extensions.");
         setAvailableExtensions([]);
         return;
       }
-      const list = Array.isArray(res?.message)
+      const sipList = Array.isArray(res?.message)
         ? res.message
         : Array.isArray(res?.data)
           ? res.data
           : [];
-      const exts = list
+      const exts = sipList
         .filter((e) => e && e.extension)
         .map((e) => ({
           value: String(e.extension),
-          label: `${(e.display_name || "").trim() || String(e.extension)}-${String(e.extension)}`,
+          label: `${(e.display_name || e.name || String(e.extension)).trim()}-${String(e.extension)}`,
         }))
         .sort((a, b) => {
           const an = parseInt(a.value, 10);
@@ -316,7 +328,7 @@ const PickupGroup = () => {
   // ── Search & Pagination ──
   const filteredRows = searchQuery.trim()
     ? rows.filter((r) =>
-        [r.name].some((v) =>
+        [r.name, r.number].some((v) =>
           String(v || "")
             .toLowerCase()
             .includes(searchQuery.toLowerCase()),
@@ -351,10 +363,12 @@ const PickupGroup = () => {
   const somePageSelected =
     pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
 
-  const handleToggleRow = (idx) =>
+  const handleToggleRow = (idx) => {
     setSelected((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
     );
+  };
+
   const handleToggleAll = () => {
     if (!pageIndices.length) return;
     setSelected((prev) =>
@@ -368,6 +382,9 @@ const PickupGroup = () => {
   const resetForm = () => {
     setEditId(null);
     setName("");
+    setNumber("");
+    setPagingType("one-way");
+    setCallerIdNamePrefix("");
     setMemberExtensions([]);
     setAvailableSelected([]);
     setChosenSelected([]);
@@ -376,17 +393,24 @@ const PickupGroup = () => {
   const handleOpenAddModal = async () => {
     resetForm();
     setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) await loadExtensions();
+    if (!hasLoadedExtensionsRef.current) {
+      await loadExtensions();
+    }
   };
 
   const handleOpenEditModal = async (row) => {
     setEditId(row.id);
     setName(row.name || "");
-    setMemberExtensions(Array.isArray(row.members) ? row.members : []);
+    setNumber(row.number || "");
+    setPagingType(row.type || "one-way");
+    setCallerIdNamePrefix(row.callerIdNamePrefix || "");
+    setMemberExtensions(Array.isArray(row.members) ? [...row.members] : []);
     setAvailableSelected([]);
     setChosenSelected([]);
     setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) await loadExtensions();
+    if (!hasLoadedExtensionsRef.current) {
+      await loadExtensions();
+    }
   };
 
   const handleCloseModal = () => {
@@ -396,8 +420,10 @@ const PickupGroup = () => {
   };
 
   const handleDelete = () => {
-    if (selected.length === 0)
-      return showMessage("error", "Please select at least one row to delete.");
+    if (selected.length === 0) {
+      showMessage("error", "Please select at least one row to delete.");
+      return;
+    }
     if (
       !window.confirm(
         `Are you sure you want to delete ${selected.length} records?`,
@@ -413,23 +439,23 @@ const PickupGroup = () => {
         );
         for (const row of toDelete) {
           if (row.id != null) {
-            const res = await deletePickupGroup(row.id);
+            const res = await deletePagingGroup(row.id);
             if (res?.response === false) {
               showMessage(
                 "error",
-                res?.message || "Failed to delete pickup group.",
+                res?.message || "Failed to delete paging group.",
               );
               break;
             }
           }
         }
         setSelected([]);
-        await refreshPickupGroups();
-        showMessage("success", "Pickup Group(s) deleted successfully.");
+        await refreshPagingGroups();
+        showMessage("success", "Paging Group(s) deleted successfully.");
       } catch (err) {
         showMessage(
           "error",
-          err?.message || "Failed to delete pickup group(s).",
+          err?.message || "Failed to delete paging group(s).",
         );
       } finally {
         setLoading((prev) => ({ ...prev, delete: false }));
@@ -438,13 +464,12 @@ const PickupGroup = () => {
   };
 
   const handleSave = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return showMessage("error", "Name is required.");
-    if (!/^[A-Za-z0-9_]+$/.test(trimmed))
-      return showMessage(
-        "error",
-        "Name may contain only letters, numbers, and underscore.",
-      );
+    const trimmedName = name.trim();
+    const trimmedNumber = number.trim();
+    if (!trimmedName) return showMessage("error", "Name is required.");
+    if (!trimmedNumber) return showMessage("error", "Number is required.");
+    if (!/^\d+$/.test(trimmedNumber))
+      return showMessage("error", "Number must be numeric.");
     if (!memberExtensions.length)
       return showMessage("error", "Please select at least one Member.");
 
@@ -452,33 +477,46 @@ const PickupGroup = () => {
     (async () => {
       try {
         if (editId != null) {
-          const res = await updatePickupGroup(editId, {
-            name: trimmed,
+          const res = await updatePagingGroup(editId, {
+            name: trimmedName,
+            page_number: Number(trimmedNumber),
+            pagingMode: pagingType,
+            page_type: pagingType,
+            paging_type: pagingType,
+            cid_name_prefix: callerIdNamePrefix.trim(),
             members: memberExtensions.map(String),
           });
-          if (res?.response === false)
-            return showMessage(
+          if (res?.response === false) {
+            showMessage(
               "error",
-              res?.message || "Failed to update pickup group.",
+              res?.message || "Failed to update paging group.",
             );
-          await refreshPickupGroups();
-          showMessage("success", "Pickup group updated successfully.");
+            return;
+          }
+          showMessage("success", "Paging group updated successfully.");
         } else {
-          const res = await createPickupGroup(
-            trimmed,
-            memberExtensions.map(String),
-          );
-          if (res?.response === false)
-            return showMessage(
+          const res = await createPagingGroup({
+            name: trimmedName,
+            page_number: Number(trimmedNumber),
+            pagingMode: pagingType,
+            page_type: pagingType,
+            paging_type: pagingType,
+            cid_name_prefix: callerIdNamePrefix.trim(),
+            members: memberExtensions.map(String),
+          });
+          if (res?.response === false) {
+            showMessage(
               "error",
-              res?.message || "Failed to create pickup group.",
+              res?.message || "Failed to create paging group.",
             );
-          setRows(normalizePickupGroupList(res));
-          showMessage("success", "Pickup group created successfully.");
+            return;
+          }
+          showMessage("success", "Paging group created successfully.");
         }
+        await refreshPagingGroups();
         handleCloseModal();
       } catch (err) {
-        showMessage("error", err?.message || "Failed to save pickup group.");
+        showMessage("error", err?.message || "Failed to save paging group.");
       } finally {
         setLoading((prev) => ({ ...prev, save: false }));
       }
@@ -523,12 +561,40 @@ const PickupGroup = () => {
     setChosenSelected([]);
   };
 
+  const handleReorderSelected = (action) => {
+    if (chosenSelected.length !== 1) {
+      showMessage(
+        "error",
+        "Select exactly one member in 'Selected' list to reorder.",
+      );
+      return;
+    }
+    const id = chosenSelected[0];
+    setMemberExtensions((prev) => {
+      const idx = prev.indexOf(id);
+      if (idx < 0) return prev;
+      const next = [...prev];
+      if (action === "top") {
+        next.splice(idx, 1);
+        next.unshift(id);
+      } else if (action === "bottom") {
+        next.splice(idx, 1);
+        next.push(id);
+      } else if (action === "up" && idx > 0) {
+        [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+      } else if (action === "down" && idx < next.length - 1) {
+        [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      }
+      return next;
+    });
+  };
+
   return (
     <div
       style={{
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 24,
+        padding: 16,
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
@@ -568,7 +634,7 @@ const PickupGroup = () => {
           <div style={{ fontSize: 11, color: C.mutedText }}>
             PBX &rsaquo; Call Features &rsaquo;{" "}
             <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              Pickup Group
+              Paging
             </span>
           </div>
         </div>
@@ -576,27 +642,27 @@ const PickupGroup = () => {
         {/* Main Card */}
         <div
           style={{
-           background: "#ffffff",
-borderRadius: 10,
-overflow: "hidden",
-border: `1.5px solid ${C.cardBorder}`,
-boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+            background: "#ffffff",
+            borderRadius: CARD_RADIUS,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
           <div
             style={{
-          display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-minHeight: 44,
-padding: "7px 14px",
-borderBottom: `1px solid ${C.cardBorder}`,
-background: "#ffffff",
-flexWrap: "wrap",
-gap: 12,
-borderTopLeftRadius: CARD_RADIUS,
-borderTopRightRadius: CARD_RADIUS,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div
@@ -607,7 +673,7 @@ borderTopRightRadius: CARD_RADIUS,
                 flexWrap: "wrap",
               }}
             >
-              
+             
               {selected.length > 0 && (
                 <span
                   style={{
@@ -646,7 +712,8 @@ borderTopRightRadius: CARD_RADIUS,
     boxShadow:
       "0 1px 2px rgba(15, 23, 42, 0.08)",
   }}
-              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+              >
+                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
               <Btn
@@ -666,10 +733,13 @@ borderTopRightRadius: CARD_RADIUS,
           </div>
 
           {/* Table */}
-          <div style={{ 
-overflowX: "auto",
-overflowY: "auto",
-flex: 1, }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {loading.list ? (
               <div
                 style={{
@@ -685,43 +755,56 @@ flex: 1, }}>
               <table
                 style={{
                   width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                    sx={checkboxSx}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Name</TH>
+                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>ID</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}> Name </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Number</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Type</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>CallerID Name Prefix</TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Members</TH>
-                    <TH style={{ width: 70,
+                    <TH
+                      style={{
+                        width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>Modify</TH>
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={8}
                         style={{
                           textAlign: "center",
                           padding: "36px 0",
@@ -731,7 +814,7 @@ minWidth: 900,
                       >
                         {searchQuery
                           ? `No results for "${searchQuery}"`
-                          : "No pickup groups found. Click '+ Add New' to create one."}
+                          : "No paging groups found. Click '+ Add New' to create one."}
                       </td>
                     </tr>
                   ) : (
@@ -764,21 +847,22 @@ minWidth: 900,
                         >
                           <td
                             style={{
-                                ...tdStyle,
+                              ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+
                             }}
                           >
                             <Checkbox
                               size="small"
                               checked={isSelected}
                               onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                              sx={checkboxSx}
                             />
                           </td>
                           <td
                             style={{
-                                ...tdStyle,
+                              ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
@@ -787,7 +871,7 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                             ...tdStyle,
+                            ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                             }}
@@ -796,24 +880,71 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                               ...tdStyle,
+                            ...tdStyle,
   background: rowBg,
   borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+
                             }}
                           >
-                            {(row.members || [])
-                              .slice(0, 4)
-                              .map(getExtLabel)
-                              .join(", ")}
-                            {(row.members || []).length > 4
-                              ? ` +${(row.members || []).length - 4}`
-                              : ""}
+                            <span
+                              style={{
+                                color: C.valueText,
+                                padding: "4px 11px",
+                                borderRadius: 999,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                letterSpacing: "0.01em",
+                                whiteSpace: "nowrap",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {row.number}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                                ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+
+                            }}
+                          >
+                            {row.type}
                           </td>
                           <td
                             style={{
                               ...tdStyle,
   background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,  
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+
+                            }}
+                          >
+                            {row.callerIdNamePrefix || "—"}
+                          </td>
+                          <td
+                            style={{
+                             ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+
+                            }}
+                          >
+                            {(row.members || [])
+                              .slice(0, 3)
+                              .map(getExtLabel)
+                              .join(", ")}
+                            {(row.members || []).length > 3
+                              ? ` +${(row.members || []).length - 3}`
+                              : ""}
+                          </td>
+                          <td
+                            style={{
+                               ...tdStyle,
+  background: rowBg,
+  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+
                             }}
                           >
                            <EditDocumentIcon
@@ -838,17 +969,16 @@ minWidth: 900,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                gap: 8,
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
               </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 8 }}>
                 <Btn
                   onClick={handlePrev}
                   disabled={loading.list || page <= 1}
@@ -864,7 +994,7 @@ minWidth: 900,
                     background: "#e0f2fe",
                     padding: "5px 14px",
                     borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
+                    border: `0.5px solid ${C.accent}`,
                   }}
                 >
                   Page {page} of {totalPages}
@@ -887,7 +1017,7 @@ minWidth: 900,
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 900, maxWidth: "96vw", borderRadius: 2 } }}
+        PaperProps={{ sx: { width: 760, maxWidth: "96vw", borderRadius: 2 } }}
       >
         <DialogTitle
           style={{
@@ -899,11 +1029,11 @@ minWidth: 900,
             padding: "14px 24px",
           }}
         >
-          {editId != null ? "Edit Pickup Group" : "Add Pickup Group"}
+          {editId != null ? "Edit Paging Group" : "Add Paging Group"}
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px",backgroundColor:"#ffffff"}}
+          style={{ padding: "20px 24px", backgroundColor:"#ffffff" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
@@ -914,188 +1044,255 @@ minWidth: 900,
                 padding: "20px 24px 16px",
               }}
             >
-              <div style={{ marginBottom: 20, position: "relative" }}>
-                <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                <span
-style={{
-                          fontSize: 14,
-                          fontWeight: 700,
-                          color: C.accent,
-                          marginBottom: 6,
-                          textAlign: "center",
-                        }}
-                >
-                  Pickup Group
-                </span>
-              </div>
+              <SectionHeading title="General Settings" />
 
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr",
+                  gridTemplateColumns: "1fr 1fr",
                   gap: "16px 32px",
                 }}
               >
-                <FieldRow label="Name" required>
-                  <TextField
-                    size="small"
-                    fullWidth
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    inputProps={{ style: { fontSize: 13, padding: "6px 8px", backgroundColor: "#fff" } }}
-                  />
-                </FieldRow>
-
+                {/* ── LEFT COLUMN ── */}
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                    }}
-                  >
-                    Member <span style={{ color: C.errorRed }}>*</span>
-                  </div>
+                  <FieldRow label="Name" required>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",},
+                      }}
+                    />
+                  </FieldRow>
 
+                  <FieldRow label="Number" required>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      type="number"
+                      value={number}
+                      onChange={(e) => setNumber(e.target.value)}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px" , backgroundColor: "#fff",},
+                      }}
+                    />
+                  </FieldRow>
+                </div>
+
+                {/* ── RIGHT COLUMN ── */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                >
+                  <FieldRow label="Type" required>
+                    <FormControl size="small" fullWidth>
+                      <MuiSelect
+                        value={pagingType}
+                        onChange={(e) => setPagingType(e.target.value)}
+                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
+                      >
+                        {PAGING_TYPE_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </MuiSelect>
+                    </FormControl>
+                  </FieldRow>
+
+                  <FieldRow label="CallerID Name Prefix">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={callerIdNamePrefix}
+                      onChange={(e) => setCallerIdNamePrefix(e.target.value)}
+                      inputProps={{
+                        style: { fontSize: 13, padding: "6px 8px", backgroundColor: "#fff", },
+                      }}
+                    />
+                  </FieldRow>
+                </div>
+              </div>
+
+              <SectionHeading title="Member Extensions" />
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 40px 1fr",
+                  gap: 12,
+                }}
+              >
+                <div>
                   <div
+                   style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: C.accent,
+                        marginBottom: 6,
+                        textAlign: "center",
+                      }}
+                  >
+                    Available
+                  </div>
+                  <select
+                    multiple
+                    value={availableSelected}
+                    onChange={(e) =>
+                      setAvailableSelected(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value,
+                        ),
+                      )
+                    }
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 40px 1fr",
-                      gap: 12,
+                      width: "100%",
+                      height: 160,
+                      border: `1px solid ${C.cardBorder}`,
+                      borderRadius: 4,
+                      padding: 8,
+                      fontSize: 13,
+                      outline: "none",
+                      background: "#fff",
                     }}
                   >
-                    <div>
-                      <div
-                      style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.accent,
-                          marginBottom: 6,
-                          textAlign: "center",
-                        }}
-                      >
-                        Available
-                      </div>
-                      <select
-                        multiple
-                        value={availableSelected}
-                        onChange={(e) =>
-                          setAvailableSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value,
-                            ),
-                          )
-                        }
-                        style={{
-                          width: "100%",
-                          height: 160,
-                          border: `1px solid ${C.cardBorder}`,
-                          borderRadius: 4,
-                          padding: 8,
-                          fontSize: 13,
-                          outline: "none",
-                      backgroundColor: "#fff",
-                        }}
-                      >
-                        {loading.extensions ? (
-                          <option disabled>Loading...</option>
-                        ) : availableList.length === 0 ? (
-                          <option disabled>No extensions</option>
-                        ) : (
-                          availableList.map((t) => (
-                            <option key={t.value} value={t.value}>
-                              {t.label}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
+                    {loading.extensions ? (
+                      <option disabled>Loading...</option>
+                    ) : availableList.length === 0 ? (
+                      <option disabled>No extensions</option>
+                    ) : (
+                      availableList.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Btn
+                    onClick={addSelectedMembers}
+                    variant="outline"
+                    style={{ padding: "4px 0", fontSize: 12 }}
+                  >
+                    &gt;
+                  </Btn>
+                  <Btn
+                    onClick={addAllMembers}
+                    variant="outline"
+                    style={{ padding: "4px 0", fontSize: 12 }}
+                  >
+                    &gt;&gt;
+                  </Btn>
+                  <Btn
+                    onClick={removeSelectedMembers}
+                    variant="outline"
+                    style={{ padding: "4px 0", fontSize: 12 }}
+                  >
+                    &lt;
+                  </Btn>
+                  <Btn
+                    onClick={removeAllMembers}
+                    variant="outline"
+                    style={{ padding: "4px 0", fontSize: 12 }}
+                  >
+                    &lt;&lt;
+                  </Btn>
+                </div>
+                <div style={{ display: "flex", gap: 12 }}>
+                  <div style={{ flex: 1 }}>
                     <div
                       style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 8,
-                        justifyContent: "center",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: C.accent,
+                        marginBottom: 6,
+                        textAlign: "center",
                       }}
                     >
-                      <Btn
-                        onClick={addSelectedMembers}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 12 }}
-                      >
-                        &gt;
-                      </Btn>
-                      <Btn
-                        onClick={addAllMembers}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 12 }}
-                      >
-                        &gt;&gt;
-                      </Btn>
-                      <Btn
-                        onClick={removeSelectedMembers}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 12 }}
-                      >
-                        &lt;
-                      </Btn>
-                      <Btn
-                        onClick={removeAllMembers}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 12 }}
-                      >
-                        &lt;&lt;
-                      </Btn>
+                      Selected
                     </div>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.accent,
-                          marginBottom: 6,
-                          textAlign: "center",
-                        }}
-                      >
-                        Selected
-                      </div>
-                      <select
-                        multiple
-                        value={chosenSelected}
-                        onChange={(e) =>
-                          setChosenSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value,
-                            ),
-                          )
-                        }
-                        style={{
-                          width: "100%",
-                          height: 160,
-                          border: `1px solid ${C.cardBorder}`,
-                          borderRadius: 4,
-                          padding: 8,
-                          fontSize: 13,
-                          outline: "none",
-                          background: "#fff",
-                        }}
-                      >
-                        {memberExtensions.length === 0 ? (
-                          <option disabled>No selected members</option>
-                        ) : (
-                          memberExtensions.map((id) => (
-                            <option key={id} value={id}>
-                              {getExtLabel(id)}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
+                    <select
+                      multiple
+                      value={chosenSelected}
+                      onChange={(e) =>
+                        setChosenSelected(
+                          Array.from(
+                            e.target.selectedOptions,
+                            (opt) => opt.value,
+                          ),
+                        )
+                      }
+                      style={{
+                        width: "100%",
+                        height: 160,
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: 4,
+                        padding: 8,
+                        fontSize: 13,
+                        outline: "none",
+                        background: "#fff",
+                      }}
+                    >
+                      {memberExtensions.length === 0 ? (
+                        <option disabled>No selected members</option>
+                      ) : (
+                        memberExtensions.map((id) => (
+                          <option key={id} value={id}>
+                            {getExtLabel(id)}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      paddingTop: 22,
+                    }}
+                  >
+                    <Btn
+                      onClick={() => handleReorderSelected("top")}
+                      variant="outline"
+                      style={{ padding: "4px 0", fontSize: 14 }}
+                    >
+                      <VerticalAlignTopIcon sx={{ fontSize: 16 }} />
+                    </Btn>
+                    <Btn
+                      onClick={() => handleReorderSelected("up")}
+                      variant="outline"
+                      style={{ padding: "4px 0", fontSize: 14 }}
+                    >
+                      <KeyboardArrowUpIcon sx={{ fontSize: 16 }} />
+                    </Btn>
+                    <Btn
+                      onClick={() => handleReorderSelected("down")}
+                      variant="outline"
+                      style={{ padding: "4px 0", fontSize: 14 }}
+                    >
+                      <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
+                    </Btn>
+                    <Btn
+                      onClick={() => handleReorderSelected("bottom")}
+                      variant="outline"
+                      style={{ padding: "4px 0", fontSize: 14 }}
+                    >
+                      <VerticalAlignBottomIcon sx={{ fontSize: 16 }} />
+                    </Btn>
                   </div>
                 </div>
               </div>
@@ -1112,21 +1309,16 @@ style={{
             gap: 12,
           }}
         >
-<Btn
+       <Btn
   variant="primary"
   onClick={handleSave}
   disabled={loading.save}
-  style={{
-    minWidth: 100,
-    height: 36,
-    fontSize: 13
-    
-  }}
+ style={{ minWidth: 100, height: 33, fontSize: 13 }}
 >
   {loading.save ? (
     <>
       <CircularProgress
-        size={13}
+        size={14}
         sx={{ color: "#fff", mr: 1 }}
       />
       Saving...
@@ -1137,11 +1329,11 @@ style={{
     "Create Group"
   )}
 </Btn>
-        <Btn
+          <Btn
   onClick={handleCloseModal}
   disabled={loading.save}
   variant="cancel"
- style={{ minWidth: 100, height: 33 }}
+  style={{ minWidth: 100, height: 33 }}
 >
   Cancel
 </Btn>
@@ -1151,4 +1343,4 @@ style={{
   );
 };
 
-export default PickupGroup;
+export default Paging;
