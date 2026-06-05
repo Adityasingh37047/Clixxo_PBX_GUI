@@ -16,7 +16,7 @@ const C = {
   divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#64748b",
-  valueText: "#1e293b",
+  valueText: "#3e5475",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",
@@ -335,10 +335,17 @@ const BackupUpload = () => {
                 disabled={loadingBackup || loadingRestore}
               />
               <Btn
-                variant="default"
+                variant="cancel"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loadingBackup || loadingRestore}
-                style={{ minWidth: 120, height: 36, fontSize: 13 }}
+                style={{
+                  minWidth: 120,
+                  height: 36,
+                  minHeight: 36,
+                  fontSize: 13,
+                  padding: "6px 14px",
+                  boxSizing: "border-box",
+                }}
               >
                 {BU_LABELS.chooseFile}
               </Btn>

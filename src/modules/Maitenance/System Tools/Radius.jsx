@@ -12,6 +12,15 @@ import {
   FormControlLabel,
   Alert,
 } from "@mui/material";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
+import {
+  systemToolsFieldInputStyle as inputStyle,
+  systemToolsMuiSelectSx,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
@@ -172,19 +181,6 @@ const ENABLE_CHECKBOX_FIELDS = RADIUS_FIELDS.filter(
 );
 const RADIUS_FORM_FIELDS = RADIUS_FIELDS.filter((f) => f.type !== "checkbox");
 
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
-};
-
 const RADIUS_INITIAL_FORM = {
   radius: false,
   certification: false,
@@ -290,7 +286,10 @@ const Radius = () => {
             </div>
 
             <div className="px-5 pt-3 pb-0">
-              <div className="w-full max-w-[640px] mx-auto">
+              <div
+                className="w-full max-w-[640px] mx-auto"
+                style={{ marginBottom: 12 }}
+              >
                 {/* Form Fields Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                   {/* Enable checkboxes — same spacing as Call Type list, tighter rows only */}
@@ -353,19 +352,8 @@ const Radius = () => {
                               className="w-full"
                               displayEmpty
                               sx={{
-                                backgroundColor: "#f8fafc",
-                                borderRadius: "6px",
-                                fontSize: 14,
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: C.cardBorder,
-                                },
-                                "&:hover .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: "#64748b",
-                                },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                  {
-                                    borderColor: `${C.accent} !important`,
-                                  },
+                                ...systemToolsMuiSelectSx,
+                                width: "100%",
                               }}
                             >
                               <MenuItem value="">
@@ -385,17 +373,7 @@ const Radius = () => {
                               name={field.name}
                               value={form[field.name] || ""}
                               onChange={handleChange}
-                              style={{
-                                padding: "6px 12px",
-                                borderRadius: 6,
-                                border: `1px solid ${C.cardBorder}`,
-                                fontSize: 14,
-                                width: "100%",
-                                backgroundColor: "#f8fafc",
-                                outline: "none",
-                                color: C.valueText,
-                                transition: "border-color 0.2s ease",
-                              }}
+                              style={inputStyle}
                               {...inputInteraction}
                             />
                           )}
@@ -405,29 +383,32 @@ const Radius = () => {
                   )}
                 </div>
               </div>
+            </div>
 
-              {/* Action Buttons — top border full content width */}
-              <div
-                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-2"
-                style={{ borderTop: `1px solid ${C.divider}` }}
+            <div
+              style={{
+                ...advancedFormInlineFooterStyle,
+                width: "100%",
+                marginLeft: 0,
+                marginRight: 0,
+              }}
+            >
+              <Btn
+                type="button"
+                variant="cancel"
+                onClick={handleReset}
+                style={advancedFormBtnStyle}
               >
-                <Btn
-                  type="button"
-                  variant="cancel"
-                  onClick={handleReset}
-                  style={{ minWidth: 110, height: 34 }}
-                >
-                  Reset
-                </Btn>
-                <Btn
-                  type="submit"
-                  variant="primary"
-                  onClick={handleSave}
-                  style={{ minWidth: 110, height: 34 }}
-                >
-                  Save
-                </Btn>
-              </div>
+                Reset
+              </Btn>
+              <Btn
+                type="submit"
+                variant="primary"
+                onClick={handleSave}
+                style={advancedFormBtnStyle}
+              >
+                Save
+              </Btn>
             </div>
           </div>
         </form>

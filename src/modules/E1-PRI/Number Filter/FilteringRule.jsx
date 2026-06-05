@@ -11,6 +11,11 @@ import {
   listNumberPool,
 } from "../../../api/apiService";
 import {
+  addHostFormPanelStyle,
+  modalSelectSx,
+  modalTextFieldSx,
+} from "../../../sections/advanced/advancedSharedUi";
+import {
   Button,
   Dialog,
   DialogTitle,
@@ -826,17 +831,7 @@ const FilteringRule = () => {
             overflowY: "visible",
           }}
         >
-          <div
-            style={{
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 14,
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-            }}
-          >
+          <div style={{ ...addHostFormPanelStyle, padding: 14, gap: 10 }}>
             <div
               style={{
                 display: "flex",
@@ -962,22 +957,7 @@ const FilteringRule = () => {
                     onChange={handleFormChange}
                     size="small"
                     fullWidth
-                    sx={{
-                      fontSize: 13,
-                      height: 32,
-                      backgroundColor: "#fff",
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: C.cardBorder,
-                        transition: "border-color 0.2s ease",
-                      },
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#64748b",
-                      },
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#0284c7 !important",
-                        borderWidth: "1px !important",
-                      },
-                    }}
+                    sx={modalSelectSx}
                   >
                     {[
                       "none",
@@ -999,7 +979,7 @@ const FilteringRule = () => {
         </DialogContent>
         <DialogActions
           style={{
-            background: "#ffffff",
+            background: "#f8fafc",
             padding: "16px 24px",
             borderTop: `1px solid ${C.cardBorder}`,
             display: "flex",

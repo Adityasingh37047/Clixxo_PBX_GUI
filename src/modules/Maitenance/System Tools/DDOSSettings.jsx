@@ -4,8 +4,13 @@ import {
   DDOS_INITIAL_FORM,
   DDOS_INFO_LOG,
 } from "../../../constants/DDOSSettingsConstants";
-import { Select, MenuItem, Alert, Checkbox } from "@mui/material";
+import { Alert, Checkbox } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
+import {
+  systemToolsFieldInputStyle as inputStyle,
+  systemToolsFieldSelectStyle as selectStyle,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
@@ -137,17 +142,18 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
+const labelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+};
+
+const checkboxSx = {
+  padding: "4px",
+  marginRight: "4px",
+  color: "#64748b",
+  "&.Mui-checked": { color: C.accent },
 };
 
 const DDOSSettings = () => {
@@ -564,362 +570,208 @@ const DDOSSettings = () => {
             <span>DDOS Settings</span>
           </div>
 
-          <div className="px-5 pt-3 pb-0">
-            <div className="w-full max-w-4xl mx-auto">
-              <form
-                onSubmit={handleSave}
-                className="w-full flex flex-col gap-0"
-              >
-                {/* Form Fields Grid */}
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                  {/* WEB Port Attack Protection */}
-                  <React.Fragment>
-                    <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                      <span style={{ color: C.labelText }}>
-                        WEB Port Attack Protection
-                      </span>
-                    </div>
-                    <div className="flex items-center min-h-[34px]">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          size="small"
-                          checked={!!form.webPortAttack}
-                          onChange={() =>
-                            handleChange(
-                              "webPortAttack",
-                              !form.webPortAttack,
-                              "checkbox",
-                            )
-                          }
-                          sx={{
-                            padding: "4px",
-                            marginRight: "4px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
-                          }}
-                        />
-                        <span style={{ fontSize: 14, color: C.valueText }}>
-                          Enable
-                        </span>
-                      </div>
-                    </div>
-                  </React.Fragment>
-
-                  {/* WEB Limit - Conditional */}
-                  {form.webPortAttack && (
-                    <React.Fragment>
-                      <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                        <span style={{ color: C.labelText }}>WEB Limit</span>
-                      </div>
-                      <div className="flex items-center min-h-[34px]">
-                        <input
-                          type="number"
-                          value={form.webLimit || ""}
-                          onChange={(e) =>
-                            handleChange(
-                              "webLimit",
-                              Number(e.target.value),
-                              "number",
-                            )
-                          }
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: 6,
-                            border: `1px solid ${C.cardBorder}`,
-                            fontSize: 14,
-                            width: "100%",
-                            maxWidth: 180,
-                            backgroundColor: "#f8fafc",
-                            outline: "none",
-                            color: C.valueText,
-                            transition: "border-color 0.2s ease",
-                          }}
-                          {...inputInteraction}
-                        />
-                      </div>
-                    </React.Fragment>
-                  )}
-
-                  {/* FTP Port Attack Protection */}
-                  <React.Fragment>
-                    <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                      <span style={{ color: C.labelText }}>
-                        FTP Port Attack Protection
-                      </span>
-                    </div>
-                    <div className="flex items-center min-h-[34px]">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          size="small"
-                          checked={!!form.ftpPortAttack}
-                          onChange={() =>
-                            handleChange(
-                              "ftpPortAttack",
-                              !form.ftpPortAttack,
-                              "checkbox",
-                            )
-                          }
-                          sx={{
-                            padding: "4px",
-                            marginRight: "4px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
-                          }}
-                        />
-                        <span style={{ fontSize: 14, color: C.valueText }}>
-                          Enable
-                        </span>
-                      </div>
-                    </div>
-                  </React.Fragment>
-
-                  {/* FTP Limit - Conditional */}
-                  {form.ftpPortAttack && (
-                    <React.Fragment>
-                      <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                        <span style={{ color: C.labelText }}>FTP Limit</span>
-                      </div>
-                      <div className="flex items-center min-h-[34px]">
-                        <input
-                          type="number"
-                          value={form.ftpLimit || ""}
-                          onChange={(e) =>
-                            handleChange(
-                              "ftpLimit",
-                              Number(e.target.value),
-                              "number",
-                            )
-                          }
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: 6,
-                            border: `1px solid ${C.cardBorder}`,
-                            fontSize: 14,
-                            width: "100%",
-                            maxWidth: 180,
-                            backgroundColor: "#f8fafc",
-                            outline: "none",
-                            color: C.valueText,
-                            transition: "border-color 0.2s ease",
-                          }}
-                          {...inputInteraction}
-                        />
-                      </div>
-                    </React.Fragment>
-                  )}
-
-                  {/* SSH Port Attack Protection */}
-                  <React.Fragment>
-                    <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                      <span style={{ color: C.labelText }}>
-                        SSH Port Attack Protection
-                      </span>
-                    </div>
-                    <div className="flex items-center min-h-[34px]">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          size="small"
-                          checked={!!form.sshPortAttack}
-                          onChange={() =>
-                            handleChange(
-                              "sshPortAttack",
-                              !form.sshPortAttack,
-                              "checkbox",
-                            )
-                          }
-                          sx={{
-                            padding: "4px",
-                            marginRight: "4px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
-                          }}
-                        />
-                        <span style={{ fontSize: 14, color: C.valueText }}>
-                          Enable
-                        </span>
-                      </div>
-                    </div>
-                  </React.Fragment>
-
-                  {/* SSH Limit - Conditional */}
-                  {form.sshPortAttack && (
-                    <React.Fragment>
-                      <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                        <span style={{ color: C.labelText }}>SSH Limit</span>
-                      </div>
-                      <div className="flex items-center min-h-[34px]">
-                        <input
-                          type="number"
-                          value={form.sshLimit || ""}
-                          onChange={(e) =>
-                            handleChange(
-                              "sshLimit",
-                              Number(e.target.value),
-                              "number",
-                            )
-                          }
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: 6,
-                            border: `1px solid ${C.cardBorder}`,
-                            fontSize: 14,
-                            width: "100%",
-                            maxWidth: 180,
-                            backgroundColor: "#f8fafc",
-                            outline: "none",
-                            color: C.valueText,
-                            transition: "border-color 0.2s ease",
-                          }}
-                          {...inputInteraction}
-                        />
-                      </div>
-                    </React.Fragment>
-                  )}
-
-                  {/* TELNET Port Attack Protection */}
-                  <React.Fragment>
-                    <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                      <span style={{ color: C.labelText }}>
-                        TELNET Port Attack Protection
-                      </span>
-                    </div>
-                    <div className="flex items-center min-h-[34px]">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          size="small"
-                          checked={!!form.telnetPortAttack}
-                          onChange={() =>
-                            handleChange(
-                              "telnetPortAttack",
-                              !form.telnetPortAttack,
-                              "checkbox",
-                            )
-                          }
-                          sx={{
-                            padding: "4px",
-                            marginRight: "4px",
-                            color: "#64748b",
-                            "&.Mui-checked": { color: C.accent },
-                          }}
-                        />
-                        <span style={{ fontSize: 14, color: C.valueText }}>
-                          Enable
-                        </span>
-                      </div>
-                    </div>
-                  </React.Fragment>
-
-                  {/* TELNET Limit - Conditional */}
-                  {form.telnetPortAttack && (
-                    <React.Fragment>
-                      <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                        <span style={{ color: C.labelText }}>TELNET Limit</span>
-                      </div>
-                      <div className="flex items-center min-h-[34px]">
-                        <input
-                          type="number"
-                          value={form.telnetLimit || ""}
-                          onChange={(e) =>
-                            handleChange(
-                              "telnetLimit",
-                              Number(e.target.value),
-                              "number",
-                            )
-                          }
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: 6,
-                            border: `1px solid ${C.cardBorder}`,
-                            fontSize: 14,
-                            width: "100%",
-                            maxWidth: 180,
-                            backgroundColor: "#f8fafc",
-                            outline: "none",
-                            color: C.valueText,
-                            transition: "border-color 0.2s ease",
-                          }}
-                          {...inputInteraction}
-                        />
-                      </div>
-                    </React.Fragment>
-                  )}
-
-                  {/* Set Validity of Attacker IP Blacklist */}
-                  <React.Fragment>
-                    <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                      <span style={{ color: C.labelText }}>
-                        Set Validity of Attacker IP Blacklist
-                      </span>
-                    </div>
-                    <div className="flex items-center min-h-[34px]">
-                      <Select
-                        value={form.blacklistValidityType}
-                        onChange={(e) =>
-                          handleChange(
-                            "blacklistValidityType",
-                            e.target.value,
-                            "select",
-                          )
-                        }
-                        size="small"
-                        variant="outlined"
-                        displayEmpty
-                        sx={{
-                          width: "100%",
-                          maxWidth: 180,
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#f8fafc",
-                            borderRadius: 2,
-                            fontSize: 14,
-                            height: "36px",
-                          },
-                        }}
-                      >
-                        <MenuItem value="forever">Forever</MenuItem>
-                        <MenuItem value="inSetTime">In The Set Time</MenuItem>
-                      </Select>
-                    </div>
-                  </React.Fragment>
-
-                  {/* Time (Min) - Conditional */}
-                  {form.blacklistValidityType === "inSetTime" && (
-                    <React.Fragment>
-                      <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                        <span style={{ color: C.labelText }}>Time (Min)</span>
-                      </div>
-                      <div className="flex items-center min-h-[34px]">
-                        <input
-                          type="number"
-                          value={form.blacklistTime || ""}
-                          onChange={(e) =>
-                            handleChange(
-                              "blacklistTime",
-                              Number(e.target.value),
-                              "number",
-                            )
-                          }
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: 6,
-                            border: `1px solid ${C.cardBorder}`,
-                            fontSize: 14,
-                            width: "100%",
-                            maxWidth: 180,
-                            backgroundColor: "#f8fafc",
-                            outline: "none",
-                            color: C.valueText,
-                            transition: "border-color 0.2s ease",
-                          }}
-                          {...inputInteraction}
-                        />
-                      </div>
-                    </React.Fragment>
-                  )}
+          <div className="w-full px-5 pt-3 pb-2 flex flex-col items-center">
+            <form
+              onSubmit={handleSave}
+              className="w-full flex flex-col items-center"
+            >
+              {/* Form Fields Grid — centered like Signaling Call Test */}
+              <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center">
+                <label style={labelStyle}>WEB Port Attack Protection</label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    size="small"
+                    checked={!!form.webPortAttack}
+                    onChange={() =>
+                      handleChange(
+                        "webPortAttack",
+                        !form.webPortAttack,
+                        "checkbox",
+                      )
+                    }
+                    sx={checkboxSx}
+                  />
+                  <span style={{ fontSize: 14, color: C.valueText }}>
+                    Enable
+                  </span>
                 </div>
 
-                {/* Action Buttons */}
+                {form.webPortAttack && (
+                  <>
+                    <label style={labelStyle}>WEB Limit</label>
+                    <input
+                      type="number"
+                      value={form.webLimit || ""}
+                      onChange={(e) =>
+                        handleChange(
+                          "webLimit",
+                          Number(e.target.value),
+                          "number",
+                        )
+                      }
+                      style={inputStyle}
+                      {...inputInteraction}
+                    />
+                  </>
+                )}
+
+                <label style={labelStyle}>FTP Port Attack Protection</label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    size="small"
+                    checked={!!form.ftpPortAttack}
+                    onChange={() =>
+                      handleChange(
+                        "ftpPortAttack",
+                        !form.ftpPortAttack,
+                        "checkbox",
+                      )
+                    }
+                    sx={checkboxSx}
+                  />
+                  <span style={{ fontSize: 14, color: C.valueText }}>
+                    Enable
+                  </span>
+                </div>
+
+                {form.ftpPortAttack && (
+                  <>
+                    <label style={labelStyle}>FTP Limit</label>
+                    <input
+                      type="number"
+                      value={form.ftpLimit || ""}
+                      onChange={(e) =>
+                        handleChange(
+                          "ftpLimit",
+                          Number(e.target.value),
+                          "number",
+                        )
+                      }
+                      style={inputStyle}
+                      {...inputInteraction}
+                    />
+                  </>
+                )}
+
+                <label style={labelStyle}>SSH Port Attack Protection</label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    size="small"
+                    checked={!!form.sshPortAttack}
+                    onChange={() =>
+                      handleChange(
+                        "sshPortAttack",
+                        !form.sshPortAttack,
+                        "checkbox",
+                      )
+                    }
+                    sx={checkboxSx}
+                  />
+                  <span style={{ fontSize: 14, color: C.valueText }}>
+                    Enable
+                  </span>
+                </div>
+
+                {form.sshPortAttack && (
+                  <>
+                    <label style={labelStyle}>SSH Limit</label>
+                    <input
+                      type="number"
+                      value={form.sshLimit || ""}
+                      onChange={(e) =>
+                        handleChange(
+                          "sshLimit",
+                          Number(e.target.value),
+                          "number",
+                        )
+                      }
+                      style={inputStyle}
+                      {...inputInteraction}
+                    />
+                  </>
+                )}
+
+                <label style={labelStyle}>TELNET Port Attack Protection</label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    size="small"
+                    checked={!!form.telnetPortAttack}
+                    onChange={() =>
+                      handleChange(
+                        "telnetPortAttack",
+                        !form.telnetPortAttack,
+                        "checkbox",
+                      )
+                    }
+                    sx={checkboxSx}
+                  />
+                  <span style={{ fontSize: 14, color: C.valueText }}>
+                    Enable
+                  </span>
+                </div>
+
+                {form.telnetPortAttack && (
+                  <>
+                    <label style={labelStyle}>TELNET Limit</label>
+                    <input
+                      type="number"
+                      value={form.telnetLimit || ""}
+                      onChange={(e) =>
+                        handleChange(
+                          "telnetLimit",
+                          Number(e.target.value),
+                          "number",
+                        )
+                      }
+                      style={inputStyle}
+                      {...inputInteraction}
+                    />
+                  </>
+                )}
+
+                <label style={labelStyle}>
+                  Set Validity of Attacker IP Blacklist
+                </label>
+                <select
+                  value={form.blacklistValidityType}
+                  onChange={(e) =>
+                    handleChange(
+                      "blacklistValidityType",
+                      e.target.value,
+                      "select",
+                    )
+                  }
+                  style={selectStyle}
+                  {...inputInteraction}
+                >
+                  <option value="forever">Forever</option>
+                  <option value="inSetTime">In The Set Time</option>
+                </select>
+
+                {form.blacklistValidityType === "inSetTime" && (
+                  <>
+                    <label style={labelStyle}>Time (Min)</label>
+                    <input
+                      type="number"
+                      value={form.blacklistTime || ""}
+                      onChange={(e) =>
+                        handleChange(
+                          "blacklistTime",
+                          Number(e.target.value),
+                          "number",
+                        )
+                      }
+                      style={inputStyle}
+                      {...inputInteraction}
+                    />
+                  </>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="w-full mt-3 flex flex-col items-center">
                 <div
-                  className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1 mb-0"
+                  className="w-full max-w-2xl flex flex-row flex-wrap justify-center gap-3 pt-2 pb-2"
                   style={{ borderTop: `1px solid ${C.divider}` }}
                 >
                   <Btn
@@ -949,49 +801,52 @@ const DDOSSettings = () => {
                     Simulate Attack
                   </Btn>
                 </div>
-
-                {/* Info Log Section */}
                 <div
-                  className="w-full mt-1 pt-2 pb-0"
-                  style={{ borderTop: `1px solid ${C.divider}` }}
-                >
-                  <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 items-center mb-1">
-                    <div className="flex items-center text-[13px] font-semibold text-left pl-2 sm:pl-4 min-h-[34px]">
-                      <span style={{ color: C.labelText }}>Info Log</span>
-                    </div>
-                    <div className="flex items-center justify-start md:justify-end min-h-[34px]">
-                      <Btn
-                        type="button"
-                        variant="cancel"
-                        onClick={handleClearLogs}
-                        disabled={loading}
-                        style={{ minWidth: 100, height: 28, fontSize: 12 }}
-                      >
-                        Clear Logs
-                      </Btn>
-                    </div>
+                  style={{
+                    width: "calc(100% - 32px)",
+                    marginLeft: 16,
+                    marginRight: 16,
+                    borderBottom: `1px solid ${C.divider}`,
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              {/* Info Log Section */}
+              <div className="w-full max-w-2xl mt-1 pt-2 pb-0">
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 items-center mb-1">
+                  <label style={labelStyle}>Info Log</label>
+                  <div className="flex items-center justify-start md:justify-end min-h-[34px]">
+                    <Btn
+                      type="button"
+                      variant="cancel"
+                      onClick={handleClearLogs}
+                      disabled={loading}
+                      style={{ minWidth: 100, height: 28, fontSize: 12 }}
+                    >
+                      Clear Logs
+                    </Btn>
                   </div>
-                  <textarea
-                    className="w-full rounded resize-y"
-                    style={{
-                      minHeight: 120,
-                      maxHeight: 200,
-                      fontSize: 13,
-                      padding: "12px",
-                      backgroundColor: "#f8fafc",
-                      border: `1px solid ${C.cardBorder}`,
-                      color: C.valueText,
-                      fontFamily: "monospace",
-                      outline: "none",
-                    }}
-                    value={log}
-                    readOnly
-                    onFocus={(e) => (e.target.style.borderColor = C.accent)}
-                    onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
-                  />
                 </div>
-              </form>
-            </div>
+                <textarea
+                  className="w-full rounded resize-y"
+                  style={{
+                    minHeight: 120,
+                    maxHeight: 200,
+                    fontSize: 13,
+                    padding: "12px",
+                    backgroundColor: "#f8fafc",
+                    border: `1px solid ${C.cardBorder}`,
+                    color: C.valueText,
+                    fontFamily: "monospace",
+                    outline: "none",
+                  }}
+                  value={log}
+                  readOnly
+                  {...inputInteraction}
+                />
+              </div>
+            </form>
           </div>
         </div>
       </div>

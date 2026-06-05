@@ -6,6 +6,11 @@ import {
 } from "../../../constants/PcmReceptionTimeoutConstants";
 import { Alert } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import {
+  addHostFormPanelStyle,
+  nativeFieldInputStyle,
+  nativeFieldInteraction,
+} from "../../../sections/advanced/advancedSharedUi";
 
 // ── Color palette (same as SIPAccountGenerator) ───────────────────────────────
 const C = {
@@ -381,17 +386,7 @@ const PcmReceptionTimeoutPage = () => {
                 Number-Receiving Timeout
               </div>
               <div style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 14,
-                    background: "#f8fafc",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    padding: 20,
-                  }}
-                >
+                <div style={addHostFormPanelStyle}>
                   {PCM_RECEPTION_TIMEOUT_FIELDS.map((field) => (
                     <div
                       key={field.name}
@@ -422,32 +417,12 @@ const PcmReceptionTimeoutPage = () => {
                           onChange={handleInputChange}
                           placeholder={field.placeholder || ""}
                           style={{
-                            fontSize: 13,
-                            padding: "0 8px",
+                            ...nativeFieldInputStyle,
                             height: 32,
-                            borderRadius: 4,
-                            border: `1px solid ${C.cardBorder}`,
-                            background: "#ffffff",
-                            color: "#1e293b",
-                            outline: "none",
                             width: "100%",
-                            transition: "border-color 0.2s ease",
-                            boxSizing: "border-box",
+                            color: "#1e293b",
                           }}
-                          onFocus={(e) =>
-                            (e.target.style.borderColor = "#0284c7")
-                          }
-                          onBlur={(e) =>
-                            (e.target.style.borderColor = C.cardBorder)
-                          }
-                          onMouseEnter={(e) => {
-                            if (document.activeElement !== e.target)
-                              e.target.style.borderColor = "#64748b";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (document.activeElement !== e.target)
-                              e.target.style.borderColor = C.cardBorder;
-                          }}
+                          {...nativeFieldInteraction}
                         />
                       </div>
                     </div>
@@ -461,7 +436,7 @@ const PcmReceptionTimeoutPage = () => {
                   gap: 16,
                   padding: "16px 24px",
                   background: "#f8fafc",
-                  borderTop: "1px solid #e2e8f0",
+                  borderTop: `1px solid ${C.cardBorder}`,
                 }}
               >
                 <Btn

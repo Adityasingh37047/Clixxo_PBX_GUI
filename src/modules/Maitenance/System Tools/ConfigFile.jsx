@@ -8,6 +8,14 @@ import {
 } from "../../../constants/ConfigFileConstants";
 import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
 import { Alert, CircularProgress } from "@mui/material";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
+import {
+  systemToolsFieldSelectStyle as selectStyle,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
@@ -16,8 +24,8 @@ const C = {
   cardBorder: "#9CA3AF",
   divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
-  valueText: "#1e293b",
+  labelText: "#3E5475",
+  valueText: "#3e5475",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",
@@ -82,12 +90,12 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition: "all 0.15s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         ...s,
@@ -115,6 +123,14 @@ const tableContainerStyle = {
   borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
+};
+
+const footerBtnStyle = {
+  ...advancedFormBtnStyle,
+  width: 110,
+  minWidth: 110,
+  maxWidth: 110,
+  padding: "0 10px",
 };
 
 const blueBarStyle = {
@@ -313,12 +329,13 @@ const ConfigFile = () => {
                 onChange={handleFileChange}
                 disabled={loading.fetch}
                 style={{
+                  ...selectStyle,
                   minWidth: "180px",
-                  borderColor: C.cardBorder,
                   height: 30,
                   fontSize: 13,
                   fontWeight: 500,
                 }}
+                {...inputInteraction}
               >
                 {CONFIG_FILE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -329,9 +346,7 @@ const ConfigFile = () => {
             </div>
           </div>
 
-          {/* Main content container */}
-          <div style={{ backgroundColor: C.pageBg }}>
-            <div className="relative">
+          <div className="relative">
               {loading.fetch && selectedFile === "hosts" && (
                 <div
                   className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10"
@@ -367,33 +382,35 @@ const ConfigFile = () => {
                 }}
                 placeholder="Click to edit configuration content..."
               />
-            </div>
+          </div>
 
-            {/* Action buttons */}
-            <div
-              className="flex justify-center gap-4 py-3 flex-wrap"
-              style={{ borderTop: `1px solid ${C.divider}` }}
+          <div
+            style={{
+              ...advancedFormInlineFooterStyle,
+              width: "100%",
+              marginLeft: 0,
+              marginRight: 0,
+            }}
+          >
+            <Btn
+              variant="primary"
+              onClick={handleSave}
+              disabled={loading.fetch || loading.save}
+              startIcon={
+                loading.save && <CircularProgress size={16} color="inherit" />
+              }
+              style={footerBtnStyle}
             >
-              <Btn
-                variant="primary"
-                onClick={handleSave}
-                disabled={loading.fetch || loading.save}
-                startIcon={
-                  loading.save && <CircularProgress size={16} color="inherit" />
-                }
-                style={{ minWidth: 110, height: 34 }}
-              >
-                {loading.save ? "Saving..." : "Save Changes"}
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleReset}
-                disabled={loading.fetch || loading.save}
-                style={{ minWidth: 110, height: 34 }}
-              >
-                Reset
-              </Btn>
-            </div>
+              {loading.save ? "Saving..." : "Save Changes"}
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={handleReset}
+              disabled={loading.fetch || loading.save}
+              style={footerBtnStyle}
+            >
+              Reset
+            </Btn>
           </div>
         </div>
       </div>

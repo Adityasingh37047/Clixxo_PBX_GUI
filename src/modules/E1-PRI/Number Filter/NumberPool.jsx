@@ -24,6 +24,11 @@ import {
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { Checkbox } from "@mui/material";
+import {
+  addHostFormPanelStyle,
+  modalSelectSx,
+  modalTextFieldSx,
+} from "../../../sections/advanced/advancedSharedUi";
 
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
@@ -39,6 +44,41 @@ const C = {
 };
 
 const CARD_RADIUS = 20;
+
+const NUMBER_POOL_FIELD_LABEL_WIDTH = 140;
+
+const numberPoolFieldLabelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  width: NUMBER_POOL_FIELD_LABEL_WIDTH,
+  flexShrink: 0,
+  whiteSpace: "normal",
+  lineHeight: 1.2,
+  textAlign: "left",
+};
+
+const numberPoolFieldRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  width: "100%",
+};
+
+const numberPoolFieldControlStyle = {
+  flex: 1,
+  minWidth: 0,
+  width: "100%",
+};
+
+const numberPoolInputProps = {
+  style: {
+    fontSize: 13,
+    height: 32,
+    padding: "0 8px",
+    boxSizing: "border-box",
+  },
+};
 
 const Btn = ({
   children,
@@ -792,83 +832,36 @@ const NumberPool = () => {
         >
           {editIndex !== null ? "Edit" : "Add"} Number Pool Entry
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#f8fafc" }}>
-          <div
-            style={{
-              background: "#fff",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
-            {/* Group No */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  width: 140,
-                  whiteSpace: "normal",
-                  lineHeight: 1.2,
-                }}
-              >
-                Group No.:
-              </label>
-              <MuiSelect
-                name="groupNo"
-                value={form.groupNo}
-                onChange={handleFormChange}
-                size="small"
-                fullWidth
-                sx={{
-                  fontSize: 13,
-                  height: 36,
-                  backgroundColor: "#fff",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: C.cardBorder,
-                    transition: "border-color 0.2s ease",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#64748b",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0284c7 !important",
-                    borderWidth: "1px !important",
-                  },
-                }}
-              >
-                {NUMBER_POOL_GROUPS.map((g) => (
-                  <MenuItem key={g.value} value={g.value} sx={{ fontSize: 13 }}>
-                    {g.label}
-                  </MenuItem>
-                ))}
-              </MuiSelect>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={{ ...addHostFormPanelStyle, gap: 16 }}>
+            <div style={numberPoolFieldRowStyle}>
+              <label style={numberPoolFieldLabelStyle}>Group No.:</label>
+              <div style={numberPoolFieldControlStyle}>
+                <MuiSelect
+                  name="groupNo"
+                  value={form.groupNo}
+                  onChange={handleFormChange}
+                  size="small"
+                  fullWidth
+                  sx={modalSelectSx}
+                >
+                  {NUMBER_POOL_GROUPS.map((g) => (
+                    <MenuItem key={g.value} value={g.value} sx={{ fontSize: 13 }}>
+                      {g.label}
+                    </MenuItem>
+                  ))}
+                </MuiSelect>
+              </div>
             </div>
 
-            {/* Number Range */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  width: 140,
-                  whiteSpace: "normal",
-                  lineHeight: 1.2,
-                }}
-              >
-                Range:
-              </label>
+            <div style={numberPoolFieldRowStyle}>
+              <label style={numberPoolFieldLabelStyle}>Range:</label>
               <div
                 style={{
+                  ...numberPoolFieldControlStyle,
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  flex: 1,
                 }}
               >
                 <TextField
@@ -878,25 +871,18 @@ const NumberPool = () => {
                   size="small"
                   fullWidth
                   placeholder="Start"
-                  inputProps={{ style: { fontSize: 13, height: 16 } }}
-                  sx={{
-                    backgroundColor: "#fff",
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: C.cardBorder,
-                        transition: "border-color 0.2s ease",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#64748b",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#0284c7",
-                        borderWidth: 1,
-                      },
-                    },
-                  }}
+                  inputProps={numberPoolInputProps}
+                  sx={modalTextFieldSx}
                 />
-                <span style={{ color: C.mutedText, fontWeight: 600 }}>-</span>
+                <span
+                  style={{
+                    color: C.mutedText,
+                    fontWeight: 600,
+                    flexShrink: 0,
+                  }}
+                >
+                  -
+                </span>
                 <TextField
                   name="numberRangeEnd"
                   value={form.numberRangeEnd}
@@ -904,23 +890,8 @@ const NumberPool = () => {
                   size="small"
                   fullWidth
                   placeholder="End"
-                  inputProps={{ style: { fontSize: 13, height: 16 } }}
-                  sx={{
-                    backgroundColor: "#fff",
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: C.cardBorder,
-                        transition: "border-color 0.2s ease",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#64748b",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#0284c7",
-                        borderWidth: 1,
-                      },
-                    },
-                  }}
+                  inputProps={numberPoolInputProps}
+                  sx={modalTextFieldSx}
                 />
               </div>
             </div>
@@ -934,7 +905,7 @@ const NumberPool = () => {
         </DialogContent>
         <DialogActions
           style={{
-            background: "#ffffff",
+            background: "#f8fafc",
             padding: "16px 24px",
             borderTop: `1px solid ${C.cardBorder}`,
             display: "flex",

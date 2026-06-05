@@ -19,6 +19,7 @@ import {
   Checkbox,
   Alert,
 } from "@mui/material";
+import { modalSelectSx, modalTextFieldSx } from "../../../sections/shared/outlinedFieldUi";
 import {
   listNumberManipulations,
   createNumberManipulation,
@@ -1237,22 +1238,7 @@ const IPCallInCalleeID = () => {
                           })
                         }
                         variant="outlined"
-                        sx={{
-                          fontSize: 13,
-                          height: 32,
-                          backgroundColor: "#fff",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: C.cardBorder,
-                            transition: "border-color 0.2s ease",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#64748b",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                        }}
+                        sx={modalSelectSx}
                       >
                         {field.options.map((opt) => (
                           <MenuItem
@@ -1282,22 +1268,7 @@ const IPCallInCalleeID = () => {
                           boxSizing: "border-box",
                         },
                       }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "#fff",
-                          "& fieldset": {
-                            borderColor: C.cardBorder,
-                            transition: "border-color 0.2s ease",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#64748b",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                        },
-                      }}
+                      sx={modalTextFieldSx}
                     />
                   )}
                 </div>

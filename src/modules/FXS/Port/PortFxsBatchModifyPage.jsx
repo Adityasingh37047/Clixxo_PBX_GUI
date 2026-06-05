@@ -4,6 +4,8 @@ import {
   PORT_FXS_BATCH_MODIFY_FIELDS,
   PORT_FXS_BATCH_MODIFY_NOTE,
   PORT_FXS_BATCH_MODIFY_TITLE,
+  PORT_FXS_MODIFY_DIALOG_WIDTH,
+  PORT_FXS_MODIFY_FORM_WIDTH,
   PORT_FXS_TOTAL_PORTS,
 } from "../../../sections/port/constants/PortFxsPageConstants";
 import { saveFxsBatch } from "../../../api/apiService";
@@ -15,28 +17,35 @@ const FWD_TYPE_TO_API = {
   Busy: "busy",
 };
 import { ROUTE_PATHS } from "../../../constants/routeConstatns";
-import { C, Btn, checkboxSx } from "../../../sections/fxs/fxsSharedUi";
+import {
+  C,
+  Btn,
+  checkboxSx,
+  fxsNativeFieldInputStyle,
+  fxsNativeFieldInteraction,
+} from "../../../sections/fxs/fxsSharedUi";
 
 const dialogFieldStyle = {
+  ...fxsNativeFieldInputStyle,
   height: 32,
-  width: "200px",
-  fontSize: 13,
-  padding: "0 8px",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  backgroundColor: "#fff",
-  color: C.valueText,
-  boxSizing: "border-box",
+  width: "180px",
 };
 
 const legacyFieldStyle = {
   height: "22px",
-  width: "200px",
+  width: "180px",
   fontSize: "12px",
 };
 
-const BATCH_LABEL_WIDTH = 240;
-const BATCH_FORM_TABLE_WIDTH = BATCH_LABEL_WIDTH + 280;
+const BATCH_LABEL_WIDTH = 200;
+const BATCH_INPUT_COL_WIDTH = 200;
+const BATCH_FORM_TABLE_WIDTH = BATCH_LABEL_WIDTH + BATCH_INPUT_COL_WIDTH;
+
+const fxsModifyFormShellStyle = {
+  width: PORT_FXS_MODIFY_FORM_WIDTH,
+  maxWidth: "100%",
+  margin: "0 auto",
+};
 
 const batchLabelCellStyle = {
   fontSize: 13,
@@ -47,8 +56,9 @@ const batchLabelCellStyle = {
   width: BATCH_LABEL_WIDTH,
   minWidth: BATCH_LABEL_WIDTH,
   maxWidth: BATCH_LABEL_WIDTH,
-  padding: "6px 16px 6px 0",
-  whiteSpace: "nowrap",
+  padding: "6px 12px 6px 0",
+  whiteSpace: "normal",
+  lineHeight: 1.35,
 };
 
 const batchValueCellStyle = {
@@ -385,8 +395,8 @@ const PortFxsBatchModifyPage = ({
     ? dialogFieldStyle
     : { ...dialogFieldStyle, ...legacyFieldStyle };
   const wideFieldStyle = inDialog
-    ? { ...dialogFieldStyle, width: "280px" }
-    : { ...dialogFieldStyle, ...legacyFieldStyle, width: "280px" };
+    ? { ...dialogFieldStyle, width: "200px" }
+    : { ...dialogFieldStyle, ...legacyFieldStyle, width: "200px" };
   const fieldClassName = inDialog
     ? undefined
     : "border border-gray-400 rounded-sm px-1 bg-white";
@@ -416,31 +426,42 @@ const PortFxsBatchModifyPage = ({
         </Alert>
       )}
 
-      <form id={formId} onSubmit={handleSave}>
-        <div
-          style={
-            inDialog
-              ? {
-                  background: "#f8fafc",
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 8,
-                  padding: 20,
-                }
-              : undefined
-          }
-          className={
-            inDialog
-              ? undefined
-              : "bg-[#dde0e4] border-2 rounded-b-lg border-gray-400 border-t-0 shadow-sm py-2 text-xs"
-          }
-        >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+          width: "100%",
+        }}
+      >
+        <form id={formId} onSubmit={handleSave} style={fxsModifyFormShellStyle}>
+          <div
+            style={
+              inDialog
+                ? {
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
+                    background: "#f8fafc",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    padding: 20,
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }
+                : undefined
+            }
+            className={
+              inDialog
+                ? undefined
+                : "bg-[#dde0e4] border-2 rounded-b-lg border-gray-400 border-t-0 shadow-sm py-2 text-xs w-full"
+            }
+          >
               <div
                 style={{
                   display: "flex",
                   justifyContent: "center",
                   width: "100%",
-                  paddingLeft: 4,
-                  paddingRight: 4,
                 }}
               >
                 <table
@@ -527,6 +548,7 @@ const PortFxsBatchModifyPage = ({
                                   }
                                   className={fieldClassName}
                                   style={fieldStyle}
+                                  {...fxsNativeFieldInteraction}
                                   maxLength={field.maxLength || 31}
                                   onKeyDown={
                                     field.validation === "integer"
@@ -548,6 +570,7 @@ const PortFxsBatchModifyPage = ({
                                   }
                                   className={fieldClassName}
                                   style={fieldStyle}
+                                  {...fxsNativeFieldInteraction}
                                   maxLength={field.maxLength || 63}
                                 />
                               ) : field.type === "select" ? (
@@ -562,6 +585,7 @@ const PortFxsBatchModifyPage = ({
                                       ? wideFieldStyle
                                       : fieldStyle
                                   }
+                                  {...fxsNativeFieldInteraction}
                                 >
                                   {(field.key === "startingPort" ||
                                   field.key === "endingPort"
@@ -587,14 +611,42 @@ const PortFxsBatchModifyPage = ({
                   </tbody>
                 </table>
               </div>
-        </div>
+          </div>
+
+          {!inDialog && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 12,
+                padding: "24px 0",
+              }}
+            >
+              <Btn
+                variant="primary"
+                type="button"
+                onClick={handleSave}
+                style={{ minWidth: 100, height: 33, fontSize: 13 }}
+              >
+                Save
+              </Btn>
+              <Btn
+                variant="cancel"
+                type="button"
+                onClick={handleCancel}
+                style={{ minWidth: 100, height: 33 }}
+              >
+                Close
+              </Btn>
+            </div>
+          )}
+        </form>
 
         <div
           style={{
-            marginTop: 16,
             textAlign: "center",
             fontSize: 12,
-            color: inDialog ? C.mutedText : "#4b5563",
+            color: "#dc2626",
             width: "100%",
             whiteSpace: "nowrap",
             overflowX: "auto",
@@ -602,35 +654,7 @@ const PortFxsBatchModifyPage = ({
         >
           {PORT_FXS_BATCH_MODIFY_NOTE}
         </div>
-
-        {!inDialog && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 12,
-              padding: "24px 0",
-            }}
-          >
-            <Btn
-              variant="primary"
-              type="button"
-              onClick={handleSave}
-              style={{ minWidth: 100, height: 33, fontSize: 13 }}
-            >
-              Save
-            </Btn>
-            <Btn
-              variant="cancel"
-              type="button"
-              onClick={handleCancel}
-              style={{ minWidth: 100, height: 33 }}
-            >
-              Close
-            </Btn>
-          </div>
-        )}
-      </form>
+      </div>
     </>
   );
 
@@ -641,8 +665,14 @@ const PortFxsBatchModifyPage = ({
       className="bg-gray-50 min-h-[calc(100vh-128px)] py-1"
       style={{ backgroundColor: "#dde0e4" }}
     >
-      <div className="flex justify-center" style={{ padding: "0 20px" }}>
-        <div style={{ width: "62%", maxWidth: "1000px", minWidth: "700px" }}>
+      <div className="flex justify-center" style={{ padding: "0 16px" }}>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: PORT_FXS_MODIFY_DIALOG_WIDTH,
+            margin: "0 auto",
+          }}
+        >
           <div className="rounded-t-lg w-full h-8 bg-[#3E5475] flex items-center justify-center font-semibold text-lg text-white shadow mb-0">
             <span>{PORT_FXS_BATCH_MODIFY_TITLE}</span>
           </div>

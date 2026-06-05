@@ -27,9 +27,9 @@ export {
   TH,
   tdStyle,
   checkboxSx,
-  muiSelectSx,
-  muiTextFieldSx,
   numManipulateCardStyle,
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
 } from "../numManipulate/numManipulateSharedUi";
+
+export { muiSelectSx, muiTextFieldSx } from "../shared/outlinedFieldUi";

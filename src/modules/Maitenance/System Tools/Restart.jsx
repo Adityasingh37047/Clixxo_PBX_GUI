@@ -19,7 +19,7 @@ const C = {
   divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#64748b",
-  valueText: "#1e293b",
+  valueText: "#3e5475",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",

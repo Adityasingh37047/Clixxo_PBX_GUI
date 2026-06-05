@@ -13,19 +13,23 @@ import {
   deleteUser,
 } from "../api/apiService";
 import { useAuth } from "../context/AuthContext";
+import {
+  userPermissionFieldInputStyle as inputStyle,
+  inputInteraction,
+} from "../sections/userPermission/userPermissionSharedUi";
 
 // ── Color palette (matches CallCount) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  divider: "#f1f5f9",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#0284c7",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   successGreen: "#16a34a",
@@ -138,16 +142,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: C.pageBg,
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "14px 18px",
-      textAlign: "left",
-      borderBottom: `1px solid ${C.divider}`,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.08em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -155,39 +160,23 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
 const cbSx = {
   p: 0,
-  color: C.accent,
-  "&.Mui-checked": { color: C.accent },
-  "&.MuiCheckbox-indeterminate": { color: C.accent },
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
   "& .MuiSvgIcon-root": { fontSize: 16 },
-};
-
-const inputStyle = {
-  height: 30,
-  padding: "0 10px",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 6,
-  fontSize: 13,
-  outline: "none",
-  width: "100%",
-  boxSizing: "border-box",
-  color: C.valueText,
-  background: C.cardBg,
-  transition: "border-color 0.2s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#94a3b8";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 function allChecked(pages, perms) {
@@ -696,10 +685,11 @@ export default function UserManage() {
         <div
           style={{
             background: C.cardBg,
-            borderRadius: 20,
+            borderRadius: 10,
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
+            border: `1.5px solid ${C.cardBorder}`,
           }}
         >
           {/* Card Toolbar */}
@@ -711,7 +701,7 @@ export default function UserManage() {
               gap: 12,
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.divider}`,
             }}
           >
@@ -813,22 +803,66 @@ export default function UserManage() {
                 style={{
                   width: "100%",
                   minWidth: 600,
-                  borderCollapse: "collapse",
-                  fontSize: 13,
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 50, textAlign: "center" }}>#</TH>
-                    <TH style={{ width: 180 }}>Username</TH>
-                    <TH style={{ width: 140, textAlign: "center" }}>
+                    <TH
+                      style={{
+                        width: 50,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
+                    <TH
+                      style={{
+                        width: 180,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Username
+                    </TH>
+                    <TH
+                      style={{
+                        width: 140,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       Access Type
                     </TH>
-                    <TH style={{ width: 160, textAlign: "center" }}>
+                    <TH
+                      style={{
+                        width: 160,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       Role Permission
                     </TH>
-                    <TH>Sections</TH>
-                    <TH style={{ width: 160, textAlign: "center" }}>Actions</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Sections
+                    </TH>
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Actions
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -838,49 +872,52 @@ export default function UserManage() {
                       access.access_type ?? user.access_type ?? user.role ?? "";
                     const isSuperAdmin =
                       accessType === "superadmin" || accessType === "admin";
+                    const isLastRow = i === users.length - 1;
+                    const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
                     return (
                       <tr
                         key={user.id}
                         style={{
-                          background: C.cardBg,
-                          borderBottom: `1px solid ${C.divider}`,
+                          background: rowBg,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = C.pageBg;
+                          e.currentTarget.style.background = "#f1f5f9";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = C.cardBg;
+                          e.currentTarget.style.background = rowBg;
                         }}
                       >
                         <td
                           style={{
-                            padding: "16px 18px",
+                            ...tdStyle,
+                            background: rowBg,
                             color: C.mutedText,
-                            textAlign: "center",
-                            fontSize: 13,
                             fontWeight: 500,
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {i + 1}
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
+                            ...tdStyle,
+                            background: rowBg,
                             fontWeight: 500,
-                            color: C.valueText,
-                            fontSize: 13,
-                            borderBottom: `1px solid ${C.divider}`,
+                            textAlign: "left",
+                            ...lastRowCellStyle,
                           }}
                         >
                           {user.username}
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
-                            textAlign: "center",
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <span
@@ -897,12 +934,10 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
-                            color: C.valueText,
-                            fontSize: 13,
-                            textAlign: "center",
+                            ...tdStyle,
+                            background: rowBg,
                             fontWeight: 500,
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {access.role_permission ??
@@ -911,15 +946,14 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
-                            color: C.valueText,
-                            fontSize: 13,
+                            ...tdStyle,
+                            background: rowBg,
                             fontWeight: 500,
                             maxWidth: 220,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            borderBottom: `1px solid ${C.divider}`,
+                            textAlign: "left",
+                            ...lastRowCellStyle,
                           }}
                         >
                           {isSuperAdmin ? (
@@ -942,9 +976,10 @@ export default function UserManage() {
                         </td>
                         <td
                           style={{
-                            padding: "16px 18px",
-                            textAlign: "center",
-                            borderBottom: `1px solid ${C.divider}`,
+                            ...tdStyle,
+                            background: rowBg,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
                           <div
@@ -956,8 +991,14 @@ export default function UserManage() {
                           >
                             {!isSuperAdmin && (
                               <EditDocumentIcon
-                                className="transition-opacity"
                                 titleAccess="Edit"
+                                style={{
+                                  cursor: canWrite ? "pointer" : "not-allowed",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: canWrite ? 0.7 : 0.3,
+                                  transition: "opacity 0.15s ease",
+                                }}
                                 onClick={() => {
                                   if (!canWrite) {
                                     showReadOnlyToast();
@@ -965,17 +1006,24 @@ export default function UserManage() {
                                   }
                                   openEdit(user);
                                 }}
-                                style={{
-                                  cursor: canWrite ? "pointer" : "not-allowed",
-                                  opacity: canWrite ? 0.7 : 0.3,
-                                  color: "#2563eb",
+                                onMouseEnter={(e) => {
+                                  if (canWrite) e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (canWrite) e.currentTarget.style.opacity = "0.7";
                                 }}
                               />
                             )}
                             {!isSuperAdmin && (
                               <DeleteOutlineOutlinedIcon
-                                className="transition-opacity"
                                 titleAccess="Delete"
+                                style={{
+                                  cursor: canWrite ? "pointer" : "not-allowed",
+                                  color: "#dc2626",
+                                  fontSize: 22,
+                                  opacity: canWrite ? 0.7 : 0.3,
+                                  transition: "opacity 0.15s ease",
+                                }}
                                 onClick={() => {
                                   if (!canWrite) {
                                     showReadOnlyToast();
@@ -983,10 +1031,11 @@ export default function UserManage() {
                                   }
                                   handleDelete(user);
                                 }}
-                                style={{
-                                  cursor: canWrite ? "pointer" : "not-allowed",
-                                  opacity: canWrite ? 0.7 : 0.3,
-                                  color: "#dc2626",
+                                onMouseEnter={(e) => {
+                                  if (canWrite) e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (canWrite) e.currentTarget.style.opacity = "0.7";
                                 }}
                               />
                             )}
@@ -1007,11 +1056,12 @@ export default function UserManage() {
             <div
               style={{
                 background: C.cardBg,
-                borderRadius: 20,
+                borderRadius: 10,
                 overflow: "hidden",
                 boxShadow: C.cardShadow,
                 marginTop: 24,
                 marginBottom: 24,
+                border: `1.5px solid ${C.cardBorder}`,
               }}
             >
               {/* Card Header */}
@@ -1139,11 +1189,12 @@ export default function UserManage() {
             <div
               style={{
                 background: C.cardBg,
-                borderRadius: 20,
+                borderRadius: 10,
                 overflow: "hidden",
                 boxShadow: C.cardShadow,
                 marginTop: 24,
                 marginBottom: 0,
+                border: `1.5px solid ${C.cardBorder}`,
               }}
             >
               {/* Card Header */}

@@ -1,0 +1,2 @@
+export const MEDIA_PARAMETERS_NOTE = `At present, the maximum number of concurrent sessions supported by G723 encoding is 9. When the concurrent sessions are more than 9, the encoding of the next priority will be automatically used (it is recommended to configure G711A/U as the encoding of the next priority).
+The maximum number of concurrent sessions supported by AMR/iLBC encoding is 15. When the concurrent sessions are more than 15, the encoding of the next priority will be automatically used (it is recommended to configure G711A/U as the encoding of the next priority).`;

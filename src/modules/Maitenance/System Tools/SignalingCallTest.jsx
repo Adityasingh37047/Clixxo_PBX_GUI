@@ -7,6 +7,11 @@ import {
   SCT_BUTTONS,
   SCT_TRACE_LABEL,
 } from "../../../constants/SignalingCallTestConstants";
+import {
+  systemToolsFieldInputStyleWhite as inputStyle,
+  systemToolsFieldSelectStyleWhite as selectStyle,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -151,24 +156,6 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 
-const inputStyle = {
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: "6px 12px",
-  fontSize: 14,
-  color: C.valueText,
-  background: C.cardBg,
-  width: "100%",
-  minWidth: "220px",
-  outline: "none",
-  transition: "border-color 0.15s ease",
-};
-
-const selectStyle = {
-  ...inputStyle,
-  appearance: "auto",
-};
-
 const SignalingCallTest = () => {
   const [testType, setTestType] = useState(SCT_TEST_TYPE_OPTIONS[0].value);
   const [trunkGroup, setTrunkGroup] = useState(
@@ -186,18 +173,7 @@ const SignalingCallTest = () => {
     setTrace("");
   };
 
-  const inputProps = {
-    onFocus: (e) => (e.target.style.borderColor = C.accent),
-    onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-    onMouseEnter: (e) => {
-      if (document.activeElement !== e.target)
-        e.target.style.borderColor = "#64748b";
-    },
-    onMouseLeave: (e) => {
-      if (document.activeElement !== e.target)
-        e.target.style.borderColor = C.cardBorder;
-    },
-  };
+  const inputProps = inputInteraction;
 
   return (
     <div
@@ -335,35 +311,46 @@ const SignalingCallTest = () => {
             </form>
 
             {/* Action Buttons */}
-            <div
-              className="w-full max-w-2xl flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1 mb-0"
-              style={{ borderTop: `1px solid ${C.divider}` }}
-            >
-              <Btn
-                variant="primary"
-                type="button"
-                style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            <div className="w-full mt-3 flex flex-col items-center">
+              <div
+                className="w-full max-w-2xl flex flex-row flex-wrap justify-center gap-3 pt-2 pb-2"
+                style={{ borderTop: `1px solid ${C.divider}` }}
               >
-                {SCT_BUTTONS.start}
-              </Btn>
-              <Btn
-                variant="cancel"
-                type="button"
-                onClick={handleClear}
-                style={{ minWidth: 100, height: 33, fontSize: 13 }}
-              >
-                {SCT_BUTTONS.clear}
-              </Btn>
+                <Btn
+                  variant="primary"
+                  type="button"
+                  style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                >
+                  {SCT_BUTTONS.start}
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  type="button"
+                  onClick={handleClear}
+                  style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                >
+                  {SCT_BUTTONS.clear}
+                </Btn>
+              </div>
+              <div
+                style={{
+                  width: "calc(100% - 32px)",
+                  marginLeft: 16,
+                  marginRight: 16,
+                  borderBottom: `1px solid ${C.divider}`,
+                  boxSizing: "border-box",
+                }}
+              />
             </div>
 
-            {/* Signaling Trace */}
+            {/* Signaling Trace — same size/layout as Signaling Call Track › Track Message */}
             <div
-              className="w-full max-w-2xl mt-1 pt-2 pb-0"
+              className="w-full mt-1 pt-2 pb-2"
               style={{
-                borderTop: `1px solid ${C.divider}`,
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
+                alignSelf: "stretch",
               }}
             >
               <label
@@ -371,8 +358,6 @@ const SignalingCallTest = () => {
                   fontSize: 14,
                   color: C.labelText,
                   fontWeight: 600,
-                  textAlign: "left",
-                  marginBottom: 8,
                 }}
               >
                 {SCT_TRACE_LABEL}
@@ -394,6 +379,7 @@ const SignalingCallTest = () => {
                   resize: "vertical",
                   outline: "none",
                   transition: "border-color 0.2s ease",
+                  boxSizing: "border-box",
                 }}
                 {...inputProps}
               />

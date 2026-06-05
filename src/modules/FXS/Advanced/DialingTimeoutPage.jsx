@@ -25,10 +25,29 @@ import {
   FieldRow,
   advancedModalPaperSx,
   advancedModalTitleStyle,
-  advancedModalContentStyle,
-  advancedModalFooterStyle,
-  advancedFormPanelStyle,
+  addHostModalContentStyle,
+  addHostFormPanelStyle,
+  addHostModalFooterStyle,
 } from "../../../sections/advanced/advancedSharedUi";
+
+const DIALING_TIMEOUT_FIELD_LABEL_WIDTH = 220;
+
+const dialingTimeoutTextFieldSx = {
+  ...muiTextFieldSx,
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    height: 32,
+  },
+};
+
+const dialingTimeoutInputProps = {
+  style: {
+    fontSize: 13,
+    height: 32,
+    padding: "0 8px",
+    boxSizing: "border-box",
+  },
+};
 
 const DialingTimeoutPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -147,15 +166,14 @@ const DialingTimeoutPage = () => {
           >
             <thead>
               <tr>
-                <TH style={{ width: 70, ...routeThExtra }}>Modify</TH>
-                {DIALING_TIMEOUT_TABLE_COLUMNS.filter(
-                  (c) => c.key !== "modify",
-                ).map((col) => (
+                {DIALING_TIMEOUT_TABLE_COLUMNS.map((col, colIdx) => (
                   <TH
                     key={col.key}
                     style={{
                       ...routeThExtra,
-                      ...(col.key === "description"
+                      ...(col.key === "modify" ? { width: 70 } : {}),
+                      ...(colIdx === 0 ? { borderLeft: "none" } : {}),
+                      ...(colIdx === DIALING_TIMEOUT_TABLE_COLUMNS.length - 1
                         ? { borderRight: "none" }
                         : {}),
                     }}
@@ -167,58 +185,45 @@ const DialingTimeoutPage = () => {
             </thead>
             <tbody>
               <tr>
-                <td
-                  style={{
-                    ...routeTdStyle,
-                    borderLeft: "none",
-                    borderBottom: "none",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "center" }}>
-                    <EditDocumentIcon
-                      titleAccess="Edit"
-                      style={{
-                        cursor: "pointer",
-                        color: "#2563eb",
-                        fontSize: 22,
-                        opacity: 0.7,
-                        transition: "opacity 0.15s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.opacity = "1";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.opacity = "0.7";
-                      }}
-                      onClick={handleOpenModal}
-                    />
-                  </div>
-                </td>
-                <td
-                  style={{
-                    ...routeTdStyle,
-                    borderBottom: "none",
-                  }}
-                >
-                  {timeoutData.interDigitTimeout}
-                </td>
-                <td
-                  style={{
-                    ...routeTdStyle,
-                    borderBottom: "none",
-                  }}
-                >
-                  {timeoutData.offHookTimeout}
-                </td>
-                <td
-                  style={{
-                    ...routeTdStyle,
-                    borderRight: "none",
-                    borderBottom: "none",
-                  }}
-                >
-                  {timeoutData.description}
-                </td>
+                {DIALING_TIMEOUT_TABLE_COLUMNS.map((col, colIdx) => (
+                  <td
+                    key={col.key}
+                    style={{
+                      ...routeTdStyle,
+                      borderBottom: "none",
+                      ...(colIdx === 0 ? { borderLeft: "none" } : {}),
+                      ...(colIdx === DIALING_TIMEOUT_TABLE_COLUMNS.length - 1
+                        ? { borderRight: "none" }
+                        : {}),
+                    }}
+                  >
+                    {col.key === "modify" ? (
+                      <div
+                        style={{ display: "flex", justifyContent: "center" }}
+                      >
+                        <EditDocumentIcon
+                          titleAccess="Edit"
+                          style={{
+                            cursor: "pointer",
+                            color: "#2563eb",
+                            fontSize: 22,
+                            opacity: 0.7,
+                            transition: "opacity 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = "1";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = "0.7";
+                          }}
+                          onClick={handleOpenModal}
+                        />
+                      </div>
+                    ) : (
+                      timeoutData[col.key]
+                    )}
+                  </td>
+                ))}
               </tr>
             </tbody>
           </table>
@@ -236,9 +241,12 @@ const DialingTimeoutPage = () => {
         <DialogTitle style={advancedModalTitleStyle}>
           Dialing Timeout
         </DialogTitle>
-        <DialogContent style={advancedModalContentStyle}>
-          <div style={advancedFormPanelStyle}>
-            <FieldRow label="Description:">
+        <DialogContent style={addHostModalContentStyle}>
+          <div style={addHostFormPanelStyle}>
+            <FieldRow
+              label="Description:"
+              labelWidth={DIALING_TIMEOUT_FIELD_LABEL_WIDTH}
+            >
               <TextField
                 name="description"
                 value={formData.description || ""}
@@ -246,13 +254,14 @@ const DialingTimeoutPage = () => {
                 size="small"
                 fullWidth
                 variant="outlined"
-                sx={muiTextFieldSx}
-                inputProps={{
-                  style: { fontSize: 13, padding: "6px 8px" },
-                }}
+                sx={dialingTimeoutTextFieldSx}
+                inputProps={dialingTimeoutInputProps}
               />
             </FieldRow>
-            <FieldRow label="Inter Digit Timeout (s):">
+            <FieldRow
+              label="Inter Digit Timeout (s):"
+              labelWidth={DIALING_TIMEOUT_FIELD_LABEL_WIDTH}
+            >
               <TextField
                 name="interDigitTimeout"
                 value={formData.interDigitTimeout || ""}
@@ -261,13 +270,14 @@ const DialingTimeoutPage = () => {
                 size="small"
                 fullWidth
                 variant="outlined"
-                sx={muiTextFieldSx}
-                inputProps={{
-                  style: { fontSize: 13, padding: "6px 8px" },
-                }}
+                sx={dialingTimeoutTextFieldSx}
+                inputProps={dialingTimeoutInputProps}
               />
             </FieldRow>
-            <FieldRow label="Off-hook waiting digit timeout(s):" labelWidth={220}>
+            <FieldRow
+              label="Off-hook waiting digit timeout(s):"
+              labelWidth={DIALING_TIMEOUT_FIELD_LABEL_WIDTH}
+            >
               <TextField
                 name="offHookTimeout"
                 value={formData.offHookTimeout || ""}
@@ -276,15 +286,13 @@ const DialingTimeoutPage = () => {
                 size="small"
                 fullWidth
                 variant="outlined"
-                sx={muiTextFieldSx}
-                inputProps={{
-                  style: { fontSize: 13, padding: "6px 8px" },
-                }}
+                sx={dialingTimeoutTextFieldSx}
+                inputProps={dialingTimeoutInputProps}
               />
             </FieldRow>
           </div>
         </DialogContent>
-        <DialogActions style={advancedModalFooterStyle}>
+        <DialogActions style={addHostModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}

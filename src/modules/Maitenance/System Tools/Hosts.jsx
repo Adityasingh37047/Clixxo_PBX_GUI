@@ -11,6 +11,10 @@ import {
   Checkbox,
 } from "@mui/material";
 import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
+import {
+  systemToolsModalInputStyle as modalInputStyle,
+  getSystemToolsInputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -191,34 +195,8 @@ const modalLabelStyle = {
   textAlign: "left",
   whiteSpace: "nowrap",
 };
-const modalInputStyle = {
-  fontSize: 13,
-  padding: "0 8px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  color: "#1e293b",
-  outline: "none",
-  width: "100%",
-  height: 32,
-  boxSizing: "border-box",
-  transition: "border-color 0.2s ease",
-};
+const getInputInteraction = getSystemToolsInputInteraction;
 
-const getInputInteraction = (hasError) => ({
-  onFocus: (e) =>
-    (e.target.style.borderColor = hasError ? C.errorRed : "#0284c7"),
-  onBlur: (e) =>
-    (e.target.style.borderColor = hasError ? C.errorRed : C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = hasError ? C.errorRed : "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = hasError ? C.errorRed : C.cardBorder;
-  },
-});
 const modalFooterStyle = {
   display: "flex",
   justifyContent: "center",
@@ -1016,10 +994,10 @@ const Hosts = () => {
                         ...modalInputStyle,
                         borderColor: validationErrors.proxyIp
                           ? C.errorRed
-                          : "#cbd5e1",
+                          : undefined,
                       }}
                       placeholder="e.g., 192.168.1.1"
-                      {...getInputInteraction(!!validationErrors.proxyIp)}
+                      {...getInputInteraction(!!validationErrors.proxyIp, C.errorRed)}
                     />
                     {validationErrors.proxyIp && (
                       <span
@@ -1051,10 +1029,10 @@ const Hosts = () => {
                         ...modalInputStyle,
                         borderColor: validationErrors.domain
                           ? C.errorRed
-                          : "#cbd5e1",
+                          : undefined,
                       }}
                       placeholder="e.g., example.com (Optional)"
-                      {...getInputInteraction(!!validationErrors.domain)}
+                      {...getInputInteraction(!!validationErrors.domain, C.errorRed)}
                     />
                     {validationErrors.domain && (
                       <span

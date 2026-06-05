@@ -7,6 +7,11 @@ import {
   PCM_PSTN_INITIAL_FORM,
 } from "../../../constants/PcmPstnConstants";
 import { listPstn, createPstn, deletePstn } from "../../../api/apiService";
+import {
+  addHostFormPanelStyle,
+  modalSelectSx,
+  modalTextFieldSx,
+} from "../../../sections/advanced/advancedSharedUi";
 
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -970,22 +975,7 @@ const PcmPstnPage = () => {
               }
               return selected;
             }}
-            sx={{
-              fontSize: 13,
-              height: 32,
-              backgroundColor: "#fff",
-              "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: C.cardBorder,
-                transition: "border-color 0.2s ease",
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#64748b",
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#0284c7",
-                borderWidth: 1,
-              },
-            }}
+            sx={modalSelectSx}
           >
             {/* hidden placeholder */}
             <MenuItem value="" disabled hidden />
@@ -1038,22 +1028,7 @@ const PcmPstnPage = () => {
                 boxSizing: "border-box",
               },
             }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#fff",
-                "& fieldset": {
-                  borderColor: C.cardBorder,
-                  transition: "border-color 0.2s ease",
-                },
-                "&:hover fieldset": {
-                  borderColor: "#64748b",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "#0284c7",
-                  borderWidth: 1,
-                },
-              },
-            }}
+            sx={modalTextFieldSx}
           />
         )}
       </div>
@@ -1415,7 +1390,10 @@ const PcmPstnPage = () => {
         </DialogTitle>
 
         <div
-          style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}
+          style={{
+            borderBottom: `1px solid ${C.cardBorder}`,
+            background: "#ffffff",
+          }}
         >
           <Tabs
             value={tab}
@@ -1461,18 +1439,7 @@ const PcmPstnPage = () => {
             backgroundColor: "#ffffff",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              width: "100%",
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+          <div style={{ ...addHostFormPanelStyle, width: "100%" }}>
             {(tab === 0
               ? SPAN_FIELDS
               : tab === 1
@@ -1489,7 +1456,7 @@ const PcmPstnPage = () => {
             gap: 16,
             padding: "16px 24px",
             background: "#f8fafc",
-            borderTop: "1px solid #e2e8f0",
+            borderTop: `1px solid ${C.cardBorder}`,
             borderBottomLeftRadius: 8,
             borderBottomRightRadius: 8,
           }}

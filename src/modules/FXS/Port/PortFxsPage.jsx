@@ -10,6 +10,7 @@ import {
   PORT_FXS_ITEMS_PER_PAGE,
   PORT_FXS_TOTAL_PORTS,
   PORT_FXS_BATCH_MODIFY_TITLE,
+  PORT_FXS_MODIFY_DIALOG_WIDTH,
 } from "../../../sections/port/constants/PortFxsPageConstants";
 import { fetchFxsPorts } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
@@ -47,7 +48,7 @@ const FWD_TYPE_TO_UI = {
 const tableSectionBorder = `1px solid ${C.cardBorder}`;
 
 const fxsDialogPaperSx = {
-  width: 900,
+  width: PORT_FXS_MODIFY_DIALOG_WIDTH,
   maxWidth: "95vw",
   p: 0,
   borderRadius: "8px",
@@ -304,7 +305,7 @@ const PortFxsPage = () => {
           fontWeight: 600,
           whiteSpace: "nowrap",
           ...(registered
-            ? { color: "#15803d", background: "none", border: "none" }
+            ? { color: "#16a34a", background: "none", border: "none" }
             : {
                 padding: "2px 10px",
                 borderRadius: 999,

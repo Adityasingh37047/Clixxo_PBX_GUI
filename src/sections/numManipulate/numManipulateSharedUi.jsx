@@ -149,22 +149,7 @@ export const checkboxSx = {
   },
 };
 
-export const muiSelectSx = {
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-};
+export { muiSelectSx } from "../shared/outlinedFieldUi";
 
 export const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {

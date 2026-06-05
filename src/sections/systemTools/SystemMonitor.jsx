@@ -5,6 +5,10 @@ import {
   BUTTON_LABELS,
   VALIDATION_MESSAGES,
 } from './constants/SystemMonitorConstants';
+import {
+  systemToolsLegacyFieldStyle as fieldStyle,
+  inputInteraction,
+} from './systemToolsSharedUi';
 
 const getInitialState = () => {
   const state = {};
@@ -152,14 +156,13 @@ function SystemMonitor() {
                             onChange={(e) => handleInputChange('watchdogTime', e.target.value)}
                             onKeyPress={handleKeyPress}
                             style={{
-                              fontSize: '13px',
+                              ...fieldStyle,
                               padding: '2px 4px',
                               width: '80px',
-                              height: '24px',
-                              backgroundColor: '#ffffff',
-                              border: '1px solid #999',
-                              imeMode: 'disabled',
+                              minHeight: 24,
+                              height: 24,
                             }}
+                            {...inputInteraction}
                           />
                         </td>
                       </tr>
@@ -222,14 +225,13 @@ function SystemMonitor() {
                             onChange={(e) => handleInputChange('lostConnectThreshold', e.target.value)}
                             onKeyPress={handleKeyPress}
                             style={{
-                              fontSize: '13px',
+                              ...fieldStyle,
                               padding: '2px 4px',
                               width: '80px',
-                              height: '24px',
-                              backgroundColor: '#ffffff',
-                              border: '1px solid #999',
-                              imeMode: 'disabled',
+                              minHeight: 24,
+                              height: 24,
                             }}
+                            {...inputInteraction}
                           />
                         </td>
                       </tr>

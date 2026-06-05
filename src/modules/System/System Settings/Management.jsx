@@ -17,7 +17,14 @@ import {
   TextField,
   Alert,
   CircularProgress,
+  Checkbox,
 } from "@mui/material";
+import { checkboxSx } from "../../../sections/advanced/advancedSharedUi";
+import {
+  systemFieldInputStyleNarrow as inputStyle,
+  systemFieldSelectStyle as selectStyle,
+  inputInteraction,
+} from "../../../sections/system/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -123,32 +130,6 @@ const Btn = ({
       {children}
     </button>
   );
-};
-
-const inputStyle = {
-  width: "100%",
-  maxWidth: "280px",
-  fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1.5px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
-  outline: "none",
-  transition: "border-color 0.2s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 const disabledInputStyle = {
@@ -631,6 +612,12 @@ const Management = () => {
       console.log("📡 NTP enabled - detecting current configuration...");
       detectNtpConfiguration();
     }
+  };
+
+  const handleCheckboxChange = (name) => (_e, checked) => {
+    handleChange({
+      target: { name, type: "checkbox", checked, value: checked },
+    });
   };
 
   // Helper function to execute Linux commands for SSH and Telnet
@@ -1235,12 +1222,12 @@ const Management = () => {
       <div className="flex-1 w-full max-w-[280px]">
         <div className="flex items-center gap-2 w-full">
           <div className="flex items-center gap-2 flex-shrink-0">
-            <input
-              type="checkbox"
+            <Checkbox
               name={nextField.name}
+              size="small"
               checked={!!form[nextField.name]}
-              onChange={handleChange}
-              style={{ accentColor: C.primary, width: 16, height: 16 }}
+              onChange={handleCheckboxChange(nextField.name)}
+              sx={checkboxSx}
             />
             <span style={{ fontSize: 12, fontWeight: 600, color: C.labelText }}>
               {nextField.label}
@@ -1382,17 +1369,17 @@ const Management = () => {
               <form
                 key={formKey}
                 onSubmit={handleSave}
-                className="flex flex-col gap-8"
+                className="flex flex-col gap-2"
               >
                 {MANAGEMENT_SECTIONS.map((section, idx) => (
-                  <div key={section.section} className="flex flex-col gap-4">
+                  <div key={section.section} className="flex flex-col gap-0">
                     <SectionHeading
                       title={section.section}
                       isFirst={idx === 0}
                     />
 
                     <div
-                      className="flex flex-col gap-4 w-full"
+                      className="flex flex-col gap-3 w-full"
                       style={{ maxWidth: 640, margin: "0 auto" }}
                     >
                       {section.fields.map((field, fieldIdx) => {
@@ -1592,10 +1579,10 @@ const Management = () => {
                                     value={form[field.name]}
                                     onChange={handleChange}
                                     style={{
-                                      ...inputStyle,
+                                      ...selectStyle,
                                       borderColor: fieldErrors[field.name]
                                         ? C.errorRed
-                                        : C.cardBorder,
+                                        : undefined,
                                     }}
                                     onFocus={inputInteraction.onFocus}
                                     onBlur={inputInteraction.onBlur}
@@ -1672,17 +1659,15 @@ const Management = () => {
                               )}
 
                               {field.type === "checkbox" && (
-                                <input
-                                  type="checkbox"
-                                  name={field.name}
-                                  checked={!!form[field.name]}
-                                  onChange={handleChange}
-                                  style={{
-                                    accentColor: C.primary,
-                                    width: 16,
-                                    height: 16,
-                                  }}
-                                />
+                                <div className="flex items-center min-h-[32px]">
+                                  <Checkbox
+                                    name={field.name}
+                                    size="small"
+                                    checked={!!form[field.name]}
+                                    onChange={handleCheckboxChange(field.name)}
+                                    sx={checkboxSx}
+                                  />
+                                </div>
                               )}
                             </div>
                           </div>

@@ -29,6 +29,11 @@ import {
   listGroups,
   listPstnGroups,
 } from "../../../api/apiService";
+import {
+  addHostFormPanelStyle,
+  modalSelectSx,
+  modalTextFieldSx,
+} from "../../../sections/advanced/advancedSharedUi";
 
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
@@ -963,14 +968,7 @@ const RoutePstnToIPPage = () => {
         </DialogTitle>
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#f8fafc",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 8,
-                padding: 20,
-              }}
-            >
+            <div style={addHostFormPanelStyle}>
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 14 }}
               >
@@ -987,22 +985,7 @@ const RoutePstnToIPPage = () => {
                             }))
                           }
                           displayEmpty
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                             Please select
@@ -1078,25 +1061,7 @@ const RoutePstnToIPPage = () => {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                          "& .MuiOutlinedInput-input": {
-                            backgroundColor: "#fff",
-                          },
-                        }}
+                        sx={modalTextFieldSx}
                       />
                     )}
                   </FieldRow>
@@ -1109,7 +1074,7 @@ const RoutePstnToIPPage = () => {
           style={{
             padding: "16px 24px",
             background: "#f8fafc",
-            borderTop: "1px solid #e5e7eb",
+            borderTop: `1px solid ${C.cardBorder}`,
             justifyContent: "center",
             gap: 12,
           }}

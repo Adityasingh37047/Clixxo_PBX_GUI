@@ -6,6 +6,10 @@ import {
   VALIDATION_MESSAGES,
   PROGRESS_MESSAGE,
 } from './constants/DnsTestConstants';
+import {
+  systemToolsLegacyFieldStyle as fieldStyle,
+  inputInteraction,
+} from './systemToolsSharedUi';
 
 function DnsTest() {
   const [domain, setDomain] = useState('');
@@ -81,15 +85,11 @@ function DnsTest() {
                         onChange={handleDomainChange}
                         disabled={isTesting}
                         style={{
-                          fontSize: '13px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #999',
-                          padding: '3px 6px',
+                          ...fieldStyle,
                           width: '220px',
-                          height: '28px',
-                          imeMode: 'disabled',
                           opacity: isTesting ? 0.6 : 1,
                         }}
+                        {...inputInteraction}
                       />
                     </td>
                   </tr>

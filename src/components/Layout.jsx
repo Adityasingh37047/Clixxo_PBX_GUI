@@ -1,5 +1,5 @@
 // components/Layout.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -9,6 +9,7 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(290); // desktop: left + right panel (95 + 195)
   const location = useLocation();
+  const mainRef = useRef(null);
   const [refreshKey, setRefreshKey] = useState(0);
  
   useEffect(() => {
@@ -27,6 +28,12 @@ const Layout = () => {
       setRefreshKey(location.state.refresh);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+  }, [location.pathname]);
  
   const NAVBAR_HEIGHT = isMobile ? 140 : 48;
  
@@ -52,6 +59,7 @@ const Layout = () => {
  
       {/* Main content margin matches sidebar width */}
       <main
+        ref={mainRef}
         style={{
           marginLeft: contentMarginLeft,
           marginTop: NAVBAR_HEIGHT,

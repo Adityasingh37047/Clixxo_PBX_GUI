@@ -23,6 +23,11 @@ import {
   CircularProgress,
   Checkbox,
 } from "@mui/material";
+import {
+  addHostFormPanelStyle,
+  modalSelectSx,
+  modalTextFieldSx,
+} from "../../../sections/advanced/advancedSharedUi";
 
 // ── Color palette (matches Extensions page) ───────────────────────────────────
 const C = {
@@ -504,15 +509,7 @@ const PcmNumReceivingRulePage = () => {
             sx={{
               maxWidth: "100%",
               minWidth: 0,
-              backgroundColor: "#ffffff",
-              "& .MuiOutlinedInput-notchedOutline": { borderColor: "#cbd5e1" },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#64748b",
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#0284c7",
-                borderWidth: 1,
-              },
+              ...modalSelectSx,
             }}
           >
             {field.options.map((option) => (
@@ -533,12 +530,7 @@ const PcmNumReceivingRulePage = () => {
             sx={{
               maxWidth: "100%",
               minWidth: 0,
-              backgroundColor: "#ffffff",
-              "& .MuiOutlinedInput-notchedOutline": { borderColor: "#cbd5e1" },
-              "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-                { borderColor: "#64748b" },
-              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                { borderColor: "#0284c7", borderWidth: 1 },
+              ...modalTextFieldSx,
             }}
             placeholder={field.placeholder || ""}
           />
@@ -1064,17 +1056,7 @@ const PcmNumReceivingRulePage = () => {
             : "Add Number-Receiving Rule"}
         </DialogTitle>
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+          <div style={addHostFormPanelStyle}>
             {NUM_RECEIVING_RULE_FIELDS.map((field) => (
               <div
                 key={field.name}
@@ -1108,22 +1090,7 @@ const PcmNumReceivingRulePage = () => {
                       fullWidth
                       variant="outlined"
                       MenuProps={{ PaperProps: { style: { maxHeight: 240 } } }}
-                      sx={{
-                        fontSize: 13,
-                        height: 32,
-                        backgroundColor: "#fff",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.cardBorder,
-                          transition: "border-color 0.2s ease",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#64748b",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#0284c7",
-                          borderWidth: 1,
-                        },
-                      }}
+                      sx={modalSelectSx}
                     >
                       {field.options.map((option) => (
                         <MenuItem
@@ -1146,25 +1113,7 @@ const PcmNumReceivingRulePage = () => {
                       fullWidth
                       variant="outlined"
                       placeholder={field.placeholder || ""}
-                      sx={{
-                        fontSize: 13,
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "#fff",
-                        },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.cardBorder,
-                          transition: "border-color 0.2s ease",
-                        },
-                        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-                          {
-                            borderColor: "#64748b",
-                          },
-                        "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                          {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                      }}
+                      sx={{ fontSize: 13, ...modalTextFieldSx }}
                       inputProps={{
                         style: {
                           fontSize: 13,
@@ -1187,7 +1136,7 @@ const PcmNumReceivingRulePage = () => {
             gap: 16,
             padding: "16px 24px",
             background: "#f8fafc",
-            borderTop: "1px solid #e2e8f0",
+            borderTop: `1px solid ${C.cardBorder}`,
             borderBottomLeftRadius: 8,
             borderBottomRightRadius: 8,
           }}

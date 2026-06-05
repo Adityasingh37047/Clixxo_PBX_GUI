@@ -17,6 +17,10 @@ import {
   muiSelectSx,
   muiTextFieldSx,
 } from "../../../sections/route/routeSharedUi";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
 /** Match E1-PRI Route Routing Parameters card radii (10px, not table 20px kit). */
 const ROUTE_CARD_RADIUS = 10;
@@ -42,12 +46,6 @@ const cardHeaderStyle = {
   fontSize: 13,
   color: C.labelText,
   borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const saveBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
 };
 
 const fieldLabelStyle = {
@@ -169,8 +167,11 @@ const RouteRoutingParameterPage = () => {
         <div style={cardStyle}>
           <div style={cardHeaderStyle}>Routing Parameters</div>
 
-          <div className="w-full px-5 pt-3 pb-2">
-            <div className="space-y-4 w-full max-w-[500px] mx-auto">
+          <div className="w-full px-5 pt-3 pb-0">
+            <div
+              className="space-y-4 w-full max-w-[500px] mx-auto"
+              style={{ marginBottom: 12 }}
+            >
               <div className="flex items-center justify-between">
                 <label style={fieldLabelStyle}>IP-&gt;TEL</label>
                 <FormControl size="small">
@@ -238,27 +239,31 @@ const RouteRoutingParameterPage = () => {
                 />
               </div>
             </div>
+          </div>
 
-            <div
-              className="w-full flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1 mb-0"
-              style={{ borderTop: `1px solid ${C.cardBorder}` }}
+          <div
+            style={{
+              ...advancedFormInlineFooterStyle,
+              width: "100%",
+              marginLeft: 0,
+              marginRight: 0,
+            }}
+          >
+            <Btn
+              variant="primary"
+              onClick={handleSave}
+              disabled={loading}
+              style={advancedFormBtnStyle}
             >
-              <Btn
-                variant="primary"
-                onClick={handleSave}
-                disabled={loading}
-                style={saveBtnStyle}
-              >
-                {loading ? (
-                  <>
-                    <CircularProgress size={16} sx={{ color: "inherit" }} />
-                    Saving...
-                  </>
-                ) : (
-                  "Save"
-                )}
-              </Btn>
-            </div>
+              {loading ? (
+                <>
+                  <CircularProgress size={16} sx={{ color: "inherit" }} />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Btn>
           </div>
         </div>
       </div>

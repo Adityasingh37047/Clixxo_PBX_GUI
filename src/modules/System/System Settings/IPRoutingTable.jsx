@@ -19,6 +19,11 @@ import {
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
+import {
+  systemModalFieldInputStyle,
+  systemModalSelectSx,
+  inputInteraction,
+} from "../../../sections/system/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -1842,32 +1847,8 @@ WantedBy=multi-user.target
                       value={form[field.key] || ""}
                       onChange={handleFormChange}
                       placeholder={field.placeholder || ""}
-                      style={{
-                        flex: 1,
-                        fontSize: 13,
-                        padding: "0 8px",
-                        borderRadius: 4,
-                        border: `1px solid ${C.cardBorder}`,
-                        background: "#ffffff",
-                        color: "#1e293b",
-                        outline: "none",
-                        width: "100%",
-                        transition: "border-color 0.2s ease",
-                        height: 32,
-                        boxSizing: "border-box",
-                      }}
-                      onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = C.cardBorder)
-                      }
-                      onMouseEnter={(e) => {
-                        if (document.activeElement !== e.target)
-                          e.target.style.borderColor = "#64748b";
-                      }}
-                      onMouseLeave={(e) => {
-                        if (document.activeElement !== e.target)
-                          e.target.style.borderColor = C.cardBorder;
-                      }}
+                      style={{ ...systemModalFieldInputStyle, flex: 1 }}
+                      {...inputInteraction}
                     />
                   ) : null}
                   {field.type === "select" ? (
@@ -1885,26 +1866,9 @@ WantedBy=multi-user.target
                       onChange={handleFormChange}
                       fullWidth
                       sx={{
-                        height: 32,
+                        ...systemModalSelectSx,
                         borderRadius: "4px",
                         fontSize: 13,
-                        backgroundColor: "#ffffff",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.cardBorder,
-                          transition: "border-color 0.2s ease",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#64748b",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#0284c7 !important",
-                          borderWidth: "1px !important",
-                        },
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px !important",
-                          display: "flex",
-                          alignItems: "center",
-                        },
                       }}
                       MenuProps={{
                         PaperProps: {

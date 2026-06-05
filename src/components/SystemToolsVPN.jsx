@@ -42,6 +42,11 @@ import {
   seVpnDelete,
   seVpnState,
 } from "../api/apiService";
+import {
+  systemFieldInputStyle as inputStyle,
+  systemFieldSelectStyle as selectStyle,
+  inputInteraction,
+} from "../sections/system/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -147,31 +152,6 @@ const Btn = ({
       {children}
     </button>
   );
-};
-
-const inputStyle = {
-  width: "100%",
-  fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1.5px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
-  outline: "none",
-  transition: "border-color 0.2s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 const disabledInputStyle = {
@@ -1432,7 +1412,7 @@ const SystemToolsVPN = () => {
             <select
               value={form.vpnType}
               onChange={handleTypeChange}
-              style={{ ...inputStyle, width: 220 }}
+              style={{ ...selectStyle, width: 220 }}
               onFocus={inputInteraction.onFocus}
               onBlur={inputInteraction.onBlur}
               onMouseEnter={inputInteraction.onMouseEnter}
@@ -2262,7 +2242,7 @@ const SystemToolsVPN = () => {
                     <select
                       value={authMethod}
                       onChange={(e) => setAuthMethod(e.target.value)}
-                      style={{ ...inputStyle, maxWidth: 280 }}
+                      style={{ ...selectStyle, maxWidth: 280 }}
                       onFocus={inputInteraction.onFocus}
                       onBlur={inputInteraction.onBlur}
                       onMouseEnter={inputInteraction.onMouseEnter}

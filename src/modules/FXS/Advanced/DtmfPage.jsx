@@ -480,7 +480,7 @@ const DtmfPage = () => {
           >
             <p
               style={{
-                color: "red",
+                color: "#dc2626",
                 fontSize: "13px",
                 margin: 0,
                 whiteSpace: "nowrap",

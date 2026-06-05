@@ -5,6 +5,14 @@ import {
   CERTIFICATE_NOTE,
 } from "../../../constants/CertificateManageConstants";
 import { Alert } from "@mui/material";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
+import {
+  systemToolsFieldInputStyleSmall as inputStyle,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
@@ -109,12 +117,19 @@ const Btn = ({
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
+  margin: "0 auto",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
+  border: `1.5px solid ${C.cardBorder}`,
   borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 8,
+};
+
+const labelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
 };
 
 const blueBarStyle = {
@@ -134,19 +149,6 @@ const blueBarStyle = {
   fontSize: 13,
   color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 const CertificateManage = () => {
@@ -211,84 +213,78 @@ const CertificateManage = () => {
           </span>
         </div>
 
-        <div style={tableContainerStyle}>
-          {/* Header */}
+        <div style={{ ...tableContainerStyle, marginBottom: 12 }}>
           <div style={blueBarStyle}>
             <span>Certificate Management</span>
           </div>
 
-          <div className="px-5 pt-3 pb-2">
-            <div className="w-full max-w-4xl mx-auto">
-              {/* Form Fields Grid */}
-              <form className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                {CERTIFICATE_FIELDS.map((field) => (
-                  <React.Fragment key={field.name}>
-                    <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 whitespace-nowrap min-h-[34px]">
-                      <span style={{ color: C.labelText }}>{field.label}:</span>
-                    </div>
-                    <div className="flex items-center min-h-[34px]">
-                      <input
-                        type="text"
-                        name={field.name}
-                        value={form[field.name] || ""}
-                        onChange={handleChange}
-                        style={{
-                          padding: "6px 12px",
-                          borderRadius: 6,
-                          border: `1px solid ${C.cardBorder}`,
-                          fontSize: 14,
-                          width: "100%",
-                          backgroundColor: "#f8fafc",
-                          outline: "none",
-                          color: C.valueText,
-                          transition: "border-color 0.2s ease",
-                        }}
-                        {...inputInteraction}
-                      />
-                    </div>
-                  </React.Fragment>
-                ))}
-              </form>
+          <div
+            className="w-full px-5 pt-3 pb-0 flex flex-col items-center"
+            style={{ borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
+          >
+            <form
+              className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center"
+              style={{ marginBottom: 12 }}
+            >
+              {CERTIFICATE_FIELDS.map((field) => (
+                <React.Fragment key={field.name}>
+                  <label style={labelStyle}>{field.label}:</label>
+                  <div className="flex items-center min-w-0 w-full">
+                    <input
+                      type="text"
+                      name={field.name}
+                      value={form[field.name] || ""}
+                      onChange={handleChange}
+                      style={{ ...inputStyle, textAlign: "center" }}
+                      {...inputInteraction}
+                    />
+                  </div>
+                </React.Fragment>
+              ))}
+            </form>
+          </div>
 
-              {/* Action Buttons */}
-              <div
-                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-0 mb-0"
-                style={{ borderTop: `1px solid ${C.divider}` }}
+          <div
+            style={{
+              ...advancedFormInlineFooterStyle,
+              width: "100%",
+              marginLeft: 0,
+              marginRight: 0,
+            }}
+          >
+            {CERTIFICATE_BUTTONS.map((btn) => (
+              <Btn
+                key={btn.name}
+                type="button"
+                variant={
+                  btn.name.toLowerCase() === "generate" ||
+                  btn.name.toLowerCase() === "download"
+                    ? "primary"
+                    : "cancel"
+                }
+                onClick={() => handleAction(btn.label)}
+                style={advancedFormBtnStyle}
               >
-                {CERTIFICATE_BUTTONS.map((btn) => (
-                  <Btn
-                    key={btn.name}
-                    type="button"
-                    variant={
-                      btn.name.toLowerCase() === "generate" ||
-                      btn.name.toLowerCase() === "download"
-                        ? "primary"
-                        : "cancel"
-                    }
-                    onClick={() => handleAction(btn.label)}
-                    style={{ minWidth: 110, height: 34 }}
-                  >
-                    {btn.label}
-                  </Btn>
-                ))}
-              </div>
-            </div>
+                {btn.label}
+              </Btn>
+            ))}
           </div>
         </div>
         {/* Note */}
-        <div className="w-full flex justify-center mt-2">
-          <span
-            style={{
-              color: C.errorRed,
-              fontSize: 13,
-              fontWeight: 500,
-              textAlign: "center",
-              padding: "0 16px",
-            }}
-          >
-            {CERTIFICATE_NOTE}
-          </span>
-        </div>
+        <p
+          style={{
+            margin: "16px 0 0",
+            textAlign: "center",
+            fontSize: 12,
+            color: "#dc2626",
+            width: "100%",
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+            lineHeight: 1.45,
+          }}
+        >
+          {CERTIFICATE_NOTE}
+        </p>
       </div>
     </div>
   );

@@ -5,6 +5,11 @@ import {
   SCTRACK_LABELS,
   SCTRACK_BUTTONS,
 } from "../../../constants/SignalingCallTrackConstants";
+import {
+  systemToolsFieldInputStyleWhite as inputStyle,
+  OUTLINED_BORDER,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -154,19 +159,6 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = "#cbd5e1"),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#cbd5e1";
-  },
-};
-
 const SignalingCallTrack = () => {
   const [filterType, setFilterType] = useState("caller");
   const [filterValue, setFilterValue] = useState("0");
@@ -257,15 +249,9 @@ const SignalingCallTrack = () => {
                 value={filterValue}
                 onChange={(e) => setFilterValue(e.target.value)}
                 style={{
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 8,
-                  padding: "6px 12px",
-                  fontSize: 14,
-                  color: C.valueText,
+                  ...inputStyle,
                   minWidth: 120,
                   maxWidth: 180,
-                  outline: "none",
-                  transition: "border-color 0.2s ease",
                 }}
                 {...inputInteraction}
               />
@@ -328,7 +314,7 @@ const SignalingCallTrack = () => {
                   width: "100%",
                   minHeight: 220,
                   maxHeight: 400,
-                  border: `1px solid ${C.cardBorder}`,
+                  border: `1px solid ${OUTLINED_BORDER}`,
                   borderRadius: 10,
                   backgroundColor: C.pageBg,
                   color: C.valueText,

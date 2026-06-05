@@ -12,9 +12,11 @@ import {
   AdvancedPageShell,
   AdvancedFormCard,
   FieldRow,
-  advancedToolbarBtnStyle,
   wavFileNoteStyle,
 } from "../../../sections/advanced/advancedSharedUi";
+
+/** Choose file & Upload — same size; gray cancel styling on file picker */
+const cueToneFileBtnStyle = { height: 30, fontSize: 12, minWidth: 100 };
 
 const CueTonePage = () => {
   const [formData, setFormData] = useState(CUE_TONE_INITIAL_FORM);
@@ -118,9 +120,9 @@ const CueTonePage = () => {
               id="cue-tone-file-input"
             />
             <Btn
-              variant="outline"
+              variant="cancel"
               onClick={() => fileInputRef.current?.click()}
-              style={advancedToolbarBtnStyle}
+              style={cueToneFileBtnStyle}
             >
               Choose file
             </Btn>
@@ -128,13 +130,13 @@ const CueTonePage = () => {
             <Btn
               variant="primary"
               onClick={handleUpload}
-              style={advancedToolbarBtnStyle}
+              style={cueToneFileBtnStyle}
             >
               Upload
             </Btn>
           </div>
         </FieldRow>
-        <p style={wavFileNoteStyle}>
+        <p style={{ ...wavFileNoteStyle, color: "#dc2626" }}>
           Note: The file should be a wav file with 8000Hz sampling rate, 16-bit mono, A-law formatted, and less than 200KB in size.
         </p>
       </AdvancedFormCard>

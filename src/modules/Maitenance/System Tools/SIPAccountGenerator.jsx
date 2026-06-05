@@ -7,6 +7,10 @@ import {
   SIP_ACCOUNT_SAVE_BUTTON,
 } from "../../../constants/SIPAccountGeneratorConstants";
 import { Alert } from "@mui/material";
+import {
+  systemToolsFieldInputStyle as inputStyle,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
@@ -16,7 +20,7 @@ const C = {
   divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#3E5475",
-  valueText: "#1e293b",
+  valueText: "#3E5475",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",
@@ -136,19 +140,6 @@ const blueBarStyle = {
   fontSize: 13,
   color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 const SIPAccountGenerator = () => {
@@ -272,17 +263,7 @@ const SIPAccountGenerator = () => {
                       value={form.sipTrunkNo}
                       onChange={handleInputChange}
                       placeholder="0"
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 6,
-                        border: `1px solid ${C.cardBorder}`,
-                        fontSize: 14,
-                        width: "100%",
-                        minWidth: 80,
-                        backgroundColor: "#f8fafc",
-                        outline: "none",
-                        transition: "border-color 0.2s ease",
-                      }}
+                      style={{ ...inputStyle, minWidth: 80 }}
                       {...inputInteraction}
                     />
                   </div>
@@ -306,17 +287,7 @@ const SIPAccountGenerator = () => {
                       value={form.registrationPeriod}
                       onChange={handleInputChange}
                       placeholder="1800"
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 6,
-                        border: `1px solid ${C.cardBorder}`,
-                        fontSize: 14,
-                        width: "100%",
-                        minWidth: 120,
-                        backgroundColor: "#f8fafc",
-                        outline: "none",
-                        transition: "border-color 0.2s ease",
-                      }}
+                      style={{ ...inputStyle, minWidth: 120 }}
                       {...inputInteraction}
                     />
                   </div>
@@ -339,16 +310,7 @@ const SIPAccountGenerator = () => {
                       type="text"
                       value={form.registrationAddress}
                       onChange={handleInputChange}
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 6,
-                        border: `1px solid ${C.cardBorder}`,
-                        fontSize: 14,
-                        width: "100%",
-                        backgroundColor: "#f8fafc",
-                        outline: "none",
-                        transition: "border-color 0.2s ease",
-                      }}
+                      style={inputStyle}
                       {...inputInteraction}
                     />
                   </div>
@@ -372,17 +334,7 @@ const SIPAccountGenerator = () => {
                       value={form.description}
                       onChange={handleInputChange}
                       placeholder="default"
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 6,
-                        border: `1px solid ${C.cardBorder}`,
-                        fontSize: 14,
-                        width: "100%",
-                        minWidth: 100,
-                        backgroundColor: "#f8fafc",
-                        outline: "none",
-                        transition: "border-color 0.2s ease",
-                      }}
+                      style={{ ...inputStyle, minWidth: 100 }}
                       {...inputInteraction}
                     />
                   </div>
@@ -401,17 +353,20 @@ const SIPAccountGenerator = () => {
               </div>
 
               {/* Note */}
-              <div
-                className="mt-4"
+              <p
                 style={{
-                  fontSize: 13,
-                  color: C.errorRed,
-                  fontWeight: 500,
+                  margin: "16px 0 0",
                   textAlign: "center",
+                  fontSize: 12,
+                  color: "#dc2626",
+                  width: "100%",
+                  whiteSpace: "nowrap",
+                  overflowX: "auto",
+                  lineHeight: 1.45,
                 }}
               >
                 {SIP_ACCOUNT_NOTE}
-              </div>
+              </p>
             </div>
           </div>
         </form>
@@ -422,7 +377,7 @@ const SIPAccountGenerator = () => {
             <span>{SIP_ACCOUNT_UPLOAD.title}</span>
           </div>
           <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div style={{ flex: 1, color: C.valueText, fontSize: 14 }}>
+            <div style={{ flex: 1, color: C.valueText, fontSize: 13 }}>
               <div style={{ fontWeight: 500 }}>
                 {SIP_ACCOUNT_UPLOAD.instruction}
               </div>
@@ -439,9 +394,9 @@ const SIPAccountGenerator = () => {
                 onChange={handleFileChange}
               />
               <Btn
-                variant="default"
+                variant="cancel"
                 onClick={() => fileInputRef.current.click()}
-                style={{ height: 36, minWidth: 120 }}
+                style={{ minWidth: 110, height: 34, fontSize: 13 }}
               >
                 {SIP_ACCOUNT_UPLOAD.chooseFile}
               </Btn>
@@ -484,7 +439,7 @@ const SIPAccountGenerator = () => {
                 {SIP_ACCOUNT_DOWNLOAD.fileLabel}
               </span>
               <span
-                style={{ color: C.errorRed, fontSize: 14, fontWeight: 500 }}
+                style={{ color: C.errorRed, fontSize: 13, fontWeight: 500 }}
               >
                 {SIP_ACCOUNT_DOWNLOAD.fileName}
               </span>
@@ -494,7 +449,7 @@ const SIPAccountGenerator = () => {
               style={{
                 flex: 1,
                 color: C.valueText,
-                fontSize: 14,
+                fontSize: 13,
                 textAlign: "center",
               }}
             >

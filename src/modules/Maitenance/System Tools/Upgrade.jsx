@@ -132,7 +132,7 @@ const tableContainerStyle = {
   maxWidth: "100%",
   margin: "0 auto",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
+  border: `1.5px solid ${C.cardBorder}`,
   borderRadius: 10,
   boxShadow: C.cardShadow,
   overflow: "hidden",
@@ -154,36 +154,43 @@ const blueBarStyle = {
   color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
-const thStyle = {
-  background: C.pageBg,
+const labelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
   color: C.labelText,
-  fontWeight: 700,
-  fontSize: 11,
-  borderBottom: `1px solid ${C.divider}`,
-  padding: "14px 18px",
-  whiteSpace: "nowrap",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-};
-const tdStyle = {
-  borderBottom: "none",
-  padding: "10px 18px",
-  fontSize: 13,
-  background: C.cardBg,
-  color: C.valueText,
-  textAlign: "right",
-  whiteSpace: "nowrap",
-  width: "50%",
-};
-const tdLeftStyle = {
-  borderBottom: "none",
-  padding: "10px 18px",
-  fontSize: 13,
-  background: C.cardBg,
-  color: C.valueText,
   textAlign: "left",
-  whiteSpace: "nowrap",
-  width: "50%",
+};
+
+const valueBoxStyle = {
+  padding: "6px 12px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+  fontSize: 12,
+  fontWeight: 500,
+  width: "100%",
+  minHeight: 34,
+  backgroundColor: "#f8fafc",
+  color: C.valueText,
+  textAlign: "center",
+  lineHeight: 1.45,
+  whiteSpace: "normal",
+  overflowWrap: "break-word",
+  wordBreak: "break-word",
+  boxSizing: "border-box",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
+const formatVersionValue = (raw) => {
+  if (raw == null || raw === "") return "Unavailable";
+  if (typeof raw === "object") {
+    const parts = [raw.version, raw.timestamp, raw.boot, raw.boot_time, raw.value]
+      .filter((v) => v != null && String(v).trim() !== "")
+      .map((v) => String(v).trim());
+    return parts.length ? parts.join(" ") : "Unavailable";
+  }
+  return String(raw).trim() || "Unavailable";
 };
 
 const VERSION_FIELDS = [
@@ -311,9 +318,10 @@ const Upgrade = () => {
 
       const updatedRows = VERSION_FIELDS.map((field) => {
         const rawValue = parsed[field.key];
+        const normalized = formatVersionValue(rawValue);
         const formatted = field.formatter
-          ? field.formatter(rawValue)
-          : (rawValue ?? "Unavailable");
+          ? field.formatter(normalized)
+          : normalized;
         return {
           ...field,
           version: String(formatted),
@@ -506,8 +514,8 @@ const Upgrade = () => {
           </Alert>
         )}
 
-        {/* Table */}
-        <div style={tableContainerStyle}>
+        {/* Current Version */}
+        <div style={{ ...tableContainerStyle, marginBottom: 12 }}>
           <div style={blueBarStyle}>
             <span>{UPGRADE_LABELS.currentVersion}</span>
             {versionLoading && (
@@ -515,59 +523,34 @@ const Upgrade = () => {
             )}
           </div>
           <div
-            style={{
-              padding: "32px 24px",
-              maxWidth: 500,
-              width: "100%",
-              margin: "0 auto",
-            }}
+            className="w-full px-5 pt-3 pb-3 flex flex-col items-center"
+            style={{ borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
           >
-            <div className="space-y-4">
+            <div
+              className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center"
+            >
               {versionRows.map((row) => (
-                <div
-                  key={row.key}
-                  className="flex items-center"
-                  style={{ flexWrap: "wrap" }}
-                >
-                  <label
-                    style={{
-                      width: "auto",
-                      minWidth: 130,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      textAlign: "left",
-                      marginRight: 10,
-                      whiteSpace: "nowrap",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {row.label}:
-                  </label>
-                  <div className="flex-1 flex flex-col text-center">
-                    <div
-                      style={{
-                        fontSize: 13,
-                        color: row.key === "serial_no" ? C.valueText : C.accent,
-                        fontWeight: 500,
-                        padding: "6px 10px",
-                      }}
-                    >
+                <React.Fragment key={row.key}>
+                  <label style={labelStyle}>{row.label}:</label>
+                  <div className="flex flex-col min-w-0 w-full">
+                    <div style={valueBoxStyle}>
                       {row.version || "Unavailable"}
                     </div>
-                    {row.timestamp && (
+                    {row.timestamp ? (
                       <div
                         style={{
                           fontSize: 11,
                           color: C.mutedText,
                           marginTop: 4,
+                          textAlign: "center",
+                          lineHeight: 1.45,
                         }}
                       >
                         Last updated: {row.timestamp}
                       </div>
-                    )}
+                    ) : null}
                   </div>
-                </div>
+                </React.Fragment>
               ))}
             </div>
           </div>
@@ -604,7 +587,7 @@ const Upgrade = () => {
             disabled={uploading || rebooting}
           />
           <Btn
-            variant="default"
+            variant="cancel"
             onClick={() =>
               !uploading && !rebooting && fileInputRef.current?.click()
             }

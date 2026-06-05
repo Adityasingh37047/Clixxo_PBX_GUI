@@ -114,7 +114,7 @@ export const MANAGEMENT_SECTIONS = [
     fields: [
       { name: 'ntpEnable', label: 'NTP', type: 'radio', options: ['Yes', 'No'], initial: 'Yes' },
       { name: 'ntpServerAddress', label: 'NTP Server Address', type: 'text', initial: '127.0.0.1', conditional: 'ntpEnable', conditionalValue: 'Yes' },
-      { name: 'synchronizingCycle', label: 'Synchronizing Cycle', type: 'text', initial: '3600', conditional: 'ntpEnable', conditionalValue: 'Yes', unit: 's' },
+      { name: 'synchronizingCycle', label: 'Synchronizing Cycle', type: 'text', initial: '3600', conditional: 'ntpEnable', conditionalValue: 'Yes' },
       { name: 'dailyRestart', label: 'Daily Restart', type: 'radio', options: ['Yes', 'No'], initial: 'Yes' },
       // Restart Time (visible only when Daily Restart = Yes)
       { 

@@ -7,6 +7,10 @@ import {
   LINUX_CLI_BUTTONS,
   LINUX_CLI_PLACEHOLDERS,
 } from "../../../constants/LinuxCLIConstants";
+import {
+  systemToolFieldInputStyle as inputStyle,
+  inputInteraction,
+} from "../../../sections/system/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -98,31 +102,6 @@ const Btn = ({
       {children}
     </button>
   );
-};
-
-const inputStyle = {
-  width: "100%",
-  fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1.5px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
-  outline: "none",
-  transition: "border-color 0.2s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 const LinuxCLI = () => {
@@ -369,16 +348,7 @@ const LinuxCLI = () => {
                   onChange={(e) => setLogs(e.target.value)}
                   placeholder={LINUX_CLI_PLACEHOLDERS.logs}
                   readOnly
-                  onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
-                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
-                  onMouseEnter={(e) => {
-                    if (document.activeElement !== e.target)
-                      e.target.style.borderColor = "#64748b";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (document.activeElement !== e.target)
-                      e.target.style.borderColor = C.cardBorder;
-                  }}
+                  {...inputInteraction}
                 />
               </div>
             </div>

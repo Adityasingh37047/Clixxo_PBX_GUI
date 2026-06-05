@@ -23,6 +23,16 @@ const labelCellStyle = {
   verticalAlign: "middle",
 };
 
+/** Media Parameters header look; column alignment matches original layout */
+const functionKeyTableHeaderBase = {
+  fontSize: 12,
+  fontWeight: 700,
+  color: C.labelText,
+  padding: "8px 8px 12px",
+  boxSizing: "border-box",
+  verticalAlign: "middle",
+};
+
 const FUNCTION_KEY_SECTION_HEADING_COLOR = "#30415A";
 
 const FunctionKeySectionHeading = ({ title, isFirst = false }) => (
@@ -295,12 +305,39 @@ const FunctionKeyPage = () => {
               {tableColgroup}
               <tbody>
                 <tr>
-                  <td style={{ ...labelCellStyle, paddingLeft: 0 }}>Function</td>
-                  <td style={{ ...labelCellStyle, textAlign: "center" }}>
+                  <td
+                    style={{
+                      ...functionKeyTableHeaderBase,
+                      textAlign: "left",
+                      paddingLeft: 0,
+                    }}
+                  >
+                    Function
+                  </td>
+                  <td
+                    style={{
+                      ...functionKeyTableHeaderBase,
+                      textAlign: "center",
+                    }}
+                  >
                     Enable
                   </td>
-                  <td style={labelCellStyle}>Function Key</td>
-                  <td style={labelCellStyle}>Mode</td>
+                  <td
+                    style={{
+                      ...functionKeyTableHeaderBase,
+                      textAlign: "left",
+                    }}
+                  >
+                    Function Key
+                  </td>
+                  <td
+                    style={{
+                      ...functionKeyTableHeaderBase,
+                      textAlign: "left",
+                    }}
+                  >
+                    Mode
+                  </td>
                 </tr>
               </tbody>
             </table>
