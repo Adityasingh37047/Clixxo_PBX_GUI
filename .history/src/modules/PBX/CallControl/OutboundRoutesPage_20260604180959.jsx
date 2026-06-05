@@ -1503,13 +1503,10 @@ const OutboundRoutesPage = () => {
             >
               <div
                 className="px-3 py-1.5 text-[13px] font-semibold"
-               style={{
-                  fontSize: 13,
-                  fontWeight: 700,
+                style={{
                   color: C.labelText,
-                  marginBottom: 14,
+                  background: "#f5f7fa",
                   borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
                 }}
               >
                 Outbound Call Routing
@@ -1856,7 +1853,6 @@ const OutboundRoutesPage = () => {
 
                 <div className="flex flex-col gap-2 mt-1">
                   <label className="text-[14px] text-gray-700 font-medium">
-                    
                     Member Extensions <span className="text-red-500">*</span>
                   </label>
                   <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">

@@ -43,7 +43,6 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
 };
 
 const CARD_RADIUS = 10;
@@ -63,10 +62,10 @@ color: C.valueText,
 border: "1px solid #9ca3af",
 },
 primary: {
-background:
-"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-color: "#fff",
-border: "1px solid #5A6F8F",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
 },
 cancel: {
 background: "#cbd5e1",
@@ -132,17 +131,11 @@ border: `1px solid ${C.cardBorder}`,
         ...s,
         ...extraStyle,
       }}
-      onMouseEnter={(e) => {
-        if (!disabled && !disableHover) {
-          e.currentTarget.style.background = hoverBg;
-          e.currentTarget.style.opacity = "0.82";
-        }
+      onMouseEnter={(e) => { // This logic is slightly different from DisaPage.jsx, but matches the original siptrunkpage.jsx behavior.
+        if (!disabled && !disableHover) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled && !disableHover) {
-          e.currentTarget.style.background = baseBg;
-          e.currentTarget.style.opacity = "1";
-        }
+        if (!disabled && !disableHover) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -787,25 +780,53 @@ const SipTrunkPage = () => {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Btn
-                onClick={handleCheckAll} disabled={loading.delete} variant="cancel"
+                onClick={handleCheckAll}
+                disabled={loading.delete}
+                variant="outline"
+                disableHover
+                  style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 Check All
               </Btn>
               <Btn
-                onClick={handleUncheckAll} disabled={loading.delete} variant="cancel"
+                onClick={handleUncheckAll}
+                disabled={loading.delete}
+                variant="outline"
+                disableHover
+                  style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 Uncheck All
               </Btn>
               <Btn
-                onClick={handleInverse} disabled={loading.delete} variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete}
+                variant="outline"
+                disableHover
+                  style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}  
               >
                 Inverse
               </Btn>
               <Btn
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                variant="cancel"
-                style={{
+                variant="danger"
+                disableHover
+                  style={{
                   background: "#cbd5e1",
                   color: "#374151",
                   border: "1px solid #cbd5e1",
@@ -813,7 +834,7 @@ const SipTrunkPage = () => {
                 }}
               >
                 {loading.delete && (
-                  <CircularProgress size={11}  />
+                  <CircularProgress size={11} style={{ color: "#fff" }} />
                 )}
                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -886,7 +907,7 @@ const SipTrunkPage = () => {
                           border: "1px solid #bbb",
                           padding: "6px 8px",
                           minHeight: 32,
-                            whiteSpace: "nowrap", // This is already part of TH
+                            whiteSpace: "nowrap",
                         }}
                       >
                         Modify
@@ -948,8 +969,8 @@ const SipTrunkPage = () => {
                                 borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
                               }}
                             >
-                              <input
-                                type="checkbox"
+                              <Checkbox
+                                size="small"
                                 checked={selected.includes(realIdx)}
                                 onChange={() => handleSelectRow(realIdx)}
                                 disabled={loading.delete}
@@ -1232,7 +1253,7 @@ const SipTrunkPage = () => {
                                 <MenuItem key={option.value} value={option.value} disabled={option.disabled}>
                                   {option.label}
                                 </MenuItem>
-                              ))} 
+                              ))}
                             </MuiSelect>
                           </FormControl>
                           {validationErrors[field.name] && (
@@ -1387,4 +1408,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

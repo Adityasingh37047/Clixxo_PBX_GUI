@@ -883,7 +883,7 @@ const SipTrunkPage = () => {
                       <th
                         className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
                         style={{
-                          border: "1px solid #bbb",
+                       
                           padding: "6px 8px",
                           minHeight: 32,
                             whiteSpace: "nowrap", // This is already part of TH
@@ -1387,4 +1387,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

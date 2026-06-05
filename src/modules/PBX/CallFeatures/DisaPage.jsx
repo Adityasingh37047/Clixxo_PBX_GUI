@@ -1120,14 +1120,8 @@ const DisaPage = () => {
           {editId != null ? "Edit DISA" : "Add DISA"}
         </DialogTitle>
 
-        <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
-          }}
+         <DialogContent
+                  style={{ padding: "20px 24px", backgroundColor:"#ffffff", }}
         >
           {loading.get ? (
             <div
@@ -1144,7 +1138,7 @@ const DisaPage = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div
                 style={{
-                  background: "#fff",
+                  background: "#f5f7fa",
                   border: `1px solid ${C.cardBorder}`,
                   borderRadius: 6,
                   padding: "20px 24px 16px",
@@ -1177,7 +1171,7 @@ const DisaPage = () => {
                           setForm((f) => ({ ...f, name: e.target.value }))
                         }
                         inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff"}
                         }}
                       />
                     </FieldRow>
@@ -1196,7 +1190,7 @@ const DisaPage = () => {
                         }
                         inputProps={{
                           min: 1,
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff" }
                         }}
                       />
                     </FieldRow>
@@ -1211,13 +1205,13 @@ const DisaPage = () => {
                               secondDial: e.target.value,
                             }))
                           }
-                          sx={{ fontSize: 13 }}
+                          sx={{ fontSize: 13  ,backgroundColor: "#fff" }}
                         >
                           {SECOND_DIAL_OPTIONS.map((opt) => (
                             <MenuItem
                               key={opt}
                               value={opt}
-                              sx={{ fontSize: 13 }}
+                              sx={{ fontSize: 13  ,backgroundColor: "#fff" }}
                             >
                               {opt}
                             </MenuItem>
@@ -1312,7 +1306,7 @@ const DisaPage = () => {
                                 setForm((f) => ({ ...f, pin: e.target.value }))
                               }
                               inputProps={{
-                                style: { fontSize: 13, padding: "6px 8px" },
+                                style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff" },
                               }}
                               InputProps={{
                                 endAdornment: (
@@ -1361,7 +1355,7 @@ const DisaPage = () => {
                         }
                         inputProps={{
                           min: 1,
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff" },
                         }}
                       />
                     </FieldRow>
@@ -1376,7 +1370,7 @@ const DisaPage = () => {
                               transparent: e.target.value,
                             }))
                           }
-                          sx={{ fontSize: 13 }}
+                          sx={{ fontSize: 13 ,backgroundColor: "#fff" }}
                         >
                           {TRANSPARENT_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1401,7 +1395,7 @@ const DisaPage = () => {
                               enabled: e.target.value === "Yes",
                             }))
                           }
-                          sx={{ fontSize: 13 }}
+                          sx={{ fontSize: 13 ,backgroundColor: "#fff" }}
                         >
                           {ENABLE_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1430,13 +1424,13 @@ const DisaPage = () => {
                   <div>
                     <div
                       style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: C.mutedText,
-                        marginBottom: 6,
-                        textAlign: "center",
-                      }}
-                    >
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: C.accent,
+                      marginBottom: 6,
+                      textAlign: "center",
+                    }}
+                  >
                       Available Routes
                     </div>
                     <select
@@ -1457,7 +1451,7 @@ const DisaPage = () => {
                         padding: 8,
                         fontSize: 13,
                         outline: "none",
-                        background: "#f8fafc",
+                        background: "#fff",
                       }}
                     >
                       {availableRoutes.length === 0 ? (
@@ -1597,13 +1591,15 @@ const DisaPage = () => {
             </div>
           )}
         </DialogContent>
-        <DialogActions
-          style={{
-            justifyContent: "center",
-            gap: 12,
-            padding: 16,
-          }}
-        >
+       <DialogActions
+  style={{
+    justifyContent: "center",
+    gap: 12,
+    padding: 16,
+    background: "#f5f7fa",
+    borderTop: "1px solid #d1d5db",
+  }}
+>
           <Btn
             variant="primary"
             onClick={handleSave}

@@ -886,7 +886,7 @@ const SipTrunkPage = () => {
                           border: "1px solid #bbb",
                           padding: "6px 8px",
                           minHeight: 32,
-                            whiteSpace: "nowrap", // This is already part of TH
+                           
                         }}
                       >
                         Modify
@@ -1387,4 +1387,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

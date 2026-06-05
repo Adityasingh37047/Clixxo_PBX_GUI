@@ -867,7 +867,7 @@ const SipTrunkPage = () => {
                   <thead>
                     <tr>
                       <TH
-                        style={{ width: 40, padding: 0, borderLeft: "none" }}
+                        style={{ width: 40, padding: 0, }}
                       >
                         <Checkbox
                           size="small"
@@ -1387,4 +1387,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

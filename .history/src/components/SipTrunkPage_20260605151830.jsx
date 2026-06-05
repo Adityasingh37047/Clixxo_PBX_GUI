@@ -804,7 +804,7 @@ const SipTrunkPage = () => {
               <Btn
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                variant="cancel"
+                variant="danger"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -1387,4 +1387,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

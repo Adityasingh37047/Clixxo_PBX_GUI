@@ -1230,12 +1230,24 @@ minWidth: 900,
       </div>
 
       {/* ── Add/Edit Modal ── */}
-      <Dialog
-        open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
-        maxWidth={false}
-        PaperProps={{ sx: { width: 880, maxWidth: "96vw", borderRadius: 2 } }}
-      >
+  <Dialog
+  open={showModal}
+  onClose={loading.save ? null : handleCloseModal}
+  maxWidth={false}
+  sx={{
+    "& .MuiDialog-container": {
+      alignItems: "flex-start",
+      pt: 6,
+    },
+  }}
+  PaperProps={{
+    sx: {
+      width: 880,
+      maxWidth: "96vw",
+      borderRadius: 2,
+    },
+  }}
+>
         <DialogTitle
           sx={{
             background: "#1e2d42",
@@ -1249,62 +1261,70 @@ minWidth: 900,
           {editId != null ? "Edit Conference" : "Add Conference"}
         </DialogTitle>
 
-        <DialogContent
-          sx={{
-            p: "12px 8px 0 8px",
-            backgroundColor: C.pageBg,
-            border: "1px solid #9ca3af",
-            borderTop: "none",
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 6,
-            },
-            "& .MuiOutlinedInput-input": {
-              padding: "10px 12px",
-              fontSize: 13,
-            },
-            "& .MuiSelect-select": {
-              padding: "10px 12px",
-              fontSize: 13,
-            },
-          }}
-        >
-          <div
-            style={{
-              borderBottom: "1px solid #f1f5f9",
-              marginBottom: 8,
-              background: "#f1f3f6",
-              borderRadius: "4px 4px 0 0",
-            }}
-          >
-            <Tabs
-              value={activeTab}
-              onChange={(_, value) => setActiveTab(value)}
-              variant="fullWidth"
-              textColor="inherit"
-              TabIndicatorProps={{
-                style: { backgroundColor: C.accent, height: 3 },
-              }}
-            >
-              <Tab
-                label="BASIC"
-                value="basic"
-                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-              />
-              <Tab
-                label="ADVANCED SETTINGS"
-                value="advanced"
-                sx={{ fontSize: 12, fontWeight: 700, minHeight: 36 }}
-              />
-            </Tabs>
-          </div>
-          <div style={{ background: C.pageBg }}>
-            <div style={{ padding: 12 }}>
+     
+             <DialogContent
+       style={{
+         padding: "8px 24px 20px",
+         backgroundColor: "#ffffff",
+       }}
+     >
+       
+<div
+  style={{
+    borderBottom: "1px solid #e5e7eb",
+    background: "#ffffff",
+    marginLeft: "-24px",
+    marginRight: "-24px",
+  }}
+>
+  <Tabs
+    value={activeTab}
+    onChange={(_, value) => setActiveTab(value)}
+    variant="fullWidth"
+    TabIndicatorProps={{
+      style: {
+        backgroundColor: "#3E5475",
+        height: 2,
+      },
+    }}
+    sx={{
+      minHeight: 48,
+
+      "& .MuiTab-root": {
+        color: "#374151",
+        fontWeight: 600,
+        textTransform: "none",
+        minHeight: 48,
+      },
+
+      "& .MuiTab-root.Mui-selected": {
+        color: "#3E5475",
+      },
+    }}
+  >
+    <Tab
+      label="BASIC"
+      value="basic"
+    />
+
+    <Tab
+      label="ADVANCED SETTINGS"
+      value="advanced"
+    />
+  </Tabs>
+</div>
+        <div style={{ background: "#ffffff" }}>
+  <div
+  style={{
+    padding: 12,
+  }}
+>
           {/* ── BASIC TAB ── */}
           {activeTab === "basic" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div
                 style={{
-                  background: "#fff",
+                background: "#f5f7fa",
                   border: `1px solid ${C.cardBorder}`,
                   borderRadius: 6,
                   padding: 16,
@@ -1333,7 +1353,7 @@ minWidth: 900,
                         value={roomName}
                         onChange={(e) => setRoomName(e.target.value)}
                         inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px" ,   background: "#fff", },
                         }}
                       />
                     </FieldRow>
@@ -1344,7 +1364,7 @@ minWidth: 900,
                         value={conferenceNumber}
                         onChange={(e) => setConferenceNumber(e.target.value)}
                         inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px" ,   background: "#fff", },
                         }}
                       />
                     </FieldRow>
@@ -1355,7 +1375,7 @@ minWidth: 900,
                         value={greeting}
                         onChange={(e) => setGreeting(e.target.value)}
                         MenuProps={{ PaperProps: { sx: { maxHeight: 280 } } }}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13    ,background: "#fff", }}
                       >
                         {(greetingOptions.length
                           ? greetingOptions
@@ -1373,7 +1393,7 @@ minWidth: 900,
                         fullWidth
                         value={announce}
                         onChange={(e) => setAnnounce(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13,background: "#fff", }}
                       >
                         {YES_NO_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1388,7 +1408,7 @@ minWidth: 900,
                         fullWidth
                         value={record}
                         onChange={(e) => setRecord(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13  ,background: "#fff",}}
                       >
                         {YES_NO_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1413,7 +1433,7 @@ minWidth: 900,
                         fullWidth
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13 ,background: "#fff",}}
                       >
                         {ENABLE_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1430,7 +1450,7 @@ minWidth: 900,
                         value={scheduleStart}
                         onChange={(e) => setScheduleStart(e.target.value)}
                         inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px" ,background: "#fff", },
                         }}
                       />
                     </FieldRow>
@@ -1442,7 +1462,7 @@ minWidth: 900,
                         value={scheduleEnd}
                         onChange={(e) => setScheduleEnd(e.target.value)}
                         inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px" ,background: "#fff", },
                         }}
                       />
                     </FieldRow>
@@ -1458,7 +1478,7 @@ minWidth: 900,
                             setParticipantPassword("");
                           }
                         }}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13 ,background: "#fff", }}
                       >
                         {YES_NO_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1478,7 +1498,7 @@ minWidth: 900,
                               setModeratorPassword(e.target.value)
                             }
                             inputProps={{
-                              style: { fontSize: 13, padding: "6px 8px" },
+                              style: { fontSize: 13, padding: "6px 8px"  ,background: "#fff",},
                             }}
                           />
                         </FieldRow>
@@ -1491,7 +1511,7 @@ minWidth: 900,
                               setParticipantPassword(e.target.value)
                             }
                             inputProps={{
-                              style: { fontSize: 13, padding: "6px 8px" },
+                              style: { fontSize: 13, padding: "6px 8px" ,background: "#fff", },
                             }}
                           />
                         </FieldRow>
@@ -1504,7 +1524,7 @@ minWidth: 900,
                         value={maxMembers}
                         onChange={(e) => setMaxMembers(e.target.value)}
                         inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px"  ,background: "#fff",},
                         }}
                       />
                     </FieldRow>
@@ -1529,18 +1549,20 @@ minWidth: 900,
                     <div>
                       <div
                         style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.mutedText,
-                          marginBottom: 8,
-                        }}
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: C.accent,
+                      marginBottom: 6,
+                      textAlign: "center",
+                    }}
+                  
                       >
                         Moderator Member (Extensions)
                       </div>
                       <div
                         style={{
                           border: `1px solid ${C.cardBorder}`,
-                          background: "#f8fafc",
+                          background: "#fff",
                           borderRadius: 4,
                           padding: 8,
                           height: 160,
@@ -1575,19 +1597,20 @@ minWidth: 900,
                     </div>
                     <div>
                       <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.mutedText,
-                          marginBottom: 8,
-                        }}
-                      >
+                         style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: C.accent,
+                      marginBottom: 6,
+                      textAlign: "center",
+                    }}
+                  >
                         Extension Group
                       </div>
                       <div
                         style={{
                           border: `1px solid ${C.cardBorder}`,
-                          background: "#f8fafc",
+                          background: "#fff",
                           borderRadius: 4,
                           padding: 8,
                           height: 160,
@@ -1638,7 +1661,7 @@ minWidth: 900,
           {activeTab === "advanced" && (
             <div
               style={{
-                background: "#fff",
+                 background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1660,7 +1683,7 @@ minWidth: 900,
                       fullWidth
                       value={waitForModerator}
                       onChange={(e) => setWaitForModerator(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13 ,background: "#fff",}}
                     >
                       {YES_NO_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1675,7 +1698,7 @@ minWidth: 900,
                       fullWidth
                       value={sayYourName}
                       onChange={(e) => setSayYourName(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13,background: "#fff", }}
                     >
                       {YES_NO_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1694,7 +1717,7 @@ minWidth: 900,
                       fullWidth
                       value={muteParticipant}
                       onChange={(e) => setMuteParticipant(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13  ,background: "#fff",}}
                     >
                       {YES_NO_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1709,7 +1732,7 @@ minWidth: 900,
                       fullWidth
                       value={allowInvite}
                       onChange={(e) => setAllowInvite(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13  ,background: "#fff",}}
                     >
                       {YES_NO_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>

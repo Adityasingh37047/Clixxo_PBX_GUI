@@ -2346,7 +2346,7 @@ minWidth: 900,
                       position: "absolute",
                       top: -10,
                       left: 0,
-                      background: "#fff",
+                     
                       paddingRight: 8,
                       fontSize: 13,
                       fontWeight: 600,

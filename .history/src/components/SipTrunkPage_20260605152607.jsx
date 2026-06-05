@@ -869,7 +869,7 @@ const SipTrunkPage = () => {
                       <TH
                         style={{ width: 40, padding: 0, borderLeft: "none" }}
                       >
-                        <Checkbox
+                         <Checkbox
                           size="small"
                           checked={selected.length === pagedRegisters.length && pagedRegisters.length > 0}
                           indeterminate={selected.length > 0 && selected.length < pagedRegisters.length}
@@ -1387,4 +1387,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

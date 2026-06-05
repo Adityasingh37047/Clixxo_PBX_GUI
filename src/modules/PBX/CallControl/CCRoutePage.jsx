@@ -711,7 +711,7 @@ minWidth: 900,
                       />
                     </TH>
                     <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >CC Interval Time</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 , }} >CC Interval Time</TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Through</TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Record Keep Time</TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Enable</TH>
@@ -1008,11 +1008,10 @@ borderTopRightRadius: 8,
                       value={ccIntervalTime}
                       onChange={(e) => setCcIntervalTime(e.target.value)}
                      sx={{
-  "& .MuiOutlinedInput-root": {
-    "&.Mui-focused fieldset": {
+ 
       borderColor: "#60a5fa",
-    },
-  },
+      backgroundColor: "#fff",
+
 }}
                     >
                       {CC_INTERVAL_OPTIONS.map((o) => (
@@ -1036,6 +1035,7 @@ borderTopRightRadius: 8,
                       value={recordKeepTime}
                       onChange={(e) => setRecordKeepTime(e.target.value)}
                      sx={{
+                      
   fontSize: 13,
   backgroundColor: "#fff",
 }}

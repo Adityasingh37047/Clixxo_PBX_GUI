@@ -1,3 +1,14 @@
+Notepad
+More Tools
+Delete Icon
+Download Icon
+Copy Icon
+Preferences
+Play Ambient Noise
+Play Writing Timer
+Share Notes across system apps
+Activate Floating Window
+About
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   SIP_TRUNK_FIELDS,
@@ -1387,4 +1398,7 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;
+
+47104 characters • 3605 words
+

@@ -43,7 +43,6 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
 };
 
 const CARD_RADIUS = 10;
@@ -54,7 +53,6 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
-  disableHover = false,
 }) => {
   const variants = {
     default: {
@@ -80,14 +78,15 @@ color: C.labelText,
 border: `1px solid ${C.cardBorder}`,
     },
     danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `1px solid #fecaca`,
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
     },
     accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `1px solid ${C.cardBorder}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
   };
 
@@ -124,7 +123,7 @@ border: `1px solid ${C.cardBorder}`,
         fontSize: 11,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
+        opacity: disabled ? 0.6 : 1,
         transition: "all 0.15s ease",
         height:30,
         gap: 6,
@@ -133,16 +132,10 @@ border: `1px solid ${C.cardBorder}`,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled && !disableHover) {
-          e.currentTarget.style.background = hoverBg;
-          e.currentTarget.style.opacity = "0.82";
-        }
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled && !disableHover) {
-          e.currentTarget.style.background = baseBg;
-          e.currentTarget.style.opacity = "1";
-        }
+        if (!disabled) e.currentTarget.style.background = baseBg;
       }}
     >
       {children}
@@ -787,25 +780,56 @@ const SipTrunkPage = () => {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Btn
-                onClick={handleCheckAll} disabled={loading.delete} variant="cancel"
+                onClick={handleCheckAll}
+                disabled={loading.delete}
+                variant="outline"
+                  style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+                  sx={{
+    "&:hover": {
+      background: "#cbd5e1 !important",
+      color: "#374151 !important",
+      border: "1px solid #cbd5e1 !important",
+    },
+  }}
               >
                 Check All
               </Btn>
               <Btn
-                onClick={handleUncheckAll} disabled={loading.delete} variant="cancel"
+                onClick={handleUncheckAll}
+                disabled={loading.delete}
+                variant="outline"
+                  style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 Uncheck All
               </Btn>
               <Btn
-                onClick={handleInverse} disabled={loading.delete} variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete}
+                variant="outline"
+                  style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}  
               >
                 Inverse
               </Btn>
               <Btn
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                variant="cancel"
-                style={{
+                variant="danger"
+                  style={{
                   background: "#cbd5e1",
                   color: "#374151",
                   border: "1px solid #cbd5e1",
@@ -813,12 +837,21 @@ const SipTrunkPage = () => {
                 }}
               >
                 {loading.delete && (
-                  <CircularProgress size={11}  />
+                  <CircularProgress size={11} style={{ color: "#fff" }} />
                 )}
                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
-              <Btn onClick={handleClearAll} disabled={loading.delete} variant="cancel"
+              <Btn
+                onClick={handleClearAll}
+                disabled={loading.delete}
+                variant="outline"
+                  style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
 
                 Clear All
@@ -856,29 +889,35 @@ const SipTrunkPage = () => {
                 }}
               >
                 <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "separate",
-                    borderSpacing: 0,
-                    tableLayout: "auto",
-                    minWidth: 900,
-                  }}
+                  className="w-full min-w-[1400px] border border-gray-300 border-collapse whitespace-nowrap"
+                  style={{ tableLayout: "auto", border: "1px solid #bbb" }}
                 >
                   <thead>
-                    <tr>
-                      <TH
-                        style={{ width: 40, padding: 0, borderLeft: "none" }}
+                    <tr style={{ minHeight: 32 }}>
+                      <th
+                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                        style={{
+                          border: "1px solid #bbb",
+                          padding: "6px 8px",
+                          minHeight: 32,
+                          whiteSpace: "nowrap",
+                        }}
                       >
-                        <Checkbox
-                          size="small"
-                          checked={selected.length === pagedRegisters.length && pagedRegisters.length > 0}
-                          indeterminate={selected.length > 0 && selected.length < pagedRegisters.length}
-                          onChange={() => (selected.length === pagedRegisters.length ? handleUncheckAll() : handleCheckAll())}
-                          sx={checkboxSx}
-                        />
-                      </TH>
+                        Check
+                      </th>
                       {visibleTableFields.map((field) => (
-                        <TH key={field.name}>{field.label}</TH>
+                        <th
+                          key={field.name}
+                          className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                          style={{
+                            border: "1px solid #bbb",
+                            padding: "6px 8px",
+                            minHeight: 32,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {field.label}
+                        </th>
                       ))}
                       <th
                         className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
@@ -886,7 +925,7 @@ const SipTrunkPage = () => {
                           border: "1px solid #bbb",
                           padding: "6px 8px",
                           minHeight: 32,
-                            whiteSpace: "nowrap", // This is already part of TH
+                          whiteSpace: "nowrap",
                         }}
                       >
                         Modify
@@ -895,7 +934,7 @@ const SipTrunkPage = () => {
                   </thead>
                   <tbody>
                     {loading.fetch ? (
-                      <tr style={{ minHeight: 120 }}>
+                      <tr>
                         <td
                           colSpan={visibleFieldsCount + 2}
                           className="border border-gray-300 px-2 py-4 text-center"
@@ -907,7 +946,7 @@ const SipTrunkPage = () => {
                         </td>
                       </tr>
                     ) : registers.length === 0 ? (
-                      <tr style={{ minHeight: 120 }}>
+                      <tr>
                         <td
                           colSpan={visibleFieldsCount + 2}
                           className="border border-gray-300 px-2 py-1 text-center"
@@ -932,20 +971,20 @@ const SipTrunkPage = () => {
                             style={{
                               background: rowBg,
                               transition: "background 0.15s ease",
-                              borderBottom: `1px solid ${C.cardBorder}`,
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
                             }}
                             onMouseLeave={(e) => {
                               if (!isSelected) e.currentTarget.style.background = rowBg;
-                            }}>
+                            }}
+                          >
                             <td
                               style={{
                                 ...tdStyle,
                                 background: rowBg,
                                 borderLeft: "none",
-                                borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
+                                borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                               }}
                             >
                               <input
@@ -961,7 +1000,7 @@ const SipTrunkPage = () => {
                                 style={{
                                   ...tdStyle,
                                   background: rowBg,
-                                  borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
+                                  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                                 }}
                               >
                                 {field.name === "index"
@@ -973,8 +1012,8 @@ const SipTrunkPage = () => {
                               style={{
                                 ...tdStyle,
                                 background: rowBg,
-                                borderRight: "none", // This is already part of tdStyle
-                                borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
+                                borderRight: "none",
+                                borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                               }}
                             >
                               <EditDocumentIcon
@@ -1232,7 +1271,7 @@ const SipTrunkPage = () => {
                                 <MenuItem key={option.value} value={option.value} disabled={option.disabled}>
                                   {option.label}
                                 </MenuItem>
-                              ))} 
+                              ))}
                             </MuiSelect>
                           </FormControl>
                           {validationErrors[field.name] && (
@@ -1387,4 +1426,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

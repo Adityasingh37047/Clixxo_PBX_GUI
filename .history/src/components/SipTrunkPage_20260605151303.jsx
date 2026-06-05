@@ -804,7 +804,7 @@ const SipTrunkPage = () => {
               <Btn
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                variant="cancel"
+                variant="danger"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -813,7 +813,7 @@ const SipTrunkPage = () => {
                 }}
               >
                 {loading.delete && (
-                  <CircularProgress size={11}  />
+                  <CircularProgress size={11} style={{ color: "#fff" }} />
                 )}
                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -869,13 +869,7 @@ const SipTrunkPage = () => {
                       <TH
                         style={{ width: 40, padding: 0, borderLeft: "none" }}
                       >
-                        <Checkbox
-                          size="small"
-                          checked={selected.length === pagedRegisters.length && pagedRegisters.length > 0}
-                          indeterminate={selected.length > 0 && selected.length < pagedRegisters.length}
-                          onChange={() => (selected.length === pagedRegisters.length ? handleUncheckAll() : handleCheckAll())}
-                          sx={checkboxSx}
-                        />
+                       
                       </TH>
                       {visibleTableFields.map((field) => (
                         <TH key={field.name}>{field.label}</TH>
@@ -1387,4 +1381,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

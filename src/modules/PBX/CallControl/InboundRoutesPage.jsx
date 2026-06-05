@@ -1490,7 +1490,7 @@ const InboundRoutesPage = () => {
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13,background: "#fff", }}
                     >
                       {ENABLE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1530,7 +1530,7 @@ const InboundRoutesPage = () => {
                       onChange={(e) =>
                         setEnableMobilityExtension(e.target.value)
                       }
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13, background: "#fff", }}
                     >
                       {MOBILITY_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1553,7 +1553,7 @@ const InboundRoutesPage = () => {
                     <Select
                       value={sendRingTone}
                       onChange={(e) => setSendRingTone(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13,background: "#fff", }}
                     >
                       {SEND_RINGTONE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1569,7 +1569,7 @@ const InboundRoutesPage = () => {
                     <Select
                       value={enableT38}
                       onChange={(e) => setEnableT38(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13, background: "#fff", }}
                     >
                       {T38_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1584,7 +1584,7 @@ const InboundRoutesPage = () => {
                     <Select
                       value={enableTimeCondition}
                       onChange={(e) => setEnableTimeCondition(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13 , background: "#fff",}}
                     >
                       {TIME_CONDITION_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1614,7 +1614,7 @@ const InboundRoutesPage = () => {
                       }}
                       displayEmpty
                       MenuProps={SELECT_MENU_PROPS}
-                      sx={{ fontSize: 13 }}
+                      sx={{ fontSize: 13 , background: "#fff", }}
                     >
                       <MenuItem value="">
                         <em>Select</em>

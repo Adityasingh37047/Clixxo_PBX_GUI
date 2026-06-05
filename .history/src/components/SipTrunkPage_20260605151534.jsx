@@ -804,7 +804,7 @@ const SipTrunkPage = () => {
               <Btn
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                variant="cancel"
+                variant="danger"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -813,7 +813,7 @@ const SipTrunkPage = () => {
                 }}
               >
                 {loading.delete && (
-                  <CircularProgress size={11}  />
+                  <CircularProgress size={11} style={{ color: "#fff" }} />
                 )}
                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1254,10 +1254,7 @@ const SipTrunkPage = () => {
                                   />
                                 }
                                 label={codec.label}
-                                sx={{
-                                  margin: 0,
-                                  "& .MuiFormControlLabel-label": { fontSize: 13, fontWeight: 500, color: "#374151" },
-                                }}
+                              
                               />
                             ))}
                           </FormGroup>
@@ -1387,4 +1384,4 @@ const SipTrunkPage = () => {
   );
 };
 
-export default SipTrunkPage;  
+export default SipTrunkPage;

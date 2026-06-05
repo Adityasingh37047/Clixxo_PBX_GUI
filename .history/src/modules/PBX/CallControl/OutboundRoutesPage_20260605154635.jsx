@@ -1856,7 +1856,13 @@ const OutboundRoutesPage = () => {
 
                 <div className="flex flex-col gap-2 mt-1">
                   <label className="text-[14px] text-gray-700 font-medium">
-                    
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: C.accent,
+                      marginBottom: 6,
+                      textAlign: "center",
+                    }}
                     Member Extensions <span className="text-red-500">*</span>
                   </label>
                   <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
