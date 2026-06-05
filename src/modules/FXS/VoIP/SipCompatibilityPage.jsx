@@ -6,9 +6,11 @@ import {
   Btn,
   FormEnableCheckbox,
   AdvancedPageShell,
-  AdvancedBreadcrumb,
+  VoipBreadcrumb,
   advancedTableContainerStyle,
   advancedBlueBarStyle,
+  nativeFieldInputStyle,
+  nativeFieldSelectStyle,
   nativeFieldInteraction,
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
@@ -87,16 +89,13 @@ const SipCompatibilityPage = () => {
   };
 
   const fieldInputStyle = {
-    height: 28,
+    ...nativeFieldInputStyle,
     width: 220,
-    padding: "0 8px",
-    fontSize: 13,
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 4,
-    outline: "none",
-    backgroundColor: "#fff",
-    color: C.valueText,
-    boxSizing: "border-box",
+  };
+
+  const fieldSelectStyle = {
+    ...nativeFieldSelectStyle,
+    width: 220,
   };
 
   const labelColStyle = {
@@ -146,12 +145,13 @@ const SipCompatibilityPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="SIP Compatibility" />
+      <VoipBreadcrumb current="SIP Compatibility" />
       <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
         <div style={advancedBlueBarStyle}>
           <span>SIP Compatibility</span>
         </div>
         <div style={{ padding: "24px 32px 0" }}>
+          <div style={{ marginBottom: 12 }}>
           <div
             className="flex flex-col gap-3"
             style={{
@@ -210,7 +210,7 @@ const SipCompatibilityPage = () => {
                           onChange={(e) =>
                             handleChange(field.key, e.target.value)
                           }
-                          style={fieldInputStyle}
+                          style={fieldSelectStyle}
                           {...nativeFieldInteraction}
                         >
                           {field.options.map((opt) => (
@@ -236,12 +236,30 @@ const SipCompatibilityPage = () => {
               );
             })}
           </div>
+          </div>
         </div>
-        <div style={advancedFormInlineFooterStyle}>
-          <Btn type="button" onClick={handleSave} variant="primary" style={advancedFormBtnStyle}>
+        <div
+          style={{
+            ...advancedFormInlineFooterStyle,
+            width: "100%",
+            marginLeft: 0,
+            marginRight: 0,
+          }}
+        >
+          <Btn
+            type="button"
+            onClick={handleSave}
+            variant="primary"
+            style={advancedFormBtnStyle}
+          >
             Save
           </Btn>
-          <Btn type="button" onClick={handleReset} variant="cancel" style={advancedFormBtnStyle}>
+          <Btn
+            type="button"
+            onClick={handleReset}
+            variant="cancel"
+            style={advancedFormBtnStyle}
+          >
             Reset
           </Btn>
         </div>

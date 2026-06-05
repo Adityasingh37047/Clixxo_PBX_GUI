@@ -15,12 +15,13 @@ import {
   Btn,
   FormEnableCheckbox,
   AdvancedPageShell,
-  AdvancedBreadcrumb,
+  VoipBreadcrumb,
   advancedTableContainerStyle,
   advancedBlueBarStyle,
-  nativeFieldInteraction,
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
+  nativeFieldInputStyle,
+  getFxsNativeFieldInteraction,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const LOCAL_PBX_REGISTER_STATUS_TEXT =
@@ -208,18 +209,12 @@ const FxsVoipSipPage = () => {
   };
 
   const fieldInputStyle = {
-    height: 28,
+    ...nativeFieldInputStyle,
     width: CONTROL_FIELD_WIDTH,
     maxWidth: "100%",
-    padding: "0 8px",
-    fontSize: 13,
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 4,
-    outline: "none",
-    backgroundColor: "#fff",
-    color: C.valueText,
-    boxSizing: "border-box",
   };
+
+  const sipFieldInteraction = getFxsNativeFieldInteraction(saving);
 
   const fieldReadonlyStyle = {
     ...fieldInputStyle,
@@ -286,7 +281,7 @@ const FxsVoipSipPage = () => {
         </Alert>
       )}
 
-      <AdvancedBreadcrumb current="SIP Settings" />
+      <VoipBreadcrumb current="SIP Settings" />
 
       {registrationMode === "local" && localModeMsg && (
         <div
@@ -326,6 +321,7 @@ const FxsVoipSipPage = () => {
           </div>
         ) : (
           <div style={{ padding: "24px 32px 0" }}>
+            <div style={{ marginBottom: 12 }}>
             <div
               className="flex flex-col gap-3"
               style={{
@@ -385,7 +381,7 @@ const FxsVoipSipPage = () => {
                             }
                             style={fieldInputStyle}
                             disabled={saving}
-                            {...nativeFieldInteraction}
+                            {...sipFieldInteraction}
                           />
                         </div>
                       )}
@@ -399,7 +395,7 @@ const FxsVoipSipPage = () => {
                             }
                             style={fieldInputStyle}
                             disabled={saving}
-                            {...nativeFieldInteraction}
+                            {...sipFieldInteraction}
                           >
                             {field.options.map((opt) => (
                               <option key={opt} value={opt}>
@@ -456,10 +452,19 @@ const FxsVoipSipPage = () => {
                 {SIP_SETTINGS_NOTE}
               </div>
             ) : null}
+            </div>
           </div>
         )}
 
-        <div style={advancedFormInlineFooterStyle}>
+        {!loadingPage && (
+        <div
+          style={{
+            ...advancedFormInlineFooterStyle,
+            width: "100%",
+            marginLeft: 0,
+            marginRight: 0,
+          }}
+        >
           <Btn
             type="button"
             onClick={handleSave}
@@ -486,6 +491,7 @@ const FxsVoipSipPage = () => {
             Reset
           </Btn>
         </div>
+        )}
       </div>
     </AdvancedPageShell>
   );

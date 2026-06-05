@@ -9,6 +9,14 @@ import {
   fetchResetDhcpSettings,
 } from "../api/apiService";
 import { Alert, Checkbox } from "@mui/material";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../sections/advanced/advancedSharedUi";
+import {
+  systemFieldInputStyleNarrow as inputStyle,
+  inputInteraction,
+} from "../sections/system/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -101,32 +109,6 @@ const Btn = ({
       {children}
     </button>
   );
-};
-
-const inputStyle = {
-  width: "100%",
-  maxWidth: "280px",
-  fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1.5px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
-  outline: "none",
-  transition: "border-color 0.2s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 const disabledInputStyle = {
@@ -431,15 +413,16 @@ const DhcpServerSettings = () => {
             className="w-full flex flex-col"
             style={{ padding: "24px 32px 0" }}
           >
-            <form onSubmit={handleSave} className="flex flex-col gap-8">
+            <form onSubmit={handleSave} className="flex flex-col">
+              <div className="flex flex-col gap-2" style={{ marginBottom: 12 }}>
               {DHCP_SERVER_SETTINGS_FIELDS.map((lanGroup, idx) => {
                 const isEnabled = form[lanGroup.fields[0].name];
                 return (
-                  <div key={lanGroup.lan} className="flex flex-col gap-4">
+                  <div key={lanGroup.lan} className="flex flex-col gap-0">
                     <SectionHeading title={lanGroup.lan} isFirst={idx === 0} />
 
                     <div
-                      className="flex flex-col gap-4 w-full"
+                      className="flex flex-col gap-3 w-full"
                       style={{ maxWidth: 640, margin: "0 auto" }}
                     >
                       {/* Enable DHCP Checkbox */}
@@ -534,17 +517,21 @@ const DhcpServerSettings = () => {
                   </div>
                 );
               })}
+              </div>
 
-              {/* Action Buttons Row */}
               <div
-                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-2"
-                style={{ borderTop: `1px solid ${C.divider}` }}
+                style={{
+                  ...advancedFormInlineFooterStyle,
+                  width: "calc(100% + 64px)",
+                  marginLeft: -32,
+                  marginRight: -32,
+                }}
               >
                 <Btn
                   variant="primary"
                   type="submit"
                   disabled={loading}
-                  style={{ minWidth: 110, height: 34 }}
+                  style={advancedFormBtnStyle}
                 >
                   {loading ? "Saving..." : "Save"}
                 </Btn>
@@ -553,7 +540,7 @@ const DhcpServerSettings = () => {
                   type="button"
                   onClick={handleReset}
                   disabled={loading}
-                  style={{ minWidth: 110, height: 34 }}
+                  style={advancedFormBtnStyle}
                 >
                   {loading ? "Resetting..." : "Reset"}
                 </Btn>

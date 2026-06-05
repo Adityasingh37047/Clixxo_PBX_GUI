@@ -15,6 +15,10 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { postLinuxCmd } from "../../../api/apiService";
 import { IPTABLES_INFO } from "../../../constants/AccessControlConstants";
+import {
+  systemModalFieldInputStyle,
+  inputInteraction,
+} from "../../../sections/system/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -1020,7 +1024,10 @@ const AccessControl = () => {
             {executionLogs}
           </pre>
         </div>
-        <div className="mt-2 text-[11px] text-red-600 text-center">
+        <div
+          className="mt-2 text-[11px] text-center"
+          style={{ color: "#dc2626" }}
+        >
           <div>
             Note: Please don't enable "SIP" =&gt; "Calls from SIP Trunk Address
             only".
@@ -1124,41 +1131,12 @@ const AccessControl = () => {
                   disabled={editIndex !== null}
                   placeholder="Auto-generated"
                   style={{
-                    fontSize: 13,
-                    padding: "0 8px",
-                    height: 32,
-                    borderRadius: 4,
-                    border: `1px solid ${C.cardBorder}`,
+                    ...systemModalFieldInputStyle,
                     background: editIndex !== null ? "#f1f5f9" : "#ffffff",
                     color: editIndex !== null ? "#94a3b8" : "#1e293b",
-                    outline: "none",
-                    width: "100%",
                     cursor: editIndex !== null ? "not-allowed" : "text",
-                    transition: "border-color 0.2s ease",
-                    boxSizing: "border-box",
                   }}
-                  onFocus={(e) => {
-                    if (editIndex === null)
-                      e.target.style.borderColor = "#0284c7";
-                  }}
-                  onBlur={(e) => {
-                    if (editIndex === null)
-                      e.target.style.borderColor = C.cardBorder;
-                  }}
-                  onMouseEnter={(e) => {
-                    if (
-                      editIndex === null &&
-                      document.activeElement !== e.target
-                    )
-                      e.target.style.borderColor = "#64748b";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (
-                      editIndex === null &&
-                      document.activeElement !== e.target
-                    )
-                      e.target.style.borderColor = C.cardBorder;
-                  }}
+                  {...(editIndex === null ? inputInteraction : {})}
                 />
               </div>
             </div>
@@ -1189,29 +1167,8 @@ const AccessControl = () => {
                   value={form.command || ""}
                   onChange={(e) => handleChange("command", e.target.value)}
                   placeholder="e.g., iptables -P OUTPUT ACCEPT"
-                  style={{
-                    fontSize: 13,
-                    padding: "0 8px",
-                    height: 32,
-                    borderRadius: 4,
-                    border: `1px solid ${C.cardBorder}`,
-                    background: "#ffffff",
-                    color: "#1e293b",
-                    outline: "none",
-                    width: "100%",
-                    transition: "border-color 0.2s ease",
-                    boxSizing: "border-box",
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = "#0284c7")}
-                  onBlur={(e) => (e.target.style.borderColor = C.cardBorder)}
-                  onMouseEnter={(e) => {
-                    if (document.activeElement !== e.target)
-                      e.target.style.borderColor = "#64748b";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (document.activeElement !== e.target)
-                      e.target.style.borderColor = C.cardBorder;
-                  }}
+                  style={systemModalFieldInputStyle}
+                  {...inputInteraction}
                 />
               </div>
             </div>

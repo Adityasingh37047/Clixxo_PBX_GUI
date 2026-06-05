@@ -10,6 +10,10 @@ import {
   CARD_RADIUS,
   muiSelectSx,
 } from "../../../sections/route/routeSharedUi";
+import {
+  advancedFormBtnStyle,
+  advancedFormInlineFooterStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
 const cardStyle = {
   background: C.cardBg,
@@ -44,12 +48,6 @@ const labelStyle = {
   textAlign: "left",
   whiteSpace: "nowrap",
   flexShrink: 0,
-};
-
-const saveBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
 };
 
 const RouteRoutingParameterPage = () => {
@@ -118,7 +116,7 @@ const RouteRoutingParameterPage = () => {
         <div style={cardStyle}>
           <div style={cardHeaderStyle}>Route Settings</div>
 
-          <div style={{ padding: "24px 32px" }}>
+          <div style={{ padding: "24px 32px 0" }}>
             <div
               style={{
                 display: "flex",
@@ -126,6 +124,7 @@ const RouteRoutingParameterPage = () => {
                 gap: 24,
                 maxWidth: 640,
                 margin: "0 auto",
+                marginBottom: 12,
               }}
             >
               <div className="flex items-center justify-between">
@@ -142,20 +141,17 @@ const RouteRoutingParameterPage = () => {
 
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 12,
-              padding: "16px 24px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              background: C.cardBg,
+              ...advancedFormInlineFooterStyle,
+              width: "100%",
+              marginLeft: 0,
+              marginRight: 0,
             }}
           >
             <Btn
               variant="primary"
               onClick={handleSave}
               disabled={loading}
-              style={saveBtnStyle}
+              style={advancedFormBtnStyle}
             >
               {loading ? (
                 <>

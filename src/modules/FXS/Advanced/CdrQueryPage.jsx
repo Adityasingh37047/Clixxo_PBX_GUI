@@ -185,9 +185,7 @@ const CdrQueryPage = () => {
                 id="startdate"
                 type="date"
                 value={formData.startdate || ""}
-                onChange={(e) =>
-                  handleInputChange("startdate", e.target.value)
-                }
+                onChange={(e) => handleInputChange("startdate", e.target.value)}
                 size="small"
                 variant="outlined"
                 sx={compactFieldSx}
@@ -264,9 +262,7 @@ const CdrQueryPage = () => {
               <TextField
                 id="callednum"
                 value={formData.callednum || ""}
-                onChange={(e) =>
-                  handleInputChange("callednum", e.target.value)
-                }
+                onChange={(e) => handleInputChange("callednum", e.target.value)}
                 onKeyPress={handleStringKeyPress}
                 size="small"
                 variant="outlined"
@@ -275,7 +271,7 @@ const CdrQueryPage = () => {
               />
             </CdrFieldRow>
             <CdrFieldRow label="Call Duration(s)">
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <TextField
                   id="mintalktime"
                   value={formData.mintalktime || ""}
@@ -285,7 +281,7 @@ const CdrQueryPage = () => {
                   onKeyPress={handleNumberKeyPress}
                   size="small"
                   variant="outlined"
-                  sx={{ ...muiTextFieldSx, width: 72 }}
+                  sx={{ ...muiTextFieldSx, width: 54.5 }}
                   inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                 />
                 <span style={{ fontSize: 13, color: C.mutedText }}>—</span>
@@ -298,7 +294,7 @@ const CdrQueryPage = () => {
                   onKeyPress={handleNumberKeyPress}
                   size="small"
                   variant="outlined"
-                  sx={{ ...muiTextFieldSx, width: 72 }}
+                  sx={{ ...muiTextFieldSx, width: 54.5 }}
                   inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
                 />
               </div>

@@ -329,20 +329,20 @@ const ModificationRecord = () => {
           </Btn>
         </div>
 
-        <div
-          style={{ display: "flex", justifyContent: "center", marginTop: 20 }}
+        <p
+          style={{
+            margin: "16px 0 0",
+            textAlign: "center",
+            fontSize: 12,
+            color: "#dc2626",
+            width: "100%",
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+            lineHeight: 1.45,
+          }}
         >
-          <span
-            style={{
-              color: C.errorRed,
-              fontSize: 13,
-              fontWeight: 500,
-              textAlign: "center",
-            }}
-          >
-            {MR_NOTE}
-          </span>
-        </div>
+          {MR_NOTE}
+        </p>
       </div>
     </div>
   );

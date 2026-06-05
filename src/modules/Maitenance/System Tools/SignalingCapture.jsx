@@ -7,38 +7,163 @@ import {
   SC_BUTTONS,
   SC_NOTE,
 } from "../../../constants/SignalingCaptureConstants";
-import { Button } from "@mui/material";
+import { Checkbox } from "@mui/material";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
+import {
+  systemToolsFieldInputStyleWhite as inputStyle,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
-const blueBar = (title) => (
-  <div
-    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-    style={{
-      background: "linear-gradient(#3E5475 100%)",
-      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-    }}
-  >
-    {title}
-  </div>
-);
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#0284c7",
+  primary: "#2563eb",
+  primaryHover: "#1d4ed8",
+  errorRed: "#dc2626",
+};
 
-const blueButtonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "edit":
+        return "#bbf7d0";
+      case "delete":
+        return "#fecaca";
+      case "danger":
+        return "#b91c1c";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 10,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  marginBottom: 24,
+};
+
+const blueBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
+  marginBottom: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
+  fontWeight: 700,
+  fontSize: 13,
+  color: "#3E5475",
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const labelStyle = {
+  fontSize: 13,
   fontWeight: 600,
-  fontSize: 14,
-  borderRadius: 1,
-  minWidth: 80,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  px: 2,
-  py: 1,
-  padding: "4px 16px",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
-  },
+  color: C.labelText,
+  textAlign: "left",
 };
 
 const SignalingCapture = () => {
@@ -70,7 +195,7 @@ const SignalingCapture = () => {
   const [e1bPcm, setE1bPcm] = useState(SC_PCM_OPTIONS[0].value);
   const [e1bSlot, setE1bSlot] = useState(SC_TS_OPTIONS[3].value);
 
-  // Fetch system info and populate network options
+  // Network interfaces state
   useEffect(() => {
     const fetchNetworkInterfaces = async () => {
       try {
@@ -428,283 +553,360 @@ const SignalingCapture = () => {
 
   return (
     <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      {/* Data Capture Section */}
-      <div className="w-full max-w-5xl mx-auto mb-12">
-        {blueBar(SC_SECTIONS[0])}
+      <div className="w-full" style={{ maxWidth: 1000 }}>
         <div
-          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
         >
-          <div className="p-6">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-              <div className="flex-1 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
+          <span>Maintenance</span>
+          <span>&gt;</span>
+          <span>System Tool</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            Signaling Capture
+          </span>
+        </div>
+
+        <div style={tableContainerStyle}>
+          <div style={blueBarStyle}>
+            <span>{SC_SECTIONS[0]}</span>
+          </div>
+          <div className="flex flex-col p-6 gap-6">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                  <label
+                    className="sm:w-[280px] whitespace-nowrap"
+                    style={labelStyle}
+                  >
                     {SC_LABELS.networkInterface}
                   </label>
-                  <select
-                    className={`border border-gray-300 rounded px-3 py-1 text-sm w-full sm:w-48 ${
-                      isCapturing
-                        ? "text-gray-500 bg-gray-100 cursor-not-allowed"
-                        : "text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
-                    }`}
-                    value={network}
-                    onChange={(e) => setNetwork(e.target.value)}
-                    disabled={loading || isCapturing}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <select
+                      style={{ ...inputStyle, width: "100%", minWidth: 220 }}
+                      value={network}
+                      onChange={(e) => setNetwork(e.target.value)}
+                      disabled={loading || isCapturing || isStopping}
+                      {...inputInteraction}
+                    >
+                      {loading ? (
+                        <option value="">Loading...</option>
+                      ) : (
+                        networkOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2 lg:ml-4">
+                  <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end">
+                    <Btn
+                      variant="primary"
+                      onClick={handleStartCapture}
+                      disabled={isCapturing || isStopping}
+                      style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                    >
+                      {SC_BUTTONS.start}
+                    </Btn>
+                    <Btn
+                      variant="cancel"
+                      onClick={handleStopCapture}
+                      disabled={!isCapturing || isStopping}
+                      style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                    >
+                      {isStopping ? "Please wait…" : SC_BUTTONS.stop}
+                    </Btn>
+                  </div>
+                  {captureStatus && (
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "#1d4ed8",
+                        fontWeight: 600,
+                        background: "#eff6ff",
+                        border: "1px solid #bfdbfe",
+                        borderRadius: 6,
+                        padding: "4px 12px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {captureStatus}
+                    </div>
+                  )}
+                  {isCapturing && !isStopping && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#15803d",
+                        fontWeight: 600,
+                        background: "#f0fdf4",
+                        border: "1px solid #bbf7d0",
+                        borderRadius: 6,
+                        padding: "3px 10px",
+                      }}
+                    >
+                      ● Capturing…
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <label
+                  className="sm:w-[280px] whitespace-nowrap"
+                  style={labelStyle}
+                >
+                  {SC_LABELS.captureSyslog}
+                </label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    size="small"
+                    checked={syslogEnabled}
+                    onChange={(e) => setSyslogEnabled(e.target.checked)}
+                    id="syslog-enable"
+                    disabled={isCapturing || isStopping}
+                    sx={{
+                      padding: "4px",
+                      color: "#64748b",
+                      "&.Mui-checked": { color: C.accent },
+                      cursor:
+                        isCapturing || isStopping ? "not-allowed" : "pointer",
+                    }}
+                  />
+                  <label
+                    htmlFor="syslog-enable"
+                    style={{
+                      fontSize: 14,
+                      color: C.valueText,
+                      cursor:
+                        isCapturing || isStopping ? "not-allowed" : "pointer",
+                    }}
                   >
-                    {loading ? (
-                      <option value="">Loading...</option>
-                    ) : (
-                      networkOptions.map((opt) => (
+                    {SC_LABELS.enable}
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <label
+                  className="sm:w-[280px] whitespace-nowrap"
+                  style={labelStyle}
+                >
+                  {SC_LABELS.syslogDest}
+                </label>
+                <input
+                  type="text"
+                  value={syslogDest}
+                  onChange={(e) => setSyslogDest(e.target.value)}
+                  disabled={!syslogEnabled || isCapturing || isStopping}
+                  style={{
+                    ...inputStyle,
+                    width: "100%",
+                    maxWidth: 220,
+                    opacity:
+                      !syslogEnabled || isCapturing || isStopping ? 0.6 : 1,
+                    cursor:
+                      !syslogEnabled || isCapturing || isStopping
+                        ? "not-allowed"
+                        : "text",
+                  }}
+                  {...inputInteraction}
+                />
+              </div>
+
+              <p
+                style={{
+                  margin: "16px 0 0",
+                  textAlign: "center",
+                  fontSize: 12,
+                  color: "#dc2626",
+                  width: "100%",
+                  whiteSpace: "nowrap",
+                  overflowX: "auto",
+                  lineHeight: 1.45,
+                }}
+              >
+                {SC_NOTE}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style={tableContainerStyle}>
+          <div style={blueBarStyle}>
+            <span>{SC_SECTIONS[1]}</span>
+          </div>
+          <div className="p-6 flex flex-col gap-6">
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 last:pb-0"
+                style={{
+                  borderBottom: i === 0 ? `1px solid ${C.divider}` : "none",
+                }}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                  <label
+                    className="sm:w-[280px] whitespace-nowrap"
+                    style={labelStyle}
+                  >
+                    {SC_LABELS.pcmTs}
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <select
+                      style={{ ...inputStyle, minWidth: 100 }}
+                      value={i === 0 ? ts1Pcm : ts2Pcm}
+                      onChange={(e) =>
+                        i === 0
+                          ? setTs1Pcm(e.target.value)
+                          : setTs2Pcm(e.target.value)
+                      }
+                      {...inputInteraction}
+                    >
+                      {SC_PCM_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
-                    {SC_LABELS.captureSyslog}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={syslogEnabled}
-                      onChange={(e) => setSyslogEnabled(e.target.checked)}
-                      className={`w-4 h-4 accent-blue-500 ${isCapturing ? "cursor-not-allowed" : ""}`}
-                      id="syslog-enable"
-                      disabled={isCapturing}
-                    />
-                    <label
-                      htmlFor="syslog-enable"
-                      className="text-sm text-gray-800 select-none"
+                      ))}
+                    </select>
+                    <select
+                      style={{ ...inputStyle, minWidth: 180 }}
+                      value={i === 0 ? ts1Slot : ts2Slot}
+                      onChange={(e) =>
+                        i === 0
+                          ? setTs1Slot(e.target.value)
+                          : setTs2Slot(e.target.value)
+                      }
+                      {...inputInteraction}
                     >
-                      {SC_LABELS.enable}
-                    </label>
+                      {SC_TS_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
-                    {SC_LABELS.syslogDest}
-                  </label>
-                  <input
-                    type="text"
-                    value={syslogDest}
-                    onChange={(e) => setSyslogDest(e.target.value)}
-                    disabled={!syslogEnabled || isCapturing}
-                    className={`border border-gray-300 rounded px-3 py-1 text-sm w-full sm:w-48 ${
-                      !syslogEnabled || isCapturing
-                        ? "text-gray-500 bg-gray-100 cursor-not-allowed"
-                        : "text-gray-800 bg-white cursor-text"
-                    }`}
-                  />
-                </div>
-                <div className="mt-2">
-                  <span className="text-sm text-red-600 font-medium">
-                    {SC_NOTE}
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-2 lg:ml-4">
-                <div className="flex gap-3 justify-center">
-                  <Button
-                    variant="contained"
-                    sx={blueButtonSx}
-                    onClick={handleStartCapture}
-                    disabled={isCapturing || isStopping}
+                <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
+                  <Btn
+                    variant="primary"
+                    style={{ minWidth: 100, height: 33, fontSize: 13 }}
                   >
                     {SC_BUTTONS.start}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    sx={blueButtonSx}
-                    onClick={handleStopCapture}
-                    disabled={!isCapturing || isStopping}
+                  </Btn>
+                  <Btn
+                    variant="cancel"
+                    style={{ minWidth: 100, height: 33, fontSize: 13 }}
                   >
-                    {isStopping ? "Please wait…" : SC_BUTTONS.stop}
-                  </Button>
+                    {SC_BUTTONS.stop}
+                  </Btn>
                 </div>
-                {captureStatus && (
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: "#1d4ed8",
-                      fontWeight: 600,
-                      background: "#eff6ff",
-                      border: "1px solid #bfdbfe",
-                      borderRadius: 6,
-                      padding: "4px 12px",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {captureStatus}
-                  </div>
-                )}
-                {isCapturing && !isStopping && (
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#15803d",
-                      fontWeight: 600,
-                      background: "#f0fdf4",
-                      border: "1px solid #bbf7d0",
-                      borderRadius: 6,
-                      padding: "3px 10px",
-                    }}
-                  >
-                    ● Capturing…
-                  </div>
-                )}
               </div>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* TS Recording Section */}
-      <div className="w-full max-w-5xl mx-auto mb-12">
-        {blueBar(SC_SECTIONS[1])}
-        <div
-          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
-        >
-          <div className="p-6">
-            <div className="space-y-4">
-              {[0, 1].map((i) => (
-                <div
-                  key={i}
-                  className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                    <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
-                      {SC_LABELS.pcmTs}
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                      <select
-                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 bg-white w-full sm:w-24"
-                        value={i === 0 ? ts1Pcm : ts2Pcm}
-                        onChange={(e) =>
-                          i === 0
-                            ? setTs1Pcm(e.target.value)
-                            : setTs2Pcm(e.target.value)
-                        }
-                      >
-                        {SC_PCM_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 bg-white w-full sm:w-48"
-                        value={i === 0 ? ts1Slot : ts2Slot}
-                        onChange={(e) =>
-                          i === 0
-                            ? setTs1Slot(e.target.value)
-                            : setTs2Slot(e.target.value)
-                        }
-                      >
-                        {SC_TS_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex gap-3 justify-end lg:justify-start">
-                    <Button variant="contained" sx={blueButtonSx}>
-                      {SC_BUTTONS.start}
-                    </Button>
-                    <Button variant="contained" sx={blueButtonSx}>
-                      {SC_BUTTONS.stop}
-                    </Button>
+        <div style={tableContainerStyle}>
+          <div style={blueBarStyle}>
+            <span>{SC_SECTIONS[2]}</span>
+          </div>
+          <div className="p-6 flex flex-col gap-6">
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 last:pb-0"
+                style={{
+                  borderBottom: i === 0 ? `1px solid ${C.divider}` : "none",
+                }}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                  <label
+                    className="sm:w-[280px] whitespace-nowrap"
+                    style={labelStyle}
+                  >
+                    {SC_LABELS.pcmTs}
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <select
+                      style={{ ...inputStyle, minWidth: 100 }}
+                      value={i === 0 ? e1aPcm : e1bPcm}
+                      onChange={(e) =>
+                        i === 0
+                          ? setE1aPcm(e.target.value)
+                          : setE1bPcm(e.target.value)
+                      }
+                      {...inputInteraction}
+                    >
+                      {SC_PCM_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      style={{ ...inputStyle, minWidth: 180 }}
+                      value={i === 0 ? e1aSlot : e1bSlot}
+                      onChange={(e) =>
+                        i === 0
+                          ? setE1aSlot(e.target.value)
+                          : setE1bSlot(e.target.value)
+                      }
+                      {...inputInteraction}
+                    >
+                      {SC_TS_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* E1 Two-way Recording Section */}
-      <div className="w-full max-w-5xl mx-auto mb-12">
-        {blueBar(SC_SECTIONS[2])}
-        <div
-          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
-        >
-          <div className="p-6">
-            <div className="space-y-4">
-              {[0, 1].map((i) => (
-                <div
-                  key={i}
-                  className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                    <label className="text-sm text-gray-800 w-full sm:w-80 text-left">
-                      {SC_LABELS.pcmTs}
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                      <select
-                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 bg-white w-full sm:w-24"
-                        value={i === 0 ? e1aPcm : e1bPcm}
-                        onChange={(e) =>
-                          i === 0
-                            ? setE1aPcm(e.target.value)
-                            : setE1bPcm(e.target.value)
-                        }
-                      >
-                        {SC_PCM_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 bg-white w-full sm:w-48"
-                        value={i === 0 ? e1aSlot : e1bSlot}
-                        onChange={(e) =>
-                          i === 0
-                            ? setE1aSlot(e.target.value)
-                            : setE1bSlot(e.target.value)
-                        }
-                      >
-                        {SC_TS_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex gap-3 justify-end lg:justify-start">
-                    <Button variant="contained" sx={blueButtonSx}>
-                      {SC_BUTTONS.start}
-                    </Button>
-                    <Button variant="contained" sx={blueButtonSx}>
-                      {SC_BUTTONS.stop}
-                    </Button>
-                  </div>
+                <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
+                  <Btn
+                    variant="primary"
+                    style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                  >
+                    {SC_BUTTONS.start}
+                  </Btn>
+                  <Btn
+                    variant="cancel"
+                    style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                  >
+                    {SC_BUTTONS.stop}
+                  </Btn>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* Bottom Buttons */}
-      <div className="w-full max-w-7xl flex justify-center items-center gap-6 mt-8 mb-8">
-        <Button variant="contained" sx={blueButtonSx}>
-          {SC_BUTTONS.clean}
-        </Button>
-        <Button variant="contained" sx={blueButtonSx}>
-          {SC_BUTTONS.download}
-        </Button>
+        <div className="flex justify-center items-center gap-6 mt-4 mb-12 flex-wrap">
+          <Btn
+            variant="primary"
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+          >
+            {SC_BUTTONS.clean}
+          </Btn>
+          <Btn
+            variant="cancel"
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+          >
+            {SC_BUTTONS.download}
+          </Btn>
+        </div>
       </div>
     </div>
   );

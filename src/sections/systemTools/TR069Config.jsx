@@ -5,6 +5,11 @@ import {
   BUTTON_LABELS,
   VALIDATION_MESSAGES,
 } from './constants/TR069ConfigConstants';
+import {
+  systemToolsLegacyFieldStyle as fieldStyle,
+  systemToolsLegacySelectStyle as selectStyle,
+  inputInteraction,
+} from './systemToolsSharedUi';
 
 const getInitialState = () => {
   const state = {};
@@ -224,12 +229,8 @@ function TR069Config() {
                         onChange={(e) => handleInputChange('acs_url', e.target.value)}
                         disabled={isFieldDisabled(TR069_CONFIG_FIELDS[1])}
                         style={{
-                          fontSize: '13px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #999',
-                          padding: '3px 6px',
+                          ...fieldStyle,
                           width: '200px',
-                          height: '28px',
                           imeMode: 'disabled',
                           opacity: isFieldDisabled(TR069_CONFIG_FIELDS[1]) ? 0.6 : 1,
                         }}
@@ -253,14 +254,10 @@ function TR069Config() {
                         onChange={(e) => handleSelectChange('authmode', e.target.value)}
                         disabled={isFieldDisabled(TR069_CONFIG_FIELDS[2])}
                         style={{
-                          fontSize: '13px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #999',
-                          padding: '3px 6px',
-                          width: '155px',
-                          height: '28px',
+                          ...selectStyle,
                           opacity: isFieldDisabled(TR069_CONFIG_FIELDS[2]) ? 0.6 : 1,
                         }}
+                        {...inputInteraction}
                       >
                         {TR069_CONFIG_FIELDS[2].options.map(option => (
                           <option key={option.value} value={option.value}>
@@ -290,14 +287,11 @@ function TR069Config() {
                         onChange={(e) => handleInputChange('username', e.target.value)}
                         disabled={isFieldDisabled(TR069_CONFIG_FIELDS[3])}
                         style={{
-                          fontSize: '13px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #999',
-                          padding: '3px 6px',
+                          ...fieldStyle,
                           width: '200px',
-                          height: '28px',
                           opacity: isFieldDisabled(TR069_CONFIG_FIELDS[3]) ? 0.6 : 1,
                         }}
+                      {...inputInteraction}
                       />
                     </td>
                   </tr>
@@ -321,14 +315,11 @@ function TR069Config() {
                         onChange={(e) => handleInputChange('password', e.target.value)}
                         disabled={isFieldDisabled(TR069_CONFIG_FIELDS[4])}
                         style={{
-                          fontSize: '13px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #999',
-                          padding: '3px 6px',
+                          ...fieldStyle,
                           width: '200px',
-                          height: '28px',
                           opacity: isFieldDisabled(TR069_CONFIG_FIELDS[4]) ? 0.6 : 1,
                         }}
+                      {...inputInteraction}
                       />
                     </td>
                   </tr>
@@ -352,15 +343,12 @@ function TR069Config() {
                         onKeyPress={(e) => handleKeyPress(e, 'number')}
                         disabled={isFieldDisabled(TR069_CONFIG_FIELDS[5])}
                         style={{
-                          fontSize: '13px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #999',
-                          padding: '3px 6px',
+                          ...fieldStyle,
                           width: '200px',
-                          height: '28px',
                           imeMode: 'disabled',
                           opacity: isFieldDisabled(TR069_CONFIG_FIELDS[5]) ? 0.6 : 1,
                         }}
+                      {...inputInteraction}
                       />
                     </td>
                   </tr>
@@ -418,12 +406,8 @@ function TR069Config() {
                         onKeyPress={(e) => handleKeyPress(e, 'text')}
                         disabled={isFieldDisabled(TR069_CONFIG_FIELDS[7])}
                         style={{
-                          fontSize: '13px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #999',
-                          padding: '3px 6px',
+                          ...fieldStyle,
                           width: '200px',
-                          height: '28px',
                           opacity: isFieldDisabled(TR069_CONFIG_FIELDS[7]) ? 0.6 : 1,
                         }}
                       />
@@ -450,14 +434,11 @@ function TR069Config() {
                         onKeyPress={(e) => handleKeyPress(e, 'text')}
                         disabled={isFieldDisabled(TR069_CONFIG_FIELDS[8])}
                         style={{
-                          fontSize: '13px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #999',
-                          padding: '3px 6px',
+                          ...fieldStyle,
                           width: '200px',
-                          height: '28px',
                           opacity: isFieldDisabled(TR069_CONFIG_FIELDS[8]) ? 0.6 : 1,
                         }}
+                      {...inputInteraction}
                       />
                     </td>
                   </tr>

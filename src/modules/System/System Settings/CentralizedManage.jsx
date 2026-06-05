@@ -7,8 +7,17 @@ import {
   SNMP_VERSION_OPTIONS,
 } from "../../../constants/CentralizedManageConstants";
 import { Alert, CircularProgress, Checkbox } from "@mui/material";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 import { postLinuxCmd } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
+import {
+  systemFieldInputStyle as inputStyle,
+  systemFieldSelectStyle as selectStyle,
+  inputInteraction,
+} from "../../../sections/system/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -101,31 +110,6 @@ const Btn = ({
       {children}
     </button>
   );
-};
-
-const inputStyle = {
-  width: "100%",
-  fontSize: 13,
-  padding: "6px 10px",
-  borderRadius: 10,
-  border: `1.5px solid ${C.cardBorder}`,
-  background: C.cardBg,
-  color: C.valueText,
-  outline: "none",
-  transition: "border-color 0.2s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = "#0284c7"),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 const disabledInputStyle = {
@@ -722,9 +706,16 @@ fi`;
           </div>
 
           {/* Card Body */}
-          <div className="w-full flex flex-col px-5 pt-3 pb-2">
-            <form onSubmit={handleSave} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-4 items-center w-full">
+          <div style={{ padding: "8px 32px 0" }}>
+            <form
+              id="centralized-manage-form"
+              onSubmit={handleSave}
+              className="flex flex-col"
+            >
+              <div
+                className="flex flex-col gap-4 items-center w-full"
+                style={{ marginBottom: 12 }}
+              >
                 {CENTRALIZED_MANAGE_FIELDS.map((field) => {
                   if (field.name === "monitoringPortValue") return null;
                   if (field.name === "workingStatus") return null;
@@ -842,7 +833,11 @@ fi`;
                             value={form[field.name]}
                             onChange={handleChange}
                             disabled={!isEditable}
-                            style={isEditable ? inputStyle : disabledInputStyle}
+                            style={
+                              isEditable
+                                ? selectStyle
+                                : { ...selectStyle, ...disabledInputStyle }
+                            }
                             onFocus={
                               isEditable ? inputInteraction.onFocus : undefined
                             }
@@ -902,49 +897,49 @@ fi`;
                   );
                 })}
               </div>
-
-              {/* Action Buttons Row */}
-              <div
-                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1"
-                style={{ borderTop: `1px solid ${C.divider}` }}
-              >
-                <Btn
-                  variant="primary"
-                  type="submit"
-                  disabled={isApplying}
-                  style={{ minWidth: 110, height: 34 }}
-                >
-                  {isApplying ? "Connecting…" : "Save"}
-                </Btn>
-                <Btn
-                  variant="cancel"
-                  type="button"
-                  onClick={handleReset}
-                  disabled={isApplying}
-                  style={{ minWidth: 110, height: 34 }}
-                >
-                  Reset
-                </Btn>
-                <Btn
-                  variant="primary"
-                  type="button"
-                  onClick={handleDownloadMib}
-                  disabled={isApplying}
-                  style={{ minWidth: 110, height: 34 }}
-                >
-                  {CENTRALIZED_MANAGE_BUTTONS[2].label}
-                </Btn>
-              </div>
-
-              {isApplying && (
-                <div className="flex justify-center items-center gap-3 mt-3 text-gray-700">
-                  <CircularProgress size={18} />
-                  <span style={{ fontSize: 14 }}>
-                    {applyStatus || "Applying…"}
-                  </span>
-                </div>
-              )}
             </form>
+
+            {isApplying && (
+              <div
+                className="flex justify-center items-center gap-3 mt-3"
+                style={{ color: C.valueText }}
+              >
+                <CircularProgress size={18} sx={{ color: C.accent }} />
+                <span style={{ fontSize: 14 }}>
+                  {applyStatus || "Applying…"}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div style={advancedFormInlineFooterStyle}>
+            <Btn
+              variant="primary"
+              type="submit"
+              form="centralized-manage-form"
+              disabled={isApplying}
+              style={advancedFormBtnStyle}
+            >
+              {isApplying ? "Connecting…" : "Save"}
+            </Btn>
+            <Btn
+              variant="cancel"
+              type="button"
+              onClick={handleReset}
+              disabled={isApplying}
+              style={advancedFormBtnStyle}
+            >
+              Reset
+            </Btn>
+            <Btn
+              variant="primary"
+              type="button"
+              onClick={handleDownloadMib}
+              disabled={isApplying}
+              style={advancedFormBtnStyle}
+            >
+              {CENTRALIZED_MANAGE_BUTTONS[2].label}
+            </Btn>
           </div>
         </div>
       </div>

@@ -34,13 +34,13 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
       borderRadius: 6,
-      boxShadow: "0 2px 8px #3E5475",
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -272,19 +272,20 @@ const SystemToolsSqlUpload = () => {
                   className="cursor-pointer select-none"
                   style={{
                     padding: "8px 16px",
-                    background: C.cardBg,
-                    border: `1px solid ${C.cardBorder}`,
+                    background: "#cbd5e1",
+                    border: "1px solid #cbd5e1",
                     borderRadius: 6,
-                    color: C.valueText,
+                    color: "#374151",
                     fontWeight: 600,
                     fontSize: 13,
-                    transition: "all .15s ease-in-out",
+                    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                    transition: "background 0.15s ease",
                   }}
                   onMouseOver={(e) => {
-                    e.currentTarget.style.background = "#f3f4f6";
+                    e.currentTarget.style.background = "#b6c2d3";
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.background = C.cardBg;
+                    e.currentTarget.style.background = "#cbd5e1";
                   }}
                 >
                   Choose File

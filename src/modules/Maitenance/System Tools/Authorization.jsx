@@ -10,6 +10,14 @@ import {
   fetchSystemInfo,
   postLinuxCmd,
 } from "../../../api/apiService";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
+import {
+  systemToolsFieldInputStyleSmall as inputStyle,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
@@ -141,17 +149,18 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
+const labelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+};
+
+/** Authorization read-only fields — 12px (original size) */
+const inputStyleWithAuth = {
+  ...inputStyle,
+  textAlign: "center",
+  cursor: "text",
 };
 
 const DEFAULT_DEVICE_TYPE = "IPPBX";
@@ -409,8 +418,8 @@ const Authorization = () => {
 
   const statusStyle =
     authStatus === AUTH_STATUS.AUTHORIZED
-      ? { color: "#166534", fontWeight: 600, fontSize: "14px" }
-      : { color: "#991b1b", fontWeight: 600, fontSize: "14px" };
+      ? { color: "#166534", fontWeight: 600, fontSize: "12px" }
+      : { color: "#991b1b", fontWeight: 600, fontSize: "12px" };
 
   const rows = [
     { label: "Serial Number:", value: serial, loading: loadingInfo },
@@ -484,46 +493,25 @@ const Authorization = () => {
           </div>
 
           <div
-            className="w-full flex flex-col px-5 pt-3 pb-0"
+            className="w-full px-5 pt-3 pb-0 flex flex-col items-center"
             style={{ borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
           >
-            <div className="w-full max-w-3xl mx-auto flex flex-col gap-3">
+            <div
+              className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center"
+              style={{ marginBottom: 12 }}
+            >
               {rows.map((row) => (
-                <div
-                  key={row.label}
-                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full"
-                >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: "100%",
-                      maxWidth: 280,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {row.label}
-                  </label>
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                <React.Fragment key={row.label}>
+                  <label style={labelStyle}>{row.label}</label>
+                  <div className="flex items-center gap-2 min-w-0">
                     <input
                       type="text"
                       value={row.value}
                       readOnly
                       style={{
-                        padding: "6px 12px",
-                        borderRadius: 4,
-                        border: `1px solid ${C.cardBorder}`,
-                        fontSize: 12,
-                        width: "100%",
-                        maxWidth: 320,
-                        backgroundColor: "#f8fafc",
-                        outline: "none",
+                        ...inputStyleWithAuth,
                         color: row.isStatus ? statusStyle.color : C.valueText,
                         fontWeight: row.isStatus ? 700 : 500,
-                        textAlign: "center",
-                        cursor: "text",
-                        transition: "border-color 0.2s ease",
                       }}
                       {...inputInteraction}
                     />
@@ -531,33 +519,44 @@ const Authorization = () => {
                       <CircularProgress size={16} sx={{ flexShrink: 0 }} />
                     )}
                   </div>
-                </div>
+                </React.Fragment>
               ))}
             </div>
+          </div>
 
-            {/* Action button — top border full content width */}
-            <div
-              className="flex justify-center mt-3 pt-2 pb-2"
-              style={{ borderTop: `1px solid ${C.divider}` }}
+          <div
+            style={{
+              ...advancedFormInlineFooterStyle,
+              width: "100%",
+              marginLeft: 0,
+              marginRight: 0,
+            }}
+          >
+            <Btn
+              type="button"
+              variant="primary"
+              onClick={refreshAll}
+              disabled={busy}
+              style={advancedFormBtnStyle}
             >
-              <Btn
-                type="button"
-                variant="primary"
-                onClick={refreshAll}
-                disabled={busy}
-                style={{ minWidth: 110, height: 34 }}
-              >
-                {busy ? "Loading…" : "Refresh"}
-              </Btn>
-            </div>
+              {busy ? "Loading…" : "Refresh"}
+            </Btn>
           </div>
         </div>
 
-        <div className="text-center mt-2">
-          <span style={{ color: C.errorRed, fontSize: 12, fontWeight: 500 }}>
-            Note - The information above is a summary of your license. For any
-            change, contact your vendor or authorized supplier.
-          </span>
+        <div
+          style={{
+            marginTop: 16,
+            textAlign: "center",
+            fontSize: 12,
+            color: "#dc2626",
+            width: "100%",
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+          }}
+        >
+          Note - The information above is a summary of your license. For any
+          change, contact your vendor or authorized supplier.
         </div>
       </div>
     </div>

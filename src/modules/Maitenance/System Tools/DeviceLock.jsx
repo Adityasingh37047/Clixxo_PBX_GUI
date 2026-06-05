@@ -4,6 +4,11 @@ import {
   DEVICE_LOCK_LABELS,
 } from "../../../constants/DeviceLockConstants";
 import { Alert, TextField, Checkbox } from "@mui/material";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
+import { systemToolsMuiTextFieldSx } from "../../../sections/systemTools/systemToolsSharedUi";
 
 const C = {
   pageBg: "#f8fafc",
@@ -12,7 +17,7 @@ const C = {
   divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#3E5475",
-  valueText: "#1e293b",
+  valueText: "#3e5475",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",
@@ -124,27 +129,12 @@ const labelBaseStyle = {
 };
 
 const passwordFieldSx = {
+  ...systemToolsMuiTextFieldSx,
   width: "100%",
   maxWidth: 280,
-  "& .MuiOutlinedInput-root": {
-    height: 36,
-    fontSize: 13,
-    backgroundColor: C.cardBg,
-    transition: "border-color 0.2s ease",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": { borderColor: "#64748b" },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-  "& .MuiInputBase-input": {
-    fontSize: 13,
-    color: C.valueText,
-    padding: "6px 10px",
+  margin: 0,
+  "& .MuiFormControl-root": {
+    margin: 0,
   },
 };
 
@@ -346,6 +336,7 @@ const DeviceLock = () => {
                     alignItems: "center",
                     margin: "0 auto",
                     width: "fit-content",
+                    marginBottom: 12,
                   }}
                 >
                   <label style={{ ...labelBaseStyle, textAlign: "left" }}>
@@ -376,32 +367,23 @@ const DeviceLock = () => {
               </div>
             </div>
 
-            {/* Buttons — divider inset from card left/right edges */}
-            <div
-              className="w-full mt-2 pb-4"
-              style={{ paddingLeft: 24, paddingRight: 24 }}
-            >
-              <div
-                className="flex flex-row flex-wrap justify-center gap-4 pt-2 pb-1"
-                style={{ borderTop: `1px solid ${C.divider}` }}
+            <div style={advancedFormInlineFooterStyle}>
+              <Btn
+                variant="primary"
+                onClick={handleLock}
+                type="submit"
+                style={advancedFormBtnStyle}
               >
-                <Btn
-                  variant="primary"
-                  onClick={handleLock}
-                  type="submit"
-                  style={{ minWidth: 110, height: 34, fontSize: 13 }}
-                >
-                  {DEVICE_LOCK_LABELS.lock}
-                </Btn>
-                <Btn
-                  variant="cancel"
-                  onClick={handleReset}
-                  type="button"
-                  style={{ minWidth: 110, height: 34, fontSize: 12 }}
-                >
-                  {DEVICE_LOCK_LABELS.reset}
-                </Btn>
-              </div>
+                {DEVICE_LOCK_LABELS.lock}
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleReset}
+                type="button"
+                style={advancedFormBtnStyle}
+              >
+                {DEVICE_LOCK_LABELS.reset}
+              </Btn>
             </div>
           </form>
         </div>

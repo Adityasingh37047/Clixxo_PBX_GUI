@@ -32,19 +32,18 @@ import {
   advancedPageInnerStyle,
   routeTdStyle,
   routeThExtra,
+  fxsNativeFieldInputStyle,
+  fxsNativeFieldInteraction,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const inputStyle = {
+  ...fxsNativeFieldInputStyle,
   width: "100%",
-  fontSize: 13,
+  height: "auto",
   padding: "6px 8px",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  outline: "none",
-  color: C.valueText,
-  background: "#ffffff",
-  boxSizing: "border-box",
 };
+
+const inputInteraction = fxsNativeFieldInteraction;
 
 // ── Initial State Logic ───────────────────────────────────────────────────────
 const initializePortData = () => {
@@ -228,6 +227,7 @@ const PortFxsAdvancedPage = () => {
                   handleFormChange(`period${i}Start1`, e.target.value)
                 }
                 style={{ ...inputStyle, width: 100 }}
+                {...inputInteraction}
                 maxLength={8}
                 placeholder="00:00:00"
               />
@@ -239,6 +239,7 @@ const PortFxsAdvancedPage = () => {
                   handleFormChange(`period${i}End1`, e.target.value)
                 }
                 style={{ ...inputStyle, width: 100 }}
+                {...inputInteraction}
                 maxLength={8}
                 placeholder="00:00:00"
               />
@@ -253,6 +254,7 @@ const PortFxsAdvancedPage = () => {
                   handleFormChange(`period${i}Start2`, e.target.value)
                 }
                 style={{ ...inputStyle, width: 100 }}
+                {...inputInteraction}
                 maxLength={8}
                 placeholder="00:00:00"
               />
@@ -264,6 +266,7 @@ const PortFxsAdvancedPage = () => {
                   handleFormChange(`period${i}End2`, e.target.value)
                 }
                 style={{ ...inputStyle, width: 100 }}
+                {...inputInteraction}
                 maxLength={8}
                 placeholder="00:00:00"
               />
@@ -278,6 +281,7 @@ const PortFxsAdvancedPage = () => {
                   handleFormChange(`period${i}Start3`, e.target.value)
                 }
                 style={{ ...inputStyle, width: 100 }}
+                {...inputInteraction}
                 maxLength={8}
                 placeholder="00:00:00"
               />
@@ -289,6 +293,7 @@ const PortFxsAdvancedPage = () => {
                   handleFormChange(`period${i}End3`, e.target.value)
                 }
                 style={{ ...inputStyle, width: 100 }}
+                {...inputInteraction}
                 maxLength={8}
                 placeholder="00:00:00"
               />
@@ -338,6 +343,7 @@ const PortFxsAdvancedPage = () => {
             value={batchForm.port}
             onChange={(e) => handleFormChange("port", e.target.value)}
             style={inputStyle}
+            {...inputInteraction}
           >
             {Array.from({ length: PORT_FXS_ADVANCED_TOTAL_PORTS }, (_, i) => (
               <option key={i + 1} value={String(i + 1)}>
@@ -353,6 +359,7 @@ const PortFxsAdvancedPage = () => {
             value={batchForm.type || "FXS"}
             onChange={(e) => handleFormChange("type", e.target.value)}
             style={inputStyle}
+            {...inputInteraction}
             readOnly
           />
         </FieldRow>
@@ -385,6 +392,7 @@ const PortFxsAdvancedPage = () => {
                 handleFormChange("wayOfForbidOutgoingCall", e.target.value)
               }
               style={inputStyle}
+              {...inputInteraction}
             >
               <option value="All time">All time</option>
               <option value="Select time">Select time</option>

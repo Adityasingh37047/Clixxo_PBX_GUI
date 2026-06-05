@@ -32,12 +32,31 @@ import {
   FieldRow,
   advancedModalPaperSx,
   advancedModalTitleStyle,
-  advancedModalContentStyle,
-  advancedModalFooterStyle,
-  advancedFormPanelStyle,
+  addHostModalContentStyle,
+  addHostFormPanelStyle,
+  addHostModalFooterStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const LOCAL_STORAGE_KEY = "toneDetectorRules";
+
+const TONE_DETECTER_FIELD_LABEL_WIDTH = 220;
+
+const toneDetecterTextFieldSx = {
+  ...muiTextFieldSx,
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    height: 32,
+  },
+};
+
+const toneDetecterInputProps = {
+  style: {
+    fontSize: 13,
+    height: 32,
+    padding: "0 8px",
+    boxSizing: "border-box",
+  },
+};
 
 const DATA_COLUMNS = TONE_DETECTER_TABLE_COLUMNS.filter(
   (c) => c.key !== "check" && c.key !== "modify",
@@ -658,13 +677,13 @@ const ToneDetecterPage = () => {
         <DialogTitle style={advancedModalTitleStyle}>
           {editIndex !== null ? "Edit Tone Parameters" : "Add Tone Parameters"}
         </DialogTitle>
-        <DialogContent style={advancedModalContentStyle}>
-          <div style={advancedFormPanelStyle}>
+        <DialogContent style={addHostModalContentStyle}>
+          <div style={addHostFormPanelStyle}>
             {TONE_DETECTER_FIELDS.map((field) => (
               <FieldRow
                 key={field.name}
                 label={field.label}
-                labelWidth={field.name === "duration_error" ? 220 : 180}
+                labelWidth={TONE_DETECTER_FIELD_LABEL_WIDTH}
               >
                 {field.type === "select" ? (
                   <FormControl size="small" fullWidth>
@@ -697,17 +716,15 @@ const ToneDetecterPage = () => {
                     size="small"
                     fullWidth
                     variant="outlined"
-                    sx={muiTextFieldSx}
-                    inputProps={{
-                      style: { fontSize: 13, padding: "6px 8px" },
-                    }}
+                    sx={toneDetecterTextFieldSx}
+                    inputProps={toneDetecterInputProps}
                   />
                 )}
               </FieldRow>
             ))}
           </div>
         </DialogContent>
-        <DialogActions style={advancedModalFooterStyle}>
+        <DialogActions style={addHostModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}

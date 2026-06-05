@@ -15,7 +15,7 @@ const C = {
   divider: "#9CA3AF",
   cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
   labelText: "#64748b",
-  valueText: "#1e293b",
+  valueText: "#3e5475",
   strongText: "#0f172a",
   mutedText: "#94a3b8",
   accent: "#0284c7",
@@ -40,7 +40,8 @@ const Btn = ({
       border: "1px solid #9ca3af",
     },
     primary: {
-      background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
@@ -122,8 +123,6 @@ const Btn = ({
   );
 };
 
-
-
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
@@ -163,7 +162,11 @@ const FactoryReset = () => {
   };
 
   const handleReset = async () => {
-    if (window.confirm("If you factory reset the PBX, everything will be erased. Do you want to continue?")) {
+    if (
+      window.confirm(
+        "If you factory reset the PBX, everything will be erased. Do you want to continue?",
+      )
+    ) {
       if (window.confirm("Are you absolutely sure?")) {
         await performReset();
       }
@@ -293,7 +296,6 @@ const FactoryReset = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

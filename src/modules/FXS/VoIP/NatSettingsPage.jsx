@@ -9,9 +9,11 @@ import {
   Btn,
   checkboxSx,
   AdvancedPageShell,
-  AdvancedBreadcrumb,
+  VoipBreadcrumb,
   advancedTableContainerStyle,
   advancedBlueBarStyle,
+  nativeFieldInputStyle,
+  nativeFieldSelectStyle,
   nativeFieldInteraction,
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
@@ -146,16 +148,13 @@ const NatSettingsPage = () => {
   }, {});
 
   const fieldInputStyle = {
-    height: 28,
+    ...nativeFieldInputStyle,
     width: 220,
-    padding: "0 8px",
-    fontSize: 13,
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 4,
-    outline: "none",
-    backgroundColor: "#fff",
-    color: C.valueText,
-    boxSizing: "border-box",
+  };
+
+  const fieldSelectStyle = {
+    ...nativeFieldSelectStyle,
+    width: 220,
   };
 
   const fieldLabelStyle = {
@@ -216,7 +215,7 @@ const NatSettingsPage = () => {
         <select
           value={form[field.key]}
           onChange={(e) => handleChange(field.key, e.target.value)}
-          style={fieldInputStyle}
+          style={fieldSelectStyle}
           {...nativeFieldInteraction}
         >
           {field.options.map((opt) => (
@@ -228,8 +227,7 @@ const NatSettingsPage = () => {
       );
     }
     if (field.type === "checkbox") {
-      const disabled =
-        field.key === "autoDetectNatIp" && !form.learnNat;
+      const disabled = field.key === "autoDetectNatIp" && !form.learnNat;
       return (
         <label
           style={{
@@ -285,106 +283,131 @@ const NatSettingsPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="NAT Settings" />
+      <VoipBreadcrumb current="NAT Settings" />
       <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
         <div style={advancedBlueBarStyle}>
           <span>NAT Settings</span>
         </div>
         <div style={{ padding: "24px 32px 0" }}>
-          <div className="flex flex-col gap-8 w-full">
-            {Object.entries(groupedFields).map(
-              ([sectionName, methods], sectionIdx) => (
-                <div key={sectionName} className="flex flex-col gap-4 w-full">
-                  <NatSettingsSectionHeading
-                    title={sectionName}
-                    isFirst={sectionIdx === 0}
-                  />
+          <div style={{ marginBottom: 12 }}>
+            <div className="flex flex-col gap-4 w-full">
+              {Object.entries(groupedFields).map(
+                ([sectionName, methods], sectionIdx) => (
+                  <div key={sectionName} className="flex flex-col gap-2 w-full">
+                    <NatSettingsSectionHeading
+                      title={sectionName}
+                      isFirst={sectionIdx === 0}
+                    />
 
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      width: "100%",
-                    }}
-                  >
-                    <div className="flex flex-col gap-4" style={{ width: "fit-content", maxWidth: "100%" }}>
-                  {Object.entries(methods).map(([methodName, fields]) => (
                     <div
-                      key={`${sectionName}-${methodName}`}
-                      className="flex flex-col gap-4"
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        width: "100%",
+                      }}
                     >
-                      {methodName !== "no-method" && (
-                        <div
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            paddingLeft: methodName.endsWith("-") ? 0 : 24,
-                          }}
-                        >
-                          {methodName}
-                        </div>
-                      )}
-
                       <div
-                        className="flex flex-col gap-4"
-                        style={{
-                          paddingLeft: methodName !== "no-method" ? 24 : 0,
-                        }}
+                        className="flex flex-col gap-6"
+                        style={{ width: "fit-content", maxWidth: "100%" }}
                       >
-                        {fields.map((field) => renderFieldRow(field))}
+                        {Object.entries(methods).map(([methodName, fields]) => (
+                          <div
+                            key={`${sectionName}-${methodName}`}
+                            className="flex flex-col gap-2"
+                          >
+                            {methodName !== "no-method" && (
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 600,
+                                  color: C.labelText,
+                                  paddingLeft: methodName.endsWith("-")
+                                    ? 0
+                                    : 24,
+                                }}
+                              >
+                                {methodName}
+                              </div>
+                            )}
+
+                            <div
+                              className="flex flex-col gap-2"
+                              style={{
+                                paddingLeft:
+                                  methodName !== "no-method" ? 24 : 0,
+                              }}
+                            >
+                              {fields.map((field) => renderFieldRow(field))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                    </div>
                   </div>
-                </div>
-              ),
-            )}
+                ),
+              )}
 
-            <div className="flex flex-col gap-2 w-full">
-              <NatSettingsSectionHeading title="Note:" />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  width: "100%",
-                }}
-              >
+              <div className="flex flex-col gap-0 w-full">
+                <NatSettingsSectionHeading title="Note:" />
                 <div
                   style={{
-                    width: "max-content",
-                    maxWidth: "100%",
-                    textAlign: "left",
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
                   }}
                 >
-                  {NAT_SETTINGS_NOTE.split("\n")
-                    .filter(Boolean)
-                    .map((line, index) => (
-                      <p
-                        key={index}
-                        style={{
-                          margin: 0,
-                          color: C.mutedText,
-                          fontSize: 11,
-                          lineHeight: 1.45,
-                          whiteSpace: "nowrap",
-                          textAlign: "left",
-                        }}
-                      >
-                        {line}
-                      </p>
-                    ))}
+                  <div
+                    style={{
+                      width: "max-content",
+                      maxWidth: "100%",
+                      textAlign: "left",
+                    }}
+                  >
+                    {NAT_SETTINGS_NOTE.split("\n")
+                      .filter(Boolean)
+                      .map((line, index) => (
+                        <p
+                          key={index}
+                          style={{
+                            margin: 0,
+                            color: C.mutedText,
+                            fontSize: 11,
+                            lineHeight: 1.45,
+                            whiteSpace: "nowrap",
+                            textAlign: "left",
+                          }}
+                        >
+                          {line}
+                        </p>
+                      ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div style={advancedFormInlineFooterStyle}>
-          <Btn type="button" onClick={handleSave} variant="primary" style={advancedFormBtnStyle}>
+        <div
+          style={{
+            ...advancedFormInlineFooterStyle,
+            width: "100%",
+            marginLeft: 0,
+            marginRight: 0,
+          }}
+        >
+          <Btn
+            type="button"
+            onClick={handleSave}
+            variant="primary"
+            style={advancedFormBtnStyle}
+          >
             Save
           </Btn>
-          <Btn type="button" onClick={handleReset} variant="cancel" style={advancedFormBtnStyle}>
+          <Btn
+            type="button"
+            onClick={handleReset}
+            variant="cancel"
+            style={advancedFormBtnStyle}
+          >
             Reset
           </Btn>
         </div>

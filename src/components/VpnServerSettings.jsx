@@ -13,6 +13,10 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
+import {
+  muiTextFieldSx,
+  systemToolsMuiSelectSx,
+} from "../sections/systemTools/systemToolsSharedUi";
 
 const VpnServerSettings = () => {
   const [form, setForm] = useState(VPN_SERVER_SETTINGS_INITIAL_FORM);
@@ -74,8 +78,8 @@ const VpnServerSettings = () => {
                     name="vpnType"
                     value={form.vpnType}
                     onChange={handleChange}
-                    // fullWidth
                     variant="outlined"
+                    sx={systemToolsMuiSelectSx}
                   >
                     {VPN_SERVER_SETTINGS_FIELDS.find(
                       (f) => f.name === "vpnType",
@@ -98,8 +102,8 @@ const VpnServerSettings = () => {
                     name="identityProtocol"
                     value={form.identityProtocol}
                     onChange={handleChange}
-                    // fullWidth
                     variant="outlined"
+                    sx={systemToolsMuiSelectSx}
                   >
                     {VPN_SERVER_SETTINGS_FIELDS.find(
                       (f) => f.name === "identityProtocol",
@@ -123,8 +127,8 @@ const VpnServerSettings = () => {
                   value={form.clientIpRange}
                   onChange={handleChange}
                   size="small"
-                  // fullWidth
                   variant="outlined"
+                  sx={muiTextFieldSx}
                 />
               </div>
             </div>
@@ -139,8 +143,8 @@ const VpnServerSettings = () => {
                   value={form.preferredWINS}
                   onChange={handleChange}
                   size="small"
-                  // fullWidth
                   variant="outlined"
+                  sx={muiTextFieldSx}
                 />
               </div>
             </div>
@@ -155,8 +159,8 @@ const VpnServerSettings = () => {
                   value={form.spareWINS}
                   onChange={handleChange}
                   size="small"
-                  // fullWidth
                   variant="outlined"
+                  sx={muiTextFieldSx}
                 />
               </div>
             </div>

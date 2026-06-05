@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { Alert } from "@mui/material";
 import { postTracerttest, fetchNetwork } from "../../../api/apiService";
 import {
   TRACERT_TITLE,
@@ -6,38 +7,137 @@ import {
   TRACERT_SOURCE_OPTIONS,
   TRACERT_BUTTONS,
 } from "../../../constants/TRACERTTestConstants";
-import Button from "@mui/material/Button";
+import {
+  systemToolFieldInputStyle as inputStyle,
+  systemToolFieldSelectStyle as selectStyle,
+  inputInteraction,
+} from "../../../sections/system/systemSharedUi";
 
-const blueBar = (title) => (
-  <div
-    className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-    style={{
-      background: "linear-gradient(#3E5475 100%)",
-      boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-    }}
-  >
-    {title}
-  </div>
-);
-
-const buttonSx = {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  fontWeight: 600,
-  fontSize: 16,
-  borderRadius: 1.5,
-  minWidth: 120,
-  boxShadow: "0 2px 8px #3E5475",
-  textTransform: "none",
-  px: 3,
-  py: 1.5,
-  padding: "6px 28px",
-  "&:hover": {
-    background: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-    color: "#fff",
-  },
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  errorRed: "#dc2626",
 };
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  background: C.cardBg,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  marginBottom: 24,
+};
+
+const blueBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "7px 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const labelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  width: 160,
+  flexShrink: 0,
+};
+
+const fieldWrapStyle = { width: 280 };
 
 function isValidIp(ip) {
   return /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
@@ -56,7 +156,7 @@ const TRACERTTest = () => {
   const [info, setInfo] = useState("");
   const [error, setError] = useState(false);
   const [loadind, setLoading] = useState(false);
-  const [alertMsg, setAlertMsg] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
   const intervalRef = useRef(null);
   const [sourceIpError, setSourceIpError] = useState("");
   const [destIpError, setDestIpError] = useState("");
@@ -64,12 +164,10 @@ const TRACERTTest = () => {
   const [sourceOptions, setSourceOptions] = useState([]);
   const [loadingSource, setLoadingSource] = useState(true);
 
-  useEffect(() => {
-    if (alertMsg) {
-      const timer = setTimeout(() => setAlertMsg(""), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [alertMsg]);
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
 
   useEffect(() => {
     const loadSourceOptions = async () => {
@@ -145,7 +243,10 @@ const TRACERTTest = () => {
       setJumpsError("Maximum Jumps must be between 1 and 255.");
       valid = false;
     }
-    if (!valid) return;
+    if (!valid) {
+      showToast("Please correct the errors before starting.", "error");
+      return;
+    }
     setLoading(true);
     if (!maxJumps) {
       // Interval mode: run every 2 seconds
@@ -156,24 +257,37 @@ const TRACERTTest = () => {
           intervalRef.current = setInterval(() => {
             handleTracert();
           }, 2000);
+          showToast("Continuous tracert started.", "success");
         } else {
           setLoading(false);
         }
+      } else {
+        showToast("Tracert test is already running.", "warning");
+        setLoading(false);
       }
     } else {
       // Single run mode
-      await handleTracert();
+      showToast("Tracert test started.", "info");
+      const success = await handleTracert();
       setLoading(false);
+      if (success) {
+        showToast("Tracert test completed.", "success");
+      }
     }
   };
 
   const stopTracertInterval = () => {
+    const wasRunning = !!intervalRef.current || loadind;
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
     setLoading(false);
-    setAlertMsg("Tracert stopped!");
+    if (wasRunning) {
+      showToast("Tracert stopped.", "success");
+    } else {
+      showToast("No tracert test is running.", "warning");
+    }
   };
 
   const stopTracertOnError = () => {
@@ -216,13 +330,19 @@ const TRACERTTest = () => {
             ? prev + "\n" + (Apiresponse.message || "No response data")
             : Apiresponse.message || "No response data",
         );
-        alert(Apiresponse.message || "Server error occurred");
+        showToast(
+          Apiresponse.message || "Server error occurred",
+          "error",
+        );
         stopTracertOnError();
         return false; // Failed
       }
     } catch (err) {
       console.error("Tracert API Error:", err);
-      alert("Server is not connected. Please check your connection.");
+      showToast(
+        "Server is not connected. Please check your connection.",
+        "error",
+      );
       setError(true);
       stopTracertOnError();
       return false; // Failed
@@ -231,161 +351,205 @@ const TRACERTTest = () => {
 
   return (
     <div
-      className="w-full min-h-[calc(100vh-200px)] bg-gray-50 flex flex-col items-center py-0 px-2 md:p-2"
-      style={{ backgroundColor: "#dde0e4" }}
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      style={{ backgroundColor: C.pageBg }}
     >
-      <div className="w-full max-w-4xl">
-        {blueBar(TRACERT_TITLE)}
-        <div
-          className="rounded-b-lg w-full border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
-          style={{ backgroundColor: "#dde0e4" }}
-        >
-          <div className="w-full flex flex-col overflow-hidden">
-            <div className="p-6 flex flex-col items-center">
-              {/* Form Row */}
-              <form className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-center mb-6">
-                <label className="text-[14px] text-gray-700 text-left">
-                  {TRACERT_LABELS.sourceIp}
-                </label>
-                <select
-                  className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
-                  value={sourceIp}
-                  onChange={(e) => {
-                    setSourceIp(e.target.value);
-                    setInfo("");
-                    setSourceIpError("");
-                  }}
-                  disabled={loadingSource}
-                >
-                  {loadingSource ? (
-                    <option value="">Loading...</option>
-                  ) : (
-                    sourceOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))
-                  )}
-                </select>
+      <div className="w-full" style={{ maxWidth: 1000 }}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-                <label className="text-[14px] text-gray-700 text-left">
-                  {TRACERT_LABELS.destIp}
-                </label>
-                <div className="flex flex-col w-full">
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>System</span>
+          <span>&gt;</span>
+          <span>System Settings</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {TRACERT_TITLE}
+          </span>
+        </div>
+
+        <div style={tableContainerStyle}>
+          <div style={blueBarStyle}>
+            <span>{TRACERT_TITLE}</span>
+          </div>
+
+          <div className="w-full flex flex-col px-5 pt-3 pb-2">
+            <div
+              className="flex flex-col gap-0 w-full"
+              style={{ maxWidth: 460, margin: "0 auto" }}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                <span style={labelStyle}>{TRACERT_LABELS.sourceIp}</span>
+                <div style={fieldWrapStyle}>
+                  <select
+                    style={selectStyle}
+                    value={sourceIp}
+                    onChange={(e) => {
+                      setSourceIp(e.target.value);
+                      setInfo("");
+                      setSourceIpError("");
+                    }}
+                    disabled={loadingSource}
+                    {...inputInteraction}
+                  >
+                    {loadingSource ? (
+                      <option value="">Loading...</option>
+                    ) : (
+                      sourceOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  <div style={{ minHeight: 18, marginTop: 2 }}>
+                    {sourceIpError && (
+                      <span style={{ color: C.errorRed, fontSize: 11 }}>
+                        {sourceIpError}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                <span style={labelStyle}>{TRACERT_LABELS.destIp}</span>
+                <div style={fieldWrapStyle}>
                   <input
                     type="text"
-                    className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
+                    style={inputStyle}
                     value={destIp}
                     onChange={(e) => {
                       setDestIp(e.target.value);
                       setInfo("");
                       setDestIpError("");
                     }}
+                    {...inputInteraction}
                   />
-                  <div className="min-h-[20px]">
+                  <div style={{ minHeight: 18, marginTop: 2 }}>
                     {destIpError && (
-                      <span className="text-red-600 text-sm">
+                      <span style={{ color: C.errorRed, fontSize: 11 }}>
                         {destIpError}
                       </span>
                     )}
                   </div>
                 </div>
+              </div>
 
-                <label className="text-[14px] text-gray-700 text-left">
-                  {TRACERT_LABELS.maxJumps}
-                </label>
-                <div className="flex flex-col w-full">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                <span style={labelStyle}>{TRACERT_LABELS.maxJumps}</span>
+                <div style={fieldWrapStyle}>
                   <input
                     type="number"
-                    className="border border-gray-400 rounded px-3 py-2 text-[14px] text-gray-800 bg-white min-w-[220px] max-w-[220px] h-10"
+                    style={inputStyle}
                     value={maxJumps}
                     onChange={(e) => {
                       setMaxJumps(e.target.value);
                       setInfo("");
                       setJumpsError("");
                     }}
+                    {...inputInteraction}
                   />
-                  <div className="min-h-[20px]">
+                  <div style={{ minHeight: 18, marginTop: 2 }}>
                     {jumpsError && (
-                      <span className="text-red-600 text-sm">{jumpsError}</span>
+                      <span style={{ color: C.errorRed, fontSize: 11 }}>
+                        {jumpsError}
+                      </span>
                     )}
                   </div>
                 </div>
-              </form>
-              {/* Buttons Row */}
-              <div className="w-full flex flex-row justify-center gap-8 mb-6">
-                <Button
-                  variant="contained"
-                  sx={buttonSx}
-                  onClick={startTracert}
-                  disabled={loadind}
-                >
-                  {loadind
-                    ? TRACERT_BUTTONS.loading || "Loading..."
-                    : TRACERT_BUTTONS.start || "Start"}
-                </Button>
-                <Button
-                  variant="contained"
-                  sx={buttonSx}
-                  onClick={stopTracertInterval}
-                >
-                  {TRACERT_BUTTONS.end}
-                </Button>
               </div>
-              {/* Info Section */}
-              <div className="w-full flex flex-col md:flex-row md:items-start gap-4">
-                <label className="text-[14px] text-gray-700 min-w-[80px] md:pt-2">
-                  {TRACERT_LABELS.info}
-                </label>
-                <textarea
-                  className="w-full min-h-[180px] max-h-[320px] border border-gray-400 rounded bg-white text-[12px] p-3 font-mono resize-y"
-                  value={info}
-                  onChange={(e) => setInfo(e.target.value)}
-                  placeholder=""
-                  style={{ fontSize: "12px" }}
-                />
+            </div>
+
+            <div className="w-full mt-1 flex flex-col items-center">
+              <div
+                className="w-full flex flex-col items-center"
+                style={{ maxWidth: 460, margin: "0 auto" }}
+              >
+                <div
+                  className="w-full flex flex-wrap gap-3 justify-center py-2"
+                  style={{ borderTop: `1px solid ${C.divider}` }}
+                >
+                  <Btn
+                    variant="primary"
+                    onClick={startTracert}
+                    disabled={loadind}
+                    style={{ minWidth: 100 }}
+                  >
+                    {loadind
+                      ? TRACERT_BUTTONS.loading || "Loading..."
+                      : TRACERT_BUTTONS.start || "Start"}
+                  </Btn>
+                  <Btn
+                    variant="cancel"
+                    onClick={stopTracertInterval}
+                    style={{ minWidth: 100 }}
+                  >
+                    {TRACERT_BUTTONS.end}
+                  </Btn>
+                </div>
               </div>
+              <div
+                style={{
+                  width: "100%",
+                  borderBottom: `1px solid ${C.divider}`,
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+
+            <div
+              className="flex flex-col gap-2"
+              style={{ width: "80%", margin: "8px auto 0", maxWidth: "100%" }}
+            >
+              <span style={{ ...labelStyle, width: "auto" }}>
+                {TRACERT_LABELS.info}
+              </span>
+              <textarea
+                style={{
+                  ...inputStyle,
+                  minHeight: 180,
+                  maxHeight: 320,
+                  fontSize: 12,
+                  fontFamily: "monospace",
+                  lineHeight: 1.5,
+                  resize: "vertical",
+                  whiteSpace: "pre-wrap",
+                  backgroundColor: "#f8fafc",
+                }}
+                value={info}
+                onChange={(e) => setInfo(e.target.value)}
+                {...inputInteraction}
+              />
             </div>
           </div>
         </div>
       </div>
-      {/* Bottom Alert Message (add fade-in animation to your CSS) */}
-      {alertMsg && (
-        <div className="fixed bottom-35 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="flex items-center px-6 py-3 rounded shadow-lg text-white text-lg bg-green-500 animate-fade-in-up">
-            <svg
-              className="w-6 h-6 mr-2"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            {alertMsg}
-          </div>
-        </div>
-      )}
-      {/*
-      Add this to your global CSS (e.g., index.css):
-      @keyframes fade-in-up {
-        from {
-          opacity: 0;
-          transform: translateY(40px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .animate-fade-in-up {
-        animation: fade-in-up 0.4s cubic-bezier(0.4,0,0.2,1);
-      }
-      */}
+
     </div>
   );
 };

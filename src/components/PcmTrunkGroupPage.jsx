@@ -26,6 +26,11 @@ import {
   listIpPstnRoutes,
   listNumberManipulations,
 } from "../api/apiService";
+import {
+  addHostFormPanelStyle,
+  modalSelectSx,
+  modalTextFieldSx,
+} from "../sections/advanced/advancedSharedUi";
 
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
@@ -1243,17 +1248,7 @@ const PcmTrunkGroupPage = () => {
             : "Add PCM Trunk Group"}
         </DialogTitle>
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+          <div style={addHostFormPanelStyle}>
             {PCM_TRUNK_GROUP_FIELDS.map((field) => (
               <div
                 key={field.name}
@@ -1294,22 +1289,7 @@ const PcmTrunkGroupPage = () => {
                           style: { maxHeight: 240, width: "auto" },
                         },
                       }}
-                      sx={{
-                        fontSize: 13,
-                        height: 32,
-                        backgroundColor: "#fff",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.cardBorder,
-                          transition: "border-color 0.2s ease",
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#64748b",
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#0284c7",
-                          borderWidth: 1,
-                        },
-                      }}
+                      sx={modalSelectSx}
                     >
                       {field.options.map((option) => (
                         <MenuItem
@@ -1335,25 +1315,7 @@ const PcmTrunkGroupPage = () => {
                       fullWidth
                       variant="outlined"
                       placeholder={field.placeholder || ""}
-                      sx={{
-                        fontSize: 13,
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "#fff",
-                        },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: C.cardBorder,
-                          transition: "border-color 0.2s ease",
-                        },
-                        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-                          {
-                            borderColor: "#64748b",
-                          },
-                        "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                          {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                      }}
+                      sx={{ fontSize: 13, ...modalTextFieldSx }}
                       inputProps={{
                         style: {
                           fontSize: 13,
@@ -1374,7 +1336,7 @@ const PcmTrunkGroupPage = () => {
                 display: "flex",
                 flexDirection: "column",
                 background: "#ffffff",
-                border: "1px solid #cbd5e1",
+                border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: "12px",
                 gap: 8,
@@ -1532,7 +1494,7 @@ const PcmTrunkGroupPage = () => {
                   gap: 8,
                   marginTop: 8,
                   padding: "8px 0 0 0",
-                  borderTop: "1px dashed #e2e8f0",
+                  borderTop: `1px dashed ${C.cardBorder}`,
                 }}
               >
                 {isLoadingSpans ? (
@@ -1560,7 +1522,7 @@ const PcmTrunkGroupPage = () => {
                           alignItems: "center",
                           background: isChecked ? "#f0f9ff" : "#ffffff",
                           border: `1px solid ${
-                            isChecked ? "#0284c7" : "#cbd5e1"
+                            isChecked ? "#0284c7" : C.cardBorder
                           }`,
                           borderRadius: 6,
                           padding: "2px 8px",
@@ -1618,7 +1580,7 @@ const PcmTrunkGroupPage = () => {
             gap: 16,
             padding: "16px 24px",
             background: "#f8fafc",
-            borderTop: "1px solid #e2e8f0",
+            borderTop: `1px solid ${C.cardBorder}`,
             borderBottomLeftRadius: 8,
             borderBottomRightRadius: 8,
           }}

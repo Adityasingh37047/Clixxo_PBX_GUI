@@ -21,6 +21,10 @@ import {
   LICENSE_DEVICE_TYPE_OPTIONS,
   LICENSE_DEVICE_TYPE_VALUES,
 } from "../../../constants/LicenceConstants";
+import {
+  systemToolsFieldInputStyleWhite as inputStyle,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 const LICENCE_DEVICE_TYPE_STORAGE_KEY = "clixxo_licence_device_type";
 
@@ -133,44 +137,6 @@ const tableContainerStyle = {
   boxShadow: C.cardShadow,
   overflow: "hidden",
   marginBottom: 24,
-};
-
-const inputStyle = {
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: "6px 12px",
-  fontSize: 14,
-  color: C.valueText,
-  background: C.cardBg,
-  outline: "none",
-  transition: "border-color 0.15s ease",
-};
-
-const inputInteraction = {
-  onFocus: (e) => {
-    if (!e.target.disabled && !e.target.readOnly)
-      e.target.style.borderColor = "#0284c7";
-  },
-  onBlur: (e) => {
-    if (!e.target.disabled && !e.target.readOnly)
-      e.target.style.borderColor = C.cardBorder;
-  },
-  onMouseEnter: (e) => {
-    if (
-      !e.target.disabled &&
-      !e.target.readOnly &&
-      document.activeElement !== e.target
-    )
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (
-      !e.target.disabled &&
-      !e.target.readOnly &&
-      document.activeElement !== e.target
-    )
-      e.target.style.borderColor = C.cardBorder;
-  },
 };
 
 const blueBarStyle = {
@@ -513,7 +479,7 @@ const Licence = () => {
                     <div className="flex flex-wrap items-center gap-3">
                       {getStatusDisplay(licenseData.status)}
                       <Btn
-                        variant="default"
+                        variant="cancel"
                         startIcon={
                           loading.validity ? (
                             <CircularProgress size={16} color="inherit" />
@@ -614,7 +580,7 @@ const Licence = () => {
                   <label htmlFor="license-file-input">
                     <Btn
                       component="span"
-                      variant="default"
+                      variant="cancel"
                       startIcon={<UploadIcon style={{ fontSize: 18 }} />}
                       style={{ minWidth: 100, height: 34, fontSize: 13 }}
                     >

@@ -1,20 +1,33 @@
 import React, { useState } from "react";
 import { Alert, Checkbox } from "@mui/material";
+import { MEDIA_PARAMETERS_NOTE } from "../../../sections/voip/constants/MediaParametersConstants";
 import {
   C,
   Btn,
   checkboxSx,
   AdvancedPageShell,
-  AdvancedBreadcrumb,
+  VoipBreadcrumb,
   advancedTableContainerStyle,
   advancedBlueBarStyle,
   nativeFieldInteraction,
   nativeFieldInputStyle,
+  nativeFieldSelectStyle,
+  getFxsNativeFieldInteraction,
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const CODEC_PRIORITY_HEADING_COLOR = "#30415A";
+
+/** Matches IDS Settings column headers (Type, Warning Threshold, …) */
+const codecTableHeaderCellStyle = {
+  fontSize: 12,
+  fontWeight: 700,
+  color: C.labelText,
+  textAlign: "center",
+  padding: "8px 8px 12px",
+  boxSizing: "border-box",
+};
 
 const CodecPrioritySectionHeading = ({ title }) => (
   <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
@@ -332,11 +345,16 @@ const FxsVoipMediaPage = () => {
     width: 220,
   };
 
+  const fieldSelectStyle = {
+    ...nativeFieldSelectStyle,
+    width: 220,
+  };
+
   const getFieldInteraction = (disabled = false) =>
-    disabled ? {} : nativeFieldInteraction;
+    getFxsNativeFieldInteraction(disabled);
 
   const codecSelectStyle = (enabled, width) => ({
-    ...nativeFieldInputStyle,
+    ...nativeFieldSelectStyle,
     width,
     backgroundColor: enabled ? "#ffffff" : "#e5e7eb",
     cursor: enabled ? "pointer" : "not-allowed",
@@ -441,204 +459,222 @@ const FxsVoipMediaPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="Media Parameters" />
+      <VoipBreadcrumb current="Media Parameters" />
       <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
         <div style={advancedBlueBarStyle}>
           <span>Media Parameters</span>
         </div>
         <div style={{ padding: "24px 32px 0" }}>
-          <div
-            className="flex flex-col gap-3"
-            style={{
-              width: "100%",
-              maxWidth: 640,
-              margin: "0 auto",
-            }}
-          >
-            {mediaParameterRows.map((row) => (
-              <div key={row.name} className="flex flex-row items-start w-full">
-                <label style={labelColStyle}>{row.label}</label>
-                <div style={valueColStyle}>
-                  <div style={controlSlotStyle}>
-                    {row.type === "select" ? (
-                      <select
-                        name={row.name}
-                        value={formData[row.name]}
-                        onChange={handleInputChange}
-                        style={fieldStyle}
-                        {...nativeFieldInteraction}
-                      >
-                        {row.options.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        name={row.name}
-                        value={formData[row.name]}
-                        onChange={handleInputChange}
-                        onKeyPress={(e) =>
-                          handleKeyPress(e, row.keyPress || "number")
-                        }
-                        style={fieldStyle}
-                        {...nativeFieldInteraction}
-                        maxLength="31"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* CODEC Priority Table */}
-          <div style={{ width: "100%", marginTop: 16 }}>
-            <CodecPrioritySectionHeading title="CODEC Priority" />
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <table
-                style={{
-                  tableLayout: "fixed",
-                  width: "100%",
-                  maxWidth: 860,
-                  fontSize: 13,
-                }}
-              >
-                <colgroup>
-                  <col style={{ width: "12%" }} />
-                  <col style={{ width: "17%" }} />
-                  <col style={{ width: "17%" }} />
-                  <col style={{ width: "24%" }} />
-                  <col style={{ width: "24%" }} />
-                </colgroup>
-                <tbody>
-                  <tr
-                    style={{
-                      textAlign: "center",
-                      color: C.labelText,
-                      fontWeight: 600,
-                    }}
-                  >
-                    <td>Check</td>
-                    <td>Priority</td>
-                    <td>CODEC</td>
-                    <td>Packing Time</td>
-                    <td>Bit Rate (kbs)</td>
-                  </tr>
-                  {codecData.map((item, index) => (
-                    <tr
-                      key={index}
-                      style={{ textAlign: "center", color: C.valueText }}
-                    >
-                      <td>
-                        <Checkbox
-                          size="small"
-                          checked={item.enabled}
-                          onChange={() => handleCodecCheckbox(index)}
-                          sx={checkboxSx}
-                        />
-                      </td>
-                      <td>{index + 1}</td>
-                      <td>
+          <div style={{ marginBottom: 12 }}>
+            <div
+              className="flex flex-col gap-3"
+              style={{
+                width: "100%",
+                maxWidth: 640,
+                margin: "0 auto",
+              }}
+            >
+              {mediaParameterRows.map((row) => (
+                <div
+                  key={row.name}
+                  className="flex flex-row items-start w-full"
+                >
+                  <label style={labelColStyle}>{row.label}</label>
+                  <div style={valueColStyle}>
+                    <div style={controlSlotStyle}>
+                      {row.type === "select" ? (
                         <select
-                          value={item.codec}
-                          onChange={(e) =>
-                            handleCodecChange(index, e.target.value)
-                          }
-                          disabled={!item.enabled}
-                          style={codecSelectStyle(item.enabled, 120)}
-                          {...getFieldInteraction(!item.enabled)}
+                          name={row.name}
+                          value={formData[row.name]}
+                          onChange={handleInputChange}
+                          style={fieldSelectStyle}
+                          {...nativeFieldInteraction}
                         >
-                          <option value="6">G711A</option>
-                          <option value="7">G711U</option>
-                          <option value="131">G729</option>
-                          <option value="98">iLBC</option>
-                          <option value="96">AMR</option>
-                          <option value="4">G723</option>
-                        </select>
-                      </td>
-                      <td>
-                        <select
-                          value={item.packingTime}
-                          onChange={(e) =>
-                            handlePackingTimeChange(index, e.target.value)
-                          }
-                          disabled={!item.enabled}
-                          style={codecSelectStyle(item.enabled, 80)}
-                          {...getFieldInteraction(!item.enabled)}
-                        >
-                          {getPackingTimeOptions(item.codec).map((opt) => (
-                            <option key={opt} value={opt}>
-                              {opt}
+                          {row.options.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
                             </option>
                           ))}
                         </select>
-                      </td>
-                      <td>
-                        <select
-                          value={item.bitRate}
-                          onChange={(e) =>
-                            handleBitRateChange(index, e.target.value)
+                      ) : (
+                        <input
+                          type="text"
+                          name={row.name}
+                          value={formData[row.name]}
+                          onChange={handleInputChange}
+                          onKeyPress={(e) =>
+                            handleKeyPress(e, row.keyPress || "number")
                           }
-                          disabled={!item.enabled}
-                          style={codecSelectStyle(item.enabled, 80)}
-                          {...getFieldInteraction(!item.enabled)}
-                        >
-                          {getBitRateOptions(item.codec, item.packingTime).map(
-                            (opt) => (
+                          style={fieldStyle}
+                          {...nativeFieldInteraction}
+                          maxLength="31"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CODEC Priority Table */}
+            <div style={{ width: "100%", marginTop: 16 }}>
+              <CodecPrioritySectionHeading title="CODEC Priority" />
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <table
+                  style={{
+                    tableLayout: "fixed",
+                    width: "100%",
+                    maxWidth: 860,
+                    fontSize: 13,
+                  }}
+                >
+                  <colgroup>
+                    <col style={{ width: "12%" }} />
+                    <col style={{ width: "17%" }} />
+                    <col style={{ width: "17%" }} />
+                    <col style={{ width: "24%" }} />
+                    <col style={{ width: "24%" }} />
+                  </colgroup>
+                  <tbody>
+                    <tr>
+                      <td style={codecTableHeaderCellStyle}>Check</td>
+                      <td style={codecTableHeaderCellStyle}>Priority</td>
+                      <td style={codecTableHeaderCellStyle}>CODEC</td>
+                      <td style={codecTableHeaderCellStyle}>Packing Time</td>
+                      <td style={codecTableHeaderCellStyle}>Bit Rate (kbs)</td>
+                    </tr>
+                    {codecData.map((item, index) => (
+                      <tr
+                        key={index}
+                        style={{ textAlign: "center", color: C.valueText }}
+                      >
+                        <td>
+                          <Checkbox
+                            size="small"
+                            checked={item.enabled}
+                            onChange={() => handleCodecCheckbox(index)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td>{index + 1}</td>
+                        <td>
+                          <select
+                            value={item.codec}
+                            onChange={(e) =>
+                              handleCodecChange(index, e.target.value)
+                            }
+                            disabled={!item.enabled}
+                            style={codecSelectStyle(item.enabled, 120)}
+                            {...getFieldInteraction(!item.enabled)}
+                          >
+                            <option value="6">G711A</option>
+                            <option value="7">G711U</option>
+                            <option value="131">G729</option>
+                            <option value="98">iLBC</option>
+                            <option value="96">AMR</option>
+                            <option value="4">G723</option>
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            value={item.packingTime}
+                            onChange={(e) =>
+                              handlePackingTimeChange(index, e.target.value)
+                            }
+                            disabled={!item.enabled}
+                            style={codecSelectStyle(item.enabled, 80)}
+                            {...getFieldInteraction(!item.enabled)}
+                          >
+                            {getPackingTimeOptions(item.codec).map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            value={item.bitRate}
+                            onChange={(e) =>
+                              handleBitRateChange(index, e.target.value)
+                            }
+                            disabled={!item.enabled}
+                            style={codecSelectStyle(item.enabled, 80)}
+                            {...getFieldInteraction(!item.enabled)}
+                          >
+                            {getBitRateOptions(
+                              item.codec,
+                              item.packingTime,
+                            ).map((opt) => (
                               <option key={opt.value} value={opt.value}>
                                 {opt.label}
                               </option>
-                            ),
-                          )}
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr style={{ height: 10 }} />
-                  <tr>
-                    <td
-                      colSpan="5"
-                      style={{ color: C.mutedText, fontSize: 11 }}
-                    >
-                      Note: At present, the maximum number of concurrent
-                      sessions supported by G723 encoding is 9. When the
-                      concurrent sessions are more than 9, the encoding of the
-                      next priority will be automatically used (it is
-                      recommended to configure G711A/U as the encoding of the
-                      next priority).
-                    </td>
-                  </tr>
-                  <tr>
-                    <td
-                      colSpan="5"
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-0 w-full">
+              <CodecPrioritySectionHeading title="Note:" />
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: 860,
+                  margin: "0 auto",
+                  padding: "0 8px",
+                  boxSizing: "border-box",
+                }}
+              >
+                {MEDIA_PARAMETERS_NOTE.split("\n")
+                  .filter(Boolean)
+                  .map((line, index) => (
+                    <p
+                      key={index}
                       style={{
+                        margin: 0,
                         color: C.mutedText,
                         fontSize: 11,
-                        paddingTop: 4,
+                        lineHeight: 1.45,
+                        whiteSpace: "normal",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word",
+                        textAlign: "left",
                       }}
                     >
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The
-                      maximum number of concurrent sessions supported by
-                      AMR/iLBC encoding is 15. When the concurrent sessions are
-                      more than 15, the encoding of the next priority will be
-                      automatically used (it is recommended to configure G711A/U
-                      as the encoding of the next priority).
-                    </td>
-                  </tr>
-                  <tr style={{ height: 12 }} />
-                </tbody>
-              </table>
+                      {line}
+                    </p>
+                  ))}
+              </div>
             </div>
           </div>
         </div>
-        <div style={advancedFormInlineFooterStyle}>
-          <Btn type="button" onClick={handleSave} variant="primary" style={advancedFormBtnStyle}>
+        <div
+          style={{
+            ...advancedFormInlineFooterStyle,
+            width: "100%",
+            marginLeft: 0,
+            marginRight: 0,
+          }}
+        >
+          <Btn
+            type="button"
+            onClick={handleSave}
+            variant="primary"
+            style={advancedFormBtnStyle}
+          >
             Save
           </Btn>
-          <Btn type="button" onClick={handleReset} variant="cancel" style={advancedFormBtnStyle}>
+          <Btn
+            type="button"
+            onClick={handleReset}
+            variant="cancel"
+            style={advancedFormBtnStyle}
+          >
             Reset
           </Btn>
         </div>

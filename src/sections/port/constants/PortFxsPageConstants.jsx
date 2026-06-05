@@ -367,6 +367,12 @@ export const PORT_FXS_MODIFY_FIELDS = PORT_FXS_BATCH_MODIFY_FIELDS.filter(
 export const PORT_FXS_BATCH_MODIFY_NOTE =
   "Note: 'Auto Dial Number' goes into effect only if no dialing occurs during 'Wait Time before Auto Dial'.";
 
+// Full dialog/page width for FXS-Modify and FXS-Batch Modify
+export const PORT_FXS_MODIFY_DIALOG_WIDTH = 610;
+
+// Form/card area (internal width only)
+export const PORT_FXS_MODIFY_FORM_WIDTH = 600;
+
 // Page Title
 export const PORT_FXS_PAGE_TITLE = "FXS Settings";
 

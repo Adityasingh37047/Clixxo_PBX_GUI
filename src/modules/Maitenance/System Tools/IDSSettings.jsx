@@ -6,6 +6,15 @@ import {
   IDS_LOG_NOTE,
 } from "../../../constants/IDSSettingsConstants";
 import { Alert, Checkbox } from "@mui/material";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
+import {
+  systemToolsFieldInputStyle,
+  systemToolsFieldInputStyleCompact,
+  inputInteraction,
+} from "../../../sections/systemTools/systemToolsSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
@@ -137,19 +146,6 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 
-const inputInteraction = {
-  onFocus: (e) => (e.target.style.borderColor = C.accent),
-  onBlur: (e) => (e.target.style.borderColor = C.cardBorder),
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
-};
-
 const IDSSettings = () => {
   const [form, setForm] = useState(IDS_INITIAL_FORM);
   const [log, setLog] = useState(IDS_WARNING_LOG);
@@ -242,8 +238,12 @@ const IDSSettings = () => {
             <span>IDS Settings</span>
           </div>
 
-          <form onSubmit={handleSave} className="w-full px-5 pt-3 pb-0">
-            <div className="w-full max-w-4xl mx-auto">
+          <form onSubmit={handleSave} className="w-full">
+            <div className="w-full px-5 pt-3 pb-0">
+            <div
+              className="w-full max-w-4xl mx-auto"
+              style={{ marginBottom: 12 }}
+            >
               {/* Enable Checkbox */}
               <div
                 className="flex items-center gap-4 mb-3"
@@ -280,19 +280,19 @@ const IDSSettings = () => {
               </div>
 
               {/* Table Header - Hidden on mobile, shown on larger screens */}
-              <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-2 items-center w-full mb-3 px-2 py-2 rounded bg-slate-50">
+              <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-2 items-center w-full mb-3 px-2 py-2 rounded">
                 <span
-                  style={{ fontSize: 12, fontWeight: 700, color: C.strongText }}
+                  style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
                 >
                   Type
                 </span>
                 <span
-                  style={{ fontSize: 12, fontWeight: 700, color: C.strongText }}
+                  style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
                 >
                   Warning Threshold (per 10 seconds)
                 </span>
                 <span
-                  style={{ fontSize: 12, fontWeight: 700, color: C.strongText }}
+                  style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
                 >
                   Blacklist Threshold (per 10 seconds)
                 </span>
@@ -331,16 +331,8 @@ const IDSSettings = () => {
                           handleWarningThreshold(idx, Number(e.target.value))
                         }
                         style={{
-                          padding: "4px 10px",
-                          borderRadius: 6,
-                          border: `1px solid ${C.cardBorder}`,
-                          fontSize: 14,
-                          width: "100%",
+                          ...systemToolsFieldInputStyleCompact,
                           maxWidth: 140,
-                          backgroundColor: "#f8fafc",
-                          outline: "none",
-                          color: C.valueText,
-                          transition: "border-color 0.2s ease",
                         }}
                         {...inputInteraction}
                       />
@@ -353,16 +345,8 @@ const IDSSettings = () => {
                           handleBlacklistThreshold(idx, Number(e.target.value))
                         }
                         style={{
-                          padding: "4px 10px",
-                          borderRadius: 6,
-                          border: `1px solid ${C.cardBorder}`,
-                          fontSize: 14,
-                          width: "100%",
+                          ...systemToolsFieldInputStyleCompact,
                           maxWidth: 140,
-                          backgroundColor: "#f8fafc",
-                          outline: "none",
-                          color: C.valueText,
-                          transition: "border-color 0.2s ease",
                         }}
                         {...inputInteraction}
                       />
@@ -421,15 +405,7 @@ const IDSSettings = () => {
                             handleWarningThreshold(idx, Number(e.target.value))
                           }
                           style={{
-                            padding: "4px 10px",
-                            borderRadius: 6,
-                            border: `1px solid ${C.cardBorder}`,
-                            fontSize: 14,
-                            width: "100%",
-                            backgroundColor: "#fff",
-                            outline: "none",
-                            color: C.valueText,
-                            transition: "border-color 0.2s ease",
+                            ...systemToolsFieldInputStyleCompact,
                           }}
                           {...inputInteraction}
                         />
@@ -454,15 +430,7 @@ const IDSSettings = () => {
                             )
                           }
                           style={{
-                            padding: "4px 10px",
-                            borderRadius: 6,
-                            border: `1px solid ${C.cardBorder}`,
-                            fontSize: 14,
-                            width: "100%",
-                            backgroundColor: "#fff",
-                            outline: "none",
-                            color: C.valueText,
-                            transition: "border-color 0.2s ease",
+                            ...systemToolsFieldInputStyleCompact,
                           }}
                           {...inputInteraction}
                         />
@@ -492,42 +460,34 @@ const IDSSettings = () => {
                   value={form.blacklistValidity}
                   onChange={(e) => handleValidity(Number(e.target.value))}
                   style={{
-                    padding: "6px 12px",
-                    borderRadius: 6,
-                    border: `1px solid ${C.cardBorder}`,
-                    fontSize: 14,
-                    width: "100%",
+                    ...systemToolsFieldInputStyle,
                     maxWidth: 180,
-                    backgroundColor: "#f8fafc",
-                    outline: "none",
-                    color: C.valueText,
-                    transition: "border-color 0.2s ease",
                   }}
                   {...inputInteraction}
                 />
               </div>
+            </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div
-                className="flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-2 mb-0"
-                style={{ borderTop: `1px solid ${C.divider}` }}
+            <div
+              style={{
+                ...advancedFormInlineFooterStyle,
+                width: "100%",
+                marginLeft: 0,
+                marginRight: 0,
+              }}
+            >
+              <Btn
+                type="button"
+                variant="cancel"
+                onClick={handleReset}
+                style={advancedFormBtnStyle}
               >
-                <Btn
-                  type="button"
-                  variant="cancel"
-                  onClick={handleReset}
-                  style={{ minWidth: 110, height: 34 }}
-                >
-                  Reset
-                </Btn>
-                <Btn
-                  type="submit"
-                  variant="primary"
-                  style={{ minWidth: 110, height: 34 }}
-                >
-                  Save
-                </Btn>
-              </div>
+                Reset
+              </Btn>
+              <Btn type="submit" variant="primary" style={advancedFormBtnStyle}>
+                Save
+              </Btn>
             </div>
           </form>
         </div>
@@ -576,11 +536,14 @@ const IDSSettings = () => {
 
         {/* Note */}
         <p
-          className="text-center m-0 mt-2"
           style={{
-            color: C.errorRed,
+            margin: "16px 0 0",
+            textAlign: "center",
             fontSize: 12,
-            fontWeight: 500,
+            color: "#dc2626",
+            width: "100%",
+            whiteSpace: "nowrap",
+            overflowX: "auto",
             lineHeight: 1.45,
           }}
         >

@@ -8,18 +8,18 @@ import {
   IconButton,
   InputAdornment,
   TextField,
-  Paper,
-  Typography,
   Alert,
 } from "@mui/material";
-
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
+import { getUserPermissionMuiTextFieldSx } from "../../../sections/userPermission/userPermissionSharedUi";
 import {
   CHANGE_PASSWORD_FIELDS,
   CHANGE_PASSWORD_INITIAL_FORM,
-  CHANGE_PASSWORD_BUTTONS,
   CHANGE_PASSWORD_NOTE,
 } from "../../../constants/ChangePasswordConstants";
-import Button from "@mui/material/Button";
 
 const C = {
   pageBg: "#f8fafc",
@@ -131,18 +131,28 @@ const tableContainerStyle = {
 
 const blueBarStyle = {
   width: "100%",
-  height: 44,
+  minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
+  marginBottom: 0,
   display: "flex",
   alignItems: "center",
-  justifyContent: "space-between",
+  justifyContent: "flex-start",
   padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
   fontWeight: 700,
   fontSize: 13,
+  color: "#3E5475",
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const labelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  textAlign: "left",
 };
 
 const ChangePassword = () => {
@@ -323,35 +333,24 @@ const ChangePassword = () => {
           </Alert>
         )}
 
-        <div style={tableContainerStyle}>
-          {/* Header */}
-          <div style={blueBarStyle}>Change Password</div>
+        <div style={{ ...tableContainerStyle, marginBottom: 12 }}>
+          <div style={blueBarStyle}>
+            <span>Change Password</span>
+          </div>
 
-          <div className="w-full px-5 pt-3 pb-2">
-            <form onSubmit={handleSave} className="w-full">
-              <div className="space-y-4 w-full max-w-[500px] mx-auto">
+          <form onSubmit={handleSave} className="w-full">
+            <div
+              className="w-full px-5 pt-3 pb-0 flex flex-col items-center"
+              style={{ borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
+            >
+              <div
+                className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center"
+                style={{ marginBottom: 12 }}
+              >
                 {CHANGE_PASSWORD_FIELDS.map((field) => (
-                  <div
-                    key={field.name}
-                    className="flex items-center"
-                    style={{ flexWrap: "wrap" }}
-                  >
-                    <label
-                      style={{
-                        width: "auto",
-                        minWidth: 130,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        textAlign: "left",
-                        marginRight: 10,
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {field.label}:
-                    </label>
-                    <div className="flex-1 flex flex-col">
+                  <React.Fragment key={field.name}>
+                    <label style={labelStyle}>{field.label}:</label>
+                    <div className="flex flex-col min-w-0 w-full">
                       {field.type === "password" ? (
                         <TextField
                           name={field.name}
@@ -362,38 +361,10 @@ const ChangePassword = () => {
                           autoComplete="off"
                           variant="outlined"
                           size="small"
-                          sx={{
-                            width: "100%",
-                            "& .MuiOutlinedInput-root": {
-                              height: 36,
-                              fontSize: 13,
-                              backgroundColor: C.cardBg,
-                              transition: "border-color 0.2s ease",
-                              "& fieldset": {
-                                borderColor: fieldErrors[field.name]
-                                  ? C.errorRed
-                                  : C.cardBorder,
-                                transition: "border-color 0.2s ease",
-                              },
-                              "&:hover fieldset": {
-                                borderColor: fieldErrors[field.name]
-                                  ? C.errorRed
-                                  : "#64748b",
-                              },
-                              "&.Mui-focused fieldset": {
-                                borderColor: fieldErrors[field.name]
-                                  ? C.errorRed
-                                  : "#0284c7",
-                                borderWidth: 1,
-                              },
-                            },
-                            "& .MuiInputBase-input": {
-                              fontSize: 13,
-                              color: C.valueText,
-                              padding: "6px 10px",
-                              textAlign: "center",
-                            },
-                          }}
+                          sx={getUserPermissionMuiTextFieldSx({
+                            hasError: !!fieldErrors[field.name],
+                            disabled: loading,
+                          })}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment
@@ -441,110 +412,64 @@ const ChangePassword = () => {
                           autoComplete="off"
                           variant="outlined"
                           size="small"
-                          sx={{
-                            width: "100%",
-                            "& .MuiOutlinedInput-root": {
-                              height: 36,
-                              fontSize: 13,
-                              backgroundColor:
-                                field.name === "username" || loading
-                                  ? "#f1f5f9"
-                                  : C.cardBg,
-                              transition: "border-color 0.2s ease",
-                              "& fieldset": {
-                                borderColor: fieldErrors[field.name]
-                                  ? C.errorRed
-                                  : C.cardBorder,
-                                transition: "border-color 0.2s ease",
-                              },
-                              "&:hover fieldset": {
-                                borderColor:
-                                  field.name === "username" || loading
-                                    ? C.cardBorder
-                                    : fieldErrors[field.name]
-                                      ? C.errorRed
-                                      : "#64748b",
-                              },
-                              "&.Mui-focused fieldset": {
-                                borderColor: fieldErrors[field.name]
-                                  ? C.errorRed
-                                  : "#0284c7",
-                                borderWidth: 1,
-                              },
-                              "&.Mui-disabled": {
-                                cursor: "not-allowed",
-                              },
-                              "&.Mui-disabled fieldset": {
-                                borderColor: C.cardBorder,
-                              },
-                            },
-                            "& .MuiInputBase-input": {
-                              fontSize: 13,
-                              color: C.valueText,
-                              padding: "6px 10px",
-                              textAlign: "center",
-                            },
-                            "& .MuiInputBase-input.Mui-disabled": {
-                              color: "#94a3b8",
-                              WebkitTextFillColor: "#94a3b8",
-                            },
-                          }}
+                          sx={getUserPermissionMuiTextFieldSx({
+                            hasError: !!fieldErrors[field.name],
+                            disabled: loading || field.name === "username",
+                            readOnlyLook: field.name === "username",
+                          })}
                         />
                       )}
                       {fieldErrors[field.name] && (
                         <div
                           style={{
                             color: C.errorRed,
-                            fontSize: "12px",
-                            marginTop: "4px",
-                            marginLeft: "4px",
+                            fontSize: 12,
+                            marginTop: 4,
                           }}
                         >
                           {fieldErrors[field.name]}
                         </div>
                       )}
                     </div>
-                  </div>
+                  </React.Fragment>
                 ))}
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div
-                className="w-full flex flex-row flex-wrap justify-center gap-3 mt-3 pt-2 pb-1 mb-0"
-                style={{ borderTop: `1px solid ${C.divider}` }}
+            <div
+              style={{
+                ...advancedFormInlineFooterStyle,
+                width: "100%",
+                marginLeft: 0,
+                marginRight: 0,
+              }}
+            >
+              <Btn
+                variant="primary"
+                disabled={loading}
+                type="submit"
+                style={advancedFormBtnStyle}
               >
-                <Btn
-                  variant="primary"
-                  onClick={handleSave}
-                  disabled={loading}
-                  type="submit"
-                  style={{
-                    minWidth: 110,
-                    height: 34,
-                    fontSize: 13,
-                    letterSpacing: "0.2px",
-                  }}
-                >
-                  {loading ? "Changing Password..." : "Save"}
-                </Btn>
-              </div>
-            </form>
-          </div>
+                {loading ? "Changing Password..." : "Save"}
+              </Btn>
+            </div>
+          </form>
         </div>
 
-        {/* Red note text in background */}
-        <div className="w-full text-center mt-2">
-          <Typography
-            variant="body2"
-            sx={{
-              color: C.errorRed,
-              fontSize: "14px",
-              fontWeight: 500,
-            }}
-          >
-            {CHANGE_PASSWORD_NOTE}
-          </Typography>
-        </div>
+        <p
+          style={{
+            margin: "16px 0 0",
+            textAlign: "center",
+            fontSize: 12,
+            color: "#dc2626",
+            width: "100%",
+            whiteSpace: "nowrap",
+            overflowX: "auto",
+            lineHeight: 1.45,
+          }}
+        >
+          {CHANGE_PASSWORD_NOTE}
+        </p>
       </div>
     </div>
   );

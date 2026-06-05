@@ -32,9 +32,9 @@ import {
   FieldRow,
   advancedModalPaperSx,
   advancedModalTitleStyle,
-  advancedModalContentStyle,
-  advancedModalFooterStyle,
-  advancedFormPanelStyle,
+  addHostModalContentStyle,
+  addHostFormPanelStyle,
+  addHostModalFooterStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
 const DATA_COLUMNS = DIALING_RULE_TABLE_COLUMNS.filter(
@@ -609,8 +609,8 @@ const DialingRulePage = () => {
         <DialogTitle style={advancedModalTitleStyle}>
           {editIndex !== null ? "Edit Dialing Rule" : "Add Dialing Rule"}
         </DialogTitle>
-        <DialogContent style={advancedModalContentStyle}>
-          <div style={advancedFormPanelStyle}>
+        <DialogContent style={addHostModalContentStyle}>
+          <div style={addHostFormPanelStyle}>
             <FieldRow label="Index:">
               <FormControl size="small" fullWidth>
                 <MuiSelect
@@ -660,7 +660,7 @@ const DialingRulePage = () => {
             </FieldRow>
           </div>
         </DialogContent>
-        <DialogActions style={advancedModalFooterStyle}>
+        <DialogActions style={addHostModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}

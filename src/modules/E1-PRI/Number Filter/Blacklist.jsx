@@ -22,6 +22,11 @@ import {
   deleteNumberFilter,
   deleteAllNumberFilters,
 } from "../../../api/apiService";
+import {
+  addHostFormPanelStyle,
+  modalSelectSx,
+  modalTextFieldSx,
+} from "../../../sections/advanced/advancedSharedUi";
 
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
@@ -962,18 +967,8 @@ const Blacklist = () => {
             : "CalleeIDs in Blacklist"}
         </DialogTitle>
 
-        <DialogContent style={{ padding: "24px", backgroundColor: "#f8fafc" }}>
-          <div
-            style={{
-              background: "#fff",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={{ ...addHostFormPanelStyle, gap: 16 }}>
             {/* Group No. */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <label
@@ -993,22 +988,7 @@ const Blacklist = () => {
                 onChange={(e) => handleGroupNoChange(e.target.value)}
                 size="small"
                 fullWidth
-                sx={{
-                  fontSize: 13,
-                  height: 36,
-                  backgroundColor: "#fff",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: C.cardBorder,
-                    transition: "border-color 0.2s ease",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#64748b",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0284c7 !important",
-                    borderWidth: "1px !important",
-                  },
-                }}
+                sx={{ ...modalSelectSx, height: 36 }}
                 MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
               >
                 {[...Array(200).keys()].map((i) => (
@@ -1043,22 +1023,7 @@ const Blacklist = () => {
                 fullWidth
                 disabled={isEditMode}
                 inputProps={{ style: { fontSize: 13, height: 16 } }}
-                sx={{
-                  backgroundColor: "#fff",
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": {
-                      borderColor: C.cardBorder,
-                      transition: "border-color 0.2s ease",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#64748b",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#0284c7",
-                      borderWidth: 1,
-                    },
-                  },
-                }}
+                sx={modalTextFieldSx}
               />
             </div>
           </div>
@@ -1066,7 +1031,7 @@ const Blacklist = () => {
 
         <DialogActions
           style={{
-            background: "#ffffff",
+            background: "#f8fafc",
             padding: "16px 24px",
             borderTop: `1px solid ${C.cardBorder}`,
             display: "flex",

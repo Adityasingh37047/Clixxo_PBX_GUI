@@ -19,6 +19,7 @@ import {
   Checkbox,
   Alert,
 } from "@mui/material";
+import { modalSelectSx, modalTextFieldSx } from "../../../sections/shared/outlinedFieldUi";
 import {
   listNumberManipulations,
   createNumberManipulation,
@@ -1271,23 +1272,7 @@ const PSTNCallInCallerID = () => {
                           })
                         }
                         variant="outlined"
-                        sx={{
-                          fontSize: 13,
-                          height: 32,
-                          backgroundColor: "#fff",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: C.cardBorder,
-                            transition: "border-color 0.2s ease",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#3E5475",
-                            borderWidth: 1,
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                        }}
+                        sx={modalSelectSx}
                       >
                         {field.options.map((opt) => (
                           <MenuItem
@@ -1317,23 +1302,7 @@ const PSTNCallInCallerID = () => {
                           boxSizing: "border-box",
                         },
                       }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "#fff",
-                          "& fieldset": {
-                            borderColor: C.cardBorder,
-                            transition: "border-color 0.2s ease",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "#3E5475",
-                            borderWidth: 1,
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                        },
-                      }}
+                      sx={modalTextFieldSx}
                     />
                   )}
                 </div>

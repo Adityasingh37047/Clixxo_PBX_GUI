@@ -32,9 +32,9 @@ import {
   FieldRow,
   advancedModalPaperSx,
   advancedModalTitleStyle,
-  advancedModalContentStyle,
-  advancedModalFooterStyle,
-  advancedFormPanelStyle,
+  addHostModalContentStyle,
+  addHostFormPanelStyle,
+  addHostModalFooterStyle,
   wavFileNoteStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 
@@ -575,8 +575,8 @@ const ColorRingPage = () => {
         <DialogTitle style={advancedModalTitleStyle}>
           Color Ring-Upload
         </DialogTitle>
-        <DialogContent style={advancedModalContentStyle}>
-          <div style={advancedFormPanelStyle}>
+        <DialogContent style={addHostModalContentStyle}>
+          <div style={addHostFormPanelStyle}>
             <FieldRow label="Index">
               <FormControl size="small" fullWidth>
                 <MuiSelect
@@ -633,7 +633,7 @@ const ColorRingPage = () => {
                   style={{ display: "none" }}
                 />
                 <Btn
-                  variant="outline"
+                  variant="cancel"
                   onClick={() => fileInputRef.current?.click()}
                   style={{ height: 30, fontSize: 12 }}
                 >
@@ -644,12 +644,12 @@ const ColorRingPage = () => {
                 </span>
               </div>
             </FieldRow>
-            <p style={wavFileNoteStyle}>
+            <p style={{ ...wavFileNoteStyle, color: "#dc2626" }}>
               Note: The file should be a wav file with 8000Hz sampling rate, 16-bit mono, A-law formatted, and less than 200KB in size.
             </p>
           </div>
         </DialogContent>
-        <DialogActions style={advancedModalFooterStyle}>
+        <DialogActions style={addHostModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleUpload}

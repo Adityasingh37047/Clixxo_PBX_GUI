@@ -7,14 +7,25 @@ import {
   TH,
   tdStyle,
   checkboxSx,
-  muiSelectSx,
-  muiTextFieldSx,
   numManipulateCardStyle,
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
   routeTableMinWidthForZoom,
   getBrowserZoomPercent,
+  fxsNativeFieldInputStyle,
+  fxsNativeFieldInteraction,
+  getFxsNativeFieldInteraction,
 } from "../fxs/fxsSharedUi";
+import {
+  muiSelectSx,
+  muiTextFieldSx,
+  modalSelectSx,
+  modalTextFieldSx,
+  nativeFieldInputStyle,
+  nativeFieldSelectStyle,
+  nativeFieldInteraction,
+  getNativeFieldInteraction,
+} from "../shared/outlinedFieldUi";
 
 export {
   C,
@@ -25,6 +36,15 @@ export {
   checkboxSx,
   muiSelectSx,
   muiTextFieldSx,
+  modalSelectSx,
+  modalTextFieldSx,
+  nativeFieldInputStyle,
+  nativeFieldSelectStyle,
+  nativeFieldInteraction,
+  getNativeFieldInteraction,
+  fxsNativeFieldInputStyle,
+  fxsNativeFieldInteraction,
+  getFxsNativeFieldInteraction,
   numManipulateCardStyle,
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
@@ -176,6 +196,32 @@ export const advancedModalFooterStyle = {
   gap: 12,
 };
 
+/** Modal colors matching Maintenance › Hosts › Add Host */
+export const addHostModalContentStyle = {
+  padding: "24px",
+  paddingBottom: "16px",
+  backgroundColor: "#ffffff",
+};
+
+export const addHostFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+export const addHostModalFooterStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 12,
+  padding: "10px 16px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  background: "#f8fafc",
+};
+
 export const advancedPaginationBarStyle = {
   display: "flex",
   alignItems: "center",
@@ -196,44 +242,6 @@ export const advancedTableScrollStyle = {
   boxSizing: "border-box",
 };
 
-/** Native text input / select — same size and hover/focus as System Tools */
-export const nativeFieldInputStyle = {
-  height: 28,
-  width: 200,
-  padding: "0 8px",
-  fontSize: 13,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  outline: "none",
-  backgroundColor: "#fff",
-  color: C.valueText,
-  boxSizing: "border-box",
-  transition: "border-color 0.2s ease",
-};
-
-export const nativeFieldSelectStyle = {
-  ...nativeFieldInputStyle,
-};
-
-export const nativeFieldInteraction = {
-  onFocus: (e) => {
-    e.target.style.borderColor = "#0284c7";
-  },
-  onBlur: (e) => {
-    e.target.style.borderColor = C.cardBorder;
-  },
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target) {
-      e.target.style.borderColor = "#64748b";
-    }
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target) {
-      e.target.style.borderColor = C.cardBorder;
-    }
-  },
-};
-
 export const AdvancedBreadcrumb = ({ current }) => (
   <div
     style={{
@@ -250,6 +258,27 @@ export const AdvancedBreadcrumb = ({ current }) => (
     <span>FXS</span>
     <span>&gt;</span>
     <span>Advanced</span>
+    <span>&gt;</span>
+    <span style={{ color: C.strongText, fontWeight: 600 }}>{current}</span>
+  </div>
+);
+
+export const VoipBreadcrumb = ({ current }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: C.mutedText,
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>FXS</span>
+    <span>&gt;</span>
+    <span>VoIP</span>
     <span>&gt;</span>
     <span style={{ color: C.strongText, fontWeight: 600 }}>{current}</span>
   </div>

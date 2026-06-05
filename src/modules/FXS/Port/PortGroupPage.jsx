@@ -28,6 +28,9 @@ import {
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
   routeTableMinWidthForZoom,
+  fxsNativeFieldInputStyle,
+  fxsNativeFieldSelectStyle,
+  fxsNativeFieldInteraction,
 } from "../../../sections/fxs/fxsSharedUi";
 
 const routeTdStyle = {
@@ -68,35 +71,17 @@ const FieldRow = ({ label, children }) => (
 );
 
 const inputStyle = {
+  ...fxsNativeFieldInputStyle,
   width: "100%",
   height: 32,
-  padding: "0 8px",
-  fontSize: 13,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  outline: "none",
-  backgroundColor: "#fff",
-  color: C.valueText,
-  boxSizing: "border-box",
-  transition: "border-color 0.15s ease",
 };
 
-const inputInteraction = {
-  onFocus: (e) => {
-    e.target.style.borderColor = "#0284c7";
-  },
-  onBlur: (e) => {
-    e.target.style.borderColor = C.cardBorder;
-  },
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "#64748b";
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = C.cardBorder;
-  },
+const selectStyle = {
+  ...fxsNativeFieldSelectStyle,
+  width: "100%",
 };
+
+const inputInteraction = fxsNativeFieldInteraction;
 
 // ── Initial State ─────────────────────────────────────────────────────────────
 const initialFormState = () => ({
@@ -643,7 +628,7 @@ const PortGroupPage = () => {
                 <select
                   value={form.index}
                   onChange={(e) => handleFormChange("index", e.target.value)}
-                  style={inputStyle}
+                  style={selectStyle}
                   {...inputInteraction}
                 >
                   {PORT_GROUP_INDEX_OPTIONS.map((v) => (
@@ -673,7 +658,7 @@ const PortGroupPage = () => {
                   onChange={(e) =>
                     handleFormChange("registerPortGroup", e.target.value)
                   }
-                  style={inputStyle}
+                  style={selectStyle}
                   {...inputInteraction}
                 >
                   {PORT_GROUP_REGISTER_OPTIONS.map((o) => (
@@ -728,7 +713,7 @@ const PortGroupPage = () => {
                   onChange={(e) =>
                     handleFormChange("registerSelectMode", e.target.value)
                   }
-                  style={inputStyle}
+                  style={selectStyle}
                   {...inputInteraction}
                 >
                   {PORT_GROUP_AUTHENTICATION_MODE_OPTIONS.map((o) => (
@@ -745,7 +730,7 @@ const PortGroupPage = () => {
                   onChange={(e) =>
                     handleFormChange("portSelectMode", e.target.value)
                   }
-                  style={inputStyle}
+                  style={selectStyle}
                   {...inputInteraction}
                 >
                   {PORT_GROUP_SELECT_MODE_OPTIONS.map((o) => (
@@ -801,7 +786,7 @@ const PortGroupPage = () => {
                   onChange={(e) =>
                     handleFormChange("enablePortMultiGroup", e.target.value)
                   }
-                  style={inputStyle}
+                  style={selectStyle}
                   {...inputInteraction}
                 >
                   {PORT_GROUP_MULTI_GROUP_OPTIONS.map((o) => (
