@@ -1373,31 +1373,7 @@ borderTopRightRadius: CARD_RADIUS,
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
-              <Btn
-                onClick={() => {
-                  setImportFile(null);
-                  setShowImportModal(true);
-                }}
-                variant="outline"
-                  style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                ⬇ Import
-              </Btn>
-              <Btn onClick={handleExport} variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-                >
-                ⬆ Export
-              </Btn>
+              
               {/* <Btn
                 onClick={fetchInitialData}
                 disabled={loading.list}
@@ -1419,7 +1395,6 @@ borderTopRightRadius: CARD_RADIUS,
       "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
     color: "#fff",
     border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
   }}
 >
   + Add New
@@ -1730,17 +1705,22 @@ minWidth: 900,
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 900, maxWidth: "96vw", borderRadius: 2 } }}
+            sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: 8 } }}
+      PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
       >
         <DialogTitle
           sx={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            py: 1.5,
-          }}
+    background: "#1e2d42",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: 15,
+    textAlign: "center",
+    py: 1,
+    minHeight: 48,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
         >
           {editId != null ? "Edit IVR" : "Add IVR"}
         </DialogTitle>
@@ -1814,7 +1794,7 @@ minWidth: 900,
                                           position: "absolute",
                                           top: -10,
                                           left: 0,
-                                          background: "#fff",
+                                          background: "#fff",       
                                           paddingRight: 8,
                                           fontSize: 13,
                                           fontWeight: 600,

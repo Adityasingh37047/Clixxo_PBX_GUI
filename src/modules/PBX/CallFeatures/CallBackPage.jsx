@@ -651,30 +651,7 @@ borderTopRightRadius: CARD_RADIUS,
                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                Delete
               </Btn>
-              <Btn
-                onClick={() => {
-                  setImportFile(null);
-                  setShowImportModal(true);
-                }}
-                variant="outline"
-                   style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                ⬇ Import
-              </Btn>
-              <Btn onClick={handleExport} variant="outline"
-                 style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}>
-                ⬆ Export
-              </Btn>
+            
               {/* <Btn
                 onClick={loadRows}
                 disabled={loading.fetch}
@@ -1016,12 +993,12 @@ minWidth: 900,
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px", backgroundColor:"#ffffff", }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#fff",
+                background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1073,7 +1050,7 @@ minWidth: 900,
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff", },
                       }}
                     />
                   </div>
@@ -1100,7 +1077,7 @@ minWidth: 900,
                       value={strip}
                       onChange={(e) => setStrip(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" , backgroundColor: "#fff",},
                       }}
                     />
                   </div>
@@ -1125,7 +1102,7 @@ minWidth: 900,
                         value={destination}
                         onChange={(e) => setDestination(e.target.value)}
                         displayEmpty
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
                       >
                         <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                           <span style={{ color: C.mutedText }}>
@@ -1170,7 +1147,7 @@ minWidth: 900,
                       value={delay}
                       onChange={(e) => setDelay(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff", },
                       }}
                     />
                   </div>
@@ -1196,7 +1173,7 @@ minWidth: 900,
                       value={prepend}
                       onChange={(e) => setPrepend(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",},
                       }}
                     />
                   </div>
@@ -1269,6 +1246,7 @@ minWidth: 900,
                     marginTop: 16,
                     paddingTop: 16,
                     borderTop: `1px dashed ${C.cardBorder}`,
+                    
                   }}
                 >
                   <div
@@ -1277,6 +1255,7 @@ minWidth: 900,
                       alignItems: "center",
                       marginBottom: 8,
                       paddingLeft: 102,
+                      
                     }}
                   >
                     <div
@@ -1296,6 +1275,7 @@ minWidth: 900,
                         fontWeight: 600,
                         color: C.mutedText,
                         textAlign: "center",
+                        
                       }}
                     >
                       Order

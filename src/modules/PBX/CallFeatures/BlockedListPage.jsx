@@ -619,33 +619,7 @@ borderTopRightRadius: CARD_RADIUS,
                 Next →
               </Btn> */}
 
-              <Btn
-                onClick={() => {
-                  setImportFile(null);
-                  setShowImportModal(true);
-                }}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                ⬇ Import
-              </Btn>
-              <Btn
-                onClick={handleExport}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                ⬆ Export
-              </Btn>
+              
               {/* <Btn
                 onClick={loadRows}
                 disabled={loading.fetch}
@@ -1059,12 +1033,12 @@ borderTopRightRadius: CARD_RADIUS,
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px",  background: "#ffffff", }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#fff",
+                 background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1105,6 +1079,7 @@ borderTopRightRadius: CARD_RADIUS,
                         color: C.labelText,
                         width: 120,
                         flexShrink: 0,
+                        
                       }}
                     >
                       Name <span style={{ color: C.errorRed }}>*</span>
@@ -1115,7 +1090,7 @@ borderTopRightRadius: CARD_RADIUS,
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" ,  backgroundColor: "#fff",},
                       }}
                     />
                   </div>
@@ -1143,7 +1118,10 @@ borderTopRightRadius: CARD_RADIUS,
                           if (val === "Extension") setBlockedNumber("");
                           else setSelectedExtension("");
                         }}
-                        sx={{ fontSize: 13 }}
+                        sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                       >
                         <MenuItem
                           value="Exact Match"
@@ -1232,7 +1210,7 @@ borderTopRightRadius: CARD_RADIUS,
                         value={blockedNumber}
                         onChange={(e) => setBlockedNumber(e.target.value)}
                         inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" },
+                          style: { fontSize: 13, padding: "6px 8px",   backgroundColor: "#fff", },
                         }}
                       />
                     </div>
@@ -1262,7 +1240,7 @@ borderTopRightRadius: CARD_RADIUS,
                       <MuiSelect
                         value={direction}
                         onChange={(e) => setDirection(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13 ,   backgroundColor: "#fff",}}
                       >
                         <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
                           Inbound
@@ -1295,7 +1273,7 @@ borderTopRightRadius: CARD_RADIUS,
                       <MuiSelect
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13,  backgroundColor: "#fff", }}
                       >
                         <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                           Yes

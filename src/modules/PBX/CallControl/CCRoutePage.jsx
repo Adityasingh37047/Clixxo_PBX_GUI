@@ -657,12 +657,12 @@ Delete
   onClick={handleOpenAddModal}
   disabled={loading.save || loading.fetch}
   variant="primary"
- style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+  style={{
+    height: 30,
+    padding: "6px 14px",
+    fontSize: 12,
+    borderRadius: 10,
+  }}
 >
   + Add New
 </Btn>
@@ -946,30 +946,40 @@ minWidth: 900,
         open={showModal}
         onClose={handleCloseModal}
         maxWidth={false}
+        sx={{
+            "& .MuiDialog-container": {
+              alignItems: "flex-start",
+              pt: 8,
+            },
+          }}
         PaperProps={{ sx: { width: 980, maxWidth: "98vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
+           style={{
+background: "#1e2d42",
+color: "#ffffff",
+fontWeight: 600,
+fontSize: 16,
+padding: "16px 24px",
+textAlign: "center",
+borderTopLeftRadius: 8,
+borderTopRightRadius: 8,
+}}
+>
           {editId != null ? "Edit CC Route" : "Add CC Route"}
         </DialogTitle>
+            <div style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}></div>
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Settings Section */}
             <div
               style={{
-                background: "#fff",
+                background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
+                overflow: "hidden",
                 padding: 16,
               }}
             >
@@ -997,13 +1007,22 @@ minWidth: 900,
                     <Select
                       value={ccIntervalTime}
                       onChange={(e) => setCcIntervalTime(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                     sx={{
+  "& .MuiOutlinedInput-root": {
+    "&.Mui-focused fieldset": {
+      borderColor: "#60a5fa",
+    },
+  },
+}}
                     >
                       {CC_INTERVAL_OPTIONS.map((o) => (
                         <MenuItem
                           key={o.value}
                           value={o.value}
-                          sx={{ fontSize: 13 }}
+                          sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                         >
                           {o.label}
                         </MenuItem>
@@ -1016,7 +1035,10 @@ minWidth: 900,
                     <Select
                       value={recordKeepTime}
                       onChange={(e) => setRecordKeepTime(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                     sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                     >
                       {RECORD_KEEP_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1031,7 +1053,10 @@ minWidth: 900,
                     <Select
                       value={through}
                       onChange={(e) => setThrough(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                     sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                     >
                       {THROUGH_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1046,7 +1071,10 @@ minWidth: 900,
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{ fontSize: 13 }}
+                      sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                     >
                       {ENABLE_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1062,14 +1090,16 @@ minWidth: 900,
             {/* Extensions Selection */}
             <div
               style={{
-                background: "#fff",
+                 background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
+                overflow: "hidden",
                 borderRadius: 6,
                 padding: 16,
               }}
             >
               <div
                 style={{
+                   background: "#f5f7fa",
                   fontSize: 13,
                   fontWeight: 700,
                   color: C.labelText,
@@ -1082,6 +1112,7 @@ minWidth: 900,
               </div>
               <div
                 style={{
+                   
                   display: "grid",
                   gridTemplateColumns: "1fr 48px 1fr 48px",
                   gap: 12,
@@ -1108,15 +1139,16 @@ minWidth: 900,
                         Array.from(e.target.selectedOptions, (o) => o.value),
                       )
                     }
-                    style={{
-                      width: "100%",
-                      height: 180,
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 4,
-                      padding: 8,
-                      fontSize: 13,
-                     
-                    }}
+                     style={{
+  width: "100%",
+  height: 180,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 4,
+  padding: 8,
+  fontSize: 13,
+  background: "#fff",
+  outline: "none",
+}}
                   >
                     {availableList.map((item) => (
                       <option key={item.extension} value={item.extension}>
@@ -1186,13 +1218,15 @@ minWidth: 900,
                       )
                     }
                     style={{
-                      width: "100%",
-                      height: 180,
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 4,
-                      padding: 8,
-                      fontSize: 13,
-                    }}
+  width: "100%",
+  height: 180,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 4,
+  padding: 8,
+  fontSize: 13,
+  background: "#fff",
+  outline: "none",
+}}
                   >
                     {selectedExtensions.map((ext) => (
                       <option key={ext} value={ext}>

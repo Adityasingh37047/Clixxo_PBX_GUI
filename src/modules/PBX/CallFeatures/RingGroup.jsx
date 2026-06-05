@@ -1153,12 +1153,12 @@ minWidth: 900,
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px",backgroundColor:"#ffffff",}}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#fff",
+               background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: "20px 24px 16px",
@@ -1167,16 +1167,13 @@ minWidth: 900,
               <div style={{ marginBottom: 20, position: "relative" }}>
                 <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
                 <span
-                  style={{
-                    position: "absolute",
-                    top: -10,
-                    left: 0,
-                    background: "#fff",
-                    paddingRight: 8,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.mutedText,
-                  }}
+                   style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: C.accent,
+                        marginBottom: 6,
+                        textAlign: "center",
+                      }}
                 >
                   Ring Group
                 </span>
@@ -1201,7 +1198,7 @@ minWidth: 900,
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" , backgroundColor: "#fff",},
                       }}
                     />
                   </FieldRow>
@@ -1211,7 +1208,7 @@ minWidth: 900,
                       <MuiSelect
                         value={ringStrategy}
                         onChange={(e) => setRingStrategy(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
                       >
                         {RING_STRATEGY_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1227,7 +1224,7 @@ minWidth: 900,
                       <MuiSelect
                         value={ringTimeout}
                         onChange={(e) => setRingTimeout(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13 , backgroundColor: "#fff",}}
                       >
                         {RING_TIMEOUT_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1245,7 +1242,7 @@ minWidth: 900,
                       value={alertInfo}
                       onChange={(e) => setAlertInfo(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" , backgroundColor: "#fff",},
                       }}
                     />
                   </FieldRow>
@@ -1257,7 +1254,7 @@ minWidth: 900,
                         onChange={(e) =>
                           setExtensionAnswerConfirm(e.target.value)
                         }
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
                       >
                         {EXTENSION_ANSWER_CONFIRM_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1281,7 +1278,7 @@ minWidth: 900,
                       value={ringGroupNumber}
                       onChange={(e) => setRingGroupNumber(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px" , backgroundColor: "#fff",},
                       }}
                     />
                   </FieldRow>
@@ -1296,7 +1293,7 @@ minWidth: 900,
                             setTimeoutDestinationType(e.target.value);
                             setTimeoutDestinationValue("");
                           }}
-                          sx={{ fontSize: 13 }}
+                          sx={{ fontSize: 13, backgroundColor: "#fff", }}
                         >
                           <MenuItem value="" sx={{ fontSize: 13 }}>
                             <em>Select type</em>
@@ -1305,7 +1302,7 @@ minWidth: 900,
                             <MenuItem
                               key={opt.value}
                               value={opt.value}
-                              sx={{ fontSize: 13 }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff", }}
                             >
                               {opt.label}
                             </MenuItem>
@@ -1321,7 +1318,7 @@ minWidth: 900,
                             onChange={(e) =>
                               setTimeoutDestinationValue(e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={{ fontSize: 13 , backgroundColor: "#fff",}}
                           >
                             <MenuItem value="" sx={{ fontSize: 13 }}>
                               <em>Select value</em>
@@ -1330,7 +1327,7 @@ minWidth: 900,
                               <MenuItem
                                 key={opt.value}
                                 value={opt.value}
-                                sx={{ fontSize: 13 }}
+                                sx={{ fontSize: 13, backgroundColor: "#fff", }}
                               >
                                 {opt.label}
                               </MenuItem>
@@ -1346,7 +1343,7 @@ minWidth: 900,
                       <MuiSelect
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
                       >
                         {ENABLE_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1363,7 +1360,7 @@ minWidth: 900,
                         value={ringBack}
                         onChange={(e) => setRingBack(e.target.value)}
                         MenuProps={RING_BACK_MENU_PROPS}
-                        sx={{ fontSize: 13 }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
                       >
                         {ringBack && !ringBackAllValues.includes(ringBack) && (
                           <MenuItem value={ringBack} sx={{ fontSize: 13 }}>
@@ -1377,6 +1374,7 @@ minWidth: 900,
                               fontWeight: 700,
                               fontSize: 12,
                               lineHeight: "24px",
+                              
                             }}
                           >
                             Music on Hold
@@ -1444,7 +1442,7 @@ minWidth: 900,
                       value={cidNamePrefix}
                       onChange={(e) => setCidNamePrefix(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" },
+                        style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff", },
                       }}
                     />
                   </FieldRow>
@@ -1468,14 +1466,15 @@ minWidth: 900,
                     display: "grid",
                     gridTemplateColumns: "1fr 40px 1fr",
                     gap: 12,
+                    
                   }}
                 >
                   <div>
                     <div
-                      style={{
+                        style={{
                         fontSize: 12,
                         fontWeight: 700,
-                        color: C.mutedText,
+                        color: C.accent,
                         marginBottom: 6,
                         textAlign: "center",
                       }}
@@ -1501,7 +1500,7 @@ minWidth: 900,
                         padding: 8,
                         fontSize: 13,
                         outline: "none",
-                        background: "#f8fafc",
+                       backgroundColor: "#fff",
                       }}
                     >
                       {loading.members ? (
@@ -1523,6 +1522,7 @@ minWidth: 900,
                       flexDirection: "column",
                       gap: 8,
                       justifyContent: "center",
+                      
                     }}
                   >
                     <Btn

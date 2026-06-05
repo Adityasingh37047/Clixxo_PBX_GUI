@@ -79,10 +79,11 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-    cancel: {
-      background: "#f1f5f9",
-      color: "#64748b",
+   cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
       border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     outline: {
       background: C.cardBg,
@@ -1039,36 +1040,8 @@ const OutboundRoutesPage = () => {
               >
                 Uncheck All
               </Btn>
-              <Btn
-                onClick={() => {
-                  setImportFile(null);
-                  setShowImportModal(true);
-                }}
-                disabled={importLoading}
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                ⬇ Import
-              </Btn>
-              <Btn
-                onClick={handleExport}
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                ⬆ Export
-              </Btn>
+              
+            
              <Btn
   onClick={handleOpenAddModal}
   disabled={loading.save || loading.list}
@@ -1457,34 +1430,89 @@ const OutboundRoutesPage = () => {
         maxWidth={false}
         className="z-50"
         PaperProps={{
-          sx: { width: 1000, maxWidth: "98vw", mx: "auto", p: 0 },
+          sx: {
+            width: 900,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
         }}
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
           style={{
-            background: "rgb(30, 45, 62)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           {editId != null ? "Edit Outbound Route" : "Add Outbound Route"}
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
           style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+            padding: "24px",
+            backgroundColor: "#ffffff",
           }}
         >
-          <div className="flex flex-col gap-3 w-full pb-2">
-            <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
-              <div className="px-3 py-1.5 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
+          <style>
+            {`
+              .outbound-route-modal label {
+                color: ${C.labelText} !important;
+                text-align: left !important;
+              }
+
+              .outbound-route-modal input:not([type="checkbox"]),
+              .outbound-route-modal select {
+                height: 32px;
+                background: #ffffff !important;
+                border-color: ${C.cardBorder} !important;
+                font-size: 13px !important;
+                box-sizing: border-box;
+              }
+
+              .outbound-route-modal input:not([type="checkbox"]):hover,
+              .outbound-route-modal select:hover {
+                border-color: #64748b !important;
+              }
+            `}
+          </style>
+          <div
+            className="outbound-route-modal flex flex-col gap-3 w-full"
+            style={{
+              background: "transparent",
+              border: "none",
+              borderRadius: 0,
+              padding: 0,
+            }}
+          >
+            <div
+              className="rounded-md overflow-hidden"
+              style={{
+                background: "#f8fafc",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 8,
+              }}
+            >
+              <div
+                className="px-3 py-1.5 text-[13px] font-semibold"
+                style={{
+                  color: C.labelText,
+                  background: "#f5f7fa",
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                }}
+              >
                 Outbound Call Routing
               </div>
               <div className="p-4 flex flex-col gap-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                   <div className="flex flex-col gap-2">
                     <div
                       className="flex items-center gap-2"
@@ -1657,10 +1685,10 @@ const OutboundRoutesPage = () => {
                       </div>
                     </div>
 
-                    <div
-                      className="flex items-center gap-2 flex-wrap"
-                      style={{ minHeight: 32 }}
-                    >
+                  <div
+  className="flex items-center gap-2"
+  style={{ minHeight: 32 }}
+>
                       <label
                         className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
                         style={{ width: 190, marginRight: 10 }}
@@ -1690,95 +1718,89 @@ const OutboundRoutesPage = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[14px] text-gray-700 font-medium">
-                    Dial Patterns
-                  </label>
-                  <div className="flex flex-col gap-2">
-                    <div className="hidden md:grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center">
-                      <div className="text-[12px] text-gray-600 font-medium">
-                        Patterns
-                      </div>
-                      <div className="text-[12px] text-gray-600 font-medium">
-                        Strip
-                      </div>
-                      <div className="text-[12px] text-gray-600 font-medium">
-                        Front
-                      </div>
-                      <div className="text-[12px] text-gray-600 font-medium">
-                        Suffix
-                      </div>
-                      <div className="text-[12px] text-gray-600 font-medium">
-                        Delay
-                      </div>
-                      <div />
-                    </div>
-                    {dialPatterns.map((item, index) => (
-                      <div
-                        key={`pattern-${index}`}
-                        className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center"
-                      >
-                        <input
-                          className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? "" : undefined}
-                          value={item.pattern}
-                          onChange={(e) =>
-                            updateDialPattern(index, "pattern", e.target.value)
-                          }
-                        />
-                        <input
-                          className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? "" : undefined}
-                          value={item.strip}
-                          onChange={(e) =>
-                            updateDialPattern(index, "strip", e.target.value)
-                          }
-                        />
-                        <input
-                          className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? "" : undefined}
-                          value={item.front}
-                          onChange={(e) =>
-                            updateDialPattern(index, "front", e.target.value)
-                          }
-                        />
-                        <input
-                          className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? "" : undefined}
-                          value={item.suffix}
-                          onChange={(e) =>
-                            updateDialPattern(index, "suffix", e.target.value)
-                          }
-                        />
-                        <input
-                          className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                          placeholder={index === 0 ? "Unit is ms" : undefined}
-                          value={item.delay}
-                          onChange={(e) =>
-                            updateDialPattern(index, "delay", e.target.value)
-                          }
-                        />
-                        <div className="flex gap-1">
-                          <button
-                            type="button"
-                            className="h-7 w-7 border border-gray-400 bg-[#d9dde3] text-sm font-semibold"
-                            onClick={addDialPattern}
-                          >
-                            +
-                          </button>
-                          <button
-                            type="button"
-                            className="h-7 w-7 border border-gray-400 bg-[#d9dde3] text-sm font-semibold"
-                            onClick={() => removeDialPatternAt(index)}
-                            disabled={dialPatterns.length <= 1}
-                          >
-                            x
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+
+           <div className="flex flex-col gap-2">
+  <label className="text-[14px] text-gray-700 font-medium">
+    Dial Patterns
+  </label>
+
+  {/* Header */}
+  <div className="hidden md:grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_50px] gap-2 items-center">
+    <div className="text-[12px] text-gray-600 font-medium">Patterns</div>
+    <div className="text-[12px] text-gray-600 font-medium">Strip</div>
+    <div className="text-[12px] text-gray-600 font-medium">Front</div>
+    <div className="text-[12px] text-gray-600 font-medium">Suffix</div>
+    <div className="text-[12px] text-gray-600 font-medium">Delay</div>
+    <div />
+  </div>
+
+  {dialPatterns.map((item, index) => (
+    <div
+      key={`pattern-${index}`}
+      className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_50px] gap-2 items-center"
+    >
+      <input
+        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
+        value={item.pattern}
+        onChange={(e) =>
+          updateDialPattern(index, "pattern", e.target.value)
+        }
+      />
+
+      <input
+        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
+        value={item.strip}
+        onChange={(e) =>
+          updateDialPattern(index, "strip", e.target.value)
+        }
+      />
+
+      <input
+        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
+        value={item.front}
+        onChange={(e) =>
+          updateDialPattern(index, "front", e.target.value)
+        }
+      />
+
+      <input
+        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
+        value={item.suffix}
+        onChange={(e) =>
+          updateDialPattern(index, "suffix", e.target.value)
+        }
+      />
+
+      <input
+        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
+        placeholder="Unit is ms"
+        value={item.delay}
+        onChange={(e) =>
+          updateDialPattern(index, "delay", e.target.value)
+        }
+      />
+
+      <div className="flex gap-1">
+        <button
+          type="button"
+          className="h-7 w-7 border border-gray-400 bg-[#d9dde3] text-sm font-semibold"
+          onClick={addDialPattern}
+        >
+          +
+        </button>
+
+        <button
+          type="button"
+          className="h-7 w-7 border border-gray-400 bg-[#d9dde3] text-sm font-semibold"
+          onClick={() => removeDialPatternAt(index)}
+          disabled={dialPatterns.length <= 1}
+        >
+          x
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
 
                 <div className="flex flex-col gap-2">
                   <label className="text-[14px] text-gray-700 font-medium">
@@ -1849,7 +1871,8 @@ const OutboundRoutesPage = () => {
                             ),
                           )
                         }
-                        className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+                         className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+  style={{ height: "180px" }}
                       >
                         {loading.members ? (
                           <option>Loading extensions...</option>
@@ -1911,7 +1934,9 @@ const OutboundRoutesPage = () => {
                             ),
                           )
                         }
-                        className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+                       className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+  style={{ height: "180px" }}
+
                       >
                         {memberExtensions.length === 0 ? (
                           <option disabled>No selected extensions</option>
@@ -1962,7 +1987,9 @@ const OutboundRoutesPage = () => {
                             ),
                           )
                         }
-                        className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+                         className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+  style={{ height: "180px" }}
+
                       >
                         {loading.trunks ? (
                           <option>Loading trunks...</option>
@@ -2024,7 +2051,10 @@ const OutboundRoutesPage = () => {
                             ),
                           )
                         }
-                        className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+                        className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+  style={{ height: "180px" }}
+
+  
                       >
                         {memberTrunks.length === 0 ? (
                           <option disabled>No selected trunks</option>
@@ -2060,9 +2090,14 @@ const OutboundRoutesPage = () => {
         </DialogContent>
         <DialogActions
           style={{
+            display: "flex",
             justifyContent: "center",
-            gap: 12,
-            padding: 16,
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: "1px solid #e2e8f0",
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn

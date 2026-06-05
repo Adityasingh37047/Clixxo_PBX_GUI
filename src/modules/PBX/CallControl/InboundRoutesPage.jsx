@@ -136,15 +136,17 @@ const resolveRingGroupDestValue = (rawDestValue, ringGroupRows) => {
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9ca3af",
-  labelText: "#1e293b",
-  valueText: "#1e293b",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  accent: "#1e293b",
-  errorRed: "#dc2626",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
+ const CARD_RADIUS = 20;
 
 const Btn = ({
   children,
@@ -154,37 +156,42 @@ const Btn = ({
   style: extraStyle,
 }) => {
   const variants = {
-     default: {
+    default: {
       background: C.cardBg,
-  color: C.valueText,
-  border: "1px solid #9ca3af",
+      color: C.valueText,
+      border: "1px solid #9ca3af",
     },
     primary: {
-  background:
-    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-  color: "#fff",
-  border: "1px solid #5A6F8F",
-},
-cancel: {
-background: "#cbd5e1",
-color: "#374151",
-border: "1px solid #cbd5e1",
-boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-},
-    outline: {
-     background: C.cardBg,
-  color: C.labelText,
-  border: `1px solid ${C.cardBorder}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+    
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
-      border: `1px solid #fecaca`,
+      border: `0.5px solid #fecaca`,
     },
     accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `1px solid ${C.cardBorder}`,
+    background: C.cardBg,
+  color: C.labelText,
+  border: `1px solid ${C.cardBorder}`,
     },
   };
   const s = variants[variant] || variants.default;
@@ -194,16 +201,17 @@ boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
       disabled={disabled}
       style={{
         ...s,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
         padding: "5px 14px",
-        borderRadius: 6,
+        borderRadius: 10,
+        height: 30,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
+        gap: 6,
         transition: "opacity 0.15s ease",
         whiteSpace: "nowrap",
         ...extraStyle,
@@ -223,17 +231,17 @@ boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
-      color: "#1e293b",
+        background: "#F8FAFC",
+      color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "9px 14px",
       textAlign: "center",
-      borderBottom: "1px solid #9ca3af",
-      borderRight: "0.5px solid #9ca3af",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -241,6 +249,21 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 const FieldRow = ({ label, children }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
     <label
@@ -831,7 +854,7 @@ const InboundRoutesPage = () => {
       style={{
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 16,
+        padding: 24,
       }}
     >
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
@@ -866,11 +889,11 @@ const InboundRoutesPage = () => {
         {/* Main Card */}
         <div
           style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            background: "#ffffff",
+            borderRadius: 10,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
           }}
         >
           {/* Toolbar */}
@@ -879,37 +902,28 @@ const InboundRoutesPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "10px 14px",
+              minHeight: 44,
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#DCE6F2",
+              background: "#ffffff",
               flexWrap: "wrap",
-              gap: 8,
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  background: "#f1f5f9",
-                  border: `0.5px solid ${C.cardBorder}`,
-                  color: "#475569",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: "3px 12px",
-                  borderRadius: 20,
-                }}
-              >
-                Page {page} · {rows.length} records
-              </span>
+              
               {selected.length > 0 && (
                 <span
                   style={{
                     background: "#e0f2fe",
                     color: C.accent,
                     fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    border: `0.5px solid ${C.accent}`,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
@@ -924,34 +938,30 @@ const InboundRoutesPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <Btn
-                onClick={() => {
-                  setImportFile(null);
-                  setShowImportModal(true);
-                }}
-                variant="outline"
-              >
-                ⬇ Import
-              </Btn>
-              <Btn onClick={handleExport} variant="outline">
-                ⬆ Export
-              </Btn>
+              
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 {loading.delete && (
-                  <CircularProgress size={11} style={{ color: C.errorRed }} />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 )}
-                🗑 Delete
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.save}
-                variant="accent"
+                variant="primary"
                 style={{
                   height: 30,
                   padding: "6px 14px",
@@ -965,7 +975,7 @@ const InboundRoutesPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {loading.list ? (
               <div
                 style={{
@@ -981,38 +991,34 @@ const InboundRoutesPage = () => {
               <table
                 style={{
                   width: "100%",
-                  borderCollapse: "collapse",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
                   tableLayout: "auto",
                   minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 36 }}>
+                    <TH style={{ width: 40, padding: 0, borderLeft: "none", position: "sticky", top: 0, zIndex: 10 }}>
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
                         disabled={loading.delete}
-                        sx={{
-                          padding: "1px",
-                          color: C.accent,
-                          "&.Mui-checked": { color: C.accent },
-                          "&.MuiCheckbox-indeterminate": { color: C.accent },
-                        }}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 40 }}>#</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: 16 }}>Name</TH>
-                    <TH>DID Pattern</TH>
-                    <TH>Caller ID Pattern</TH>
-                    <TH>Destination</TH>
-                    <TH>Enabled</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: 16 }}>
+                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>#</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Name</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>DID Pattern</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Caller ID Pattern</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Destination</TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Enabled</TH>
+                    <TH style={{ textAlign: "left", paddingLeft: 16, position: "sticky", top: 0, zIndex: 10 }}>
                       Member Trunks
                     </TH>
-                    <TH style={{ width: 70 }}>Actions</TH>
+                    <TH style={{ width: 70, borderRight: "none", position: "sticky", top: 0, zIndex: 10 }}>Actions</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1185,9 +1191,13 @@ const InboundRoutesPage = () => {
                                 fontSize: 10,
                                 padding: "3px 10px",
                                 margin: "0 auto",
+                                minWidth: 34,
                               }}
+                              title="Edit"
                             >
-                              Edit
+                              <EditDocumentIcon
+                                sx={{ fontSize: 16, color: C.labelText }}
+                              />
                             </Btn>
                           </td>
                         </tr>
@@ -1206,10 +1216,9 @@ const InboundRoutesPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
-                flexWrap: "wrap",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
                 gap: 8,
               }}
             >
@@ -1303,7 +1312,15 @@ const InboundRoutesPage = () => {
           }
         }}
         maxWidth={false}
-        PaperProps={{ sx: { width: 420, maxWidth: "96vw", mx: "auto", p: 0 } }}
+        PaperProps={{
+          sx: {
+            width: 420,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: 2,
+          },
+        }}
       >
         <DialogTitle
           style={{
@@ -1320,8 +1337,14 @@ const InboundRoutesPage = () => {
         <DialogContent
           style={{ backgroundColor: C.pageBg, padding: "20px 24px 12px" }}
         >
-          <div className="flex flex-col gap-4 pt-1">
-            <p className="text-[13px] text-gray-600">
+          <div  style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              paddingTop: 4,
+            }}
+            >
+            <p style={{ fontSize: 13, color: "#475569", margin: 0 }}>
               Select a CSV or JSON file to import.
             </p>
             <div
@@ -1361,6 +1384,14 @@ const InboundRoutesPage = () => {
           <Btn
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
+            variant="default"
+             style={{
+    background:
+      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+    color: "#fff",
+    border: "1px solid #5A6F8F",
+    boxShadow: "0 2px 8px #3E5475",
+  }}
           >
             {importLoading ? "Importing..." : "Import"}
           </Btn>
@@ -1381,10 +1412,25 @@ const InboundRoutesPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: { width: 1000, maxWidth: "98vw", mx: "auto", p: 0 },
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
         }}
+        PaperProps={{
+          sx: {
+            width: 1000,
+            maxWidth: "98vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: 2,
+             boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          },
+        }}
+            disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
           style={{
@@ -1394,18 +1440,20 @@ const InboundRoutesPage = () => {
             fontSize: 16,
             textAlign: "center",
             padding: "14px 24px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           {editId != null ? "Edit Inbound Route" : "Add Inbound Route"}
         </DialogTitle>
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "20px 24px",  background: "#ffffff" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Route Settings */}
             <div
               style={{
-                background: "#fff",
+               background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1632,7 +1680,7 @@ const InboundRoutesPage = () => {
             {/* Member Trunks */}
             <div
               style={{
-                background: "#fff",
+                 background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1882,12 +1930,19 @@ const InboundRoutesPage = () => {
           </div>
         </DialogContent>
         <DialogActions
-          style={{ padding: "16px 24px", justifyContent: "center", gap: 16 }}
+          style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 16,
+          }}
         >
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 110, padding: "8px 24px", fontSize: 13 }}
+           variant="primary"
+ style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <>
@@ -1901,8 +1956,8 @@ const InboundRoutesPage = () => {
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
-            variant="outline"
-            style={{ minWidth: 110, padding: "8px 24px", fontSize: 13 }}
+           variant="cancel"
+  style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

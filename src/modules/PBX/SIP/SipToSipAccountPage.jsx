@@ -1014,13 +1014,13 @@ minWidth: 900,
         <DialogContent
           style={{
             padding: "20px 24px",
-            backgroundColor: "#f8fafc",
+           backgroundColor:"#ffffff",
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#fff",
+               background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1076,7 +1076,7 @@ minWidth: 900,
                         variant="outlined"
                         placeholder="Enter password"
                         error={!!validationErrors[field.name]}
-                        inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                        inputProps={{ style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff", } }}
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
@@ -1140,7 +1140,7 @@ minWidth: 900,
                             handleChange("context", e.target.value)
                           }
                           inputProps={{ "aria-label": "Select Context" }}
-                          sx={{ fontSize: 13 }}
+                          sx={{ fontSize: 13 ,backgroundColor: "#fff",}}
                         >
                           <MenuItem value="" disabled sx={{ fontSize: 13 }}><em>Select Context</em></MenuItem>
                           {Array.from({ length: 10 }, (_, i) => `sip${i + 1}`).map((ctx) => (
@@ -1171,7 +1171,7 @@ minWidth: 900,
                           error={!!validationErrors.contact}
                           placeholder="e.g., 15.158.34.15"
                           disabled={field.name === "extension" && editIndex !== null}
-                          inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                          inputProps={{ style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",} }}
                           InputProps={{
                             startAdornment: <InputAdornment position="start">sip:</InputAdornment>,
                           }}
@@ -1199,7 +1199,7 @@ minWidth: 900,
                                     : `Enter ${field.label.toLowerCase()}`
                           }
                           disabled={field.name === "extension" && editIndex !== null}
-                          inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                          inputProps={{ style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff", } }}
                         />
                       )}
                       {validationErrors[field.name] && (
