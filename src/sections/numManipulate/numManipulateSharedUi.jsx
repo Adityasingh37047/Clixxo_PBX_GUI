@@ -22,6 +22,7 @@ export const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
   component,
   title,
 }) => {
@@ -72,6 +73,7 @@ export const Btn = ({
   return (
     <Component
       type={type}
+      form={form}
       title={title}
       onClick={onClick}
       disabled={disabled}
