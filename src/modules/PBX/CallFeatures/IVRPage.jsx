@@ -1743,7 +1743,14 @@ minWidth: 900,
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
             sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: 8 } }}
-      PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
+     PaperProps={{
+  sx: {
+    width: 900,
+    maxWidth: "96vw",
+    mx: "auto",
+    p: 0,
+  },
+}}
       >
         <DialogTitle
          style={{

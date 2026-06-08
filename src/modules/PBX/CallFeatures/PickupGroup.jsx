@@ -147,7 +147,7 @@ const Btn = ({
     </button>
   );
 };
-
+ 
 const TH = ({ children, style: extra }) => (
   <th
     style={{
@@ -960,13 +960,14 @@ style={{
                     Member <span style={{ color: C.errorRed }}>*</span>
                   </div>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 40px 1fr",
-                      gap: 12,
-                    }}
-                  >
+              <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 50px 1fr",
+    gap: 12,
+    alignItems: "start",
+  }}
+>
                     <div>
                       <div
                       style={{
@@ -1014,43 +1015,65 @@ style={{
                         )}
                       </select>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 8,
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Btn
-                        onClick={addSelectedMembers}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 12 }}
-                      >
-                        &gt;
-                      </Btn>
-                      <Btn
-                        onClick={addAllMembers}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 12 }}
-                      >
-                        &gt;&gt;
-                      </Btn>
-                      <Btn
-                        onClick={removeSelectedMembers}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 12 }}
-                      >
-                        &lt;
-                      </Btn>
-                      <Btn
-                        onClick={removeAllMembers}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 12 }}
-                      >
-                        &lt;&lt;
-                      </Btn>
-                    </div>
+                <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 24, // label ki height jitna
+    height: 160,   // same as select box
+  }}
+>
+  <Btn
+    onClick={addSelectedMembers}
+    variant="outline"
+    style={{
+      width: 44,
+      height: "100%",
+      fontSize: 12,
+    }}
+  >
+    &gt;
+  </Btn>
+
+  <Btn
+    onClick={addAllMembers}
+    variant="outline"
+    style={{
+      width: 44,
+      height: "100%",
+      fontSize: 12,
+    }}
+  >
+    &gt;&gt;
+  </Btn>
+
+  <Btn
+    onClick={removeSelectedMembers}
+    variant="outline"
+    style={{
+      width: 44,
+      height: "100%",
+      fontSize: 12,
+    }}
+  >
+    &lt;
+  </Btn>
+
+  <Btn
+    onClick={removeAllMembers}
+    variant="outline"
+    style={{
+      width: 44,
+      height: "100%",
+      fontSize: 12,
+    }}
+  >
+    &lt;&lt;
+  </Btn>
+</div>
                     <div>
                       <div
                         style={{

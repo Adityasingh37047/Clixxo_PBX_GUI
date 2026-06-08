@@ -2061,18 +2061,18 @@ minWidth: 900, }}>
         maxWidth={false}
         className="z-50"
         sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: 8 } }}
-        PaperProps={{
-          sx: {
-            width: 760,
-            maxWidth: "96vw",
-            mx: "auto",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
-        }}
+      PaperProps={{
+  sx: {
+   width: 1050,
+maxWidth: "96vw",
+    mx: "auto",
+    p: 0,
+    borderRadius: "8px",
+    overflow: "hidden",
+    boxShadow:
+      "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+  },
+}}
         disableRestoreFocus
         disableEnforceFocus
       >
@@ -2160,17 +2160,7 @@ minWidth: 900, }}>
           border-color: #0284c7 !important;
         }
 
-        .sip-reg .MuiSelect-root {
-          border: 1px solid ${C.cardBorder} !important;
-        }
-
-        .sip-reg .MuiSelect-root:hover {
-          border-color: #64748b !important;
-        }
-
-        .sip-reg .MuiSelect-root.Mui-focused {
-          border-color: #0284c7 !important;
-        }
+        
 
         .sip-reg label {
           text-align: left !important;
@@ -2230,7 +2220,7 @@ minWidth: 900, }}>
                             error={!!validationErrors.trunk_id}
                             placeholder="Trunk Name"
                             disabled={editIndex !== null}
-                            inputProps={{ style: { fontSize: 14 } }}
+                         inputProps={{ style: { fontSize: 13} }}
                           />
                           {validationErrors.trunk_id && (
                             <div className="text-red-500 text-xs mt-0.5">
@@ -2254,7 +2244,7 @@ minWidth: 900, }}>
                               onChange={(e) =>
                                 handleChange("ui_country", e.target.value)
                               }
-                              sx={{ fontSize: 14 }}
+                            sx={{ fontSize: 13}}
                             >
                               {SIP_REGISTER_COUNTRY_OPTIONS.map((c) => (
                                 <MenuItem key={c} value={c}>
@@ -2281,7 +2271,7 @@ minWidth: 900, }}>
                               onChange={(e) =>
                                 handleChange("ui_transport", e.target.value)
                               }
-                              sx={{ fontSize: 14 }}
+                                sx={{ fontSize: 13}}
                             >
                               {SIP_REGISTER_TRANSPORT_OPTIONS.map((c) => (
                                 <MenuItem key={c} value={c}>
@@ -2311,7 +2301,9 @@ minWidth: 900, }}>
                               />
                             }
                             label=""
-                            sx={checkboxSx}
+                             sx={{
+checkboxSx
+}}
                           />
                         </div>
                       </div>
@@ -2326,7 +2318,7 @@ minWidth: 900, }}>
                               onChange={(e) =>
                                 handleChange("ui_register", e.target.value)
                               }
-                              sx={{ fontSize: 14 }}
+                                 sx={{ fontSize: 13}}
                             >
                               {SIP_REGISTER_YES_NO.map((c) => (
                                 <MenuItem key={c} value={c}>
@@ -2425,7 +2417,7 @@ minWidth: 900, }}>
                                 )
                               }
                               displayEmpty
-                              sx={{ fontSize: 14 }}
+                               sx={{ fontSize: 13}}
                             >
                               {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
                                 (c) => (
@@ -2454,7 +2446,7 @@ minWidth: 900, }}>
                               onChange={(e) =>
                                 handleChange("ui_record", e.target.value)
                               }
-                              sx={{ fontSize: 14 }}
+                              sx={{ fontSize: 13}}
                             >
                               {SIP_REGISTER_YES_NO.map((c) => (
                                 <MenuItem key={c} value={c}>
@@ -2476,7 +2468,7 @@ minWidth: 900, }}>
                               onChange={(e) =>
                                 handleChange("ui_enabled", e.target.value)
                               }
-                              sx={{ fontSize: 14 }}
+                                sx={{ fontSize: 13}}
                             >
                               {SIP_REGISTER_YES_NO.map((c) => (
                                 <MenuItem key={c} value={c}>
@@ -2498,7 +2490,8 @@ minWidth: 900, }}>
                               onChange={(e) =>
                                 handleChange("ui_eth_port", e.target.value)
                               }
-                              sx={{ fontSize: 14 }}
+                              
+                                sx={{ fontSize: 13}}
                             >
                               {(ethPortOptions.length
                                 ? ethPortOptions
@@ -2530,7 +2523,7 @@ minWidth: 900, }}>
                                 }
                                 error={!!validationErrors.provider}
                                 placeholder="host:port or domain"
-                                inputProps={{ style: { fontSize: 14 } }}
+                                 inputProps={{ style: { fontSize: 13} }}
                               />
                               {validationErrors.provider && (
                                 <div className="text-red-500 text-xs mt-0.5">
@@ -2575,7 +2568,8 @@ minWidth: 900, }}>
         onChange={(e) =>
           handleChange("ui_outbound_cid_name", e.target.value)
         }
-        inputProps={{ style: { fontSize: 14 } }}
+         inputProps={{ style: { fontSize: 13} }}
+
       />
     </div>
   </div>
@@ -2593,7 +2587,7 @@ minWidth: 900, }}>
       onChange={(e) =>
         handleChange("ui_outbound_cid_number", e.target.value)
       }
-      inputProps={{ style: { fontSize: 14 } }}
+        inputProps={{ style: { fontSize: 13} }}
     />
   </div>
 </div>

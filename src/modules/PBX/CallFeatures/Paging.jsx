@@ -1157,12 +1157,13 @@ const Paging = () => {
               <SectionHeading title="Member Extensions" />
 
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 40px 1fr",
-                  gap: 12,
-                }}
-              >
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 40px 1fr",
+    gap: 12,
+    alignItems: "start",
+  }}
+>
                 <div>
                   <div
                    style={{
@@ -1210,39 +1211,66 @@ const Paging = () => {
                     )}
                   </select>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                    justifyContent: "center",
-                  }}
-                >
+              <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+    height: 160,
+  }}
+>
                   <Btn
                     onClick={addSelectedMembers}
                     variant="outline"
-                    style={{ padding: "4px 0", fontSize: 12 }}
+                    style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                   >
                     &gt;
                   </Btn>
                   <Btn
                     onClick={addAllMembers}
                     variant="outline"
-                    style={{ padding: "4px 0", fontSize: 12 }}
+                     style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                   >
                     &gt;&gt;
                   </Btn>
                   <Btn
                     onClick={removeSelectedMembers}
                     variant="outline"
-                    style={{ padding: "4px 0", fontSize: 12 }}
+                     style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                   >
                     &lt;
                   </Btn>
                   <Btn
                     onClick={removeAllMembers}
                     variant="outline"
-                    style={{ padding: "4px 0", fontSize: 12 }}
+                    style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                   >
                     &lt;&lt;
                   </Btn>
@@ -1293,39 +1321,66 @@ const Paging = () => {
                       )}
                     </select>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 22,
-                    }}
-                  >
+                <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+    height: 160,
+  }}
+>
                     <Btn
                       onClick={() => handleReorderSelected("top")}
                       variant="outline"
-                      style={{ padding: "4px 0", fontSize: 14 }}
+                      style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                     >
                       <VerticalAlignTopIcon sx={{ fontSize: 16 }} />
                     </Btn>
                     <Btn
                       onClick={() => handleReorderSelected("up")}
                       variant="outline"
-                      style={{ padding: "4px 0", fontSize: 14 }}
+                    style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                     >
                       <KeyboardArrowUpIcon sx={{ fontSize: 16 }} />
                     </Btn>
                     <Btn
                       onClick={() => handleReorderSelected("down")}
                       variant="outline"
-                      style={{ padding: "4px 0", fontSize: 14 }}
+                     style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                     >
                       <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
                     </Btn>
                     <Btn
                       onClick={() => handleReorderSelected("bottom")}
                       variant="outline"
-                      style={{ padding: "4px 0", fontSize: 14 }}
+                  style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                     >
                       <VerticalAlignBottomIcon sx={{ fontSize: 16 }} />
                     </Btn>

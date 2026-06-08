@@ -5,16 +5,15 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 
 // ── Column definitions ────────────────────────────────────────────────────────
 const columns = [
-  { key: "calldate", label: "Start", width: "130px" },
-  { key: "src", label: "Call From", width: "110px" },
-  { key: "src_ip", label: "Call From IP", width: "110px" },
-  { key: "dst", label: "Call To", width: "110px" },
-  { key: "dst_ip", label: "Call To IP", width: "120px" },
-  { key: "call_direction", label: "Direction", width: "90px" },
-  { key: "disposition", label: "Call Status", width: "100px" },
-  { key: "billsec", label: "Talk Duration", width: "100px" },
-  { key: "hangup_cause", label: "Hangup Cause", width: "120px" },
-  { key: "dcontext", label: "Context", width: "110px" },
+  { key: "calldate", label: "Start", width: "120px" },
+  { key: "src", label: "Call From", width: "100px" },
+  { key: "src_ip", label: "Call From IP", width: "100px" },
+  { key: "dst", label: "Call To", width: "100px" },
+  { key: "dst_ip", label: "Call To IP", width: "110px" },
+  { key: "call_direction", label: "Direction", width: "80px" },
+  { key: "disposition", label: "Call Status", width: "90px" },
+  { key: "billsec", label: "Duration", width: "90px" },
+  { key: "hangup_cause", label: "Hangup Cause", width: "110px" },
 ];
 
 // ── Color palette (matches PbxMonitor.jsx) ───────────────────────────────────
@@ -462,9 +461,9 @@ const Pill = ({ text, bg, color }) => (
     style={{
       background: bg,
       color,
-      padding: "4px 10px",
+      padding: "2px 8px",
       borderRadius: 999,
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: 600,
       whiteSpace: "nowrap",
       display: "inline-block",
@@ -597,14 +596,14 @@ const TH = ({ children, style: extra, align = "center" }) => (
      background: "#F8FAFC",
 color: C.labelText,
 fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
+fontSize: 10,
+padding: "6px 10px",
 textAlign: align,
 borderBottom: `1px solid ${C.cardBorder}`,
 borderRight: `1px solid ${C.cardBorder}`,
 whiteSpace: "nowrap",
 textTransform: "uppercase",
-letterSpacing: "0.14em",
+letterSpacing: "0.12em",
       ...extra,
     }}
   >
@@ -613,8 +612,8 @@ letterSpacing: "0.14em",
 );
 
 const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
+  padding: "4px 10px",
+  fontSize: 12,
   color: C.valueText,
   textAlign: "center",
   borderBottom: `1px solid ${C.cardBorder}`,
@@ -942,18 +941,22 @@ const CallCount = () => {
                 paddingBottom: 0,
               }}
             >
-              <GhostBtn
-                onClick={handleResetFilters}
-                disabled={loading}
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                }}
-                hoverBackground="#b6c2d3"
-              >
-                Reset
-              </GhostBtn>
+           <GhostBtn
+  onClick={handleResetFilters}
+  disabled={loading}
+  style={{
+    height: 30,
+    padding: "0 14px",
+    fontSize: 12,
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
+  hoverBackground="#b6c2d3"
+>
+  Reset
+</GhostBtn>
             </div>
           </div>
 
@@ -1018,19 +1021,7 @@ const CallCount = () => {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span
-                style={{
-                  background: "#f8fafc",
-                  border: `1px solid ${C.cardBorder}`,
-                  color: C.labelText,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: "6px 14px",
-                  borderRadius: 999,
-                }}
-              >
-                Page {page} · {filteredData.length} records
-              </span>
+            
               {selectedIds.length > 0 && (
                 <span
                   style={{
@@ -1385,31 +1376,17 @@ const CallCount = () => {
                           </td>
 
                           <td
-                            style={{
+                             style={{
                               ...tdStyle,
                               background: rowBg,
+                              color: C.accent,
                               fontFamily: "monospace, monospace",
-                              fontWeight: 600,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {formatDuration(row.billsec)}
-                          </td>
-
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              color: C.labelText,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               ...lastRowCellStyle,
                             }}
-                            title={row.hangup_cause || ""}
                           >
-                            {row.hangup_cause || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
+                            {formatDuration(row.billsec)}
                           </td>
 
                           <td
@@ -1425,9 +1402,9 @@ const CallCount = () => {
                                 ? { borderBottomRightRadius: CARD_RADIUS }
                                 : {}),
                             }}
-                            title={row.dcontext || ""}
+                            title={row.hangup_cause || ""}
                           >
-                            {row.dcontext || (
+                            {row.hangup_cause || (
                               <span style={{ color: C.mutedText }}>—</span>
                             )}
                           </td>
@@ -1505,7 +1482,7 @@ const CallCount = () => {
     justifyContent: "center",
     marginTop: 20,
     marginBottom: 0,
-     fontSize: 15,
+     fontSize: 13,
     fontWeight: 700,
     color: "#dc2626",
   }}

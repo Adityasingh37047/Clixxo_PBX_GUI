@@ -1030,14 +1030,14 @@ minWidth: 900,
 
               <SectionHeading title="Member Extensions"  />
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 40px 1fr",
-                  gap: 12,
-                  
-                }}
-              >
+             <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 40px 1fr",
+    gap: 12,
+    alignItems: "start",
+  }}
+>
                 <div>
                   <div
                       style={{
@@ -1086,38 +1086,60 @@ minWidth: 900,
                   </select>
                 </div>
                 <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                    justifyContent: "center",
-                  }}
-                >
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22, // Available/Selected label ki height
+    height: 160,   // select box ki height
+  }}
+>
                   <Btn
                     onClick={addSelectedMembers}
                     variant="outline"
-                    style={{ padding: "4px 0", fontSize: 12 }}
+                   style={{
+  width: 40,
+  height: "100%",
+  fontSize: 12,
+}}
                   >
                     &gt;
                   </Btn>
                   <Btn
                     onClick={addAllMembers}
                     variant="outline"
-                    style={{ padding: "4px 0", fontSize: 12 }}
+                   variant="outline"
+                   style={{
+  width: 40,
+  height: "100%",
+  fontSize: 12,
+}}
                   >
                     &gt;&gt;
                   </Btn>
                   <Btn
                     onClick={removeSelectedMembers}
                     variant="outline"
-                    style={{ padding: "4px 0", fontSize: 12 }}
+                     variant="outline"
+                   style={{
+  width: 40,
+  height: "100%",
+  fontSize: 12,
+}}
                   >
                     &lt;
                   </Btn>
                   <Btn
                     onClick={removeAllMembers}
                     variant="outline"
-                    style={{ padding: "4px 0", fontSize: 12 }}
+                     variant="outline"
+                   style={{
+  width: 40,
+  height: "100%",
+  fontSize: 12,
+}}
                   >
                     &lt;&lt;
                   </Btn>
