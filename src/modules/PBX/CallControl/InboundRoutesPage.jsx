@@ -1491,18 +1491,34 @@ const InboundRoutesPage = () => {
                 padding: 16,
               }}
             >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Inbound Call Routing
-              </div>
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 14,
+  }}
+>
+  <span
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.labelText,
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Inbound Call Routing
+  </span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
               <div
                 style={{
                   display: "grid",
@@ -1718,18 +1734,34 @@ const InboundRoutesPage = () => {
                 padding: 16,
               }}
             >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Member Trunks <span style={{ color: C.errorRed }}>*</span>
-              </div>
+             <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 14,
+  }}
+>
+  <span
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.labelText,
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Member Trunks <span style={{ color: C.errorRed }}></span>
+  </span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
               <div
                 style={{
                   display: "grid",

@@ -265,6 +265,7 @@ const FOLLOW_ME_DESTINATION_TYPES = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SipAccountPage = () => {
+  
   const [accounts, setAccounts] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -295,6 +296,18 @@ const SipAccountPage = () => {
     fixedPassword: "",
     passwordPrefix: "",
   });
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    height: 32,
+  },
+};
+
+const selectSx = {
+  fontSize: 13,
+  height: 32,
+  backgroundColor: "#fff",
+};
 
   // Pagination
   const itemsPerPage = 50;
@@ -2064,20 +2077,29 @@ borderTopRightRadius: 8,
                     overflow: "hidden",
                   }}
                 >
-                  <div
-                    style={{
-                      padding: "6px 12px",
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.labelText,
-                      background: "#f5f7fa",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    General
-                  </div>
+                 <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 700,
+    color: C.labelText,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  }}
+>
+  <span>General</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
                   <div
                     style={{
                       padding: 8,
@@ -2103,30 +2125,7 @@ borderTopRightRadius: 8,
                           error={!!validationErrors.extension}
                           placeholder="e.g. 1001"
                           disabled={editIndex !== null}
-                         inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                       sx={inputSx}
                         />
                         {validationErrors.extension && (
                           <ErrMsg>{validationErrors.extension}</ErrMsg>
@@ -2147,30 +2146,7 @@ sx={{
                             size="small"
                             fullWidth
                             variant="outlined"
-                          inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                       sx={inputSx}
                           />
                         </FieldRow>
                         <FieldRow label="Create Number:">
@@ -2186,30 +2162,7 @@ sx={{
                             size="small"
                             fullWidth
                             variant="outlined"
-                          inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                     sx={inputSx}
                           />
                         </FieldRow>
                         <div style={{ gridColumn: "1 / -1" }}>
@@ -2230,22 +2183,7 @@ sx={{
                                       passwordMode: e.target.value,
                                     }))
                                   }
-                                  sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                              sx={selectSx}
                                 >
                                   <MenuItem value="random">Random</MenuItem>
                                   <MenuItem value="fixed">Fixed</MenuItem>
@@ -2268,30 +2206,7 @@ sx={{
                                   fullWidth
                                   variant="outlined"
                                   placeholder="Fixed password"
-                                inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                              sx={inputSx}
                                 />
                               )}
                               {bulkForm.passwordMode === "prefix" && (
@@ -2308,30 +2223,7 @@ sx={{
                                   fullWidth
                                   variant="outlined"
                                   placeholder="e.g. pw_"
-                                 inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                                sx={inputSx}
                                 />
                               )}
                             </div>
@@ -2352,22 +2244,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("context", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                       sx={selectSx}
                         >
                           <MenuItem value="" disabled>
                             <em>Select Context</em>
@@ -2400,30 +2277,7 @@ sx={{
                           variant="outlined"
                           error={!!validationErrors.password}
                           placeholder="Enter password"
-                        inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                     sx={inputSx}
                           InputProps={{
                             endAdornment: (
                               <InputAdornment position="end">
@@ -2459,30 +2313,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                      inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                      sx={inputSx}
 
                       />
                     </FieldRow>
@@ -2538,20 +2369,30 @@ sx={{
                     overflow: "hidden",
                   }}
                 >
-                  <div
-                    style={{
-                      padding: "6px 12px",
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.labelText,
-                      background: "#f5f7fa",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    User Info
-                  </div>
+                 <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 700,
+    color: C.labelText,
+    background: "#f5f7fa",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  }}
+>
+  <span>User Info</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
                   <div
                     style={{
                       padding: 8,
@@ -2570,30 +2411,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                       sx={inputSx}
                       />
                     </FieldRow>
                     <FieldRow label="User Password:">
@@ -2606,30 +2424,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                    sx={inputSx}
                       />
                     </FieldRow>
                     <FieldRow label="Email:">
@@ -2640,30 +2435,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                    sx={inputSx}
                       />
                     </FieldRow>
                     <FieldRow label="Mobile Number:">
@@ -2677,30 +2449,7 @@ sx={{
                         fullWidth
                         variant="outlined"
                         placeholder="+91XXXXXXXXXX"
-                        inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                      sx={inputSx}
                       />
                     </FieldRow>
                   </div>
@@ -2734,22 +2483,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("voicemail_enabled", e.target.value)
                           }
-                          sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                       sx={selectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -2763,22 +2497,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("voicemail_keep_local", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                      sx={selectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -2792,22 +2511,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("voicemail_file", e.target.value)
                           }
-                          sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                        sx={selectSx}
                         >
                           <MenuItem value="audio_file_attachment">
                             Audio File Attachment
@@ -2828,30 +2532,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                     sx={inputSx}
                       />
                     </FieldRow>
                     <FieldRow label="Select Voice:">
@@ -2861,22 +2542,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("voicemail_voice", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                     sx={selectSx}
                         >
                           <MenuItem value="system_default">
                             System Default
@@ -2958,22 +2624,7 @@ sx={{
                               e.target.value,
                             )
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                  sx={selectSx}
                         >
                           <MenuItem value="">
                             <em>Destination Number</em>
@@ -2994,22 +2645,7 @@ sx={{
                           onChange={(e) =>
                             handleChange(`cf_${rule.key}_time`, e.target.value)
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                       sx={selectSx}
                         >
                           <MenuItem value="all">All</MenuItem>
                           <MenuItem value="work_time">Work Time</MenuItem>
@@ -3078,22 +2714,7 @@ sx={{
                         onChange={(e) =>
                           handleChange("follow_me_time", e.target.value)
                         }
-                        sx={{
-                          fontSize: 13,
-                          height: 32,
-                          backgroundColor: "#fff",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: C.cardBorder,
-                            transition: "border-color 0.2s ease",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#64748b",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                        }}
+                      sx={selectSx}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -3172,22 +2793,7 @@ sx={{
                                   e.target.value,
                                 )
                               }
-                             sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                            sx={selectSx}
                             >
                               <MenuItem value="">
                                 <em>Select extension</em>
@@ -3209,22 +2815,7 @@ sx={{
                                   Number(e.target.value),
                                 )
                               }
-                              sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                              sx={selectSx}
                             >
                               {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                                 <MenuItem key={v} value={v}>
@@ -3243,22 +2834,7 @@ sx={{
                                   e.target.value,
                                 )
                               }
-                             sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                           sx={selectSx}
                             >
                               <MenuItem value="confirm">Confirm</MenuItem>
                               <MenuItem value="unconfirm">UnConfirm</MenuItem>
@@ -3293,22 +2869,7 @@ sx={{
                                 e.target.value,
                               )
                             }
-                            sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                           sx={selectSx}
                           >
                             <MenuItem value="">
                               <em>Select destination</em>
@@ -3382,22 +2943,7 @@ sx={{
                         onChange={(e) =>
                           handleChange("dnd_time", e.target.value)
                         }
-                      sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                      sx={selectSx}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -3462,22 +3008,7 @@ sx={{
                             onChange={(e) =>
                               handleDndNumberChange(idx, e.target.value)
                             }
-                            sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                         sx={selectSx}
                           >
                             <MenuItem value="">
                               <em>Select extension</em>
@@ -3513,22 +3044,7 @@ sx={{
                               e.target.value,
                             )
                           }
-                       sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                      sx={selectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3545,30 +3061,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                      inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                     sx={inputSx}
                       />
                     </FieldRow>
                     <FieldRow label="Ring Simultaneously">
@@ -3578,22 +3071,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("ring_simultaneously", e.target.value)
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                       sx={selectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3610,22 +3088,7 @@ sx={{
                               Number(e.target.value),
                             )
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                      sx={selectSx}
                         >
                           {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                             <MenuItem key={v} value={v}>
@@ -3696,22 +3159,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("secretary_extension", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                       sx={selectSx}
                         >
                           <MenuItem value="">
                             <em>Select extension</em>
@@ -3755,22 +3203,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("enable_srtp", e.target.value)
                           }
-                          sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                       sx={selectSx}
                         >
                           <MenuItem value="no">No</MenuItem>
                           <MenuItem value="yes">Yes</MenuItem>
@@ -3784,22 +3217,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("sip_bypass_media", e.target.value)
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                        sx={selectSx}
                         >
                           <MenuItem value="proxy_media">Proxy Media</MenuItem>
                           <MenuItem value="bypass_media">Bypass Media</MenuItem>
@@ -3828,30 +3246,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                     sx={inputSx}
                       />
                     </FieldRow>
                     <FieldRow label="Max Call Duration (s):">
@@ -3864,30 +3259,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                  sx={inputSx}
                       />
                     </FieldRow>
                     <FieldRow label="Outbound Restriction:">
@@ -3897,22 +3269,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("outbound_restriction", e.target.value)
                           }
-                       sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                     sx={selectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -3931,22 +3288,7 @@ sx={{
                               e.target.value,
                             )
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                     sx={selectSx}
                         >
                           <MenuItem value="no_call">No Call</MenuItem>
                           <MenuItem value="internal_call">
@@ -3969,22 +3311,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("extension_trunk", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                   sx={selectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -4017,22 +3344,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("dynamic_lock_pin", e.target.value)
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                       sx={selectSx}
                         >
                           <MenuItem value="default">Default</MenuItem>
                           {form.dynamic_lock_pin === "user_password" && (
@@ -4050,22 +3362,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("diversion", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                      sx={selectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -4079,22 +3376,7 @@ sx={{
                           onChange={(e) =>
                             handleChange("call_prohibition", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                   sx={selectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -4123,30 +3405,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                     sx={inputSx}
                       />
                     </FieldRow>
                     <FieldRow label="TX Volume:">
@@ -4159,30 +3418,7 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                  sx={inputSx}
                       />
                     </FieldRow>
                   </div>
@@ -4230,6 +3466,7 @@ sx={{
   );
 };
 
+
 // ── Small helper components (inline, no extra file needed) ────────────────────
 const FieldRow = ({ label, children }) => (
   <div
@@ -4270,19 +3507,29 @@ const SectionCard = ({ title, children }) => (
     }}
   >
     <div
-      style={{
-        padding: "6px 12px",
-        borderBottom: "1px solid #9ca3af",
-        fontSize: 12,
-        fontWeight: 700,
-        color: C.labelText,
-        background: "#f5f7fa",
-        textTransform: "uppercase",
-        letterSpacing: "0.04em",
-      }}
-    >
-      {title}
-    </div>
+  style={{
+    display: "flex",
+    alignItems: "center",
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 700,
+    color: C.labelText,
+    background: "#f5f7fa",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  }}
+>
+  <span>{title}</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: "#9ca3af",
+      marginLeft: 12,
+    }}
+  />
+</div>
     <div style={{ padding: 10 }}>{children}</div>
   </div>
 );

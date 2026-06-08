@@ -914,21 +914,34 @@ minWidth: 900,
                 padding: "20px 24px 16px",
               }}
             >
-              <div style={{ marginBottom: 20, position: "relative" }}>
-                <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                <span
-style={{
-                          fontSize: 14,
-                          fontWeight: 700,
-                          color: C.accent,
-                          marginBottom: 6,
-                          textAlign: "center",
-                        }}
-                >
-                  Pickup Group
-                </span>
-              </div>
+             <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 20,
+  }}
+>
+  <span
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.labelText,
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Pickup Group
+  </span>
 
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{

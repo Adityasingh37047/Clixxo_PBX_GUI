@@ -10,6 +10,120 @@ import {
 } from "../../../constants/FeatureCodeConstants";
 
 const LABEL_W = 220;
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+  type,
+  hoverBehavior = "background",
+}) => {
+  const variants = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+   cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+  };
+
+  const s = variants[variant] || variants.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+      case "accent":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "danger":
+        return "#b91c1c";
+      case "cancel":
+        return "#e2e8f0";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = extraStyle?.background || s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "0.82";
+          } else {
+            e.currentTarget.style.background = hoverBg;
+          }
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "1";
+          } else {
+            e.currentTarget.style.background = baseBg;
+          }
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+
+
 
 const SectionHeader = ({ title }) => (
   <div className="px-4 py-1 text-[15px] font-semibold border-b border-gray-300 text-[#333]">
@@ -204,9 +318,10 @@ const FeatureCodePage = () => {
         </div>
         <div className="flex justify-center mt-6">
           <Button
-            variant="contained"
+           
             onClick={handleSave}
             disabled={saving}
+            variant="primary"
             sx={{
               background:
                 "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
@@ -216,11 +331,7 @@ const FeatureCodePage = () => {
               borderRadius: 1.5,
               minWidth: 120,
               minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
+             
               "&:hover": {
                 background:
                   "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",

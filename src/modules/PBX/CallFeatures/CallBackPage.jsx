@@ -1041,18 +1041,27 @@ minWidth: 900,
                 padding: 16,
               }}
             >
-              <h3
-                style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 12,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                CallBack Settings
-              </h3>
+             <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 12,
+    fontSize: 14,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
+>
+  <span>CallBack Settings</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
 
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
@@ -1139,7 +1148,16 @@ minWidth: 900,
                         value={destination}
                         onChange={(e) => setDestination(e.target.value)}
                         displayEmpty
-                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
+                           sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                           <span style={{ color: C.mutedText }}>

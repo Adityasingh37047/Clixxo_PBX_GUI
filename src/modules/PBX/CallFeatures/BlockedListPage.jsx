@@ -1082,18 +1082,27 @@ borderTopRightRadius: CARD_RADIUS,
                 padding: 16,
               }}
             >
-              <h3
-                style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 12,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Block Settings
-              </h3>
+              <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 12,
+    fontSize: 14,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
+>
+  <span>Block Settings</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
 
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
@@ -1148,19 +1157,25 @@ borderTopRightRadius: CARD_RADIUS,
                       Match Mode <span style={{ color: C.errorRed }}>*</span>
                     </label>
                     <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={matchMode}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setMatchMode(val);
-                          if (val === "Extension") setBlockedNumber("");
-                          else setSelectedExtension("");
-                        }}
-                        sx={{
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
-                      >
+                 <MuiSelect
+  value={matchMode}
+  onChange={(e) => {
+    const val = e.target.value;
+    setMatchMode(val);
+    if (val === "Extension") setBlockedNumber("");
+    else setSelectedExtension("");
+  }}
+  sx={{
+    fontSize: 13,
+    backgroundColor: "#fff",
+    height: 32, // Name ke equal
+    "& .MuiSelect-select": {
+      padding: "6px 8px",
+      display: "flex",
+      alignItems: "center",
+    },
+  }}
+>
                         <MenuItem
                           value="Exact Match"
                           sx={{ fontSize: 13, fontWeight: 400 }}
@@ -1274,12 +1289,21 @@ borderTopRightRadius: CARD_RADIUS,
                       Blocked List Direction{" "}
                       <span style={{ color: C.errorRed }}>*</span>
                     </label>
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={direction}
-                        onChange={(e) => setDirection(e.target.value)}
-                        sx={{ fontSize: 13 ,   backgroundColor: "#fff",}}
-                      >
+                   <FormControl size="small" fullWidth>
+  <MuiSelect
+    value={direction}
+    onChange={(e) => setDirection(e.target.value)}
+    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
+  >
                         <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
                           Inbound
                         </MenuItem>
@@ -1311,7 +1335,16 @@ borderTopRightRadius: CARD_RADIUS,
                       <MuiSelect
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{ fontSize: 13,  backgroundColor: "#fff", }}
+                           sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                           Yes

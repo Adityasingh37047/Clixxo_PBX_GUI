@@ -1015,17 +1015,26 @@ borderTopRightRadius: 8,
               }}
             >
               <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                CC Route Settings
-              </div>
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 14,
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
+>
+  <span>CC Route Settings</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
               <div
                 style={{
                   display: "grid",
@@ -1038,21 +1047,31 @@ borderTopRightRadius: 8,
                     <Select
                       value={ccIntervalTime}
                       onChange={(e) => setCcIntervalTime(e.target.value)}
-                     sx={{
- 
-      borderColor: "#60a5fa",
+                                             sx={{
+      fontSize: 13,
       backgroundColor: "#fff",
-
-}}
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                     >
                       {CC_INTERVAL_OPTIONS.map((o) => (
                         <MenuItem
                           key={o.value}
                           value={o.value}
-                          sx={{
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {o.label}
                         </MenuItem>
@@ -1065,11 +1084,16 @@ borderTopRightRadius: 8,
                     <Select
                       value={recordKeepTime}
                       onChange={(e) => setRecordKeepTime(e.target.value)}
-                     sx={{
-                      
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                                              sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                     >
                       {RECORD_KEEP_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1084,10 +1108,16 @@ borderTopRightRadius: 8,
                     <Select
                       value={through}
                       onChange={(e) => setThrough(e.target.value)}
-                     sx={{
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                                               sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                     >
                       {THROUGH_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1102,10 +1132,16 @@ borderTopRightRadius: 8,
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                                               sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                     >
                       {ENABLE_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1128,19 +1164,29 @@ borderTopRightRadius: 8,
                 padding: 16,
               }}
             >
-              <div
-                style={{
-                   background: "#f5f7fa",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Member Extensions
-              </div>
+            <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    background: "#f5f7fa",
+    marginBottom: 14,
+    padding: "0 0 6px 0",
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
+>
+  <span>Member Extensions</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
               <div
                 style={{
                    
@@ -1189,40 +1235,66 @@ borderTopRightRadius: 8,
                   </select>
                 </div>
                 {/* Move Controls */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 6,
-                    justifyContent: "center",
-                    paddingTop: 24,
-                  }}
-                >
+              <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+    height: 180, // same as select height
+  }}
+>
                   <Btn
                     onClick={addSelectedExtensions}
                     variant="outline"
-                    style={{ padding: "6px 0" }}
+                   style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                   >
                     &gt;
                   </Btn>
                   <Btn
                     onClick={addAllExtensions}
                     variant="outline"
-                    style={{ padding: "6px 0" }}
+style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                   >
                     &gt;&gt;
                   </Btn>
                   <Btn
                     onClick={removeSelectedExtensions}
                     variant="outline"
-                    style={{ padding: "6px 0" }}
+                  style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                   >
                     &lt;
                   </Btn>
                   <Btn
                     onClick={removeAllExtensions}
                     variant="outline"
-                    style={{ padding: "6px 0" }}
+                    style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                   >
                     &lt;&lt;
                   </Btn>
@@ -1267,19 +1339,26 @@ borderTopRightRadius: 8,
                   </select>
                 </div>
                 {/* Sort Controls - EXACTLY FROM REFERENCE */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 6,
-                    justifyContent: "center",
-                    paddingTop: 24,
-                  }}
-                >
+              <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+    height: 180, // same as select height
+  }}
+>
                   <Btn
                     onClick={moveExtensionToBottom}
                     variant="outline"
-                    style={{ padding: "6px 0" }}
+                   style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+}}
                     title="Move to bottom"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1304,7 +1383,12 @@ borderTopRightRadius: 8,
                   <Btn
                     onClick={moveExtensionUp}
                     variant="outline"
-                    style={{ padding: "6px 0" }}
+                   style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+}}
                     title="Move up"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1320,7 +1404,12 @@ borderTopRightRadius: 8,
                   <Btn
                     onClick={moveExtensionDown}
                     variant="outline"
-                    style={{ padding: "6px 0" }}
+                   style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+}}
                     title="Move down"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1336,7 +1425,12 @@ borderTopRightRadius: 8,
                   <Btn
                     onClick={moveExtensionToTop}
                     variant="outline"
-                    style={{ padding: "6px 0" }}
+                    style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+}}
                     title="Move to top"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
