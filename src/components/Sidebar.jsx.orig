@@ -20,7 +20,7 @@ import {
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import { SIDEBAR_SECTIONS } from "../constants/sidebarConstants";
 
-// ─── Window width hook ────────────────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇ Window width hook ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const useWindowSize = () => {
   const [width, setWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1280,
@@ -44,16 +44,7 @@ const isTouchDevice = () =>
   typeof window !== "undefined" &&
   ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
-const SIDEBAR_ACCENT = "#3B6FE8";
-const SIDEBAR_RAIL_BG = "#1a2332";
-const SIDEBAR_BORDER = "#243044";
-const SIDEBAR_TEXT_MUTED = "#94a3b8";
-const SIDEBAR_TEXT_ACTIVE = "#dbeafe";
-const SIDEBAR_TEXT_ICON_ACTIVE = "#93c5fd";
-const SIDEBAR_HOVER_BG = "#243044";
-const SUBMENU_ACTIVE_BG = "rgba(59, 111, 232, 0.16)";
-
-// ─────────────────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
 const Sidebar = ({
   isMobile: _isMobileProp = false,
@@ -67,7 +58,7 @@ const Sidebar = ({
   const { user } = useAuth();
   const screenW = useWindowSize();
 
-  // ─── Breakpoints ──────────────────────────────────────────────────────────
+  // ΓöÇΓöÇΓöÇ Breakpoints ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const isMobile = screenW < 768;
   const isTablet = screenW >= 768 && screenW < 1024;
   const isTouch = isTouchDevice();
@@ -76,7 +67,7 @@ const Sidebar = ({
   const LEFT_W = isMobile ? 70 : isTablet ? 80 : 95;
   const RIGHT_W = isMobile ? 160 : isTablet ? 175 : 195;
 
-  // ─── Filter sections ──────────────────────────────────────────────────────
+  // ΓöÇΓöÇΓöÇ Filter sections ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const sidebarSections = useMemo(() => {
     const access = user?.access;
     const allowAll =
@@ -102,7 +93,7 @@ const Sidebar = ({
         });
 
       if (allowAll) {
-        // Admin / superadmin — show everything, just filter licence
+        // Admin / superadmin ΓÇö show everything, just filter licence
         if (
           section.id === "maintenance" &&
           Array.isArray(section.submenuItems)
@@ -115,7 +106,7 @@ const Sidebar = ({
         return section;
       }
 
-      // Custom user — filter pages within each submenu item, then drop empty ones
+      // Custom user ΓÇö filter pages within each submenu item, then drop empty ones
       const filteredSubmenus = (section.submenuItems || [])
         .map((sm) => ({
           ...sm,
@@ -136,9 +127,9 @@ const Sidebar = ({
     }).filter(Boolean);
   }, [user]);
 
-  // ─── State ────────────────────────────────────────────────────────────────
-  const [activeMenu, setActiveMenu] = useState(null); // click → persistent
-  const [hoveredMenu, setHoveredMenu] = useState(null); // hover → temporary
+  // ΓöÇΓöÇΓöÇ State ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  const [activeMenu, setActiveMenu] = useState(null); // click ΓåÆ persistent
+  const [hoveredMenu, setHoveredMenu] = useState(null); // hover ΓåÆ temporary
   const [openItems, setOpenItems] = useState({});
   const [scrollTarget, setScrollTarget] = useState("submenu");
 
@@ -146,7 +137,7 @@ const Sidebar = ({
   const mainMenuRef = useRef(null);
   const subMenuRef = useRef(null);
 
-  // First section with submenu — default when right panel is always open (desktop)
+  // First section with submenu ΓÇö default when right panel is always open (desktop)
   const defaultOpenSectionId =
     sidebarSections.find((s) => s.hasSubmenu)?.id ??
     sidebarSections[0]?.id ??
@@ -160,19 +151,19 @@ const Sidebar = ({
     ? activeMenu
     : activeMenu ?? defaultOpenSectionId;
 
-  // ─── Notify Layout on EVERY width change (hover + click both) ─────────────
+  // ΓöÇΓöÇΓöÇ Notify Layout on EVERY width change (hover + click both) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   useEffect(() => {
     if (isMobile) {
       onWidthChange(0);
     } else {
-      // Submenu visible (either hovered or clicked) → full width
-      // Submenu hidden → left panel only
+      // Submenu visible (either hovered or clicked) ΓåÆ full width
+      // Submenu hidden ΓåÆ left panel only
       // onWidthChange(activeSection ? LEFT_W + RIGHT_W : LEFT_W);
       onWidthChange(LEFT_W + RIGHT_W);
     }
   }, [activeSection, isMobile, LEFT_W, RIGHT_W, onWidthChange]);
 
-  // ─── Cleanup on breakpoint change ─────────────────────────────────────────
+  // ΓöÇΓöÇΓöÇ Cleanup on breakpoint change ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   useEffect(() => {
     if (isMobile) setHoveredMenu(null);
   }, [isMobile]);
@@ -181,42 +172,7 @@ const Sidebar = ({
     if (!isMobile && sidebarOpen) setSidebarOpen(false);
   }, [isMobile]);
 
-  useEffect(() => {
-    const path = location.pathname;
-    const matchedSection = sidebarSections.find((section) => {
-      if (!section.submenuItems?.length) return false;
-      return section.submenuItems.some((group) =>
-        (group.items || []).some(
-          (item) =>
-            item.path === path ||
-            (item.path &&
-              path.startsWith(item.path.split("/").slice(0, 3).join("/"))),
-        ),
-      );
-    });
-    if (matchedSection) {
-      setActiveMenu(matchedSection.id);
-      const groupContainsPath = (group, itemPath) => {
-        const prefixes = {
-          fxsAdvanced: "/advanced",
-          fxsPort: "/port",
-          fxsRoute: "/fxs/route",
-          fxsNumManipulate: "/fxs/num-manipulate",
-        };
-        const prefix = prefixes[group.id];
-        if (prefix && itemPath.startsWith(prefix)) return true;
-        return (group.items || []).some((item) => item.path === itemPath);
-      };
-      const openGroup = matchedSection.submenuItems.find((group) =>
-        groupContainsPath(group, path),
-      );
-      if (openGroup) {
-        setOpenItems((prev) => ({ ...prev, [openGroup.id]: true }));
-      }
-    }
-  }, [location.pathname, sidebarSections]);
-
-  // ─── Navigation ───────────────────────────────────────────────────────────
+  // ΓöÇΓöÇΓöÇ Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleNavigation = useCallback(
     (path) => {
       if (!path) return;
@@ -235,7 +191,7 @@ const Sidebar = ({
 
   const isActive = (path) => location.pathname === path;
 
-  // ─── Hover handlers with 80ms delay (prevents flicker) — kept, not wired in JSX ──
+  // ΓöÇΓöÇΓöÇ Hover handlers with 80ms delay (prevents flicker) ΓÇö kept, not wired in JSX ΓöÇΓöÇ
   // onMouseEnter={() => handleLeftItemMouseEnter(section.id)}
   // onMouseLeave={handleLeftItemMouseLeave}
   // onMouseEnter={handleSubmenuMouseEnter} onMouseLeave={handleSubmenuMouseLeave}
@@ -260,78 +216,81 @@ const Sidebar = ({
     hoverLeaveTimer.current = setTimeout(() => setHoveredMenu(null), 80);
   };
 
-  // ─── Click handler ────────────────────────────────────────────────────────
+  // ΓöÇΓöÇΓöÇ Click handler ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleMainItemClick = (section) => {
     clearTimeout(hoverLeaveTimer.current);
     if (!section.hasSubmenu) {
       handleNavigation(section.path);
       setActiveMenu(section.id);
     } else {
-      // Click-to-toggle close (disabled — right menu always open on desktop)
+      // Click-to-toggle close (disabled ΓÇö right menu always open on desktop)
       // setActiveMenu((prev) => (prev === section.id ? null : section.id));
       setActiveMenu(section.id);
     }
   };
 
   // ============================================
-  // RENDER FUNCTIONS — 4 LEVELS OF NESTING
+  // RENDER FUNCTIONS ΓÇö 4 LEVELS OF NESTING
   // ============================================
 
-  // LEVEL 4 — leaf page items
-  const renderDeepItem = (item) => {
-    const active = isActive(item.path);
-    return (
-      <ListItem
-        key={item.id}
-        component="div"
-        className="sidebar-subnav-link"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleNavigation(item.path);
-        }}
-        sx={{
-          cursor: "pointer",
-          backgroundColor: active ? SUBMENU_ACTIVE_BG : "transparent",
-          borderLeft: active
-            ? `3px solid ${SIDEBAR_ACCENT}`
-            : "3px solid transparent",
-          minHeight: 34,
-          display: "flex",
-          alignItems: "center",
-          width: "100%",
-          boxSizing: "border-box",
-          padding: "7px 12px 7px 16px",
-          transition:
-            "background 0.12s ease, color 0.12s ease, padding-left 0.12s ease, border-left-color 0.12s ease",
-          "&:hover": {
-            backgroundColor: active ? SUBMENU_ACTIVE_BG : SIDEBAR_HOVER_BG,
-            paddingLeft: active ? "16px" : "18px",
-          },
-        }}
-      >
-        <ListItemText
-          primary={item.title}
-          sx={{
-            margin: 0,
-            "& .MuiTypography-root": {
-              color: active ? SIDEBAR_TEXT_ICON_ACTIVE : SIDEBAR_TEXT_MUTED,
-              fontWeight: active ? 600 : 500,
-              fontSize: isMobile ? 12 : 13,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            },
+  // LEVEL 4 ΓÇö leaf page items
+  const renderDeepItem = (item) => (
+    <ListItem
+      key={item.id}
+      component="div"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleNavigation(item.path);
+      }}
+      sx={{
+        cursor: "pointer",
+        backgroundColor: isActive(item.path) ? "#d0ecf8" : "#ffffff",
+        borderBottom: "1px solid #e8edf3",
+        borderLeft: isActive(item.path)
+          ? "3px solid #29a8e0"
+          : "3px solid transparent",
+        minHeight: isMobile ? "26px" : "28px",
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+        boxSizing: "border-box",
+        padding: isMobile ? "3px 6px" : "3px 8px 3px 10px",
+        transition: "background-color 0.15s ease",
+        "&:hover": {
+          backgroundColor: isActive(item.path) ? "#d0ecf8" : "#f0f7fd",
+        },
+      }}
+    >
+      <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
+        <div
+          style={{
+            width: "2px",
+            height: "14px",
+            backgroundColor: isActive(item.path) ? "#29a8e0" : "#cbd5e1",
           }}
         />
-      </ListItem>
-    );
-  };
+      </ListItemIcon>
+      <ListItemText
+        primary={item.title}
+        sx={{
+          "& .MuiTypography-root": {
+            color: isActive(item.path) ? "#29a8e0" : "#374151",
+            fontWeight: isActive(item.path) ? 700 : 500,
+            fontSize: isMobile ? 12 : isTablet ? 11 : 12,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          },
+        }}
+      />
+    </ListItem>
+  );
 
-  // LEVEL 3 — subgroup with items (collapsible dropdown)
+  // LEVEL 3 ΓÇö subgroup with items
   const renderSubGroup = (group) => {
+    const IconComponent = group.icon;
     const isOpen = openItems[group.id] || false;
-    const hasActiveChild = group.items?.some((item) => isActive(item.path));
     return (
       <React.Fragment key={group.id}>
         <ListItem
@@ -350,28 +309,30 @@ const Sidebar = ({
           }}
           sx={{
             cursor: "pointer",
-            backgroundColor: "transparent",
-            borderBottom: `1px solid ${SIDEBAR_BORDER}`,
-            minHeight: 38,
+            backgroundColor: "#eaeff5",
+            borderBottom: "1px solid #dde4ed",
+            // borderTop: "1px solid rgba(255,255,255,0.9)",
+            minHeight: isMobile ? "26px" : "28px",
             display: "flex",
             alignItems: "center",
-            padding: "8px 12px",
+            padding: isMobile ? "4px 6px" : "6px 8px 6px 10px",
             width: "100%",
             boxSizing: "border-box",
-            transition: "background 0.12s ease",
-            "&:hover": { backgroundColor: SIDEBAR_HOVER_BG },
+            transition: "background-color 0.15s ease",
           }}
         >
+          <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
+            <IconComponent
+              sx={{ color: "#29a8e0", fontSize: isMobile ? 14 : 15 }}
+            />
+          </ListItemIcon>
           <ListItemText
             primary={group.title}
             sx={{
-              margin: 0,
               "& .MuiTypography-root": {
-                color: hasActiveChild ? SIDEBAR_TEXT_ACTIVE : SIDEBAR_TEXT_MUTED,
+                color: "#334155",
                 fontWeight: 700,
-                fontSize: 10,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
+                fontSize: isMobile ? 12 : isTablet ? 12 : 13,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -380,8 +341,8 @@ const Sidebar = ({
           />
           <ExpandLess
             sx={{
-              color: SIDEBAR_TEXT_MUTED,
-              transform: isOpen ? "rotate(180deg)" : "rotate(90deg)",
+              color: "#64748b",
+              transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
               fontSize: isMobile ? 15 : 16,
               transition: "transform 0.2s ease",
               flexShrink: 0,
@@ -397,7 +358,7 @@ const Sidebar = ({
     );
   };
 
-  // LEVEL 2 — group with subgroups
+  // LEVEL 2 ΓÇö group with subgroups
   const renderGroupItem = (item) => {
     const isOpen = openItems[item.id] || false;
     return (
@@ -411,28 +372,34 @@ const Sidebar = ({
           }}
           sx={{
             cursor: "pointer",
-            backgroundColor: "transparent",
-            borderBottom: `1px solid ${SIDEBAR_BORDER}`,
-            minHeight: 38,
+            backgroundColor: "#eaeff5",
+            borderBottom: "1px solid #dde4ed",
+            borderTop: "1px solid rgba(255,255,255,0.9)",
+            minHeight: isMobile ? "26px" : "28px",
             display: "flex",
             alignItems: "center",
             width: "100%",
             boxSizing: "border-box",
-            padding: "8px 12px",
-            transition: "background 0.12s ease",
-            "&:hover": { backgroundColor: SIDEBAR_HOVER_BG },
+            padding: isMobile ? "2px 6px" : "2px 8px",
+            transition: "background-color 0.15s ease",
           }}
         >
+          <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
+            <div
+              style={{
+                width: "2px",
+                height: "12px",
+                backgroundColor: "#29a8e0",
+              }}
+            />
+          </ListItemIcon>
           <ListItemText
             primary={item.title}
             sx={{
-              margin: 0,
               "& .MuiTypography-root": {
-                color: SIDEBAR_TEXT_MUTED,
+                color: "#334155",
                 fontWeight: 700,
-                fontSize: 10,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
+                fontSize: isMobile ? 11 : isTablet ? 11.5 : 12,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -441,8 +408,8 @@ const Sidebar = ({
           />
           <ExpandLess
             sx={{
-              color: SIDEBAR_TEXT_MUTED,
-              transform: isOpen ? "rotate(180deg)" : "rotate(90deg)",
+              color: "#64748b",
+              transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
               fontSize: isMobile ? 14 : 16,
               transition: "transform 0.2s ease",
               flexShrink: 0,
@@ -458,57 +425,58 @@ const Sidebar = ({
     );
   };
 
-  // LEVEL 1 — simple nav item
-  const renderSimpleItem = (item) => {
-    const active = isActive(item.path);
-    return (
-      <ListItem
-        key={item.id}
-        component="div"
-        className="sidebar-subnav-link"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleNavigation(item.path);
-        }}
-        sx={{
-          cursor: "pointer",
-          backgroundColor: active ? SUBMENU_ACTIVE_BG : "transparent",
-          borderBottom: `1px solid ${SIDEBAR_BORDER}`,
-          borderLeft: active
-            ? `3px solid ${SIDEBAR_ACCENT}`
-            : "3px solid transparent",
-          minHeight: 34,
-          display: "flex",
-          alignItems: "center",
-          width: "100%",
-          boxSizing: "border-box",
-          padding: "7px 12px",
-          transition:
-            "background 0.12s ease, color 0.12s ease, padding-left 0.12s ease, border-left-color 0.12s ease",
-          "&:hover": {
-            backgroundColor: active ? SUBMENU_ACTIVE_BG : SIDEBAR_HOVER_BG,
-            paddingLeft: active ? "12px" : "14px",
-          },
-        }}
-      >
-        <ListItemText
-          primary={item.title}
-          sx={{
-            margin: 0,
-            "& .MuiTypography-root": {
-              color: active ? SIDEBAR_TEXT_ICON_ACTIVE : SIDEBAR_TEXT_MUTED,
-              fontWeight: active ? 600 : 500,
-              fontSize: isMobile ? 12 : 13,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            },
+  // LEVEL 1 ΓÇö simple nav item
+  const renderSimpleItem = (item) => (
+    <ListItem
+      key={item.id}
+      component="div"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleNavigation(item.path);
+      }}
+      sx={{
+        cursor: "pointer",
+        backgroundColor: isActive(item.path) ? "#d0ecf8" : "transparent",
+        borderBottom: "1px solid #e8edf3",
+        borderLeft: isActive(item.path)
+          ? "3px solid #29a8e0"
+          : "3px solid transparent",
+        minHeight: isMobile ? "26px" : "28px",
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+        boxSizing: "border-box",
+        padding: isMobile ? "1px 6px" : "1px 10px",
+        "&:hover": {
+          backgroundColor: isActive(item.path) ? "#d0ecf8" : "#f0f7fd",
+        },
+      }}
+    >
+      <ListItemIcon sx={{ minWidth: 0, marginRight: 1 }}>
+        <div
+          style={{
+            width: "2px",
+            height: "12px",
+            backgroundColor: isActive(item.path) ? "#29a8e0" : "#cbd5e1",
           }}
         />
-      </ListItem>
-    );
-  };
+      </ListItemIcon>
+      <ListItemText
+        primary={item.title}
+        sx={{
+          "& .MuiTypography-root": {
+            color: isActive(item.path) ? "#29a8e0" : "#374151",
+            fontWeight: isActive(item.path) ? 700 : 500,
+            fontSize: isMobile ? 12 : isTablet ? 12.5 : 13,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          },
+        }}
+      />
+    </ListItem>
+  );
 
   // Smart router
   const renderSubmenuItems = (submenuItems) =>
@@ -527,7 +495,6 @@ const Sidebar = ({
       <ListItem
         key={section.id}
         component="div"
-        className="sidebar-rail-item"
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -535,33 +502,17 @@ const Sidebar = ({
         }}
         sx={{
           cursor: "pointer",
-          position: "relative",
-          backgroundColor: isCurrentActive
-            ? SUBMENU_ACTIVE_BG
-            : "transparent",
-          borderBottom: `1px solid ${SIDEBAR_BORDER}`,
-          borderLeft: isCurrentActive
-            ? `3px solid ${SIDEBAR_ACCENT}`
-            : "3px solid transparent",
-          borderRadius: isCurrentActive ? "10px" : 0,
-          margin: isCurrentActive ? "4px 5px" : "0",
-          width: isCurrentActive ? "calc(100% - 10px)" : "100%",
+          backgroundColor: isCurrentActive ? "#29a8e0" : "transparent",
+          borderBottom: "1px solid #162233",
           minHeight: isMobile ? "44px" : isTablet ? "48px" : "52px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          padding: isMobile ? "6px 4px" : "10px 6px",
-          transition:
-            "background 0.13s ease, color 0.13s ease, transform 0.13s ease, border-color 0.13s ease",
+          padding: isMobile ? "6px 4px" : "10px 8px",
+          transition: "background-color 0.15s ease",
           "&:hover": {
-            backgroundColor: isCurrentActive
-              ? SUBMENU_ACTIVE_BG
-              : SIDEBAR_HOVER_BG,
-            transform: "scale(1.04)",
-          },
-          "&:active": {
-            transform: "scale(0.96)",
+            backgroundColor: isCurrentActive ? "#29a8e0" : "#2a3f58",
           },
         }}
         title={section.title}
@@ -569,7 +520,7 @@ const Sidebar = ({
         <ListItemIcon sx={{ minWidth: 0, marginBottom: isMobile ? 0 : -0.5 }}>
           <IconComponent
             sx={{
-              color: isCurrentActive ? SIDEBAR_TEXT_ICON_ACTIVE : SIDEBAR_TEXT_MUTED,
+              color: isCurrentActive ? "#ffffff" : "#ffffff",
               fontSize: isMobile ? 18 : isTablet ? 20 : 21,
             }}
           />
@@ -580,14 +531,14 @@ const Sidebar = ({
             sx={{
               textAlign: "center",
               "& .MuiTypography-root": {
-                color: isCurrentActive ? SIDEBAR_TEXT_ACTIVE : SIDEBAR_TEXT_MUTED,
+                color: isCurrentActive ? "#ffffff" : "#ffffff",
                 fontWeight: 700,
-                fontSize: isTablet ? 10.5 : 11,
+                fontSize: isTablet ? 11 : 11.5,
                 lineHeight: 1.2,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                maxWidth: LEFT_W - 12,
+                maxWidth: LEFT_W - 8,
               },
             }}
           />
@@ -640,9 +591,9 @@ const Sidebar = ({
         onScroll={handleScroll}
         style={{
           position: "fixed",
-          top: `${navbarHeight}px`,
+          top: `${navbarHeight + 1}px`,
           left: sidebarLeft,
-          height: `calc(100vh - ${navbarHeight}px)`,
+          height: `calc(100vh - ${navbarHeight + 1}px)`,
           display: "flex",
           flexDirection: "row",
           width: sidebarWidth,
@@ -654,32 +605,30 @@ const Sidebar = ({
         {/* LEFT MENU */}
         <div
           ref={mainMenuRef}
-          className="sidebar-rail"
           onMouseEnter={() => setScrollTarget("main")}
           style={{
             minWidth: LEFT_W,
             width: LEFT_W,
-            background: SIDEBAR_RAIL_BG,
-            borderRight: `1px solid ${SIDEBAR_BORDER}`,
+            background: "#162436",
+            borderRight: "1px solid #162233",
             overflowY: "auto",
             overflowX: "hidden",
             WebkitOverflowScrolling: "touch",
           }}
         >
-          <List sx={{ py: 0.5 }}>
+          <List sx={{ py: 0 }}>
             {sidebarSections.map(renderSidebarSection)}
           </List>
         </div>
 
-        {/* RIGHT MENU — always open on desktop; click switches section (mobile: when active) */}
+        {/* RIGHT MENU ΓÇö always open on desktop; click switches section (mobile: when active) */}
         {(isMobile ? activeSection : activeSection != null) && (
           <div
             ref={subMenuRef}
-            className="sidebar-submenu-panel"
             style={{
               width: isMobile ? `calc(100vw - ${LEFT_W}px)` : RIGHT_W,
-              background: SIDEBAR_RAIL_BG,
-              borderRight: `1px solid ${SIDEBAR_BORDER}`,
+              background: "#f0f4f8",
+              borderRight: "1px solid #dde4ed",
               overflowY: "auto",
               overflowX: "hidden",
               WebkitOverflowScrolling: "touch",

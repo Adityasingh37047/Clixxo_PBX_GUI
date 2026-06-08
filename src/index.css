@@ -37,6 +37,14 @@ body, html {
   background-color: #dde0e4 !important;
 }
 
+/* VoIP settings pages — outer layout #eef2f7 + inner page shell #f8fafc (matches Media Parameters) */
+.fxs-voip-media-page {
+  background: #f8fafc;
+  min-height: calc(100vh - 80px);
+  padding: 20px 24px 32px;
+  box-sizing: border-box;
+}
+
 /* Ensure all main containers use the same background */
 .main-container, .page-container, .content-wrapper {
   background-color: #dde0e4 !important;

@@ -12,6 +12,7 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
   const [dateTime, setDateTime] = useState(new Date());
   const [serverDateTime, setServerDateTime] = useState(null);
   const [useServerTime, setUseServerTime] = useState(true);
+  const [timeOffset, setTimeOffset] = useState(0);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
 
@@ -29,8 +30,10 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
           const serverDate = new Date(serverTimeStr);
 
           if (!isNaN(serverDate.getTime())) {
+            const offset = serverDate.getTime() - Date.now();
+            setTimeOffset(offset);
             setServerDateTime(serverDate);
-            console.log("📡 Server time fetched:", serverTimeStr);
+            console.log("📡 Server time fetched and offset set:", offset);
           } else {
             console.warn("⚠️ Invalid server time, using browser time");
             setUseServerTime(false);
@@ -46,26 +49,20 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
     };
 
     fetchServerTime();
-
-    // Refetch server time every 30 seconds to stay in sync
-    const refetchInterval = setInterval(fetchServerTime, 30000);
-
-    return () => clearInterval(refetchInterval);
   }, []);
 
   // Update displayed time every second
   useEffect(() => {
     const timer = setInterval(() => {
-      if (useServerTime && serverDateTime) {
-        // Increment server time by 1 second
-        setServerDateTime((prev) => new Date(prev.getTime() + 1000));
+      if (useServerTime) {
+        setServerDateTime(new Date(Date.now() + timeOffset));
       } else {
         // Use browser time
         setDateTime(new Date());
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [useServerTime, serverDateTime]);
+  }, [useServerTime, timeOffset]);
 
   // Only show time once server time is fetched
   let formattedDate = "";
@@ -102,8 +99,7 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
         className="flex items-center justify-between overflow-hidden"
         style={{
           height: 48,
-          backgroundColor: "#1e2d3e",
-          borderBottom: "1px solid #243347",
+          backgroundColor: "#1C2536",
         }}
       >
         {/* LEFT: hamburger + logo */}
@@ -169,16 +165,16 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
           </div>
           <button
             onClick={handleLogout}
-            className="clixxo-logout-btn group flex items-center bg-[#F1F5F9] text-[#2F4362] text-xs sm:text-sm px-2 sm:px-3 py-1 border border-[#D8E0EA] rounded-full shadow-sm hover:bg-[#E2E8F0] hover:text-[#1E2F47] active:bg-[#D1DAE6] transition-all font-medium gap-1 sm:gap-2 outline-none min-w-[60px] sm:min-w-[80px] cursor-pointer"
-            style={{ boxShadow: "0 2px 4px rgba(0,0,0,0.08)" }}
+            className="clixxo-logout-btn group flex items-center text-white text-xs sm:text-sm px-3 sm:px-4 py-1 border border-white rounded-md font-semibold gap-1 sm:gap-2 outline-none min-w-[60px] sm:min-w-[80px] cursor-pointer"
+            style={{ background: "transparent", transition: "all 0.13s ease" }}
           >
             <span className="transition-colors">Logout</span>
             <PowerSettingsNewIcon
               className="power-icon"
               style={{
                 fontSize: 16,
-                color: "#6b7280",
-                transition: "all 0.3s ease",
+                color: "#ffffff",
+                transition: "all 0.13s ease",
               }}
             />
           </button>
@@ -187,17 +183,11 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
       {/* Custom Button Styles */}
       <style jsx="true">{`
         .clixxo-logout-btn:hover {
-          background: #e5e7eb !important;
-          border-color: #3e5475 !important;
-          box-shadow: 0 4px 12px rgba(62, 84, 117, 0.6) !important;
-          transform: translateY(-1px) !important;
+          background: rgba(255, 255, 255, 0.1) !important;
+          border-color: #ffffff !important;
         }
-        .clixxo-logout-btn:hover .power-icon {
-          color: #3e5475 !important;
-          transform: scale(1.1) rotate(5deg) !important;
-        }
-        .clixxo-logout-btn:hover span {
-          color: #000 !important;
+        .clixxo-logout-btn:active {
+          transform: scale(0.97) !important;
         }
       `}</style>
     </div>
