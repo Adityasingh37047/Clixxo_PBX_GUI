@@ -10,7 +10,7 @@ import {
   advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 import {
-  systemToolsFieldInputStyleSmall as inputStyle,
+  systemToolsEditableFieldInputStyleSmall as inputStyle,
   inputInteraction,
 } from "../../../sections/systemTools/systemToolsSharedUi";
 

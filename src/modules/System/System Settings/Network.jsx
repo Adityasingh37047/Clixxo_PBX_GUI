@@ -261,7 +261,7 @@ const Network = () => {
             .filter((iface) => {
               const kn = (iface.interface || "").toLowerCase();
               // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
-              return /^eth\d+$/.test(kn) || /^enp\d+s\d+$/.test(kn);
+              return /^eth\d+$/.test(kn) || /^enp\d+s\d+/.test(kn);
             })
             // Assign sequential "LAN 1", "LAN 2", … — ignore API name field which
             // may reflect a different device numbering (e.g. "LAN 6", "LAN 7")

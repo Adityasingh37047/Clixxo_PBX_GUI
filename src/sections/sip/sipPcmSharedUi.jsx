@@ -169,37 +169,62 @@ export const sipPcmFormHeaderStyle = {
 };
 
 export const SIP_PCM_AUTH_FIELD_WIDTH = 200;
+/** Matches DTMF Transmit Mode select — all SIP form fill boxes use this height */
+export const SIP_PCM_FORM_FIELD_HEIGHT = 32;
 
-/** Authorization-style centered form body */
-export const SIP_PCM_AUTH_FORM_BODY_CLASS =
-  "w-full px-5 pt-3 pb-0 flex flex-col items-center";
+/** Form body — original label-left / field-right rows */
+export const SIP_PCM_FORM_BODY_CLASS = "w-full px-5 pt-3 pb-0";
 
-/** Narrow control column + wider label-to-field gap (56px) */
-export const SIP_PCM_AUTH_FORM_GRID_CLASS =
-  `w-full max-w-2xl grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_${SIP_PCM_AUTH_FIELD_WIDTH}px] gap-x-14 gap-y-4 items-center`;
+export const SIP_PCM_FORM_FIELDS_WRAPPER_CLASS = "flex-1 py-4 px-16";
 
-export const sipPcmAuthLabelStyle = {
+export const SIP_PCM_FORM_STACK_CLASS = "space-y-4";
+
+export const SIP_PCM_FORM_ROW_CLASS = "flex items-center justify-between";
+
+export const sipPcmFormLabelStyle = {
   fontSize: 13,
   fontWeight: 600,
   color: C.labelText,
   textAlign: "left",
+  width: 320,
+  marginRight: 10,
+  lineHeight: 1.4,
+  flexShrink: 0,
+  whiteSpace: "nowrap",
 };
 
-export const sipPcmAuthControlWrapStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  minWidth: 0,
+export const getSipPcmFormLabelStyle = (fieldKey) => ({
+  ...sipPcmFormLabelStyle,
+  width: fieldKey === "externalBound" ? 380 : 320,
+  whiteSpace: fieldKey === "externalBound" ? "normal" : "nowrap",
+});
+
+export const sipPcmFormControlWrapStyle = {
   width: SIP_PCM_AUTH_FIELD_WIDTH,
   maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
+  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
+  flexShrink: 0,
 };
 
-/** Text / number inputs — same size as Certificate Management fill boxes */
+const SIP_PCM_FILL_BG_EDITABLE = "#ffffff";
+const SIP_PCM_FILL_BG_READ_ONLY = "#f1f5f9";
+
+/** Text / number inputs — same height as DTMF Transmit Mode select */
 export const sipPcmAuthInputStyle = {
   ...systemToolsFieldInputStyleSmall,
   width: SIP_PCM_AUTH_FIELD_WIDTH,
   maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
+  height: SIP_PCM_FORM_FIELD_HEIGHT,
+  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
+  padding: "0 12px",
+  lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
   textAlign: "left",
+  backgroundColor: SIP_PCM_FILL_BG_EDITABLE,
+};
+
+export const sipPcmAuthReadOnlyInputStyle = {
+  ...sipPcmAuthInputStyle,
+  backgroundColor: SIP_PCM_FILL_BG_READ_ONLY,
 };
 
 /** Hover / focus — same as Certificate Management (`inputInteraction`) */
@@ -228,12 +253,12 @@ export const sipPcmAuthMuiSelectSx = {
   fontSize: 12,
   width: SIP_PCM_AUTH_FIELD_WIDTH,
   maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  backgroundColor: "#f8fafc",
+  backgroundColor: SIP_PCM_FILL_BG_EDITABLE,
   borderRadius: "6px",
   "& .MuiOutlinedInput-root": {
-    minHeight: "unset",
-    height: "auto",
-    backgroundColor: "#f8fafc",
+    height: SIP_PCM_FORM_FIELD_HEIGHT,
+    minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
+    backgroundColor: SIP_PCM_FILL_BG_EDITABLE,
     transition: "border-color 0.2s ease",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
@@ -263,9 +288,11 @@ export const sipPcmAuthMuiSelectSx = {
     borderWidth: 2,
   },
   "& .MuiSelect-select": {
-    padding: "6px 32px 6px 12px !important",
+    padding: "0 32px 0 12px !important",
     fontSize: 12,
-    lineHeight: 1.35,
+    lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
+    height: "100%",
+    minHeight: "unset !important",
     textAlign: "left",
     display: "flex",
     alignItems: "center",
@@ -303,10 +330,12 @@ export const sipPcmAuthSectionFullWidthStyle = {
   boxSizing: "border-box",
 };
 
+export const SIP_PCM_SECTION_HEADING_COLOR = "#30415A";
+
 export const SipPcmSectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 20px 0" : "0",
+      margin: isFirst ? "0 0 20px 0" : "16px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -321,7 +350,7 @@ export const SipPcmSectionHeading = ({ title, isFirst = false }) => (
         paddingRight: 8,
         fontSize: 13,
         fontWeight: 600,
-        color: C.mutedText,
+        color: SIP_PCM_SECTION_HEADING_COLOR,
       }}
     >
       {title}

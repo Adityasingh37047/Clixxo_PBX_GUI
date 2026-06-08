@@ -8,6 +8,8 @@ import {
   TextField,
   Alert,
   CircularProgress,
+  FormGroup,
+  FormControlLabel,
   Checkbox,
   InputAdornment,
   IconButton,
@@ -18,12 +20,12 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import { CODEC_OPTIONS } from "../../../constants/SipAccountConstants";
 import {
   SIP_TO_SIP_FIELDS,
   SIP_TO_SIP_TABLE_COLUMNS,
   SIP_TO_SIP_INITIAL_FORM,
   SIP_TO_SIP_FORM_LAYOUT,
-  SIP_TO_SIP_CODEC_OPTIONS,
 } from "../../../constants/SipToSipAccountConstants";
 import { fetchSipAccounts } from "../../../api/apiService";
 import {
@@ -559,6 +561,44 @@ const SipToSipAccountPage = () => {
       );
     }
 
+    if (field.type === "checkbox") {
+      return (
+        <div className="w-full">
+          <FormGroup row sx={{ gap: 1, flexWrap: "wrap" }}>
+            {CODEC_OPTIONS.map((codec) => (
+              <FormControlLabel
+                key={codec.value}
+                control={
+                  <Checkbox
+                    checked={isCodecSelected(codec.value)}
+                    onChange={(e) =>
+                      handleCodecChange(codec.value, e.target.checked)
+                    }
+                    size="small"
+                    sx={sipPcmCheckboxSx}
+                  />
+                }
+                label={codec.label}
+                sx={{
+                  margin: 0,
+                  "& .MuiFormControlLabel-label": {
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: "#374151",
+                  },
+                }}
+              />
+            ))}
+          </FormGroup>
+          {validationErrors.allow_codecs && (
+            <div className="text-red-500 text-xs mt-1">
+              {validationErrors.allow_codecs}
+            </div>
+          )}
+        </div>
+      );
+    }
+
     if (field.name === "context") {
       return (
         <div className="w-full">
@@ -572,7 +612,24 @@ const SipToSipAccountPage = () => {
               displayEmpty
               onChange={(e) => handleChange("context", e.target.value)}
               inputProps={{ "aria-label": "Select Context" }}
-              sx={{ fontSize: 13, backgroundColor: "#fff" }}
+              variant="outlined"
+              sx={{
+                fontSize: 13,
+                backgroundColor: "#fff",
+                "& .MuiOutlinedInput-root": {
+                  height: "auto",
+                  minHeight: "unset",
+                },
+                "& .MuiSelect-select": {
+                  padding: "6px 32px 6px 8px !important",
+                  fontSize: 13,
+                  lineHeight: 1.35,
+                  minHeight: "unset !important",
+                  boxSizing: "border-box",
+                  display: "flex",
+                  alignItems: "center",
+                },
+              }}
             >
               <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                 <em>Select Context</em>
@@ -637,7 +694,7 @@ const SipToSipAccountPage = () => {
                 : field.name === "from_domain"
                   ? "e.g., sip.domain.in"
                   : field.name === "contact_user"
-                    ? "e.g., +91XXXXXXXXXX"
+                    ? "+91XXXXXXXXXX"
                     : field.name === "outbound_proxy"
                       ? "e.g., 15.158.34.15"
                       : `Enter ${field.label.toLowerCase()}`
@@ -661,79 +718,23 @@ const SipToSipAccountPage = () => {
     );
   };
 
-  const renderAllowCodecsField = () => (
-    <div key="allow_codecs" style={{ width: "100%", minWidth: 0 }}>
-      <div
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          textTransform: "uppercase",
-          marginBottom: 10,
-        }}
-      >
-        Allow Codecs <span style={{ color: C.errorRed }}>*</span>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        {SIP_TO_SIP_CODEC_OPTIONS.map((codec) => (
-          <label
-            key={codec.value}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "5px 10px",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 6,
-              backgroundColor: "#ffffff",
-              cursor: "pointer",
-              fontSize: 12,
-              fontWeight: 500,
-              color: "#3E5475",
-              userSelect: "none",
-            }}
-          >
-            <Checkbox
-              checked={isCodecSelected(codec.value)}
-              onChange={(e) =>
-                handleCodecChange(codec.value, e.target.checked)
-              }
-              size="small"
-              sx={{ ...sipPcmCheckboxSx, padding: "2px" }}
-            />
-            {codec.label}
-          </label>
-        ))}
-      </div>
-      {validationErrors.allow_codecs && (
-        <div className="text-red-500 text-xs mt-1">
-          {validationErrors.allow_codecs}
-        </div>
-      )}
-    </div>
-  );
-
   const renderFormField = (field) => (
     <div
       key={field.name}
       style={{
-        display: "flex",
-        alignItems: "center",
+        width: "100%",
+        display: "grid",
+        gridTemplateColumns: "120px 1fr",
         gap: 12,
-        minWidth: 0,
+        alignItems: field.type === "checkbox" ? "flex-start" : "center",
       }}
     >
       <label style={formFieldLabelStyle}>
         {field.label} <span style={{ color: C.errorRed }}>*</span>
       </label>
-      <div className="flex-1 min-w-0">{renderFormFieldControl(field)}</div>
+      <div style={{ width: "100%", minWidth: 0 }}>
+        {renderFormFieldControl(field)}
+      </div>
     </div>
   );
 
@@ -1044,7 +1045,6 @@ const SipToSipAccountPage = () => {
                 }}
               >
                 {SIP_TO_SIP_FORM_LAYOUT.map((rowFields, rowIdx) => {
-                  const isFullRow = rowFields.length === 1;
                   const fields = rowFields
                     .map((name) =>
                       SIP_TO_SIP_FIELDS.find((f) => f.name === name),
@@ -1052,23 +1052,8 @@ const SipToSipAccountPage = () => {
                     .filter(Boolean);
 
                   return (
-                    <div
-                      key={rowIdx}
-                      style={
-                        isFullRow
-                          ? { display: "flex", minWidth: 0 }
-                          : {
-                              display: "grid",
-                              gridTemplateColumns: "1fr 1fr",
-                              gap: "16px 32px",
-                            }
-                      }
-                    >
-                      {fields.map((field) =>
-                        field.name === "allow_codecs"
-                          ? renderAllowCodecsField()
-                          : renderFormField(field),
-                      )}
+                    <div key={rowIdx} style={{ width: "100%", minWidth: 0 }}>
+                      {fields.map((field) => renderFormField(field))}
                     </div>
                   );
                 })}

@@ -756,9 +756,23 @@ const SipTrunkGroup = () => {
                       size="small"
                       fullWidth
                       displayEmpty
+                      variant="outlined"
                       sx={{
                         fontSize: 13,
                         backgroundColor: "#fff",
+                        "& .MuiOutlinedInput-root": {
+                          height: "auto",
+                          minHeight: "unset",
+                        },
+                        "& .MuiSelect-select": {
+                          padding: "6px 32px 6px 8px !important",
+                          fontSize: 13,
+                          lineHeight: 1.35,
+                          minHeight: "unset !important",
+                          boxSizing: "border-box",
+                          display: "flex",
+                          alignItems: "center",
+                        },
                       }}
                     >
                       <MenuItem value="" disabled sx={{ fontSize: 13 }}>

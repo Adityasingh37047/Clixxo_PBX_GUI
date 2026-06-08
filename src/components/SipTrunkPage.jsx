@@ -7,7 +7,6 @@ import {
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -15,7 +14,6 @@ import {
   TextField,
   Select as MuiSelect,
   MenuItem,
-  FormControl,
   Alert,
   CircularProgress,
   IconButton,
@@ -24,6 +22,28 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  C,
+  SystemSettingsBtn,
+  SystemSettingsTH,
+  systemSettingsTdStyle,
+  systemSettingsCheckboxSx,
+  systemSettingsSelectedBadgeStyle,
+  systemSettingsPageWrapStyle,
+  systemSettingsInnerStyle,
+  systemSettingsCardStyle,
+  systemSettingsToolbarStyle,
+  systemSettingsPaginationStyle,
+  systemSettingsPageBadgeStyle,
+  SystemSettingsBreadcrumb,
+  SYSTEM_SETTINGS_CARD_RADIUS,
+} from "../sections/system/systemSettingsTableUi";
+import {
+  systemModalFieldInputStyle,
+  systemModalSelectSx,
+  inputInteraction,
+} from "../sections/system/systemSharedUi";
 import {
   listGlobalSipSettings,
   createGlobalSipSettings,
@@ -54,14 +74,7 @@ const SipTrunkPage = () => {
     { value: "0.0.0.0", label: "Any LAN (0.0.0.0)" },
   ]);
 
-  // Scroll state for custom horizontal scrollbar
   const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
 
   // Fields to hide from the table
   const HIDDEN_TABLE_FIELDS = [
@@ -263,24 +276,6 @@ const SipTrunkPage = () => {
     });
   }, [form.local_ip]);
 
-  // Update scroll state when data changes
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-      }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [registers, page]);
-
   // Message handling
   const showMessage = (type, text) => {
     setMessage({ type, text });
@@ -414,14 +409,13 @@ const SipTrunkPage = () => {
       sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
     );
   };
-  const handleCheckAll = () => setSelected(registers.map((_, idx) => idx));
-  const handleUncheckAll = () => setSelected([]);
-  const handleInverse = () =>
-    setSelected(
-      registers
-        .map((_, idx) => (selected.includes(idx) ? null : idx))
-        .filter((i) => i !== null),
-    );
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelected(registers.map((_, idx) => idx));
+    } else {
+      setSelected([]);
+    }
+  };
 
   const handleDelete = async () => {
     if (selected.length === 0) {
@@ -485,51 +479,10 @@ const SipTrunkPage = () => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
   };
 
-  // Scroll handling functions
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
-
-  // Calculate scrollbar thumb dimensions
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
+  const pagedStart = (page - 1) * itemsPerPage;
 
   return (
-    <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
-    >
-      {/* Message Display */}
+    <div style={systemSettingsPageWrapStyle}>
       {message.text && (
         <Alert
           severity={message.type}
@@ -547,366 +500,316 @@ const SipTrunkPage = () => {
         </Alert>
       )}
 
-      {/* Main Content */}
-      <div className="w-full max-w-full mx-auto">
-        {/* Blue header bar - always show */}
-        <div
-          className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#444] shadow-sm mt-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          Global SIP
-        </div>
+      <div style={systemSettingsInnerStyle}>
+        <SystemSettingsBreadcrumb current="Global SIP" />
 
-        <div
-          className="w-full max-w-full mx-auto"
-          style={{
-            border: "2px solid #bbb",
-            borderRadius: 8,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div className="bg-white rounded-lg shadow-sm w-full flex flex-col overflow-hidden">
+        <div style={systemSettingsCardStyle}>
+          <div style={systemSettingsToolbarStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {selected.length > 0 && (
+                <span style={systemSettingsSelectedBadgeStyle}>
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
             <div
-              className="w-full border-b border-gray-300"
               style={{
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-                borderBottom: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
               }}
             >
+              <SystemSettingsBtn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={selected.length === 0 || loading.delete}
+                style={{ height: 30 }}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                {loading.delete ? "Working..." : "Delete"}
+              </SystemSettingsBtn>
+              <SystemSettingsBtn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={registers.length === 0 || loading.delete}
+                style={{ height: 30 }}
+              >
+                {loading.delete ? "Working..." : "Clear All"}
+              </SystemSettingsBtn>
+              <SystemSettingsBtn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                disabled={loading.save}
+                style={{ height: 30 }}
+              >
+                + Add New
+              </SystemSettingsBtn>
+            </div>
+          </div>
+
+          <div
+            ref={tableScrollRef}
+            className="overflow-x-auto w-full"
+            style={
+              loading.fetch || registers.length === 0
+                ? {
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: 240,
+                    padding: 24,
+                    textAlign: "center",
+                  }
+                : {
+                    overflowX: "auto",
+                    overflowY: "auto",
+                    width: "100%",
+                  }
+            }
+          >
+            {loading.fetch ? (
               <div
-                ref={tableScrollRef}
-                onScroll={handleTableScroll}
-                className="scrollbar-hide"
                 style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  maxHeight: 360,
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  color: C.labelText,
+                  fontSize: 13,
                 }}
               >
-                <table
-                  className="w-full min-w-[1400px] border border-gray-300 border-collapse whitespace-nowrap"
-                  style={{ tableLayout: "auto", border: "1px solid #bbb" }}
+                <CircularProgress size={20} />
+                <span>Loading Global SIP settings...</span>
+              </div>
+            ) : registers.length === 0 ? (
+              <>
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
                 >
-                  <thead>
-                    <tr style={{ minHeight: 32 }}>
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                  No Global SIP settings configured!
+                </div>
+                <SystemSettingsBtn
+                  onClick={() => handleOpenModal()}
+                  variant="cancel"
+                  disabled={loading.save}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New
+                </SystemSettingsBtn>
+              </>
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  minWidth: 900,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <SystemSettingsTH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={
+                          registers.length > 0 &&
+                          selected.length === registers.length
+                        }
+                        indeterminate={
+                          selected.length > 0 &&
+                          selected.length < registers.length
+                        }
+                        onChange={handleSelectAll}
+                        disabled={loading.delete}
+                        sx={systemSettingsCheckboxSx}
+                      />
+                    </SystemSettingsTH>
+                    {visibleTableFields.map((field) => (
+                      <SystemSettingsTH
+                        key={field.name}
+                        style={{ position: "sticky", top: 0, zIndex: 10 }}
+                      >
+                        {field.label}
+                      </SystemSettingsTH>
+                    ))}
+                    <SystemSettingsTH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </SystemSettingsTH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedRegisters.map((reg, idx) => {
+                    const realIdx = pagedStart + idx;
+                    const isLastRow = idx === pagedRegisters.length - 1;
+                    const isRowChecked = selected.includes(realIdx);
+                    const rowBg = isRowChecked
+                      ? "#f0f9ff"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+
+                    return (
+                      <tr
+                        key={realIdx}
                         style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
+                          background: rowBg,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isRowChecked)
+                            e.currentTarget.style.background = "#f1f5f9";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isRowChecked)
+                            e.currentTarget.style.background = rowBg;
                         }}
                       >
-                        Check
-                      </th>
-                      {visibleTableFields.map((field) => (
-                        <th
-                          key={field.name}
-                          className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
+                        <td
                           style={{
-                            border: "1px solid #bbb",
-                            padding: "6px 8px",
-                            minHeight: 32,
-                            whiteSpace: "nowrap",
+                            ...systemSettingsTdStyle,
+                            background: rowBg,
+                            borderLeft: "none",
+                            width: 36,
+                            ...lastRowCellStyle,
+                            ...(isLastRow
+                              ? {
+                                  borderBottomLeftRadius:
+                                    SYSTEM_SETTINGS_CARD_RADIUS,
+                                }
+                              : {}),
                           }}
                         >
-                          {field.label}
-                        </th>
-                      ))}
-                      <th
-                        className="bg-white text-[#222] font-semibold text-[15px] border border-gray-300 text-center"
-                        style={{
-                          border: "1px solid #bbb",
-                          padding: "6px 8px",
-                          minHeight: 32,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Modify
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading.fetch ? (
-                      <tr>
+                          <Checkbox
+                            size="small"
+                            checked={isRowChecked}
+                            onChange={() => handleSelectRow(realIdx)}
+                            disabled={loading.delete}
+                            sx={systemSettingsCheckboxSx}
+                          />
+                        </td>
+                        {visibleTableFields.map((field) => (
+                          <td
+                            key={field.name}
+                            style={{
+                              ...systemSettingsTdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {field.name === "index"
+                              ? pagedStart + idx + 1
+                              : renderCellValue(field, reg)}
+                          </td>
+                        ))}
                         <td
-                          colSpan={visibleFieldsCount + 2}
-                          className="border border-gray-300 px-2 py-4 text-center"
+                          style={{
+                            ...systemSettingsTdStyle,
+                            background: rowBg,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
+                            ...(isLastRow
+                              ? {
+                                  borderBottomRightRadius:
+                                    SYSTEM_SETTINGS_CARD_RADIUS,
+                                }
+                              : {}),
+                          }}
                         >
-                          <div className="flex items-center justify-center gap-2">
-                            <CircularProgress size={20} />
-                            <span>Loading trunks...</span>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() =>
+                                !loading.delete &&
+                                handleOpenModal(reg, realIdx)
+                              }
+                              style={{
+                                cursor: loading.delete
+                                  ? "not-allowed"
+                                  : "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: loading.delete ? 0.5 : 0.7,
+                                transition: "opacity 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "0.7";
+                              }}
+                            />
                           </div>
                         </td>
                       </tr>
-                    ) : registers.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={visibleFieldsCount + 2}
-                          className="border border-gray-300 px-2 py-1 text-center"
-                        >
-                          No data
-                        </td>
-                      </tr>
-                    ) : (
-                      pagedRegisters.map((reg, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        return (
-                          <tr key={realIdx} style={{ minHeight: 32 }}>
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selected.includes(realIdx)}
-                                onChange={() => handleSelectRow(realIdx)}
-                                disabled={loading.delete}
-                              />
-                            </td>
-                            {visibleTableFields.map((field) => (
-                              <td
-                                key={field.name}
-                                className="border border-gray-300 text-center bg-white"
-                                style={{
-                                  border: "1px solid #bbb",
-                                  padding: "6px 8px",
-                                  minHeight: 32,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {field.name === "index"
-                                  ? (page - 1) * itemsPerPage + idx + 1
-                                  : renderCellValue(field, reg)}
-                              </td>
-                            ))}
-                            <td
-                              className="border border-gray-300 text-center bg-white"
-                              style={{
-                                border: "1px solid #bbb",
-                                padding: "6px 8px",
-                                minHeight: 32,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <EditDocumentIcon
-                                className={`cursor-pointer text-blue-600 mx-auto ${loading.delete ? "opacity-50" : ""}`}
-                                onClick={() =>
-                                  !loading.delete &&
-                                  handleOpenModal(reg, realIdx)
-                                }
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {/* Custom scrollbar row below the table */}
-            {showCustomScrollbar && (
-              <div
-                style={{
-                  width: "100%",
-                  margin: "0 auto",
-                  background: "#f4f6fa",
-                  display: "flex",
-                  alignItems: "center",
-                  height: 24,
-                  borderBottomLeftRadius: 8,
-                  borderBottomRightRadius: 8,
-                  border: "none",
-                  borderTop: "none",
-                  padding: "0 4px",
-                  boxSizing: "border-box",
-                }}
-              >
-                <div
-                  style={{
-                    width: 18,
-                    height: 18,
-                    background: "#e3e7ef",
-                    border: "1px solid #bbb",
-                    borderRadius: 8,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    color: "#888",
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                  onClick={() => handleArrowClick("left")}
-                >
-                  &#9664;
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    height: 12,
-                    background: "#e3e7ef",
-                    borderRadius: 8,
-                    position: "relative",
-                    margin: "0 4px",
-                    overflow: "hidden",
-                  }}
-                  onClick={handleScrollbarDrag}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      height: 12,
-                      background: "#888",
-                      borderRadius: 8,
-                      cursor: "pointer",
-                      top: 0,
-                      width: thumbWidth,
-                      left: thumbLeft,
-                    }}
-                    draggable
-                    onDrag={handleScrollbarDrag}
-                  />
-                </div>
-                <div
-                  style={{
-                    width: 18,
-                    height: 18,
-                    background: "#e3e7ef",
-                    border: "1px solid #bbb",
-                    borderRadius: 8,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    color: "#888",
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                  onClick={() => handleArrowClick("right")}
-                >
-                  &#9654;
-                </div>
-              </div>
+                    );
+                  })}
+                </tbody>
+              </table>
             )}
           </div>
-        </div>
 
-        {/* Action and pagination rows OUTSIDE the border, visually separated backgrounds and gap */}
-        <div
-          className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2"
-          style={{ background: "#e3e7ef", marginTop: 12 }}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleInverse}
-              disabled={loading.delete}
-            >
-              Inverse
-            </button>
-
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleDelete}
-              disabled={loading.delete}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleClearAll}
-              disabled={loading.delete}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Clear All
-            </button>
-          </div>
-          <button
-            className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400 ${loading.save ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={() => handleOpenModal()}
-            disabled={loading.save}
-          >
-            Add New
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-          <span>{registers.length} items Total</span>
-          <span>{itemsPerPage} Items/Page</span>
-          <span>
-            {page}/{totalPages}
-          </span>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(1)}
-            disabled={page === 1}
-          >
-            First
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-          <button
-            className="bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400"
-            onClick={() => handlePageChange(totalPages)}
-            disabled={page === totalPages}
-          >
-            Last
-          </button>
-          <span>Go to Page</span>
-          <select
-            className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-            value={page}
-            onChange={(e) => handlePageChange(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
-          <span>{totalPages} Pages Total</span>
+          {registers.length > 0 && (
+            <div style={systemSettingsPaginationStyle}>
+              <span style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}>
+                Showing {registers.length} record
+                {registers.length !== 1 ? "s" : ""}
+              </span>
+              {totalPages > 1 && (
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <SystemSettingsBtn
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page <= 1}
+                    variant="outline"
+                  >
+                    ← Prev
+                  </SystemSettingsBtn>
+                  <span style={systemSettingsPageBadgeStyle}>
+                    Page {page} of {totalPages}
+                  </span>
+                  <SystemSettingsBtn
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= totalPages}
+                    variant="outline"
+                  >
+                    Next →
+                  </SystemSettingsBtn>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -916,12 +819,19 @@ const SipTrunkPage = () => {
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
         className="z-50"
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
         PaperProps={{
           sx: {
-            width: 600,
+            width: 560,
             maxWidth: "95vw",
             mx: "auto",
-            p: 0,
+            borderRadius: "8px",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            backgroundColor: "#ffffff",
+            backgroundImage: "none",
             maxHeight: "90vh",
             display: "flex",
             flexDirection: "column",
@@ -931,28 +841,42 @@ const SipTrunkPage = () => {
         disableEnforceFocus
       >
         <DialogTitle
-          className="text-white text-center font-semibold p-2 text-base"
-          style={{
-            background:
-              "linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)",
-            borderBottom: "1px solid #444444",
+          sx={{
+            fontWeight: 600,
+            fontSize: "16px",
+            color: "#ffffff",
+            backgroundColor: "#1e2d42",
+            borderBottom: `1px solid ${C.cardBorder}`,
+            px: 3,
+            py: 2,
+            textAlign: "center",
+            borderTopLeftRadius: "8px",
+            borderTopRightRadius: "8px",
             flexShrink: 0,
           }}
         >
           {editIndex !== null ? "Edit Global SIP" : "Add Global SIP"}
         </DialogTitle>
         <DialogContent
-          className="pt-3 pb-0 px-2"
-          style={{
-            padding: "12px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+          sx={{
+            p: "24px",
+            backgroundColor: "#ffffff",
             overflowY: "auto",
             flex: "1 1 auto",
           }}
         >
-          <div className="flex flex-col gap-2 w-full">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+              marginTop: 8,
+            }}
+          >
             {SIP_TRUNK_FIELDS.map((field) => {
               // id is auto-assigned by API; no need to expose it in the form
               if (field.name === "index") return null;
@@ -972,38 +896,62 @@ const SipTrunkPage = () => {
               return (
                 <div
                   key={field.name}
-                  className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
-                  style={{ minHeight: 32 }}
+                  style={{
+                    display: "flex",
+                    alignItems:
+                      field.type === "checkbox" && field.name === "allow_codecs"
+                        ? "flex-start"
+                        : "center",
+                    justifyContent: "center",
+                    gap: 12,
+                  }}
                 >
                   <label
-                    className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                    style={{ width: 180, marginRight: 10 }}
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 170,
+                      flexShrink: 0,
+                      textAlign: "left",
+                      whiteSpace: "nowrap",
+                    }}
                   >
                     {field.label}:
                   </label>
-                  <div className="flex-1">
+                  <div
+                    style={{
+                      width: "min(100%, 320px)",
+                      display: "flex",
+                      flex: 1,
+                    }}
+                  >
                     {field.type === "select" ? (
                       <div className="w-full">
-                        <FormControl fullWidth size="small" variant="outlined">
-                          <MuiSelect
-                            value={form[field.name] || ""}
-                            onChange={(e) =>
-                              handleChange(field.name, e.target.value)
-                            }
-                            displayEmpty
-                            sx={{ fontSize: 14 }}
-                          >
-                            {selectOptions.map((option) => (
-                              <MenuItem
-                                key={option.value}
-                                value={option.value}
-                                disabled={option.disabled}
-                              >
-                                {option.label}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
+                        <MuiSelect
+                          value={form[field.name] || ""}
+                          onChange={(e) =>
+                            handleChange(field.name, e.target.value)
+                          }
+                          displayEmpty
+                          fullWidth
+                          sx={{
+                            ...systemModalSelectSx,
+                            borderRadius: "4px",
+                            fontSize: 13,
+                          }}
+                        >
+                          {selectOptions.map((option) => (
+                            <MenuItem
+                              key={option.value}
+                              value={option.value}
+                              disabled={option.disabled}
+                              sx={{ fontSize: 13 }}
+                            >
+                              {option.label}
+                            </MenuItem>
+                          ))}
+                        </MuiSelect>
                         {validationErrors[field.name] && (
                           <div className="text-red-500 text-xs mt-1">
                             {validationErrors[field.name]}
@@ -1026,17 +974,14 @@ const SipTrunkPage = () => {
                                     )
                                   }
                                   size="small"
-                                  sx={{
-                                    padding: "2px 4px",
-                                    "& .MuiSvgIcon-root": { fontSize: 16 },
-                                  }}
+                                  sx={systemSettingsCheckboxSx}
                                 />
                               }
                               label={codec.label}
                               sx={{
                                 margin: 0,
                                 "& .MuiFormControlLabel-label": {
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   fontWeight: 500,
                                   color: "#374151",
                                 },
@@ -1057,28 +1002,25 @@ const SipTrunkPage = () => {
                               }
                             }}
                             size="small"
-                            sx={{
-                              padding: "2px 4px",
-                              "& .MuiSvgIcon-root": { fontSize: 16 },
-                            }}
+                            sx={systemSettingsCheckboxSx}
                           />
-                          <TextField
+                          <input
                             type="text"
-                            value={form["working_period_text"] || ""}
+                            value={form.working_period_text || ""}
                             onChange={(e) =>
                               handleChange(
                                 "working_period_text",
                                 e.target.value,
                               )
                             }
-                            size="small"
-                            fullWidth
-                            variant="outlined"
                             placeholder="24 Hour"
-                            inputProps={{
-                              style: { fontSize: 14, padding: "3px 6px" },
-                            }}
                             disabled={!form[field.name]}
+                            style={{
+                              ...systemModalFieldInputStyle,
+                              flex: 1,
+                              opacity: form[field.name] ? 1 : 0.6,
+                            }}
+                            {...inputInteraction}
                           />
                         </div>
                       ) : field.name === "sip_agent" ? (
@@ -1089,12 +1031,9 @@ const SipTrunkPage = () => {
                               handleChange(field.name, e.target.checked)
                             }
                             size="small"
-                            sx={{
-                              padding: "2px 4px",
-                              "& .MuiSvgIcon-root": { fontSize: 16 },
-                            }}
+                            sx={systemSettingsCheckboxSx}
                           />
-                          <span style={{ fontSize: 14, color: "#666" }}>
+                          <span style={{ fontSize: 13, color: C.labelText }}>
                             Enable
                           </span>
                         </div>
@@ -1105,10 +1044,7 @@ const SipTrunkPage = () => {
                             handleChange(field.name, e.target.checked)
                           }
                           size="small"
-                          sx={{
-                            padding: "2px 4px",
-                            "& .MuiSvgIcon-root": { fontSize: 16 },
-                          }}
+                          sx={systemSettingsCheckboxSx}
                         />
                       )
                     ) : field.type === "password" ? (
@@ -1125,7 +1061,13 @@ const SipTrunkPage = () => {
                           error={!!validationErrors[field.name]}
                           placeholder="Enter password"
                           inputProps={{
-                            style: { fontSize: 14, padding: "3px 6px" },
+                            style: {
+                              ...systemModalFieldInputStyle,
+                              padding: "0 8px",
+                            },
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": { height: 32 },
                           }}
                           InputProps={{
                             endAdornment: (
@@ -1155,21 +1097,22 @@ const SipTrunkPage = () => {
                       </div>
                     ) : (
                       <div className="w-full">
-                        <TextField
+                        <input
                           type="text"
                           value={form[field.name] || ""}
                           onChange={(e) =>
                             handleChange(field.name, e.target.value)
                           }
-                          size="small"
-                          fullWidth
-                          variant="outlined"
-                          error={!!validationErrors[field.name]}
                           disabled={field.name === "index"}
                           placeholder={`Enter ${field.label.toLowerCase()}`}
-                          inputProps={{
-                            style: { fontSize: 14, padding: "3px 6px" },
+                          style={{
+                            ...systemModalFieldInputStyle,
+                            width: "100%",
+                            borderColor: validationErrors[field.name]
+                              ? "#dc2626"
+                              : systemModalFieldInputStyle.border,
                           }}
+                          {...inputInteraction}
                         />
                         {validationErrors[field.name] && (
                           <div className="text-red-500 text-xs mt-1">
@@ -1185,74 +1128,32 @@ const SipTrunkPage = () => {
           </div>
         </DialogContent>
         <DialogActions
-          className="p-4 justify-center gap-12"
           sx={{
-            backgroundColor: "#dde0e4",
-            borderTop: "1px solid #444444",
+            justifyContent: "center",
+            gap: 2,
+            py: "10px",
+            px: "16px",
+            borderTop: `1px solid ${C.cardBorder}`,
+            backgroundColor: "#f8fafc",
             flexShrink: 0,
           }}
         >
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px #b3e0ff",
-              textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-                color: "#fff",
-              },
-              "&:disabled": {
-                background: "#f5f5f5",
-                color: "#666",
-              },
-            }}
+          <SystemSettingsBtn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={20} color="inherit" />
-            }
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-              color: "#374151",
-              fontWeight: 600,
-              fontSize: "16px",
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-                color: "#374151",
-              },
-              "&:disabled": {
-                background: "#f5f5f5",
-                color: "#666",
-              },
-            }}
+          </SystemSettingsBtn>
+          <SystemSettingsBtn
+            variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             Close
-          </Button>
+          </SystemSettingsBtn>
         </DialogActions>
       </Dialog>
     </div>

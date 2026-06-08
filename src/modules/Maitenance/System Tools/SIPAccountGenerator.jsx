@@ -8,7 +8,7 @@ import {
 } from "../../../constants/SIPAccountGeneratorConstants";
 import { Alert } from "@mui/material";
 import {
-  systemToolsFieldInputStyle as inputStyle,
+  systemToolsEditableFieldInputStyle as inputStyle,
   inputInteraction,
 } from "../../../sections/systemTools/systemToolsSharedUi";
 

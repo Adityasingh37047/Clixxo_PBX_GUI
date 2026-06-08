@@ -16,11 +16,12 @@ import {
   sipPcmAuthFormFooterStyle,
   sipPcmAuthFormBtnStyle,
   SipPcmSectionHeading,
-  SIP_PCM_AUTH_FORM_BODY_CLASS,
-  SIP_PCM_AUTH_FORM_GRID_CLASS,
-  sipPcmAuthSectionFullWidthStyle,
-  sipPcmAuthLabelStyle,
-  sipPcmAuthControlWrapStyle,
+  SIP_PCM_FORM_BODY_CLASS,
+  SIP_PCM_FORM_FIELDS_WRAPPER_CLASS,
+  SIP_PCM_FORM_STACK_CLASS,
+  SIP_PCM_FORM_ROW_CLASS,
+  sipPcmFormLabelStyle,
+  sipPcmFormControlWrapStyle,
   sipPcmAuthInputStyle,
   sipPcmAuthInputInteraction,
   sipPcmAuthMuiSelectSx,
@@ -156,7 +157,7 @@ const SipMediaPage = () => {
             <span>Media Parameters</span>
           </div>
 
-          <div className={SIP_PCM_AUTH_FORM_BODY_CLASS}>
+          <div className={SIP_PCM_FORM_BODY_CLASS}>
             {loading ? (
               <div className="flex items-center justify-center min-h-[400px] w-full">
                 <div className="text-center">
@@ -167,11 +168,11 @@ const SipMediaPage = () => {
                 </div>
               </div>
             ) : (
-              <>
-                <div
-                  className={SIP_PCM_AUTH_FORM_GRID_CLASS}
-                  style={{ marginBottom: 0 }}
-                >
+              <div
+                className={SIP_PCM_FORM_FIELDS_WRAPPER_CLASS}
+                style={{ marginBottom: 12 }}
+              >
+                <div className={SIP_PCM_FORM_STACK_CLASS}>
                   {SIP_MEDIA_FIELDS.map((field) => {
                     if (field.conditional) {
                       const condVal = formData[field.conditional];
@@ -184,9 +185,11 @@ const SipMediaPage = () => {
                     }
 
                     return (
-                      <React.Fragment key={field.name}>
-                        <label style={sipPcmAuthLabelStyle}>{field.label}</label>
-                        <div style={sipPcmAuthControlWrapStyle}>
+                      <div key={field.name} className={SIP_PCM_FORM_ROW_CLASS}>
+                        <label style={sipPcmFormLabelStyle}>
+                          {field.label}
+                        </label>
+                        <div style={sipPcmFormControlWrapStyle}>
                           {field.type === "select" ? (
                             <Select
                               name={field.name}
@@ -217,44 +220,45 @@ const SipMediaPage = () => {
                             />
                           )}
                         </div>
-                      </React.Fragment>
+                      </div>
                     );
                   })}
-                </div>
 
-                <div style={sipPcmAuthSectionFullWidthStyle}>
                   <SipPcmSectionHeading title="CODEC Settings" />
-                </div>
 
-                <div
-                  className={SIP_PCM_AUTH_FORM_GRID_CLASS}
-                  style={{ marginBottom: 12 }}
-                >
-                  <label style={sipPcmAuthLabelStyle}>
-                    Gateway Negotiation Coding Sequence:
-                  </label>
-                  <div style={sipPcmAuthControlWrapStyle}>
-                    <Select
-                      name={SIP_MEDIA_CODEC_FIELD.name}
-                      value={formData[SIP_MEDIA_CODEC_FIELD.name]}
-                      onChange={handleInputChange}
-                      variant="outlined"
-                      fullWidth
-                      sx={sipPcmAuthMuiSelectSx}
+                  <div className={SIP_PCM_FORM_ROW_CLASS}>
+                    <label
+                      style={{
+                        ...sipPcmFormLabelStyle,
+                        whiteSpace: "normal",
+                        lineHeight: 1.4,
+                      }}
                     >
-                      {SIP_MEDIA_CODEC_FIELD.options.map((option) => (
-                        <MenuItem
-                          key={option.value}
-                          value={option.value}
-                          sx={{ fontSize: 12 }}
-                        >
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                      Gateway Negotiation Coding Sequence:
+                    </label>
+                    <div style={sipPcmFormControlWrapStyle}>
+                      <Select
+                        name={SIP_MEDIA_CODEC_FIELD.name}
+                        value={formData[SIP_MEDIA_CODEC_FIELD.name]}
+                        onChange={handleInputChange}
+                        variant="outlined"
+                        fullWidth
+                        sx={sipPcmAuthMuiSelectSx}
+                      >
+                        {SIP_MEDIA_CODEC_FIELD.options.map((option) => (
+                          <MenuItem
+                            key={option.value}
+                            value={option.value}
+                            sx={{ fontSize: 12 }}
+                          >
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </div>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
 

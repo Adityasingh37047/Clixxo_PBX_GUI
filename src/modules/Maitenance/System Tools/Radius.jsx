@@ -17,8 +17,8 @@ import {
   advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 import {
-  systemToolsFieldInputStyle as inputStyle,
-  systemToolsMuiSelectSx,
+  systemToolsEditableFieldInputStyle as inputStyle,
+  systemToolsEditableMuiSelectSx as systemToolsMuiSelectSx,
   inputInteraction,
 } from "../../../sections/systemTools/systemToolsSharedUi";
 

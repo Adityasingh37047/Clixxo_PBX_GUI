@@ -11,8 +11,9 @@ import {
   advancedFormBtnStyle,
 } from "../../../sections/advanced/advancedSharedUi";
 import {
-  systemToolsFieldInputStyle,
-  systemToolsFieldInputStyleCompact,
+  systemToolsEditableFieldInputStyle,
+  systemToolsEditableFieldInputStyleCompact,
+  systemToolsReadOnlyFieldTextAreaStyle,
   inputInteraction,
 } from "../../../sections/systemTools/systemToolsSharedUi";
 
@@ -331,7 +332,7 @@ const IDSSettings = () => {
                           handleWarningThreshold(idx, Number(e.target.value))
                         }
                         style={{
-                          ...systemToolsFieldInputStyleCompact,
+                          ...systemToolsEditableFieldInputStyleCompact,
                           maxWidth: 140,
                         }}
                         {...inputInteraction}
@@ -345,7 +346,7 @@ const IDSSettings = () => {
                           handleBlacklistThreshold(idx, Number(e.target.value))
                         }
                         style={{
-                          ...systemToolsFieldInputStyleCompact,
+                          ...systemToolsEditableFieldInputStyleCompact,
                           maxWidth: 140,
                         }}
                         {...inputInteraction}
@@ -405,7 +406,7 @@ const IDSSettings = () => {
                             handleWarningThreshold(idx, Number(e.target.value))
                           }
                           style={{
-                            ...systemToolsFieldInputStyleCompact,
+                            ...systemToolsEditableFieldInputStyleCompact,
                           }}
                           {...inputInteraction}
                         />
@@ -430,7 +431,7 @@ const IDSSettings = () => {
                             )
                           }
                           style={{
-                            ...systemToolsFieldInputStyleCompact,
+                            ...systemToolsEditableFieldInputStyleCompact,
                           }}
                           {...inputInteraction}
                         />
@@ -460,7 +461,7 @@ const IDSSettings = () => {
                   value={form.blacklistValidity}
                   onChange={(e) => handleValidity(Number(e.target.value))}
                   style={{
-                    ...systemToolsFieldInputStyle,
+                    ...systemToolsEditableFieldInputStyle,
                     maxWidth: 180,
                   }}
                   {...inputInteraction}
@@ -504,16 +505,10 @@ const IDSSettings = () => {
               <textarea
                 className="w-full rounded resize-y"
                 style={{
+                  ...systemToolsReadOnlyFieldTextAreaStyle,
                   minHeight: 120,
                   maxHeight: 200,
-                  fontSize: 13,
-                  padding: "12px",
-                  backgroundColor: "#f8fafc",
-                  border: `1px solid ${C.cardBorder}`,
                   color: C.valueText,
-                  fontFamily: "monospace",
-                  outline: "none",
-                  transition: "border-color 0.2s ease",
                 }}
                 value={log}
                 readOnly

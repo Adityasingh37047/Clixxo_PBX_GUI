@@ -7,8 +7,9 @@ import {
 import { Alert, Checkbox } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
 import {
-  systemToolsFieldInputStyle as inputStyle,
-  systemToolsFieldSelectStyle as selectStyle,
+  systemToolsEditableFieldInputStyle as inputStyle,
+  systemToolsEditableFieldSelectStyle as selectStyle,
+  systemToolsReadOnlyFieldTextAreaStyle,
   inputInteraction,
 } from "../../../sections/systemTools/systemToolsSharedUi";
 
@@ -831,15 +832,10 @@ const DDOSSettings = () => {
                 <textarea
                   className="w-full rounded resize-y"
                   style={{
+                    ...systemToolsReadOnlyFieldTextAreaStyle,
                     minHeight: 120,
                     maxHeight: 200,
-                    fontSize: 13,
-                    padding: "12px",
-                    backgroundColor: "#f8fafc",
-                    border: `1px solid ${C.cardBorder}`,
                     color: C.valueText,
-                    fontFamily: "monospace",
-                    outline: "none",
                   }}
                   value={log}
                   readOnly

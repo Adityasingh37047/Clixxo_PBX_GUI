@@ -10,7 +10,9 @@ import {
 import { Checkbox } from "@mui/material";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 import {
-  systemToolsFieldInputStyleWhite as inputStyle,
+  systemToolsEditableFieldInputStyle as inputStyle,
+  SYSTEM_TOOLS_FILL_BG_EDITABLE,
+  SYSTEM_TOOLS_FILL_BG_READ_ONLY,
   inputInteraction,
 } from "../../../sections/systemTools/systemToolsSharedUi";
 
@@ -716,6 +718,10 @@ const SignalingCapture = () => {
                     ...inputStyle,
                     width: "100%",
                     maxWidth: 220,
+                    backgroundColor:
+                      !syslogEnabled || isCapturing || isStopping
+                        ? SYSTEM_TOOLS_FILL_BG_READ_ONLY
+                        : SYSTEM_TOOLS_FILL_BG_EDITABLE,
                     opacity:
                       !syslogEnabled || isCapturing || isStopping ? 0.6 : 1,
                     cursor:

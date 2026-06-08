@@ -131,6 +131,62 @@ export const systemToolsMuiSelectSx = {
   fontSize: 14,
 };
 
+/** Change Password fill-box backgrounds — IDS, DDOS, Certificate, Radius, etc. */
+export const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
+export const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
+
+export const systemToolsEditableFieldInputStyle = {
+  ...systemToolsFieldInputStyle,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+};
+
+export const systemToolsEditableFieldInputStyleSmall = {
+  ...systemToolsFieldInputStyleSmall,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+};
+
+export const systemToolsEditableFieldInputStyleCompact = {
+  ...systemToolsFieldInputStyleCompact,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+};
+
+export const systemToolsEditableFieldSelectStyle = {
+  ...systemToolsFieldSelectStyle,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+};
+
+export const systemToolsReadOnlyFieldInputStyle = {
+  ...systemToolsFieldInputStyleSmall,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_READ_ONLY,
+};
+
+export const systemToolsReadOnlyFieldTextAreaStyle = {
+  fontSize: 13,
+  padding: "12px",
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_READ_ONLY,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  color: "#3E5475",
+  outline: "none",
+  fontFamily: "monospace",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  borderRadius: 6,
+  width: "100%",
+};
+
+/** MUI Select — white background (Radius, etc.) */
+export const systemToolsEditableMuiSelectSx = {
+  ...muiSelectSx,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+  borderRadius: "6px",
+  fontSize: 14,
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+  },
+};
+
 export const inputInteraction = {
   onFocus: (e) => {
     if (e.target.disabled || e.target.readOnly) return;
