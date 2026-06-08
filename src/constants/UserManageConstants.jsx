@@ -92,17 +92,6 @@ export const PAGE_PERMISSION_GROUPS = [
         label: "Feature Codes",
         pages: [{ id: "featureCodeSettings", label: "Feature Codes" }],
       },
-      {
-        id: "sip",
-        label: "SIP",
-        pages: [
-          { id: "sipMain", label: "SIP" },
-          { id: "sipTrunk", label: "SIP Trunk" },
-          { id: "sipToSipAccount", label: "SIP To SIP Account" },
-          { id: "sipTrunkGroup", label: "SIP Trunk Group" },
-          { id: "sipMedia", label: "Media" },
-        ],
-      },
     ],
   },
 
@@ -220,16 +209,16 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "pcmReceptionTimeout", label: "Reception Timeout" },
         ],
       },
-      // {
-      //   id: 'sip',
-      //   label: 'SIP',
-      //   pages: [
-      //     { id: 'sipMain',          label: 'SIP' },
-      //     { id: 'sipToSipAccount',  label: 'SIP To SIP Account' },
-      //     { id: 'sipTrunkGroup',    label: 'SIP Trunk Group' },
-      //     { id: 'sipMedia',         label: 'Media' },
-      //   ],
-      // },
+      {
+        id: "sip",
+        label: "SIP",
+        pages: [
+          { id: "sipMain", label: "SIP" },
+          { id: "sipToSipAccount", label: "SIP To SIP Account" },
+          { id: "sipTrunkGroup", label: "SIP Trunk Group" },
+          { id: "sipMedia", label: "Media" },
+        ],
+      },
     ],
   },
 
@@ -244,6 +233,7 @@ export const PAGE_PERMISSION_GROUPS = [
         pages: [
           { id: "sysNetwork", label: "Network" },
           { id: "sysManagement", label: "Management" },
+          { id: "sysGlobalSip", label: "Global SIP" },
           { id: "sysIpRoutingTable", label: "IP Route Table" },
           { id: "sysAccessControl", label: "Access Control" },
           { id: "sysVpn", label: "VPN" },

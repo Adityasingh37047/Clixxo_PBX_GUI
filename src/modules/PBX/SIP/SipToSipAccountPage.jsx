@@ -8,8 +8,6 @@ import {
   TextField,
   Alert,
   CircularProgress,
-  FormGroup,
-  FormControlLabel,
   Checkbox,
   InputAdornment,
   IconButton,
@@ -20,11 +18,12 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import { CODEC_OPTIONS } from "../../../constants/SipAccountConstants";
 import {
   SIP_TO_SIP_FIELDS,
   SIP_TO_SIP_TABLE_COLUMNS,
   SIP_TO_SIP_INITIAL_FORM,
+  SIP_TO_SIP_FORM_LAYOUT,
+  SIP_TO_SIP_CODEC_OPTIONS,
 } from "../../../constants/SipToSipAccountConstants";
 import { fetchSipAccounts } from "../../../api/apiService";
 import {
@@ -35,126 +34,22 @@ import {
   listGroups,
 } from "../../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
-};
-const CARD_RADIUS = 20;
-
-const Btn = ({ children, onClick, disabled, variant = "default", style: extraStyle, title }) => {
-  const variants = {
-     default: {
-     background: C.cardBg,
-color: C.valueText,
-border: "1px solid #9ca3af",
-},
-primary: {
-background:
-"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-color: "#fff",
-border: "1px solid #5A6F8F",
-},
-cancel: {
-background: "#cbd5e1",
-color: "#374151",
-border: "1px solid #cbd5e1",
-boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-},
-    outline: {
-      background: C.cardBg,
-color: C.labelText,
-border: `1px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `1px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "6px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.85";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-    background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const tdStyle = {
-padding: "7px 14px",
-fontSize: 13,
-color: C.valueText,
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-};
-const checkboxSx = {
-padding: "1px",
-color: "#3E5475",
-"&.Mui-checked": { color: "#0284c7" },
-"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+import {
+  C,
+  Btn,
+  TH,
+  tdStyle,
+  SipPcmBreadcrumb,
+  sipPcmPageWrapStyle,
+  sipPcmInnerStyle,
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  SipPcmPagination,
+  sipPcmCheckboxSx,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const SipToSipAccountPage = () => {
   const [accounts, setAccounts] = useState([]);
@@ -608,14 +503,242 @@ const SipToSipAccountPage = () => {
     page * itemsPerPage,
   );
 
-  return (
+  const formFieldLabelStyle = {
+    fontSize: 13,
+    fontWeight: 600,
+    color: C.labelText,
+    width: 120,
+    flexShrink: 0,
+  };
+
+  const renderFormFieldControl = (field) => {
+    if (field.type === "password") {
+      return (
+        <div className="w-full">
+          <TextField
+            type={showPassword ? "text" : "password"}
+            value={form[field.name] || ""}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            size="small"
+            fullWidth
+            variant="outlined"
+            placeholder="Enter password"
+            error={!!validationErrors[field.name]}
+            inputProps={{
+              style: {
+                fontSize: 13,
+                padding: "6px 8px",
+                backgroundColor: "#fff",
+              },
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={togglePasswordVisibility}
+                    edge="end"
+                    size="small"
+                    sx={{ padding: "2px" }}
+                  >
+                    {showPassword ? (
+                      <VisibilityOff fontSize="small" />
+                    ) : (
+                      <Visibility fontSize="small" />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+          {validationErrors[field.name] && (
+            <div className="text-red-500 text-xs mt-1">
+              {validationErrors[field.name]}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (field.name === "context") {
+      return (
+        <div className="w-full">
+          <FormControl
+            fullWidth
+            size="small"
+            error={!!validationErrors.context}
+          >
+            <MuiSelect
+              value={form.context || ""}
+              displayEmpty
+              onChange={(e) => handleChange("context", e.target.value)}
+              inputProps={{ "aria-label": "Select Context" }}
+              sx={{ fontSize: 13, backgroundColor: "#fff" }}
+            >
+              <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                <em>Select Context</em>
+              </MenuItem>
+              {Array.from({ length: 10 }, (_, i) => `sip${i + 1}`).map(
+                (ctx) => (
+                  <MenuItem key={ctx} value={ctx}>
+                    {ctx}
+                  </MenuItem>
+                ),
+              )}
+            </MuiSelect>
+          </FormControl>
+          {validationErrors.context && (
+            <div className="text-red-500 text-xs mt-1">
+              {validationErrors.context}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-full">
+        {field.name === "contact" ? (
+          <TextField
+            type="text"
+            value={
+              form.contact ? String(form.contact).replace(/^sip:/, "") : ""
+            }
+            onChange={(e) => handleChange("contact", e.target.value)}
+            size="small"
+            fullWidth
+            variant="outlined"
+            error={!!validationErrors.contact}
+            placeholder="e.g., 15.158.34.15"
+            inputProps={{
+              style: {
+                fontSize: 13,
+                padding: "6px 8px",
+                backgroundColor: "#fff",
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">sip:</InputAdornment>
+              ),
+            }}
+          />
+        ) : (
+          <TextField
+            type="text"
+            value={form[field.name] || ""}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            size="small"
+            fullWidth
+            variant="outlined"
+            error={!!validationErrors[field.name]}
+            placeholder={
+              field.name === "extension"
+                ? "e.g., 1001"
+                : field.name === "from_domain"
+                  ? "e.g., sip.domain.in"
+                  : field.name === "contact_user"
+                    ? "e.g., +91XXXXXXXXXX"
+                    : field.name === "outbound_proxy"
+                      ? "e.g., 15.158.34.15"
+                      : `Enter ${field.label.toLowerCase()}`
+            }
+            disabled={field.name === "extension" && editIndex !== null}
+            inputProps={{
+              style: {
+                fontSize: 13,
+                padding: "6px 8px",
+                backgroundColor: "#fff",
+              },
+            }}
+          />
+        )}
+        {validationErrors[field.name] && (
+          <div className="text-red-500 text-xs mt-1">
+            {validationErrors[field.name]}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderAllowCodecsField = () => (
+    <div key="allow_codecs" style={{ width: "100%", minWidth: 0 }}>
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          textTransform: "uppercase",
+          marginBottom: 10,
+        }}
+      >
+        Allow Codecs <span style={{ color: C.errorRed }}>*</span>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        {SIP_TO_SIP_CODEC_OPTIONS.map((codec) => (
+          <label
+            key={codec.value}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "5px 10px",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 6,
+              backgroundColor: "#ffffff",
+              cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#3E5475",
+              userSelect: "none",
+            }}
+          >
+            <Checkbox
+              checked={isCodecSelected(codec.value)}
+              onChange={(e) =>
+                handleCodecChange(codec.value, e.target.checked)
+              }
+              size="small"
+              sx={{ ...sipPcmCheckboxSx, padding: "2px" }}
+            />
+            {codec.label}
+          </label>
+        ))}
+      </div>
+      {validationErrors.allow_codecs && (
+        <div className="text-red-500 text-xs mt-1">
+          {validationErrors.allow_codecs}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderFormField = (field) => (
     <div
+      key={field.name}
       style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        minWidth: 0,
       }}
     >
+      <label style={formFieldLabelStyle}>
+        {field.label} <span style={{ color: C.errorRed }}>*</span>
+      </label>
+      <div className="flex-1 min-w-0">{renderFormFieldControl(field)}</div>
+    </div>
+  );
+
+  return (
+    <div style={sipPcmPageWrapStyle}>
       {message.text && (
         <Alert
           severity={message.type}
@@ -633,118 +756,38 @@ const SipToSipAccountPage = () => {
         </Alert>
       )}
 
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; SIP &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              SIP To SIP Account
-            </span>
-          </div>
-        </div>
+      <div style={sipPcmInnerStyle}>
+        <SipPcmBreadcrumb current="SIP To SIP Account" />
 
-        {/* Main Card */}
-        <div
-          style={{
-           background: "#ffffff",
-borderRadius: 10,
-overflow: "hidden",
-border: `1.5px solid ${C.cardBorder}`,
-boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-minHeight: 44,
-padding: "7px 14px",
-borderBottom: `1px solid ${C.cardBorder}`,
-background: "#ffffff",
-flexWrap: "wrap",
-gap: 12,
-borderTopLeftRadius: CARD_RADIUS,
-borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-             
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Btn
-                onClick={() => setSelected(accounts.map((_, i) => i))}
+                onClick={() =>
+                  setSelected((sel) =>
+                    accounts
+                      .map((_, i) => (sel.includes(i) ? null : i))
+                      .filter((i) => i !== null),
+                  )
+                }
                 disabled={loading.delete}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                Check All
-              </Btn>
-              <Btn
-                onClick={() => setSelected([])}
-                disabled={loading.delete}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                Uncheck All
-              </Btn>
-              <Btn
-                onClick={() => setSelected((sel) => accounts.map((_, i) => (sel.includes(i) ? null : i)).filter((i) => i !== null))}
-                disabled={loading.delete}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 Inverse
               </Btn>
               <Btn
                 onClick={() => handleDelete(selected)}
                 disabled={loading.delete || selected.length === 0}
-                variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#dc2626" }} />
@@ -755,56 +798,51 @@ borderTopRightRadius: CARD_RADIUS,
               <Btn
                 onClick={handleClearAll}
                 disabled={loading.delete}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 Clear All
               </Btn>
-             <Btn
-  onClick={() => handleOpenModal()}
-  disabled={loading.fetch || loading.save}
-  variant="primary"
-    style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
->
-  + Add New
-</Btn>
+              <Btn
+                onClick={() => handleOpenModal()}
+                disabled={loading.fetch || loading.save}
+                variant="primary"
+                style={sipPcmPrimaryBtnStyle}
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto",
-overflowY: "auto",
-flex: 1, }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             <table
               style={{
                 width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                tableLayout: "auto",
+                minWidth: 900,
               }}
             >
               <thead>
                 <tr>
-                  <TH style={{width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,}}>
+                  <TH
+                    style={{
+                      width: 40,
+                      padding: 0,
+                      borderLeft: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
                     <Checkbox
                       size="small"
-                      checked={selected.length > 0 && selected.length === accounts.length}
+                      checked={
+                        selected.length > 0 &&
+                        selected.length === accounts.length
+                      }
                       indeterminate={
                         selected.length > 0 && selected.length < accounts.length
                       }
@@ -814,17 +852,23 @@ minWidth: 900,
                           : () => setSelected(accounts.map((_, i) => i))
                       }
                       disabled={loading.delete}
-                      sx={checkboxSx}
+                      sx={sipPcmCheckboxSx}
                     />
                   </TH>
                   {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
                     <TH key={col.key}>{col.label}</TH>
                   ))}
-                  <TH style={{ width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,}}>Modify</TH>
+                  <TH
+                    style={{
+                      width: 70,
+                      borderRight: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    Modify
+                  </TH>
                 </tr>
               </thead>
               <tbody>
@@ -857,7 +901,7 @@ minWidth: 900,
                     const isSel = selected.includes(realIdx);
                     const isLastRow = idx === pagedAccounts.length - 1;
                     const rowBg = isSel
-                      ? "#e0f2fe"
+                      ? "#eff6ff"
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
@@ -869,7 +913,8 @@ minWidth: 900,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          if (!isSel) e.currentTarget.style.background = "#f8fafc";
+                          if (!isSel)
+                            e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSel) e.currentTarget.style.background = rowBg;
@@ -879,15 +924,23 @@ minWidth: 900,
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
                           <Checkbox
                             size="small"
                             checked={isSel}
-                            onChange={() => setSelected((sel) => (sel.includes(realIdx) ? sel.filter((i) => i !== realIdx) : [...sel, realIdx]))}
+                            onChange={() =>
+                              setSelected((sel) =>
+                                sel.includes(realIdx)
+                                  ? sel.filter((i) => i !== realIdx)
+                                  : [...sel, realIdx],
+                              )
+                            }
                             disabled={loading.delete}
-                            sx={checkboxSx}
+                            sx={sipPcmCheckboxSx}
                           />
                         </td>
                         {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
@@ -896,7 +949,9 @@ minWidth: 900,
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              borderBottom: isLastRow
+                                ? "none"
+                                : tdStyle.borderBottom,
                             }}
                           >
                             {col.key === "password"
@@ -910,7 +965,9 @@ minWidth: 900,
                             background: rowBg,
                             textAlign: "center",
                             padding: "7px 8px",
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
                           <EditDocumentIcon
@@ -927,66 +984,15 @@ minWidth: 900,
             </table>
           </div>
 
-          {/* Footer Pagination */}
           {!loading.fetch && accounts.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                gap: 8,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedAccounts.length} records on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
-                <Btn
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-                <Btn
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedAccounts.length}
+              onPageChange={(nextPage) =>
+                setPage(Math.min(totalPages, Math.max(1, nextPage)))
+              }
+            />
           )}
         </div>
       </div>
@@ -997,7 +1003,9 @@ minWidth: 900,
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
         className="z-50"
-        PaperProps={{ sx: { width: 700, maxWidth: "95vw", mx: "auto", borderRadius: 2 } }}
+        PaperProps={{
+          sx: { width: 700, maxWidth: "95vw", mx: "auto", borderRadius: 2 },
+        }}
       >
         <DialogTitle
           style={{
@@ -1009,209 +1017,61 @@ minWidth: 900,
             padding: "14px 24px",
           }}
         >
-          {editIndex !== null ? "Edit SIP To SIP Account" : "Add SIP To SIP Account"}
+          {editIndex !== null
+            ? "Edit SIP To SIP Account"
+            : "Add SIP To SIP Account"}
         </DialogTitle>
         <DialogContent
           style={{
             padding: "20px 24px",
-           backgroundColor:"#ffffff",
+            backgroundColor: "#ffffff",
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-               background: "#f5f7fa",
+                background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
               }}
             >
-              <h3
+              <div
                 style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 12,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
                 }}
               >
-                SIP Account Info
-              </h3>
+                {SIP_TO_SIP_FORM_LAYOUT.map((rowFields, rowIdx) => {
+                  const isFullRow = rowFields.length === 1;
+                  const fields = rowFields
+                    .map((name) =>
+                      SIP_TO_SIP_FIELDS.find((f) => f.name === name),
+                    )
+                    .filter(Boolean);
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px 32px",
-                }}
-              >
-            {SIP_TO_SIP_FIELDS.map((field) => (
-              <div
-                key={field.name}
-                style={{ display: "flex", alignItems: "center", gap: 12 }}
-              >
-                <label
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    width: 120,
-                    flexShrink: 0,
-                  }}
-                >
-                  {field.label} <span style={{ color: C.errorRed }}>*</span>
-                </label>
-                <div className="flex-1">
-                  {field.type === "password" ? (
-                    <div className="w-full">
-                      <TextField
-                        type={showPassword ? "text" : "password"}
-                        value={form[field.name] || ""}
-                        onChange={(e) =>
-                          handleChange(field.name, e.target.value)
-                        }
-                        size="small"
-                        fullWidth
-                        variant="outlined"
-                        placeholder="Enter password"
-                        error={!!validationErrors[field.name]}
-                        inputProps={{ style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff", } }}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                onClick={togglePasswordVisibility}
-                                edge="end"
-                                size="small"
-                                sx={{ padding: "2px" }}
-                              >
-                                {showPassword ? (
-                                  <VisibilityOff fontSize="small" />
-                                ) : (
-                                  <Visibility fontSize="small" />
-                                )}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                      {validationErrors[field.name] && (
-                        <div className="text-red-500 text-xs mt-1">
-                          {validationErrors[field.name]}
-                        </div>
-                      )}
-                    </div>
-                  ) : field.type === "checkbox" ? (
-                    <div className="w-full">
-                      <FormGroup row sx={{ gap: 1 }}>
-                        {CODEC_OPTIONS.map((codec) => (
-                          <FormControlLabel
-                            key={codec.value}
-                            control={
-                              <Checkbox
-                                checked={isCodecSelected(codec.value)}
-                                onChange={(e) => handleCodecChange(codec.value, e.target.checked)}
-                                size="small"
-                                sx={checkboxSx}
-                              />
+                  return (
+                    <div
+                      key={rowIdx}
+                      style={
+                        isFullRow
+                          ? { display: "flex", minWidth: 0 }
+                          : {
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr",
+                              gap: "16px 32px",
                             }
-                            label={codec.label}
-                            sx={{
-                              margin: 0,
-                              "& .MuiFormControlLabel-label": { fontSize: 12, fontWeight: 500, color: "#374151" },
-                            }}
-                          />
-                        ))}
-                      </FormGroup>
-                      {validationErrors.allow_codecs && (
-                        <div className="text-red-500 text-xs mt-1">
-                          {validationErrors.allow_codecs}
-                        </div>
+                      }
+                    >
+                      {fields.map((field) =>
+                        field.name === "allow_codecs"
+                          ? renderAllowCodecsField()
+                          : renderFormField(field),
                       )}
                     </div>
-                  ) : field.name === "context" ? (
-                    <div className="w-full">
-                      <FormControl fullWidth size="small" error={!!validationErrors.context}>
-                        <MuiSelect
-                          value={form.context || ""}
-                          displayEmpty
-                          onChange={(e) =>
-                            handleChange("context", e.target.value)
-                          }
-                          inputProps={{ "aria-label": "Select Context" }}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff",}}
-                        >
-                          <MenuItem value="" disabled sx={{ fontSize: 13 }}><em>Select Context</em></MenuItem>
-                          {Array.from({ length: 10 }, (_, i) => `sip${i + 1}`).map((ctx) => (
-                            <MenuItem key={ctx} value={ctx}>
-                              {ctx}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                      {validationErrors.context && (
-                        <div className="text-red-500 text-xs mt-1">
-                          {validationErrors.context}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-full">
-                      {field.name === "contact" ? (
-                        <TextField
-                          type="text"
-                          value={form.contact ? String(form.contact).replace(/^sip:/, "") : ""}
-                          onChange={(e) =>
-                            handleChange("contact", e.target.value)
-                          }
-                          size="small"
-                          fullWidth
-                          variant="outlined"
-                          error={!!validationErrors.contact}
-                          placeholder="e.g., 15.158.34.15"
-                          disabled={field.name === "extension" && editIndex !== null}
-                          inputProps={{ style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",} }}
-                          InputProps={{
-                            startAdornment: <InputAdornment position="start">sip:</InputAdornment>,
-                          }}
-                        />
-                      ) : (
-                        <TextField
-                          type="text"
-                          value={form[field.name] || ""}
-                          onChange={(e) =>
-                            handleChange(field.name, e.target.value)
-                          }
-                          size="small"
-                          fullWidth
-                          variant="outlined"
-                          error={!!validationErrors[field.name]}
-                          placeholder={
-                            field.name === "extension"
-                              ? "e.g., 1001"
-                              : field.name === "from_domain"
-                                ? "e.g., sip.domain.in"
-                                : field.name === "contact_user"
-                                  ? "e.g., +91XXXXXXXXXX"
-                                  : field.name === "outbound_proxy"
-                                    ? "e.g., 15.158.34.15"
-                                    : `Enter ${field.label.toLowerCase()}`
-                          }
-                          disabled={field.name === "extension" && editIndex !== null}
-                          inputProps={{ style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff", } }}
-                        />
-                      )}
-                      {validationErrors[field.name] && (
-                        <div className="text-red-500 text-xs mt-1">
-                          {validationErrors[field.name]}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1229,10 +1089,13 @@ minWidth: 900,
             onClick={handleSave}
             variant="primary"
             disabled={loading.save}
-             style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
-              <CircularProgress size={14} style={{ color: "#fff", marginRight: 8 }} />
+              <CircularProgress
+                size={14}
+                style={{ color: "#fff", marginRight: 8 }}
+              />
             ) : null}
             {loading.save ? "Saving..." : "Save"}
           </Btn>
@@ -1240,7 +1103,7 @@ minWidth: 900,
             onClick={handleCloseModal}
             variant="cancel"
             disabled={loading.save}
-           style={{ minWidth: 100, height: 33 }}          
+            style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

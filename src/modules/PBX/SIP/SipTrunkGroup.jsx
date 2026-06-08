@@ -31,135 +31,23 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  C,
+  Btn,
+  TH,
+  tdStyle,
+  SipPcmBreadcrumb,
+  sipPcmPageWrapStyle,
+  sipPcmInnerStyle,
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  SipPcmPagination,
+  sipPcmCheckboxSx,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+} from "../../../sections/sip/sipPcmSharedUi";
 
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
-};
-
-const CARD_RADIUS = 20;
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  title,
-}) => {
-  const variants = {
-    default: {
-     background: C.cardBg,
-color: C.valueText,
-border: "1px solid #9ca3af",
-},
-primary: {
-background:
-"linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-color: "#fff",
-border: "1px solid #5A6F8F",
-},
-cancel: {
-background: "#cbd5e1",
-color: "#374151",
-border: "1px solid #cbd5e1",
-boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-},
-    outline: {
-      background: C.cardBg,
-color: C.labelText,
-border: `1px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `1px solid #fecaca`,
-    },
-    accent: {
-      background: C.cardBg,
-      color: C.accent,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "6px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.85";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-     background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-const tdStyle = {
-padding: "7px 14px",
-fontSize: 13,
-color: C.valueText,
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-};
-const checkboxSx = {
-padding: "1px",
-color: "#3E5475",
-"&.Mui-checked": { color: "#0284c7" },
-"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
 const SipTrunkGroup = () => {
   const [formData, setFormData] = useState(SIP_TRUNK_GROUP_INITIAL_FORM);
   const [groups, setGroups] = useState([]);
@@ -539,17 +427,17 @@ const SipTrunkGroup = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
+    <div style={sipPcmPageWrapStyle}>
       {/* Toast Alert */}
       {message.text && (
         <Alert
-          severity={message.type === "error" ? "error" : message.type === "success" ? "success" : "info"}
+          severity={
+            message.type === "error"
+              ? "error"
+              : message.type === "success"
+                ? "success"
+                : "info"
+          }
           onClose={() => setMessage({ type: "", text: "" })}
           sx={{
             position: "fixed",
@@ -564,126 +452,44 @@ const SipTrunkGroup = () => {
         </Alert>
       )}
 
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div style={{ fontSize: 11, color: C.mutedText, marginBottom: 12 }}>
-          PBX &rsaquo; SIP &rsaquo;{" "}
-          <span style={{ color: C.valueText, fontWeight: 600 }}>
-            SIP Trunk Group
-          </span>
-        </div>
+      <div style={sipPcmInnerStyle}>
+        <SipPcmBreadcrumb current="SIP Trunk Group" />
 
-        {/* Main Card */}
-        <div
-          style={{
-           background: "#ffffff",
-borderRadius: 10,
-overflow: "hidden",
-border: `1.5px solid ${C.cardBorder}`,
-boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-            display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-minHeight: 44,
-padding: "7px 14px",
-borderBottom: `1px solid ${C.cardBorder}`,
-background: "#ffffff",
-flexWrap: "wrap",
-gap: 12,
-borderTopLeftRadius: CARD_RADIUS,
-borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Btn
-                onClick={handleCheckAll}
-                disabled={loading.delete}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                Check All
-              </Btn>
-              <Btn
-                onClick={handleUncheckAll}
-                disabled={loading.delete}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                Uncheck All
-              </Btn>
-              <Btn
                 onClick={handleInverse}
                 disabled={loading.delete}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 Inverse
               </Btn>
               <Btn
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete && (
-                  <CircularProgress size={11} style={{ color: "#dc2626" }} />
+                  <CircularProgress size={11} style={{ color: C.accent }} />
                 )}
-                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-             Delete
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
                 onClick={handleClearAll}
                 disabled={loading.delete}
-                variant="outline"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 Clear All
               </Btn>
@@ -691,12 +497,7 @@ borderTopRightRadius: CARD_RADIUS,
                 onClick={handleAddNew}
                 disabled={loading.fetch}
                 variant="primary"
-                  style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -704,26 +505,28 @@ borderTopRightRadius: CARD_RADIUS,
           </div>
 
           {/* Table */}
-          <div style={{overflowX: "auto",
-overflowY: "auto",
-flex: 1,}}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             <table
               style={{
                 width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                tableLayout: "auto",
+                minWidth: 900,
               }}
             >
               <thead>
                 <tr>
-                  <TH style={{width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10, }}>
+                  <TH
+                    style={{
+                      width: 40,
+                      padding: 0,
+                      borderLeft: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
                     <Checkbox
                       size="small"
                       checked={
@@ -738,7 +541,7 @@ minWidth: 900,
                           : handleCheckAll
                       }
                       disabled={loading.delete}
-                      sx={checkboxSx} 
+                      sx={sipPcmCheckboxSx}
                     />
                   </TH>
                   {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
@@ -746,11 +549,17 @@ minWidth: 900,
                   ).map((col) => (
                     <TH key={col.key}>{col.label}</TH>
                   ))}
-                  <TH style={{ width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,}}>Actions</TH>
+                  <TH
+                    style={{
+                      width: 70,
+                      borderRight: "none",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    Actions
+                  </TH>
                 </tr>
               </thead>
               <tbody>
@@ -783,7 +592,7 @@ minWidth: 900,
                     const isSel = selected.includes(realIdx);
                     const isLastRow = idx === pagedGroups.length - 1;
                     const rowBg = isSel
-                      ? "#f0f9ff"
+                      ? "#eff6ff"
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
@@ -795,7 +604,8 @@ minWidth: 900,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          if (!isSel) e.currentTarget.style.background = "#f8fafc";
+                          if (!isSel)
+                            e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSel) e.currentTarget.style.background = rowBg;
@@ -805,7 +615,9 @@ minWidth: 900,
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
                           <Checkbox
@@ -813,7 +625,7 @@ minWidth: 900,
                             checked={isSel}
                             onChange={() => handleSelectRow(realIdx)}
                             disabled={loading.delete}
-                            sx={checkboxSx}
+                            sx={sipPcmCheckboxSx}
                           />
                         </td>
                         {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
@@ -827,7 +639,9 @@ minWidth: 900,
                               style={{
                                 ...tdStyle,
                                 background: rowBg,
-                                borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                                borderBottom: isLastRow
+                                  ? "none"
+                                  : tdStyle.borderBottom,
                               }}
                             >
                               {value !== undefined &&
@@ -842,7 +656,9 @@ minWidth: 900,
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
                           <EditDocumentIcon
@@ -859,97 +675,15 @@ minWidth: 900,
             </table>
           </div>
 
-          {/* Pagination Footer */}
           {!loading.fetch && groups.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                flexWrap: "wrap",
-                gap: 12,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  fontSize: 11,
-                  color: C.mutedText,
-                }}
-              >
-                <span>Showing {pagedGroups.length} records on page {page}</span>
-                {/* <span>{groups.length} items Total</span>   */}
-                {/* <span>{itemsPerPage} Items/Page</span> */}
-                {/* <span style={{ color: C.accent, fontWeight: 600 }}>{page} / {totalPages} Pages</span> */}
-              </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
-                <Btn
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                    fontSize: 11,
-                    color: C.mutedText,
-                    margin: "0 4px",
-                  }}
-                >
-                  <span>Go to</span>
-                  <select
-                    value={page}
-                    onChange={(e) => setPage(Number(e.target.value))}
-                    style={{
-                      padding: "2px 4px",
-                      borderRadius: 4,
-                      border: `1px solid ${C.cardBorder}`,
-                      fontSize: 11,
-                      background: "#fff",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <Btn
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-                <Btn
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedGroups.length}
+              onPageChange={(nextPage) =>
+                setPage(Math.min(totalPages, Math.max(1, nextPage)))
+              }
+            />
           )}
         </div>
       </div>
@@ -981,132 +715,119 @@ minWidth: 900,
         >
           {editIndex !== -1 ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
         </DialogTitle>
-       <DialogContent
-  style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
->
-  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-    <div
-      style={{
-        background: "#f5f7fa",
-        border: `1px solid ${C.cardBorder}`,
-        borderRadius: 6,
-        padding: 16,
-      }}
-    >
-      <h3
-        style={{
-          fontSize: 14,
-          fontWeight: 700,
-          color: C.labelText,
-          marginBottom: 12,
-          borderBottom: `1px solid ${C.cardBorder}`,
-          paddingBottom: 6,
-        }}
-      >
-        Trunk Group Info
-      </h3>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {/* SIP Trunk ID */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
+        <DialogContent
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
         >
-          <label
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: C.labelText,
-              width: 120,
-              flexShrink: 0,
-            }}
-          >
-            SIP Trunk ID:
-          </label>
-
-          <div style={{ flex: 1 }}>
-            <Select
-              name="sip_trunk_id"
-              value={formData.sip_trunk_id}
-              onChange={handleInputChange}
-              size="small"
-              fullWidth
-              displayEmpty
-              sx={{
-                fontSize: 13,
-                backgroundColor: "#fff",
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div
+              style={{
+                background: "#f5f7fa",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: 16,
               }}
             >
-              <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                Select SIP Trunk ID
-              </MenuItem>
-
-              {trunkIds.length === 0 ? (
-                <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                  No options
-                </MenuItem>
-              ) : (
-                trunkIds.map((opt) => (
-                  <MenuItem
-                    key={opt.value}
-                    value={opt.value}
-                    sx={{ fontSize: 13 }}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {/* SIP Trunk ID */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 120,
+                      flexShrink: 0,
+                    }}
                   >
-                    {opt.label}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </div>
-        </div>
+                    SIP Trunk ID:
+                  </label>
 
-        {/* Group ID */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
-          <label
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: C.labelText,
-              width: 120,
-              flexShrink: 0,
-            }}
-          >
-            Group ID:
-          </label>
+                  <div style={{ flex: 1 }}>
+                    <Select
+                      name="sip_trunk_id"
+                      value={formData.sip_trunk_id}
+                      onChange={handleInputChange}
+                      size="small"
+                      fullWidth
+                      displayEmpty
+                      sx={{
+                        fontSize: 13,
+                        backgroundColor: "#fff",
+                      }}
+                    >
+                      <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                        Select SIP Trunk ID
+                      </MenuItem>
 
-          <div style={{ flex: 1 }}>
-            <TextField
-              type="text"
-              name="group_id"
-              value={formData.group_id}
-              onChange={handleInputChange}
-              size="small"
-              fullWidth
-              variant="outlined"
-              placeholder="Enter Group ID"
-              inputProps={{
-                style: {
-                  fontSize: 13,
-                  padding: "6px 8px",
-                  backgroundColor: "#fff",
-                },
-              }}
-            />
+                      {trunkIds.length === 0 ? (
+                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                          No options
+                        </MenuItem>
+                      ) : (
+                        trunkIds.map((opt) => (
+                          <MenuItem
+                            key={opt.value}
+                            value={opt.value}
+                            sx={{ fontSize: 13 }}
+                          >
+                            {opt.label}
+                          </MenuItem>
+                        ))
+                      )}
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Group ID */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 120,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Group ID:
+                  </label>
+
+                  <div style={{ flex: 1 }}>
+                    <TextField
+                      type="text"
+                      name="group_id"
+                      value={formData.group_id}
+                      onChange={handleInputChange}
+                      size="small"
+                      fullWidth
+                      variant="outlined"
+                      placeholder="Enter Group ID"
+                      inputProps={{
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</DialogContent>
+        </DialogContent>
         <DialogActions
           style={{
             padding: "16px 24px",
@@ -1120,10 +841,13 @@ minWidth: 900,
             onClick={handleSave}
             variant="primary"
             disabled={loading.save}
-           style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
-              <CircularProgress size={14} style={{ color: "#fff", marginRight: 8 }} />
+              <CircularProgress
+                size={14}
+                style={{ color: "#fff", marginRight: 8 }}
+              />
             ) : null}
             {loading.save ? "Saving..." : "Save"}
           </Btn>
@@ -1131,7 +855,7 @@ minWidth: 900,
             onClick={() => setShowModal(false)}
             variant="cancel"
             disabled={loading.save}
-           style={{ minWidth: 100, height: 33 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

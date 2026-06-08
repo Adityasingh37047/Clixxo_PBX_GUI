@@ -4,54 +4,31 @@ import {
   SIP_MEDIA_CODEC_FIELD,
   SIP_MEDIA_INITIAL_FORM,
 } from "../../../constants/SipMediaconstants";
+import { Select, MenuItem, CircularProgress, Alert } from "@mui/material";
 import {
-  Select,
-  MenuItem,
-  Button,
-  CircularProgress,
-  Alert,
-} from "@mui/material";
+  C,
+  Btn,
+  SipPcmBreadcrumb,
+  sipPcmFormPageWrapStyle,
+  sipPcmFormPageInnerStyle,
+  sipPcmFormCardStyle,
+  sipPcmFormHeaderStyle,
+  sipPcmAuthFormFooterStyle,
+  sipPcmAuthFormBtnStyle,
+  SipPcmSectionHeading,
+  SIP_PCM_AUTH_FORM_BODY_CLASS,
+  SIP_PCM_AUTH_FORM_GRID_CLASS,
+  sipPcmAuthSectionFullWidthStyle,
+  sipPcmAuthLabelStyle,
+  sipPcmAuthControlWrapStyle,
+  sipPcmAuthInputStyle,
+  sipPcmAuthInputInteraction,
+  sipPcmAuthMuiSelectSx,
+} from "../../../sections/sip/sipPcmSharedUi";
 import {
   listMediaSettings,
   updateMediaSettings,
 } from "../../../api/apiService";
-
-// ── Design System ─────────────────────────────────────────────────────────────
-const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
-};
-
-
-
-const CARD_RADIUS = 20;
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
 
 const SipMediaPage = () => {
   const [formData, setFormData] = useState(SIP_MEDIA_INITIAL_FORM);
@@ -148,14 +125,8 @@ const SipMediaPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
+    <div style={sipPcmFormPageWrapStyle}>
+      <div style={sipPcmFormPageInnerStyle}>
         {/* Toast Alert */}
         {message.text && (
           <div
@@ -178,239 +149,139 @@ const SipMediaPage = () => {
           </div>
         )}
 
-        {/* Breadcrumb */}
-        <div style={{ fontSize: 11, color: C.mutedText, marginBottom: 12 }}>
-          PBX &rsaquo; SIP &rsaquo;{" "}
-          <span style={{ color: C.valueText, fontWeight: 600 }}>
-            Media Parameters
-          </span>
-        </div>
+        <SipPcmBreadcrumb current="Media Parameters" />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ padding: "24px 28px" }}>
-            <SectionHeading title="Media Parameters" />
-
-            <div style={{ padding: "24px 32px" }}>
-              {loading ? (
-                <div className="flex items-center justify-center min-h-[400px]">
-                  <div className="text-center">
-                    <CircularProgress size={40} sx={{ color: "#0e8fd6" }} />
-                    <div className="mt-3 text-gray-600">
-                      Loading media parameters...
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 py-4 px-16">
-                  <div className="space-y-4">
-                    {/* Regular Media Fields */}
-                    {SIP_MEDIA_FIELDS.map((field) => {
-                      if (field.conditional) {
-                        const condVal = formData[field.conditional];
-                        if (field.conditionalValues) {
-                          if (!field.conditionalValues.includes(condVal))
-                            return null;
-                        } else if (field.conditionalValue) {
-                          if (condVal !== field.conditionalValue) return null;
-                        }
-                      }
-
-                      return (
-                        <div
-                          key={field.name}
-                          className="flex items-center justify-between"
-                        >
-                          <label
-                            className="text-sm text-gray-600 font-medium text-left whitespace-nowrap"
-                            style={{
-                              width: "320px",
-                              marginRight: "10px",
-                              lineHeight: "1.4",
-                            }}
-                          >
-                            {field.label}
-                          </label>
-                          <div style={{ width: "200px" }}>
-                            {field.type === "select" ? (
-                              <Select
-                                name={field.name}
-                                value={formData[field.name]}
-                                onChange={handleInputChange}
-                                variant="outlined"
-                                style={{ width: "200px", height: "28px" }}
-                                sx={{
-                                  fontSize: 13,
-                                  height: 28,
-                                  backgroundColor: "#ffffff",
-                                  "& .MuiOutlinedInput-notchedOutline": {
-                                    borderColor: "#999999",
-                                  },
-                                  "& .MuiSelect-select": {
-                                    padding: "4px 10px",
-                                    lineHeight: "18px",
-                                    backgroundColor: "transparent",
-                                    fontSize: "13px",
-                                  },
-                                }}
-                              >
-                                {field.options.map((option) => (
-                                  <MenuItem
-                                    key={option.value}
-                                    value={option.value}
-                                    sx={{ fontSize: 13 }}
-                                  >
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            ) : (
-                              <input
-                                type="text"
-                                name={field.name}
-                                value={formData[field.name]}
-                                onChange={handleInputChange}
-                                className="border border-gray-400 bg-white"
-                                style={{
-                                  width: "200px",
-                                  height: "28px",
-                                  padding: "4px 10px",
-                                  fontSize: "13px",
-                                  borderRadius: "4px",
-                                  outline: "none",
-                                }}
-                              />
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    <SectionHeading title="CODEC Settings" />
-
-                    <div className="flex items-center justify-between">
-                      <label
-                        className="text-sm text-gray-600 font-medium text-left whitespace-nowrap"
-                        style={{
-                          width: "320px",
-                          marginRight: "10px",
-                          lineHeight: "1.4",
-                        }}
-                      >
-                        Gateway Negotiation Coding Sequence:
-                      </label>
-                      <div style={{ width: "200px" }}>
-                        <Select
-                          name={SIP_MEDIA_CODEC_FIELD.name}
-                          value={formData[SIP_MEDIA_CODEC_FIELD.name]}
-                          onChange={handleInputChange}
-                          variant="outlined"
-                          style={{ width: "200px", height: "28px" }}
-                          sx={{
-                            fontSize: 13,
-                            height: 28,
-                            backgroundColor: "#ffffff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#999999",
-                            },
-                            "& .MuiSelect-select": {
-                              padding: "4px 10px",
-                              lineHeight: "18px",
-                              backgroundColor: "transparent",
-                              fontSize: "13px",
-                            },
-                          }}
-                        >
-                          {SIP_MEDIA_CODEC_FIELD.options.map((option) => (
-                            <MenuItem
-                              key={option.value}
-                              value={option.value}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {option.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+        <div style={sipPcmFormCardStyle}>
+          <div style={sipPcmFormHeaderStyle}>
+            <span>Media Parameters</span>
           </div>
 
-          {/* Bottom Actions Footer */}
+          <div className={SIP_PCM_AUTH_FORM_BODY_CLASS}>
+            {loading ? (
+              <div className="flex items-center justify-center min-h-[400px] w-full">
+                <div className="text-center">
+                  <CircularProgress size={40} sx={{ color: C.accent }} />
+                  <div className="mt-3 text-gray-600">
+                    Loading media parameters...
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div
+                  className={SIP_PCM_AUTH_FORM_GRID_CLASS}
+                  style={{ marginBottom: 0 }}
+                >
+                  {SIP_MEDIA_FIELDS.map((field) => {
+                    if (field.conditional) {
+                      const condVal = formData[field.conditional];
+                      if (field.conditionalValues) {
+                        if (!field.conditionalValues.includes(condVal))
+                          return null;
+                      } else if (field.conditionalValue) {
+                        if (condVal !== field.conditionalValue) return null;
+                      }
+                    }
+
+                    return (
+                      <React.Fragment key={field.name}>
+                        <label style={sipPcmAuthLabelStyle}>{field.label}</label>
+                        <div style={sipPcmAuthControlWrapStyle}>
+                          {field.type === "select" ? (
+                            <Select
+                              name={field.name}
+                              value={formData[field.name]}
+                              onChange={handleInputChange}
+                              variant="outlined"
+                              fullWidth
+                              sx={sipPcmAuthMuiSelectSx}
+                            >
+                              {field.options.map((option) => (
+                                <MenuItem
+                                  key={option.value}
+                                  value={option.value}
+                                  sx={{ fontSize: 12 }}
+                                >
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          ) : (
+                            <input
+                              type="text"
+                              name={field.name}
+                              value={formData[field.name]}
+                              onChange={handleInputChange}
+                              style={sipPcmAuthInputStyle}
+                              {...sipPcmAuthInputInteraction}
+                            />
+                          )}
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+
+                <div style={sipPcmAuthSectionFullWidthStyle}>
+                  <SipPcmSectionHeading title="CODEC Settings" />
+                </div>
+
+                <div
+                  className={SIP_PCM_AUTH_FORM_GRID_CLASS}
+                  style={{ marginBottom: 12 }}
+                >
+                  <label style={sipPcmAuthLabelStyle}>
+                    Gateway Negotiation Coding Sequence:
+                  </label>
+                  <div style={sipPcmAuthControlWrapStyle}>
+                    <Select
+                      name={SIP_MEDIA_CODEC_FIELD.name}
+                      value={formData[SIP_MEDIA_CODEC_FIELD.name]}
+                      onChange={handleInputChange}
+                      variant="outlined"
+                      fullWidth
+                      sx={sipPcmAuthMuiSelectSx}
+                    >
+                      {SIP_MEDIA_CODEC_FIELD.options.map((option) => (
+                        <MenuItem
+                          key={option.value}
+                          value={option.value}
+                          sx={{ fontSize: 12 }}
+                        >
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
           {!loading && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 16,
-                padding: "16px 24px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#f8fafc",
-              }}
-            >
-              <Button
-                variant="contained"
+            <div style={sipPcmAuthFormFooterStyle}>
+              <Btn
+                variant="primary"
                 onClick={handleSave}
                 disabled={loading || saving}
-                startIcon={
-                  saving && <CircularProgress size={14} color="inherit" />
-                }
-                sx={{
-                  background:
-                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                  color: "#fff",
-                  border: "1px solid #5A6F8F",
-                  boxShadow: "0 2px 8px #3E5475",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  textTransform: "none",
-                  padding: "8px 28px",
-                  minWidth: 110,
-                  borderRadius: "6px",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                    opacity: 0.85,
-                  },
-                }}
+                style={sipPcmAuthFormBtnStyle}
               >
-                {saving ? "Saving..." : "Save"}
-              </Button>
-              <Button
-                variant="outlined"
+                {saving ? (
+                  <>
+                    <CircularProgress size={14} color="inherit" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Btn>
+              <Btn
+                variant="cancel"
                 onClick={handleReset}
-                sx={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08)",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  textTransform: "none",
-                  padding: "8px 20px",
-                  minWidth: 110,
-                  borderRadius: "6px",
-                  "&:hover": {
-                    background: "#cbd5e1",
-                    border: "1px solid #cbd5e1",
-                    opacity: 0.85,
-                  },
-                }}
+                style={sipPcmAuthFormBtnStyle}
               >
                 Reset
-              </Button>
+              </Btn>
             </div>
           )}
         </div>

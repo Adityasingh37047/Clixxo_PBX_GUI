@@ -224,8 +224,8 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
   const handle = () => {
-    if (pw.length < 8) {
-      setErr("Password must be at least 8 characters.");
+    if (pw.length < 5) {
+      setErr("Password must be at least 5 characters.");
       return;
     }
     onSave(pw);
@@ -270,7 +270,7 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
         <input
           style={{ ...inputStyle, marginBottom: 6, height: 36 }}
           type="password"
-          placeholder="New password (min 8 chars)"
+          placeholder="New password (min 5 chars)"
           value={pw}
           onChange={(e) => {
             setPw(e.target.value);
@@ -555,8 +555,8 @@ export default function UserManage() {
         showFormError("Username must be at least 5 characters.");
         return;
       }
-      if (password.length < 8) {
-        showFormError("Password must be at least 8 characters.");
+      if (password.length < 5) {
+        showFormError("Password must be at least 5 characters.");
         return;
       }
       setSaving(true);
@@ -1007,10 +1007,12 @@ export default function UserManage() {
                                   openEdit(user);
                                 }}
                                 onMouseEnter={(e) => {
-                                  if (canWrite) e.currentTarget.style.opacity = "1";
+                                  if (canWrite)
+                                    e.currentTarget.style.opacity = "1";
                                 }}
                                 onMouseLeave={(e) => {
-                                  if (canWrite) e.currentTarget.style.opacity = "0.7";
+                                  if (canWrite)
+                                    e.currentTarget.style.opacity = "0.7";
                                 }}
                               />
                             )}
@@ -1032,10 +1034,12 @@ export default function UserManage() {
                                   handleDelete(user);
                                 }}
                                 onMouseEnter={(e) => {
-                                  if (canWrite) e.currentTarget.style.opacity = "1";
+                                  if (canWrite)
+                                    e.currentTarget.style.opacity = "1";
                                 }}
                                 onMouseLeave={(e) => {
-                                  if (canWrite) e.currentTarget.style.opacity = "0.7";
+                                  if (canWrite)
+                                    e.currentTarget.style.opacity = "0.7";
                                 }}
                               />
                             )}
@@ -1133,7 +1137,7 @@ export default function UserManage() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Min 8 characters"
+                        placeholder="Min 5 characters"
                         {...inputInteraction}
                       />
                     </div>

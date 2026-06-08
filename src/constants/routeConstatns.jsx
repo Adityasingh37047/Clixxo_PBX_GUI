@@ -26,6 +26,7 @@ export const ROUTE_PATHS = {
   VPN: '/vpn',
   DHCP: '/dhcp',
   SYSTEM_TOOLS: '/system-tools',
+  GLOBAL_SIP: '/system-tools/global-sip',
   // Call Features
   CONFERENCE: '/call-features/conference',
   IP_CALL_IN_CALLERID: '/num-manipulate/ip-call-in-callerid',

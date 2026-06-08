@@ -3,8 +3,28 @@ import {
   SIP_SETTINGS_FIELDS,
   SIP_SETTINGS_NOTE,
 } from "../constants/SipSipConstants";
-import Button from "@mui/material/Button";
-import { Select, MenuItem, FormControl } from "@mui/material";
+import { Select, MenuItem, FormControl, Checkbox } from "@mui/material";
+import {
+  C,
+  Btn,
+  SipPcmBreadcrumb,
+  sipPcmFormPageWrapStyle,
+  sipPcmFormPageInnerStyle,
+  sipPcmFormCardStyle,
+  sipPcmFormHeaderStyle,
+  sipPcmAuthFormFooterStyle,
+  sipPcmAuthFormBtnStyle,
+  SIP_PCM_AUTH_FORM_BODY_CLASS,
+  SIP_PCM_AUTH_FORM_GRID_CLASS,
+  sipPcmAuthLabelStyle,
+  sipPcmAuthControlWrapStyle,
+  sipPcmAuthInputStyle,
+  sipPcmAuthInputInteraction,
+  sipPcmAuthMuiSelectSx,
+  sipPcmCheckboxSx,
+  sipPcmNativeCheckboxStyle,
+  sipPcmNoteStyle,
+} from "../sections/sip/sipPcmSharedUi";
 import {
   listSipSettings,
   updateSipSettings,
@@ -34,20 +54,6 @@ const getInitialState = () => {
   return state;
 };
 
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-};  
-
-
 const SipSipPage = () => {
   const [form, setForm] = useState(getInitialState());
   const [loading, setLoading] = useState(false);
@@ -71,26 +77,6 @@ const SipSipPage = () => {
     } catch (_) {}
     return [];
   };
-
-  const SectionHeading = ({ title }) => (
-    <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-      <span
-        style={{
-          position: "absolute",
-          top: -10,
-          left: 0,
-          background: "#fff",
-          paddingRight: 8,
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.mutedText,
-        }}
-      >
-        {title}
-      </span>
-    </div>
-  );
 
   const [sipWanOptions, setSipWanOptions] = useState(getCachedWanOptions());
   // Track previous sipWan value to detect changes
@@ -692,14 +678,8 @@ echo "Configuration persists across reboots"
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
+    <div style={sipPcmFormPageWrapStyle}>
+      <div style={sipPcmFormPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && !saving && (
           <Alert
@@ -730,7 +710,7 @@ echo "Configuration persists across reboots"
               className="bg-white rounded-lg shadow-xl p-6 flex flex-col items-center gap-4 pointer-events-auto"
               style={{ minWidth: "300px" }}
             >
-              <CircularProgress size={50} sx={{ color: "#0e8fd6" }} />
+              <CircularProgress size={50} sx={{ color: C.accent }} />
               <div className="text-lg font-medium text-gray-700">
                 Applying Settings...
               </div>
@@ -741,50 +721,29 @@ echo "Configuration persists across reboots"
           </div>
         )}
 
-        {/* Breadcrumb */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; SIP &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              SIP Settings
-            </span>
+        <SipPcmBreadcrumb current="SIP Settings" />
+
+        <div style={sipPcmFormCardStyle}>
+          <div style={sipPcmFormHeaderStyle}>
+            <span>SIP Settings</span>
           </div>
-        </div>
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          <div style={{ padding: "24px 28px" }}>
-            <SectionHeading title="SIP Settings" />
-
-            <div style={{ padding: "24px 32px" }}>
-              {loading ? (
-                <div className="flex items-center justify-center min-h-[400px]">
-                  <div className="text-center">
-                    <CircularProgress size={40} sx={{ color: "#0e8fd6" }} />
-                    <div className="mt-3 text-gray-600">
-                      Loading SIP settings...
-                    </div>
+          <div className={SIP_PCM_AUTH_FORM_BODY_CLASS}>
+            {loading ? (
+              <div className="flex items-center justify-center min-h-[400px] w-full">
+                <div className="text-center">
+                  <CircularProgress size={40} sx={{ color: C.accent }} />
+                  <div className="mt-3 text-gray-600">
+                    Loading SIP settings...
                   </div>
                 </div>
-              ) : (
-                <div className="flex-1 py-4 px-16">
-                  <div className="space-y-4">
-                    {SIP_SETTINGS_FIELDS.map((field, idx) => {
+              </div>
+            ) : (
+              <div
+                className={SIP_PCM_AUTH_FORM_GRID_CLASS}
+                style={{ marginBottom: 12 }}
+              >
+                {SIP_SETTINGS_FIELDS.map((field) => {
                       // Skip conditional fields if their condition is not met
                       if (field.conditional) {
                         if (field.conditionalValues) {
@@ -827,245 +786,219 @@ echo "Configuration persists across reboots"
                       }
 
                       return (
-                        <div
-                          key={field.key}
-                          className="flex items-center justify-between"
-                        >
-                          <label
-                            className={`text-sm text-gray-600 font-medium text-left ${field.key === "externalBound" ? "" : "whitespace-nowrap"}`}
-                            style={{
-                              width:
-                                field.key === "externalBound"
-                                  ? "380px"
-                                  : "320px",
-                              marginRight: "10px",
-                              lineHeight: "1.4",
-                            }}
-                          >
+                        <React.Fragment key={field.key}>
+                          <label style={sipPcmAuthLabelStyle}>
                             {field.key === "externalBound"
                               ? "When the externally bound is enabled, only the externally bound address is matched to confirm the SIP trunk"
                               : field.label}
                           </label>
 
-                          {field.type === "text" && (
-                            <input
-                              type={
-                                field.key === "calledPrefix" ? "text" : "number"
-                              }
-                              value={form[field.key]}
-                              className="border border-gray-400 bg-white"
-                              style={{
-                                width: "200px",
-                                height: "28px",
-                                padding: "4px 10px",
-                                fontSize: "13px",
-                                borderRadius: "4px",
-                                outline: "none",
-                              }}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (field.key === "calledPrefix") {
-                                  if (
-                                    /^[0-9:]*$/.test(value) &&
-                                    value.split(":").length <= 6
+                          <div style={sipPcmAuthControlWrapStyle}>
+                            {field.type === "text" && (
+                              <input
+                                type={
+                                  field.key === "calledPrefix"
+                                    ? "text"
+                                    : "number"
+                                }
+                                value={form[field.key]}
+                                style={sipPcmAuthInputStyle}
+                                {...sipPcmAuthInputInteraction}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (field.key === "calledPrefix") {
+                                    if (
+                                      /^[0-9:]*$/.test(value) &&
+                                      value.split(":").length <= 6
+                                    ) {
+                                      handleChange(field.key, value);
+                                    }
+                                  } else if (
+                                    /^\d*$/.test(value) ||
+                                    value === ""
                                   ) {
                                     handleChange(field.key, value);
                                   }
-                                } else {
-                                  if (/^\d*$/.test(value) || value === "") {
-                                    handleChange(field.key, value);
-                                  }
+                                }}
+                                placeholder={
+                                  field.key === "calledPrefix"
+                                    ? "e.g., 123:456:789"
+                                    : ""
                                 }
-                              }}
-                              placeholder={
-                                field.key === "calledPrefix"
-                                  ? "e.g., 123:456:789"
-                                  : ""
-                              }
-                            />
-                          )}
+                              />
+                            )}
 
-                          {field.type === "select" && (
-                            <FormControl size="small">
-                              <Select
-                                value={form[field.key]}
-                                onChange={(e) =>
-                                  handleChange(field.key, e.target.value)
-                                }
-                                variant="outlined"
-                                style={{ width: "200px", height: "28px" }}
-                                sx={{
-                                  fontSize: 13,
-                                  height: 28,
-                                  backgroundColor: "#ffffff",
-                                  "& .MuiOutlinedInput-root": {
-                                    backgroundColor: "#ffffff",
-                                    height: 28,
-                                    "& fieldset": {
-                                      borderColor: "#999999",
-                                    },
-                                    "&:hover fieldset": {
-                                      borderColor: "#999999",
-                                    },
-                                    "&.Mui-focused fieldset": {
-                                      borderColor: "#999999",
-                                    },
-                                  },
-                                  "& .MuiSelect-select": {
-                                    backgroundColor: "#ffffff",
-                                    padding: "4px 10px",
-                                    height: "auto",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    fontSize: "13px",
-                                  },
+                            {field.type === "select" && (
+                              <FormControl size="small" fullWidth>
+                                <Select
+                                  value={form[field.key]}
+                                  onChange={(e) =>
+                                    handleChange(field.key, e.target.value)
+                                  }
+                                  variant="outlined"
+                                  fullWidth
+                                  sx={sipPcmAuthMuiSelectSx}
+                                >
+                                  {field.key === "sipWan" &&
+                                  sipWanOptions.length > 0
+                                    ? sipWanOptions.map((o) => (
+                                        <MenuItem
+                                          key={o.value}
+                                          value={o.value}
+                                        >
+                                          {o.label}
+                                        </MenuItem>
+                                      ))
+                                    : field.options.map((opt) => (
+                                        <MenuItem key={opt} value={opt}>
+                                          {opt}
+                                        </MenuItem>
+                                      ))}
+                                </Select>
+                              </FormControl>
+                            )}
+
+                            {field.type === "checkbox" && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  minHeight: 36,
+                                  gap: 8,
                                 }}
                               >
-                                {field.key === "sipWan" &&
-                                sipWanOptions.length > 0
-                                  ? sipWanOptions.map((o) => (
-                                      <MenuItem key={o.value} value={o.value}>
-                                        {o.label}
-                                      </MenuItem>
-                                    ))
-                                  : field.options.map((opt) => (
-                                      <MenuItem key={opt} value={opt}>
-                                        {opt}
-                                      </MenuItem>
-                                    ))}
-                              </Select>
-                            </FormControl>
-                          )}
-
-                          {field.type === "checkbox" && (
-                            <div
-                              className="flex items-center"
-                              style={{ width: "200px", height: "28px" }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={!!form[field.key]}
-                                className="w-4 h-4 mr-2 accent-blue-600"
-                                onChange={() => handleCheckbox(field.key)}
-                              />
-                              {field.key === "workingPeriod" ? (
-                                field.labelAfter && (
-                                  <span className="text-sm text-gray-600">
-                                    {field.labelAfter}
-                                  </span>
-                                )
-                              ) : (
-                                <>
-                                  <span className="text-sm text-gray-600">
-                                    Enable
-                                  </span>
-                                  {field.labelAfter && (
-                                    <span className="text-sm ml-2 text-gray-600">
+                                <Checkbox
+                                  size="small"
+                                  checked={!!form[field.key]}
+                                  onChange={() => handleCheckbox(field.key)}
+                                  sx={sipPcmCheckboxSx}
+                                />
+                                {field.key === "workingPeriod" ? (
+                                  field.labelAfter && (
+                                    <span
+                                      style={{
+                                        fontSize: 13,
+                                        color: C.labelText,
+                                      }}
+                                    >
                                       {field.labelAfter}
                                     </span>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          )}
+                                  )
+                                ) : (
+                                  <>
+                                    <span
+                                      style={{
+                                        fontSize: 13,
+                                        color: C.labelText,
+                                      }}
+                                    >
+                                      Enable
+                                    </span>
+                                    {field.labelAfter && (
+                                      <span
+                                        style={{
+                                          fontSize: 13,
+                                          color: C.labelText,
+                                        }}
+                                      >
+                                        {field.labelAfter}
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            )}
 
-                          {field.type === "radio" && (
-                            <div
-                              className="flex items-center"
-                              style={{ width: "200px", height: "28px" }}
-                            >
-                              <label className="flex items-center text-sm mr-4">
-                                <input
-                                  type="radio"
-                                  name={field.key}
-                                  value="Yes"
-                                  checked={form[field.key] === "Yes"}
-                                  onChange={() =>
-                                    handleChange(field.key, "Yes")
-                                  }
-                                  className="mr-1 accent-blue-600"
-                                />
-                                Yes
-                              </label>
-                              <label className="flex items-center text-sm">
-                                <input
-                                  type="radio"
-                                  name={field.key}
-                                  value="No"
-                                  checked={form[field.key] === "No"}
-                                  onChange={() => handleChange(field.key, "No")}
-                                  className="mr-1 accent-blue-600"
-                                />
-                                No
-                              </label>
-                            </div>
-                          )}
-                        </div>
+                            {field.type === "radio" && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  minHeight: 36,
+                                  gap: 16,
+                                  fontSize: 13,
+                                  color: C.labelText,
+                                }}
+                              >
+                                <label
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={field.key}
+                                    value="Yes"
+                                    checked={form[field.key] === "Yes"}
+                                    onChange={() =>
+                                      handleChange(field.key, "Yes")
+                                    }
+                                    style={sipPcmNativeCheckboxStyle}
+                                  />
+                                  Yes
+                                </label>
+                                <label
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={field.key}
+                                    value="No"
+                                    checked={form[field.key] === "No"}
+                                    onChange={() =>
+                                      handleChange(field.key, "No")
+                                    }
+                                    style={sipPcmNativeCheckboxStyle}
+                                  />
+                                  No
+                                </label>
+                              </div>
+                            )}
+                          </div>
+                        </React.Fragment>
                       );
                     })}
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
-          {/* Bottom Actions Footer */}
           {!loading && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 16,
-                padding: "16px 24px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#f8fafc",
-              }}
-            >
-              <Button
-                variant="contained"
+            <div style={sipPcmAuthFormFooterStyle}>
+              <Btn
+                variant="primary"
                 onClick={handleSave}
                 disabled={loading || saving}
-                startIcon={
-                  saving && <CircularProgress size={16} color="inherit" />
-                }
-                sx={{
-                  background: "#1e2d42",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  textTransform: "none",
-                  padding: "6px 32px",
-                  minWidth: 120,
-                  "&:hover": { background: "#0f172a" },
-                }}
+                style={sipPcmAuthFormBtnStyle}
               >
-                {saving ? "Saving..." : "Save"}
-              </Button>
-              <Button
-                variant="outlined"
+                {saving ? (
+                  <>
+                    <CircularProgress size={14} color="inherit" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Btn>
+              <Btn
+                variant="cancel"
                 onClick={handleReset}
-                sx={{
-                  color: "#1e293b",
-                  borderColor: "#9ca3af",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  textTransform: "none",
-                  padding: "6px 32px",
-                  minWidth: 100,
-                  "&:hover": { borderColor: "#1e293b", background: "#f1f5f9" },
-                }}
+                style={sipPcmAuthFormBtnStyle}
               >
                 Reset
-              </Button>
+              </Btn>
             </div>
           )}
         </div>
 
-        {/* Note */}
-        <div className="text-red-600 text-center mt-6 text-sm">
-          {SIP_SETTINGS_NOTE}
-        </div>
+        <div style={sipPcmNoteStyle}>{SIP_SETTINGS_NOTE}</div>
       </div>
     </div>
   );

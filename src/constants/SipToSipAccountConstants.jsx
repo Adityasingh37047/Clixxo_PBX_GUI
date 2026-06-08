@@ -4,7 +4,7 @@ export const SIP_TO_SIP_FIELDS = [
   { name: 'allow_codecs', label: 'Allow Codecs', type: 'checkbox', defaultValue: '' },
   { name: 'contact', label: 'Contact', type: 'text', defaultValue: '' },
   { name: 'password', label: 'Password', type: 'password', defaultValue: '' },
-  {name: 'from_domain', label: 'Domain name', type: 'text', defaultValue: ''},
+  { name: 'from_domain', label: 'Domain Name', type: 'text', defaultValue: '' },
   {name: 'contact_user', label: 'Contact User', type: 'text', defaultValue: ''},
   {name: 'outbound_proxy', label: 'Outbound Proxy', type: 'text', defaultValue: ''},
 ];
@@ -25,5 +25,25 @@ export const SIP_TO_SIP_INITIAL_FORM = SIP_TO_SIP_FIELDS.reduce((acc, field) => 
   acc[field.name] = field.defaultValue;
   return acc;
 }, {});
+
+/** Add/Edit modal — codec boxes (row 2) */
+export const SIP_TO_SIP_CODEC_OPTIONS = [
+  { value: "ulaw", label: "ulaw" },
+  { value: "alaw", label: "alaw" },
+  { value: "gsm", label: "gsm" },
+  { value: "g726", label: "g726" },
+  { value: "g722", label: "g722" },
+  { value: "g729", label: "g729" },
+  { value: "h264", label: "h264" },
+];
+
+/** Add/Edit modal — field rows */
+export const SIP_TO_SIP_FORM_LAYOUT = [
+  ["extension", "context"],
+  ["allow_codecs"],
+  ["contact", "password"],
+  ["from_domain", "contact_user"],
+  ["outbound_proxy"],
+];
 
 

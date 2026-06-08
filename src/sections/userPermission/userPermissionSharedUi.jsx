@@ -10,13 +10,7 @@ import {
   nativeFieldInteraction,
 } from "../shared/outlinedFieldUi";
 
-export {
-  C,
-  OUTLINED_BORDER,
-  OUTLINED_HOVER,
-  OUTLINED_FOCUS,
-  muiTextFieldSx,
-};
+export { C, OUTLINED_BORDER, OUTLINED_HOVER, OUTLINED_FOCUS, muiTextFieldSx };
 
 /** Account Manage modal inputs / selects */
 export const userPermissionModalInputStyle = {
