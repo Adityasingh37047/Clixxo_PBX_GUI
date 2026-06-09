@@ -794,7 +794,28 @@ const RingGroup = () => {
           </Alert>
         )}
 
+<<<<<<< HEAD
         <PbxBreadcrumb section="Call Features" current="Ring Group" />
+=======
+        {/* Breadcrumb + Last Updated */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontSize: 11, color: C.mutedText }}>
+            PBX &rsaquo; Call Features &rsaquo;{" "}
+            <span style={{ color: "#1e293b", fontWeight: 600 }}>
+              Ring Group
+            </span>
+
+
+          </div>
+        </div>
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
 
         {/* Main Card */}
         <div
@@ -1172,21 +1193,34 @@ minWidth: 900,
                 padding: "20px 24px 16px",
               }}
             >
-              <div style={{ marginBottom: 20, position: "relative" }}>
-                <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                <span
-                   style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: C.accent,
-                        marginBottom: 6,
-                        textAlign: "center",
-                      }}
-                >
-                  Ring Group
-                </span>
-              </div>
+              <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 20,
+  }}
+>
+  <span
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.labelText,
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Ring Group
+  </span>
 
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{
@@ -1216,7 +1250,16 @@ minWidth: 900,
                       <MuiSelect
                         value={ringStrategy}
                         onChange={(e) => setRingStrategy(e.target.value)}
-                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
+                                                   sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {RING_STRATEGY_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1232,7 +1275,16 @@ minWidth: 900,
                       <MuiSelect
                         value={ringTimeout}
                         onChange={(e) => setRingTimeout(e.target.value)}
-                        sx={{ fontSize: 13 , backgroundColor: "#fff",}}
+                                                  sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {RING_TIMEOUT_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1262,7 +1314,16 @@ minWidth: 900,
                         onChange={(e) =>
                           setExtensionAnswerConfirm(e.target.value)
                         }
-                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
+                                                   sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {EXTENSION_ANSWER_CONFIRM_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1301,7 +1362,16 @@ minWidth: 900,
                             setTimeoutDestinationType(e.target.value);
                             setTimeoutDestinationValue("");
                           }}
-                          sx={{ fontSize: 13, backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           <MenuItem value="" sx={{ fontSize: 13 }}>
                             <em>Select type</em>
@@ -1310,7 +1380,16 @@ minWidth: 900,
                             <MenuItem
                               key={opt.value}
                               value={opt.value}
-                              sx={{ fontSize: 13, backgroundColor: "#fff", }}
+                                                        sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                             >
                               {opt.label}
                             </MenuItem>
@@ -1326,7 +1405,16 @@ minWidth: 900,
                             onChange={(e) =>
                               setTimeoutDestinationValue(e.target.value)
                             }
-                            sx={{ fontSize: 13 , backgroundColor: "#fff",}}
+                                                      sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                           >
                             <MenuItem value="" sx={{ fontSize: 13 }}>
                               <em>Select value</em>
@@ -1335,7 +1423,16 @@ minWidth: 900,
                               <MenuItem
                                 key={opt.value}
                                 value={opt.value}
-                                sx={{ fontSize: 13, backgroundColor: "#fff", }}
+                                                       sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                               >
                                 {opt.label}
                               </MenuItem>
@@ -1351,7 +1448,16 @@ minWidth: 900,
                       <MuiSelect
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
+                                                  sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {ENABLE_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1368,7 +1474,16 @@ minWidth: 900,
                         value={ringBack}
                         onChange={(e) => setRingBack(e.target.value)}
                         MenuProps={RING_BACK_MENU_PROPS}
-                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
+                                                 sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {ringBack && !ringBackAllValues.includes(ringBack) && (
                           <MenuItem value={ringBack} sx={{ fontSize: 13 }}>

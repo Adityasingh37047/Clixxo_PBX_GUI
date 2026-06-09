@@ -65,62 +65,112 @@ const Btn = ({
   disabled,
   variant = "default",
   style: extraStyle,
+  title,
+  type,
+  hoverBehavior = "background",
 }) => {
   const variants = {
     default: {
-      background: "#1e2d42",
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
-      border: "1px solid #162233",
+      border: "1px solid #5A6F8F",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+   cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     outline: {
       background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
     },
     accent: {
-      background: C.accent,
-      color: C.cardBg,
-      border: `0.5px solid ${C.accent}`,
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
     },
   };
+
   const s = variants[variant] || variants.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+      case "accent":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "danger":
+        return "#b91c1c";
+      case "cancel":
+        return "#e2e8f0";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = extraStyle?.background || s.background;
+
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
       disabled={disabled}
+      title={title}
       style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
         whiteSpace: "nowrap",
+        ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "0.82";
+          } else {
+            e.currentTarget.style.background = hoverBg;
+          }
+        }
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "1";
+          } else {
+            e.currentTarget.style.background = baseBg;
+          }
+        }
       }}
     >
       {children}
     </button>
   );
 };
+
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -162,22 +212,33 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
 );
 
 const SectionHeading = ({ title }) => (
-  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      margin: "24px 0 16px 0",
+    }}
+  >
     <span
       style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
+        fontSize: 12,
+        fontWeight: 700,
+        color: C.labelText,
+        textTransform: "uppercase",
+        letterSpacing: "0.04em",
       }}
     >
       {title}
     </span>
+
+    <div
+      style={{
+        flex: 1,
+        height: 1,
+        background: C.cardBorder,
+        marginLeft: 12,
+      }}
+    />
   </div>
 );
 
@@ -772,16 +833,15 @@ const VoicePromptsPage = () => {
              <Btn
   onClick={handleSavePreferences}
   disabled={savingPrefs}
-  variant="default"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+  variant="primary"
+  
+ style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+
 >
   {savingPrefs ? "Saving..." : "SAVE"}
 </Btn>
@@ -874,7 +934,7 @@ const VoicePromptsPage = () => {
 
                   <Btn
   onClick={handleUploadMoh}
-  variant="default"
+  variant="primary"
   style={{
     marginLeft: "auto",
     padding: "8px 28px",
@@ -1163,7 +1223,7 @@ const VoicePromptsPage = () => {
                 >
                   <Btn
   onClick={openRecordModal}
-  variant="accent"
+  variant="primary"
   style={{
     padding: "8px 28px",
     fontSize: 13,
@@ -1233,7 +1293,7 @@ const VoicePromptsPage = () => {
                   </div>
                  <Btn
   onClick={handleUploadCustomPrompt}
-  variant="default"
+  variant="primary"
   style={{
     marginLeft: "auto",
     padding: "8px 28px",

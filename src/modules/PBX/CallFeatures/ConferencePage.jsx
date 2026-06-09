@@ -1363,7 +1363,16 @@ minWidth: 900,
                         value={greeting}
                         onChange={(e) => setGreeting(e.target.value)}
                         MenuProps={{ PaperProps: { sx: { maxHeight: 280 } } }}
-                        sx={{ fontSize: 13    ,background: "#fff", }}
+                                                   sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {(greetingOptions.length
                           ? greetingOptions
@@ -1381,7 +1390,16 @@ minWidth: 900,
                         fullWidth
                         value={announce}
                         onChange={(e) => setAnnounce(e.target.value)}
-                        sx={{ fontSize: 13,background: "#fff", }}
+                       sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {YES_NO_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1396,7 +1414,16 @@ minWidth: 900,
                         fullWidth
                         value={record}
                         onChange={(e) => setRecord(e.target.value)}
-                        sx={{ fontSize: 13  ,background: "#fff",}}
+                        sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {YES_NO_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1421,7 +1448,16 @@ minWidth: 900,
                         fullWidth
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{ fontSize: 13 ,background: "#fff",}}
+                        sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {ENABLE_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1466,7 +1502,16 @@ minWidth: 900,
                             setParticipantPassword("");
                           }
                         }}
-                        sx={{ fontSize: 13 ,background: "#fff", }}
+                                                   sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                       >
                         {YES_NO_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>

@@ -241,24 +241,36 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
 );
 
 const SectionHeading = ({ title }) => (
-  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      margin: "16px 0 16px 0",
+    }}
+  >
     <span
       style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
+        fontSize: 12,
+        fontWeight: 700,
+        color: C.labelText,
+        textTransform: "uppercase",
+        letterSpacing: "0.04em",
       }}
     >
       {title}
     </span>
+
+    <div
+      style={{
+        flex: 1,
+        height: 1,
+        background: C.cardBorder,
+        marginLeft: 12,
+      }}
+    />
   </div>
 );
+
 
 // ── API Helpers ───────────────────────────────────────────────────────────────
 const normalizeList = (raw) => {
@@ -1180,7 +1192,16 @@ const DisaPage = () => {
                               secondDial: e.target.value,
                             }))
                           }
-                          sx={{ fontSize: 13  ,backgroundColor: "#fff" }}
+                                                 sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {SECOND_DIAL_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1345,7 +1366,16 @@ const DisaPage = () => {
                               transparent: e.target.value,
                             }))
                           }
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff" }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {TRANSPARENT_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1370,7 +1400,16 @@ const DisaPage = () => {
                               enabled: e.target.value === "Yes",
                             }))
                           }
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff" }}
+                                                     sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {ENABLE_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1398,13 +1437,13 @@ const DisaPage = () => {
                 >
                   <div>
                     <div
-                      style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.accent,
-                      marginBottom: 6,
-                      textAlign: "center",
-                    }}
+                     style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: C.accent,
+                        marginBottom: 6,
+                        textAlign: "center",
+                      }}
                   >
                       Available Routes
                     </div>
@@ -1441,39 +1480,65 @@ const DisaPage = () => {
                     </select>
                   </div>
                   <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 8,
-                      justifyContent: "center",
-                      paddingTop: 24,
-                    }}
+                     style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+    height: 160,
+  }}
                   >
                     <Btn
                       onClick={addSelectedToChosen}
                       variant="outline"
-                      style={{ padding: "4px 0", fontSize: 12 }}
+                      style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                     >
                       &gt;
                     </Btn>
                     <Btn
                       onClick={addAllToChosen}
                       variant="outline"
-                      style={{ padding: "4px 0", fontSize: 12 }}
+                   style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                     >
                       &gt;&gt;
                     </Btn>
                     <Btn
                       onClick={removeSelectedFromChosen}
                       variant="outline"
-                      style={{ padding: "4px 0", fontSize: 12 }}
+                       style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                     >
                       &lt;
                     </Btn>
                     <Btn
                       onClick={removeAllFromChosen}
                       variant="outline"
-                      style={{ padding: "4px 0", fontSize: 12 }}
+                       style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                     >
                       &lt;&lt;
                     </Btn>
@@ -1524,38 +1589,65 @@ const DisaPage = () => {
                       </select>
                     </div>
                     <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                        paddingTop: 24,
-                      }}
+                     style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+    height: 160,
+  }}
                     >
                       <Btn
                         onClick={moveChosenTop}
                         variant="outline"
-                        style={{ padding: "4px 0", fontSize: 14 }}
+                         style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                       >
                         <VerticalAlignTopIcon sx={{ fontSize: 16 }} />
                       </Btn>
                       <Btn
                         onClick={moveChosenUp}
                         variant="outline"
-                        style={{ padding: "4px 0", fontSize: 14 }}
+                         style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                       >
                         <KeyboardArrowUpIcon sx={{ fontSize: 16 }} />
                       </Btn>
                       <Btn
                         onClick={moveChosenDown}
                         variant="outline"
-                        style={{ padding: "4px 0", fontSize: 14 }}
+                         style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                       >
                         <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
                       </Btn>
                       <Btn
                         onClick={moveChosenBottom}
                         variant="outline"
-                        style={{ padding: "4px 0", fontSize: 14 }}
+                         style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
                       >
                         <VerticalAlignBottomIcon sx={{ fontSize: 16 }} />
                       </Btn>

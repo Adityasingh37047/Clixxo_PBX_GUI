@@ -1470,19 +1470,34 @@ const OutboundRoutesPage = () => {
                 borderRadius: 8,
               }}
             >
-              <div
-                className="px-3 py-1.5 text-[13px] font-semibold"
-               style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Outbound Call Routing
-              </div>
+       <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    margin: "12px 0 14px 0",
+  }}
+>
+  <span
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.labelText,
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Outbound Call Routing
+  </span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 20, // 12 se 20 kar do
+    }}
+  />
+</div>
               <div className="p-4 flex flex-col gap-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                   <div className="flex flex-col gap-2">

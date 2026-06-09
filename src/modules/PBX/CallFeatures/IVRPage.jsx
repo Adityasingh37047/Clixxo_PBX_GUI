@@ -1800,24 +1800,34 @@ minWidth: 900,
                                     }}
                                   >
                                     {/* ── Naya "Basic" Heading ── */}
-                                    <div style={{ marginBottom: 20, position: "relative" }}>
-                                      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                                      <span
-                                        style={{
-                                          position: "absolute",
-                                          top: -10,
-                                          left: 0,
-                                          background: "#fff",       
-                                          paddingRight: 8,
-                                          fontSize: 13,
-                                          fontWeight: 600,
-                                          color: C.mutedText,
-                                        }}
-                                      >
-                                        Basic
-                                      </span>
-                                    </div>
+                                  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 20,
+  }}
+>
+ <span
+  style={{
+    fontSize: 12,
+    fontWeight: 700,
+    color: C.labelText,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  }}
+>
+  BASIC
+</span>
 
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
                 {/* 2-Column Grid for Basic fields */}
                 <div
                   style={{
@@ -1871,7 +1881,16 @@ minWidth: 900,
                           <MuiSelect
                             value={greetLong}
                             onChange={(e) => setGreetLong(e.target.value)}
-                            sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
+                                                      sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                           >
                             {greetLongOptions.map((opt) => (
                               <MenuItem
@@ -1911,7 +1930,16 @@ minWidth: 900,
                           <MuiSelect
                             value={greetShort}
                             onChange={(e) => setGreetShort(e.target.value)}
-                            sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
+                                                      sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                           >
                             {greetShortOptions.map((opt) => (
                               <MenuItem
@@ -1985,7 +2013,16 @@ minWidth: 900,
                         <MuiSelect
                           value={checkVoicemail}
                           onChange={(e) => setCheckVoicemail(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {CHECK_VOICEMAIL_OPTIONS.map((opt) => (
                             <MenuItem
@@ -2090,7 +2127,16 @@ minWidth: 900,
                         <MuiSelect
                           value={enabled}
                           onChange={(e) => setEnabled(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {ENABLE_OPTIONS.map((opt) => (
                             <MenuItem
@@ -2110,7 +2156,16 @@ minWidth: 900,
                         <MuiSelect
                           value={directExtension}
                           onChange={(e) => setDirectExtension(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                   sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {DIRECT_EXTENSION_OPTIONS.map((opt) => (
                             <MenuItem
@@ -2130,7 +2185,16 @@ minWidth: 900,
                         <MuiSelect
                           value={fxoFlashTransfer}
                           onChange={(e) => setFxoFlashTransfer(e.target.value)}
-                          sx={{ fontSize: 13   ,backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {FXO_FLASH_TRANSFER_OPTIONS.map((opt) => (
                             <MenuItem
@@ -2356,23 +2420,34 @@ minWidth: 900,
                 )}
 
                 {/* Advanced Divider */}
-                <div style={{ margin: "32px 0 20px 0", position: "relative" }}>
-                  <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: -10,
-                      left: 0,
-                      background: "#fff",
-                      paddingRight: 8,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.mutedText,
-                    }}
-                  >
-                    Advanced
-                  </span>
-                </div>
+             <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    margin: "32px 0 20px 0",
+  }}
+>
+  <span
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.labelText,
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Advanced
+  </span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
 
                 {/* Advanced Section 2-Column Grid */}
                 <div
@@ -2395,7 +2470,16 @@ minWidth: 900,
                         <MuiSelect
                           value={invalidSound}
                           onChange={(e) => setInvalidSound(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {invalidSoundOptions.map((opt) => (
                             <MenuItem
@@ -2415,7 +2499,16 @@ minWidth: 900,
                         <MuiSelect
                           value={exitSound}
                           onChange={(e) => setExitSound(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {exitSoundOptions.map((opt) => (
                             <MenuItem
@@ -2442,7 +2535,16 @@ minWidth: 900,
                           renderValue={(value) =>
                             value ? formatActionLabel(value) : "Select action"
                           }
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                     sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           <MenuItem value="" sx={{ fontSize: 13 }}>
                             <em>Select action</em>
@@ -2497,7 +2599,16 @@ minWidth: 900,
                           value={ringBack}
                           onChange={(e) => setRingBack(e.target.value)}
                           MenuProps={{ PaperProps: { sx: { maxHeight: 360 } } }}
-                          sx={{ fontSize: 13,backgroundColor: "#fff", }}
+                                                   sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {ringBack &&
                             !ringBackAllValues.includes(ringBack) && (
@@ -2598,23 +2709,39 @@ minWidth: 900,
                 }}
               >
                 <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
-                >
-                  Option
-                </span>
+  style={{
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
+>
+  Option
+</span>
                 <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
+                  style={{
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
                 >
                   Destination
                 </span>
                 <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
+                 style={{
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
                 >
                   Target
                 </span>
               </div>
               <div
-                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                style={{
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
               >
                 {KEYS.map((key) => (
                   <div

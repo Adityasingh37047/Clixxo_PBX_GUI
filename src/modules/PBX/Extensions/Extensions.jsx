@@ -125,6 +125,7 @@ const FOLLOW_ME_DESTINATION_TYPES = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SipAccountPage = () => {
+  
   const [accounts, setAccounts] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -156,6 +157,18 @@ const SipAccountPage = () => {
     fixedPassword: "",
     passwordPrefix: "",
   });
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    height: 32,
+  },
+};
+
+const selectSx = {
+  fontSize: 13,
+  height: 32,
+  backgroundColor: "#fff",
+};
 
   // Pagination
   const itemsPerPage = 50;
@@ -1752,20 +1765,29 @@ const SipAccountPage = () => {
                     overflow: "hidden",
                   }}
                 >
-                  <div
-                    style={{
-                      padding: "6px 12px",
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.labelText,
-                      background: "#f5f7fa",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    General
-                  </div>
+                 <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 700,
+    color: C.labelText,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  }}
+>
+  <span>General</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
                   <div
                     style={{
                       padding: 8,
@@ -1791,6 +1813,7 @@ const SipAccountPage = () => {
                           error={!!validationErrors.extension}
                           placeholder="e.g. 1001"
                           disabled={editIndex !== null}
+<<<<<<< HEAD
                           inputProps={{
                             style: {
                               fontSize: 13,
@@ -1815,6 +1838,9 @@ const SipAccountPage = () => {
                               },
                             },
                           }}
+=======
+                       sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         />
                         {validationErrors.extension && (
                           <ErrMsg>{validationErrors.extension}</ErrMsg>
@@ -1835,6 +1861,7 @@ const SipAccountPage = () => {
                             size="small"
                             fullWidth
                             variant="outlined"
+<<<<<<< HEAD
                             inputProps={{
                               style: {
                                 fontSize: 13,
@@ -1859,6 +1886,9 @@ const SipAccountPage = () => {
                                 },
                               },
                             }}
+=======
+                       sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                           />
                         </FieldRow>
                         <FieldRow label="Create Number:">
@@ -1874,6 +1904,7 @@ const SipAccountPage = () => {
                             size="small"
                             fullWidth
                             variant="outlined"
+<<<<<<< HEAD
                             inputProps={{
                               style: {
                                 fontSize: 13,
@@ -1898,6 +1929,9 @@ const SipAccountPage = () => {
                                 },
                               },
                             }}
+=======
+                     sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                           />
                         </FieldRow>
                         <div style={{ gridColumn: "1 / -1" }}>
@@ -1918,6 +1952,7 @@ const SipAccountPage = () => {
                                       passwordMode: e.target.value,
                                     }))
                                   }
+<<<<<<< HEAD
                                   sx={{
                                     fontSize: 13,
                                     height: 32,
@@ -1936,6 +1971,9 @@ const SipAccountPage = () => {
                                         borderWidth: 1,
                                       },
                                   }}
+=======
+                              sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                                 >
                                   <MenuItem value="random">Random</MenuItem>
                                   <MenuItem value="fixed">Fixed</MenuItem>
@@ -1958,6 +1996,7 @@ const SipAccountPage = () => {
                                   fullWidth
                                   variant="outlined"
                                   placeholder="Fixed password"
+<<<<<<< HEAD
                                   inputProps={{
                                     style: {
                                       fontSize: 13,
@@ -1982,6 +2021,9 @@ const SipAccountPage = () => {
                                       },
                                     },
                                   }}
+=======
+                              sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                                 />
                               )}
                               {bulkForm.passwordMode === "prefix" && (
@@ -1998,6 +2040,7 @@ const SipAccountPage = () => {
                                   fullWidth
                                   variant="outlined"
                                   placeholder="e.g. pw_"
+<<<<<<< HEAD
                                   inputProps={{
                                     style: {
                                       fontSize: 13,
@@ -2022,6 +2065,9 @@ const SipAccountPage = () => {
                                       },
                                     },
                                   }}
+=======
+                                sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                                 />
                               )}
                             </div>
@@ -2042,6 +2088,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("context", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -2058,6 +2105,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                       sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="" disabled>
                             <em>Select Context</em>
@@ -2090,6 +2140,7 @@ const SipAccountPage = () => {
                           variant="outlined"
                           error={!!validationErrors.password}
                           placeholder="Enter password"
+<<<<<<< HEAD
                           inputProps={{
                             style: {
                               fontSize: 13,
@@ -2114,6 +2165,9 @@ const SipAccountPage = () => {
                               },
                             },
                           }}
+=======
+                     sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                           InputProps={{
                             endAdornment: (
                               <InputAdornment position="end">
@@ -2149,6 +2203,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2173,6 +2228,10 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                      sx={inputSx}
+
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
 
@@ -2226,20 +2285,30 @@ const SipAccountPage = () => {
                     overflow: "hidden",
                   }}
                 >
-                  <div
-                    style={{
-                      padding: "6px 12px",
-                      borderBottom: `1px solid ${C.cardBorder}`,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.labelText,
-                      background: "#f5f7fa",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    User Info
-                  </div>
+                 <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 700,
+    color: C.labelText,
+    background: "#f5f7fa",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  }}
+>
+  <span>User Info</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
                   <div
                     style={{
                       padding: 8,
@@ -2258,6 +2327,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2282,6 +2352,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                       sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                     <FieldRow label="User Password:">
@@ -2294,6 +2367,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2318,6 +2392,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                    sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                     <FieldRow label="Email:">
@@ -2328,6 +2405,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2352,6 +2430,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                    sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                     <FieldRow label="Mobile Number:">
@@ -2365,6 +2446,7 @@ const SipAccountPage = () => {
                         fullWidth
                         variant="outlined"
                         placeholder="+91XXXXXXXXXX"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2389,6 +2471,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                      sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                   </div>
@@ -2422,6 +2507,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("voicemail_enabled", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -2438,6 +2524,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                       sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -2451,6 +2540,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("voicemail_keep_local", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -2467,6 +2557,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                      sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -2480,6 +2573,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("voicemail_file", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -2496,6 +2590,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                        sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="audio_file_attachment">
                             Audio File Attachment
@@ -2516,6 +2613,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2540,6 +2638,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                     sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                     <FieldRow label="Select Voice:">
@@ -2549,6 +2650,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("voicemail_voice", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -2565,6 +2667,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                     sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="system_default">
                             System Default
@@ -2646,6 +2751,7 @@ const SipAccountPage = () => {
                               e.target.value,
                             )
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -2662,6 +2768,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                  sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="">
                             <em>Destination Number</em>
@@ -2682,6 +2791,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange(`cf_${rule.key}_time`, e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -2698,6 +2808,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                       sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="all">All</MenuItem>
                           <MenuItem value="work_time">Work Time</MenuItem>
@@ -2766,22 +2879,7 @@ const SipAccountPage = () => {
                         onChange={(e) =>
                           handleChange("follow_me_time", e.target.value)
                         }
-                        sx={{
-                          fontSize: 13,
-                          height: 32,
-                          backgroundColor: "#fff",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: C.cardBorder,
-                            transition: "border-color 0.2s ease",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#64748b",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                        }}
+                      sx={selectSx}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -2860,6 +2958,7 @@ const SipAccountPage = () => {
                                   e.target.value,
                                 )
                               }
+<<<<<<< HEAD
                               sx={{
                                 fontSize: 13,
                                 height: 32,
@@ -2877,6 +2976,9 @@ const SipAccountPage = () => {
                                     borderWidth: 1,
                                   },
                               }}
+=======
+                            sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                             >
                               <MenuItem value="">
                                 <em>Select extension</em>
@@ -2898,6 +3000,7 @@ const SipAccountPage = () => {
                                   Number(e.target.value),
                                 )
                               }
+<<<<<<< HEAD
                               sx={{
                                 fontSize: 13,
                                 height: 32,
@@ -2915,6 +3018,9 @@ const SipAccountPage = () => {
                                     borderWidth: 1,
                                   },
                               }}
+=======
+                              sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                             >
                               {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                                 <MenuItem key={v} value={v}>
@@ -2933,6 +3039,7 @@ const SipAccountPage = () => {
                                   e.target.value,
                                 )
                               }
+<<<<<<< HEAD
                               sx={{
                                 fontSize: 13,
                                 height: 32,
@@ -2950,6 +3057,9 @@ const SipAccountPage = () => {
                                     borderWidth: 1,
                                   },
                               }}
+=======
+                           sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                             >
                               <MenuItem value="confirm">Confirm</MenuItem>
                               <MenuItem value="unconfirm">UnConfirm</MenuItem>
@@ -2984,6 +3094,7 @@ const SipAccountPage = () => {
                                 e.target.value,
                               )
                             }
+<<<<<<< HEAD
                             sx={{
                               fontSize: 13,
                               height: 32,
@@ -3001,6 +3112,9 @@ const SipAccountPage = () => {
                                   borderWidth: 1,
                                 },
                             }}
+=======
+                           sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                           >
                             <MenuItem value="">
                               <em>Select destination</em>
@@ -3074,6 +3188,7 @@ const SipAccountPage = () => {
                         onChange={(e) =>
                           handleChange("dnd_time", e.target.value)
                         }
+<<<<<<< HEAD
                         sx={{
                           fontSize: 13,
                           height: 32,
@@ -3090,6 +3205,9 @@ const SipAccountPage = () => {
                             borderWidth: 1,
                           },
                         }}
+=======
+                      sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -3154,6 +3272,7 @@ const SipAccountPage = () => {
                             onChange={(e) =>
                               handleDndNumberChange(idx, e.target.value)
                             }
+<<<<<<< HEAD
                             sx={{
                               fontSize: 13,
                               height: 32,
@@ -3171,6 +3290,9 @@ const SipAccountPage = () => {
                                   borderWidth: 1,
                                 },
                             }}
+=======
+                         sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                           >
                             <MenuItem value="">
                               <em>Select extension</em>
@@ -3206,6 +3328,7 @@ const SipAccountPage = () => {
                               e.target.value,
                             )
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3222,6 +3345,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                      sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3238,6 +3364,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -3262,6 +3389,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                     sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                     <FieldRow label="Ring Simultaneously">
@@ -3271,6 +3401,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("ring_simultaneously", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3287,6 +3418,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                       sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3303,6 +3437,7 @@ const SipAccountPage = () => {
                               Number(e.target.value),
                             )
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3319,6 +3454,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                      sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                             <MenuItem key={v} value={v}>
@@ -3389,6 +3527,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("secretary_extension", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3405,6 +3544,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                       sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="">
                             <em>Select extension</em>
@@ -3448,6 +3590,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("enable_srtp", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3464,6 +3607,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                       sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="no">No</MenuItem>
                           <MenuItem value="yes">Yes</MenuItem>
@@ -3477,6 +3623,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("sip_bypass_media", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3493,6 +3640,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                        sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="proxy_media">Proxy Media</MenuItem>
                           <MenuItem value="bypass_media">Bypass Media</MenuItem>
@@ -3521,6 +3671,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -3545,6 +3696,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                     sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                     <FieldRow label="Max Call Duration (s):">
@@ -3557,6 +3711,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -3581,6 +3736,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                  sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                     <FieldRow label="Outbound Restriction:">
@@ -3590,6 +3748,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("outbound_restriction", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3606,6 +3765,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                     sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -3624,6 +3786,7 @@ const SipAccountPage = () => {
                               e.target.value,
                             )
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3640,6 +3803,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                     sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="no_call">No Call</MenuItem>
                           <MenuItem value="internal_call">
@@ -3662,6 +3828,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("extension_trunk", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3678,6 +3845,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                   sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -3710,6 +3880,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("dynamic_lock_pin", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3726,6 +3897,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                       sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="default">Default</MenuItem>
                           {form.dynamic_lock_pin === "user_password" && (
@@ -3743,6 +3917,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("diversion", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3759,6 +3934,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                      sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3772,6 +3950,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("call_prohibition", e.target.value)
                           }
+<<<<<<< HEAD
                           sx={{
                             fontSize: 13,
                             height: 32,
@@ -3788,6 +3967,9 @@ const SipAccountPage = () => {
                               borderWidth: 1,
                             },
                           }}
+=======
+                   sx={selectSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -3816,6 +3998,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -3840,6 +4023,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                     sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                     <FieldRow label="TX Volume:">
@@ -3852,6 +4038,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
+<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -3876,6 +4063,9 @@ const SipAccountPage = () => {
                             },
                           },
                         }}
+=======
+                  sx={inputSx}
+>>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
                       />
                     </FieldRow>
                   </div>
@@ -3914,6 +4104,7 @@ const SipAccountPage = () => {
     </div>
   );
 };
+
 
 // ── Small helper components (inline, no extra file needed) ────────────────────
 const FieldRow = ({ label, children }) => (
@@ -3955,19 +4146,29 @@ const SectionCard = ({ title, children }) => (
     }}
   >
     <div
-      style={{
-        padding: "6px 12px",
-        borderBottom: "1px solid #9ca3af",
-        fontSize: 12,
-        fontWeight: 700,
-        color: C.labelText,
-        background: "#f5f7fa",
-        textTransform: "uppercase",
-        letterSpacing: "0.04em",
-      }}
-    >
-      {title}
-    </div>
+  style={{
+    display: "flex",
+    alignItems: "center",
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 700,
+    color: C.labelText,
+    background: "#f5f7fa",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  }}
+>
+  <span>{title}</span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: "#9ca3af",
+      marginLeft: 12,
+    }}
+  />
+</div>
     <div style={{ padding: 10 }}>{children}</div>
   </div>
 );
