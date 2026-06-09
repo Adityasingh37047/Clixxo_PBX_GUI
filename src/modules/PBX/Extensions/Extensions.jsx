@@ -44,7 +44,6 @@ import {
   Btn,
   TH,
   tdStyle,
-  checkboxSx,
   PbxBreadcrumb,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
@@ -59,6 +58,12 @@ import {
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
 } from "../../../sections/sip/sipPcmSharedUi";
+import {
+  modalTextFieldSx,
+  modalSelectSx,
+  OUTLINED_BORDER,
+  OUTLINED_HOVER,
+} from "../../../sections/shared/outlinedFieldUi";
 
 // ── Pill badge ────────────────────────────────────────────────────────────────
 const Pill = ({ text, bg, color }) => (
@@ -66,21 +71,29 @@ const Pill = ({ text, bg, color }) => (
     style={{
       background: bg,
       color,
-      padding: "4px 11px",
+      padding: "1px 8px",
       borderRadius: 999,
       fontSize: 11,
       fontWeight: 700,
       letterSpacing: "0.01em",
+      lineHeight: 1.2,
       whiteSpace: "nowrap",
       display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
-      minWidth: 72,
+      minWidth: 64,
     }}
   >
     {text}
   </span>
 );
+
+const extensionTableCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 
 // ── Status style helper ───────────────────────────────────────────────────────
 const statusStyle = (s) => {
@@ -125,7 +138,6 @@ const FOLLOW_ME_DESTINATION_TYPES = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SipAccountPage = () => {
-  
   const [accounts, setAccounts] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -157,18 +169,6 @@ const SipAccountPage = () => {
     fixedPassword: "",
     passwordPrefix: "",
   });
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    height: 32,
-  },
-};
-
-const selectSx = {
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-};
 
   // Pagination
   const itemsPerPage = 50;
@@ -1225,291 +1225,291 @@ const selectSx = {
             />
           ) : (
             <>
-          <div
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              flex: 1,
-            }}
-          >
-              <table
+              <div
                 style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  tableLayout: "auto",
-                  minWidth: 900,
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
                 }}
               >
-                <thead>
-                  <tr>
-                    {/* Select-all checkbox */}
-                    <TH
-                      style={{
-                        width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={allPageSelected}
-                        indeterminate={somePageSelected}
-                        onChange={handleToggleAll}
-                        sx={checkboxSx}
-                      />
-                    </TH>
-                    <TH
-                      style={{
-                        width: 36,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      ID
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Extension
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Context
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Codecs
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Password
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Status
-                    </TH>
-                    <TH
-                      style={{
-                        width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      Modify
-                    </TH>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagedAccounts.length === 0 ? (
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
+                  }}
+                >
+                  <thead>
                     <tr>
-                      <td
-                        colSpan={8}
+                      {/* Select-all checkbox */}
+                      <TH
                         style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
                         }}
                       >
-                        {`No results for "${searchQuery}"`}
-                      </td>
+                        <Checkbox
+                          size="small"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={handleToggleAll}
+                          sx={extensionTableCheckboxSx}
+                        />
+                      </TH>
+                      <TH
+                        style={{
+                          width: 36,
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        ID
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Extension
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Context
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Codecs
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Password
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Status
+                      </TH>
+                      <TH
+                        style={{
+                          width: 70,
+                          borderRight: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        Modify
+                      </TH>
                     </tr>
-                  ) : (
-                    pagedAccounts.map((item, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const rowBg = isSelected
-                        ? "#eff6ff"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
-                      const ss = statusStyle(item.status);
-                      const isLastRow = idx === pagedAccounts.length - 1;
-                      const lastRowCellStyle = isLastRow
-                        ? { borderBottom: "none" }
-                        : {};
-
-                      return (
-                        <tr
-                          key={realIdx}
+                  </thead>
+                  <tbody>
+                    {pagedAccounts.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={8}
                           style={{
-                            background: rowBg,
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            textAlign: "center",
+                            padding: "36px 0",
+                            color: C.mutedText,
+                            fontSize: 13,
                           }}
                         >
-                          {/* Checkbox */}
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              width: 36,
-                              borderLeft: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                              disabled={loading.delete}
-                              sx={checkboxSx}
-                            />
-                          </td>
+                          {`No results for "${searchQuery}"`}
+                        </td>
+                      </tr>
+                    ) : (
+                      pagedAccounts.map((item, idx) => {
+                        const realIdx = (page - 1) * itemsPerPage + idx;
+                        const isSelected = selected.includes(realIdx);
+                        const rowBg = isSelected
+                          ? "#eff6ff"
+                          : idx % 2 === 1
+                            ? "#f8fafc"
+                            : "#ffffff";
+                        const ss = statusStyle(item.status);
+                        const isLastRow = idx === pagedAccounts.length - 1;
+                        const lastRowCellStyle = isLastRow
+                          ? { borderBottom: "none" }
+                          : {};
 
-                          {/* Row number */}
-                          <td
+                        return (
+                          <tr
+                            key={realIdx}
                             style={{
-                              ...tdStyle,
                               background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
+                              transition: "background 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = "#f8fafc";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = rowBg;
                             }}
                           >
-                            {realIdx + 1}
-                          </td>
-
-                          {/* Extension */}
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {item.extension || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-
-                          {/* Context */}
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {item.context || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-
-                          {/* Codecs */}
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {item.allow_codecs || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-
-                          {/* Password (masked) */}
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {"•".repeat(
-                              Math.min(item.password?.length || 0, 10),
-                            )}
-                          </td>
-
-                          {/* Status pill */}
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {item.status ? (
-                              <Pill
-                                text={item.status}
-                                bg={ss.bg}
-                                color={ss.color}
-                              />
-                            ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-
-                          {/* Edit */}
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderRight: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <div
+                            {/* Checkbox */}
+                            <td
                               style={{
-                                display: "flex",
-                                justifyContent: "center",
+                                ...tdStyle,
+                                background: rowBg,
+                                width: 36,
+                                borderLeft: "none",
+                                ...lastRowCellStyle,
                               }}
                             >
-                              <EditDocumentIcon
-                                titleAccess="Edit"
-                                onClick={() => {
-                                  if (!loading.delete)
-                                    handleOpenModal(item, realIdx);
-                                }}
-                                style={{
-                                  cursor: loading.delete
-                                    ? "not-allowed"
-                                    : "pointer",
-                                  color: "#2563eb",
-                                  fontSize: 22,
-                                  opacity: loading.delete ? 0.4 : 0.7,
-                                  transition: "opacity 0.15s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!loading.delete)
-                                    e.currentTarget.style.opacity = "1";
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!loading.delete)
-                                    e.currentTarget.style.opacity = "0.7";
-                                }}
+                              <Checkbox
+                                size="small"
+                                checked={isSelected}
+                                onChange={() => handleToggleRow(realIdx)}
+                                disabled={loading.delete}
+                                sx={extensionTableCheckboxSx}
                               />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-          </div>
+                            </td>
 
-          {filteredAccounts.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedAccounts.length}
-              recordLabel="extension"
-              onPageChange={(p) => setPage(p)}
-            />
-          )}
+                            {/* Row number */}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                fontWeight: 400,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {realIdx + 1}
+                            </td>
+
+                            {/* Extension */}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                fontWeight: 400,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {item.extension || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+
+                            {/* Context */}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                fontWeight: 400,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {item.context || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+
+                            {/* Codecs */}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                fontWeight: 400,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {item.allow_codecs || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+
+                            {/* Password (masked) */}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                fontWeight: 400,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {"•".repeat(
+                                Math.min(item.password?.length || 0, 10),
+                              )}
+                            </td>
+
+                            {/* Status pill */}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {item.status ? (
+                                <Pill
+                                  text={item.status}
+                                  bg={ss.bg}
+                                  color={ss.color}
+                                />
+                              ) : (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+
+                            {/* Edit */}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                borderRight: "none",
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <EditDocumentIcon
+                                  titleAccess="Edit"
+                                  onClick={() => {
+                                    if (!loading.delete)
+                                      handleOpenModal(item, realIdx);
+                                  }}
+                                  style={{
+                                    cursor: loading.delete
+                                      ? "not-allowed"
+                                      : "pointer",
+                                    color: "#2563eb",
+                                    fontSize: 22,
+                                    opacity: loading.delete ? 0.4 : 0.7,
+                                    transition: "opacity 0.15s ease",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!loading.delete)
+                                      e.currentTarget.style.opacity = "1";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!loading.delete)
+                                      e.currentTarget.style.opacity = "0.7";
+                                  }}
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {filteredAccounts.length > 0 && (
+                <SipPcmPagination
+                  page={page}
+                  totalPages={totalPages}
+                  recordCount={pagedAccounts.length}
+                  recordLabel="extension"
+                  onPageChange={(p) => setPage(p)}
+                />
+              )}
             </>
           )}
         </div>
@@ -1690,7 +1690,10 @@ const selectSx = {
               : "Add Extension"}
         </DialogTitle>
         <div
-          style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}
+          style={{
+            borderBottom: `1px solid ${C.cardBorder}`,
+            background: "#ffffff",
+          }}
         >
           <Tabs
             value={activeTab}
@@ -1757,40 +1760,9 @@ const selectSx = {
                   paddingBottom: 8,
                 }}
               >
-                {/* General section */}
-                <div
-                  style={{
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    overflow: "hidden",
-                  }}
-                >
-                 <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    padding: "6px 12px",
-    fontSize: 12,
-    fontWeight: 700,
-    color: C.labelText,
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
-  }}
->
-  <span>General</span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: C.cardBorder,
-      marginLeft: 12,
-    }}
-  />
-</div>
+                <SectionCard title="General" isFirst>
                   <div
                     style={{
-                      padding: 8,
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
                       gap: "8px 32px",
@@ -1813,7 +1785,6 @@ const selectSx = {
                           error={!!validationErrors.extension}
                           placeholder="e.g. 1001"
                           disabled={editIndex !== null}
-<<<<<<< HEAD
                           inputProps={{
                             style: {
                               fontSize: 13,
@@ -1822,25 +1793,7 @@ const selectSx = {
                               boxSizing: "border-box",
                             },
                           }}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              backgroundColor: "#fff",
-                              "& fieldset": {
-                                borderColor: C.cardBorder,
-                                transition: "border-color 0.2s ease",
-                              },
-                              "&:hover fieldset": {
-                                borderColor: "#64748b",
-                              },
-                              "&.Mui-focused fieldset": {
-                                borderColor: "#0284c7",
-                                borderWidth: 1,
-                              },
-                            },
-                          }}
-=======
-                       sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalTextFieldSx}
                         />
                         {validationErrors.extension && (
                           <ErrMsg>{validationErrors.extension}</ErrMsg>
@@ -1861,7 +1814,6 @@ const selectSx = {
                             size="small"
                             fullWidth
                             variant="outlined"
-<<<<<<< HEAD
                             inputProps={{
                               style: {
                                 fontSize: 13,
@@ -1870,25 +1822,7 @@ const selectSx = {
                                 boxSizing: "border-box",
                               },
                             }}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                backgroundColor: "#fff",
-                                "& fieldset": {
-                                  borderColor: C.cardBorder,
-                                  transition: "border-color 0.2s ease",
-                                },
-                                "&:hover fieldset": {
-                                  borderColor: "#64748b",
-                                },
-                                "&.Mui-focused fieldset": {
-                                  borderColor: "#0284c7",
-                                  borderWidth: 1,
-                                },
-                              },
-                            }}
-=======
-                       sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                            sx={modalTextFieldSx}
                           />
                         </FieldRow>
                         <FieldRow label="Create Number:">
@@ -1904,7 +1838,6 @@ const selectSx = {
                             size="small"
                             fullWidth
                             variant="outlined"
-<<<<<<< HEAD
                             inputProps={{
                               style: {
                                 fontSize: 13,
@@ -1913,166 +1846,87 @@ const selectSx = {
                                 boxSizing: "border-box",
                               },
                             }}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                backgroundColor: "#fff",
-                                "& fieldset": {
-                                  borderColor: C.cardBorder,
-                                  transition: "border-color 0.2s ease",
-                                },
-                                "&:hover fieldset": {
-                                  borderColor: "#64748b",
-                                },
-                                "&.Mui-focused fieldset": {
-                                  borderColor: "#0284c7",
-                                  borderWidth: 1,
-                                },
-                              },
-                            }}
-=======
-                     sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                            sx={modalTextFieldSx}
                           />
                         </FieldRow>
-                        <div style={{ gridColumn: "1 / -1" }}>
-                          <FieldRow label="Reg Password:">
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 6,
-                              }}
-                            >
-                              <FormControl size="small" sx={{ maxWidth: 220 }}>
-                                <MuiSelect
-                                  value={bulkForm.passwordMode}
-                                  onChange={(e) =>
-                                    setBulkForm((p) => ({
-                                      ...p,
-                                      passwordMode: e.target.value,
-                                    }))
-                                  }
-<<<<<<< HEAD
-                                  sx={{
+                        <FieldRow label="Reg Password:">
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 6,
+                            }}
+                          >
+                            <FormControl size="small" fullWidth>
+                              <MuiSelect
+                                value={bulkForm.passwordMode}
+                                onChange={(e) =>
+                                  setBulkForm((p) => ({
+                                    ...p,
+                                    passwordMode: e.target.value,
+                                  }))
+                                }
+                                sx={modalSelectSx}
+                              >
+                                <MenuItem value="random">Random</MenuItem>
+                                <MenuItem value="fixed">Fixed</MenuItem>
+                                <MenuItem value="prefix">
+                                  Prefix + Extension
+                                </MenuItem>
+                              </MuiSelect>
+                            </FormControl>
+                            {bulkForm.passwordMode === "fixed" && (
+                              <TextField
+                                type="text"
+                                value={bulkForm.fixedPassword}
+                                onChange={(e) =>
+                                  setBulkForm((p) => ({
+                                    ...p,
+                                    fixedPassword: e.target.value,
+                                  }))
+                                }
+                                size="small"
+                                fullWidth
+                                variant="outlined"
+                                placeholder="Fixed password"
+                                inputProps={{
+                                  style: {
                                     fontSize: 13,
                                     height: 32,
-                                    backgroundColor: "#fff",
-                                    "& .MuiOutlinedInput-notchedOutline": {
-                                      borderColor: C.cardBorder,
-                                      transition: "border-color 0.2s ease",
-                                    },
-                                    "&:hover .MuiOutlinedInput-notchedOutline":
-                                      {
-                                        borderColor: "#64748b",
-                                      },
-                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                      {
-                                        borderColor: "#0284c7",
-                                        borderWidth: 1,
-                                      },
-                                  }}
-=======
-                              sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
-                                >
-                                  <MenuItem value="random">Random</MenuItem>
-                                  <MenuItem value="fixed">Fixed</MenuItem>
-                                  <MenuItem value="prefix">
-                                    Prefix + Extension
-                                  </MenuItem>
-                                </MuiSelect>
-                              </FormControl>
-                              {bulkForm.passwordMode === "fixed" && (
-                                <TextField
-                                  type="text"
-                                  value={bulkForm.fixedPassword}
-                                  onChange={(e) =>
-                                    setBulkForm((p) => ({
-                                      ...p,
-                                      fixedPassword: e.target.value,
-                                    }))
-                                  }
-                                  size="small"
-                                  fullWidth
-                                  variant="outlined"
-                                  placeholder="Fixed password"
-<<<<<<< HEAD
-                                  inputProps={{
-                                    style: {
-                                      fontSize: 13,
-                                      height: 32,
-                                      padding: "0 8px",
-                                      boxSizing: "border-box",
-                                    },
-                                  }}
-                                  sx={{
-                                    "& .MuiOutlinedInput-root": {
-                                      backgroundColor: "#fff",
-                                      "& fieldset": {
-                                        borderColor: C.cardBorder,
-                                        transition: "border-color 0.2s ease",
-                                      },
-                                      "&:hover fieldset": {
-                                        borderColor: "#64748b",
-                                      },
-                                      "&.Mui-focused fieldset": {
-                                        borderColor: "#0284c7",
-                                        borderWidth: 1,
-                                      },
-                                    },
-                                  }}
-=======
-                              sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
-                                />
-                              )}
-                              {bulkForm.passwordMode === "prefix" && (
-                                <TextField
-                                  type="text"
-                                  value={bulkForm.passwordPrefix}
-                                  onChange={(e) =>
-                                    setBulkForm((p) => ({
-                                      ...p,
-                                      passwordPrefix: e.target.value,
-                                    }))
-                                  }
-                                  size="small"
-                                  fullWidth
-                                  variant="outlined"
-                                  placeholder="e.g. pw_"
-<<<<<<< HEAD
-                                  inputProps={{
-                                    style: {
-                                      fontSize: 13,
-                                      height: 32,
-                                      padding: "0 8px",
-                                      boxSizing: "border-box",
-                                    },
-                                  }}
-                                  sx={{
-                                    "& .MuiOutlinedInput-root": {
-                                      backgroundColor: "#fff",
-                                      "& fieldset": {
-                                        borderColor: C.cardBorder,
-                                        transition: "border-color 0.2s ease",
-                                      },
-                                      "&:hover fieldset": {
-                                        borderColor: "#64748b",
-                                      },
-                                      "&.Mui-focused fieldset": {
-                                        borderColor: "#0284c7",
-                                        borderWidth: 1,
-                                      },
-                                    },
-                                  }}
-=======
-                                sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
-                                />
-                              )}
-                            </div>
-                          </FieldRow>
-                        </div>
+                                    padding: "0 8px",
+                                    boxSizing: "border-box",
+                                  },
+                                }}
+                                sx={modalTextFieldSx}
+                              />
+                            )}
+                            {bulkForm.passwordMode === "prefix" && (
+                              <TextField
+                                type="text"
+                                value={bulkForm.passwordPrefix}
+                                onChange={(e) =>
+                                  setBulkForm((p) => ({
+                                    ...p,
+                                    passwordPrefix: e.target.value,
+                                  }))
+                                }
+                                size="small"
+                                fullWidth
+                                variant="outlined"
+                                placeholder="e.g. pw_"
+                                inputProps={{
+                                  style: {
+                                    fontSize: 13,
+                                    height: 32,
+                                    padding: "0 8px",
+                                    boxSizing: "border-box",
+                                  },
+                                }}
+                                sx={modalTextFieldSx}
+                              />
+                            )}
+                          </div>
+                        </FieldRow>
                       </>
                     )}
 
@@ -2088,26 +1942,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("context", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                       sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="" disabled>
                             <em>Select Context</em>
@@ -2140,7 +1975,6 @@ const selectSx = {
                           variant="outlined"
                           error={!!validationErrors.password}
                           placeholder="Enter password"
-<<<<<<< HEAD
                           inputProps={{
                             style: {
                               fontSize: 13,
@@ -2149,25 +1983,7 @@ const selectSx = {
                               boxSizing: "border-box",
                             },
                           }}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              backgroundColor: "#fff",
-                              "& fieldset": {
-                                borderColor: C.cardBorder,
-                                transition: "border-color 0.2s ease",
-                              },
-                              "&:hover fieldset": {
-                                borderColor: "#64748b",
-                              },
-                              "&.Mui-focused fieldset": {
-                                borderColor: "#0284c7",
-                                borderWidth: 1,
-                              },
-                            },
-                          }}
-=======
-                     sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalTextFieldSx}
                           InputProps={{
                             endAdornment: (
                               <InputAdornment position="end">
@@ -2203,7 +2019,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2212,32 +2027,21 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                      sx={inputSx}
-
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
 
                     <div style={{ gridColumn: "1 / -1" }}>
-                      <FieldRow label="Allow Codecs:">
-                        <FormGroup row sx={{ gap: 0.5 }}>
+                      <FieldRow label="Allow Codecs:" wide>
+                        <FormGroup
+                          row
+                          sx={{
+                            gap: 0.5,
+                            flexWrap: "nowrap",
+                            width: "100%",
+                            justifyContent: "flex-start",
+                          }}
+                        >
                           {CODEC_OPTIONS.map((codec) => (
                             <FormControlLabel
                               key={codec.value}
@@ -2252,7 +2056,7 @@ const selectSx = {
                                   }
                                   size="small"
                                   sx={{
-                                    padding: "2px 4px",
+                                    padding: "9px 4px",
                                     "& .MuiSvgIcon-root": { fontSize: 15 },
                                   }}
                                 />
@@ -2260,6 +2064,7 @@ const selectSx = {
                               label={codec.label}
                               sx={{
                                 margin: 0,
+                                flexShrink: 0,
                                 "& .MuiFormControlLabel-label": {
                                   fontSize: 12,
                                   fontWeight: 500,
@@ -2275,43 +2080,11 @@ const selectSx = {
                       </FieldRow>
                     </div>
                   </div>
-                </div>
+                </SectionCard>
 
-                {/* User Info section */}
-                <div
-                  style={{
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    overflow: "hidden",
-                  }}
-                >
-                 <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    padding: "6px 12px",
-    fontSize: 12,
-    fontWeight: 700,
-    color: C.labelText,
-    background: "#f5f7fa",
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
-  }}
->
-  <span>User Info</span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: C.cardBorder,
-      marginLeft: 12,
-    }}
-  />
-</div>
+                <SectionCard title="User Info">
                   <div
                     style={{
-                      padding: 8,
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
                       gap: "8px 32px",
@@ -2327,7 +2100,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2336,25 +2108,7 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                       sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="User Password:">
@@ -2367,7 +2121,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2376,25 +2129,7 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                    sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="Email:">
@@ -2405,7 +2140,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2414,25 +2148,7 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                    sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="Mobile Number:">
@@ -2446,7 +2162,6 @@ const selectSx = {
                         fullWidth
                         variant="outlined"
                         placeholder="+91XXXXXXXXXX"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2455,29 +2170,11 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                      sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                   </div>
-                </div>
+                </SectionCard>
               </div>
             )}
 
@@ -2492,7 +2189,7 @@ const selectSx = {
                 }}
               >
                 {/* Voicemail */}
-                <SectionCard title="Voicemail">
+                <SectionCard title="Voicemail" isFirst>
                   <div
                     style={{
                       display: "grid",
@@ -2507,26 +2204,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("voicemail_enabled", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                       sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -2540,26 +2218,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("voicemail_keep_local", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                      sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -2573,26 +2232,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("voicemail_file", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                        sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="audio_file_attachment">
                             Audio File Attachment
@@ -2613,7 +2253,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -2622,25 +2261,7 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                     sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="Select Voice:">
@@ -2650,26 +2271,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("voicemail_voice", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                     sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="system_default">
                             System Default
@@ -2691,7 +2293,25 @@ const selectSx = {
                     { key: "busy", label: "On Busy" },
                     { key: "no_answer", label: "No Answer" },
                     { key: "not_registered", label: "Not Registered" },
-                  ].map((rule) => (
+                  ].map((rule) => {
+                    const cfRuleEnabled =
+                      (form[`cf_${rule.key}_enabled`] || "disabled") ===
+                      "enabled";
+                    const cfFieldSx = {
+                      ...modalSelectSx,
+                      backgroundColor: cfRuleEnabled ? "#fff" : "#f1f5f9",
+                      cursor: cfRuleEnabled ? "pointer" : "not-allowed",
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: cfRuleEnabled
+                          ? OUTLINED_HOVER
+                          : OUTLINED_BORDER,
+                      },
+                      "&.Mui-disabled": {
+                        cursor: "not-allowed",
+                      },
+                    };
+
+                    return (
                     <div
                       key={rule.key}
                       style={{
@@ -2741,36 +2361,22 @@ const selectSx = {
                           }}
                         />
                       </RadioGroup>
-                      <FormControl size="small" sx={{ minWidth: 150 }}>
+                      <FormControl
+                        size="small"
+                        disabled={!cfRuleEnabled}
+                        sx={{ minWidth: 150 }}
+                      >
                         <MuiSelect
                           value={form[`cf_${rule.key}_number`] || ""}
                           displayEmpty
+                          disabled={!cfRuleEnabled}
                           onChange={(e) =>
                             handleChange(
                               `cf_${rule.key}_number`,
                               e.target.value,
                             )
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                  sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={cfFieldSx}
                         >
                           <MenuItem value="">
                             <em>Destination Number</em>
@@ -2782,35 +2388,26 @@ const selectSx = {
                           ))}
                         </MuiSelect>
                       </FormControl>
-                      <span style={{ fontSize: 11, color: C.mutedText }}>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          color: "#374151",
+                        }}
+                      >
                         Time Condition
                       </span>
-                      <FormControl size="small" sx={{ minWidth: 90 }}>
+                      <FormControl
+                        size="small"
+                        disabled={!cfRuleEnabled}
+                        sx={{ minWidth: 90 }}
+                      >
                         <MuiSelect
                           value={form[`cf_${rule.key}_time`] || "all"}
+                          disabled={!cfRuleEnabled}
                           onChange={(e) =>
                             handleChange(`cf_${rule.key}_time`, e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                       sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={cfFieldSx}
                         >
                           <MenuItem value="all">All</MenuItem>
                           <MenuItem value="work_time">Work Time</MenuItem>
@@ -2819,7 +2416,8 @@ const selectSx = {
                         </MuiSelect>
                       </FormControl>
                     </div>
-                  ))}
+                    );
+                  })}
                 </SectionCard>
 
                 {/* Follow Me */}
@@ -2879,7 +2477,7 @@ const selectSx = {
                         onChange={(e) =>
                           handleChange("follow_me_time", e.target.value)
                         }
-                      sx={selectSx}
+                        sx={modalSelectSx}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -2958,27 +2556,7 @@ const selectSx = {
                                   e.target.value,
                                 )
                               }
-<<<<<<< HEAD
-                              sx={{
-                                fontSize: 13,
-                                height: 32,
-                                backgroundColor: "#fff",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: C.cardBorder,
-                                  transition: "border-color 0.2s ease",
-                                },
-                                "&:hover .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: "#64748b",
-                                },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                  {
-                                    borderColor: "#0284c7",
-                                    borderWidth: 1,
-                                  },
-                              }}
-=======
-                            sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                              sx={modalSelectSx}
                             >
                               <MenuItem value="">
                                 <em>Select extension</em>
@@ -3000,27 +2578,7 @@ const selectSx = {
                                   Number(e.target.value),
                                 )
                               }
-<<<<<<< HEAD
-                              sx={{
-                                fontSize: 13,
-                                height: 32,
-                                backgroundColor: "#fff",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: C.cardBorder,
-                                  transition: "border-color 0.2s ease",
-                                },
-                                "&:hover .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: "#64748b",
-                                },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                  {
-                                    borderColor: "#0284c7",
-                                    borderWidth: 1,
-                                  },
-                              }}
-=======
-                              sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                              sx={modalSelectSx}
                             >
                               {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                                 <MenuItem key={v} value={v}>
@@ -3039,27 +2597,7 @@ const selectSx = {
                                   e.target.value,
                                 )
                               }
-<<<<<<< HEAD
-                              sx={{
-                                fontSize: 13,
-                                height: 32,
-                                backgroundColor: "#fff",
-                                "& .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: C.cardBorder,
-                                  transition: "border-color 0.2s ease",
-                                },
-                                "&:hover .MuiOutlinedInput-notchedOutline": {
-                                  borderColor: "#64748b",
-                                },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                  {
-                                    borderColor: "#0284c7",
-                                    borderWidth: 1,
-                                  },
-                              }}
-=======
-                           sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                              sx={modalSelectSx}
                             >
                               <MenuItem value="confirm">Confirm</MenuItem>
                               <MenuItem value="unconfirm">UnConfirm</MenuItem>
@@ -3094,27 +2632,7 @@ const selectSx = {
                                 e.target.value,
                               )
                             }
-<<<<<<< HEAD
-                            sx={{
-                              fontSize: 13,
-                              height: 32,
-                              backgroundColor: "#fff",
-                              "& .MuiOutlinedInput-notchedOutline": {
-                                borderColor: C.cardBorder,
-                                transition: "border-color 0.2s ease",
-                              },
-                              "&:hover .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#64748b",
-                              },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                {
-                                  borderColor: "#0284c7",
-                                  borderWidth: 1,
-                                },
-                            }}
-=======
-                           sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                            sx={modalSelectSx}
                           >
                             <MenuItem value="">
                               <em>Select destination</em>
@@ -3188,26 +2706,7 @@ const selectSx = {
                         onChange={(e) =>
                           handleChange("dnd_time", e.target.value)
                         }
-<<<<<<< HEAD
-                        sx={{
-                          fontSize: 13,
-                          height: 32,
-                          backgroundColor: "#fff",
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: C.cardBorder,
-                            transition: "border-color 0.2s ease",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#64748b",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "#0284c7",
-                            borderWidth: 1,
-                          },
-                        }}
-=======
-                      sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalSelectSx}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -3272,27 +2771,7 @@ const selectSx = {
                             onChange={(e) =>
                               handleDndNumberChange(idx, e.target.value)
                             }
-<<<<<<< HEAD
-                            sx={{
-                              fontSize: 13,
-                              height: 32,
-                              backgroundColor: "#fff",
-                              "& .MuiOutlinedInput-notchedOutline": {
-                                borderColor: C.cardBorder,
-                                transition: "border-color 0.2s ease",
-                              },
-                              "&:hover .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#64748b",
-                              },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
-                                {
-                                  borderColor: "#0284c7",
-                                  borderWidth: 1,
-                                },
-                            }}
-=======
-                         sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                            sx={modalSelectSx}
                           >
                             <MenuItem value="">
                               <em>Select extension</em>
@@ -3316,9 +2795,13 @@ const selectSx = {
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
                       gap: "8px 32px",
+                      paddingTop: 4,
                     }}
                   >
-                    <FieldRow label="Enable Mobility Extension">
+                    <FieldRow
+                      label="Enable Mobility Extension:"
+                      labelWidth={200}
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.enable_mobility_extension || "no"}
@@ -3328,26 +2811,7 @@ const selectSx = {
                               e.target.value,
                             )
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                      sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3364,7 +2828,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -3373,54 +2836,17 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                     sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Ring Simultaneously">
+                    <FieldRow label="Ring Simultaneously:" labelWidth={200}>
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.ring_simultaneously || "no"}
                           onChange={(e) =>
                             handleChange("ring_simultaneously", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                       sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3437,26 +2863,7 @@ const selectSx = {
                               Number(e.target.value),
                             )
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                      sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                             <MenuItem key={v} value={v}>
@@ -3527,26 +2934,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("secretary_extension", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                       sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="">
                             <em>Select extension</em>
@@ -3575,7 +2963,7 @@ const selectSx = {
                 }}
               >
                 {/* RTP Settings */}
-                <SectionCard title="RTP Settings">
+                <SectionCard title="RTP Settings" isFirst>
                   <div
                     style={{
                       display: "grid",
@@ -3590,26 +2978,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("enable_srtp", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                       sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="no">No</MenuItem>
                           <MenuItem value="yes">Yes</MenuItem>
@@ -3623,26 +2992,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("sip_bypass_media", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                        sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="proxy_media">Proxy Media</MenuItem>
                           <MenuItem value="bypass_media">Bypass Media</MenuItem>
@@ -3671,7 +3021,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -3680,25 +3029,7 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                     sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="Max Call Duration (s):">
@@ -3711,7 +3042,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -3720,25 +3050,7 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                  sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="Outbound Restriction:">
@@ -3748,26 +3060,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("outbound_restriction", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                     sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -3786,26 +3079,7 @@ const selectSx = {
                               e.target.value,
                             )
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                     sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="no_call">No Call</MenuItem>
                           <MenuItem value="internal_call">
@@ -3828,26 +3102,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("extension_trunk", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                   sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -3880,26 +3135,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("dynamic_lock_pin", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                       sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="default">Default</MenuItem>
                           {form.dynamic_lock_pin === "user_password" && (
@@ -3917,26 +3153,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("diversion", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                      sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3950,26 +3167,7 @@ const selectSx = {
                           onChange={(e) =>
                             handleChange("call_prohibition", e.target.value)
                           }
-<<<<<<< HEAD
-                          sx={{
-                            fontSize: 13,
-                            height: 32,
-                            backgroundColor: "#fff",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          }}
-=======
-                   sx={selectSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                          sx={modalSelectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -3998,7 +3196,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -4007,25 +3204,7 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                     sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="TX Volume:">
@@ -4038,7 +3217,6 @@ const selectSx = {
                         size="small"
                         fullWidth
                         variant="outlined"
-<<<<<<< HEAD
                         inputProps={{
                           style: {
                             fontSize: 13,
@@ -4047,25 +3225,7 @@ const selectSx = {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "#fff",
-                            "& fieldset": {
-                              borderColor: C.cardBorder,
-                              transition: "border-color 0.2s ease",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#64748b",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#0284c7",
-                              borderWidth: 1,
-                            },
-                          },
-                        }}
-=======
-                  sx={inputSx}
->>>>>>> 4e8c2c6fec6b0d285407ea9ed8b74ea6662b39c8
+                        sx={modalTextFieldSx}
                       />
                     </FieldRow>
                   </div>
@@ -4077,10 +3237,14 @@ const selectSx = {
 
         <DialogActions
           style={{
-            backgroundColor: "#dde0e4",
+            display: "flex",
             justifyContent: "center",
             gap: 16,
-            padding: "12px 24px 16px",
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
@@ -4105,15 +3269,42 @@ const selectSx = {
   );
 };
 
-
 // ── Small helper components (inline, no extra file needed) ────────────────────
-const FieldRow = ({ label, children }) => (
+const EXTENSION_MODAL_BG = "#f8fafc";
+const EXTENSION_SECTION_HEADING_COLOR = "#30415A";
+
+const ExtensionSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 12px 0" : "16px 0 12px 0",
+      position: "relative",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: EXTENSION_MODAL_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: EXTENSION_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
   <div
     style={{
       display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: wide ? "flex-start" : "center",
       gap: 12,
+      width: "100%",
     }}
   >
     <label
@@ -4123,12 +3314,22 @@ const FieldRow = ({ label, children }) => (
         fontWeight: 600,
         whiteSpace: "nowrap",
         textAlign: "left",
-        width: 170,
+        width: labelWidth,
+        flexShrink: 0,
+        paddingTop: wide ? 4 : 0,
       }}
     >
       {label}
     </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+    <div
+      style={{
+        flex: 1,
+        minWidth: 0,
+        width: "100%",
+      }}
+    >
+      {children}
+    </div>
   </div>
 );
 
@@ -4136,40 +3337,10 @@ const ErrMsg = ({ children }) => (
   <div style={{ color: "#dc2626", fontSize: 11, marginTop: 2 }}>{children}</div>
 );
 
-const SectionCard = ({ title, children }) => (
-  <div
-    style={{
-      background: "#f8fafc",
-      border: `1px solid ${C.cardBorder}`,
-      borderRadius: 6,
-      overflow: "hidden",
-    }}
-  >
-    <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    padding: "6px 12px",
-    fontSize: 12,
-    fontWeight: 700,
-    color: C.labelText,
-    background: "#f5f7fa",
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
-  }}
->
-  <span>{title}</span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: "#9ca3af",
-      marginLeft: 12,
-    }}
-  />
-</div>
-    <div style={{ padding: 10 }}>{children}</div>
+const SectionCard = ({ title, children, isFirst = false }) => (
+  <div style={{ marginBottom: 8 }}>
+    <ExtensionSectionHeading title={title} isFirst={isFirst} />
+    <div>{children}</div>
   </div>
 );
 

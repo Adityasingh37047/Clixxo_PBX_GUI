@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import { CircularProgress, Checkbox } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -6,8 +12,6 @@ import {
   C,
   Btn,
   TH,
-  tdStyle,
-  checkboxSx,
   PageBreadcrumb,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
@@ -21,28 +25,68 @@ import {
   sipPcmCancelBtnStyle,
   SipPcmPagination,
 } from "../../sections/sip/sipPcmSharedUi";
-import {
-  TRUNK_TABLE_SCROLL_CLASS,
-  trunkTableScrollStyle,
-  trunkTableInnerStyle,
-} from "../../sections/trunk/trunkSharedUi";
+import { TRUNK_TABLE_SCROLL_CLASS } from "../../sections/trunk/trunkSharedUi";
+
+// Wider columns for long data; tighter left/right gap on short-value columns
+const callCountCellPadding = "7px 6px";
+const callCountHeaderPadding = "9px 6px";
+const callCountCompactCellPadding = "7px 3px";
+const callCountCompactHeaderPadding = "9px 3px";
+
+const callCountTableTdStyle = {
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  background: "#ffffff",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  boxSizing: "border-box",
+};
+
+const callCountTableThStyle = {
+  letterSpacing: "0.08em",
+  boxSizing: "border-box",
+};
+
+const callCountTableCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
 
 // ── Column definitions ────────────────────────────────────────────────────────
 const columns = [
-  { key: "calldate", label: "Start", width: "120px" },
-  { key: "src", label: "Call From", width: "100px" },
-  { key: "src_ip", label: "Call From IP", width: "100px" },
-  { key: "dst", label: "Call To", width: "100px" },
-  { key: "dst_ip", label: "Call To IP", width: "110px" },
-  { key: "call_direction", label: "Direction", width: "80px" },
-  { key: "disposition", label: "Call Status", width: "90px" },
-  { key: "billsec", label: "Duration", width: "90px" },
-  { key: "hangup_cause", label: "Hangup Cause", width: "110px" },
+  { key: "calldate", label: "Start", width: "12%" },
+  { key: "src", label: "Call From", width: "10%" },
+  { key: "src_ip", label: "Call From IP", width: "11%" },
+  { key: "dst", label: "Call To", width: "10%" },
+  { key: "dst_ip", label: "Call To IP", width: "11%" },
+  { key: "call_direction", label: "Direction", width: "7%", compact: true },
+  { key: "disposition", label: "Call Status", width: "7%", compact: true },
+  { key: "billsec", label: "Duration", width: "7%", compact: true },
+  { key: "hangup_cause", label: "Hangup Cause", width: "12%" },
 ];
+
+const getCallCountCellPadding = (key) => {
+  const col = columns.find((c) => c.key === key);
+  return col?.compact ? callCountCompactCellPadding : callCountCellPadding;
+};
+
+const getCallCountHeaderPadding = (key) => {
+  const col = columns.find((c) => c.key === key);
+  return col?.compact ? callCountCompactHeaderPadding : callCountHeaderPadding;
+};
 
 const cardBorderSoft = "#f1f5f9";
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const normalizeValue = (value) => String(value || "").toLowerCase().trim();
+const normalizeValue = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .trim();
 
 const includesAny = (value, needles) => {
   const text = normalizeValue(value);
@@ -97,11 +141,7 @@ const getCanonicalDirectionFromValue = (value) => {
 };
 
 const getCanonicalDirections = (row) => {
-  const directions = [
-    row.call_direction,
-    row.direction,
-    row.dcontext,
-  ]
+  const directions = [row.call_direction, row.direction, row.dcontext]
     .map(getCanonicalDirectionFromValue)
     .filter(Boolean);
 
@@ -142,11 +182,7 @@ const getCanonicalStatusesFromValue = (value) => {
     statuses.push("noanswer");
   }
 
-  if (
-    raw === "answered" ||
-    raw === "answer" ||
-    raw === "completed"
-  ) {
+  if (raw === "answered" || raw === "answer" || raw === "completed") {
     statuses.push("answered");
   }
 
@@ -181,11 +217,7 @@ const getDispositionStatus = (row) => {
   const compact = raw.replace(/[\s_-]+/g, "");
 
   if (!raw) return "";
-  if (
-    raw === "answered" ||
-    raw === "answer" ||
-    raw === "completed"
-  ) {
+  if (raw === "answered" || raw === "answer" || raw === "completed") {
     return "answered";
   }
   if (
@@ -225,10 +257,7 @@ const getFallbackStatus = (row) =>
 
 const getCanonicalCallStatuses = (row) => {
   const dispositionStatus = getDispositionStatus(row) || getFallbackStatus(row);
-  const contextStatuses = [
-    row.dcontext,
-    row.hangup_cause,
-  ].reduce(
+  const contextStatuses = [row.dcontext, row.hangup_cause].reduce(
     (statuses, value) => [
       ...statuses,
       ...getCanonicalStatusesFromValue(value).filter((status) =>
@@ -239,9 +268,7 @@ const getCanonicalCallStatuses = (row) => {
   );
 
   return Array.from(
-    new Set(
-      [dispositionStatus, ...contextStatuses].filter(Boolean),
-    ),
+    new Set([dispositionStatus, ...contextStatuses].filter(Boolean)),
   );
 };
 
@@ -329,7 +356,9 @@ const matchesCallStatus = (row, status) => {
   const selectedStatus = normalizeValue(status);
   if (!selectedStatus || selectedStatus === "all") return true;
 
-  if (["answered", "noanswer", "cancelled", "failed"].includes(selectedStatus)) {
+  if (
+    ["answered", "noanswer", "cancelled", "failed"].includes(selectedStatus)
+  ) {
     const visibleStatus = getDispositionStatus(row) || getFallbackStatus(row);
     return visibleStatus === selectedStatus;
   }
@@ -426,10 +455,18 @@ const FilterLabel = ({ children }) => (
 );
 
 const FilterField = ({ label, children, minWidth = 140 }) => (
-  <div style={{ minWidth, flex: "0 0 auto" }}>{label && <FilterLabel>{label}</FilterLabel>}{children}</div>
+  <div style={{ minWidth, flex: "0 0 auto" }}>
+    {label && <FilterLabel>{label}</FilterLabel>}
+    {children}
+  </div>
 );
 
-const FilterSelect = ({ value, onChange, options, "aria-label": ariaLabel }) => (
+const FilterSelect = ({
+  value,
+  onChange,
+  options,
+  "aria-label": ariaLabel,
+}) => (
   <select
     value={value}
     onChange={onChange}
@@ -476,7 +513,13 @@ const FilterSearch = ({ value, onChange, onFocus, onBlur, focused }) => (
   />
 );
 
-const GhostBtn = ({ children, onClick, disabled, style: extraStyle = {}, hoverBackground = "#f8fafc" }) => {
+const GhostBtn = ({
+  children,
+  onClick,
+  disabled,
+  style: extraStyle = {},
+  hoverBackground = "#f8fafc",
+}) => {
   const baseBackground = extraStyle.background || "#ffffff";
   return (
     <button
@@ -674,10 +717,7 @@ const CallCount = () => {
     filteredData.some((r) => r.uniqueid && selectedIds.includes(r.uniqueid)) &&
     !allPageSelected;
 
-  const totalPages = Math.max(
-    1,
-    page + (rows.length >= limit ? 1 : 0),
-  );
+  const totalPages = Math.max(1, page + (rows.length >= limit ? 1 : 0));
 
   return (
     <div style={pbxPageWrapStyle}>
@@ -723,7 +763,9 @@ const CallCount = () => {
             style={{ marginBottom: 0 }}
           />
           {lastUpdated && (
-            <span style={{ fontSize: 12, color: C.mutedText, whiteSpace: "nowrap" }}>
+            <span
+              style={{ fontSize: 12, color: C.mutedText, whiteSpace: "nowrap" }}
+            >
               Last updated: {lastUpdated.toLocaleTimeString()}
             </span>
           )}
@@ -748,7 +790,6 @@ const CallCount = () => {
               gap: 12,
             }}
           >
-            
             <FilterField label="Call Status" minWidth={200}>
               <FilterSelect
                 aria-label="Call Status"
@@ -801,22 +842,22 @@ const CallCount = () => {
                 paddingBottom: 0,
               }}
             >
-           <GhostBtn
-  onClick={handleResetFilters}
-  disabled={loading}
-  style={{
-    height: 30,
-    padding: "0 14px",
-    fontSize: 12,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
-  hoverBackground="#b6c2d3"
->
-  Reset
-</GhostBtn>
+              <GhostBtn
+                onClick={handleResetFilters}
+                disabled={loading}
+                style={{
+                  height: 30,
+                  padding: "0 14px",
+                  fontSize: 12,
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+                hoverBackground="#b6c2d3"
+              >
+                Reset
+              </GhostBtn>
             </div>
           </div>
 
@@ -913,317 +954,323 @@ const CallCount = () => {
             />
           ) : (
             <>
-          <div
-            className={TRUNK_TABLE_SCROLL_CLASS}
-            style={{ ...trunkTableScrollStyle, flex: 1 }}
-          >
-            <div style={trunkTableInnerStyle}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  tableLayout: "auto",
-                  minWidth: 900,
-                }}
+              <div
+                className={TRUNK_TABLE_SCROLL_CLASS}
+                style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}
               >
-                <colgroup>
-                  <col style={{ width: "36px" }} />
-                  <col style={{ width: "40px" }} />
-                  {columns.map((col) => (
-                    <col key={col.key} style={{ width: col.width }} />
-                  ))}
-                </colgroup>
-                <thead>
-                  <tr>
-                    <TH
-                      style={{
-                        width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={allPageSelected}
-                        indeterminate={somePageSelected}
-                        onChange={handleToggleAll}
-                        sx={checkboxSx}
-                      />
-                    </TH>
-                    <TH
-                      style={{
-                        width: 40,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      ID
-                    </TH>
-                    {columns.map((col, colIdx) => (
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "fixed",
+                  }}
+                >
+                  <colgroup>
+                    <col style={{ width: "2.5%" }} />
+                    <col style={{ width: "2.5%" }} />
+                    {columns.map((col) => (
+                      <col key={col.key} style={{ width: col.width }} />
+                    ))}
+                  </colgroup>
+                  <thead>
+                    <tr>
                       <TH
-                        key={col.key}
                         style={{
+                          width: 36,
+                          padding: 0,
+                          borderLeft: "none",
                           position: "sticky",
                           top: 0,
                           zIndex: 10,
-                          ...(colIdx === columns.length - 1
-                            ? { borderRight: "none" }
-                            : {}),
                         }}
                       >
-                        {col.label}
+                        <Checkbox
+                          size="small"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={handleToggleAll}
+                          sx={callCountTableCheckboxSx}
+                        />
                       </TH>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody
-                  key={`${appliedFilters.callStatus}-${appliedFilters.direction}-${appliedFilters.search}`}
-                >
-                  {filteredData.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={columns.length + 2}
+                      <TH
                         style={{
+                          width: "2.5%",
+                          ...callCountTableThStyle,
+                          padding: "9px 0",
                           textAlign: "center",
-                          padding: "40px 16px",
-                          color: C.mutedText,
-                          fontSize: 14,
-                          borderBottom: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
                         }}
                       >
-                        {hasActiveFilters
-                          ? "No records match the current filters on this page."
-                          : "No records found."}
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredData.map((row, idx) => {
-                      const isLastRow = idx === filteredData.length - 1;
-                      const lastRowCellStyle = isLastRow
-                        ? { borderBottom: "none" }
-                        : {};
-                      const isSelected =
-                        row.uniqueid && selectedIds.includes(row.uniqueid);
-                      const rowBg = isSelected
-                        ? "#f0f9ff"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
-
-                      return (
-                        <tr
-                          key={getRowKey(row, idx)}
+                        ID
+                      </TH>
+                      {columns.map((col, colIdx) => (
+                        <TH
+                          key={col.key}
                           style={{
-                            background: rowBg,
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f1f5f9";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            ...callCountTableThStyle,
+                            width: col.width,
+                            padding: getCallCountHeaderPadding(col.key),
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 10,
+                            ...(colIdx === columns.length - 1
+                              ? { borderRight: "none" }
+                              : {}),
                           }}
                         >
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              width: 36,
-                              borderLeft: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <Checkbox
-                              size="small"
-                              disabled={!row.uniqueid}
-                              checked={
-                                !!row.uniqueid &&
-                                selectedIds.includes(row.uniqueid)
-                              }
-                              onChange={() => handleToggleRow(row.uniqueid)}
-                              sx={checkboxSx}
-                            />
-                          </td>
+                          {col.label}
+                        </TH>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody
+                    key={`${appliedFilters.callStatus}-${appliedFilters.direction}-${appliedFilters.search}`}
+                  >
+                    {filteredData.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={columns.length + 2}
+                          style={{
+                            textAlign: "center",
+                            padding: "40px 16px",
+                            color: C.mutedText,
+                            fontSize: 14,
+                            borderBottom: "none",
+                          }}
+                        >
+                          {hasActiveFilters
+                            ? "No records match the current filters on this page."
+                            : "No records found."}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredData.map((row, idx) => {
+                        const isLastRow = idx === filteredData.length - 1;
+                        const lastRowCellStyle = isLastRow
+                          ? { borderBottom: "none" }
+                          : {};
+                        const isSelected =
+                          row.uniqueid && selectedIds.includes(row.uniqueid);
+                        const rowBg = isSelected
+                          ? "#f0f9ff"
+                          : idx % 2 === 1
+                            ? "#f8fafc"
+                            : "#ffffff";
 
-                          <td
+                        return (
+                          <tr
+                            key={getRowKey(row, idx)}
                             style={{
-                              ...tdStyle,
                               background: rowBg,
-                              ...lastRowCellStyle,
+                              transition: "background 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = "#f1f5f9";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = rowBg;
                             }}
                           >
-                            {(page - 1) * limit + idx + 1}
-                          </td>
+                            <td
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: "4px 0",
+                                background: rowBg,
+                                width: 36,
+                                borderLeft: "none",
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              <Checkbox
+                                size="small"
+                                disabled={!row.uniqueid}
+                                checked={
+                                  !!row.uniqueid &&
+                                  selectedIds.includes(row.uniqueid)
+                                }
+                                onChange={() => handleToggleRow(row.uniqueid)}
+                                sx={callCountTableCheckboxSx}
+                              />
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {formatDate(row.calldate)}
-                          </td>
+                            <td
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: callCountCellPadding,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {(page - 1) * limit + idx + 1}
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 500,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.src || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
+                            <td
+                              title={formatDate(row.calldate)}
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("calldate"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {formatDate(row.calldate)}
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.src_ip || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
+                            <td
+                              title={row.src || ""}
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("src"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {row.src || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 500,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.dst || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
+                            <td
+                              title={row.src_ip || ""}
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("src_ip"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {row.src_ip || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.dst_ip || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
+                            <td
+                              title={row.dst || ""}
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("dst"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {row.dst || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {(() => {
-                              const dir = getDirection(row);
-                              if (!dir)
+                            <td
+                              title={row.dst_ip || ""}
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("dst_ip"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {row.dst_ip || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+
+                            <td
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding:
+                                  getCallCountCellPadding("call_direction"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {(() => {
+                                const dir = getDirection(row);
+                                if (!dir)
+                                  return (
+                                    <span style={{ color: C.mutedText }}>
+                                      —
+                                    </span>
+                                  );
+                                const s = directionStyle(dir);
                                 return (
-                                  <span style={{ color: C.mutedText }}>—</span>
+                                  <Pill text={dir} bg={s.bg} color={s.color} />
                                 );
-                              const s = directionStyle(dir);
-                              return (
-                                <Pill text={dir} bg={s.bg} color={s.color} />
-                              );
-                            })()}
-                          </td>
+                              })()}
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.disposition ? (
-                              (() => {
-                                const s = statusStyle(row.disposition);
-                                return (
-                                  <Pill
-                                    text={row.disposition}
-                                    bg={s.bg}
-                                    color={s.color}
-                                  />
-                                );
-                              })()
-                            ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
+                            <td
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("disposition"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {row.disposition ? (
+                                (() => {
+                                  const s = statusStyle(row.disposition);
+                                  return (
+                                    <Pill
+                                      text={row.disposition}
+                                      bg={s.bg}
+                                      color={s.color}
+                                    />
+                                  );
+                                })()
+                              ) : (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {formatDuration(row.billsec)}
-                          </td>
+                            <td
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("billsec"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {formatDuration(row.billsec)}
+                            </td>
 
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              borderRight: "none",
-                              ...lastRowCellStyle,
-                            }}
-                            title={row.hangup_cause || ""}
-                          >
-                            {row.hangup_cause || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                            <td
+                              title={row.hangup_cause || ""}
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding:
+                                  getCallCountCellPadding("hangup_cause"),
+                                background: rowBg,
+                                borderRight: "none",
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {row.hangup_cause || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-          {filteredData.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={filteredData.length}
-              recordLabel="record"
-              onPageChange={(p) => {
-                if (p < page) handlePrev();
-                else if (p > page) handleNext();
-              }}
-              style={{ borderTop: "none" }}
-            />
-          )}
+              {filteredData.length > 0 && (
+                <SipPcmPagination
+                  page={page}
+                  totalPages={totalPages}
+                  recordCount={filteredData.length}
+                  recordLabel="record"
+                  onPageChange={(p) => {
+                    if (p < page) handlePrev();
+                    else if (p > page) handleNext();
+                  }}
+                />
+              )}
             </>
           )}
         </div>

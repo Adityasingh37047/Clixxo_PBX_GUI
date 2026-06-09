@@ -25,6 +25,14 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -185,6 +193,8 @@ const tdStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+  lineHeight: 1.2,
+  boxSizing: "border-box",
 };
 const checkboxSx = {
   padding: "1px",
@@ -192,6 +202,17 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
+
+const EXTENSIONS_DISPLAY_LIMIT = 6;
+
+const formatExtensionsDisplay = (extensions) => {
+  if (!extensions?.length) return "";
+  if (extensions.length <= EXTENSIONS_DISPLAY_LIMIT) {
+    return extensions.join(", ");
+  }
+  return `${extensions.slice(0, EXTENSIONS_DISPLAY_LIMIT).join(", ")}....`;
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ExtensionGroupsPage = () => {
@@ -431,47 +452,11 @@ const ExtensionGroupsPage = () => {
 
         <PbxBreadcrumb section="Extensions" current="Extension Group" />
 
-        {/* Main Card */}
-        <div
-          style={{
-         background: "#ffffff",
-borderRadius: 10,
-overflow: "hidden",
-border: `1.5px solid ${C.cardBorder}`,
-boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-            display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-minHeight: 44,
-padding: "7px 14px",
-borderBottom: `1px solid ${C.cardBorder}`,
-background: "#ffffff",
-flexWrap: "wrap",
-gap: 12,
-borderTopLeftRadius: CARD_RADIUS,
-borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
-            {/* Left Toolbar Info */}
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            
               {selectedIds.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selectedIds.length} selected
                 </span>
               )}
@@ -567,44 +552,31 @@ borderTopRightRadius: CARD_RADIUS,
                 )}
               </Btn> */}
               <Btn
-  onClick={handleDelete}
-  disabled={
-    loading.delete ||
-    loading.fetch ||
-    selectedIds.length === 0
-  }
-  variant="danger"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-   Delete
-</Btn>
-          <Btn
-  onClick={handleOpenAddModal}
-  disabled={loading.fetch}
-     variant="primary"
- 
-     style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
->
-  + Add New
-</Btn>
+                onClick={handleDelete}
+                disabled={
+                  loading.delete ||
+                  loading.fetch ||
+                  selectedIds.length === 0
+                }
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
+              </Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.fetch}
+                variant="primary"
+                style={sipPcmPrimaryBtnStyle}
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto",
-overflowY: "auto",
-flex: 1, }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : dataEmpty ? (
@@ -620,11 +592,10 @@ flex: 1, }}>
             ) : (
               <table
                 style={{
-                width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
                 }}
               >
                 <thead>
@@ -643,9 +614,15 @@ minWidth: 900,
                      sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{  width: 36, position: "sticky", top: 0, zIndex: 10}}>ID</TH>
-                    <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Group Name</TH>
-                    <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Extensions</TH>
+                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>
+                      ID
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Group Name
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Extensions
+                    </TH>
                     <TH  style={{
                        width: 70,
                         borderRight: "none",
@@ -658,7 +635,10 @@ minWidth: 900,
                 <tbody>
                   {pagedGroups.map((row, idx) => {
                       const isSelected = selectedIds.includes(row.id);
-                 
+                      const isLastRow = idx === pagedGroups.length - 1;
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
                       const rowBg = isSelected
                         ? "#e0f2fe"
                         : idx % 2 === 1
@@ -670,25 +650,15 @@ minWidth: 900,
                         <tr
                           key={row.id}
                           style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
-                            }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            background: rowBg,
                           }}
                         >
                           <td
                             style={{
-                             ...tdStyle, background: rowBg 
+                              ...tdStyle,
+                              width: 36,
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
                             }}
                           >
                             <Checkbox
@@ -700,39 +670,61 @@ minWidth: 900,
                           </td>
                           <td
                             style={{
-                           ...tdStyle, background: rowBg 
+                              ...tdStyle,
+                              width: 36,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {realIndex}
                           </td>
                           <td
                             style={{
-                            ...tdStyle, background: rowBg 
+                              ...tdStyle,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              ...tdStyle, background: rowBg 
+                              ...tdStyle,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.extensions?.length > 0 ? (
-                              row.extensions.join(", ")
+                              <span title={row.extensions.join(", ")}>
+                                {formatExtensionsDisplay(row.extensions)}
+                              </span>
                             ) : (
                               <span style={{ color: C.mutedText }}></span>
                             )}
                           </td>
                           <td
-                            style={{ padding: "7px 8px", textAlign: "center", ...tdStyle,
-                              background: rowBg, }}
+                            style={{
+                              ...tdStyle,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
+                            }}
                           >
-                           <EditDocumentIcon
-  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-  titleAccess="Edit"
-  onClick={() => handleOpenEditModal(row)}
-  
-/>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <EditDocumentIcon
+                                titleAccess="Edit"
+                                onClick={() => handleOpenEditModal(row)}
+                                style={{
+                                  cursor: "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: 0.7,
+                                }}
+                              />
+                            </div>
                           </td>
                         </tr>
                       );
@@ -742,52 +734,15 @@ minWidth: 900,
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && filteredGroups.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "14px 18px",
-                borderTop: "1px solid #f1f5f9",
-                background: "#ffffff",
-              }}
-            >
-              <span style={{ fontSize: 12, color: C.mutedText }}>
-                Showing {pagedGroups.length} record
-                {pagedGroups.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                {/* <Btn
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={loading.fetch || page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn> */}
-                {/* <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.accent}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span> */}
-                {/* <Btn
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={loading.fetch || page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn> */}
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedGroups.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>
@@ -797,16 +752,26 @@ minWidth: 900,
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 500, maxWidth: "95vw", borderRadius: 2 } }}
+        PaperProps={{
+          sx: {
+            width: 500,
+            maxWidth: "95vw",
+            borderRadius: "8px",
+            overflow: "hidden",
+            p: 0,
+          },
+        }}
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
+            color: "#ffffff",
+            fontWeight: 600,
             fontSize: 16,
             textAlign: "center",
-            padding: "14px 24px",
+            padding: "16px 24px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           {editGroupId != null
@@ -815,9 +780,19 @@ minWidth: 900,
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: C.pageBg }}
+          style={{ padding: "24px", backgroundColor: "#ffffff" }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+            }}
+          >
             {/* Group Name Field */}
             <div>
               <label
@@ -945,12 +920,15 @@ minWidth: 900,
         </DialogContent>
 
         <DialogActions
-           style={{
+          style={{
+            display: "flex",
             justifyContent: "center",
-            gap: 12,
-            padding: "12px 24px 16px",
-            background: C.pageBg,
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
             borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
         <Btn

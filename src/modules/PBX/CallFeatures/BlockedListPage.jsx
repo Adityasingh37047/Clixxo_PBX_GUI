@@ -29,6 +29,13 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
@@ -518,31 +525,9 @@ const BlockedListPage = () => {
         <PbxBreadcrumb section="Call Features" current="Blocked List" />
 
         {/* Main Card */}
-        <div
-          style={{
-        background: "#ffffff",
-borderRadius: 10,
-overflow: "hidden",
-border: `1.5px solid ${C.cardBorder}`,
-boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={sipPcmCardStyle}>
           {/* Toolbar */}
-          <div
-            style={{
-           display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-minHeight: 44,
-padding: "7px 14px",
-borderBottom: `1px solid ${C.cardBorder}`,
-background: "#ffffff",
-flexWrap: "wrap",
-gap: 12,
-borderTopLeftRadius: CARD_RADIUS,
-borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -553,17 +538,7 @@ borderTopRightRadius: CARD_RADIUS,
             >
               
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -663,12 +638,7 @@ borderTopRightRadius: CARD_RADIUS,
                   loading.delete || loading.fetch || selected.length === 0
                 }
                 variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={sipPcmCancelBtnStyle}
               > <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
            Delete
               </Btn>
@@ -971,52 +941,13 @@ borderTopRightRadius: CARD_RADIUS,
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.fetch || page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.fetch || page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              recordLabel="record"
+              onPageChange={(p) => setPage(p)}
+            />
           )}
         </div>
       </div>
@@ -1053,27 +984,18 @@ borderTopRightRadius: CARD_RADIUS,
                 padding: 16,
               }}
             >
-              <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    marginBottom: 12,
-    fontSize: 14,
-    fontWeight: 700,
-    color: C.labelText,
-  }}
->
-  <span>Block Settings</span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: C.cardBorder,
-      marginLeft: 12,
-    }}
-  />
-</div>
+              <h3
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 12,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                Block Settings
+              </h3>
 
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
@@ -1128,25 +1050,19 @@ borderTopRightRadius: CARD_RADIUS,
                       Match Mode <span style={{ color: C.errorRed }}>*</span>
                     </label>
                     <FormControl size="small" fullWidth>
-                 <MuiSelect
-  value={matchMode}
-  onChange={(e) => {
-    const val = e.target.value;
-    setMatchMode(val);
-    if (val === "Extension") setBlockedNumber("");
-    else setSelectedExtension("");
-  }}
-  sx={{
-    fontSize: 13,
-    backgroundColor: "#fff",
-    height: 32, // Name ke equal
-    "& .MuiSelect-select": {
-      padding: "6px 8px",
-      display: "flex",
-      alignItems: "center",
-    },
-  }}
->
+                      <MuiSelect
+                        value={matchMode}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setMatchMode(val);
+                          if (val === "Extension") setBlockedNumber("");
+                          else setSelectedExtension("");
+                        }}
+                        sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
+                      >
                         <MenuItem
                           value="Exact Match"
                           sx={{ fontSize: 13, fontWeight: 400 }}
@@ -1260,21 +1176,12 @@ borderTopRightRadius: CARD_RADIUS,
                       Blocked List Direction{" "}
                       <span style={{ color: C.errorRed }}>*</span>
                     </label>
-                   <FormControl size="small" fullWidth>
-  <MuiSelect
-    value={direction}
-    onChange={(e) => setDirection(e.target.value)}
-    sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
-  >
+                    <FormControl size="small" fullWidth>
+                      <MuiSelect
+                        value={direction}
+                        onChange={(e) => setDirection(e.target.value)}
+                        sx={{ fontSize: 13 ,   backgroundColor: "#fff",}}
+                      >
                         <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
                           Inbound
                         </MenuItem>
@@ -1306,16 +1213,7 @@ borderTopRightRadius: CARD_RADIUS,
                       <MuiSelect
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                           sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                        sx={{ fontSize: 13,  backgroundColor: "#fff", }}
                       >
                         <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                           Yes

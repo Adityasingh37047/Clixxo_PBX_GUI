@@ -55,9 +55,6 @@ import {
   OUTLINED_BORDER,
   OUTLINED_HOVER,
   OUTLINED_FOCUS,
-  numManipulateCardStyle,
-  numManipulateToolbarStyle,
-  numManipulatePaginationStyle,
   TRUNK_TABLE_SCROLL_CLASS,
   trunkTableScrollStyle,
   trunkTableInnerStyle,
@@ -68,9 +65,6 @@ import {
   trunkModalActionsStyle,
   trunkModalPrimaryBtnStyle,
   trunkModalCancelBtnStyle,
-  trunkToolbarBtnStyle,
-  trunkAddNewBtnStyle,
-  trunkSelectionBadgeStyle,
   TrunkModalSectionHeading,
   TRUNK_SECTION_HEADING_COLOR,
   TRUNK_FIELD_LABEL_COLOR,
@@ -93,6 +87,14 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const Pill = ({ text, bg, color }) => (
   <span
@@ -114,6 +116,231 @@ const Pill = ({ text, bg, color }) => (
     {text}
   </span>
 );
+
+const SIP_REGISTER_TABLE_WIDE_MIN = 1400;
+
+const SIP_REGISTER_HIDDEN_TABLE_FIELDS = [
+  "index",
+  "password",
+  "provider",
+  "Domain name",
+  "Contact User",
+  "Outbound Proxy",
+  "sip_header",
+  "from_user",
+  "expire_in_sec",
+  "context",
+  "allow_codecs",
+];
+
+const SIP_REGISTER_VISIBLE_TABLE_FIELDS = sipRegisterFields.filter(
+  (f) => !SIP_REGISTER_HIDDEN_TABLE_FIELDS.includes(f.name),
+);
+
+const sipRegisterCheckboxCellStyle = {
+  width: 40,
+  minWidth: 40,
+  maxWidth: 40,
+  padding: 0,
+  borderLeft: "none",
+  textAlign: "center",
+  verticalAlign: "middle",
+};
+
+const sipRegisterCheckboxWrapStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+  minHeight: 32,
+};
+
+const sipRegisterIdCellStyle = {
+  width: 44,
+  minWidth: 44,
+  maxWidth: 44,
+};
+
+const sipRegisterStatusCellStyle = {
+  width: 104,
+  minWidth: 104,
+  maxWidth: 104,
+};
+
+const sipRegisterModifyCellStyle = {
+  width: 72,
+  minWidth: 72,
+  maxWidth: 72,
+  padding: "7px 6px",
+  borderRight: "none",
+};
+
+const SIP_REGISTER_LONG_TEXT_FIELDS = new Set([
+  "username",
+  "auth_username",
+  "server_domain",
+  "client_domain",
+  "identity_ip",
+]);
+
+const sipRegisterShortCellStyle = {
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+};
+
+const sipRegisterLongTextCellStyle = {
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "clip",
+};
+
+const getSipRegisterDataCellStyle = (zoomed, fieldName) => {
+  if (zoomed) return sipRegisterZoomCellStyle;
+  if (SIP_REGISTER_LONG_TEXT_FIELDS.has(fieldName)) {
+    return sipRegisterLongTextCellStyle;
+  }
+  return sipRegisterShortCellStyle;
+};
+
+const getSipRegisterHeaderCellStyle = (zoomed, fieldName) => {
+  if (zoomed) return sipRegisterZoomCellStyle;
+  if (fieldName && SIP_REGISTER_LONG_TEXT_FIELDS.has(fieldName)) {
+    return sipRegisterLongTextCellStyle;
+  }
+  return sipRegisterShortCellStyle;
+};
+
+const sipRegisterFieldColumnWidths = {
+  trunk_id: 90,
+  username: 300,
+  auth_username: 140,
+  server_domain: 260,
+  client_domain: 260,
+  identity_ip: 200,
+};
+
+/** 100% zoom — all % widths so long SIP values fit without horizontal scroll */
+const sipRegisterFieldColumnPercents = {
+  trunk_id: "4%",
+  username: "26%",
+  auth_username: "5%",
+  server_domain: "21%",
+  client_domain: "21%",
+  identity_ip: "7%",
+};
+
+const SIP_REGISTER_ZOOM_TABLE_WIDTH = Math.max(
+  SIP_REGISTER_TABLE_WIDE_MIN,
+  40 +
+    44 +
+    104 +
+    72 +
+    Object.values(sipRegisterFieldColumnWidths).reduce(
+      (sum, width) => sum + width,
+      0,
+    ),
+);
+
+const sipRegisterZoomCellStyle = {
+  whiteSpace: "nowrap",
+  overflow: "visible",
+  maxWidth: "none",
+};
+
+const sipRegisterFixedCellStyle = (baseStyle, zoomed) =>
+  zoomed ? { ...baseStyle, maxWidth: "none" } : baseStyle;
+
+/** Ctrl+/- zoom on Windows often leaves visualViewport.scale at 1.0 */
+const sipRegisterZoomBaselineRef = { innerWidth: 0, dpr: 1 };
+
+const lockSipRegisterZoomBaseline = (force = false) => {
+  const iw = window.innerWidth;
+  if (!iw) return;
+  if (force || !sipRegisterZoomBaselineRef.innerWidth) {
+    sipRegisterZoomBaselineRef.innerWidth = iw;
+    sipRegisterZoomBaselineRef.dpr = window.devicePixelRatio || 1;
+  }
+};
+
+const isSipRegisterBrowserZoomedIn = () => {
+  const iw = window.innerWidth;
+  const baseW = sipRegisterZoomBaselineRef.innerWidth;
+  const scale = window.visualViewport?.scale ?? 1;
+
+  if (scale > 0 && scale < 1.05) return false;
+  if (scale >= 1.09) return true;
+
+  if (baseW > 0 && iw > 0 && iw < baseW * 0.96 && baseW / iw >= 1.09) {
+    return true;
+  }
+
+  return false;
+};
+
+const scheduleSipRegisterZoomMeasure = (measure) => {
+  requestAnimationFrame(measure);
+  [50, 150, 300, 500].forEach((ms) => setTimeout(measure, ms));
+};
+
+const useSipRegisterBrowserZoom110 = () => {
+  const [highZoom, setHighZoom] = useState(false);
+
+  useEffect(() => {
+    const measure = () => {
+      const iw = window.innerWidth;
+      if (!iw) return;
+
+      if (!sipRegisterZoomBaselineRef.innerWidth) {
+        lockSipRegisterZoomBaseline(true);
+      }
+
+      if (!isSipRegisterBrowserZoomedIn()) {
+        lockSipRegisterZoomBaseline(true);
+        setHighZoom(false);
+        return;
+      }
+
+      setHighZoom(true);
+    };
+
+    const onWheel = (e) => {
+      if (e.ctrlKey) scheduleSipRegisterZoomMeasure(measure);
+    };
+
+    const onKeyDown = (e) => {
+      if (
+        e.ctrlKey &&
+        (e.key === "+" ||
+          e.key === "-" ||
+          e.key === "=" ||
+          e.key === "0" ||
+          e.key === "_")
+      ) {
+        scheduleSipRegisterZoomMeasure(measure);
+      }
+    };
+
+    lockSipRegisterZoomBaseline(true);
+    measure();
+
+    window.addEventListener("resize", measure);
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
+    window.visualViewport?.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("scroll", measure);
+
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
+      window.visualViewport?.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("scroll", measure);
+    };
+  }, []);
+
+  return highZoom;
+};
 
 const SipRegisterPage = () => {
   // State
@@ -161,24 +388,18 @@ const SipRegisterPage = () => {
     scrollWidth: 0,
   });
   const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
+  const allowHorizontalScroll = useSipRegisterBrowserZoom110();
+  const tableMinWidth = allowHorizontalScroll
+    ? SIP_REGISTER_ZOOM_TABLE_WIDTH
+    : "100%";
 
-  // Fields to hide from the table
-  const HIDDEN_TABLE_FIELDS = [
-    "index",
-    "password",
-    "provider",
-    "Domain name",
-    "Contact User",
-    "Outbound Proxy",
-    "sip_header",
-    "from_user",
-    "expire_in_sec",
-    "context",
-    "allow_codecs",
-  ];
-  const visibleFieldsCount = sipRegisterFields.filter(
-    (f) => !HIDDEN_TABLE_FIELDS.includes(f.name),
-  ).length;
+  useEffect(() => {
+    if (tableScrollRef.current) {
+      tableScrollRef.current.scrollLeft = 0;
+    }
+  }, [allowHorizontalScroll, tableMinWidth]);
+
+  const visibleFieldsCount = SIP_REGISTER_VISIBLE_TABLE_FIELDS.length;
   const PREFERRED_ASSERTED_IDENTITY_OPTIONS = [
     "None",
     "Extension Number",
@@ -379,13 +600,31 @@ const SipRegisterPage = () => {
           width: el.clientWidth,
           scrollWidth: el.scrollWidth,
         });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
+        setShowCustomScrollbar(
+          allowHorizontalScroll && el.scrollWidth > el.clientWidth,
+        );
       }
     };
     update();
+    const raf = requestAnimationFrame(update);
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [trunks, page, filteredRows.length, pagedRows.length]);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", update);
+    vv?.addEventListener("scroll", update);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", update);
+      vv?.removeEventListener("resize", update);
+      vv?.removeEventListener("scroll", update);
+    };
+  }, [
+    trunks,
+    page,
+    filteredRows.length,
+    pagedRows.length,
+    tableMinWidth,
+    allowHorizontalScroll,
+  ]);
 
   // Load ETH port dropdown options when SIP Register modal opens.
   // This keeps the menu consistent and shows VPN options only when VPN interfaces are detected.
@@ -1607,11 +1846,11 @@ const SipRegisterPage = () => {
 
         <PbxBreadcrumb section="Trunks" current="SIP Register" />
 
-        <div style={numManipulateCardStyle}>
-          <div style={numManipulateToolbarStyle}>
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
-                <span style={trunkSelectionBadgeStyle}>
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1628,7 +1867,7 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete}
-                style={trunkToolbarBtnStyle}
+                style={sipPcmCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1636,7 +1875,7 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.delete || trunks.length === 0}
-                style={trunkToolbarBtnStyle}
+                style={sipPcmCancelBtnStyle}
               >
                 Clear All
               </Btn>
@@ -1644,7 +1883,7 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selectedIds.length === 0}
-                style={trunkToolbarBtnStyle}
+                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -1659,7 +1898,7 @@ const SipRegisterPage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch}
-                style={trunkAddNewBtnStyle}
+                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1682,292 +1921,340 @@ const SipRegisterPage = () => {
             ) : (
               <>
                 <div
+                  ref={tableScrollRef}
+                  onScroll={handleTableScroll}
                   className={TRUNK_TABLE_SCROLL_CLASS}
-                  style={trunkTableScrollStyle}
-                >
-                <div style={trunkTableInnerStyle}>
-                <table
                   style={{
-                    width: "100%",
-                    borderCollapse: "separate",
-                    borderSpacing: 0,
-                    tableLayout: "auto",
-                    minWidth: 900,
+                    ...trunkTableScrollStyle,
+                    overflowX: allowHorizontalScroll ? "auto" : "hidden",
+                    borderBottom: "none",
                   }}
                 >
-                  <thead>
-                    <tr>
-                      <TH
-                        style={{
-                          width: 40,
-                          padding: 0,
-                          borderLeft: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        <Checkbox
-                          size="small"
-                          checked={allPageSelected}
-                          indeterminate={somePageSelected}
-                          onChange={handleToggleAll}
-                          sx={checkboxSx}
+                  <div
+                    style={{
+                      ...trunkTableInnerStyle,
+                      minWidth: allowHorizontalScroll ? tableMinWidth : "100%",
+                      width: allowHorizontalScroll ? tableMinWidth : "100%",
+                      borderBottom: "none",
+                    }}
+                  >
+                    <table
+                      style={{
+                        width: allowHorizontalScroll ? tableMinWidth : "100%",
+                        borderCollapse: "separate",
+                        borderSpacing: 0,
+                        tableLayout: allowHorizontalScroll ? "auto" : "fixed",
+                        minWidth: allowHorizontalScroll ? tableMinWidth : "100%",
+                      }}
+                    >
+                      <colgroup>
+                        <col
+                          style={{
+                            width: allowHorizontalScroll ? 40 : "2.5%",
+                          }}
                         />
-                      </TH>
-                      <TH
-                        style={{
-                          width: 50,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        ID
-                      </TH>
-                      {sipRegisterFields
-                        .filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name))
-                        .map((field) => (
-                          <TH key={field.name}>{field.label}</TH>
-                        ))}
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Status
-                      </TH>
-                      <TH
-                        style={{
-                          width: 60,
-                          borderRight: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        Modify
-                      </TH>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagedRows.map((trunk, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        const isSelected =
-                          trunk.trunk_id &&
-                          selectedIds.includes(trunk.trunk_id);
-                        const isLastRow = idx === pagedRows.length - 1;
-                        const rowBg = isSelected
-                          ? "#f0f9ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
-                        const lastRowCellStyle = isLastRow
-                          ? { borderBottom: "none" }
-                          : {};
-                        const status = String(
-                          trunk.registerStatus || "",
-                        ).toLowerCase();
-                        const statusBg = "transparent";
-                        const statusColor =
-                          status === "registered"
-                            ? "#16A34A"
-                            : status === "unregistered" ||
-                                status === "unregistered"
-                              ? "#DC2626"
-                              : status === "pending"
-                                ? "#d97706"
-                                : "#475569";
-                        return (
-                          <tr
-                            key={trunk.trunk_id || idx}
+                        <col
+                          style={{
+                            width: allowHorizontalScroll ? 44 : "2.5%",
+                          }}
+                        />
+                        {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
+                          <col
+                            key={field.name}
                             style={{
-                              background: rowBg,
-                              borderBottom: isLastRow
-                                ? "none"
-                                : `1px solid ${C.cardBorder}`,
-                              transition: "background-color 0.15s ease",
+                              width: allowHorizontalScroll
+                                ? sipRegisterFieldColumnWidths[field.name]
+                                : sipRegisterFieldColumnPercents[field.name],
                             }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = "#f1f5f9";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = rowBg;
+                          />
+                        ))}
+                        <col
+                          style={{
+                            width: allowHorizontalScroll ? 104 : "6%",
+                          }}
+                        />
+                        <col
+                          style={{
+                            width: allowHorizontalScroll ? 72 : "4%",
+                          }}
+                        />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <TH
+                            style={{
+                              ...sipRegisterFixedCellStyle(
+                                sipRegisterCheckboxCellStyle,
+                                allowHorizontalScroll,
+                              ),
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 10,
                             }}
                           >
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                borderLeft: "none",
-                                ...lastRowCellStyle,
-                                ...(isLastRow
-                                  ? { borderBottomLeftRadius: CARD_RADIUS }
-                                  : {}),
-                              }}
-                            >
+                            <div style={sipRegisterCheckboxWrapStyle}>
                               <Checkbox
                                 size="small"
-                                disabled={!trunk.trunk_id}
-                                checked={
-                                  !!trunk.trunk_id &&
-                                  selectedIds.includes(trunk.trunk_id)
-                                }
-                                onChange={() => handleToggleRow(trunk.trunk_id)}
+                                checked={allPageSelected}
+                                indeterminate={somePageSelected}
+                                onChange={handleToggleAll}
                                 sx={checkboxSx}
                               />
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {(page - 1) * itemsPerPage + idx + 1}
-                            </td>
-                            {sipRegisterFields
-                              .filter(
-                                (f) => !HIDDEN_TABLE_FIELDS.includes(f.name),
-                              )
-                              .map((field) => {
-                                const value = trunk[field.name];
-                                const hasValue =
-                                  value !== undefined &&
-                                  value !== null &&
-                                  value !== "";
-                                const displayValue =
-                                  hasValue &&
-                                  SIP_PREFIX_FIELDS.includes(field.name)
-                                    ? `sip:${value}`
-                                    : hasValue
-                                      ? value
-                                      : "—";
-                                return (
-                                  <td
-                                    key={field.name}
-                                    style={{
-                                      ...tdStyle,
-                                      background: rowBg,
-                                      fontWeight:
-                                        field.name === "trunk_id" ? 600 : 400,
-                                      ...lastRowCellStyle,
-                                    }}
-                                  >
-                                    {displayValue}
-                                  </td>
-                                );
-                              })}
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {trunk.registerStatus ? (
-                                <Pill
-                                  text={trunk.registerStatus}
-                                  bg={statusBg}
-                                  color={statusColor}
-                                />
-                              ) : (
-                                <span style={{ color: C.mutedText }}>—</span>
+                            </div>
+                          </TH>
+                          <TH
+                            style={{
+                              ...sipRegisterFixedCellStyle(
+                                sipRegisterIdCellStyle,
+                                allowHorizontalScroll,
+                              ),
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 10,
+                            }}
+                          >
+                            ID
+                          </TH>
+                          {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
+                            <TH
+                              key={field.name}
+                              title={field.label}
+                              style={getSipRegisterHeaderCellStyle(
+                                allowHorizontalScroll,
+                                field.name,
                               )}
-                            </td>
-                            <td
+                            >
+                              {field.label}
+                            </TH>
+                          ))}
+                          <TH
+                            style={{
+                              ...sipRegisterFixedCellStyle(
+                                sipRegisterStatusCellStyle,
+                                allowHorizontalScroll,
+                              ),
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 10,
+                            }}
+                          >
+                            Status
+                          </TH>
+                          <TH
+                            style={{
+                              ...sipRegisterFixedCellStyle(
+                                sipRegisterModifyCellStyle,
+                                allowHorizontalScroll,
+                              ),
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 10,
+                            }}
+                          >
+                            Modify
+                          </TH>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pagedRows.map((trunk, idx) => {
+                          const realIdx = (page - 1) * itemsPerPage + idx;
+                          const isSelected =
+                            trunk.trunk_id &&
+                            selectedIds.includes(trunk.trunk_id);
+                          const isLastRow = idx === pagedRows.length - 1;
+                          const rowBg = isSelected
+                            ? "#f0f9ff"
+                            : idx % 2 === 1
+                              ? "#f8fafc"
+                              : "#ffffff";
+                          const lastRowCellStyle = isLastRow
+                            ? { borderBottom: "none" }
+                            : {};
+                          const status = String(
+                            trunk.registerStatus || "",
+                          ).toLowerCase();
+                          const statusBg = "transparent";
+                          const statusColor =
+                            status === "registered"
+                              ? "#16A34A"
+                              : status === "unregistered" ||
+                                  status === "unregistered"
+                                ? "#DC2626"
+                                : status === "pending"
+                                  ? "#d97706"
+                                  : "#475569";
+                          return (
+                            <tr
+                              key={trunk.trunk_id || idx}
                               style={{
-                                ...tdStyle,
                                 background: rowBg,
-                                borderRight: "none",
-                                ...lastRowCellStyle,
-                                ...(isLastRow
-                                  ? { borderBottomRightRadius: CARD_RADIUS }
-                                  : {}),
+                                transition: "background-color 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isSelected)
+                                  e.currentTarget.style.background = "#f1f5f9";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isSelected)
+                                  e.currentTarget.style.background = rowBg;
                               }}
                             >
-                              <div
+                              <td
                                 style={{
-                                  display: "flex",
-                                  justifyContent: "center",
+                                  ...tdStyle,
+                                  ...sipRegisterFixedCellStyle(
+                                    sipRegisterCheckboxCellStyle,
+                                    allowHorizontalScroll,
+                                  ),
+                                  background: rowBg,
+                                  ...lastRowCellStyle,
                                 }}
                               >
-                                <EditDocumentIcon
-                                  titleAccess="Edit"
+                                <div style={sipRegisterCheckboxWrapStyle}>
+                                  <Checkbox
+                                    size="small"
+                                    disabled={!trunk.trunk_id}
+                                    checked={
+                                      !!trunk.trunk_id &&
+                                      selectedIds.includes(trunk.trunk_id)
+                                    }
+                                    onChange={() =>
+                                      handleToggleRow(trunk.trunk_id)
+                                    }
+                                    sx={checkboxSx}
+                                  />
+                                </div>
+                              </td>
+                              <td
+                                style={{
+                                  ...tdStyle,
+                                  ...sipRegisterFixedCellStyle(
+                                    sipRegisterIdCellStyle,
+                                    allowHorizontalScroll,
+                                  ),
+                                  background: rowBg,
+                                  ...lastRowCellStyle,
+                                }}
+                              >
+                                {(page - 1) * itemsPerPage + idx + 1}
+                              </td>
+                              {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map(
+                                (field) => {
+                                  const value = trunk[field.name];
+                                  const hasValue =
+                                    value !== undefined &&
+                                    value !== null &&
+                                    value !== "";
+                                  const displayValue =
+                                    hasValue &&
+                                    SIP_PREFIX_FIELDS.includes(field.name)
+                                      ? `sip:${value}`
+                                      : hasValue
+                                        ? value
+                                        : "—";
+                                  return (
+                                    <td
+                                      key={field.name}
+                                      title={String(displayValue)}
+                                      style={{
+                                        ...tdStyle,
+                                        background: rowBg,
+                                        fontWeight:
+                                          field.name === "trunk_id" ? 600 : 400,
+                                        ...getSipRegisterDataCellStyle(
+                                          allowHorizontalScroll,
+                                          field.name,
+                                        ),
+                                        ...lastRowCellStyle,
+                                      }}
+                                    >
+                                      {displayValue}
+                                    </td>
+                                  );
+                                },
+                              )}
+                              <td
+                                style={{
+                                  ...tdStyle,
+                                  ...sipRegisterFixedCellStyle(
+                                    sipRegisterStatusCellStyle,
+                                    allowHorizontalScroll,
+                                  ),
+                                  background: rowBg,
+                                  ...lastRowCellStyle,
+                                }}
+                              >
+                                {trunk.registerStatus ? (
+                                  <Pill
+                                    text={trunk.registerStatus}
+                                    bg={statusBg}
+                                    color={statusColor}
+                                  />
+                                ) : (
+                                  <span style={{ color: C.mutedText }}>—</span>
+                                )}
+                              </td>
+                              <td
+                                style={{
+                                  ...tdStyle,
+                                  ...sipRegisterFixedCellStyle(
+                                    sipRegisterModifyCellStyle,
+                                    allowHorizontalScroll,
+                                  ),
+                                  background: rowBg,
+                                  ...lastRowCellStyle,
+                                }}
+                              >
+                                <div
                                   style={{
-                                    cursor: loading.delete
-                                      ? "not-allowed"
-                                      : "pointer",
-                                    color: "#2563eb",
-                                    fontSize: 22,
-                                    opacity: loading.delete ? 0.4 : 0.7,
-                                    transition: "opacity 0.15s ease",
+                                    display: "flex",
+                                    justifyContent: "center",
                                   }}
-                                  onClick={() =>
-                                    !loading.delete &&
-                                    handleOpenModal(trunk, realIdx)
-                                  }
-                                  onMouseEnter={(e) => {
-                                    if (!loading.delete)
-                                      e.currentTarget.style.opacity = "1";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!loading.delete)
-                                      e.currentTarget.style.opacity = "0.7";
-                                  }}
-                                />
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
-                </div>
+                                >
+                                  <EditDocumentIcon
+                                    titleAccess="Edit"
+                                    style={{
+                                      cursor: loading.delete
+                                        ? "not-allowed"
+                                        : "pointer",
+                                      color: "#2563eb",
+                                      fontSize: 22,
+                                      opacity: loading.delete ? 0.4 : 0.7,
+                                      transition: "opacity 0.15s ease",
+                                    }}
+                                    onClick={() =>
+                                      !loading.delete &&
+                                      handleOpenModal(trunk, realIdx)
+                                    }
+                                    onMouseEnter={(e) => {
+                                      if (!loading.delete)
+                                        e.currentTarget.style.opacity = "1";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (!loading.delete)
+                                        e.currentTarget.style.opacity = "0.7";
+                                    }}
+                                  />
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </>
             )}
           </div>
 
           {!isInitialLoad && filteredRows.length > 0 && (
-            <div
-              style={{
-                ...numManipulatePaginationStyle,
-                borderTop: "none",
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {filteredRows.length} record
-                {filteredRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Btn
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `1px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={handlePageChange}
+            />
           )}
         </div>
       </div>

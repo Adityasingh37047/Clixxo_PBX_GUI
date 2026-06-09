@@ -28,6 +28,14 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const CC_INTERVAL_OPTIONS = [
@@ -595,32 +603,8 @@ const CCRoutePage = () => {
 
         <PbxBreadcrumb section="Call Control" current="CC Route" />
 
-        {/* Main Card */}
-        <div
-          style={{
-          background: "#ffffff",
-borderRadius: 10,
-overflow: "hidden",
-border: `1.5px solid ${C.cardBorder}`,
-boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-             display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-minHeight: 44,
-padding: "7px 14px",
-borderBottom: `1px solid ${C.cardBorder}`,
-background: "#ffffff",
-flexWrap: "wrap",
-gap: 12,
-borderTopLeftRadius: CARD_RADIUS,
-borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -629,63 +613,40 @@ borderTopRightRadius: CARD_RADIUS,
                 flexWrap: "wrap",
               }}
             >
-              
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Btn
-  onClick={handleDelete}
-  disabled={
-    loading.delete ||
-    loading.fetch ||
-    selected.length === 0
-  }
-  variant="danger"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  {loading.delete && (
-    <CircularProgress
-      size={11}
-      style={{ color: "#374151" }}
-    />
-  )}{" "}
-   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-Delete
-</Btn>
-
-<Btn
-  onClick={handleOpenAddModal}
-  disabled={loading.save || loading.fetch}
-  variant="primary"
-  style={{
-    height: 30,
-    padding: "6px 14px",
-    fontSize: 12,
-    borderRadius: 10,
-  }}
->
-  + Add New
-</Btn>
+                onClick={handleDelete}
+                disabled={
+                  loading.delete ||
+                  loading.fetch ||
+                  selected.length === 0
+                }
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
+              >
+                {loading.delete && (
+                  <CircularProgress
+                    size={11}
+                    style={{ color: "#374151" }}
+                  />
+                )}{" "}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
+              </Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.save || loading.fetch}
+                variant="primary"
+                style={sipPcmPrimaryBtnStyle}
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
@@ -870,73 +831,15 @@ minWidth: 900,
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 18px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                gap: 8,
-              }}
-            >
-             <span
-  style={{
-    fontSize: 11,
-    color: C.mutedText,
-  }}
->
-  Showing {rows.length} record
-  {rows.length !== 1 ? "s" : ""} on
-  page {page}
-</span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
-                <Btn
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page}
-                </span>
-                <Btn
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-                <Btn
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>
@@ -984,26 +887,17 @@ borderTopRightRadius: 8,
               }}
             >
               <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    marginBottom: 14,
-    fontSize: 13,
-    fontWeight: 700,
-    color: C.labelText,
-  }}
->
-  <span>CC Route Settings</span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: C.cardBorder,
-      marginLeft: 12,
-    }}
-  />
-</div>
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                CC Route Settings
+              </div>
               <div
                 style={{
                   display: "grid",
@@ -1016,31 +910,21 @@ borderTopRightRadius: 8,
                     <Select
                       value={ccIntervalTime}
                       onChange={(e) => setCcIntervalTime(e.target.value)}
-                                             sx={{
-      fontSize: 13,
+                     sx={{
+ 
+      borderColor: "#60a5fa",
       backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+
+}}
                     >
                       {CC_INTERVAL_OPTIONS.map((o) => (
                         <MenuItem
                           key={o.value}
                           value={o.value}
-                                                    sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                          sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                         >
                           {o.label}
                         </MenuItem>
@@ -1053,16 +937,11 @@ borderTopRightRadius: 8,
                     <Select
                       value={recordKeepTime}
                       onChange={(e) => setRecordKeepTime(e.target.value)}
-                                              sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                     sx={{
+                      
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                     >
                       {RECORD_KEEP_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1077,16 +956,10 @@ borderTopRightRadius: 8,
                     <Select
                       value={through}
                       onChange={(e) => setThrough(e.target.value)}
-                                               sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                     sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                     >
                       {THROUGH_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1101,16 +974,10 @@ borderTopRightRadius: 8,
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                                               sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                      sx={{
+  fontSize: 13,
+  backgroundColor: "#fff",
+}}
                     >
                       {ENABLE_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -1133,29 +1000,19 @@ borderTopRightRadius: 8,
                 padding: 16,
               }}
             >
-            <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    background: "#f5f7fa",
-    marginBottom: 14,
-    padding: "0 0 6px 0",
-    fontSize: 13,
-    fontWeight: 700,
-    color: C.labelText,
-  }}
->
-  <span>Member Extensions</span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: C.cardBorder,
-      marginLeft: 12,
-    }}
-  />
-</div>
+              <div
+                style={{
+                   background: "#f5f7fa",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                Member Extensions
+              </div>
               <div
                 style={{
                    
@@ -1204,66 +1061,40 @@ borderTopRightRadius: 8,
                   </select>
                 </div>
                 {/* Move Controls */}
-              <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 22,
-    height: 180, // same as select height
-  }}
->
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    justifyContent: "center",
+                    paddingTop: 24,
+                  }}
+                >
                   <Btn
                     onClick={addSelectedExtensions}
                     variant="outline"
-                   style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                    style={{ padding: "6px 0" }}
                   >
                     &gt;
                   </Btn>
                   <Btn
                     onClick={addAllExtensions}
                     variant="outline"
-style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                    style={{ padding: "6px 0" }}
                   >
                     &gt;&gt;
                   </Btn>
                   <Btn
                     onClick={removeSelectedExtensions}
                     variant="outline"
-                  style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                    style={{ padding: "6px 0" }}
                   >
                     &lt;
                   </Btn>
                   <Btn
                     onClick={removeAllExtensions}
                     variant="outline"
-                    style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                    style={{ padding: "6px 0" }}
                   >
                     &lt;&lt;
                   </Btn>
@@ -1308,26 +1139,19 @@ style={{
                   </select>
                 </div>
                 {/* Sort Controls - EXACTLY FROM REFERENCE */}
-              <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 22,
-    height: 180, // same as select height
-  }}
->
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    justifyContent: "center",
+                    paddingTop: 24,
+                  }}
+                >
                   <Btn
                     onClick={moveExtensionToBottom}
                     variant="outline"
-                   style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-}}
+                    style={{ padding: "6px 0" }}
                     title="Move to bottom"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1352,12 +1176,7 @@ style={{
                   <Btn
                     onClick={moveExtensionUp}
                     variant="outline"
-                   style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-}}
+                    style={{ padding: "6px 0" }}
                     title="Move up"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1373,12 +1192,7 @@ style={{
                   <Btn
                     onClick={moveExtensionDown}
                     variant="outline"
-                   style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-}}
+                    style={{ padding: "6px 0" }}
                     title="Move down"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -1394,12 +1208,7 @@ style={{
                   <Btn
                     onClick={moveExtensionToTop}
                     variant="outline"
-                    style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-}}
+                    style={{ padding: "6px 0" }}
                     title="Move to top"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

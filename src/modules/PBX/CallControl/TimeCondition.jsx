@@ -26,25 +26,20 @@ import {
   TH,
   tdStyle,
   checkboxSx,
-  numManipulateCardStyle,
-  numManipulateToolbarStyle,
   PbxBreadcrumb,
   TableListLoading,
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
-
-const LIST_CARD_RADIUS = 10;
-const listCardStyle = {
-  ...numManipulateCardStyle,
-  borderRadius: LIST_CARD_RADIUS,
-};
-const listToolbarStyle = {
-  ...numManipulateToolbarStyle,
-  borderTopLeftRadius: LIST_CARD_RADIUS,
-  borderTopRightRadius: LIST_CARD_RADIUS,
-};
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const pad = (n) => String(n ?? 0).padStart(2, "0");
@@ -266,10 +261,17 @@ const TimeCondition = () => {
   }, []);
 
   // ── select helpers ────────────────────────────────────────────────────────
+  const handleCheckAll = () => setSelected(rows.map((_, i) => i));
+  const handleUncheckAll = () => setSelected([]);
   const handleSelectRow = (idx) =>
     setSelected((s) =>
       s.includes(idx) ? s.filter((i) => i !== idx) : [...s, idx],
     );
+
+  const allRowsSelected =
+    rows.length > 0 && rows.every((_, index) => selected.includes(index));
+  const someRowsSelected =
+    rows.some((_, index) => selected.includes(index)) && !allRowsSelected;
 
   // ── delete ────────────────────────────────────────────────────────────────
   const handleDelete = async () => {
@@ -467,8 +469,8 @@ const TimeCondition = () => {
 
         <PbxBreadcrumb section="Call Control" current={TC_TITLE} />
 
-        <div style={listCardStyle}>
-          <div style={listToolbarStyle}>
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -478,17 +480,7 @@ const TimeCondition = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -507,13 +499,8 @@ const TimeCondition = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} />
@@ -526,12 +513,7 @@ const TimeCondition = () => {
                 onClick={openAdd}
                 disabled={loading.save || loading.fetch}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -558,12 +540,56 @@ const TimeCondition = () => {
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 40, padding: 0, borderLeft: "none" }} />
-                    <TH style={{ width: 36 }}>#</TH>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={allRowsSelected}
+                        indeterminate={someRowsSelected}
+                        onChange={() =>
+                          allRowsSelected ? handleUncheckAll() : handleCheckAll()
+                        }
+                        disabled={loading.delete || loading.fetch}
+                        sx={checkboxSx}
+                      />
+                    </TH>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
                     {TC_TABLE_COLUMNS.map((c) => (
-                      <TH key={c.key}>{c.label}</TH>
+                      <TH
+                        key={c.key}
+                        style={{ position: "sticky", top: 0, zIndex: 10 }}
+                      >
+                        {c.label}
+                      </TH>
                     ))}
-                    <TH style={{ width: 70, borderRight: "none" }}>Actions</TH>
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -571,8 +597,11 @@ const TimeCondition = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
                     const rowBg = isSelected
-                      ? "#e0f2fe"
+                      ? "#eff6ff"
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
@@ -582,7 +611,6 @@ const TimeCondition = () => {
                         key={row.id}
                         style={{
                           background: rowBg,
-                          borderBottom: "1px solid #f1f5f9",
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -594,7 +622,15 @@ const TimeCondition = () => {
                             e.currentTarget.style.background = rowBg;
                         }}
                       >
-                        <td style={{ ...tdStyle, background: rowBg }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            width: 36,
+                            borderLeft: "none",
+                            ...lastRowCellStyle,
+                          }}
+                        >
                           <Checkbox
                             size="small"
                             checked={isSelected}
@@ -607,9 +643,8 @@ const TimeCondition = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {realIdx + 1}
@@ -618,10 +653,8 @@ const TimeCondition = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            fontWeight: 500,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.name}
@@ -630,9 +663,8 @@ const TimeCondition = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {typeLabel(row.type)}
@@ -641,11 +673,10 @@ const TimeCondition = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
+                            fontWeight: 400,
                             maxWidth: 320,
                             whiteSpace: "normal",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {settingsSummary(row)}
@@ -654,19 +685,38 @@ const TimeCondition = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            textAlign: "center",
-                            padding: "7px 8px",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
                             borderRight: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                            titleAccess="Edit"
-                            onClick={() => openEdit(row)}
-                          />
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => openEdit(row)}
+                              style={{
+                                cursor: loading.delete
+                                  ? "not-allowed"
+                                  : "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: loading.delete ? 0.4 : 0.7,
+                                transition: "opacity 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "0.7";
+                              }}
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -677,55 +727,14 @@ const TimeCondition = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 18px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                gap: 8,
-                borderBottomLeftRadius: LIST_CARD_RADIUS,
-                borderBottomRightRadius: LIST_CARD_RADIUS,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {rows.length} record{rows.length !== 1 ? "s" : ""} on
-                page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={() =>
-                    setPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>

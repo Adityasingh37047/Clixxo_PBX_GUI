@@ -39,25 +39,20 @@ import {
   TH,
   tdStyle,
   checkboxSx,
-  numManipulateCardStyle,
-  numManipulateToolbarStyle,
   PbxBreadcrumb,
   TableListLoading,
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
-
-const LIST_CARD_RADIUS = 10;
-const listCardStyle = {
-  ...numManipulateCardStyle,
-  borderRadius: LIST_CARD_RADIUS,
-};
-const listToolbarStyle = {
-  ...numManipulateToolbarStyle,
-  borderTopLeftRadius: LIST_CARD_RADIUS,
-  borderTopRightRadius: LIST_CARD_RADIUS,
-};
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const selectSx = {
   "& .MuiOutlinedInput-input": { padding: "4px 6px", fontSize: 13 },
@@ -1728,8 +1723,8 @@ const CallQueue = () => {
 
         <PbxBreadcrumb section="Call Features" current="Call Queue" />
 
-        <div style={listCardStyle}>
-          <div style={listToolbarStyle}>
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -1739,17 +1734,7 @@ const CallQueue = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1767,7 +1752,7 @@ const CallQueue = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete || loading.fetch || queues.length === 0}
-                style={{ height: 30 }}
+                style={sipPcmCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1777,7 +1762,7 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                style={{ height: 30 }}
+                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -1792,12 +1777,7 @@ const CallQueue = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1954,53 +1934,14 @@ const CallQueue = () => {
           </div>
 
           {!isInitialLoad && queues.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 18px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                gap: 8,
-                borderBottomLeftRadius: LIST_CARD_RADIUS,
-                borderBottomRightRadius: LIST_CARD_RADIUS,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedQueues.length} record
-                {pagedQueues.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.fetch || page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.fetch || page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedQueues.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>

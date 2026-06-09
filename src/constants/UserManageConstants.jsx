@@ -232,6 +232,7 @@ export const PAGE_PERMISSION_GROUPS = [
         label: "System Settings",
         pages: [
           { id: "sysNetwork", label: "Network" },
+          { id: "sysRoutingInterface", label: "Routing Interface" },
           { id: "sysManagement", label: "Management" },
           { id: "sysGlobalSip", label: "Global SIP" },
           { id: "sysIpRoutingTable", label: "IP Route Table" },

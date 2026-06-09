@@ -1357,13 +1357,83 @@ const SystemToolsVPN = () => {
     }
   };
 
+  // SoftEther paired field rows (2 per row)
+  const seFieldPairs = [
+    [
+      { label: "Connection Name:", field: "connectionName", type: "text" },
+      { label: "Server Address:", field: "server", type: "text" },
+    ],
+    [
+      { label: "Port:", field: "port", type: "text" },
+      { label: "HUB Name:", field: "hub", type: "text" },
+    ],
+    [
+      { label: "Username:", field: "username", type: "text" },
+      { label: "Password:", field: "password", type: "password" },
+    ],
+    [
+      { label: "Client IP:", field: "clientIp", type: "text" },
+      { label: "Netmask:", field: "netmask", type: "text" },
+    ],
+  ];
+
+  const SeInput = ({ field, type = "text" }) => (
+    <input
+      type={type}
+      value={seForm[field]}
+      onChange={handleSeChange(field)}
+      disabled={isProfileCreated}
+      style={{
+        ...(isProfileCreated ? disabledInputStyle : inputStyle),
+        flex: 1,
+        minWidth: 0,
+        width: "100%",
+      }}
+      onFocus={!isProfileCreated ? inputInteraction.onFocus : undefined}
+      onBlur={!isProfileCreated ? inputInteraction.onBlur : undefined}
+      onMouseEnter={
+        !isProfileCreated ? inputInteraction.onMouseEnter : undefined
+      }
+      onMouseLeave={
+        !isProfileCreated ? inputInteraction.onMouseLeave : undefined
+      }
+    />
+  );
+
+  const seRowLabelStyle = {
+    fontSize: 12,
+    fontWeight: 600,
+    color: C.labelText,
+    minWidth: 130,
+    flexShrink: 0,
+    opacity: isProfileCreated ? 0.6 : 1,
+  };
+
+  const ROW = ({ label, children }) => (
+    <div
+      style={{ display: "flex", alignItems: "center", gap: 16, width: "100%" }}
+    >
+      <label
+        style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color: C.labelText,
+          minWidth: 210,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+      </label>
+      <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+    </div>
+  );
+
   return (
     <div
       className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
       <div className="w-full" style={{ maxWidth: 1000 }}>
-        {/* Alerts */}
         {message.text && (
           <Alert
             severity={message.type}
@@ -1383,7 +1453,6 @@ const SystemToolsVPN = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb & Dropdown Row */}
         <div
           className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
           style={{ marginBottom: 16 }}
@@ -1404,7 +1473,6 @@ const SystemToolsVPN = () => {
             <span>&gt;</span>
             <span style={{ color: C.strongText, fontWeight: 600 }}>VPN</span>
           </div>
-
           <div className="flex items-center gap-2">
             <span style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}>
               VPN Type:
@@ -1427,7 +1495,6 @@ const SystemToolsVPN = () => {
           </div>
         </div>
 
-        {/* Main Card */}
         <div
           style={{
             background: C.cardBg,
@@ -1438,15 +1505,12 @@ const SystemToolsVPN = () => {
             border: `1.5px solid ${C.cardBorder}`,
           }}
         >
-          {/* Card Header */}
           <div
             style={{
               minHeight: 44,
               display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
               alignItems: "center",
-              padding: "10px 14px",
+              padding: "7px 14px",
               borderBottom: `1px solid ${C.divider}`,
               background: C.cardBg,
             }}
@@ -1463,87 +1527,43 @@ const SystemToolsVPN = () => {
             </span>
           </div>
 
-          {/* Card Body */}
-          <div style={{ padding: "24px 32px" }}>
-            <div className="flex flex-col gap-8">
-              {/* SoftEther AutoStart (centered — same as OpenVPN) */}
-              {form.vpnType === "softethervpn" && (
-                <div className="flex flex-col gap-6 w-full">
-                  <div className="flex flex-col gap-4 w-full max-w-[650px] mx-auto">
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
+          <div style={{ padding: "28px 36px 36px" }}>
+            {/* ── OpenVPN ── */}
+            {form.vpnType === "openvpn" && (
+              <div>
+                <div
+                  style={{
+                    maxWidth: 680,
+                    margin: "0 auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 18,
+                  }}
+                >
+                  <ROW label="AutoStart OPENVPN:">
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div
                         style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 180,
-                          marginLeft: 40,
-                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 24,
                         }}
                       >
-                        AutoStart SoftEtherVPN:
-                      </label>
-                      <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-1 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="enableSeTop"
-                            checked={enableSeChoice === "yes"}
-                            onChange={() => setEnableSeChoice("yes")}
-                            style={{ accentColor: C.primary }}
-                          />
-                          <span style={{ fontSize: 13, color: C.valueText }}>
-                            Yes
-                          </span>
-                        </label>
-                        <label className="flex items-center gap-1 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="enableSeTop"
-                            checked={enableSeChoice === "no"}
-                            onChange={() => setEnableSeChoice("no")}
-                            style={{ accentColor: C.primary }}
-                          />
-                          <span style={{ fontSize: 13, color: C.valueText }}>
-                            No
-                          </span>
-                        </label>
-                      </div>
-                      <div className="sm:ml-auto sm:mr-10">
-                        <Btn
-                          variant="primary"
-                          onClick={handleSaveSeEnable}
-                          disabled={loading.toggle}
-                          style={{ minWidth: 100 }}
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            cursor: "pointer",
+                            userSelect: "none",
+                          }}
                         >
-                          {loading.toggle ? "Saving..." : "Save"}
-                        </Btn>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* OPENVPN Section (Centered Row-wise layout) */}
-              {form.vpnType === "openvpn" && (
-                <div className="flex flex-col gap-6 w-full">
-                  <div className="flex flex-col gap-4 w-full max-w-[650px] mx-auto">
-                    {/* AutoStart OPENVPN */}
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 180,
-                          marginLeft: 40,
-                          flexShrink: 0,
-                        }}
-                      >
-                        AutoStart OPENVPN:
-                      </label>
-                      <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-1 cursor-pointer">
                           <input
                             type="radio"
                             name="enableOpenVpn"
@@ -1555,7 +1575,15 @@ const SystemToolsVPN = () => {
                             Yes
                           </span>
                         </label>
-                        <label className="flex items-center gap-1 cursor-pointer">
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            cursor: "pointer",
+                            userSelect: "none",
+                          }}
+                        >
                           <input
                             type="radio"
                             name="enableOpenVpn"
@@ -1568,242 +1596,676 @@ const SystemToolsVPN = () => {
                           </span>
                         </label>
                       </div>
-                      <div className="sm:ml-auto sm:mr-10">
-                        <Btn
-                          variant="primary"
-                          onClick={handleSaveEnable}
-                          disabled={loading.toggle}
-                          style={{ minWidth: 100 }}
-                        >
-                          {loading.toggle ? "Saving..." : "Save"}
-                        </Btn>
-                      </div>
+                      <Btn
+                        variant="primary"
+                        onClick={handleSaveEnable}
+                        disabled={loading.toggle}
+                        style={{ minWidth: 80 }}
+                      >
+                        {loading.toggle ? "Saving..." : "Save"}
+                      </Btn>
                     </div>
-
-                    {showAdvanced && (
-                      <>
-                        <div
-                          style={{
-                            borderBottom: `1.5px solid ${C.cardBorder}`,
-                            width: "calc(min(1000px, 100vw) - 64px)",
-                            position: "relative",
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                            margin: "4px 0",
-                          }}
-                        />
-
-                        {/* Configuration File */}
-                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                          <label
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: C.labelText,
-                              width: 180,
-                              marginLeft: 40,
-                              flexShrink: 0,
-                            }}
-                          >
-                            Configuration File:
-                          </label>
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1 w-full justify-between">
-                            <div className="flex items-center gap-3">
-                              <input
-                                id="vpn-file-upload"
-                                type="file"
-                                accept=".ovpn,.conf"
-                                onChange={handleCertChange}
-                                style={{ display: "none" }}
-                              />
-                              <label
-                                htmlFor="vpn-file-upload"
-                                className="cursor-pointer select-none"
-                                style={{
-                                  padding: "6px 14px",
-                                  background: "#cbd5e1",
-                                  border: `1px solid #cbd5e1`,
-                                  borderRadius: 10,
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: "#374151",
-                                  whiteSpace: "nowrap",
-                                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                                  transition: "all 0.15s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = "#b6c2d3";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = "#cbd5e1";
-                                }}
-                              >
-                                Choose File
-                              </label>
-                              <span
-                                style={{
-                                  fontSize: 12,
-                                  color: C.mutedText,
-                                  textOverflow: "ellipsis",
-                                  overflow: "hidden",
-                                  whiteSpace: "nowrap",
-                                  maxWidth: "180px",
-                                }}
-                                title={
-                                  selectedFile
-                                    ? selectedFile.name
-                                    : "No file chosen"
-                                }
-                              >
-                                {selectedFile
-                                  ? selectedFile.name
-                                  : "No file chosen"}
-                              </span>
-                            </div>
-                            <div className="sm:ml-auto sm:mr-10">
-                              <Btn
-                                variant="primary"
-                                onClick={handleFileUpload}
-                                disabled={loading.upload || !selectedFile}
-                                startIcon={
-                                  loading.upload ? (
-                                    <CircularProgress
-                                      size={14}
-                                      color="inherit"
-                                    />
-                                  ) : (
-                                    <UploadIcon sx={{ fontSize: 14 }} />
-                                  )
-                                }
-                              >
-                                {loading.upload
-                                  ? "Uploading..."
-                                  : "Upload File"}
-                              </Btn>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div
-                          style={{
-                            // borderBottom: `1.5px solid ${C.cardBorder}`,
-                            width: "calc(min(1000px, 100vw) - 64px)",
-                            position: "relative",
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                            margin: "4px 0",
-                          }}
-                        />
-
-                        {/* Current Status */}
-                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                          <label
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: C.labelText,
-                              width: 180,
-                              marginLeft: 40,
-                              flexShrink: 0,
-                            }}
-                          >
-                            Current Status:
-                          </label>
-                          <div className="flex items-center gap-4">
-                            <Chip
-                              label={vpnStatus}
-                              size="small"
-                              sx={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                borderRadius: 2,
-                                color: "#fff",
-                                backgroundColor:
-                                  vpnStatus === "Running"
-                                    ? "#16a34a"
-                                    : vpnStatus === "Stopped"
-                                      ? C.errorRed
-                                      : "#ea580c",
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        <div
-                          style={{
-                            borderBottom: `1.5px solid ${C.cardBorder}`,
-                            width: "calc(min(1000px, 100vw) - 64px)",
-                            position: "relative",
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                            margin: "4px 0",
-                          }}
-                        />
-
-                        {/* Control Buttons */}
-                        <div className="flex flex-wrap gap-25 mt-2 justify-center w-full">
-                          <Btn
-                            variant="primary"
-                            onClick={handleStartVpn}
-                            disabled={loading.start}
-                            startIcon={
-                              loading.start ? (
-                                <CircularProgress size={14} color="inherit" />
-                              ) : (
-                                <StartIcon sx={{ fontSize: 14 }} />
-                              )
-                            }
-                            style={{ minWidth: 120 }}
-                          >
-                            {loading.start ? "Starting..." : "Start VPN"}
-                          </Btn>
-                          <Btn
-                            variant="primary"
-                            onClick={handleStopVpn}
-                            disabled={loading.stop}
-                            startIcon={
-                              loading.stop ? (
-                                <CircularProgress size={14} color="inherit" />
-                              ) : (
-                                <StopIcon sx={{ fontSize: 14 }} />
-                              )
-                            }
-                            style={{ minWidth: 120 }}
-                          >
-                            {loading.stop ? "Stopping..." : "Stop VPN"}
-                          </Btn>
-                          <Btn
-                            variant="cancel"
-                            onClick={handleCheckStatus}
-                            disabled={loading.status}
-                            startIcon={
-                              loading.status ? (
-                                <CircularProgress size={14} color="inherit" />
-                              ) : (
-                                <CheckCircleIcon sx={{ fontSize: 14 }} />
-                              )
-                            }
-                            style={{ minWidth: 130 }}
-                          >
-                            {loading.status ? "Checking..." : "Check Status"}
-                          </Btn>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  </ROW>
 
                   {showAdvanced && (
-                    <div className="w-full">
+                    <>
+                      <div style={{ height: 1, background: "#e5e7eb" }} />
+
+                      <ROW label="Configuration File:">
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              flex: 1,
+                              minWidth: 0,
+                            }}
+                          >
+                            <input
+                              id="vpn-file-upload"
+                              type="file"
+                              accept=".ovpn,.conf"
+                              onChange={handleCertChange}
+                              style={{ display: "none" }}
+                            />
+                            <label
+                              htmlFor="vpn-file-upload"
+                              className="cursor-pointer select-none"
+                              style={{
+                                padding: "5px 12px",
+                                background: "#cbd5e1",
+                                border: "1px solid #b6c2d3",
+                                borderRadius: 8,
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#374151",
+                                whiteSpace: "nowrap",
+                                flexShrink: 0,
+                                transition: "background 0.15s",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "#b6c2d3";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "#cbd5e1";
+                              }}
+                            >
+                              Choose File
+                            </label>
+                            <span
+                              style={{
+                                fontSize: 11,
+                                color: C.mutedText,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                minWidth: 0,
+                              }}
+                              title={
+                                selectedFile
+                                  ? selectedFile.name
+                                  : "No file chosen"
+                              }
+                            >
+                              {selectedFile
+                                ? selectedFile.name
+                                : "No file chosen"}
+                            </span>
+                          </div>
+                          <Btn
+                            variant="primary"
+                            onClick={handleFileUpload}
+                            disabled={loading.upload || !selectedFile}
+                            startIcon={
+                              loading.upload ? (
+                                <CircularProgress size={13} color="inherit" />
+                              ) : (
+                                <UploadIcon sx={{ fontSize: 13 }} />
+                              )
+                            }
+                            style={{ minWidth: 105, flexShrink: 0 }}
+                          >
+                            {loading.upload ? "Uploading..." : "Upload File"}
+                          </Btn>
+                        </div>
+                      </ROW>
+
+                      <ROW label="Current Status:">
+                        <Chip
+                          label={vpnStatus}
+                          size="small"
+                          sx={{
+                            fontSize: 12,
+                            fontWeight: 700,
+                            borderRadius: "6px",
+                            color: "#fff",
+                            px: 0.5,
+                            backgroundColor:
+                              vpnStatus === "Running"
+                                ? "#16a34a"
+                                : vpnStatus === "Stopped"
+                                  ? C.errorRed
+                                  : "#ea580c",
+                          }}
+                        />
+                      </ROW>
+
+                      <div style={{ height: 1, background: "#e5e7eb" }} />
+
                       <div
                         style={{
-                          borderBottom: `1.5px solid ${C.cardBorder}`,
-                          margin: "15px 0",
+                          display: "flex",
+                          justifyContent: "center",
+                          gap: 12,
+                          paddingTop: 4,
+                          paddingBottom: 4,
+                        }}
+                      >
+                        <Btn
+                          variant="primary"
+                          onClick={handleStartVpn}
+                          disabled={loading.start}
+                          startIcon={
+                            loading.start ? (
+                              <CircularProgress size={13} color="inherit" />
+                            ) : (
+                              <StartIcon sx={{ fontSize: 13 }} />
+                            )
+                          }
+                          style={{ minWidth: 120, height: 34 }}
+                        >
+                          {loading.start ? "Starting..." : "Start VPN"}
+                        </Btn>
+                        <Btn
+                          variant="primary"
+                          onClick={handleStopVpn}
+                          disabled={loading.stop}
+                          startIcon={
+                            loading.stop ? (
+                              <CircularProgress size={13} color="inherit" />
+                            ) : (
+                              <StopIcon sx={{ fontSize: 13 }} />
+                            )
+                          }
+                          style={{ minWidth: 120, height: 34 }}
+                        >
+                          {loading.stop ? "Stopping..." : "Stop VPN"}
+                        </Btn>
+                        <Btn
+                          variant="cancel"
+                          onClick={handleCheckStatus}
+                          disabled={loading.status}
+                          startIcon={
+                            loading.status ? (
+                              <CircularProgress size={13} color="inherit" />
+                            ) : (
+                              <CheckCircleIcon sx={{ fontSize: 13 }} />
+                            )
+                          }
+                          style={{ minWidth: 130, height: 34 }}
+                        >
+                          {loading.status ? "Checking..." : "Check Status"}
+                        </Btn>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {showAdvanced && (
+                  <div
+                    style={{
+                      marginTop: 32,
+                      borderTop: `1px solid ${C.cardBorder}`,
+                      paddingTop: 20,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: 12,
+                      }}
+                    >
+                      <div>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: C.strongText,
+                          }}
+                        >
+                          VPN Logs
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            color: C.mutedText,
+                            marginLeft: 8,
+                          }}
+                        >
+                          Live output from the OpenVPN service
+                        </span>
+                      </div>
+                      <Btn
+                        variant="cancel"
+                        onClick={handleRefreshLogs}
+                        disabled={loading.logs}
+                        startIcon={
+                          loading.logs ? (
+                            <CircularProgress size={13} color="inherit" />
+                          ) : (
+                            <RefreshIcon sx={{ fontSize: 13 }} />
+                          )
+                        }
+                      >
+                        {loading.logs ? "Refreshing..." : "Refresh Logs"}
+                      </Btn>
+                    </div>
+                    <textarea
+                      value={vpnLogs || "No logs available"}
+                      readOnly
+                      style={{
+                        width: "100%",
+                        height: 200,
+                        fontSize: 12,
+                        fontFamily: "monospace",
+                        backgroundColor: "#f8fafc",
+                        color: C.valueText,
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        border: `1.5px solid ${C.cardBorder}`,
+                        outline: "none",
+                        resize: "vertical",
+                        lineHeight: 1.6,
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── SoftEtherVPN ── */}
+            {form.vpnType === "softethervpn" && (
+              <div>
+                <div
+                  style={{
+                    maxWidth: 680,
+                    margin: "0 auto 24px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 18,
+                  }}
+                >
+                  <ROW label="AutoStart SoftEtherVPN:">
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 24,
+                        }}
+                      >
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            cursor: "pointer",
+                            userSelect: "none",
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="enableSeTop"
+                            checked={enableSeChoice === "yes"}
+                            onChange={() => setEnableSeChoice("yes")}
+                            style={{ accentColor: C.primary }}
+                          />
+                          <span style={{ fontSize: 13, color: C.valueText }}>
+                            Yes
+                          </span>
+                        </label>
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            cursor: "pointer",
+                            userSelect: "none",
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="enableSeTop"
+                            checked={enableSeChoice === "no"}
+                            onChange={() => setEnableSeChoice("no")}
+                            style={{ accentColor: C.primary }}
+                          />
+                          <span style={{ fontSize: 13, color: C.valueText }}>
+                            No
+                          </span>
+                        </label>
+                      </div>
+                      <Btn
+                        variant="primary"
+                        onClick={handleSaveSeEnable}
+                        disabled={loading.toggle}
+                        style={{ minWidth: 80 }}
+                      >
+                        {loading.toggle ? "Saving..." : "Save"}
+                      </Btn>
+                    </div>
+                  </ROW>
+                </div>
+
+                {showSeAdvanced && (
+                  <>
+                    {/* Inner config box — no cut lines, clean card */}
+                    <div
+                      style={{
+                        background: "#f8fafc",
+                        borderRadius: 10,
+                        border: "1px solid #e2e8f0",
+                        padding: "20px 24px",
+                        marginBottom: 14,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: C.strongText,
+                          marginBottom: 18,
+                        }}
+                      >
+                        SoftEtherVPN Configuration
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 14,
+                          marginBottom: 16,
+                        }}
+                      >
+                        {seFieldPairs.map((pair, pairIdx) => (
+                          <div
+                            key={pairIdx}
+                            style={{ display: "flex", gap: 24 }}
+                          >
+                            {pair.map(({ label, field, type }) => (
+                              <div
+                                key={field}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 10,
+                                  flex: 1,
+                                  minWidth: 0,
+                                }}
+                              >
+                                <label style={seRowLabelStyle}>{label}</label>
+                                <SeInput field={field} type={type} />
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div
+                        style={{
+                          height: 1,
+                          background: "#e2e8f0",
+                          margin: "4px 0 14px",
                         }}
                       />
 
-                      {/* OpenVPN Logs */}
-                      <div className="flex flex-col gap-2 mt-4">
-                        <div className="flex items-center justify-between">
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#9CA3AF",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.07em",
+                          marginBottom: 12,
+                        }}
+                      >
+                        Authentication
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          maxWidth: 460,
+                          marginBottom: authMethod === "certificate" ? 12 : 0,
+                        }}
+                      >
+                        <label style={{ ...seRowLabelStyle, opacity: 1 }}>
+                          Auth Method:
+                        </label>
+                        <select
+                          value={authMethod}
+                          onChange={(e) => setAuthMethod(e.target.value)}
+                          style={{ ...selectStyle, flex: 1 }}
+                          onFocus={inputInteraction.onFocus}
+                          onBlur={inputInteraction.onBlur}
+                          onMouseEnter={inputInteraction.onMouseEnter}
+                          onMouseLeave={inputInteraction.onMouseLeave}
+                        >
+                          <option value="password">Password</option>
+                          <option value="certificate">Certificate</option>
+                        </select>
+                      </div>
+
+                      {authMethod === "certificate" && (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 16,
+                            paddingLeft: 140,
+                            marginTop: 8,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <input
+                              id="se-cert"
+                              type="file"
+                              accept=".cer,.crt"
+                              style={{ display: "none" }}
+                              onChange={handleSeCert}
+                            />
+                            <label
+                              htmlFor="se-cert"
+                              className="cursor-pointer select-none"
+                              style={{
+                                padding: "5px 12px",
+                                background: "#fff",
+                                border: `1.5px solid ${C.cardBorder}`,
+                                borderRadius: 8,
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: C.valueText,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Upload Cert (.cer)
+                            </label>
+                            <span style={{ fontSize: 11, color: C.mutedText }}>
+                              {seCertFile ? seCertFile.name : "No file"}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <input
+                              id="se-key"
+                              type="file"
+                              accept=".key"
+                              style={{ display: "none" }}
+                              onChange={handleSeKey}
+                            />
+                            <label
+                              htmlFor="se-key"
+                              className="cursor-pointer select-none"
+                              style={{
+                                padding: "5px 12px",
+                                background: "#fff",
+                                border: `1.5px solid ${C.cardBorder}`,
+                                borderRadius: 8,
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: C.valueText,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Upload Key (.key)
+                            </label>
+                            <span style={{ fontSize: 11, color: C.mutedText }}>
+                              {seKeyFile ? seKeyFile.name : "No file"}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          height: 1,
+                          background: "#e2e8f0",
+                          margin: "14px 0",
+                        }}
+                      />
+
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#9CA3AF",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.07em",
+                          marginBottom: 10,
+                        }}
+                      >
+                        Connection Status
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <label style={{ ...seRowLabelStyle, opacity: 1 }}>
+                          Current Status:
+                        </label>
+                        <Chip
+                          label={seStatus}
+                          size="small"
+                          sx={{
+                            fontSize: 12,
+                            fontWeight: 700,
+                            borderRadius: "6px",
+                            color: "#fff",
+                            px: 0.5,
+                            backgroundColor:
+                              seStatus === "Running"
+                                ? "#16a34a"
+                                : seStatus === "Stopped"
+                                  ? C.errorRed
+                                  : seStatus === "Connecting"
+                                    ? C.primary
+                                    : "#ea580c",
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Action buttons — outside the config box */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 10,
+                        marginBottom: 28,
+                      }}
+                    >
+                      {!isProfileCreated ? (
+                        <Btn
+                          variant="primary"
+                          onClick={handleSeCreateFlow}
+                          disabled={loading.seCreate || !areSeFieldsFilled()}
+                          style={{ minWidth: 130, height: 34 }}
+                        >
+                          {loading.seCreate
+                            ? "Processing..."
+                            : "Create & Connect"}
+                        </Btn>
+                      ) : (
+                        <>
+                          {seStatus === "Running" ||
+                          seStatus === "Connecting" ? (
+                            <Btn
+                              variant="error"
+                              onClick={handleSeDisconnect}
+                              disabled={
+                                loading.seDisconnect ||
+                                !seForm.connectionName.trim()
+                              }
+                              style={{ minWidth: 110, height: 34 }}
+                            >
+                              {loading.seDisconnect
+                                ? "Disconnecting..."
+                                : "Disconnect"}
+                            </Btn>
+                          ) : (
+                            <Btn
+                              variant="primary"
+                              onClick={handleSeConnect}
+                              disabled={
+                                loading.seConnect ||
+                                !seForm.connectionName.trim()
+                              }
+                              style={{ minWidth: 110, height: 34 }}
+                            >
+                              {loading.seConnect ? "Connecting..." : "Connect"}
+                            </Btn>
+                          )}
+                          <Btn
+                            variant="cancel"
+                            onClick={() => handleSeStatus(false)}
+                            disabled={loading.seStatus}
+                            style={{ minWidth: 110, height: 34 }}
+                          >
+                            {loading.seStatus ? "Checking..." : "Check Status"}
+                          </Btn>
+                          <Btn
+                            variant="default"
+                            onClick={handleSeState}
+                            disabled={loading.seState}
+                            style={{ minWidth: 100, height: 34 }}
+                          >
+                            {loading.seState ? "Checking..." : "VPN State"}
+                          </Btn>
+                          <Btn
+                            variant="error"
+                            onClick={() =>
+                              handleSeDelete(seForm.connectionName)
+                            }
+                            disabled={loading.seDelete}
+                            style={{ minWidth: 120, height: 34 }}
+                          >
+                            {loading.seDelete
+                              ? "Deleting..."
+                              : "Delete Profile"}
+                          </Btn>
+                        </>
+                      )}
+                    </div>
+
+                    {/* SoftEther Logs */}
+                    <div
+                      style={{
+                        borderTop: `1px solid ${C.cardBorder}`,
+                        paddingTop: 20,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          marginBottom: 12,
+                        }}
+                      >
+                        <div>
                           <span
                             style={{
                               fontSize: 13,
@@ -1811,643 +2273,45 @@ const SystemToolsVPN = () => {
                               color: C.strongText,
                             }}
                           >
-                            VPN Logs
+                            SoftEther Logs
                           </span>
-                          <Btn
-                            variant="cancel"
-                            onClick={handleRefreshLogs}
-                            disabled={loading.logs}
-                            startIcon={
-                              loading.logs ? (
-                                <CircularProgress size={14} color="inherit" />
-                              ) : (
-                                <RefreshIcon sx={{ fontSize: 14 }} />
-                              )
-                            }
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: C.mutedText,
+                              marginLeft: 8,
+                            }}
                           >
-                            {loading.logs ? "Refreshing..." : "Refresh Logs"}
-                          </Btn>
+                            Client activity log
+                          </span>
                         </div>
-                        <textarea
-                          value={vpnLogs || "No logs available"}
-                          readOnly
-                          style={{
-                            width: "100%",
-                            height: "200px",
-                            fontSize: 12,
-                            fontFamily: "monospace",
-                            backgroundColor: "#f8fafc",
-                            color: C.valueText,
-                            padding: 12,
-                            borderRadius: 8,
-                            border: `1.5px solid ${C.cardBorder}`,
-                            outline: "none",
-                            resize: "vertical",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* SoftEther Section */}
-              {showSeAdvanced && form.vpnType === "softethervpn" && (
-                <>
-                  <div
-                    style={{
-                      height: 1,
-                      background: C.divider,
-                      margin: "10px 0",
-                    }}
-                  />
-
-                  <div
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 700,
-                      color: C.strongText,
-                      marginBottom: "16px",
-                    }}
-                  >
-                    SoftEtherVPN Configuration
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 w-full">
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 140,
-                          flexShrink: 0,
-                          opacity: isProfileCreated ? 0.6 : 1,
-                        }}
-                      >
-                        Connection Name:
-                      </label>
-                      <input
-                        type="text"
-                        value={seForm.connectionName}
-                        onChange={handleSeChange("connectionName")}
-                        disabled={isProfileCreated}
-                        style={
-                          isProfileCreated ? disabledInputStyle : inputStyle
-                        }
-                        onFocus={
-                          !isProfileCreated
-                            ? inputInteraction.onFocus
-                            : undefined
-                        }
-                        onBlur={
-                          !isProfileCreated
-                            ? inputInteraction.onBlur
-                            : undefined
-                        }
-                        onMouseEnter={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseEnter
-                            : undefined
-                        }
-                        onMouseLeave={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseLeave
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 140,
-                          flexShrink: 0,
-                          opacity: isProfileCreated ? 0.6 : 1,
-                        }}
-                      >
-                        Server Address:
-                      </label>
-                      <input
-                        type="text"
-                        value={seForm.server}
-                        onChange={handleSeChange("server")}
-                        disabled={isProfileCreated}
-                        style={
-                          isProfileCreated ? disabledInputStyle : inputStyle
-                        }
-                        onFocus={
-                          !isProfileCreated
-                            ? inputInteraction.onFocus
-                            : undefined
-                        }
-                        onBlur={
-                          !isProfileCreated
-                            ? inputInteraction.onBlur
-                            : undefined
-                        }
-                        onMouseEnter={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseEnter
-                            : undefined
-                        }
-                        onMouseLeave={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseLeave
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 140,
-                          flexShrink: 0,
-                          opacity: isProfileCreated ? 0.6 : 1,
-                        }}
-                      >
-                        Port:
-                      </label>
-                      <input
-                        type="text"
-                        value={seForm.port}
-                        onChange={handleSeChange("port")}
-                        disabled={isProfileCreated}
-                        style={
-                          isProfileCreated ? disabledInputStyle : inputStyle
-                        }
-                        onFocus={
-                          !isProfileCreated
-                            ? inputInteraction.onFocus
-                            : undefined
-                        }
-                        onBlur={
-                          !isProfileCreated
-                            ? inputInteraction.onBlur
-                            : undefined
-                        }
-                        onMouseEnter={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseEnter
-                            : undefined
-                        }
-                        onMouseLeave={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseLeave
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 140,
-                          flexShrink: 0,
-                          opacity: isProfileCreated ? 0.6 : 1,
-                        }}
-                      >
-                        HUB Name:
-                      </label>
-                      <input
-                        type="text"
-                        value={seForm.hub}
-                        onChange={handleSeChange("hub")}
-                        disabled={isProfileCreated}
-                        style={
-                          isProfileCreated ? disabledInputStyle : inputStyle
-                        }
-                        onFocus={
-                          !isProfileCreated
-                            ? inputInteraction.onFocus
-                            : undefined
-                        }
-                        onBlur={
-                          !isProfileCreated
-                            ? inputInteraction.onBlur
-                            : undefined
-                        }
-                        onMouseEnter={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseEnter
-                            : undefined
-                        }
-                        onMouseLeave={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseLeave
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 140,
-                          flexShrink: 0,
-                          opacity: isProfileCreated ? 0.6 : 1,
-                        }}
-                      >
-                        Username:
-                      </label>
-                      <input
-                        type="text"
-                        value={seForm.username}
-                        onChange={handleSeChange("username")}
-                        disabled={isProfileCreated}
-                        style={
-                          isProfileCreated ? disabledInputStyle : inputStyle
-                        }
-                        onFocus={
-                          !isProfileCreated
-                            ? inputInteraction.onFocus
-                            : undefined
-                        }
-                        onBlur={
-                          !isProfileCreated
-                            ? inputInteraction.onBlur
-                            : undefined
-                        }
-                        onMouseEnter={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseEnter
-                            : undefined
-                        }
-                        onMouseLeave={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseLeave
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 140,
-                          flexShrink: 0,
-                          opacity: isProfileCreated ? 0.6 : 1,
-                        }}
-                      >
-                        Password:
-                      </label>
-                      <input
-                        type="password"
-                        value={seForm.password}
-                        onChange={handleSeChange("password")}
-                        disabled={isProfileCreated}
-                        style={
-                          isProfileCreated ? disabledInputStyle : inputStyle
-                        }
-                        onFocus={
-                          !isProfileCreated
-                            ? inputInteraction.onFocus
-                            : undefined
-                        }
-                        onBlur={
-                          !isProfileCreated
-                            ? inputInteraction.onBlur
-                            : undefined
-                        }
-                        onMouseEnter={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseEnter
-                            : undefined
-                        }
-                        onMouseLeave={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseLeave
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 140,
-                          flexShrink: 0,
-                          opacity: isProfileCreated ? 0.6 : 1,
-                        }}
-                      >
-                        Client IP:
-                      </label>
-                      <input
-                        type="text"
-                        value={seForm.clientIp}
-                        onChange={handleSeChange("clientIp")}
-                        disabled={isProfileCreated}
-                        style={
-                          isProfileCreated ? disabledInputStyle : inputStyle
-                        }
-                        onFocus={
-                          !isProfileCreated
-                            ? inputInteraction.onFocus
-                            : undefined
-                        }
-                        onBlur={
-                          !isProfileCreated
-                            ? inputInteraction.onBlur
-                            : undefined
-                        }
-                        onMouseEnter={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseEnter
-                            : undefined
-                        }
-                        onMouseLeave={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseLeave
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 140,
-                          flexShrink: 0,
-                          opacity: isProfileCreated ? 0.6 : 1,
-                        }}
-                      >
-                        Netmask:
-                      </label>
-                      <input
-                        type="text"
-                        value={seForm.netmask}
-                        onChange={handleSeChange("netmask")}
-                        disabled={isProfileCreated}
-                        style={
-                          isProfileCreated ? disabledInputStyle : inputStyle
-                        }
-                        onFocus={
-                          !isProfileCreated
-                            ? inputInteraction.onFocus
-                            : undefined
-                        }
-                        onBlur={
-                          !isProfileCreated
-                            ? inputInteraction.onBlur
-                            : undefined
-                        }
-                        onMouseEnter={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseEnter
-                            : undefined
-                        }
-                        onMouseLeave={
-                          !isProfileCreated
-                            ? inputInteraction.onMouseLeave
-                            : undefined
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full mt-4">
-                    <label
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 140,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Auth Method:
-                    </label>
-                    <select
-                      value={authMethod}
-                      onChange={(e) => setAuthMethod(e.target.value)}
-                      style={{ ...selectStyle, maxWidth: 280 }}
-                      onFocus={inputInteraction.onFocus}
-                      onBlur={inputInteraction.onBlur}
-                      onMouseEnter={inputInteraction.onMouseEnter}
-                      onMouseLeave={inputInteraction.onMouseLeave}
-                    >
-                      <option value="password">Password</option>
-                      <option value="certificate">Certificate</option>
-                    </select>
-                  </div>
-
-                  {authMethod === "certificate" && (
-                    <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center w-full mt-4">
-                      <div className="flex items-center gap-3">
-                        <input
-                          id="se-cert"
-                          type="file"
-                          accept=".cer,.crt"
-                          style={{ display: "none" }}
-                          onChange={handleSeCert}
-                        />
-                        <label
-                          htmlFor="se-cert"
-                          className="cursor-pointer select-none"
-                          style={{
-                            padding: "6px 14px",
-                            background: "#f8fafc",
-                            border: `1.5px solid ${C.cardBorder}`,
-                            borderRadius: 8,
-                            fontSize: 12,
-                            marginLeft: 156,
-                            fontWeight: 600,
-                            color: C.valueText,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          Upload Cert (.cer)
-                        </label>
-                        <span style={{ fontSize: 12, color: C.mutedText }}>
-                          {seCertFile ? seCertFile.name : "No file"}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <input
-                          id="se-key"
-                          type="file"
-                          accept=".key"
-                          style={{ display: "none" }}
-                          onChange={handleSeKey}
-                        />
-                        <label
-                          htmlFor="se-key"
-                          className="cursor-pointer select-none"
-                          style={{
-                            padding: "6px 14px",
-                            background: "#f8fafc",
-                            border: `1.5px solid ${C.cardBorder}`,
-                            borderRadius: 8,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: C.valueText,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          Upload Key (.key)
-                        </label>
-                        <span style={{ fontSize: 12, color: C.mutedText }}>
-                          {seKeyFile ? seKeyFile.name : "No file"}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full mt-4">
-                    <label
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 140,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Current Status:
-                    </label>
-                    <div className="flex items-center gap-4 w-full">
-                      <Chip
-                        label={seStatus}
-                        size="small"
-                        sx={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          borderRadius: 2,
-                          color: "#fff",
-                          backgroundColor:
-                            seStatus === "Running"
-                              ? "#16a34a"
-                              : seStatus === "Stopped"
-                                ? C.errorRed
-                                : seStatus === "Connecting"
-                                  ? C.primary
-                                  : "#ea580c",
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-4 mt-6">
-                    {!isProfileCreated ? (
-                      <Btn
-                        variant="primary"
-                        onClick={handleSeCreateFlow}
-                        disabled={loading.seCreate || !areSeFieldsFilled()}
-                      >
-                        {loading.seCreate
-                          ? "Processing..."
-                          : "Create & Connect"}
-                      </Btn>
-                    ) : (
-                      <>
-                        {seStatus === "Running" || seStatus === "Connecting" ? (
-                          <Btn
-                            variant="error"
-                            onClick={handleSeDisconnect}
-                            disabled={
-                              loading.seDisconnect ||
-                              !seForm.connectionName.trim()
-                            }
-                          >
-                            {loading.seDisconnect
-                              ? "Disconnecting..."
-                              : "Disconnect"}
-                          </Btn>
-                        ) : (
-                          <Btn
-                            variant="primary"
-                            onClick={handleSeConnect}
-                            disabled={
-                              loading.seConnect || !seForm.connectionName.trim()
-                            }
-                          >
-                            {loading.seConnect ? "Connecting..." : "Connect"}
-                          </Btn>
-                        )}
-                        <Btn
-                          variant="cancel"
-                          onClick={() => handleSeStatus(false)}
-                          disabled={loading.seStatus}
-                        >
-                          {loading.seStatus ? "Checking..." : "Check Status"}
+                        <Btn variant="cancel" onClick={() => setSeLogs("")}>
+                          Clear Logs
                         </Btn>
-                        <Btn
-                          variant="default"
-                          onClick={handleSeState}
-                          disabled={loading.seState}
-                        >
-                          {loading.seState ? "Checking..." : "VPN State"}
-                        </Btn>
-                        <Btn
-                          variant="cancel"
-                          onClick={() => handleSeDelete(seForm.connectionName)}
-                          disabled={loading.seDelete}
-                        >
-                          {loading.seDelete ? "Deleting..." : "Delete Profile"}
-                        </Btn>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-2 mt-6">
-                    <div className="flex items-center justify-between">
-                      <span
+                      </div>
+                      <textarea
+                        value={seLogs || "No logs yet"}
+                        readOnly
                         style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: C.strongText,
+                          width: "100%",
+                          height: 200,
+                          fontSize: 12,
+                          fontFamily: "monospace",
+                          backgroundColor: "#f8fafc",
+                          color: C.valueText,
+                          padding: "10px 12px",
+                          borderRadius: 8,
+                          border: `1.5px solid ${C.cardBorder}`,
+                          outline: "none",
+                          resize: "vertical",
+                          lineHeight: 1.6,
                         }}
-                      >
-                        SoftEther Logs
-                      </span>
-                      <Btn variant="cancel" onClick={() => setSeLogs("")}>
-                        Clear Logs
-                      </Btn>
+                      />
                     </div>
-                    <textarea
-                      value={seLogs || "No logs yet"}
-                      readOnly
-                      style={{
-                        width: "100%",
-                        height: "200px",
-                        fontSize: 12,
-                        fontFamily: "monospace",
-                        backgroundColor: "#f8fafc",
-                        color: C.valueText,
-                        padding: 12,
-                        borderRadius: 8,
-                        border: `1.5px solid ${C.cardBorder}`,
-                        outline: "none",
-                        resize: "vertical",
-                      }}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

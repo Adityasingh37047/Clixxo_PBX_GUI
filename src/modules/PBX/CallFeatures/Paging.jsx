@@ -33,6 +33,13 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 // Verify this matches your actual import path
 const PAGING_ITEMS_PER_PAGE = 20;
@@ -233,33 +240,22 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
 );
 
 const SectionHeading = ({ title }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      margin: "16px 0 16px 0",
-    }}
-  >
+  <div style={{ margin: "16px 0 16px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
-        fontSize: 12,
-        fontWeight: 700,
-        color: C.labelText,
-        textTransform: "uppercase",
-        letterSpacing: "0.04em",
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
       }}
     >
       {title}
     </span>
-
-    <div
-      style={{
-        flex: 1,
-        height: 1,
-        background: C.cardBorder,
-        marginLeft: 12,
-      }}
-    />
   </div>
 );
 
@@ -675,31 +671,9 @@ const Paging = () => {
         <PbxBreadcrumb section="Call Features" current="Paging" />
 
         {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={sipPcmCardStyle}>
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -710,17 +684,7 @@ const Paging = () => {
             >
              
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -740,13 +704,7 @@ const Paging = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow:
-      "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+                style={sipPcmCancelBtnStyle}
               >
                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -982,50 +940,13 @@ const Paging = () => {
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.list || page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.accent}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.list || page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              recordLabel="record"
+              onPageChange={(p) => setPage(p)}
+            />
           )}
         </div>
       </div>
@@ -1111,16 +1032,7 @@ const Paging = () => {
                       <MuiSelect
                         value={pagingType}
                         onChange={(e) => setPagingType(e.target.value)}
-                                                  sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
                       >
                         {PAGING_TYPE_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>

@@ -29,6 +29,14 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const T38_OPTIONS = ["Yes", "No"];
@@ -913,46 +921,11 @@ const InboundRoutesPage = () => {
 
         <PbxBreadcrumb section="Call Control" current="Inbound Routes" />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -965,19 +938,13 @@ const InboundRoutesPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
-                variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -989,12 +956,7 @@ const InboundRoutesPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.save}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1041,15 +1003,19 @@ const InboundRoutesPage = () => {
                     <TH style={{ textAlign: "left", paddingLeft: 16, position: "sticky", top: 0, zIndex: 10 }}>
                       Member Trunks
                     </TH>
-                    <TH style={{ width: 70, borderRight: "none", position: "sticky", top: 0, zIndex: 10 }}>Actions</TH>
+                    <TH style={{ width: 70, borderRight: "none", position: "sticky", top: 0, zIndex: 10 }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRows.length - 1;
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
                       const rowBg = isSelected
-                        ? "#f0f9ff"
+                        ? "#eff6ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -1064,12 +1030,11 @@ const InboundRoutesPage = () => {
                           key={row.id}
                           style={{
                             background: rowBg,
-                            borderBottom: "0.5px solid #9ca3af",
-                            transition: "background 0.1s ease",
+                            transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f0f9ff";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -1078,9 +1043,11 @@ const InboundRoutesPage = () => {
                         >
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "4px 0",
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              width: 36,
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
                             }}
                           >
                             <Checkbox
@@ -1088,73 +1055,70 @@ const InboundRoutesPage = () => {
                               checked={isSelected}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={loading.delete}
-                              sx={{
-                                padding: "1px",
-                                color: C.accent,
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+                              sx={checkboxSx}
                             />
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 4px",
-                              fontSize: 11,
-                              color: C.mutedText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {realIdx + 1}
                           </td>
                           <td
                             style={{
-                              padding: "7px 16px",
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.name}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
-                              color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
                             }}
                           >
-                            {row.didPattern || "—"}
+                            {row.didPattern || (
+                              <span style={{ color: C.mutedText }}>—</span>
+                            )}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
-                              color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
                             }}
                           >
-                            {row.callerIdPattern || "—"}
+                            {row.callerIdPattern || (
+                              <span style={{ color: C.mutedText }}>—</span>
+                            )}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 8px",
-                              fontSize: 12,
-                              color: C.valueText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
                             }}
                           >
-                            {destinationStr || "—"}
+                            {destinationStr || (
+                              <span style={{ color: C.mutedText }}>—</span>
+                            )}
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 8px",
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              ...lastRowCellStyle,
                             }}
                           >
                             <span
@@ -1174,12 +1138,12 @@ const InboundRoutesPage = () => {
                           </td>
                           <td
                             style={{
-                              padding: "7px 16px",
-                              fontSize: 12,
-                              color: C.labelText,
-                              borderRight: "0.5px solid #edf2f7",
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
                               whiteSpace: "normal",
                               wordBreak: "break-all",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.memberTrunks?.length > 0 ? (
@@ -1189,23 +1153,41 @@ const InboundRoutesPage = () => {
                             )}
                           </td>
                           <td
-                            style={{ textAlign: "center", padding: "4px 8px" }}
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
+                            }}
                           >
-                            <Btn
-                              onClick={() => handleOpenEditModal(row)}
-                              variant="outline"
+                            <div
                               style={{
-                                fontSize: 10,
-                                padding: "3px 10px",
-                                margin: "0 auto",
-                                minWidth: 34,
+                                display: "flex",
+                                justifyContent: "center",
                               }}
-                              title="Edit"
                             >
                               <EditDocumentIcon
-                                sx={{ fontSize: 16, color: C.labelText }}
+                                titleAccess="Edit"
+                                onClick={() => handleOpenEditModal(row)}
+                                style={{
+                                  cursor: loading.delete
+                                    ? "not-allowed"
+                                    : "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: loading.delete ? 0.4 : 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "0.7";
+                                }}
                               />
-                            </Btn>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1215,95 +1197,15 @@ const InboundRoutesPage = () => {
             )}
           </div>
 
-          {/* Pagination */}
           {!isInitialLoad && rows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 18px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                gap: 8,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                <Btn
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
-                <Btn
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-                <Btn
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-                <select
-                  value={page}
-                  onChange={(e) => setPage(Number(e.target.value))}
-                  style={{
-                    fontSize: 11,
-                    borderRadius: 4,
-                    border: `0.5px solid ${C.cardBorder}`,
-                    padding: "3px 6px",
-                    color: C.labelText,
-                    background: "#fff",
-                  }}
-                >
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1}
-                    </option>
-                  ))}
-                </select>
-                <span style={{ fontSize: 11, color: C.mutedText }}>
-                  {rows.length} total
-                </span>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>
@@ -1465,34 +1367,18 @@ const InboundRoutesPage = () => {
                 padding: 16,
               }}
             >
-<div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    marginBottom: 14,
-  }}
->
-  <span
-    style={{
-      fontSize: 12,
-      fontWeight: 700,
-      color: C.labelText,
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-    }}
-  >
-    Inbound Call Routing
-  </span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: C.cardBorder,
-      marginLeft: 12,
-    }}
-  />
-</div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                Inbound Call Routing
+              </div>
               <div
                 style={{
                   display: "grid",
@@ -1708,34 +1594,18 @@ const InboundRoutesPage = () => {
                 padding: 16,
               }}
             >
-             <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    marginBottom: 14,
-  }}
->
-  <span
-    style={{
-      fontSize: 12,
-      fontWeight: 700,
-      color: C.labelText,
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-    }}
-  >
-    Member Trunks <span style={{ color: C.errorRed }}></span>
-  </span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: C.cardBorder,
-      marginLeft: 12,
-    }}
-  />
-</div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                Member Trunks <span style={{ color: C.errorRed }}>*</span>
+              </div>
               <div
                 style={{
                   display: "grid",

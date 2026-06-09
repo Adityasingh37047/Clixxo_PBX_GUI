@@ -37,6 +37,13 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const SECOND_DIAL_OPTIONS = ["Enable", "Disable"];
 const TRANSPARENT_OPTIONS = ["Enable", "Disable"];
@@ -241,36 +248,24 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
 );
 
 const SectionHeading = ({ title }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      margin: "16px 0 16px 0",
-    }}
-  >
+  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
-        fontSize: 12,
-        fontWeight: 700,
-        color: C.labelText,
-        textTransform: "uppercase",
-        letterSpacing: "0.04em",
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
       }}
     >
       {title}
     </span>
-
-    <div
-      style={{
-        flex: 1,
-        height: 1,
-        background: C.cardBorder,
-        marginLeft: 12,
-      }}
-    />
   </div>
 );
-
 
 // ── API Helpers ───────────────────────────────────────────────────────────────
 const normalizeList = (raw) => {
@@ -689,31 +684,9 @@ const DisaPage = () => {
         <PbxBreadcrumb section="Call Features" current="DISA" />
 
         {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={sipPcmCardStyle}>
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -724,17 +697,7 @@ const DisaPage = () => {
             >
              
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -755,12 +718,7 @@ const DisaPage = () => {
                 }
                 variant="outline"
                 hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={sipPcmCancelBtnStyle}
               >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -1037,51 +995,13 @@ const DisaPage = () => {
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 18px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                gap: 8,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.list || page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.list || page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              recordLabel="record"
+              onPageChange={(p) => setPage(p)}
+            />
           )}
         </div>
       </div>
@@ -1192,16 +1112,7 @@ const DisaPage = () => {
                               secondDial: e.target.value,
                             }))
                           }
-                                                 sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                          sx={{ fontSize: 13  ,backgroundColor: "#fff" }}
                         >
                           {SECOND_DIAL_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1366,16 +1277,7 @@ const DisaPage = () => {
                               transparent: e.target.value,
                             }))
                           }
-                                                    sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                          sx={{ fontSize: 13 ,backgroundColor: "#fff" }}
                         >
                           {TRANSPARENT_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1400,16 +1302,7 @@ const DisaPage = () => {
                               enabled: e.target.value === "Yes",
                             }))
                           }
-                                                     sx={{
-      fontSize: 13,
-      backgroundColor: "#fff",
-      height: 32,
-      "& .MuiSelect-select": {
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-      },
-    }}
+                          sx={{ fontSize: 13 ,backgroundColor: "#fff" }}
                         >
                           {ENABLE_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1437,13 +1330,13 @@ const DisaPage = () => {
                 >
                   <div>
                     <div
-                     style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: C.accent,
-                        marginBottom: 6,
-                        textAlign: "center",
-                      }}
+                      style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: C.accent,
+                      marginBottom: 6,
+                      textAlign: "center",
+                    }}
                   >
                       Available Routes
                     </div>
@@ -1480,65 +1373,39 @@ const DisaPage = () => {
                     </select>
                   </div>
                   <div
-                     style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 22,
-    height: 160,
-  }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 8,
+                      justifyContent: "center",
+                      paddingTop: 24,
+                    }}
                   >
                     <Btn
                       onClick={addSelectedToChosen}
                       variant="outline"
-                      style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                      style={{ padding: "4px 0", fontSize: 12 }}
                     >
                       &gt;
                     </Btn>
                     <Btn
                       onClick={addAllToChosen}
                       variant="outline"
-                   style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                      style={{ padding: "4px 0", fontSize: 12 }}
                     >
                       &gt;&gt;
                     </Btn>
                     <Btn
                       onClick={removeSelectedFromChosen}
                       variant="outline"
-                       style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                      style={{ padding: "4px 0", fontSize: 12 }}
                     >
                       &lt;
                     </Btn>
                     <Btn
                       onClick={removeAllFromChosen}
                       variant="outline"
-                       style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                      style={{ padding: "4px 0", fontSize: 12 }}
                     >
                       &lt;&lt;
                     </Btn>
@@ -1589,65 +1456,38 @@ const DisaPage = () => {
                       </select>
                     </div>
                     <div
-                     style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 22,
-    height: 160,
-  }}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                        paddingTop: 24,
+                      }}
                     >
                       <Btn
                         onClick={moveChosenTop}
                         variant="outline"
-                         style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                        style={{ padding: "4px 0", fontSize: 14 }}
                       >
                         <VerticalAlignTopIcon sx={{ fontSize: 16 }} />
                       </Btn>
                       <Btn
                         onClick={moveChosenUp}
                         variant="outline"
-                         style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                        style={{ padding: "4px 0", fontSize: 14 }}
                       >
                         <KeyboardArrowUpIcon sx={{ fontSize: 16 }} />
                       </Btn>
                       <Btn
                         onClick={moveChosenDown}
                         variant="outline"
-                         style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                        style={{ padding: "4px 0", fontSize: 14 }}
                       >
                         <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
                       </Btn>
                       <Btn
                         onClick={moveChosenBottom}
                         variant="outline"
-                         style={{
-  width: 40,
-  height: "100%",
-  minWidth: 40,
-  padding: 0,
-  fontSize: 12,
-}}
+                        style={{ padding: "4px 0", fontSize: 14 }}
                       >
                         <VerticalAlignBottomIcon sx={{ fontSize: 16 }} />
                       </Btn>

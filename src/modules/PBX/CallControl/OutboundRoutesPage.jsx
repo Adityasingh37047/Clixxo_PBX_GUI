@@ -27,6 +27,14 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const PASSWORD_OPTIONS = ["None", "Single Pin"];
@@ -200,6 +208,13 @@ const tdStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const OutboundRoutesPage = () => {
@@ -932,28 +947,8 @@ const OutboundRoutesPage = () => {
       <div style={pbxPageInnerStyle}>
         <PbxBreadcrumb section="Call Control" current="Outbound Routes" />
 
-        <div
-          style={{
-            background: "#ffffff",
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -964,17 +959,7 @@ const OutboundRoutesPage = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -990,61 +975,36 @@ const OutboundRoutesPage = () => {
               <Btn
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
               <Btn
                 onClick={handleCheckAll}
                 disabled={loading.delete || rows.length === 0}
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 Check All
               </Btn>
               <Btn
                 onClick={handleUncheckAll}
                 disabled={loading.delete || selected.length === 0}
-                variant="outline"
-                hoverBehavior="opacity"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 Uncheck All
               </Btn>
-              
-            
-             <Btn
-  onClick={handleOpenAddModal}
-  disabled={loading.save || loading.list}
-  variant="primary"
- 
-     style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
->
-  + Add New
-</Btn>
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.save || loading.list}
+                variant="primary"
+                style={sipPcmPrimaryBtnStyle}
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
@@ -1091,12 +1051,7 @@ const OutboundRoutesPage = () => {
                         onChange={() =>
                           allRowsSelected ? handleUncheckAll() : handleCheckAll()
                         }
-                        sx={{
-                          padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-                        }}
+                        sx={checkboxSx}
                       />
                     </TH>
                     <TH
@@ -1144,13 +1099,15 @@ const OutboundRoutesPage = () => {
                   {pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRows.length - 1;
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
                       const rowBg = isSelected
-                        ? "#f0f9ff"
+                        ? "#eff6ff"
                         : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
-                      const lastRowCellStyle =
-                        idx === pagedRows.length - 1 ? { borderBottom: "none" } : {};
+                          ? "#f8fafc"
+                          : "#ffffff";
                       return (
                         <tr
                           key={row.id}
@@ -1159,10 +1116,12 @@ const OutboundRoutesPage = () => {
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
-                            if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
-                            if (!isSelected) e.currentTarget.style.background = rowBg;
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
                           <td
@@ -1172,9 +1131,6 @@ const OutboundRoutesPage = () => {
                               width: 36,
                               borderLeft: "none",
                               ...lastRowCellStyle,
-                              ...(idx === pagedRows.length - 1
-                                ? { borderBottomLeftRadius: 10 }
-                                : {}),
                             }}
                           >
                             <Checkbox
@@ -1182,17 +1138,14 @@ const OutboundRoutesPage = () => {
                               checked={isSelected}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={loading.delete}
-                              sx={{
-                                padding: "1px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: "#0284c7" },
-                              }}
+                              sx={checkboxSx}
                             />
                           </td>
                           <td
                             style={{
                               ...tdStyle,
                               background: rowBg,
+                              fontWeight: 400,
                               ...lastRowCellStyle,
                             }}
                           >
@@ -1202,6 +1155,7 @@ const OutboundRoutesPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
+                              fontWeight: 400,
                               ...lastRowCellStyle,
                             }}
                           >
@@ -1211,6 +1165,7 @@ const OutboundRoutesPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
+                              fontWeight: 400,
                               ...lastRowCellStyle,
                             }}
                           >
@@ -1246,6 +1201,7 @@ const OutboundRoutesPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
+                              fontWeight: 400,
                               ...lastRowCellStyle,
                             }}
                           >
@@ -1257,8 +1213,10 @@ const OutboundRoutesPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              ...lastRowCellStyle,
+                              fontWeight: 400,
+                              whiteSpace: "normal",
                               wordBreak: "break-all",
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.memberExtensions?.length > 0 ? (
@@ -1273,12 +1231,10 @@ const OutboundRoutesPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              borderRight: "none",
-                              ...lastRowCellStyle,
+                              fontWeight: 400,
+                              whiteSpace: "normal",
                               wordBreak: "break-all",
-                              ...(idx === pagedRows.length - 1
-                                ? { borderBottomRightRadius: 10 }
-                                : {}),
+                              ...lastRowCellStyle,
                             }}
                           >
                             {row.memberTrunks?.length > 0 ? (
@@ -1289,29 +1245,38 @@ const OutboundRoutesPage = () => {
                           </td>
                           <td
                             style={{
-                              textAlign: "center",
-                              padding: "7px 8px",
+                              ...tdStyle,
                               background: rowBg,
+                              borderRight: "none",
                               ...lastRowCellStyle,
                             }}
                           >
-                            <div style={{ display: "flex", justifyContent: "center" }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                              }}
+                            >
                               <EditDocumentIcon
                                 titleAccess="Edit"
                                 onClick={() => handleOpenEditModal(row)}
                                 style={{
-                                  cursor: "pointer",
+                                  cursor: loading.delete
+                                    ? "not-allowed"
+                                    : "pointer",
                                   color: "#2563eb",
                                   fontSize: 22,
-                                  opacity: 0.7,
+                                  opacity: loading.delete ? 0.4 : 0.7,
                                   transition: "opacity 0.15s ease",
                                 }}
-                                onMouseEnter={(e) =>
-                                  (e.currentTarget.style.opacity = "1")
-                                }
-                                onMouseLeave={(e) =>
-                                  (e.currentTarget.style.opacity = "0.7")
-                                }
+                                onMouseEnter={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "0.7";
+                                }}
                               />
                             </div>
                           </td>
@@ -1324,71 +1289,14 @@ const OutboundRoutesPage = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 11,
-                  color: C.mutedText,
-                }}
-              >
-                Showing {rows.length} record{rows.length !== 1 ? "s" : ""} on
-                page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
-                <Btn
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page}
-                </span>
-                <Btn
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-                <Btn
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-              </div>
-            </div>
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>
@@ -1470,34 +1378,19 @@ const OutboundRoutesPage = () => {
                 borderRadius: 8,
               }}
             >
-       <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    margin: "12px 0 14px 0",
-  }}
->
-  <span
-    style={{
-      fontSize: 12,
-      fontWeight: 700,
-      color: C.labelText,
-      textTransform: "uppercase",
-      letterSpacing: "0.04em",
-    }}
-  >
-    Outbound Call Routing
-  </span>
-
-  <div
-    style={{
-      flex: 1,
-      height: 1,
-      background: C.cardBorder,
-      marginLeft: 20, // 12 se 20 kar do
-    }}
-  />
-</div>
+              <div
+                className="px-3 py-1.5 text-[13px] font-semibold"
+               style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.labelText,
+                  marginBottom: 14,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
+                }}
+              >
+                Outbound Call Routing
+              </div>
               <div className="p-4 flex flex-col gap-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                   <div className="flex flex-col gap-2">

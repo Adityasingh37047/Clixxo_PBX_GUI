@@ -320,7 +320,7 @@ const NatSettingsPage = () => {
                                 style={{
                                   fontSize: 13,
                                   fontWeight: 600,
-                                  color: C.labelText,
+                                  color: NAT_SETTINGS_SECTION_HEADING_COLOR,
                                   paddingLeft: methodName.endsWith("-")
                                     ? 0
                                     : 24,

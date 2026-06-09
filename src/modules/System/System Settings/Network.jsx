@@ -215,25 +215,19 @@ const Network = () => {
     );
   }
   function isValidSubnetMask(mask) {
-    const masks = [
-      "255.0.0.0",
-      "255.255.0.0",
-      "255.255.255.0",
-      "255.255.255.128",
-      "255.255.255.192",
-      "255.255.255.224",
-      "255.255.255.240",
-      "255.255.255.248",
-      "255.255.255.252",
-      "255.255.255.254",
-      "255.255.255.255",
-    ];
-    return masks.includes(mask);
+    if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(mask)) return false;
+    const parts = mask.split(".").map(Number);
+    if (parts.some((p) => p < 0 || p > 255)) return false;
+    // Valid mask: contiguous 1-bits followed by contiguous 0-bits.
+    // When inverted, the result must be of the form 2^n - 1 (all trailing 1s),
+    // which satisfies (inverted & (inverted + 1)) === 0.
+    const num = parts.reduce((acc, p) => (acc << 8) | p, 0) >>> 0;
+    const inverted = ~num >>> 0;
+    return (inverted & (inverted + 1)) === 0;
   }
   function isValidArpMode(mode) {
     return mode === "1" || mode === "2";
   }
-
   const clearRestartPolling = () => {
     if (pingIntervalRef.current) {
       clearInterval(pingIntervalRef.current);
@@ -1095,664 +1089,681 @@ const Network = () => {
                 className="flex flex-col gap-2"
               >
                 <div style={{ marginBottom: 12 }}>
-                {/* Dynamically render LAN sections */}
-                {!vlanEnabled &&
-                  lanInterfaces.map((lan, idx) => (
-                    <div key={lan.name || idx} className="flex flex-col gap-0">
-                      <SectionHeading
-                        title={lan.name || `LAN ${idx + 1}`}
-                        isFirst={idx === 0}
-                      />
-
+                  {/* Dynamically render LAN sections */}
+                  {!vlanEnabled &&
+                    lanInterfaces.map((lan, idx) => (
                       <div
-                        className="flex flex-col gap-3 w-full"
-                        style={{ maxWidth: 640, margin: "0 auto" }}
+                        key={lan.name || idx}
+                        className="flex flex-col gap-0"
                       >
-                        {/* IPV4 Network Type */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                          <label
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: C.labelText,
-                              width: "100%",
-                              maxWidth: 220,
-                              flexShrink: 0,
-                            }}
-                          >
-                            IPV4 Network Type (M):
-                          </label>
-                          <div className="flex-1 w-full max-w-[280px]">
-                            <select
-                              value={lan.ipv4Type || "Static"}
-                              onChange={(e) =>
-                                handleLanChange(idx, "ipv4Type", e.target.value)
-                              }
-                              style={selectStyle}
-                              onFocus={inputInteraction.onFocus}
-                              onBlur={inputInteraction.onBlur}
-                              onMouseEnter={inputInteraction.onMouseEnter}
-                              onMouseLeave={inputInteraction.onMouseLeave}
-                            >
-                              <option value="Static">Static</option>
-                              <option value="DHCP">DHCP</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        {(lan.ipv4Type || "Static") === "Static" && (
-                          <>
-                            {/* IP Address */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                IP Address (I):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.ipAddress || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "ipAddress",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={{
-                                    ...inputStyle,
-                                    borderColor: ipErrors[idx]
-                                      ? C.errorRed
-                                      : C.cardBorder,
-                                  }}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                                {ipErrors[idx] && (
-                                  <div
-                                    style={{
-                                      fontSize: 11,
-                                      color: C.errorRed,
-                                      marginTop: 4,
-                                    }}
-                                  >
-                                    {ipErrors[idx]}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Subnet Mask */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                Subnet Mask (U):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.subnetMask || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "subnetMask",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={{
-                                    ...inputStyle,
-                                    borderColor: subnetErrors[idx]
-                                      ? C.errorRed
-                                      : C.cardBorder,
-                                  }}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                                {subnetErrors[idx] && (
-                                  <div
-                                    style={{
-                                      fontSize: 11,
-                                      color: C.errorRed,
-                                      marginTop: 4,
-                                    }}
-                                  >
-                                    {subnetErrors[idx]}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Default Gateway */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                Default Gateway (D):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.defaultGateway || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "defaultGateway",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={{
-                                    ...inputStyle,
-                                    borderColor: gatewayErrors[idx]
-                                      ? C.errorRed
-                                      : C.cardBorder,
-                                  }}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                                {gatewayErrors[idx] && (
-                                  <div
-                                    style={{
-                                      fontSize: 11,
-                                      color: C.errorRed,
-                                      marginTop: 4,
-                                    }}
-                                  >
-                                    {gatewayErrors[idx]}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* IPV6 Address */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                IPV6 Address (I):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.ipv6Address || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "ipv6Address",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={inputStyle}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                              </div>
-                            </div>
-
-                            {/* IPV6 Address Prefix */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                IPV6 Address Prefix (U):
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={lan.ipv6Prefix || ""}
-                                  onChange={(e) =>
-                                    handleLanChange(
-                                      idx,
-                                      "ipv6Prefix",
-                                      e.target.value,
-                                    )
-                                  }
-                                  style={inputStyle}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                {/* VLAN Enable */}
-                <div className="flex flex-col gap-0">
-                  <SectionHeading
-                    title="VLAN Configuration"
-                    isFirst={vlanEnabled}
-                  />
-                  <div
-                    className="flex flex-col gap-4 w-full"
-                    style={{ maxWidth: 640, margin: "0 auto" }}
-                  >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: "100%",
-                          maxWidth: 220,
-                          flexShrink: 0,
-                        }}
-                      >
-                        VLAN Enable:
-                      </label>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <div className="flex items-center gap-6">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="vlanEnable"
-                              checked={vlanEnabled}
-                              onChange={() => {
-                                try {
-                                  const lan1 =
-                                    (lanInterfaces || []).find(
-                                      (l) =>
-                                        l.name === "LAN 1" ||
-                                        l.interface === "eth0",
-                                    ) || {};
-                                  setVlanForm((prev) => ({
-                                    ...prev,
-                                    lan1Ip: lan1.ipAddress || prev.lan1Ip || "",
-                                    lan1Mask:
-                                      lan1.subnetMask || prev.lan1Mask || "",
-                                    lan1Gw:
-                                      lan1.defaultGateway || prev.lan1Gw || "",
-                                  }));
-                                } catch (_) {}
-                                setVlanEnabled(true);
-                                setHasChanges(true);
-                              }}
-                              style={{ accentColor: C.primary }}
-                            />
-                            <span style={{ fontSize: 13, color: C.valueText }}>
-                              Yes
-                            </span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="vlanEnable"
-                              checked={!vlanEnabled}
-                              onChange={() => {
-                                setVlanEnabled(false);
-                                setHasChanges(true);
-                              }}
-                              style={{ accentColor: C.primary }}
-                            />
-                            <span style={{ fontSize: 13, color: C.valueText }}>
-                              No
-                            </span>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-
-                    {vlanEnabled && (
-                      <>
-                        {/* LAN 1 base */}
-                        {[
-                          { label: "LAN 1 IP Address (I):", key: "lan1Ip" },
-                          { label: "LAN 1 Subnet Mask (U):", key: "lan1Mask" },
-                          {
-                            label: "LAN 1 Default Gateway (D):",
-                            key: "lan1Gw",
-                          },
-                        ].map((f) => (
-                          <div
-                            key={f.key}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                          >
-                            <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {f.label}
-                            </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <input
-                                type="text"
-                                value={vlanForm[f.key] || ""}
-                                onChange={(e) =>
-                                  handleVlanChange(f.key, e.target.value)
-                                }
-                                style={inputStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                        {/* VLAN 1 */}
-                        {[
-                          { l: "Vlan 1 Vlan ID (D):", k: "vlan1Id" },
-                          { l: "Vlan 1 IP Address (I):", k: "vlan1Ip" },
-                          { l: "Vlan 1 Subnet Mask (U):", k: "vlan1Mask" },
-                          { l: "Vlan 1 Default Gateway (D):", k: "vlan1Gw" },
-                        ].map((f) => (
-                          <div
-                            key={f.k}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                          >
-                            <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {f.l}
-                            </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <input
-                                type="text"
-                                value={vlanForm[f.k] || ""}
-                                onChange={(e) =>
-                                  handleVlanChange(f.k, e.target.value)
-                                }
-                                style={inputStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                        {/* VLAN 2 */}
-                        {[
-                          { l: "Vlan 2 Vlan ID (D):", k: "vlan2Id" },
-                          { l: "Vlan 2 IP Address (I):", k: "vlan2Ip" },
-                          { l: "Vlan 2 Subnet Mask (U):", k: "vlan2Mask" },
-                          { l: "Vlan 2 Default Gateway (D):", k: "vlan2Gw" },
-                        ].map((f) => (
-                          <div
-                            key={f.k}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                          >
-                            <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {f.l}
-                            </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <input
-                                type="text"
-                                value={vlanForm[f.k] || ""}
-                                onChange={(e) =>
-                                  handleVlanChange(f.k, e.target.value)
-                                }
-                                style={inputStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                        {/* VLAN 3 */}
-                        {[
-                          { l: "Vlan 3 Vlan ID (D):", k: "vlan3Id" },
-                          { l: "Vlan 3 IP Address (I):", k: "vlan3Ip" },
-                          { l: "Vlan 3 Subnet Mask (U):", k: "vlan3Mask" },
-                          { l: "Vlan 3 Default Gateway (D):", k: "vlan3Gw" },
-                        ].map((f) => (
-                          <div
-                            key={f.k}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                          >
-                            <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {f.l}
-                            </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <input
-                                type="text"
-                                value={vlanForm[f.k] || ""}
-                                onChange={(e) =>
-                                  handleVlanChange(f.k, e.target.value)
-                                }
-                                style={inputStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* DNS Server Set */}
-                <div className="flex flex-col gap-0">
-                  <SectionHeading title="DNS Server Set" />
-                  <div
-                    className="flex flex-col gap-3 w-full"
-                    style={{ maxWidth: 640, margin: "0 auto" }}
-                  >
-                    {/* Preferred DNS Server */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: "100%",
-                          maxWidth: 220,
-                          flexShrink: 0,
-                        }}
-                      >
-                        Preferred DNS Server (P):
-                      </label>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <input
-                          type="text"
-                          value={dnsServers[0] || ""}
-                          onChange={(e) => handleDnsChange(0, e.target.value)}
-                          style={{
-                            ...inputStyle,
-                            borderColor: dnsErrors[0]
-                              ? C.errorRed
-                              : C.cardBorder,
-                          }}
-                          onFocus={inputInteraction.onFocus}
-                          onBlur={inputInteraction.onBlur}
-                          onMouseEnter={inputInteraction.onMouseEnter}
-                          onMouseLeave={inputInteraction.onMouseLeave}
+                        <SectionHeading
+                          title={lan.name || `LAN ${idx + 1}`}
+                          isFirst={idx === 0}
                         />
-                        {dnsErrors[0] && (
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: C.errorRed,
-                              marginTop: 4,
-                            }}
-                          >
-                            {dnsErrors[0]}
-                          </div>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Standby DNS Server */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: "100%",
-                          maxWidth: 220,
-                          flexShrink: 0,
-                        }}
-                      >
-                        Standby DNS Server (P):
-                      </label>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <input
-                          type="text"
-                          value={dnsServers[1] || ""}
-                          onChange={(e) => handleDnsChange(1, e.target.value)}
-                          style={{
-                            ...inputStyle,
-                            borderColor: dnsErrors[1]
-                              ? C.errorRed
-                              : C.cardBorder,
-                          }}
-                          onFocus={inputInteraction.onFocus}
-                          onBlur={inputInteraction.onBlur}
-                          onMouseEnter={inputInteraction.onMouseEnter}
-                          onMouseLeave={inputInteraction.onMouseLeave}
-                        />
-                        {dnsErrors[1] && (
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: C.errorRed,
-                              marginTop: 4,
-                            }}
-                          >
-                            {dnsErrors[1]}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ARP Mode */}
-                <div className="flex flex-col gap-0">
-                  <SectionHeading title="ARP Mode" />
-                  <div
-                    className="flex flex-col gap-3 w-full"
-                    style={{ maxWidth: 640, margin: "0 auto" }}
-                  >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <label
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: "100%",
-                          maxWidth: 220,
-                          flexShrink: 0,
-                        }}
-                      >
-                        Default Mode:
-                      </label>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <select
-                          value={arpMode}
-                          onChange={handleArpChange}
-                          style={{
-                            ...selectStyle,
-                            borderColor: arpError ? C.errorRed : undefined,
-                          }}
-                          onFocus={inputInteraction.onFocus}
-                          onBlur={inputInteraction.onBlur}
-                          onMouseEnter={inputInteraction.onMouseEnter}
-                          onMouseLeave={inputInteraction.onMouseLeave}
+                        <div
+                          className="flex flex-col gap-3 w-full"
+                          style={{ maxWidth: 640, margin: "0 auto" }}
                         >
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                        </select>
-                        {arpError && (
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: C.errorRed,
-                              marginTop: 4,
-                            }}
-                          >
-                            {arpError}
+                          {/* IPV4 Network Type */}
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                            <label
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: C.labelText,
+                                width: "100%",
+                                maxWidth: 220,
+                                flexShrink: 0,
+                              }}
+                            >
+                              IPV4 Network Type (M):
+                            </label>
+                            <div className="flex-1 w-full max-w-[280px]">
+                              <select
+                                value={lan.ipv4Type || "Static"}
+                                onChange={(e) =>
+                                  handleLanChange(
+                                    idx,
+                                    "ipv4Type",
+                                    e.target.value,
+                                  )
+                                }
+                                style={selectStyle}
+                                onFocus={inputInteraction.onFocus}
+                                onBlur={inputInteraction.onBlur}
+                                onMouseEnter={inputInteraction.onMouseEnter}
+                                onMouseLeave={inputInteraction.onMouseLeave}
+                              >
+                                <option value="Static">Static</option>
+                                <option value="DHCP">DHCP</option>
+                              </select>
+                            </div>
                           </div>
-                        )}
+
+                          {(lan.ipv4Type || "Static") === "Static" && (
+                            <>
+                              {/* IP Address */}
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                                <label
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: C.labelText,
+                                    width: "100%",
+                                    maxWidth: 220,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  IP Address (I):
+                                </label>
+                                <div className="flex-1 w-full max-w-[280px]">
+                                  <input
+                                    type="text"
+                                    value={lan.ipAddress || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "ipAddress",
+                                        e.target.value,
+                                      )
+                                    }
+                                    style={{
+                                      ...inputStyle,
+                                      borderColor: ipErrors[idx]
+                                        ? C.errorRed
+                                        : C.cardBorder,
+                                    }}
+                                    onFocus={inputInteraction.onFocus}
+                                    onBlur={inputInteraction.onBlur}
+                                    onMouseEnter={inputInteraction.onMouseEnter}
+                                    onMouseLeave={inputInteraction.onMouseLeave}
+                                  />
+                                  {ipErrors[idx] && (
+                                    <div
+                                      style={{
+                                        fontSize: 11,
+                                        color: C.errorRed,
+                                        marginTop: 4,
+                                      }}
+                                    >
+                                      {ipErrors[idx]}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Subnet Mask */}
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                                <label
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: C.labelText,
+                                    width: "100%",
+                                    maxWidth: 220,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  Subnet Mask (U):
+                                </label>
+                                <div className="flex-1 w-full max-w-[280px]">
+                                  <input
+                                    type="text"
+                                    value={lan.subnetMask || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "subnetMask",
+                                        e.target.value,
+                                      )
+                                    }
+                                    style={{
+                                      ...inputStyle,
+                                      borderColor: subnetErrors[idx]
+                                        ? C.errorRed
+                                        : C.cardBorder,
+                                    }}
+                                    onFocus={inputInteraction.onFocus}
+                                    onBlur={inputInteraction.onBlur}
+                                    onMouseEnter={inputInteraction.onMouseEnter}
+                                    onMouseLeave={inputInteraction.onMouseLeave}
+                                  />
+                                  {subnetErrors[idx] && (
+                                    <div
+                                      style={{
+                                        fontSize: 11,
+                                        color: C.errorRed,
+                                        marginTop: 4,
+                                      }}
+                                    >
+                                      {subnetErrors[idx]}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Default Gateway */}
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                                <label
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: C.labelText,
+                                    width: "100%",
+                                    maxWidth: 220,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  Default Gateway (D):
+                                </label>
+                                <div className="flex-1 w-full max-w-[280px]">
+                                  <input
+                                    type="text"
+                                    value={lan.defaultGateway || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "defaultGateway",
+                                        e.target.value,
+                                      )
+                                    }
+                                    style={{
+                                      ...inputStyle,
+                                      borderColor: gatewayErrors[idx]
+                                        ? C.errorRed
+                                        : C.cardBorder,
+                                    }}
+                                    onFocus={inputInteraction.onFocus}
+                                    onBlur={inputInteraction.onBlur}
+                                    onMouseEnter={inputInteraction.onMouseEnter}
+                                    onMouseLeave={inputInteraction.onMouseLeave}
+                                  />
+                                  {gatewayErrors[idx] && (
+                                    <div
+                                      style={{
+                                        fontSize: 11,
+                                        color: C.errorRed,
+                                        marginTop: 4,
+                                      }}
+                                    >
+                                      {gatewayErrors[idx]}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* IPV6 Address */}
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                                <label
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: C.labelText,
+                                    width: "100%",
+                                    maxWidth: 220,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  IPV6 Address (I):
+                                </label>
+                                <div className="flex-1 w-full max-w-[280px]">
+                                  <input
+                                    type="text"
+                                    value={lan.ipv6Address || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "ipv6Address",
+                                        e.target.value,
+                                      )
+                                    }
+                                    style={inputStyle}
+                                    onFocus={inputInteraction.onFocus}
+                                    onBlur={inputInteraction.onBlur}
+                                    onMouseEnter={inputInteraction.onMouseEnter}
+                                    onMouseLeave={inputInteraction.onMouseLeave}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* IPV6 Address Prefix */}
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                                <label
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: C.labelText,
+                                    width: "100%",
+                                    maxWidth: 220,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  IPV6 Address Prefix (U):
+                                </label>
+                                <div className="flex-1 w-full max-w-[280px]">
+                                  <input
+                                    type="text"
+                                    value={lan.ipv6Prefix || ""}
+                                    onChange={(e) =>
+                                      handleLanChange(
+                                        idx,
+                                        "ipv6Prefix",
+                                        e.target.value,
+                                      )
+                                    }
+                                    style={inputStyle}
+                                    onFocus={inputInteraction.onFocus}
+                                    onBlur={inputInteraction.onBlur}
+                                    onMouseEnter={inputInteraction.onMouseEnter}
+                                    onMouseLeave={inputInteraction.onMouseLeave}
+                                  />
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                  {/* VLAN Enable */}
+                  <div className="flex flex-col gap-0">
+                    <SectionHeading
+                      title="VLAN Configuration"
+                      isFirst={vlanEnabled}
+                    />
+                    <div
+                      className="flex flex-col gap-4 w-full"
+                      style={{ maxWidth: 640, margin: "0 auto" }}
+                    >
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                        <label
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: "100%",
+                            maxWidth: 220,
+                            flexShrink: 0,
+                          }}
+                        >
+                          VLAN Enable:
+                        </label>
+                        <div className="flex-1 w-full max-w-[280px]">
+                          <div className="flex items-center gap-6">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="vlanEnable"
+                                checked={vlanEnabled}
+                                onChange={() => {
+                                  try {
+                                    const lan1 =
+                                      (lanInterfaces || []).find(
+                                        (l) =>
+                                          l.name === "LAN 1" ||
+                                          l.interface === "eth0",
+                                      ) || {};
+                                    setVlanForm((prev) => ({
+                                      ...prev,
+                                      lan1Ip:
+                                        lan1.ipAddress || prev.lan1Ip || "",
+                                      lan1Mask:
+                                        lan1.subnetMask || prev.lan1Mask || "",
+                                      lan1Gw:
+                                        lan1.defaultGateway ||
+                                        prev.lan1Gw ||
+                                        "",
+                                    }));
+                                  } catch (_) {}
+                                  setVlanEnabled(true);
+                                  setHasChanges(true);
+                                }}
+                                style={{ accentColor: C.primary }}
+                              />
+                              <span
+                                style={{ fontSize: 13, color: C.valueText }}
+                              >
+                                Yes
+                              </span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="vlanEnable"
+                                checked={!vlanEnabled}
+                                onChange={() => {
+                                  setVlanEnabled(false);
+                                  setHasChanges(true);
+                                }}
+                                style={{ accentColor: C.primary }}
+                              />
+                              <span
+                                style={{ fontSize: 13, color: C.valueText }}
+                              >
+                                No
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      {vlanEnabled && (
+                        <>
+                          {/* LAN 1 base */}
+                          {[
+                            { label: "LAN 1 IP Address (I):", key: "lan1Ip" },
+                            {
+                              label: "LAN 1 Subnet Mask (U):",
+                              key: "lan1Mask",
+                            },
+                            {
+                              label: "LAN 1 Default Gateway (D):",
+                              key: "lan1Gw",
+                            },
+                          ].map((f) => (
+                            <div
+                              key={f.key}
+                              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+                            >
+                              <label
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: C.labelText,
+                                  width: "100%",
+                                  maxWidth: 220,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {f.label}
+                              </label>
+                              <div className="flex-1 w-full max-w-[280px]">
+                                <input
+                                  type="text"
+                                  value={vlanForm[f.key] || ""}
+                                  onChange={(e) =>
+                                    handleVlanChange(f.key, e.target.value)
+                                  }
+                                  style={inputStyle}
+                                  onFocus={inputInteraction.onFocus}
+                                  onBlur={inputInteraction.onBlur}
+                                  onMouseEnter={inputInteraction.onMouseEnter}
+                                  onMouseLeave={inputInteraction.onMouseLeave}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          {/* VLAN 1 */}
+                          {[
+                            { l: "Vlan 1 Vlan ID (D):", k: "vlan1Id" },
+                            { l: "Vlan 1 IP Address (I):", k: "vlan1Ip" },
+                            { l: "Vlan 1 Subnet Mask (U):", k: "vlan1Mask" },
+                            { l: "Vlan 1 Default Gateway (D):", k: "vlan1Gw" },
+                          ].map((f) => (
+                            <div
+                              key={f.k}
+                              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+                            >
+                              <label
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: C.labelText,
+                                  width: "100%",
+                                  maxWidth: 220,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {f.l}
+                              </label>
+                              <div className="flex-1 w-full max-w-[280px]">
+                                <input
+                                  type="text"
+                                  value={vlanForm[f.k] || ""}
+                                  onChange={(e) =>
+                                    handleVlanChange(f.k, e.target.value)
+                                  }
+                                  style={inputStyle}
+                                  onFocus={inputInteraction.onFocus}
+                                  onBlur={inputInteraction.onBlur}
+                                  onMouseEnter={inputInteraction.onMouseEnter}
+                                  onMouseLeave={inputInteraction.onMouseLeave}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          {/* VLAN 2 */}
+                          {[
+                            { l: "Vlan 2 Vlan ID (D):", k: "vlan2Id" },
+                            { l: "Vlan 2 IP Address (I):", k: "vlan2Ip" },
+                            { l: "Vlan 2 Subnet Mask (U):", k: "vlan2Mask" },
+                            { l: "Vlan 2 Default Gateway (D):", k: "vlan2Gw" },
+                          ].map((f) => (
+                            <div
+                              key={f.k}
+                              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+                            >
+                              <label
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: C.labelText,
+                                  width: "100%",
+                                  maxWidth: 220,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {f.l}
+                              </label>
+                              <div className="flex-1 w-full max-w-[280px]">
+                                <input
+                                  type="text"
+                                  value={vlanForm[f.k] || ""}
+                                  onChange={(e) =>
+                                    handleVlanChange(f.k, e.target.value)
+                                  }
+                                  style={inputStyle}
+                                  onFocus={inputInteraction.onFocus}
+                                  onBlur={inputInteraction.onBlur}
+                                  onMouseEnter={inputInteraction.onMouseEnter}
+                                  onMouseLeave={inputInteraction.onMouseLeave}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          {/* VLAN 3 */}
+                          {[
+                            { l: "Vlan 3 Vlan ID (D):", k: "vlan3Id" },
+                            { l: "Vlan 3 IP Address (I):", k: "vlan3Ip" },
+                            { l: "Vlan 3 Subnet Mask (U):", k: "vlan3Mask" },
+                            { l: "Vlan 3 Default Gateway (D):", k: "vlan3Gw" },
+                          ].map((f) => (
+                            <div
+                              key={f.k}
+                              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+                            >
+                              <label
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  color: C.labelText,
+                                  width: "100%",
+                                  maxWidth: 220,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {f.l}
+                              </label>
+                              <div className="flex-1 w-full max-w-[280px]">
+                                <input
+                                  type="text"
+                                  value={vlanForm[f.k] || ""}
+                                  onChange={(e) =>
+                                    handleVlanChange(f.k, e.target.value)
+                                  }
+                                  style={inputStyle}
+                                  onFocus={inputInteraction.onFocus}
+                                  onBlur={inputInteraction.onBlur}
+                                  onMouseEnter={inputInteraction.onMouseEnter}
+                                  onMouseLeave={inputInteraction.onMouseLeave}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* DNS Server Set */}
+                  <div className="flex flex-col gap-0">
+                    <SectionHeading title="DNS Server Set" />
+                    <div
+                      className="flex flex-col gap-3 w-full"
+                      style={{ maxWidth: 640, margin: "0 auto" }}
+                    >
+                      {/* Preferred DNS Server */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                        <label
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: "100%",
+                            maxWidth: 220,
+                            flexShrink: 0,
+                          }}
+                        >
+                          Preferred DNS Server (P):
+                        </label>
+                        <div className="flex-1 w-full max-w-[280px]">
+                          <input
+                            type="text"
+                            value={dnsServers[0] || ""}
+                            onChange={(e) => handleDnsChange(0, e.target.value)}
+                            style={{
+                              ...inputStyle,
+                              borderColor: dnsErrors[0]
+                                ? C.errorRed
+                                : C.cardBorder,
+                            }}
+                            onFocus={inputInteraction.onFocus}
+                            onBlur={inputInteraction.onBlur}
+                            onMouseEnter={inputInteraction.onMouseEnter}
+                            onMouseLeave={inputInteraction.onMouseLeave}
+                          />
+                          {dnsErrors[0] && (
+                            <div
+                              style={{
+                                fontSize: 11,
+                                color: C.errorRed,
+                                marginTop: 4,
+                              }}
+                            >
+                              {dnsErrors[0]}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Standby DNS Server */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                        <label
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: "100%",
+                            maxWidth: 220,
+                            flexShrink: 0,
+                          }}
+                        >
+                          Standby DNS Server (P):
+                        </label>
+                        <div className="flex-1 w-full max-w-[280px]">
+                          <input
+                            type="text"
+                            value={dnsServers[1] || ""}
+                            onChange={(e) => handleDnsChange(1, e.target.value)}
+                            style={{
+                              ...inputStyle,
+                              borderColor: dnsErrors[1]
+                                ? C.errorRed
+                                : C.cardBorder,
+                            }}
+                            onFocus={inputInteraction.onFocus}
+                            onBlur={inputInteraction.onBlur}
+                            onMouseEnter={inputInteraction.onMouseEnter}
+                            onMouseLeave={inputInteraction.onMouseLeave}
+                          />
+                          {dnsErrors[1] && (
+                            <div
+                              style={{
+                                fontSize: 11,
+                                color: C.errorRed,
+                                marginTop: 4,
+                              }}
+                            >
+                              {dnsErrors[1]}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+
+                  {/* ARP Mode */}
+                  <div className="flex flex-col gap-0">
+                    <SectionHeading title="ARP Mode" />
+                    <div
+                      className="flex flex-col gap-3 w-full"
+                      style={{ maxWidth: 640, margin: "0 auto" }}
+                    >
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                        <label
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: "100%",
+                            maxWidth: 220,
+                            flexShrink: 0,
+                          }}
+                        >
+                          Default Mode:
+                        </label>
+                        <div className="flex-1 w-full max-w-[280px]">
+                          <select
+                            value={arpMode}
+                            onChange={handleArpChange}
+                            style={{
+                              ...selectStyle,
+                              borderColor: arpError ? C.errorRed : undefined,
+                            }}
+                            onFocus={inputInteraction.onFocus}
+                            onBlur={inputInteraction.onBlur}
+                            onMouseEnter={inputInteraction.onMouseEnter}
+                            onMouseLeave={inputInteraction.onMouseLeave}
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                          </select>
+                          {arpError && (
+                            <div
+                              style={{
+                                fontSize: 11,
+                                color: C.errorRed,
+                                marginTop: 4,
+                              }}
+                            >
+                              {arpError}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </form>
             )}
