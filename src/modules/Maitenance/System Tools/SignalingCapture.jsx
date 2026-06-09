@@ -168,6 +168,33 @@ const labelStyle = {
   textAlign: "left",
 };
 
+/** Standalone action footer — not attached to any table/card */
+const signalingCaptureFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  marginTop: 24,
+  padding: "10px 20px",
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
+  boxSizing: "border-box",
+  background: C.cardBg,
+  boxShadow: C.cardShadow,
+};
+
+const signalingCaptureFooterBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
 const SignalingCapture = () => {
   // Data Capture state
   const [network, setNetwork] = useState("all");
@@ -825,7 +852,7 @@ const SignalingCapture = () => {
           </div>
         </div>
 
-        <div style={tableContainerStyle}>
+        <div style={{ ...tableContainerStyle, marginBottom: 0 }}>
           <div style={blueBarStyle}>
             <span>{SC_SECTIONS[2]}</span>
           </div>
@@ -899,16 +926,18 @@ const SignalingCapture = () => {
           </div>
         </div>
 
-        <div className="flex justify-center items-center gap-6 mt-4 mb-12 flex-wrap">
+        <div style={signalingCaptureFooterStyle}>
           <Btn
             variant="primary"
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+            type="button"
+            style={signalingCaptureFooterBtnStyle}
           >
             {SC_BUTTONS.clean}
           </Btn>
           <Btn
             variant="cancel"
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+            type="button"
+            style={signalingCaptureFooterBtnStyle}
           >
             {SC_BUTTONS.download}
           </Btn>

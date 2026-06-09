@@ -21,6 +21,13 @@ import {
   fetchCCRoutes,
   updateCCRoute,
 } from "../../../api/apiService";
+import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const CC_INTERVAL_OPTIONS = [
@@ -291,6 +298,7 @@ const CCRoutePage = () => {
     delete: false,
     extensions: false,
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasLoadedExtensionsRef = useRef(false);
 
   const [editId, setEditId] = useState(null);
@@ -343,6 +351,7 @@ const CCRoutePage = () => {
       setRows([]);
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -564,14 +573,8 @@ const CCRoutePage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 24,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
         {/* ── Error / Success Floating Banner ── */}
         {message.text && (
           <Alert
@@ -590,21 +593,7 @@ const CCRoutePage = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          {/* Breadcrumb */}
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Call Control &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>CC Route</span>
-          </div>
-        </div>
+        <PbxBreadcrumb section="Call Control" current="CC Route" />
 
         {/* Main Card */}
         <div
@@ -704,17 +693,13 @@ Delete
           <div style={{overflowX: "auto",
 overflowY: "auto",
 flex: 1, }}>
-            {loading.fetch ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
+            {isInitialLoad ? (
+              <TableListLoading />
+            ) : rows.length === 0 ? (
+              <TableListEmptyState
+                message="No CC routes found."
+                onAddNew={handleOpenAddModal}
+              />
             ) : (
               <table
                 style={{
@@ -757,22 +742,7 @@ minWidth: 900,
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
-                        }}
-                      >
-                        No CC routes yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedRows.map((row, idx) => {
+                  {pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const isLastRow = idx === pagedRows.length - 1;
@@ -894,15 +864,14 @@ minWidth: 900,
                           </td>
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
             )}
           </div>
 
           {/* Footer Pagination */}
-          {!loading.fetch && rows.length > 0 && (
+          {!isInitialLoad && rows.length > 0 && (
             <div
               style={{
                 display: "flex",

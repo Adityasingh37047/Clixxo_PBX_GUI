@@ -8,6 +8,12 @@ import {
   numManipulateCardStyle,
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
+  TableListLoading,
+  TableListEmptyState,
+  PbxBreadcrumb,
+  pbxBreadcrumbStyle,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
 } from "../numManipulate/numManipulateSharedUi";
 import {
   OUTLINED_BORDER,
@@ -18,13 +24,7 @@ import {
 } from "../shared/outlinedFieldUi";
 import { systemToolsFieldInputStyleSmall } from "../systemTools/systemToolsSharedUi";
 
-export {
-  C,
-  Btn,
-  TH,
-  tdStyle,
-  CARD_RADIUS,
-};
+export { C, Btn, TH, tdStyle, CARD_RADIUS, TableListLoading, TableListEmptyState, PbxBreadcrumb, pbxBreadcrumbStyle, pbxPageWrapStyle, pbxPageInnerStyle };
 
 /** Table/list card — matches E1-PRI PCM pages (10px radius) */
 const SIP_PCM_TABLE_CARD_RADIUS = 10;
@@ -71,52 +71,25 @@ export const sipPcmCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-/** Table pages — full width (SIP To SIP Account, SIP Trunk Group) */
-export const sipPcmPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-};
+export const sipPcmPageWrapStyle = pbxPageWrapStyle;
 
-export const sipPcmInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
+export const sipPcmInnerStyle = pbxPageInnerStyle;
 
 /** Form pages only — SIP Settings & Media (matches Authorization width) */
 export const sipPcmFormPageWrapStyle = {
-  ...sipPcmPageWrapStyle,
+  ...pbxPageWrapStyle,
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
 };
 
 export const sipPcmFormPageInnerStyle = {
-  width: "100%",
+  ...pbxPageInnerStyle,
   maxWidth: 1000,
-  margin: "0 auto",
 };
 
 export const SipPcmBreadcrumb = ({ current }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: C.mutedText,
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-    }}
-  >
-    <span>E1-PRI</span>
-    <span>&gt;</span>
-    <span>SIP</span>
-    <span>&gt;</span>
-    <span style={{ color: C.strongText, fontWeight: 600 }}>{current}</span>
-  </div>
+  <PbxBreadcrumb section="SIP" current={current} />
 );
 
 export const sipPcmSelectedBadgeStyle = {
@@ -330,12 +303,11 @@ export const sipPcmAuthSectionFullWidthStyle = {
   boxSizing: "border-box",
 };
 
-export const SIP_PCM_SECTION_HEADING_COLOR = "#30415A";
-
+/** Matches Network page LAN 1 section heading */
 export const SipPcmSectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 20px 0" : "16px 0 24px 0",
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -346,11 +318,11 @@ export const SipPcmSectionHeading = ({ title, isFirst = false }) => (
         position: "absolute",
         top: -10,
         left: 0,
-        background: "#fff",
+        background: C.cardBg,
         paddingRight: 8,
         fontSize: 13,
         fontWeight: 600,
-        color: SIP_PCM_SECTION_HEADING_COLOR,
+        color: "#30415A",
       }}
     >
       {title}
@@ -448,8 +420,9 @@ export const SipPcmPagination = ({
   recordCount,
   onPageChange,
   recordLabel = "record",
+  style,
 }) => (
-  <div style={sipPcmPaginationStyle}>
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}

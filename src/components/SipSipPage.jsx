@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   SIP_SETTINGS_FIELDS,
   SIP_SETTINGS_NOTE,
@@ -27,30 +27,24 @@ import {
   sipPcmNativeCheckboxStyle,
   sipPcmNoteStyle,
 } from "../sections/sip/sipPcmSharedUi";
-import {
-  listSipSettings,
-  updateSipSettings,
-  postLinuxCmd,
-  fetchNetwork,
-} from "../api/apiService";
+import { listSipSettings, updateSipSettings } from "../api/apiService";
 import { Alert, CircularProgress } from "@mui/material";
 
 const getInitialState = () => {
   const state = {};
   SIP_SETTINGS_FIELDS.forEach((f) => {
     if (f.type === "select") {
-      // Special case: dynamic WAN options use values '1' and '2'
       if (f.key === "sipWan") {
         state[f.key] = "1";
       } else {
-        state[f.key] = f.options[0]; // Set first option as default for other select fields
+        state[f.key] = f.options[0];
       }
     } else if (f.type === "checkbox") {
-      state[f.key] = f.default || false; // Set checkbox default to false if not specified
+      state[f.key] = f.default || false;
     } else if (f.type === "radio") {
-      state[f.key] = f.options[0]; // Set first option as default for radio fields
+      state[f.key] = f.options[0];
     } else {
-      state[f.key] = f.default || ""; // Set text fields default to empty string if not specified
+      state[f.key] = f.default || "";
     }
   });
   return state;
@@ -66,23 +60,6 @@ const SipSipPage = () => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
-  // Seed options from cache for instant render; will refresh after API returns
-  const getCachedWanOptions = () => {
-    try {
-      const cached = JSON.parse(localStorage.getItem("lanIps") || "null");
-      if (cached && cached.lan1 && cached.lan2) {
-        return [
-          { value: "1", label: `Lan 1:${cached.lan1}` },
-          { value: "2", label: `Lan 2:${cached.lan2}` },
-        ];
-      }
-    } catch (_) {}
-    return [];
-  };
-
-  const [sipWanOptions, setSipWanOptions] = useState(getCachedWanOptions());
-  // Track previous sipWan value to detect changes
-  const previousSipWanRef = useRef(null);
 
   // Map UI keys to API keys
   const uiToApiKeyMap = useMemo(
@@ -154,102 +131,16 @@ const SipSipPage = () => {
     return reversed;
   }, [uiToApiKeyMap]);
 
-  // Fetch existing settings on mount; run system info + list in parallel to reduce time
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         setLoading(true);
-        const [listRes, netData] = await Promise.all([
-          listSipSettings(),
-          fetchNetwork().catch(() => null),
-        ]);
-        try {
-          const allIfaces = netData?.data?.interfaces || [];
-
-          // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
-          const lanIfaces = allIfaces.filter((i) => {
-            const kn = (i.interface || "").toLowerCase();
-            return /^eth\d+$/.test(kn) || /^enp\d+s\d+/.test(kn);
-          });
-
-          // Sequential "LAN 1", "LAN 2", … — never trust the API name field
-          const wanOpts = lanIfaces.map((iface, idx) => ({
-            value: String(idx + 1),
-            label: `LAN ${idx + 1}:${iface.ipAddress || ""}`,
-          }));
-
-          // Add VLAN sub-interfaces as extra options
-          const primaryKernel = lanIfaces[0]?.interface || "eth0";
-          allIfaces
-            .filter((i) => {
-              const kn = (i.interface || "").toString();
-              return kn.startsWith(`${primaryKernel}.`) && /\.\d+$/.test(kn);
-            })
-            .forEach((vlanIface) => {
-              const vlanId = (vlanIface.interface || "").split(".")[1] || "";
-              wanOpts.push({
-                value: String(wanOpts.length + 1),
-                label: `VLAN ${vlanId}:${vlanIface.ipAddress || ""}`,
-              });
-            });
-
-          setSipWanOptions(wanOpts);
-
-          // Cache LAN 1 / LAN 2 IPs for other components that read localStorage
-          try {
-            const lan1Ip = lanIfaces[0]?.ipAddress || "";
-            const lan2Ip = lanIfaces[1]?.ipAddress || "";
-            localStorage.setItem(
-              "lanIps",
-              JSON.stringify({ lan1: lan1Ip, lan2: lan2Ip }),
-            );
-          } catch (_) {}
-        } catch (e) {
-          console.error("Failed to build SIP WAN options:", e);
-        }
-
-        // Check current default route to determine which interface is active
-        let detectedSipWan = "1"; // Default to LAN1
-        try {
-          // Get the default route and check which interface it uses
-          const routeCmd = `ip route | grep '^default' | head -1`;
-          const routeRes = await postLinuxCmd({ cmd: routeCmd });
-          const routeOutput = (routeRes?.responseData || "").toString();
-
-          // Check if route uses eth1 (LAN2) or a VLAN interface (eth0.X)
-          if (routeOutput.includes("dev eth1")) {
-            detectedSipWan = "2";
-          } else if (/dev eth0\.[0-9]+/.test(routeOutput)) {
-            detectedSipWan = "3";
-          } else if (routeOutput.includes("dev eth0")) {
-            detectedSipWan = "1";
-          }
-          // If neither is found, try alternative route command
-          if (!routeOutput.includes("dev eth")) {
-            const altRouteCmd = `route -n | grep '^0.0.0.0' | head -1`;
-            const altRouteRes = await postLinuxCmd({ cmd: altRouteCmd });
-            const altRouteOutput = (altRouteRes?.responseData || "").toString();
-            if (altRouteOutput.includes("eth1")) {
-              detectedSipWan = "2";
-            } else if (/eth0\.[0-9]+/.test(altRouteOutput)) {
-              detectedSipWan = "3";
-            } else if (altRouteOutput.includes("eth0")) {
-              detectedSipWan = "1";
-            }
-          }
-        } catch (e) {
-          console.error("Failed to detect current routing interface:", e);
-          // Fallback to default LAN1 if detection fails
-        }
-
-        const res = listRes;
-        // Expect res.message.sip_settings[0]
+        const res = await listSipSettings();
         const settings = res?.message?.sip_settings?.[0] || {};
         const next = { ...getInitialState() };
         Object.entries(settings).forEach(([apiKey, value]) => {
           const uiKey = apiToUiKeyMap[apiKey];
           if (!uiKey) return;
-          // Convert API string/null to UI types
           const fieldDef = SIP_SETTINGS_FIELDS.find((f) => f.key === uiKey);
           if (!fieldDef) return;
           if (fieldDef.type === "checkbox") {
@@ -262,12 +153,7 @@ const SipSipPage = () => {
             next[uiKey] = value ?? next[uiKey];
           }
         });
-        // Always use detected routing interface as source of truth
-        // This ensures the UI reflects the actual device routing state
-        next.sipWan = detectedSipWan;
         setForm(next);
-        // Initialize previous sipWan value
-        previousSipWanRef.current = next.sipWan || "1";
       } catch (e) {
         console.error("Failed to fetch SIP settings:", e);
         showMessage("error", "Failed to load SIP settings. Please try again.");
@@ -279,10 +165,8 @@ const SipSipPage = () => {
   }, [apiToUiKeyMap]);
 
   const handleChange = (key, value) => {
-    // Apply validation based on field definition
     const fieldDef = SIP_SETTINGS_FIELDS.find((f) => f.key === key);
     if (fieldDef && fieldDef.validation === "integer") {
-      // Only allow integer values
       if (value === "" || /^\d+$/.test(value)) {
         setForm((prev) => ({ ...prev, [key]: value }));
       }
@@ -298,7 +182,6 @@ const SipSipPage = () => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      // Build settings payload
       const settingsPayload = { id: 1 };
       Object.entries(uiToApiKeyMap).forEach(([uiKey, apiKey]) => {
         const fieldDef = SIP_SETTINGS_FIELDS.find((f) => f.key === uiKey);
@@ -310,362 +193,7 @@ const SipSipPage = () => {
           settingsPayload[apiKey] = uiVal ?? null;
         }
       });
-
       const res = await updateSipSettings(settingsPayload);
-
-      // Update pjsip.conf with new SIP port if changed
-      try {
-        const sipPort = form.sipPort || "5060";
-        const pjsipConfPath = "/etc/asterisk/pjsip.conf";
-
-        // Update UDP port in pjsip.conf (no backup)
-        const updatePjsipPortCmd = `CONF="${pjsipConfPath}"
-PORT="${sipPort}"
-
-if [ -f "$CONF" ]; then
-  # Update UDP transport port (bind=0.0.0.0:PORT)
-  sed -i '/^\\[transport-udp\\]/,/^\\[/ {
-    s|^\\(bind=0.0.0.0:\\)[0-9]\\+|\\1'"$PORT"'|
-  }' "$CONF" 2>/dev/null || true
-  
-  echo "Updated pjsip.conf: UDP port set to $PORT"
-  
-  # Verify the change
-  grep -A 3 "\\[transport-udp\\]" "$CONF" | grep "bind="
-else
-  echo "Warning: $CONF not found"
-fi`;
-
-        const pjsipPortUpdateRes = await postLinuxCmd({
-          cmd: updatePjsipPortCmd,
-        });
-        console.log(
-          "PJSIP UDP port update result:",
-          pjsipPortUpdateRes?.responseData,
-        );
-      } catch (pjsipPortError) {
-        console.error("Failed to update pjsip.conf UDP port:", pjsipPortError);
-        // Don't fail the whole save operation if this fails
-      }
-
-      // Update pjsip_registrations.conf with inband_progress setting
-      try {
-        const inbandProgressValue = form.send180 === "Yes" ? "yes" : "no";
-        const pjsipConfPath = "/etc/asterisk/pjsip_registrations.conf";
-
-        // Update inband_progress in all endpoint sections
-        const updatePjsipCmd = `CONF="${pjsipConfPath}"
-VALUE="${inbandProgressValue}"
-
-if [ -f "$CONF" ]; then
-  # Remove all existing inband_progress lines
-  sed -i '/^[[:space:]]*inband_progress[[:space:]]*=/d' "$CONF" 2>/dev/null || true
-  
-  # Add inband_progress after each "type=endpoint" line
-  sed -i '/^[[:space:]]*type[[:space:]]*=[[:space:]]*endpoint[[:space:]]*$/a inband_progress='"$VALUE" "$CONF" 2>/dev/null || true
-  
-  echo "Updated pjsip_registrations.conf: inband_progress=$VALUE in all endpoint sections"
-else
-  echo "Warning: $CONF not found"
-fi`;
-
-        const pjsipUpdateRes = await postLinuxCmd({ cmd: updatePjsipCmd });
-        console.log(
-          "PJSIP config update result:",
-          pjsipUpdateRes?.responseData,
-        );
-      } catch (pjsipError) {
-        console.error("Failed to update pjsip_registrations.conf:", pjsipError);
-        // Don't fail the whole save operation if this fails
-      }
-
-      // Always execute routing command to ensure proper configuration
-      // This handles new devices and ensures metrics are always set correctly
-      const currentSipWan = form.sipWan || "1";
-      const previousSipWan = previousSipWanRef.current;
-
-      // Always run routing update (not just when changed) to ensure metrics are set
-      if (true) {
-        try {
-          // Show progress message
-          showMessage("info", "Configuring routing... Please wait.");
-
-          // --- UNIVERSAL CLEAN ROUTING UPDATE LOGIC ---
-          // Fetch real gateway info for each interface
-          const net = await fetchNetwork();
-          const interfaces = net?.data?.interfaces || [];
-
-          const eth0 = interfaces.find((i) => {
-            const name = (i.interface || i.name || "").toString().toLowerCase();
-            return name === "eth0";
-          });
-
-          const eth1 = interfaces.find((i) => {
-            const name = (i.interface || i.name || "").toString().toLowerCase();
-            return name === "eth1";
-          });
-
-          // Detect VLAN interface (eth0.X) and its gateway from vlan.cfg
-          let vlanInterfaceName = null;
-          let gatewayVlan = null;
-          try {
-            // Get VLAN interface name from vlan.cfg (auto eth0.100)
-            const vlanIfaceCmd = `grep -E '^auto[[:space:]]+eth0\\.[0-9]+' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}'`;
-            const vlanIfaceRes = await postLinuxCmd({ cmd: vlanIfaceCmd });
-            const vlanIfaceOut = (vlanIfaceRes?.responseData || "")
-              .toString()
-              .trim();
-            if (vlanIfaceOut && /^eth0\.[0-9]+$/.test(vlanIfaceOut)) {
-              vlanInterfaceName = vlanIfaceOut;
-            }
-            // Get VLAN gateway from vlan.cfg
-            const vlanGwCmd = `grep -E '^[[:space:]]*(#)?[[:space:]]*gateway[[:space:]]' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | sed 's/^[[:space:]]*#\\?[[:space:]]*gateway[[:space:]]*//' | awk '{print $1}'`;
-            const vlanGwRes = await postLinuxCmd({ cmd: vlanGwCmd });
-            const vlanGwOut = (vlanGwRes?.responseData || "").toString().trim();
-            if (
-              vlanGwOut &&
-              /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(vlanGwOut)
-            ) {
-              gatewayVlan = vlanGwOut;
-            }
-          } catch (e) {
-            console.warn(
-              "Failed to detect VLAN interface/gateway for SIP routing:",
-              e,
-            );
-          }
-
-          // Extract gateways dynamically (each device may have different)
-          let gatewayEth0 = eth0?.defaultGateway || eth0?.gateway || null;
-          let gatewayEth1 = eth1?.defaultGateway || eth1?.gateway || null;
-
-          // Fallback: If gateway not found in API (e.g., because it's commented), read from config file
-          // This reads gateway even if it's commented out in the config file
-          if (!gatewayEth0) {
-            try {
-              const gwCmd0 = `grep -E '^[[:space:]]*(#)?[[:space:]]*gateway[[:space:]]' /etc/network/interfaces.d/eth0 2>/dev/null | head -1 | sed 's/^[[:space:]]*#\\?[[:space:]]*gateway[[:space:]]*//' | awk '{print $1}'`;
-              const gwRes0 = await postLinuxCmd({ cmd: gwCmd0 });
-              const gw0 = (gwRes0?.responseData || "").toString().trim();
-              if (
-                gw0 &&
-                /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(gw0)
-              ) {
-                gatewayEth0 = gw0;
-                console.log("Read eth0 gateway from config file:", gatewayEth0);
-              }
-            } catch (e) {
-              console.warn("Failed to read eth0 gateway from config file:", e);
-            }
-          }
-
-          if (!gatewayEth1) {
-            try {
-              const gwCmd1 = `grep -E '^[[:space:]]*(#)?[[:space:]]*gateway[[:space:]]' /etc/network/interfaces.d/eth1 2>/dev/null | head -1 | sed 's/^[[:space:]]*#\\?[[:space:]]*gateway[[:space:]]*//' | awk '{print $1}'`;
-              const gwRes1 = await postLinuxCmd({ cmd: gwCmd1 });
-              const gw1 = (gwRes1?.responseData || "").toString().trim();
-              if (
-                gw1 &&
-                /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(gw1)
-              ) {
-                gatewayEth1 = gw1;
-                console.log("Read eth1 gateway from config file:", gatewayEth1);
-              }
-            } catch (e) {
-              console.warn("Failed to read eth1 gateway from config file:", e);
-            }
-          }
-
-          // Determine user-selected interface
-          let interfaceName;
-          let selectedGateway;
-          let nonSelectedInterface;
-          let nonSelectedGateway;
-
-          if (currentSipWan === "3") {
-            // VLAN selected
-            if (!vlanInterfaceName || !gatewayVlan) {
-              alert(
-                "Unable to detect VLAN interface or gateway. Routing update skipped.",
-              );
-              return;
-            }
-            interfaceName = vlanInterfaceName;
-            selectedGateway = gatewayVlan;
-            // Use eth0 or eth1 (whichever has a gateway) as backup
-            if (gatewayEth0) {
-              nonSelectedInterface = "eth0";
-              nonSelectedGateway = gatewayEth0;
-            } else if (gatewayEth1) {
-              nonSelectedInterface = "eth1";
-              nonSelectedGateway = gatewayEth1;
-            } else {
-              nonSelectedInterface = "";
-              nonSelectedGateway = null;
-            }
-          } else {
-            // LAN1 or LAN2 selected
-            interfaceName = currentSipWan === "1" ? "eth0" : "eth1";
-            selectedGateway = currentSipWan === "1" ? gatewayEth0 : gatewayEth1;
-
-            if (!selectedGateway) {
-              alert(
-                "Unable to detect gateway for selected interface. Routing update skipped.",
-              );
-              return;
-            }
-
-            nonSelectedInterface = currentSipWan === "1" ? "eth1" : "eth0";
-            nonSelectedGateway =
-              currentSipWan === "1" ? gatewayEth1 : gatewayEth0;
-          }
-
-          // Use metric-based routing with enforcement daemon
-          // Selected interface gets metric 100, backup gets 200
-          // Daemon ensures routing stays correct even after VPN connects
-          const cmd = `
-# CLIXXO Routing Configuration with Enforcement
-# This ensures selected interface remains primary even when VPN connects
-
-# Step 1: Remove all existing default routes
-while ip route del default 2>/dev/null; do :; done
-
-# Step 2: Add primary route for selected interface (metric 100)
-ip route add default via ${selectedGateway} dev ${interfaceName} metric 100
-
-# Step 3: Add backup route for non-selected interface (metric 200, only if different gateway)
-${nonSelectedGateway ? `ip route add default via ${nonSelectedGateway} dev ${nonSelectedInterface} metric 200` : "# No backup gateway"}
-
-# Step 4: Create routing enforcement daemon
-DAEMON="/usr/local/bin/clixxo-routing-enforcer.sh"
-cat > "\$DAEMON" <<'ENFORCEREOF'
-#!/bin/bash
-# CLIXXO Routing Enforcer - Ensures routing stays on selected interface
-# Runs every 10 seconds to check and fix routing if VPN or other services change it
-
-PRIMARY_GW="${selectedGateway}"
-PRIMARY_IF="${interfaceName}"
-PRIMARY_METRIC="100"
-BACKUP_GW="${nonSelectedGateway}"
-BACKUP_IF="${nonSelectedInterface}"
-BACKUP_METRIC="200"
-
-while true; do
-  # Check if primary route exists with correct metric
-  if ! ip route show | grep -q "default via \$PRIMARY_GW dev \$PRIMARY_IF metric \$PRIMARY_METRIC"; then
-    # Route is missing or wrong - fix it
-    logger "CLIXXO: Routing changed, re-applying \$PRIMARY_IF as primary"
-    
-    # Remove all default routes
-    while ip route del default 2>/dev/null; do :; done
-    
-    # Re-add primary route
-    ip route add default via \$PRIMARY_GW dev \$PRIMARY_IF metric \$PRIMARY_METRIC
-    
-    # Re-add backup route if configured
-    if [ -n "\$BACKUP_GW" ]; then
-      ip route add default via \$BACKUP_GW dev \$BACKUP_IF metric \$BACKUP_METRIC 2>/dev/null || true
-    fi
-  fi
-  
-  sleep 10
-done
-ENFORCEREOF
-chmod +x "\$DAEMON"
-
-# Step 5: Create systemd service for the daemon
-SERVICE="/etc/systemd/system/clixxo-routing-enforcer.service"
-cat > "\$SERVICE" <<'SERVICEEOF'
-[Unit]
-Description=CLIXXO Routing Enforcer
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/clixxo-routing-enforcer.sh
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-SERVICEEOF
-
-# Step 6: Enable and start the daemon
-systemctl daemon-reload
-systemctl enable clixxo-routing-enforcer.service
-systemctl restart clixxo-routing-enforcer.service
-
-# Step 7: Also update rc.local as fallback (in case daemon fails)
-RC_LOCAL="/etc/rc.local"
-if [ ! -f "\$RC_LOCAL" ]; then
-  cat > "\$RC_LOCAL" <<'RCEOF'
-#!/bin/bash
-exit 0
-RCEOF
-  chmod +x "\$RC_LOCAL"
-fi
-
-# Remove old entries
-sed -i '/# CLIXXO SIP Routing/d' "\$RC_LOCAL" 2>/dev/null || true
-sed -i '/ip route.*default.*metric/d' "\$RC_LOCAL" 2>/dev/null || true
-sed -i '/while ip route del default/d' "\$RC_LOCAL" 2>/dev/null || true
-
-# Add routing setup to rc.local (runs at boot)
-sed -i '/^exit 0/i \\# CLIXXO SIP Routing - Auto-configured' "\$RC_LOCAL"
-sed -i "/^exit 0/i while ip route del default 2>/dev/null; do :; done" "\$RC_LOCAL"
-sed -i "/^exit 0/i ip route add default via ${selectedGateway} dev ${interfaceName} metric 100" "\$RC_LOCAL"
-${nonSelectedGateway ? `sed -i "/^exit 0/i ip route add default via ${nonSelectedGateway} dev ${nonSelectedInterface} metric 200" "\$RC_LOCAL"` : ""}
-
-echo "=== Routing Configuration Complete ==="
-echo "Primary: ${interfaceName} via ${selectedGateway} (metric 100)"
-${nonSelectedGateway ? `echo "Backup: ${nonSelectedInterface} via ${nonSelectedGateway} (metric 200)"` : ""}
-echo "Enforcement daemon: Active (checks every 10 seconds)"
-echo "Configuration persists across reboots"
-`;
-
-          console.log("Routing update cmd:", cmd);
-          const linuxCmdRes = await postLinuxCmd({ cmd });
-
-          if (
-            linuxCmdRes?.response &&
-            linuxCmdRes?.responseData !== undefined
-          ) {
-            console.log(
-              `Routing changed to ${interfaceName} via ${selectedGateway}:`,
-              linuxCmdRes.responseData,
-            );
-            console.log(
-              "Routing enforcer daemon started. Changes will persist after reboot.",
-            );
-          } else if (
-            linuxCmdRes?.response === false ||
-            linuxCmdRes?.response === "false"
-          ) {
-            // Command failed
-            console.error("Routing command failed:", linuxCmdRes);
-            throw new Error("Routing command execution failed");
-          } else {
-            // Response format unexpected but might still have succeeded
-            console.warn(
-              "Linux command response format unexpected:",
-              linuxCmdRes,
-            );
-            console.log("Routing update may have succeeded.");
-          }
-          // --- END UNIVERSAL CLEAN ROUTING LOGIC ---
-        } catch (cmdError) {
-          console.error("Failed to execute routing command:", cmdError);
-          // Config files may have been updated even if command failed
-          // The changes will still apply on next reboot
-          showMessage(
-            "error",
-            "Settings saved. Routing update encountered an issue, but config files were updated. Changes will apply after reboot.",
-          );
-        }
-
-        // Update the previous value after successful command execution
-        previousSipWanRef.current = currentSipWan;
-      }
-
       alert(res?.message || "Settings Updated");
     } catch (e) {
       console.error("Failed to save SIP settings:", e);
@@ -682,7 +210,6 @@ echo "Configuration persists across reboots"
   return (
     <div style={sipPcmFormPageWrapStyle}>
       <div style={sipPcmFormPageInnerStyle}>
-        {/* Error / Success Banner */}
         {message.text && !saving && (
           <Alert
             severity={
@@ -716,9 +243,6 @@ echo "Configuration persists across reboots"
               <div className="text-lg font-medium text-gray-700">
                 Applying Settings...
               </div>
-              <div className="text-sm text-gray-500">
-                Configuring routing and services
-              </div>
             </div>
           </div>
         )}
@@ -747,10 +271,8 @@ echo "Configuration persists across reboots"
               >
                 <div className={SIP_PCM_FORM_STACK_CLASS}>
                   {SIP_SETTINGS_FIELDS.map((field) => {
-                    // Skip conditional fields if their condition is not met
                     if (field.conditional) {
                       if (field.conditionalValues) {
-                        // Check for multiple possible values (e.g., assertedId === 'P-Asserted-Identity' || 'P-Preferred-Identity')
                         if (
                           !field.conditionalValues.includes(
                             form[field.conditional],
@@ -759,30 +281,19 @@ echo "Configuration persists across reboots"
                           return null;
                         }
                       } else if (field.conditionalValue) {
-                        // Check for specific value condition (e.g., softSwitch === 'VOS')
                         if (
                           form[field.conditional] !== field.conditionalValue
                         ) {
                           return null;
                         }
                       } else {
-                        // Check for boolean condition (e.g., tls === true)
                         if (field.conditionalInverted) {
-                          // Inverted condition: show when field is false (e.g., workingPeriod === false)
-                          if (form[field.conditional]) {
-                            return null;
-                          }
+                          if (form[field.conditional]) return null;
                         } else {
-                          // Normal condition: show when field is true (e.g., tls === true)
-                          // For radio fields, check if value is 'Yes'
                           if (field.type === "radio") {
-                            if (form[field.conditional] !== "Yes") {
-                              return null;
-                            }
+                            if (form[field.conditional] !== "Yes") return null;
                           } else {
-                            if (!form[field.conditional]) {
-                              return null;
-                            }
+                            if (!form[field.conditional]) return null;
                           }
                         }
                       }
@@ -840,18 +351,11 @@ echo "Configuration persists across reboots"
                                 fullWidth
                                 sx={sipPcmAuthMuiSelectSx}
                               >
-                                {field.key === "sipWan" &&
-                                sipWanOptions.length > 0
-                                  ? sipWanOptions.map((o) => (
-                                      <MenuItem key={o.value} value={o.value}>
-                                        {o.label}
-                                      </MenuItem>
-                                    ))
-                                  : field.options.map((opt) => (
-                                      <MenuItem key={opt} value={opt}>
-                                        {opt}
-                                      </MenuItem>
-                                    ))}
+                                {field.options.map((opt) => (
+                                  <MenuItem key={opt} value={opt}>
+                                    {opt}
+                                  </MenuItem>
+                                ))}
                               </Select>
                             </FormControl>
                           )}
@@ -874,10 +378,7 @@ echo "Configuration persists across reboots"
                               {field.key === "workingPeriod" ? (
                                 field.labelAfter && (
                                   <span
-                                    style={{
-                                      fontSize: 13,
-                                      color: C.labelText,
-                                    }}
+                                    style={{ fontSize: 13, color: C.labelText }}
                                   >
                                     {field.labelAfter}
                                   </span>
@@ -885,10 +386,7 @@ echo "Configuration persists across reboots"
                               ) : (
                                 <>
                                   <span
-                                    style={{
-                                      fontSize: 13,
-                                      color: C.labelText,
-                                    }}
+                                    style={{ fontSize: 13, color: C.labelText }}
                                   >
                                     Enable
                                   </span>

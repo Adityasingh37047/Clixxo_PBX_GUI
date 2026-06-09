@@ -1,7 +1,31 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { CircularProgress, Checkbox } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  C,
+  Btn,
+  TH,
+  tdStyle,
+  checkboxSx,
+  PageBreadcrumb,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+  TableListLoading,
+  TableListEmptyState,
+} from "../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../sections/sip/sipPcmSharedUi";
+import {
+  TRUNK_TABLE_SCROLL_CLASS,
+  trunkTableScrollStyle,
+  trunkTableInnerStyle,
+} from "../../sections/trunk/trunkSharedUi";
 
 // ── Column definitions ────────────────────────────────────────────────────────
 const columns = [
@@ -16,23 +40,7 @@ const columns = [
   { key: "hangup_cause", label: "Hangup Cause", width: "110px" },
 ];
 
-// ── Color palette (matches PbxMonitor.jsx) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  cardBorderSoft: "#f1f5f9",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
-  amber: "#dc2626",
-};
-const CARD_RADIUS = 20;
+const cardBorderSoft = "#f1f5f9";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const normalizeValue = (value) => String(value || "").toLowerCase().trim();
 
@@ -251,7 +259,7 @@ const directionStyle = (d) => {
   const v = String(d).toLowerCase();
 
   if (v === "outbound") return { color: "#2563eb" };
-  if (v === "inbound") return { color: "#166534" };
+  if (v === "inbound") return { color: "#16A34A" };
   if (v === "local") return { color: "#64748b" };
 
   return { color: "#64748b" };
@@ -260,8 +268,8 @@ const directionStyle = (d) => {
 const statusStyle = (s) => {
   const v = String(s || "").toLowerCase();
 
-  if (v === "answered") return { color: "#166534" };
-  if (v === "failed") return { color: "#991b1b" };
+  if (v === "answered") return { color: "#16A34A" };
+  if (v === "failed") return { color: "#DC2626" };
   if (v === "busy") return { color: "#92400e" };
 
   if (v === "no answer" || v === "cancelled") {
@@ -367,93 +375,6 @@ const getRowKey = (row, idx) =>
   ]
     .map((value) => normalizeValue(value))
     .join("|");
-
-// ── Shared: action button ────────────────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type = "button",
-}) => {
-  const variants = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    accent: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
-  const s = variants[variant] || variants.default;
-  const baseBg = s.background;
-  const hoverBg =
-    variant === "primary"
-      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
-      : variant === "default" || variant === "outline"
-        ? "#e2e8f0"
-        : "#b6c2d3";
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        ...s,
-        fontSize: 12,
-        fontWeight: 600,
-        padding: "6px 14px",
-        borderRadius: 10,
-        height: 30,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
 
 // ── Pill badge ────────────────────────────────────────────────────────────────
 const Pill = ({ text, bg, color }) => (
@@ -589,49 +510,11 @@ const GhostBtn = ({ children, onClick, disabled, style: extraStyle = {}, hoverBa
   );
 };
 
-// ── TH (matches PbxMonitor table header) ─────────────────────────────────────
-const TH = ({ children, style: extra, align = "center" }) => (
-  <th
-    style={{
-     background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 10,
-padding: "6px 10px",
-textAlign: align,
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.12em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const tdStyle = {
-  padding: "4px 10px",
-  fontSize: 12,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  whiteSpace: "nowrap",
-};
-
-const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-// ─────────────────────────────────────────────────────────────────────────────
-
 const CallCount = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const hasInitialLoadRef = useRef(false);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [limit] = useState(50);
@@ -658,11 +541,15 @@ const CallCount = () => {
       setRows([]);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
   };
 
   useEffect(() => {
-    loadCdr(1);
+    if (!hasInitialLoadRef.current) {
+      hasInitialLoadRef.current = true;
+      loadCdr(1);
+    }
   }, []);
 
   const handlePrev = () => {
@@ -787,23 +674,21 @@ const CallCount = () => {
     filteredData.some((r) => r.uniqueid && selectedIds.includes(r.uniqueid)) &&
     !allPageSelected;
 
+  const totalPages = Math.max(
+    1,
+    page + (rows.length >= limit ? 1 : 0),
+  );
+
   return (
-    <div
-      style={{
-        background: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
         {/* Error banner */}
         {error && (
           <div
             style={{
               background: "#fef2f2",
-              borderLeft: `3px solid ${C.errorRed}`,
-              color: "#991b1b",
+              borderLeft: `3px solid ${C.amber}`,
+              color: "#DC2626",
               padding: "10px 14px",
               borderRadius: 8,
               marginBottom: 16,
@@ -816,58 +701,33 @@ const CallCount = () => {
             <span>{error}</span>
             <span
               onClick={() => setError("")}
-              style={{ cursor: "pointer", fontSize: 16, color: "#991b1b" }}
+              style={{ cursor: "pointer", fontSize: 16, color: "#DC2626" }}
             >
               ✕
             </span>
           </div>
         )}
 
-     {/* Breadcrumb + last updated (PbxMonitor-style header) */}
-<div style={{ marginBottom: 16 }}>
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      flexWrap: "wrap",
-      gap: 12,
-    }}
-  >
-    {/* Breadcrumb */}
-    <div
-      style={{
-        fontSize: 12,
-        color: C.mutedText,
-        fontWeight: 400,
-        display: "flex",
-        alignItems: "center",
-        gap: 4,
-      }}
-    >
-      <span>CDR</span>
-      <span>&gt;</span>
-      <span>Call Detail Records</span>
-      <span>&gt;</span>
-      <span style={{ color: C.valueText, fontWeight: 600 }}>
-        Call Count
-      </span>
-    </div>
-
-    {/* Last Updated */}
-    {lastUpdated && (
-      <span
-        style={{
-          fontSize: 12,
-          color: C.mutedText,
-          whiteSpace: "nowrap",
-        }}
-      >
-        Last updated: {lastUpdated.toLocaleTimeString()}
-      </span>
-    )}
-  </div>
-</div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12,
+            marginBottom: 16,
+          }}
+        >
+          <PageBreadcrumb
+            segments={["CDR", "Call Detail Records", "Call Count"]}
+            style={{ marginBottom: 0 }}
+          />
+          {lastUpdated && (
+            <span style={{ fontSize: 12, color: C.mutedText, whiteSpace: "nowrap" }}>
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
 
         {/* Filter toolbar — SaaS / telecom admin panel */}
         <div
@@ -965,7 +825,7 @@ const CallCount = () => {
               style={{
                 marginTop: 14,
                 paddingTop: 7,
-                borderTop: `1px solid ${C.cardBorderSoft}`,
+                borderTop: `1px solid ${cardBorderSoft}`,
                 fontSize: 12,
                 color: C.mutedText,
                 display: "flex",
@@ -994,46 +854,11 @@ const CallCount = () => {
           )}
         </div>
 
-        {/* Main card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            
               {selectedIds.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    padding: "6px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selectedIds.length} selected
                 </span>
               )}
@@ -1047,68 +872,52 @@ const CallCount = () => {
                 flexWrap: "wrap",
               }}
             >
-           <Btn
-  onClick={() => loadCdr(page)}
-  disabled={loading}
-  variant="danger"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  {loading ? (
-    <CircularProgress size={16} sx={{ color: "#374151" }} />
-  ) : (
-    "Refresh"
-  )}
-</Btn>
+              <Btn
+                onClick={() => loadCdr(page)}
+                disabled={loading}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
+              >
+                {loading ? (
+                  <CircularProgress size={16} sx={{ color: "#374151" }} />
+                ) : (
+                  "Refresh"
+                )}
+              </Btn>
               <Btn
                 onClick={handleDelete}
                 disabled={loading || selectedIds.length === 0}
-                variant="danger"
-                style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
-                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                 Delete
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
-              <Btn onClick={handleDownload} disabled={loading} variant="accent" style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}>
+              <Btn
+                onClick={handleDownload}
+                disabled={loading}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
+              >
                 ⬇ Download CDR
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
+          {isInitialLoad ? (
+            <TableListLoading />
+          ) : rows.length === 0 && !hasActiveFilters ? (
+            <TableListEmptyState
+              message="No call records found."
+              showButton={false}
+            />
+          ) : (
+            <>
           <div
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              flex: 1,
-            }}
+            className={TRUNK_TABLE_SCROLL_CLASS}
+            style={{ ...trunkTableScrollStyle, flex: 1 }}
           >
-            {loading ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
-            ) : (
+            <div style={trunkTableInnerStyle}>
               <table
                 style={{
                   width: "100%",
@@ -1120,7 +929,7 @@ const CallCount = () => {
               >
                 <colgroup>
                   <col style={{ width: "36px" }} />
-                  <col style={{ width: "32px" }} />
+                  <col style={{ width: "40px" }} />
                   {columns.map((col) => (
                     <col key={col.key} style={{ width: col.width }} />
                   ))}
@@ -1147,13 +956,13 @@ const CallCount = () => {
                     </TH>
                     <TH
                       style={{
-                        width: 32,
+                        width: 40,
                         position: "sticky",
                         top: 0,
                         zIndex: 10,
                       }}
                     >
-                      #
+                      ID
                     </TH>
                     {columns.map((col, colIdx) => (
                       <TH
@@ -1229,9 +1038,6 @@ const CallCount = () => {
                               width: 36,
                               borderLeft: "none",
                               ...lastRowCellStyle,
-                              ...(isLastRow
-                                ? { borderBottomLeftRadius: CARD_RADIUS }
-                                : {}),
                             }}
                           >
                             <Checkbox
@@ -1250,8 +1056,6 @@ const CallCount = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              fontSize: 12,
-                              color: C.mutedText,
                               ...lastRowCellStyle,
                             }}
                           >
@@ -1289,8 +1093,6 @@ const CallCount = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              color: C.accent,
-                              fontFamily: "monospace, monospace",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               ...lastRowCellStyle,
@@ -1320,8 +1122,6 @@ const CallCount = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              color: C.accent,
-                              fontFamily: "monospace, monospace",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               ...lastRowCellStyle,
@@ -1376,11 +1176,9 @@ const CallCount = () => {
                           </td>
 
                           <td
-                             style={{
+                            style={{
                               ...tdStyle,
                               background: rowBg,
-                              color: C.accent,
-                              fontFamily: "monospace, monospace",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               ...lastRowCellStyle,
@@ -1393,14 +1191,10 @@ const CallCount = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              color: C.labelText,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
                               borderRight: "none",
                               ...lastRowCellStyle,
-                              ...(isLastRow
-                                ? { borderBottomRightRadius: CARD_RADIUS }
-                                : {}),
                             }}
                             title={row.hangup_cause || ""}
                           >
@@ -1414,84 +1208,42 @@ const CallCount = () => {
                   )}
                 </tbody>
               </table>
-            )}
+            </div>
           </div>
 
-        {!loading && filteredData.length > 0 && (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: "7px 14px",
-      borderTop: `1px solid ${C.cardBorder}`,
-      background: "#ffffff",
-      borderBottomLeftRadius: CARD_RADIUS,
-      borderBottomRightRadius: CARD_RADIUS,
-      flexWrap: "wrap",
-      gap: 8,
-    }}
-  >
-    <span style={{ fontSize: 12, color: C.mutedText }}>
-      Showing {filteredData.length} record
-      {filteredData.length !== 1 ? "s" : ""} on page {page}
-      {hasActiveFilters ? ` (filtered from ${rows.length})` : ""}
-    </span>
+          {filteredData.length > 0 && (
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={filteredData.length}
+              recordLabel="record"
+              onPageChange={(p) => {
+                if (p < page) handlePrev();
+                else if (p > page) handleNext();
+              }}
+              style={{ borderTop: "none" }}
+            />
+          )}
+            </>
+          )}
+        </div>
 
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <Btn
-        onClick={handlePrev}
-        disabled={loading || page <= 1}
-        variant="outline"
-      >
-        ← Prev
-      </Btn>
-
-      <span
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: C.accent,
-          background: "#eff6ff",
-          padding: "5px 14px",
-          borderRadius: 999,
-          border: `1px solid ${C.accent}`,
-        }}
-      >
-        Page {page}
-      </span>
-
-      <Btn
-        onClick={handleNext}
-        disabled={loading || !rows || rows.length < limit}
-        variant="outline"
-      >
-        Next →
-      </Btn>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 20,
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#DC2626",
+          }}
+        >
+          <span>Only latest 500 records shown</span>
+        </div>
+      </div>
     </div>
-  </div>
-)}
-
-</div>
-</div>
-
-<div
-  style={{
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    marginTop: 20,
-    marginBottom: 0,
-     fontSize: 13,
-    fontWeight: 700,
-    color: "#dc2626",
-  }}
->
-  <span>Only latest 500 records shown</span>
-</div>
-
-</div>
-);
+  );
 };
 
 export default CallCount;

@@ -1,4 +1,5 @@
 import React from "react";
+import { CircularProgress } from "@mui/material";
 
 /** Shared palette — matches E1-PRI Num Manipulate pages */
 export const C = {
@@ -207,3 +208,112 @@ export const numManipulatePaginationStyle = {
   borderBottomRightRadius: CARD_RADIUS,
   overflow: "hidden",
 };
+
+/** PBX list/form pages — breadcrumb (matches SIP Register / System Settings) */
+export const pbxBreadcrumbStyle = {
+  fontSize: 12,
+  color: C.mutedText,
+  marginBottom: 16,
+  fontWeight: 400,
+  display: "flex",
+  alignItems: "center",
+  gap: 4,
+  flexWrap: "wrap",
+};
+
+export const PbxBreadcrumb = ({ section, current, style }) => (
+  <div style={{ ...pbxBreadcrumbStyle, ...style }}>
+    <span>PBX</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span style={{ color: C.strongText, fontWeight: 600 }}>{current}</span>
+  </div>
+);
+
+/** Multi-segment breadcrumb for CDR, Status, and other non-PBX sections */
+export const PageBreadcrumb = ({ segments, style }) => (
+  <div style={{ ...pbxBreadcrumbStyle, ...style }}>
+    {segments.map((label, index) => (
+      <React.Fragment key={`${label}-${index}`}>
+        {index > 0 ? <span>&gt;</span> : null}
+        <span
+          style={
+            index === segments.length - 1
+              ? { color: C.strongText, fontWeight: 600 }
+              : undefined
+          }
+        >
+          {label}
+        </span>
+      </React.Fragment>
+    ))}
+  </div>
+);
+
+export const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+export const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+/** PCM PSTN-style table list loading (first load) */
+export const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+/** PCM PSTN-style empty table list */
+export const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);

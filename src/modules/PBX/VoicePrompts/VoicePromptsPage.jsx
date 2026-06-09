@@ -12,7 +12,6 @@ import {
   Tooltip,
   TextField,
   Checkbox,
-  CircularProgress,
   Alert,
 } from "@mui/material";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
@@ -35,6 +34,13 @@ import {
   updateVoicePromptPreferences,
   uploadMohFile,
 } from "../../../api/apiService";
+import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -603,14 +609,8 @@ const VoicePromptsPage = () => {
   }, [mohAudioUrl, customAudioUrl]);
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
           <Alert
@@ -629,31 +629,16 @@ const VoicePromptsPage = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb + Last Updated */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Voice Prompts &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              Voice Prompts
-            </span>
-          </div>
-        </div>
+        <PbxBreadcrumb section="Voice Prompts" current="Voice Prompts" />
 
         {/* Main Card */}
         <div
           style={{
             background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
+            border: `1.5px solid ${C.cardBorder}`,
+            borderRadius: 10,
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
           }}
         >
           {/* Tabs */}
@@ -919,6 +904,14 @@ const VoicePromptsPage = () => {
                     borderRadius: 6,
                   }}
                 >
+                  {mohLoading ? (
+                    <TableListLoading />
+                  ) : mohFiles.length === 0 ? (
+                    <TableListEmptyState
+                      message="No hold music uploaded yet."
+                      showButton={false}
+                    />
+                  ) : (
                   <table
                     style={{
                       width: "100%",
@@ -940,31 +933,7 @@ const VoicePromptsPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {mohLoading ? (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            style={{ textAlign: "center", padding: 32 }}
-                          >
-                            <CircularProgress size={24} />
-                          </td>
-                        </tr>
-                      ) : mohFiles.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            style={{
-                              textAlign: "center",
-                              padding: 32,
-                              fontSize: 13,
-                              color: C.mutedText,
-                            }}
-                          >
-                            No hold music uploaded yet.
-                          </td>
-                        </tr>
-                      ) : (
-                        mohFiles.map((item, idx) => (
+                        {mohFiles.map((item, idx) => (
                           <tr
                             key={item.id}
                             style={{
@@ -1134,10 +1103,10 @@ const VoicePromptsPage = () => {
                               </div>
                             </td>
                           </tr>
-                        ))
-                      )}
+                        ))}
                     </tbody>
                   </table>
+                  )}
                 </div>
 
                 {mohAudioUrl && (
@@ -1293,6 +1262,14 @@ const VoicePromptsPage = () => {
                     borderRadius: 6,
                   }}
                 >
+                  {customLoading ? (
+                    <TableListLoading />
+                  ) : customItems.length === 0 ? (
+                    <TableListEmptyState
+                      message="No custom prompts uploaded yet."
+                      showButton={false}
+                    />
+                  ) : (
                   <table
                     style={{
                       width: "100%",
@@ -1314,31 +1291,7 @@ const VoicePromptsPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {customLoading ? (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            style={{ textAlign: "center", padding: 32 }}
-                          >
-                            <CircularProgress size={24} />
-                          </td>
-                        </tr>
-                      ) : customItems.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            style={{
-                              textAlign: "center",
-                              padding: 32,
-                              fontSize: 13,
-                              color: C.mutedText,
-                            }}
-                          >
-                            No custom prompts uploaded/recorded yet.
-                          </td>
-                        </tr>
-                      ) : (
-                        customItems.map((item, idx) => (
+                        {customItems.map((item, idx) => (
                           <tr
                             key={item.id}
                             style={{
@@ -1498,10 +1451,10 @@ const VoicePromptsPage = () => {
                               </div>
                             </td>
                           </tr>
-                        ))
-                      )}
+                        ))}
                     </tbody>
                   </table>
+                  )}
                 </div>
 
                 {customAudioUrl && (

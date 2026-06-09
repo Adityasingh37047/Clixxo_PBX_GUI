@@ -1,18 +1,50 @@
 import React, { useState } from "react";
-import { Alert } from "@mui/material";
+import { Alert, Checkbox } from "@mui/material";
 import {
   NAT_SETTINGS_FIELDS,
   NAT_SETTINGS_NOTE,
 } from "../../../sections/voip/constants/NatSettingsConstants";
-import { nativeFieldInteraction } from "../../../sections/advanced/advancedSharedUi";
+import {
+  C,
+  Btn,
+  checkboxSx,
+  AdvancedPageShell,
+  VoipBreadcrumb,
+  advancedTableContainerStyle,
+  advancedBlueBarStyle,
+  nativeFieldInputStyle,
+  nativeFieldSelectStyle,
+  nativeFieldInteraction,
+  advancedFormBtnStyle,
+  advancedFormInlineFooterStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
-const ACCENT = "#3B6FE8";
+const NAT_SETTINGS_SECTION_HEADING_COLOR = "#30415A";
 
-const inputClass =
-  "w-full h-9 px-3 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-lg outline-none transition-colors hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed";
-
-const labelClass =
-  "block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5";
+const NatSettingsSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: NAT_SETTINGS_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 const getInitialState = () => {
   const state = {};
@@ -29,76 +61,6 @@ const getInitialState = () => {
   });
   return state;
 };
-
-const shouldShowField = (field, form) => {
-  if (!field.conditional) return true;
-  const conditionalValue = form[field.conditional];
-  if (field.conditionalValues) {
-    return field.conditionalValues.includes(conditionalValue);
-  }
-  if (field.conditionalValue !== undefined) {
-    return conditionalValue === field.conditionalValue;
-  }
-  return !!conditionalValue;
-};
-
-const ToggleSwitch = ({ checked, onChange, id, disabled }) => (
-  <button
-    type="button"
-    id={id}
-    role="switch"
-    aria-checked={checked}
-    disabled={disabled}
-    onClick={() => !disabled && onChange(!checked)}
-    className={`relative w-11 h-6 rounded-full border-none p-0 shrink-0 bg-transparent ${
-      disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-    }`}
-  >
-    <span
-      className="block w-full h-full rounded-full transition-colors duration-200"
-      style={{ backgroundColor: checked ? ACCENT : "#cbd5e1" }}
-    />
-    <span
-      className="absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow transition-all duration-200"
-      style={{ left: checked ? 23 : 3 }}
-    />
-  </button>
-);
-
-const ToggleRow = ({ label, checked, onChange, id, disabled }) => (
-  <div className="flex items-center justify-between gap-4 py-3 border-t border-slate-100 first:border-t-0 first:pt-0">
-    <span
-      className={`text-sm font-semibold text-slate-700 ${
-        disabled ? "opacity-60" : ""
-      }`}
-    >
-      {label}
-    </span>
-    <div className="flex items-center gap-2 shrink-0">
-      <span className="text-xs font-medium text-slate-500">Enable</span>
-      <ToggleSwitch
-        id={id}
-        checked={checked}
-        onChange={onChange}
-        disabled={disabled}
-      />
-    </div>
-  </div>
-);
-
-const NatCard = ({ title, subtitle, children, className = "" }) => (
-  <div
-    className={`fxs-voip-nat-card bg-white border border-slate-200 rounded-xl shadow-sm p-5 md:p-[22px] transition-shadow duration-200 hover:shadow-md hover:border-slate-300 ${className}`}
-  >
-    <div className="mb-4">
-      <h2 className="text-sm font-bold text-slate-800 leading-snug">{title}</h2>
-      {subtitle && (
-        <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
-      )}
-    </div>
-    {children}
-  </div>
-);
 
 const NatSettingsPage = () => {
   const [form, setForm] = useState(getInitialState());
@@ -126,6 +88,7 @@ const NatSettingsPage = () => {
   };
 
   const handleCheckbox = (key) => {
+    // Prevent checking/unchecking Auto Detect NAT IP when Learn NAT is unchecked
     if (key === "autoDetectNatIp" && !form.learnNat) {
       return;
     }
@@ -134,6 +97,7 @@ const NatSettingsPage = () => {
       const newValue = !prev[key];
       const updates = { [key]: newValue };
 
+      // When Learn NAT is unchecked, uncheck Auto Detect NAT IP
       if (key === "learnNat" && !newValue) {
         updates.autoDetectNatIp = false;
       }
@@ -150,20 +114,160 @@ const NatSettingsPage = () => {
     setForm(getInitialState());
   };
 
-  const showOuterNetwork = shouldShowField(
-    NAT_SETTINGS_FIELDS.find((f) => f.key === "outerNetworkAddress"),
-    form,
-  );
-  const showStunFields = shouldShowField(
-    NAT_SETTINGS_FIELDS.find((f) => f.key === "stunServerAddress"),
-    form,
+  // Check if field should be shown based on conditional logic
+  const shouldShowField = (field) => {
+    if (!field.conditional) return true;
+
+    const conditionalValue = form[field.conditional];
+
+    if (field.conditionalValues) {
+      return field.conditionalValues.includes(conditionalValue);
+    } else if (field.conditionalValue !== undefined) {
+      return conditionalValue === field.conditionalValue;
+    } else {
+      return !!conditionalValue;
+    }
+  };
+
+  // Group fields by section and method
+  const groupedFields = NAT_SETTINGS_FIELDS.reduce((acc, field) => {
+    if (!shouldShowField(field)) return acc;
+
+    const sectionKey = field.section;
+    if (!acc[sectionKey]) {
+      acc[sectionKey] = {};
+    }
+
+    const methodKey = field.method || "no-method";
+    if (!acc[sectionKey][methodKey]) {
+      acc[sectionKey][methodKey] = [];
+    }
+
+    acc[sectionKey][methodKey].push(field);
+    return acc;
+  }, {});
+
+  const fieldInputStyle = {
+    ...nativeFieldInputStyle,
+    width: 220,
+  };
+
+  const fieldSelectStyle = {
+    ...nativeFieldSelectStyle,
+    width: 220,
+  };
+
+  const fieldLabelStyle = {
+    width: 220,
+    flexShrink: 0,
+    fontSize: 13,
+    fontWeight: 600,
+    color: C.labelText,
+    textAlign: "left",
+  };
+
+  const fieldControlStyle = {
+    width: 220,
+    flexShrink: 0,
+  };
+
+  const renderFieldRow = (field) => (
+    <div
+      key={field.key}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+      }}
+    >
+      <label style={fieldLabelStyle}>{field.label}</label>
+      <div style={fieldControlStyle}>{renderFieldControl(field)}</div>
+    </div>
   );
 
+  const renderFieldControl = (field) => {
+    if (field.type === "readonly") {
+      return (
+        <div
+          style={{
+            ...fieldInputStyle,
+            lineHeight: "28px",
+            backgroundColor: "#e5e7eb",
+          }}
+        >
+          {form[field.key] || field.default || ""}
+        </div>
+      );
+    }
+    if (field.type === "text") {
+      return (
+        <input
+          type="text"
+          value={form[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          style={fieldInputStyle}
+          {...nativeFieldInteraction}
+        />
+      );
+    }
+    if (field.type === "select") {
+      return (
+        <select
+          value={form[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          style={fieldSelectStyle}
+          {...nativeFieldInteraction}
+        >
+          {field.options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      );
+    }
+    if (field.type === "checkbox") {
+      const disabled = field.key === "autoDetectNatIp" && !form.learnNat;
+      return (
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            cursor: disabled ? "not-allowed" : "pointer",
+          }}
+        >
+          <Checkbox
+            size="small"
+            checked={!!form[field.key]}
+            onChange={() => handleCheckbox(field.key)}
+            disabled={disabled}
+            sx={{
+              ...checkboxSx,
+              ...(disabled
+                ? { opacity: 0.6, cursor: "not-allowed" }
+                : { cursor: "pointer" }),
+            }}
+          />
+          <span
+            style={{
+              color: C.valueText,
+              fontSize: 13,
+              opacity: disabled ? 0.6 : 1,
+            }}
+          >
+            Enable
+          </span>
+        </label>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="fxs-voip-media-page">
+    <AdvancedPageShell>
       {toast.msg && (
         <Alert
-          className="fxs-voip-media-toast"
           severity={toast.type}
           onClose={() => setToast({ msg: "", type: "success" })}
           sx={{
@@ -179,198 +283,136 @@ const NatSettingsPage = () => {
           {toast.msg}
         </Alert>
       )}
+      <VoipBreadcrumb current="NAT Settings" />
+      <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
+        <div style={advancedBlueBarStyle}>
+          <span>NAT Settings</span>
+        </div>
+        <div style={{ padding: "24px 32px 0" }}>
+          <div style={{ marginBottom: 12 }}>
+            <div className="flex flex-col gap-4 w-full">
+              {Object.entries(groupedFields).map(
+                ([sectionName, methods], sectionIdx) => (
+                  <div key={sectionName} className="flex flex-col gap-2 w-full">
+                    <NatSettingsSectionHeading
+                      title={sectionName}
+                      isFirst={sectionIdx === 0}
+                    />
 
-      {/* Breadcrumb & title */}
-      <div className="mb-5">
-        <nav
-          className="flex items-center gap-1.5 text-xs text-slate-400 mb-2"
-          aria-label="Breadcrumb"
-        >
-          <span>FXS</span>
-          <span className="text-slate-300">/</span>
-          <span>VoIP</span>
-          <span className="text-slate-300">/</span>
-          <span className="text-slate-800 font-semibold">NAT Settings</span>
-        </nav>
-        <h1 className="text-[26px] font-bold text-slate-900 tracking-tight m-0">
-          NAT Settings
-        </h1>
-        <p className="text-sm text-slate-500 mt-1.5 max-w-xl">
-          Configure local NAT traversal methods and remote device adaptation for
-          VoIP sessions.
-        </p>
-      </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        width: "100%",
+                      }}
+                    >
+                      <div
+                        className="flex flex-col gap-6"
+                        style={{ width: "fit-content", maxWidth: "100%" }}
+                      >
+                        {Object.entries(methods).map(([methodName, fields]) => (
+                          <div
+                            key={`${sectionName}-${methodName}`}
+                            className="flex flex-col gap-2"
+                          >
+                            {methodName !== "no-method" && (
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 600,
+                                  color: C.labelText,
+                                  paddingLeft: methodName.endsWith("-")
+                                    ? 0
+                                    : 24,
+                                }}
+                              >
+                                {methodName}
+                              </div>
+                            )}
 
-      {/* Card grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Card 1: STUN & Auto NAT */}
-        <NatCard
-          title="STUN & Auto NAT"
-          subtitle="Automated network address translation discovery"
-        >
-          <div className="mb-4">
-            <label htmlFor="autoNat" className={labelClass}>
-              Auto Nat
-            </label>
-            <select
-              id="autoNat"
-              value={form.autoNat}
-              onChange={(e) => handleChange("autoNat", e.target.value)}
-              className={inputClass}
-              {...nativeFieldInteraction}
-            >
-              <option value="DisableAutoNat">DisableAutoNat</option>
-              <option value="Enable PMP">Enable PMP</option>
-              <option value="Enable UPNP">Enable UPNP</option>
-            </select>
-          </div>
+                            <div
+                              className="flex flex-col gap-2"
+                              style={{
+                                paddingLeft:
+                                  methodName !== "no-method" ? 24 : 0,
+                              }}
+                            >
+                              {fields.map((field) => renderFieldRow(field))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ),
+              )}
 
-          {showOuterNetwork && (
-            <div className="mb-4">
-              <label className={labelClass}>Outer Network Address</label>
-              <div
-                className={`${inputClass} flex items-center bg-slate-100 text-slate-600 cursor-default`}
-              >
-                {form.outerNetworkAddress || "Offline"}
-              </div>
-            </div>
-          )}
-
-          <ToggleRow
-            id="stunServer"
-            label="STUN Server"
-            checked={!!form.stunServer}
-            onChange={() => handleCheckbox("stunServer")}
-          />
-
-          {showStunFields && (
-            <>
-              <div className="mt-3 mb-4">
-                <label className={labelClass}>NAT Type</label>
+              <div className="flex flex-col gap-0 w-full">
+                <NatSettingsSectionHeading title="Note:" />
                 <div
-                  className={`${inputClass} flex items-center bg-slate-100 text-slate-600 cursor-default`}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
                 >
-                  {form.natType || "Unknown"}
+                  <div
+                    style={{
+                      width: "max-content",
+                      maxWidth: "100%",
+                      textAlign: "left",
+                    }}
+                  >
+                    {NAT_SETTINGS_NOTE.split("\n")
+                      .filter(Boolean)
+                      .map((line, index) => (
+                        <p
+                          key={index}
+                          style={{
+                            margin: 0,
+                            color: C.mutedText,
+                            fontSize: 11,
+                            lineHeight: 1.45,
+                            whiteSpace: "nowrap",
+                            textAlign: "left",
+                          }}
+                        >
+                          {line}
+                        </p>
+                      ))}
+                  </div>
                 </div>
               </div>
-              <div>
-                <label htmlFor="stunServerAddress" className={labelClass}>
-                  STUN Server Address
-                </label>
-                <input
-                  id="stunServerAddress"
-                  type="text"
-                  value={form.stunServerAddress}
-                  onChange={(e) =>
-                    handleChange("stunServerAddress", e.target.value)
-                  }
-                  className={inputClass}
-                  {...nativeFieldInteraction}
-                />
-              </div>
-            </>
-          )}
-        </NatCard>
-
-        {/* Card 2: IP Mapping */}
-        <NatCard
-          title="IP Mapping"
-          subtitle="Static routing and signaling address mapping"
-        >
-          <div className="mb-4">
-            <label htmlFor="mappingContactIp" className={labelClass}>
-              Mapping Contact IP
-            </label>
-            <input
-              id="mappingContactIp"
-              type="text"
-              value={form.mappingContactIp}
-              onChange={(e) =>
-                handleChange("mappingContactIp", e.target.value)
-              }
-              className={inputClass}
-              {...nativeFieldInteraction}
-            />
+            </div>
           </div>
-          <div>
-            <label htmlFor="mappingSdpIp" className={labelClass}>
-              Mapping SDP IP
-            </label>
-            <input
-              id="mappingSdpIp"
-              type="text"
-              value={form.mappingSdpIp}
-              onChange={(e) => handleChange("mappingSdpIp", e.target.value)}
-              className={inputClass}
-              {...nativeFieldInteraction}
-            />
-          </div>
-        </NatCard>
-
-        {/* Card 3: Symmetric NAT & Port Control */}
-        <NatCard
-          title="Symmetric NAT & Port Control"
-          subtitle="Rport handling and NAT detection parameters"
-        >
-          <ToggleRow
-            id="rport"
-            label="Rport"
-            checked={!!form.rport}
-            onChange={() => handleCheckbox("rport")}
-          />
-          <ToggleRow
-            id="learnNat"
-            label="Learn NAT"
-            checked={!!form.learnNat}
-            onChange={() => handleCheckbox("learnNat")}
-          />
-          <ToggleRow
-            id="autoDetectNatIp"
-            label="Auto Detect NAT IP"
-            checked={!!form.autoDetectNatIp}
-            onChange={() => handleCheckbox("autoDetectNatIp")}
-            disabled={!form.learnNat}
-          />
-        </NatCard>
-
-        {/* Card 4: Remote Device Configuration */}
-        <NatCard
-          title="Remote Device Configuration"
-          subtitle="Help remote devices complete NAT traversal"
-        >
-          <ToggleRow
-            id="rtpSelfAdaption"
-            label="RTP Self-adaption"
-            checked={!!form.rtpSelfAdaption}
-            onChange={() => handleCheckbox("rtpSelfAdaption")}
-          />
-        </NatCard>
-      </div>
-
-      {/* Note + actions footer */}
-      <div className="mt-4 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-5 py-3 bg-amber-50 border-b border-amber-200 text-xs leading-relaxed text-amber-900">
-          <strong>Note:</strong>{" "}
-          {NAT_SETTINGS_NOTE.split("\n").filter(Boolean).join(" ")}
         </div>
-        <div className="flex items-center justify-end gap-2.5 px-5 py-3.5 flex-wrap">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="h-9 px-[18px] text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800 transition-all active:translate-y-px"
-          >
-            Reset
-          </button>
-          <button
+        <div
+          style={{
+            ...advancedFormInlineFooterStyle,
+            width: "100%",
+            marginLeft: 0,
+            marginRight: 0,
+          }}
+        >
+          <Btn
             type="button"
             onClick={handleSave}
-            className="h-9 px-[22px] text-sm font-bold text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 hover:shadow-md hover:shadow-blue-500/30 transition-all active:translate-y-px"
+            variant="primary"
+            style={advancedFormBtnStyle}
           >
-            Save changes
-          </button>
+            Save
+          </Btn>
+          <Btn
+            type="button"
+            onClick={handleReset}
+            variant="cancel"
+            style={advancedFormBtnStyle}
+          >
+            Reset
+          </Btn>
         </div>
       </div>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

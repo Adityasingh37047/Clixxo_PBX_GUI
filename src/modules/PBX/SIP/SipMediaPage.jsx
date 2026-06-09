@@ -16,8 +16,6 @@ import {
   sipPcmAuthFormFooterStyle,
   sipPcmAuthFormBtnStyle,
   SipPcmSectionHeading,
-  SIP_PCM_FORM_BODY_CLASS,
-  SIP_PCM_FORM_FIELDS_WRAPPER_CLASS,
   SIP_PCM_FORM_STACK_CLASS,
   SIP_PCM_FORM_ROW_CLASS,
   sipPcmFormLabelStyle,
@@ -30,6 +28,29 @@ import {
   listMediaSettings,
   updateMediaSettings,
 } from "../../../api/apiService";
+
+/** Media Parameters — responsive side inset (20px min → 150px max) */
+const SIP_MEDIA_SIDE_MARGIN = "clamp(20px, 10vw, 150px)";
+
+/** Matches Network page card body — LAN 1 heading left/right inset */
+const SIP_MEDIA_FORM_BODY_STYLE = {
+  padding: "12px 32px 0",
+  boxSizing: "border-box",
+};
+
+const SIP_MEDIA_FORM_INSET_STYLE = {
+  marginLeft: SIP_MEDIA_SIDE_MARGIN,
+  marginRight: SIP_MEDIA_SIDE_MARGIN,
+  boxSizing: "border-box",
+};
+
+const SIP_MEDIA_FORM_FIELDS_WRAPPER_STYLE = {
+  flex: 1,
+  paddingTop: 16,
+  paddingBottom: 16,
+  marginBottom: 12,
+  boxSizing: "border-box",
+};
 
 const SipMediaPage = () => {
   const [formData, setFormData] = useState(SIP_MEDIA_INITIAL_FORM);
@@ -157,7 +178,7 @@ const SipMediaPage = () => {
             <span>Media Parameters</span>
           </div>
 
-          <div className={SIP_PCM_FORM_BODY_CLASS}>
+          <div style={SIP_MEDIA_FORM_BODY_STYLE}>
             {loading ? (
               <div className="flex items-center justify-center min-h-[400px] w-full">
                 <div className="text-center">
@@ -168,64 +189,68 @@ const SipMediaPage = () => {
                 </div>
               </div>
             ) : (
-              <div
-                className={SIP_PCM_FORM_FIELDS_WRAPPER_CLASS}
-                style={{ marginBottom: 12 }}
-              >
-                <div className={SIP_PCM_FORM_STACK_CLASS}>
-                  {SIP_MEDIA_FIELDS.map((field) => {
-                    if (field.conditional) {
-                      const condVal = formData[field.conditional];
-                      if (field.conditionalValues) {
-                        if (!field.conditionalValues.includes(condVal))
-                          return null;
-                      } else if (field.conditionalValue) {
-                        if (condVal !== field.conditionalValue) return null;
+              <div style={SIP_MEDIA_FORM_FIELDS_WRAPPER_STYLE}>
+                <div style={SIP_MEDIA_FORM_INSET_STYLE}>
+                  <div className={SIP_PCM_FORM_STACK_CLASS}>
+                    {SIP_MEDIA_FIELDS.map((field) => {
+                      if (field.conditional) {
+                        const condVal = formData[field.conditional];
+                        if (field.conditionalValues) {
+                          if (!field.conditionalValues.includes(condVal))
+                            return null;
+                        } else if (field.conditionalValue) {
+                          if (condVal !== field.conditionalValue) return null;
+                        }
                       }
-                    }
 
-                    return (
-                      <div key={field.name} className={SIP_PCM_FORM_ROW_CLASS}>
-                        <label style={sipPcmFormLabelStyle}>
-                          {field.label}
-                        </label>
-                        <div style={sipPcmFormControlWrapStyle}>
-                          {field.type === "select" ? (
-                            <Select
-                              name={field.name}
-                              value={formData[field.name]}
-                              onChange={handleInputChange}
-                              variant="outlined"
-                              fullWidth
-                              sx={sipPcmAuthMuiSelectSx}
-                            >
-                              {field.options.map((option) => (
-                                <MenuItem
-                                  key={option.value}
-                                  value={option.value}
-                                  sx={{ fontSize: 12 }}
-                                >
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          ) : (
-                            <input
-                              type="text"
-                              name={field.name}
-                              value={formData[field.name]}
-                              onChange={handleInputChange}
-                              style={sipPcmAuthInputStyle}
-                              {...sipPcmAuthInputInteraction}
-                            />
-                          )}
+                      return (
+                        <div
+                          key={field.name}
+                          className={SIP_PCM_FORM_ROW_CLASS}
+                        >
+                          <label style={sipPcmFormLabelStyle}>
+                            {field.label}
+                          </label>
+                          <div style={sipPcmFormControlWrapStyle}>
+                            {field.type === "select" ? (
+                              <Select
+                                name={field.name}
+                                value={formData[field.name]}
+                                onChange={handleInputChange}
+                                variant="outlined"
+                                fullWidth
+                                sx={sipPcmAuthMuiSelectSx}
+                              >
+                                {field.options.map((option) => (
+                                  <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                    sx={{ fontSize: 12 }}
+                                  >
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            ) : (
+                              <input
+                                type="text"
+                                name={field.name}
+                                value={formData[field.name]}
+                                onChange={handleInputChange}
+                                style={sipPcmAuthInputStyle}
+                                {...sipPcmAuthInputInteraction}
+                              />
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+                </div>
 
-                  <SipPcmSectionHeading title="CODEC Settings" />
+                <SipPcmSectionHeading title="CODEC Settings" />
 
+                <div style={SIP_MEDIA_FORM_INSET_STYLE}>
                   <div className={SIP_PCM_FORM_ROW_CLASS}>
                     <label
                       style={{

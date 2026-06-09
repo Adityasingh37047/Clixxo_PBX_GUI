@@ -182,6 +182,33 @@ const valueBoxStyle = {
   justifyContent: "center",
 };
 
+/** Upgrade page — standalone action footer (not attached to any table/card) */
+const upgradeFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  marginTop: 24,
+  padding: "10px 20px",
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
+  boxSizing: "border-box",
+  background: C.cardBg,
+  boxShadow: C.cardShadow,
+};
+
+const upgradeFooterBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
 const formatVersionValue = (raw) => {
   if (raw == null || raw === "") return "Unavailable";
   if (typeof raw === "object") {
@@ -556,7 +583,7 @@ const Upgrade = () => {
           </div>
         </div>
 
-        {/* File Input Row - Styled to match AccountManage */}
+        {/* File Input Row */}
         <div
           style={{
             ...tableContainerStyle,
@@ -588,6 +615,7 @@ const Upgrade = () => {
           />
           <Btn
             variant="cancel"
+            type="button"
             onClick={() =>
               !uploading && !rebooting && fileInputRef.current?.click()
             }
@@ -602,27 +630,21 @@ const Upgrade = () => {
               color:
                 fileName === UPGRADE_LABELS.noFile ? C.mutedText : C.valueText,
               flex: 1,
+              minWidth: 0,
             }}
           >
             {fileName}
           </span>
         </div>
 
-        {/* Buttons Row */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            gap: 24,
-            marginTop: 24,
-          }}
-        >
+        {/* Personal action footer — separate from tables/cards above */}
+        <div style={upgradeFooterStyle}>
           <Btn
             variant="primary"
+            type="button"
             onClick={handleUpdate}
             disabled={uploading || rebooting}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+            style={upgradeFooterBtnStyle}
           >
             {uploading
               ? "Uploading..."
@@ -632,9 +654,10 @@ const Upgrade = () => {
           </Btn>
           <Btn
             variant="cancel"
+            type="button"
             onClick={handleReset}
             disabled={uploading || rebooting}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+            style={upgradeFooterBtnStyle}
           >
             {UPGRADE_BUTTONS.reset}
           </Btn>

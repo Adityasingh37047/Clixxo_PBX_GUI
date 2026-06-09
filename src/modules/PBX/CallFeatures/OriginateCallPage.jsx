@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import {
-  Button,
-  TextField,
   CircularProgress,
   FormControl,
   Select as MuiSelect,
@@ -12,6 +10,21 @@ import {
   Checkbox,
   Alert,
 } from "@mui/material";
+import {
+  C,
+  Btn,
+  sipPcmFormPageWrapStyle,
+  sipPcmFormPageInnerStyle,
+  sipPcmFormCardStyle,
+  sipPcmFormHeaderStyle,
+  sipPcmAuthFormFooterStyle,
+  sipPcmAuthFormBtnStyle,
+  sipPcmFormLabelStyle,
+  sipPcmAuthInputStyle,
+  sipPcmAuthInputInteraction,
+  sipPcmAuthMuiSelectSx,
+  PbxBreadcrumb,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 // Agar amiOriginate apiService me defined hai to isko uncomment kar lena:
 // import { amiOriginate } from "../api/apiService";
@@ -34,22 +47,27 @@ function buildCallerId(name, number) {
   return undefined;
 }
 
-// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
+const COL_LABEL_STYLE = {
+  ...sipPcmFormLabelStyle,
+  width: 140,
 };
-const CARD_RADIUS = 20;
 
+const RIGHT_COL_LABEL_STYLE = {
+  ...sipPcmFormLabelStyle,
+  width: 120,
+};
 
-// ─────────────────────────────────────────────────────────────────────────────
+const FULL_WIDTH_INPUT_STYLE = {
+  ...sipPcmAuthInputStyle,
+  width: "100%",
+  maxWidth: "100%",
+};
+
+const FULL_WIDTH_SELECT_SX = {
+  ...sipPcmAuthMuiSelectSx,
+  width: "100%",
+  maxWidth: "100%",
+};
 
 const OriginateCallPage = () => {
   const [mode, setMode] = useState("simple"); // 'simple' | 'twostep'
@@ -145,97 +163,55 @@ const OriginateCallPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
-        {/* Error / Success Banner */}
+    <div style={sipPcmFormPageWrapStyle}>
+      <div style={sipPcmFormPageInnerStyle}>
         {message.text && (
-          <Alert
-            severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
+          <div
+            style={{
               position: "fixed",
               top: 20,
               right: 20,
               zIndex: 9999,
               minWidth: 300,
-              boxShadow: 3,
+              maxWidth: 420,
             }}
           >
-            {message.text}
-          </Alert>
+            <Alert
+              severity={message.type}
+              onClose={() => setMessage({ type: "", text: "" })}
+              sx={{ boxShadow: 3 }}
+            >
+              {message.text}
+            </Alert>
+          </div>
         )}
 
-        {/* Breadcrumb */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Call Features &rsaquo;{" "}
-            <span style={{ color: "#01060c", fontWeight: 600 }}>
-              Originate Call
-            </span>
-          </div>
-        </div>
+        <PbxBreadcrumb section="Call Features" current="Originate Call" />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              padding: "12px 16px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-            }}
-          >
-            <h2
-              style={{
-                margin: 0,
-                fontSize: 14,
-                fontWeight: 700,
-                color: "#475569",
-              }}
-            >
+        <div style={sipPcmFormCardStyle}>
+          <div style={sipPcmFormHeaderStyle}>
+            <span>
               AMI Originate
               <span
                 style={{
                   fontSize: 12,
                   fontWeight: 500,
-                  color: "#475569",
+                  color: C.mutedText,
                   marginLeft: 8,
                 }}
               >
                 (POST /api/ami — type: ami_originate)
               </span>
-            </h2>
+            </span>
           </div>
 
-          {/* Form Content */}
-          <div style={{ padding: 24 }}>
-            {/* Top-to-Bottom 2-Column Grid */}
+          <div style={{ padding: "16px 24px 0", boxSizing: "border-box" }}>
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: "24px 48px",
+                paddingBottom: 16,
               }}
             >
               {/* ── LEFT COLUMN (Basic Info) ── */}
@@ -243,90 +219,52 @@ const OriginateCallPage = () => {
                 style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 140,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Dial Extension <span style={{ color: C.errorRed }}>*</span>
+                  <label style={COL_LABEL_STYLE}>
+                    Dial Extension <span style={{ color: C.amber }}>*</span>
                   </label>
-                  <TextField
-                    size="small"
-                    fullWidth
+                  <input
+                    type="text"
                     value={extension}
                     onChange={(e) => setExtension(e.target.value)}
                     placeholder="e.g. 1004"
-                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                    style={FULL_WIDTH_INPUT_STYLE}
+                    {...sipPcmAuthInputInteraction}
                   />
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 140,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Name (label only)
-                  </label>
-                  <TextField
-                    size="small"
-                    fullWidth
+                  <label style={COL_LABEL_STYLE}>Name (label only)</label>
+                  <input
+                    type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Optional — not sent to API"
-                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                    style={FULL_WIDTH_INPUT_STYLE}
+                    {...sipPcmAuthInputInteraction}
                   />
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 140,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Caller ID Name
-                  </label>
-                  <TextField
-                    size="small"
-                    fullWidth
+                  <label style={COL_LABEL_STYLE}>Caller ID Name</label>
+                  <input
+                    type="text"
                     value={callerIdName}
                     onChange={(e) => setCallerIdName(e.target.value)}
                     placeholder="e.g. Front Desk"
-                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                    style={FULL_WIDTH_INPUT_STYLE}
+                    {...sipPcmAuthInputInteraction}
                   />
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 140,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Caller ID Number
-                  </label>
-                  <TextField
-                    size="small"
-                    fullWidth
+                  <label style={COL_LABEL_STYLE}>Caller ID Number</label>
+                  <input
+                    type="text"
                     value={callerIdNumber}
                     onChange={(e) => setCallerIdNumber(e.target.value)}
                     placeholder="e.g. 1000"
-                    inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                    style={FULL_WIDTH_INPUT_STYLE}
+                    {...sipPcmAuthInputInteraction}
                   />
                 </div>
               </div>
@@ -340,15 +278,12 @@ const OriginateCallPage = () => {
                 >
                   <label
                     style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
+                      ...RIGHT_COL_LABEL_STYLE,
                       width: 100,
-                      flexShrink: 0,
                       marginTop: 4,
                     }}
                   >
-                    Mode <span style={{ color: C.errorRed }}>*</span>
+                    Mode <span style={{ color: C.amber }}>*</span>
                   </label>
                   <RadioGroup
                     value={mode}
@@ -396,11 +331,8 @@ const OriginateCallPage = () => {
                   </RadioGroup>
                 </div>
 
-                {/* Conditional Fields based on Mode */}
                 <div
                   style={{
-                  
-                  
                     borderRadius: 6,
                     padding: 12,
                     display: "flex",
@@ -417,24 +349,20 @@ const OriginateCallPage = () => {
                           gap: 8,
                         }}
                       >
-                       <Checkbox
-  id="fixedApp"
-  checked={useFixedApp}
-  onChange={(e) => setUseFixedApp(e.target.checked)}
-  size="small"
-  sx={{
-    p: 0,
-    color: "#64748b",
-
-    "&.Mui-checked": {
-      color: "#0284c7",
-    },
-
-    "&.MuiCheckbox-indeterminate": {
-      color: "#0284c7",
-    },
-  }}
-/>
+                        <Checkbox
+                          id="fixedApp"
+                          checked={useFixedApp}
+                          onChange={(e) => setUseFixedApp(e.target.checked)}
+                          size="small"
+                          sx={{
+                            p: 0,
+                            color: "#64748b",
+                            "&.Mui-checked": { color: "#0284c7" },
+                            "&.MuiCheckbox-indeterminate": {
+                              color: "#0284c7",
+                            },
+                          }}
+                        />
                         <label
                           htmlFor="fixedApp"
                           style={{
@@ -457,27 +385,17 @@ const OriginateCallPage = () => {
                             gap: 12,
                           }}
                         >
-                          <label
-                            style={{
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: C.labelText,
-                              width: 120,
-                              flexShrink: 0,
-                            }}
-                          >
+                          <label style={RIGHT_COL_LABEL_STYLE}>
                             Application{" "}
-                            <span style={{ color: C.errorRed }}>*</span>
+                            <span style={{ color: C.amber }}>*</span>
                           </label>
-                          <TextField
-                            size="small"
-                            fullWidth
+                          <input
+                            type="text"
                             value={application}
                             onChange={(e) => setApplication(e.target.value)}
                             placeholder="Wait"
-                            inputProps={{
-                              style: { fontSize: 13, padding: "6px 8px" },
-                            }}
+                            style={FULL_WIDTH_INPUT_STYLE}
+                            {...sipPcmAuthInputInteraction}
                           />
                         </div>
                       )}
@@ -489,26 +407,16 @@ const OriginateCallPage = () => {
                           gap: 12,
                         }}
                       >
-                        <label
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: 120,
-                            flexShrink: 0,
-                          }}
-                        >
+                        <label style={RIGHT_COL_LABEL_STYLE}>
                           {useFixedApp ? "App Data (s)" : "Application Data"}
                         </label>
-                        <TextField
-                          size="small"
-                          fullWidth
+                        <input
+                          type="text"
                           value={appData}
                           onChange={(e) => setAppData(e.target.value)}
                           placeholder={useFixedApp ? "30" : "1"}
-                          inputProps={{
-                            style: { fontSize: 13, padding: "6px 8px" },
-                          }}
+                          style={FULL_WIDTH_INPUT_STYLE}
+                          {...sipPcmAuthInputInteraction}
                         />
                       </div>
                     </>
@@ -521,28 +429,22 @@ const OriginateCallPage = () => {
                           gap: 12,
                         }}
                       >
-                        <label
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: 120,
-                            flexShrink: 0,
-                          }}
-                        >
-                          Context <span style={{ color: C.errorRed }}>*</span>
+                        <label style={RIGHT_COL_LABEL_STYLE}>
+                          Context <span style={{ color: C.amber }}>*</span>
                         </label>
                         <FormControl size="small" fullWidth>
                           <MuiSelect
                             value={context}
                             onChange={(e) => setContext(e.target.value)}
-                            sx={{ fontSize: 13, background: "#fff" }}
+                            variant="outlined"
+                            fullWidth
+                            sx={FULL_WIDTH_SELECT_SX}
                           >
                             {CONTEXT_OPTIONS.map((ctx) => (
                               <MenuItem
                                 key={ctx}
                                 value={ctx}
-                                sx={{ fontSize: 13 }}
+                                sx={{ fontSize: 12 }}
                               >
                                 {ctx}
                               </MenuItem>
@@ -558,31 +460,17 @@ const OriginateCallPage = () => {
                           gap: 12,
                         }}
                       >
-                        <label
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: 120,
-                            flexShrink: 0,
-                          }}
-                        >
+                        <label style={RIGHT_COL_LABEL_STYLE}>
                           Exten (B leg){" "}
-                          <span style={{ color: C.errorRed }}>*</span>
+                          <span style={{ color: C.amber }}>*</span>
                         </label>
-                        <TextField
-                          size="small"
-                          fullWidth
+                        <input
+                          type="text"
                           value={exten}
                           onChange={(e) => setExten(e.target.value)}
                           placeholder="e.g. 1005"
-                          inputProps={{
-                            style: {
-                              fontSize: 13,
-                              padding: "6px 8px",
-                              background: "#fff",
-                            },
-                          }}
+                          style={FULL_WIDTH_INPUT_STYLE}
+                          {...sipPcmAuthInputInteraction}
                         />
                       </div>
 
@@ -593,31 +481,14 @@ const OriginateCallPage = () => {
                           gap: 12,
                         }}
                       >
-                        <label
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: 120,
-                            flexShrink: 0,
-                          }}
-                        >
-                          Priority
-                        </label>
-                        <TextField
-                          size="small"
-                          fullWidth
+                        <label style={RIGHT_COL_LABEL_STYLE}>Priority</label>
+                        <input
                           type="number"
                           value={priority}
                           onChange={(e) => setPriority(e.target.value)}
                           placeholder="1"
-                          inputProps={{
-                            style: {
-                              fontSize: 13,
-                              padding: "6px 8px",
-                              background: "#fff",
-                            },
-                          }}
+                          style={FULL_WIDTH_INPUT_STYLE}
+                          {...sipPcmAuthInputInteraction}
                         />
                       </div>
                     </>
@@ -630,7 +501,8 @@ const OriginateCallPage = () => {
               style={{
                 fontSize: 12,
                 color: C.mutedText,
-                marginTop: 24,
+                marginTop: 8,
+                marginBottom: 16,
                 textAlign: "center",
               }}
             >
@@ -640,50 +512,22 @@ const OriginateCallPage = () => {
             </p>
           </div>
 
-          {/* Footer Action */}
-          <div
-            style={{
-              padding: "16px 24px",
-              background: "#f",
-              borderTop: `1px solid ${C.cardBorder}`,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-           <Button
-  variant="contained"
-  disabled={loading}
-  onClick={handleOriginate}
-  startIcon={
-    loading && <CircularProgress size={16} color="inherit" />
-  }
-  sx={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-    fontWeight: 600,
-    textTransform: "none",
-    minWidth: 160,
-    borderRadius: 1.5,
-
-    "&:hover": {
-      background:
-        "linear-gradient(to bottom, #647A9B 0%, #4A6284 60%, #344A67 100%)",
-    },
-
-    "&:disabled": {
-      background: "#cbd5e1",
-      color: "#64748b",
-      border: "1px solid #cbd5e1",
-    },
-  }}
->
-  {loading ? "Sending…" : "Originate Call"}
-</Button>
+          <div style={sipPcmAuthFormFooterStyle}>
+            <Btn
+              variant="primary"
+              disabled={loading}
+              onClick={handleOriginate}
+              style={sipPcmAuthFormBtnStyle}
+            >
+              {loading ? (
+                <>
+                  <CircularProgress size={14} color="inherit" />
+                  Sending…
+                </>
+              ) : (
+                "Originate Call"
+              )}
+            </Btn>
           </div>
         </div>
       </div>

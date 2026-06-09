@@ -26,6 +26,13 @@ import {
   updateCallbackRule,
   deleteCallbackRule,
 } from "../../../api/apiService";
+import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
@@ -214,6 +221,7 @@ const CallBackPage = () => {
   const [error, setError] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Search & Pagination
   const itemsPerPage = 20;
@@ -270,6 +278,7 @@ const CallBackPage = () => {
       showAlert("error", err?.message || "Failed to load callbacks.");
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -498,14 +507,8 @@ const CallBackPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 24,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {error.text && (
           <Alert
@@ -530,20 +533,7 @@ const CallBackPage = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb + Last Updated */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Call Features &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>CallBack</span>
-          </div>
-        </div>
+        <PbxBreadcrumb section="Call Features" current="CallBack" />
 
         {/* Main Card */}
         <div
@@ -722,17 +712,18 @@ borderTopRightRadius: CARD_RADIUS,
             overflowY: "auto",
             flex: 1,
           }}>
-            {loading.fetch ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
+            {isInitialLoad ? (
+              <TableListLoading />
+            ) : rows.length === 0 ? (
+              <TableListEmptyState
+                message="No callbacks found."
+                onAddNew={handleOpenAddModal}
+              />
+            ) : searchQuery && filteredRows.length === 0 ? (
+              <TableListEmptyState
+                message={`No results for "${searchQuery}"`}
+                showButton={false}
+              />
             ) : (
               <table
                 style={{
@@ -781,24 +772,7 @@ minWidth: 900,
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedRows.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={9}
-                        style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
-                        }}
-                      >
-                        {searchQuery
-                          ? `No results for "${searchQuery}"`
-                          : "No callbacks found. Click '+ Add New' to create one."}
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedRows.map((row, idx) => {
+                  {pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const isLastRow = idx === pagedRows.length - 1;
@@ -951,15 +925,14 @@ minWidth: 900,
                           </td>
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
             )}
           </div>
 
           {/* Footer Pagination */}
-          {!loading.fetch && filteredRows.length > 0 && (
+          {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
             <div
               style={{
                 display: "flex",

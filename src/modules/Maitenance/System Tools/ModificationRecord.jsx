@@ -7,6 +7,10 @@ import {
 } from "../../../constants/ModificationRecordConstants";
 import { Alert, CircularProgress } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
 
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
@@ -272,7 +276,7 @@ const ModificationRecord = () => {
           <div style={{ ...blueBarStyle, justifyContent: "left" }}>
             <span>{MR_TITLE}</span>
           </div>
-          <div style={{ padding: 0 }}>
+          <div style={{ padding: "8px 32px 0" }}>
             <div
               className="w-full min-h-[400px] max-h-[60vh] text-sm p-4 font-mono overflow-auto border-0 outline-none"
               style={{
@@ -281,52 +285,47 @@ const ModificationRecord = () => {
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
                 resize: "none",
+                marginBottom: 12,
               }}
             >
               {record || MR_PLACEHOLDER}
             </div>
           </div>
-        </div>
 
-        {/* Buttons Row */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 24,
-            marginTop: 24,
-          }}
-        >
-          <Btn
-            variant="primary"
-            onClick={handleCheck}
-            disabled={loading}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
-            {loading ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <CircularProgress size={16} sx={{ color: "inherit" }} />
-                Loading...
-              </div>
-            ) : (
-              MR_BUTTONS.check
-            )}
-          </Btn>
-          <Btn
-            variant="cancel"
-            onClick={handleDownload}
-            disabled={loading}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
-            {loading ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <CircularProgress size={16} sx={{ color: "inherit" }} />
-                Loading...
-              </div>
-            ) : (
-              MR_BUTTONS.download
-            )}
-          </Btn>
+          <div style={advancedFormInlineFooterStyle}>
+            <Btn
+              variant="primary"
+              type="button"
+              onClick={handleCheck}
+              disabled={loading}
+              style={advancedFormBtnStyle}
+            >
+              {loading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <CircularProgress size={16} sx={{ color: "inherit" }} />
+                  Loading...
+                </div>
+              ) : (
+                MR_BUTTONS.check
+              )}
+            </Btn>
+            <Btn
+              variant="cancel"
+              type="button"
+              onClick={handleDownload}
+              disabled={loading}
+              style={advancedFormBtnStyle}
+            >
+              {loading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <CircularProgress size={16} sx={{ color: "inherit" }} />
+                  Loading...
+                </div>
+              ) : (
+                MR_BUTTONS.download
+              )}
+            </Btn>
+          </div>
         </div>
 
         <p

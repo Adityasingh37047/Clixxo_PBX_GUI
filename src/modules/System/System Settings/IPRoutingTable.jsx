@@ -18,7 +18,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
+import { fetchNetwork, postLinuxCmd } from "../../../api/apiService";
 import {
   systemModalFieldInputStyle,
   systemModalSelectSx,
@@ -1103,234 +1103,45 @@ WantedBy=multi-user.target
   const loadNetworkOptions = async (isEditing = false) => {
     try {
       setNetworkLoading(true);
-      const res = await fetchSystemInfo();
-      // Robust extraction across possible shapes
-      const details = res?.details || {};
-      let interfaces = [];
-      if (Array.isArray(details.LAN_INTERFACES))
-        interfaces = details.LAN_INTERFACES;
-      else if (
-        details.LAN_INTERFACES &&
-        typeof details.LAN_INTERFACES === "object"
-      ) {
-        interfaces = Object.entries(details.LAN_INTERFACES).map(
-          ([name, data]) => ({ name, data }),
-        );
-      } else if (Array.isArray(details.interfaces))
-        interfaces = details.interfaces;
-      else if (details.network && Array.isArray(details.network.interfaces))
-        interfaces = details.network.interfaces;
+      const netData = await fetchNetwork();
+      const allIfaces = netData?.data?.interfaces || [];
 
-      // Helper to extract IPv4 from interface record
-      const getIp = (iface) => {
-        const data = iface?.data || iface || {};
-        const ipv4 = data.ipv4 || data.ip || data.address || "";
-        if (Array.isArray(ipv4)) return ipv4.find(Boolean) || "";
-        let ipStr = String(ipv4 || "");
-        // If not directly available, search common keys like 'IPv4 Address'
-        if (!ipStr && data && typeof data === "object") {
-          for (const [k, v] of Object.entries(data)) {
-            if (/ipv4|ip/i.test(k)) {
-              const valArr = Array.isArray(v) ? v : [v];
-              const hit = valArr.find(
-                (x) =>
-                  typeof x === "string" && /^(?:\d{1,3}\.){3}\d{1,3}$/.test(x),
-              );
-              if (hit) {
-                ipStr = hit;
-                break;
-              }
-            }
-          }
-        }
-        return ipStr;
-      };
-      const getMask = (iface) => {
-        const data = iface?.data || iface || {};
-        let mask = data.netmask || data.mask || data.ipv4_mask || "";
-        if (!mask && data && typeof data === "object") {
-          for (const [k, v] of Object.entries(data)) {
-            if (/mask|netmask/i.test(k)) {
-              const valArr = Array.isArray(v) ? v : [v];
-              const hit = valArr.find(
-                (x) =>
-                  typeof x === "string" && /^(?:\d{1,3}\.){3}\d{1,3}$/.test(x),
-              );
-              if (hit) {
-                mask = hit;
-                break;
-              }
-            }
-          }
-        }
-        return String(mask || "");
-      };
-      const getGateway = (iface) => {
-        const data = iface?.data || iface || {};
-        let gateway = data.gateway || data.gw || data.defaultGateway || "";
-        if (!gateway && data && typeof data === "object") {
-          for (const [k, v] of Object.entries(data)) {
-            if (/gateway|gw/i.test(k)) {
-              const valArr = Array.isArray(v) ? v : [v];
-              const hit = valArr.find(
-                (x) =>
-                  typeof x === "string" && /^(?:\d{1,3}\.){3}\d{1,3}$/.test(x),
-              );
-              if (hit) {
-                gateway = hit;
-                break;
-              }
-            }
-          }
-        }
-        // Also check IP Address array - sometimes gateway is in the third element
-        if (
-          !gateway &&
-          Array.isArray(data["IP Address"]) &&
-          data["IP Address"].length >= 3
-        ) {
-          const possibleGw = data["IP Address"][2];
-          if (
-            typeof possibleGw === "string" &&
-            /^(?:\d{1,3}\.){3}\d{1,3}$/.test(possibleGw)
-          ) {
-            gateway = possibleGw;
-          }
-        }
-        return String(gateway || "");
-      };
-
-      const options = [];
-
-      // LAN 1 / eth0
-      const eth0 = interfaces.find(
-        (i) =>
-          (i.name || "").toLowerCase() === "eth0" ||
-          (i.name || "").toLowerCase() === "lan 1",
-      );
-      if (eth0) {
-        const ip = getIp(eth0);
-        const m = getMask(eth0);
-        const gw = getGateway(eth0);
-        if (ip)
-          options.push({
-            value: `Lan 1:${ip}`,
-            label: `Lan 1:${ip}`,
-            iface: "eth0",
-            ip,
-            mask: m,
-            gateway: gw,
-          });
-      }
-      // LAN 2 / eth1
-      const eth1 = interfaces.find(
-        (i) =>
-          (i.name || "").toLowerCase() === "eth1" ||
-          (i.name || "").toLowerCase() === "lan 2",
-      );
-      if (eth1) {
-        const ip = getIp(eth1);
-        const m = getMask(eth1);
-        const gw = getGateway(eth1);
-        if (ip)
-          options.push({
-            value: `Lan 2:${ip}`,
-            label: `Lan 2:${ip}`,
-            iface: "eth1",
-            ip,
-            mask: m,
-            gateway: gw,
-          });
-      }
-      // VPN interfaces - find ALL VPN interfaces (OpenVPN: tun0/tap0, SoftEther: vpn_vpn, etc.)
-      const vpnInterfaces = (interfaces || []).filter((i) => {
-        const n = (i.name || "").toLowerCase();
-        // Match tun*, tap*, or any interface containing 'vpn' (like vpn_vpn for SoftEther)
-        return n.startsWith("tun") || n.startsWith("tap") || n.includes("vpn");
+      // Physical LAN interfaces only (eth* or enp*s*)
+      const lanIfaces = allIfaces.filter((i) => {
+        const name = (i.interface || "").toLowerCase();
+        return /^eth\d+$/.test(name) || /^enp\d+s\d+/.test(name);
       });
-      // Add all VPN interfaces found
-      vpnInterfaces.forEach((vpnIface) => {
-        const ip = getIp(vpnIface);
-        const m = getMask(vpnIface);
-        const gw = getGateway(vpnIface);
-        // Use the actual VPN interface name exactly as it appears (tun0, tap0, vpn_vpn, etc.)
-        const actualIface = vpnIface.name || "tun0"; // Use the exact name from system
-        if (ip) {
-          options.push({
-            value: `VPN:${ip}`,
-            label: `VPN:${ip} (${actualIface})`,
-            iface: actualIface,
-            ip,
-            mask: m,
-            gateway: gw,
-          });
-        }
-      });
-      // VLAN if present (eth0.X defined in /etc/network/interfaces.d/vlan.cfg)
-      try {
-        const vlanIfaceCmd = `grep -E '^auto[[:space:]]+eth0\\.[0-9]+' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}'`;
-        const vlanIfaceRes = await postLinuxCmd({ cmd: vlanIfaceCmd });
-        const vlanIfaceName = (vlanIfaceRes?.responseData || "")
-          .toString()
-          .trim();
 
-        const vlanIpCmd = `grep -E '^[[:space:]]*address[[:space:]]' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}'`;
-        const vlanIpRes = await postLinuxCmd({ cmd: vlanIpCmd });
-        const vlanIp = (vlanIpRes?.responseData || "").toString().trim();
+      const options = lanIfaces
+        .map((iface, idx) => ({
+          value: `Lan ${idx + 1}:${iface.ipAddress || ""}`,
+          label: `Lan ${idx + 1}:${iface.ipAddress || ""}`,
+          iface: iface.interface,
+          ip: iface.ipAddress || "",
+          mask: iface.subnetMask || "",
+          gateway: iface.activeGateway || iface.configuredGateway || "",
+        }))
+        .filter((o) => o.ip);
 
-        const vlanMaskCmd = `grep -E '^[[:space:]]*netmask[[:space:]]' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | awk '{print $2}'`;
-        const vlanMaskRes = await postLinuxCmd({ cmd: vlanMaskCmd });
-        const vlanMask = (vlanMaskRes?.responseData || "").toString().trim();
+      const fallback =
+        IP_ROUTING_TABLE_MODAL_FIELDS.find((f) => f.key === "networkPort")
+          ?.options || [];
 
-        const vlanGwCmd = `grep -E '^[[:space:]]*(#)?[[:space:]]*gateway[[:space:]]' /etc/network/interfaces.d/vlan.cfg 2>/dev/null | head -1 | sed 's/^[[:space:]]*#\\?[[:space:]]*gateway[[:space:]]*//' | awk '{print $1}'`;
-        const vlanGwRes = await postLinuxCmd({ cmd: vlanGwCmd });
-        const vlanGw = (vlanGwRes?.responseData || "").toString().trim();
+      setNetworkOptions(options.length > 0 ? options : fallback);
 
-        if (vlanIp && /^(?:\d{1,3}\.){3}\d{1,3}$/.test(vlanIp)) {
-          const vlanId =
-            vlanIfaceName && /^eth0\.[0-9]+$/.test(vlanIfaceName)
-              ? vlanIfaceName.split(".")[1]
-              : "";
-          options.push({
-            value: `VLAN:${vlanIp}`,
-            label: vlanId ? `VLAN ${vlanId}:${vlanIp}` : `VLAN:${vlanIp}`,
-            iface: vlanIfaceName || "eth0",
-            ip: vlanIp,
-            mask: vlanMask || "",
-            gateway: vlanGw || "",
-          });
-        }
-      } catch (e) {
-        console.warn(
-          "Failed to detect VLAN interface for IP routing options:",
-          e,
-        );
-      }
-
-      // Fallback to existing defaults if nothing extracted
-      setNetworkOptions(
-        options.length > 0
-          ? options
-          : IP_ROUTING_TABLE_MODAL_FIELDS.find((f) => f.key === "networkPort")
-              ?.options || [],
-      );
-      // Choose default: prefer Lan 1 if present, otherwise first
-      const lan1 = options.find((o) => /^lan\s*1:/i.test(o.label));
-      const preferred =
-        (lan1 && lan1.value) || (options[0] && options[0].value);
-      // Only auto-set when adding a new row (not editing)
-      if (!isEditing && options.length > 0) {
+      // Auto-select: prefer Lan 1, otherwise first available
+      const preferred = (options[0] && options[0].value) || "";
+      if (!isEditing && preferred) {
         setForm((prev) => ({ ...prev, networkPort: preferred }));
       } else if (
         isEditing &&
         options.length > 0 &&
         !options.some((o) => o.value === form.networkPort)
       ) {
-        // If editing but current value is missing, fall back to preferred
         setForm((prev) => ({ ...prev, networkPort: preferred }));
       }
     } catch (e) {
-      // Keep defaults on failure
+      console.warn("Failed to load network interfaces for Network Port:", e);
       setNetworkOptions(
         IP_ROUTING_TABLE_MODAL_FIELDS.find((f) => f.key === "networkPort")
           ?.options || [],

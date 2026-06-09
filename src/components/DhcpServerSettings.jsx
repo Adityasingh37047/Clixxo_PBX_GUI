@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  DHCP_SERVER_SETTINGS_FIELDS,
+  buildDhcpLanSections,
   DHCP_SERVER_SETTINGS_INITIAL_FORM,
 } from "../constants/DhcpServerSettingsConstants";
 import {
@@ -144,8 +144,19 @@ const SectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
+const buildSavePayload = (formData, sections) => {
+  const payload = {};
+  sections.forEach((section) => {
+    section.fields.forEach((field) => {
+      payload[field.name] = formData[field.name];
+    });
+  });
+  return payload;
+};
+
 const DhcpServerSettings = () => {
   const [form, setForm] = useState(DHCP_SERVER_SETTINGS_INITIAL_FORM);
+  const [lanSections, setLanSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -177,9 +188,10 @@ const DhcpServerSettings = () => {
         response.data &&
         Array.isArray(response.data)
       ) {
+        const lanPorts = response.data;
         const mappedData = {};
 
-        response.data.forEach((lanData, index) => {
+        lanPorts.forEach((lanData, index) => {
           const lanNumber = index + 1;
           mappedData[`enabled${lanNumber}`] = lanData.enabled || false;
           mappedData[`ipRange${lanNumber}`] = lanData.ipRange || "";
@@ -189,6 +201,7 @@ const DhcpServerSettings = () => {
           mappedData[`dnsServer${lanNumber}`] = lanData.dnsServer || "";
         });
 
+        setLanSections(buildDhcpLanSections(lanPorts));
         setForm((prevForm) => ({
           ...prevForm,
           ...mappedData,
@@ -277,7 +290,9 @@ const DhcpServerSettings = () => {
       setSuccess(null);
       setLoading(true);
 
-      const response = await fetchSaveDhcpSettings(form);
+      const response = await fetchSaveDhcpSettings(
+        buildSavePayload(form, lanSections),
+      );
 
       if (response && response.success) {
         setSuccess("DHCP settings saved successfully!");
@@ -415,7 +430,30 @@ const DhcpServerSettings = () => {
           >
             <form onSubmit={handleSave} className="flex flex-col">
               <div className="flex flex-col gap-2" style={{ marginBottom: 12 }}>
-              {DHCP_SERVER_SETTINGS_FIELDS.map((lanGroup, idx) => {
+              {loading && lanSections.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontSize: 13,
+                    color: C.mutedText,
+                    padding: "24px 0",
+                  }}
+                >
+                  Loading DHCP settings...
+                </div>
+              ) : lanSections.length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontSize: 13,
+                    color: C.mutedText,
+                    padding: "24px 0",
+                  }}
+                >
+                  No connected LAN ports found.
+                </div>
+              ) : null}
+              {lanSections.map((lanGroup, idx) => {
                 const isEnabled = form[lanGroup.fields[0].name];
                 return (
                   <div key={lanGroup.lan} className="flex flex-col gap-0">
@@ -530,7 +568,7 @@ const DhcpServerSettings = () => {
                 <Btn
                   variant="primary"
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || lanSections.length === 0}
                   style={advancedFormBtnStyle}
                 >
                   {loading ? "Saving..." : "Save"}
@@ -539,7 +577,7 @@ const DhcpServerSettings = () => {
                   variant="cancel"
                   type="button"
                   onClick={handleReset}
-                  disabled={loading}
+                  disabled={loading || lanSections.length === 0}
                   style={advancedFormBtnStyle}
                 >
                   {loading ? "Resetting..." : "Reset"}

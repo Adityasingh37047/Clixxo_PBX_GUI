@@ -62,6 +62,7 @@ const SipTrunkGroup = () => {
   });
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const itemsPerPage = 20;
   const totalPages = Math.max(1, Math.ceil(groups.length / itemsPerPage));
   const pagedGroups = groups.slice(
@@ -167,6 +168,7 @@ const SipTrunkGroup = () => {
       showMessage("error", "Network error. Please check your connection.");
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -504,8 +506,49 @@ const SipTrunkGroup = () => {
             </div>
           </div>
 
-          {/* Table */}
           <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+            {isInitialLoad ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : groups.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No SIP trunk groups found.
+                </div>
+                <Btn
+                  variant="cancel"
+                  onClick={handleAddNew}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New
+                </Btn>
+              </div>
+            ) : (
             <table
               style={{
                 width: "100%",
@@ -563,31 +606,7 @@ const SipTrunkGroup = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading.fetch ? (
-                  <tr>
-                    <td
-                      colSpan={SIP_TRUNK_GROUP_TABLE_COLUMNS.length + 2}
-                      style={{ textAlign: "center", padding: "48px 0" }}
-                    >
-                      <CircularProgress size={28} style={{ color: C.accent }} />
-                    </td>
-                  </tr>
-                ) : pagedGroups.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={SIP_TRUNK_GROUP_TABLE_COLUMNS.length + 2}
-                      style={{
-                        textAlign: "center",
-                        padding: "36px 0",
-                        color: C.mutedText,
-                        fontSize: 13,
-                      }}
-                    >
-                      No groups found.
-                    </td>
-                  </tr>
-                ) : (
-                  pagedGroups.map((item, idx) => {
+                  {pagedGroups.map((item, idx) => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSel = selected.includes(realIdx);
                     const isLastRow = idx === pagedGroups.length - 1;
@@ -669,13 +688,13 @@ const SipTrunkGroup = () => {
                         </td>
                       </tr>
                     );
-                  })
-                )}
+                  })}
               </tbody>
             </table>
+            )}
           </div>
 
-          {!loading.fetch && groups.length > 0 && (
+          {!isInitialLoad && groups.length > 0 && (
             <SipPcmPagination
               page={page}
               totalPages={totalPages}

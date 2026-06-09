@@ -13,6 +13,10 @@ import {
 } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
 import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+} from "../../../sections/advanced/advancedSharedUi";
+import {
   systemFieldInputStyleNarrow as inputStyle,
   systemFieldSelectStyle as selectStyle,
   inputInteraction,
@@ -1074,7 +1078,7 @@ const Network = () => {
           </div>
 
           {/* Card Body */}
-          <div style={{ padding: "24px 32px" }}>
+          <div style={{ padding: loading ? "24px 32px" : "24px 32px 0" }}>
             {loading ? (
               <div className="flex flex-col items-center justify-center min-h-[400px]">
                 <CircularProgress size={40} sx={{ color: C.primary }} />
@@ -1085,7 +1089,12 @@ const Network = () => {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSave} className="flex flex-col gap-2">
+              <form
+                id="network-settings-form"
+                onSubmit={handleSave}
+                className="flex flex-col gap-2"
+              >
+                <div style={{ marginBottom: 12 }}>
                 {/* Dynamically render LAN sections */}
                 {!vlanEnabled &&
                   lanInterfaces.map((lan, idx) => (
@@ -1744,29 +1753,33 @@ const Network = () => {
                     </div>
                   </div>
                 </div>
+                </div>
               </form>
             )}
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 w-full">
-          <Btn
-            variant="primary"
-            onClick={handleSave}
-            disabled={loading || resetting || networkRestarting}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
-            {loading && !resetting ? "Saving..." : "Save"}
-          </Btn>
-          <Btn
-            variant="cancel"
-            onClick={handleReset}
-            disabled={resetting || networkRestarting}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
-            {resetting ? "Resetting..." : "Reset"}
-          </Btn>
+          {!loading && (
+            <div style={advancedFormInlineFooterStyle}>
+              <Btn
+                variant="primary"
+                type="submit"
+                form="network-settings-form"
+                disabled={loading || resetting || networkRestarting}
+                style={advancedFormBtnStyle}
+              >
+                {loading && !resetting ? "Saving..." : "Save"}
+              </Btn>
+              <Btn
+                variant="cancel"
+                type="button"
+                onClick={handleReset}
+                disabled={resetting || networkRestarting}
+                style={advancedFormBtnStyle}
+              >
+                {resetting ? "Resetting..." : "Reset"}
+              </Btn>
+            </div>
+          )}
         </div>
       </div>
 

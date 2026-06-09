@@ -1,81 +1,24 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { CircularProgress } from "@mui/material";
 import { monitorBoth } from "../../../api/apiService";
+import {
+  C,
+  Btn,
+  PageBreadcrumb,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+  TableListLoading,
+  TableListEmptyState,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmCancelBtnStyle,
+} from "../../../sections/sip/sipPcmSharedUi";
 
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
-};
-
-const CARD_RADIUS = 10;
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg = variant === "cancel" ? "#b6c2d3" : "#e2e8f0";
-  const baseBg = s.background;
-
-  return (
-    <button
-      type={type || "button"}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
+const successGreen = "#16A34A";
+const errorRed = "#DC2626";
+const purple = "#8b5cf6";
 
 const StatCard = ({ label, value, accent, ready }) => (
   <div
@@ -121,13 +64,13 @@ const StatusBadge = ({ tone, text }) => {
   const colors = {
     ok: {
       // bg: "#dcfce7",
-      color: "#166534",
-      dot: "#22c55e",
+      color: successGreen,
+      dot: successGreen,
     },
     bad: {
       // bg: "#fee2e2",
-      color: "#991b1b",
-      dot: "#ef4444",
+      color: errorRed,
+      dot: errorRed,
     },
     neutral: {
       // bg: "#f1f5f9",
@@ -342,36 +285,17 @@ const PbxMonitor = () => {
       (r.trunk_name || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const tableRows =
+    activeTab === "extension" ? filteredExtensions : filteredTrunks;
+  const emptyMessage =
+    activeTab === "extension"
+      ? "No extensions found."
+      : "No trunks found.";
+
   return (
-    <div
-      style={{
-        background: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>Status</span>
-          <span>&gt;</span>
-          <span>PBX Status</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            PBX Monitor
-          </span>
-        </div>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
+        <PageBreadcrumb segments={["Status", "PBX Status", "PBX Monitor"]} />
 
         {/* Stats */}
         <div
@@ -392,51 +316,27 @@ const PbxMonitor = () => {
           <StatCard
             label="Registered"
             value={extRegistered}
-            accent={C.successGreen}
+            accent={successGreen}
             ready={hasLoaded}
           />
 
           <StatCard
             label="Unregistered"
             value={extUnregistered}
-            accent={C.errorRed}
+            accent={errorRed}
             ready={hasLoaded}
           />
 
           <StatCard
             label="Registered Trunks"
             value={trkRegistered}
-            accent={C.purple}
+            accent={purple}
             ready={hasLoaded}
           />
         </div>
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {["extension", "trunk"].map((tab) => (
                 <button
@@ -533,7 +433,7 @@ const PbxMonitor = () => {
               variant="cancel"
               onClick={() => loadData(false)}
               disabled={isRefreshing}
-              style={{ height: 30 }}
+              style={sipPcmCancelBtnStyle}
             >
               {isRefreshing ? (
                 <>
@@ -547,7 +447,11 @@ const PbxMonitor = () => {
             </div>
           </div>
 
-          {/* Table */}
+          {!hasLoaded && isRefreshing ? (
+            <TableListLoading />
+          ) : hasLoaded && tableRows.length === 0 ? (
+            <TableListEmptyState message={emptyMessage} showButton={false} />
+          ) : (
           <div style={tableWrapStyle}>
             {activeTab === "extension" ? (
               <table style={tableStyle}>
@@ -578,7 +482,7 @@ const PbxMonitor = () => {
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#f1f5f9";
+                          e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = rowBg;
@@ -640,7 +544,7 @@ const PbxMonitor = () => {
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#f1f5f9";
+                          e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = rowBg;
@@ -672,6 +576,7 @@ const PbxMonitor = () => {
               </table>
             )}
           </div>
+          )}
         </div>
       </div>
     </div>

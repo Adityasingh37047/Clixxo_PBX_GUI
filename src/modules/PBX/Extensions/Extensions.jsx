@@ -39,127 +39,26 @@ import {
   exportSipAccountsCsv,
   importSipAccountsCsv,
 } from "../../../api/apiService";
-
-// ── Color palette (matches PCM PSTN page) ─────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  cardBorderSoft: "#f1f5f9",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
-  amber: "#dc2626",
-};
-
-const CARD_RADIUS = 20;
-
-// ── Shared: action button (matches PCM PSTN Btn) ──────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const variants = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      borderRadius: 6,
-      textTransform: "none",
-      padding: "6px 28px",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    accent: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-      case "danger":
-      case "accent":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 5,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
+import {
+  C,
+  Btn,
+  TH,
+  tdStyle,
+  checkboxSx,
+  PbxBreadcrumb,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+  TableListLoading,
+  TableListEmptyState,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 // ── Pill badge ────────────────────────────────────────────────────────────────
 const Pill = ({ text, bg, color }) => (
@@ -182,45 +81,6 @@ const Pill = ({ text, bg, color }) => (
     {text}
   </span>
 );
-
-// ── TH (matches PCM PSTN TH) ──────────────────────────────────────────────────
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  whiteSpace: "nowrap",
-};
-
-const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
 
 // ── Status style helper ───────────────────────────────────────────────────────
 const statusStyle = (s) => {
@@ -277,6 +137,7 @@ const SipAccountPage = () => {
   });
   const [message, setMessage] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [activeTab, setActiveTab] = useState("basic");
@@ -700,6 +561,7 @@ const SipAccountPage = () => {
       );
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -875,7 +737,8 @@ const SipAccountPage = () => {
       return;
     }
     try {
-      const { fetchSipIpTrunkAccounts } = await import("../../../api/apiService");
+      const { fetchSipIpTrunkAccounts } =
+        await import("../../../api/apiService");
       const ipTrunkRes = await fetchSipIpTrunkAccounts();
       if (ipTrunkRes?.response && Array.isArray(ipTrunkRes.message)) {
         if (
@@ -953,8 +816,8 @@ const SipAccountPage = () => {
       showMessage("error", "Create Number must be a positive number");
       return;
     }
-    if (count > 10) {
-      showMessage("error", "Maximum 10 extensions can be created at once.");
+    if (count > 30) {
+      showMessage("error", "Maximum 30 extensions can be created at once.");
       return;
     }
     if (bulkForm.passwordMode === "fixed") {
@@ -1139,7 +1002,11 @@ const SipAccountPage = () => {
         reader.onerror = () => reject(new Error("Failed to read file"));
         reader.readAsText(importFile);
       });
-      const res = await importSipAccountsCsv({ csv, mode: "skip", dryRun: false });
+      const res = await importSipAccountsCsv({
+        csv,
+        mode: "skip",
+        dryRun: false,
+      });
       if (res?.response) {
         showMessage(
           "success",
@@ -1176,14 +1043,8 @@ const SipAccountPage = () => {
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
         {/* ── Error / success banner ── */}
         {message.text && (
           <Alert
@@ -1202,61 +1063,10 @@ const SipAccountPage = () => {
           </Alert>
         )}
 
-        {/* ── Breadcrumb + last updated ── */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          {/* Breadcrumb */}
-          <div
-            style={{
-              fontSize: 12,
-              color: C.mutedText,
-              marginBottom: 16,
-              fontWeight: 400,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            PBX &rsaquo; Extensions &rsaquo;{" "}
-            <span style={{ color: C.strongText, fontWeight: 600 }}>
-              Extensions
-            </span>
-          </div>
-        </div>
+        <PbxBreadcrumb section="Extensions" current="Extensions" />
 
-        {/* ── Main card ── */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* ── Toolbar ── */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
-            {/* Left: page info + selection count */}
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -1266,19 +1076,8 @@ const SipAccountPage = () => {
                 minWidth: 0,
               }}
             >
-              
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1351,104 +1150,68 @@ const SipAccountPage = () => {
                 )}
               </div>
 
-              {/* Pagination */}
-              {/* <Btn
-                onClick={handlePrev}
-                disabled={loading.fetch || page <= 1}
-                variant="outline"
+              <Btn
+                onClick={handleDelete}
+                disabled={loading.delete || !selected.length}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
-                ← Prev
-              </Btn> */}
-              {/* <Btn
-                onClick={handleNext}
-                disabled={loading.fetch || page >= totalPages}
-                variant="outline"
-              >
-                Next →
-              </Btn> */}
+                {loading.delete ? (
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
+              </Btn>
 
-              {/* Actions */}
-              {/* <Btn
-                onClick={() => loadAccounts()}
+              <Btn
+                onClick={() => {
+                  setShowImportModal(true);
+                  setImportFile(null);
+                }}
                 disabled={loading.fetch}
-                variant="default"
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
-                {loading.fetch ? (
-                  <CircularProgress size={11} style={{ color: "#fff" }} />
-                ) : (
-                  "Refresh"
-                )}
-              </Btn> */}
-            <Btn
-  onClick={handleDelete}
-  disabled={loading.delete || !selected.length}
-  variant="danger"
-  style={{
-    minWidth: 84,
-  }}
->
-  {loading.delete ? (
-    <CircularProgress
-      size={11}
-      style={{ color: "#374151" }}
-    />
-  ) : null}
-  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-  Delete
-</Btn>
-              {/* <Btn
-                onClick={handleClearAll}
-                disabled={loading.delete || !accounts.length}
-                variant="danger"
+                ⬇ Import
+              </Btn>
+
+              <Btn
+                onClick={handleExport}
+                disabled={loading.fetch}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
-                Clear Allkk
-              </Btn> */}
-          
+                ⬆ Export
+              </Btn>
+              <Btn
+                onClick={openBulkModal}
+                disabled={loading.fetch || loading.save}
+                variant="cancel"
+                style={sipPcmCancelBtnStyle}
+              >
+                + Bulk Add
+              </Btn>
 
-
-<Btn
-  onClick={() => {
-    setShowImportModal(true);
-    setImportFile(null);
-  }}
-  disabled={loading.fetch}
-  variant="accent" 
->
-  ⬇ Import
-</Btn>
-
-<Btn
-  onClick={handleExport}
-  disabled={loading.fetch}
-  variant="accent"
->
-  ⬆ Export
-</Btn>
-<Btn
-  onClick={openBulkModal}
-  disabled={loading.fetch || loading.save}
-  variant="accent"
->
-  + Bulk Add
-</Btn>
-
- <Btn
-  onClick={() => handleOpenModal()}
-  disabled={loading.fetch || loading.save}
-  variant="primary"
-  style={{
-    height: 30,
-    padding: "6px 14px",
-    fontSize: 12,
-    borderRadius: 10,
-  }}
->
-  + Add New
-</Btn>
+              <Btn
+                onClick={() => handleOpenModal()}
+                disabled={loading.fetch || loading.save}
+                variant="primary"
+                style={sipPcmPrimaryBtnStyle}
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
-          {/* ── Table ── */}
+          {isInitialLoad ? (
+            <TableListLoading />
+          ) : accounts.length === 0 && !searchQuery.trim() ? (
+            <TableListEmptyState
+              message="No extensions found."
+              onAddNew={() => handleOpenModal()}
+            />
+          ) : (
+            <>
           <div
             style={{
               overflowX: "auto",
@@ -1456,18 +1219,6 @@ const SipAccountPage = () => {
               flex: 1,
             }}
           >
-            {loading.fetch ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
-            ) : (
               <table
                 style={{
                   width: "100%",
@@ -1498,7 +1249,14 @@ const SipAccountPage = () => {
                         sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       ID
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
@@ -1541,9 +1299,7 @@ const SipAccountPage = () => {
                           fontSize: 13,
                         }}
                       >
-                        {searchQuery
-                          ? `No results for "${searchQuery}"`
-                          : "No extensions found."}
+                        {`No results for "${searchQuery}"`}
                       </td>
                     </tr>
                   ) : (
@@ -1551,7 +1307,7 @@ const SipAccountPage = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBg = isSelected
-                        ? "#f0f9ff"
+                        ? "#eff6ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -1570,7 +1326,7 @@ const SipAccountPage = () => {
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f1f5f9";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -1585,9 +1341,6 @@ const SipAccountPage = () => {
                               width: 36,
                               borderLeft: "none",
                               ...lastRowCellStyle,
-                              ...(isLastRow
-                                ? { borderBottomLeftRadius: CARD_RADIUS }
-                                : {}),
                             }}
                           >
                             <Checkbox
@@ -1693,9 +1446,6 @@ const SipAccountPage = () => {
                               background: rowBg,
                               borderRight: "none",
                               ...lastRowCellStyle,
-                              ...(isLastRow
-                                ? { borderBottomRightRadius: CARD_RADIUS }
-                                : {}),
                             }}
                           >
                             <div
@@ -1736,93 +1486,18 @@ const SipAccountPage = () => {
                   )}
                 </tbody>
               </table>
-            )}
           </div>
 
-          {/* ── Bottom pagination footer (mirrors CDR) ── */}
-          {!loading.fetch && filteredAccounts.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: CARD_RADIUS,
-                borderBottomRightRadius: CARD_RADIUS,
-                flexWrap: "wrap",
-                gap: 8,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedAccounts.length} of {filteredAccounts.length}{" "}
-                extension{filteredAccounts.length !== 1 ? "s" : ""} · Page{" "}
-                {page} of {totalPages}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  First
-                </Btn>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#eff6ff",
-                    padding: "5px 14px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
-                  Page {page}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-                <Btn
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Last
-                </Btn>
-                <span style={{ fontSize: 11, color: C.mutedText }}>Go to</span>
-                <select
-                  value={page}
-                  onChange={(e) => setPage(Number(e.target.value))}
-                  style={{
-                    fontSize: 11,
-                    borderRadius: 4,
-                    border: `1px solid ${C.cardBorder}`,
-                    padding: "3px 6px",
-                    color: C.labelText,
-                    background: "#fff",
-                  }}
-                >
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+          {filteredAccounts.length > 0 && (
+            <SipPcmPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedAccounts.length}
+              recordLabel="extension"
+              onPageChange={(p) => setPage(p)}
+            />
+          )}
+            </>
           )}
         </div>
       </div>
@@ -1839,7 +1514,19 @@ const SipAccountPage = () => {
           }
         }}
         maxWidth={false}
-        PaperProps={{ sx: { width: 420, maxWidth: "96vw", mx: "auto", p: 0 } }}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        PaperProps={{
+          sx: {
+            width: 420,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+          },
+        }}
       >
         <DialogTitle
           sx={{
@@ -1910,155 +1597,156 @@ const SipAccountPage = () => {
         </DialogContent>
         <DialogActions
           style={{
-            backgroundColor: C.pageBg,
+            backgroundColor: "#dde0e4",
             justifyContent: "center",
-            gap: 12,
+            gap: 16,
             padding: "12px 24px 16px",
           }}
         >
-        <Btn
-  onClick={handleImportSubmit}
-  disabled={importLoading || !importFile}
-  variant="default"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  {importLoading && (
-    <CircularProgress
-      size={11}
-      style={{ color: "#fff" }}
-    />
-  )}
-
-  Import
-</Btn>
           <Btn
-  onClick={() => {
-    setShowImportModal(false);
-    setImportFile(null);
-  }}
-  disabled={importLoading}
-  variant="outline"
-  style={{
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  Cancel
-</Btn>
+            onClick={handleImportSubmit}
+            disabled={importLoading || !importFile}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {importLoading && (
+              <CircularProgress size={11} style={{ color: "#fff" }} />
+            )}
+            Import
+          </Btn>
+          <Btn
+            onClick={() => {
+              setShowImportModal(false);
+              setImportFile(null);
+            }}
+            disabled={importLoading}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
+          >
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
 
       {/* ══════════════════════════════════════════════════════════════════════
           ADD / EDIT / BULK MODAL  (same tab structure, CDR-styled shell)
         ══════════════════════════════════════════════════════════════════════ */}
-        <Dialog
-          open={showModal}
-          onClose={loading.save ? null : handleCloseModal}
-          maxWidth={false}
-          sx={{
-            "& .MuiDialog-container": {
-              alignItems: "flex-start",
-              pt: 8,
-            },
+      <Dialog
+        open={showModal}
+        onClose={() => {
+          if (loading.save) return;
+          handleCloseModal();
+        }}
+        maxWidth={false}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
+        PaperProps={{
+          sx: {
+            width: 760,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
-          PaperProps={{ sx: { width: 760, maxWidth: "96vw", mx: "auto", p: 0 } }}
         >
-          <DialogTitle
-  style={{
-background: "#1e2d42",
-color: "#ffffff",
-fontWeight: 600,
-fontSize: 16,
-padding: "16px 24px",
-textAlign: "center",
-borderTopLeftRadius: 8,
-borderTopRightRadius: 8,
-}}
->
-            {formMode === "bulk"
-              ? "Bulk Add Extensions"
-              : editIndex !== null
-                ? "Edit Extension"
-                : "Add Extension"}
-          </DialogTitle>
-          <div style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}>
-            <Tabs
-              value={activeTab}
-              onChange={(_, v) => setActiveTab(v)}
-              variant="fullWidth"
-              TabIndicatorProps={{ style: { backgroundColor: "#3E5475" } }}
+          {formMode === "bulk"
+            ? "Bulk Add Extensions"
+            : editIndex !== null
+              ? "Edit Extension"
+              : "Add Extension"}
+        </DialogTitle>
+        <div
+          style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={(_, v) => setActiveTab(v)}
+            variant="fullWidth"
+            TabIndicatorProps={{ style: { backgroundColor: "#3E5475" } }}
+            sx={{
+              "& .MuiTab-root.Mui-selected": {
+                color: "#3E5475",
+              },
+            }}
+          >
+            <Tab
+              label="BASIC"
+              value="basic"
               sx={{
-                "& .MuiTab-root.Mui-selected": {
-                  color: "#3E5475",
-                },
+                color: "#374151",
+                fontWeight: 600,
+                textTransform: "none",
               }}
-            >
-              <Tab
-                label="BASIC"
-                value="basic"
-                sx={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                }}
-              />
-              <Tab
-                label="FEATURES"
-                value="features"
-                sx={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                }}
-              />
-              <Tab
-                label="ADVANCED"
-                value="advanced"
-                sx={{
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                }}
-              />
-            </Tabs>
-          </div>
+            />
+            <Tab
+              label="FEATURES"
+              value="features"
+              sx={{
+                color: "#374151",
+                fontWeight: 600,
+                textTransform: "none",
+              }}
+            />
+            <Tab
+              label="ADVANCED"
+              value="advanced"
+              sx={{
+                color: "#374151",
+                fontWeight: 600,
+                textTransform: "none",
+              }}
+            />
+          </Tabs>
+        </div>
 
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-            {/* Tab content container matching PcmPstnPage styling */}
-            <div
-           style={{
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  width: "100%",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
-}}
-            >
-              {/* ── BASIC TAB ── */}
-              {activeTab === "basic" && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 10,
-                    paddingBottom: 8,
-                  }}
-                >
+          {/* Tab content container matching PcmPstnPage styling */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "100%",
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+            }}
+          >
+            {/* ── BASIC TAB ── */}
+            {activeTab === "basic" && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  paddingBottom: 8,
+                }}
+              >
                 {/* General section */}
                 <div
                   style={{
-                    
                     border: `1px solid ${C.cardBorder}`,
                     borderRadius: 6,
                     overflow: "hidden",
@@ -2103,30 +1791,30 @@ borderTopRightRadius: 8,
                           error={!!validationErrors.extension}
                           placeholder="e.g. 1001"
                           disabled={editIndex !== null}
-                         inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                          inputProps={{
+                            style: {
+                              fontSize: 13,
+                              height: 32,
+                              padding: "0 8px",
+                              boxSizing: "border-box",
+                            },
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "#fff",
+                              "& fieldset": {
+                                borderColor: C.cardBorder,
+                                transition: "border-color 0.2s ease",
+                              },
+                              "&:hover fieldset": {
+                                borderColor: "#64748b",
+                              },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#0284c7",
+                                borderWidth: 1,
+                              },
+                            },
+                          }}
                         />
                         {validationErrors.extension && (
                           <ErrMsg>{validationErrors.extension}</ErrMsg>
@@ -2147,30 +1835,30 @@ sx={{
                             size="small"
                             fullWidth
                             variant="outlined"
-                          inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                height: 32,
+                                padding: "0 8px",
+                                boxSizing: "border-box",
+                              },
+                            }}
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                backgroundColor: "#fff",
+                                "& fieldset": {
+                                  borderColor: C.cardBorder,
+                                  transition: "border-color 0.2s ease",
+                                },
+                                "&:hover fieldset": {
+                                  borderColor: "#64748b",
+                                },
+                                "&.Mui-focused fieldset": {
+                                  borderColor: "#0284c7",
+                                  borderWidth: 1,
+                                },
+                              },
+                            }}
                           />
                         </FieldRow>
                         <FieldRow label="Create Number:">
@@ -2186,30 +1874,30 @@ sx={{
                             size="small"
                             fullWidth
                             variant="outlined"
-                          inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                height: 32,
+                                padding: "0 8px",
+                                boxSizing: "border-box",
+                              },
+                            }}
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                backgroundColor: "#fff",
+                                "& fieldset": {
+                                  borderColor: C.cardBorder,
+                                  transition: "border-color 0.2s ease",
+                                },
+                                "&:hover fieldset": {
+                                  borderColor: "#64748b",
+                                },
+                                "&.Mui-focused fieldset": {
+                                  borderColor: "#0284c7",
+                                  borderWidth: 1,
+                                },
+                              },
+                            }}
                           />
                         </FieldRow>
                         <div style={{ gridColumn: "1 / -1" }}>
@@ -2231,21 +1919,23 @@ sx={{
                                     }))
                                   }
                                   sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                                    fontSize: 13,
+                                    height: 32,
+                                    backgroundColor: "#fff",
+                                    "& .MuiOutlinedInput-notchedOutline": {
+                                      borderColor: C.cardBorder,
+                                      transition: "border-color 0.2s ease",
+                                    },
+                                    "&:hover .MuiOutlinedInput-notchedOutline":
+                                      {
+                                        borderColor: "#64748b",
+                                      },
+                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                      {
+                                        borderColor: "#0284c7",
+                                        borderWidth: 1,
+                                      },
+                                  }}
                                 >
                                   <MenuItem value="random">Random</MenuItem>
                                   <MenuItem value="fixed">Fixed</MenuItem>
@@ -2268,30 +1958,30 @@ sx={{
                                   fullWidth
                                   variant="outlined"
                                   placeholder="Fixed password"
-                                inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                                  inputProps={{
+                                    style: {
+                                      fontSize: 13,
+                                      height: 32,
+                                      padding: "0 8px",
+                                      boxSizing: "border-box",
+                                    },
+                                  }}
+                                  sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                      backgroundColor: "#fff",
+                                      "& fieldset": {
+                                        borderColor: C.cardBorder,
+                                        transition: "border-color 0.2s ease",
+                                      },
+                                      "&:hover fieldset": {
+                                        borderColor: "#64748b",
+                                      },
+                                      "&.Mui-focused fieldset": {
+                                        borderColor: "#0284c7",
+                                        borderWidth: 1,
+                                      },
+                                    },
+                                  }}
                                 />
                               )}
                               {bulkForm.passwordMode === "prefix" && (
@@ -2308,30 +1998,30 @@ sx={{
                                   fullWidth
                                   variant="outlined"
                                   placeholder="e.g. pw_"
-                                 inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                                  inputProps={{
+                                    style: {
+                                      fontSize: 13,
+                                      height: 32,
+                                      padding: "0 8px",
+                                      boxSizing: "border-box",
+                                    },
+                                  }}
+                                  sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                      backgroundColor: "#fff",
+                                      "& fieldset": {
+                                        borderColor: C.cardBorder,
+                                        transition: "border-color 0.2s ease",
+                                      },
+                                      "&:hover fieldset": {
+                                        borderColor: "#64748b",
+                                      },
+                                      "&.Mui-focused fieldset": {
+                                        borderColor: "#0284c7",
+                                        borderWidth: 1,
+                                      },
+                                    },
+                                  }}
                                 />
                               )}
                             </div>
@@ -2352,22 +2042,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("context", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="" disabled>
                             <em>Select Context</em>
@@ -2400,30 +2090,30 @@ sx={{
                           variant="outlined"
                           error={!!validationErrors.password}
                           placeholder="Enter password"
-                        inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                          inputProps={{
+                            style: {
+                              fontSize: 13,
+                              height: 32,
+                              padding: "0 8px",
+                              boxSizing: "border-box",
+                            },
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              backgroundColor: "#fff",
+                              "& fieldset": {
+                                borderColor: C.cardBorder,
+                                transition: "border-color 0.2s ease",
+                              },
+                              "&:hover fieldset": {
+                                borderColor: "#64748b",
+                              },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#0284c7",
+                                borderWidth: 1,
+                              },
+                            },
+                          }}
                           InputProps={{
                             endAdornment: (
                               <InputAdornment position="end">
@@ -2459,31 +2149,30 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                      inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
-
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
 
@@ -2532,7 +2221,6 @@ sx={{
                 {/* User Info section */}
                 <div
                   style={{
-                   
                     border: `1px solid ${C.cardBorder}`,
                     borderRadius: 6,
                     overflow: "hidden",
@@ -2570,30 +2258,30 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                     <FieldRow label="User Password:">
@@ -2606,30 +2294,30 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                     <FieldRow label="Email:">
@@ -2640,30 +2328,30 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                     <FieldRow label="Mobile Number:">
@@ -2678,29 +2366,29 @@ sx={{
                         variant="outlined"
                         placeholder="+91XXXXXXXXXX"
                         inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                   </div>
@@ -2735,21 +2423,21 @@ sx={{
                             handleChange("voicemail_enabled", e.target.value)
                           }
                           sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -2763,22 +2451,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("voicemail_keep_local", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -2793,21 +2481,21 @@ sx={{
                             handleChange("voicemail_file", e.target.value)
                           }
                           sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="audio_file_attachment">
                             Audio File Attachment
@@ -2829,29 +2517,29 @@ sx={{
                         fullWidth
                         variant="outlined"
                         inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                     <FieldRow label="Select Voice:">
@@ -2861,22 +2549,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("voicemail_voice", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="system_default">
                             System Default
@@ -2958,22 +2646,22 @@ sx={{
                               e.target.value,
                             )
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="">
                             <em>Destination Number</em>
@@ -2994,22 +2682,22 @@ sx={{
                           onChange={(e) =>
                             handleChange(`cf_${rule.key}_time`, e.target.value)
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="all">All</MenuItem>
                           <MenuItem value="work_time">Work Time</MenuItem>
@@ -3172,22 +2860,23 @@ sx={{
                                   e.target.value,
                                 )
                               }
-                             sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                              sx={{
+                                fontSize: 13,
+                                height: 32,
+                                backgroundColor: "#fff",
+                                "& .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: C.cardBorder,
+                                  transition: "border-color 0.2s ease",
+                                },
+                                "&:hover .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: "#64748b",
+                                },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                  {
+                                    borderColor: "#0284c7",
+                                    borderWidth: 1,
+                                  },
+                              }}
                             >
                               <MenuItem value="">
                                 <em>Select extension</em>
@@ -3210,21 +2899,22 @@ sx={{
                                 )
                               }
                               sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                                fontSize: 13,
+                                height: 32,
+                                backgroundColor: "#fff",
+                                "& .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: C.cardBorder,
+                                  transition: "border-color 0.2s ease",
+                                },
+                                "&:hover .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: "#64748b",
+                                },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                  {
+                                    borderColor: "#0284c7",
+                                    borderWidth: 1,
+                                  },
+                              }}
                             >
                               {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                                 <MenuItem key={v} value={v}>
@@ -3243,22 +2933,23 @@ sx={{
                                   e.target.value,
                                 )
                               }
-                             sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                              sx={{
+                                fontSize: 13,
+                                height: 32,
+                                backgroundColor: "#fff",
+                                "& .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: C.cardBorder,
+                                  transition: "border-color 0.2s ease",
+                                },
+                                "&:hover .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: "#64748b",
+                                },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                  {
+                                    borderColor: "#0284c7",
+                                    borderWidth: 1,
+                                  },
+                              }}
                             >
                               <MenuItem value="confirm">Confirm</MenuItem>
                               <MenuItem value="unconfirm">UnConfirm</MenuItem>
@@ -3294,21 +2985,22 @@ sx={{
                               )
                             }
                             sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                              fontSize: 13,
+                              height: 32,
+                              backgroundColor: "#fff",
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: C.cardBorder,
+                                transition: "border-color 0.2s ease",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#64748b",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "#0284c7",
+                                  borderWidth: 1,
+                                },
+                            }}
                           >
                             <MenuItem value="">
                               <em>Select destination</em>
@@ -3382,22 +3074,22 @@ sx={{
                         onChange={(e) =>
                           handleChange("dnd_time", e.target.value)
                         }
-                      sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                        sx={{
+                          fontSize: 13,
+                          height: 32,
+                          backgroundColor: "#fff",
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: C.cardBorder,
+                            transition: "border-color 0.2s ease",
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#64748b",
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#0284c7",
+                            borderWidth: 1,
+                          },
+                        }}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -3463,21 +3155,22 @@ sx={{
                               handleDndNumberChange(idx, e.target.value)
                             }
                             sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                              fontSize: 13,
+                              height: 32,
+                              backgroundColor: "#fff",
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: C.cardBorder,
+                                transition: "border-color 0.2s ease",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#64748b",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "#0284c7",
+                                  borderWidth: 1,
+                                },
+                            }}
                           >
                             <MenuItem value="">
                               <em>Select extension</em>
@@ -3513,22 +3206,22 @@ sx={{
                               e.target.value,
                             )
                           }
-                       sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3545,30 +3238,30 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                      inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                     <FieldRow label="Ring Simultaneously">
@@ -3578,22 +3271,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("ring_simultaneously", e.target.value)
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3610,22 +3303,22 @@ sx={{
                               Number(e.target.value),
                             )
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                             <MenuItem key={v} value={v}>
@@ -3696,22 +3389,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("secretary_extension", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="">
                             <em>Select extension</em>
@@ -3756,21 +3449,21 @@ sx={{
                             handleChange("enable_srtp", e.target.value)
                           }
                           sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="no">No</MenuItem>
                           <MenuItem value="yes">Yes</MenuItem>
@@ -3784,22 +3477,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("sip_bypass_media", e.target.value)
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="proxy_media">Proxy Media</MenuItem>
                           <MenuItem value="bypass_media">Bypass Media</MenuItem>
@@ -3828,30 +3521,30 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                     <FieldRow label="Max Call Duration (s):">
@@ -3864,30 +3557,30 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                     <FieldRow label="Outbound Restriction:">
@@ -3897,22 +3590,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("outbound_restriction", e.target.value)
                           }
-                       sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -3931,22 +3624,22 @@ sx={{
                               e.target.value,
                             )
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="no_call">No Call</MenuItem>
                           <MenuItem value="internal_call">
@@ -3969,22 +3662,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("extension_trunk", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -4017,22 +3710,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("dynamic_lock_pin", e.target.value)
                           }
-                         sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="default">Default</MenuItem>
                           {form.dynamic_lock_pin === "user_password" && (
@@ -4050,22 +3743,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("diversion", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -4079,22 +3772,22 @@ sx={{
                           onChange={(e) =>
                             handleChange("call_prohibition", e.target.value)
                           }
-                        sx={{
-  fontSize: 13,
-  height: 32,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: C.cardBorder,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#64748b",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#0284c7",
-    borderWidth: 1,
-  },
-}}
+                          sx={{
+                            fontSize: 13,
+                            height: 32,
+                            backgroundColor: "#fff",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          }}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -4123,30 +3816,30 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                     <FieldRow label="TX Volume:">
@@ -4159,71 +3852,63 @@ sx={{
                         size="small"
                         fullWidth
                         variant="outlined"
-                       inputProps={{
-  style: {
-    fontSize: 13,
-    height: 32,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  },
-}}
-sx={{
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: C.cardBorder,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: "#64748b",
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: "#0284c7",
-      borderWidth: 1,
-    },
-  },
-}}
+                        inputProps={{
+                          style: {
+                            fontSize: 13,
+                            height: 32,
+                            padding: "0 8px",
+                            boxSizing: "border-box",
+                          },
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "#fff",
+                            "& fieldset": {
+                              borderColor: C.cardBorder,
+                              transition: "border-color 0.2s ease",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#64748b",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#0284c7",
+                              borderWidth: 1,
+                            },
+                          },
+                        }}
                       />
                     </FieldRow>
                   </div>
                 </SectionCard>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
         </DialogContent>
 
         <DialogActions
-         style={{
-  display: "flex",
-  justifyContent: "center",
-  gap: 16,
-  padding: "16px 24px",
-  background: "#f8fafc",
-  borderTop: "1px solid #e2e8f0",
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-}}
+          style={{
+            backgroundColor: "#dde0e4",
+            justifyContent: "center",
+            gap: 16,
+            padding: "12px 24px 16px",
+          }}
         >
-        <Btn
-  onClick={
-    formMode === "single"
-      ? handleSave
-      : handleBulkSave
-  }
-  disabled={loading.save}
-  variant="primary"
- style={{ minWidth: 100, height: 33, fontSize: 13 }}
->
-  {loading.save ? "Saving..." : "Save"}
-</Btn>
-         <Btn
-  onClick={handleCloseModal}
-  disabled={loading.save}
-  variant="cancel"
-  style={{ minWidth: 100, height: 33 }}
->
-  Close
-</Btn>
+          <Btn
+            onClick={formMode === "single" ? handleSave : handleBulkSave}
+            disabled={loading.save}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save ? "Saving..." : "Save"}
+          </Btn>
+          <Btn
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
+          >
+            Close
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

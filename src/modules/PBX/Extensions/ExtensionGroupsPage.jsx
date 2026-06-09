@@ -18,6 +18,13 @@ import {
   updateExtensionGroup,
   deleteExtensionGroup,
 } from "../../../api/apiService";
+import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -195,6 +202,7 @@ const ExtensionGroupsPage = () => {
     save: false,
     extensions: false,
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const showMessage = (type, text) => {
@@ -239,6 +247,7 @@ const ExtensionGroupsPage = () => {
       showMessage("error", err?.message || "Failed to load extension groups.");
     } finally {
       setLoading((p) => ({ ...p, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -262,6 +271,8 @@ const ExtensionGroupsPage = () => {
 
   const totalPages = Math.max(1, Math.ceil(filteredGroups.length / limit));
   const pagedGroups = filteredGroups.slice((page - 1) * limit, page * limit);
+  const dataEmpty = groups.length === 0;
+  const searchEmpty = !dataEmpty && filteredGroups.length === 0;
 
   // ── Checkbox Selection Logic ──
   const pageIds = pagedGroups.map((g) => g.id);
@@ -397,14 +408,8 @@ const ExtensionGroupsPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
         {/* Error Banner */}
         {/* ── Error / Success Floating Banner ── */}
         {message.text && (
@@ -424,23 +429,7 @@ const ExtensionGroupsPage = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb + Last Updated */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          {/* Breadcrumb */}
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Extesions &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              Extension Group
-            </span>
-          </div>
-        </div>
+        <PbxBreadcrumb section="Extensions" current="Extension Group" />
 
         {/* Main Card */}
         <div
@@ -616,17 +605,18 @@ borderTopRightRadius: CARD_RADIUS,
           <div style={{ overflowX: "auto",
 overflowY: "auto",
 flex: 1, }}>
-            {loading.fetch ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
+            {isInitialLoad ? (
+              <TableListLoading />
+            ) : dataEmpty ? (
+              <TableListEmptyState
+                message="No extension groups found."
+                onAddNew={handleOpenAddModal}
+              />
+            ) : searchEmpty ? (
+              <TableListEmptyState
+                message={`No results for "${searchQuery}"`}
+                showButton={false}
+              />
             ) : (
               <table
                 style={{
@@ -666,26 +656,7 @@ minWidth: 900,
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedGroups.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        style={{
-                              padding: "10px 14px",
-                              fontSize: 13,
-                              fontWeight: 400,
-                              color: C.valueText,
-                              textAlign: "center",
-                              borderRight: "1px solid #f1f5f9",
-                            }}
-                      >
-                        {searchQuery
-                          ? `No results for "${searchQuery}"`
-                          : "No extension groups found. Click '+ Add New' to create one."}
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedGroups.map((row, idx) => {
+                  {pagedGroups.map((row, idx) => {
                       const isSelected = selectedIds.includes(row.id);
                  
                       const rowBg = isSelected
@@ -765,15 +736,14 @@ minWidth: 900,
                           </td>
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
             )}
           </div>
 
           {/* Footer Pagination */}
-          {!loading.fetch && filteredGroups.length > 0 && (
+          {!isInitialLoad && filteredGroups.length > 0 && (
             <div
               style={{
                 display: "flex",

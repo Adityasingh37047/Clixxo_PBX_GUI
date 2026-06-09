@@ -135,6 +135,11 @@ div[style*="background-color: #ffffff"]:not(td):not(th):not(.table-cell) {
   scrollbar-width: none;
 }
 
+/* Trunk / CDR — 1px separator left of vertical scrollbar (native scrollbar unchanged) */
+.trunk-table-scroll::-webkit-scrollbar-track:vertical {
+  border-left: 1px solid #9ca3af;
+}
+
 /* Match fill-box corner curve with Authorization page */
 input[type="text"],
 input[type="number"],
@@ -156,5 +161,27 @@ select,
   padding-left: 8px;
   margin-left: 4px;
   cursor: pointer;
+}
+
+/* System Settings native fill boxes — match input[type="text"] 4px radius (same specificity) */
+input.system-settings-native-field,
+select.system-settings-native-field,
+textarea.system-settings-native-field {
+  border-radius: 4px !important;
+  min-height: 34px !important;
+  box-sizing: border-box !important;
+}
+
+select.system-settings-native-field {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 6px 10px !important;
+  line-height: 1.4 !important;
+  width: 100% !important;
+  max-width: 280px !important;
+  overflow: hidden;
 }
  

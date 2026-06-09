@@ -20,6 +20,13 @@ import {
   listSipRegistrations,
   updateOutboundRoute,
 } from "../../../api/apiService";
+import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const PASSWORD_OPTIONS = ["None", "Single Pin"];
@@ -206,6 +213,7 @@ const OutboundRoutesPage = () => {
     members: false,
     trunks: false,
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasLoadedMembersRef = useRef(false);
   const hasLoadedTrunksRef = useRef(false);
 
@@ -371,6 +379,7 @@ const OutboundRoutesPage = () => {
       setRows([]);
     } finally {
       setLoading((prev) => ({ ...prev, list: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -833,13 +842,7 @@ const OutboundRoutesPage = () => {
     rows.some((_, index) => selected.includes(index)) && !allRowsSelected;
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 24,
-      }}
-    >
+    <div style={pbxPageWrapStyle}>
       {/* Import Modal */}
       <Dialog
         open={showImportModal}
@@ -926,22 +929,8 @@ const OutboundRoutesPage = () => {
         </DialogActions>
       </Dialog>
 
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Call Control &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              Outbound Routes
-            </span>
-          </div>
-        </div>
+      <div style={pbxPageInnerStyle}>
+        <PbxBreadcrumb section="Call Control" current="Outbound Routes" />
 
         <div
           style={{
@@ -1066,17 +1055,13 @@ const OutboundRoutesPage = () => {
               flex: 1,
             }}
           >
-            {loading.list ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
+            {isInitialLoad ? (
+              <TableListLoading />
+            ) : rows.length === 0 ? (
+              <TableListEmptyState
+                message="No outbound routes found."
+                onAddNew={handleOpenAddModal}
+              />
             ) : (
               <table
                 style={{
@@ -1156,22 +1141,7 @@ const OutboundRoutesPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={9}
-                        style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
-                        }}
-                      >
-                        No outbound routes yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedRows.map((row, idx) => {
+                  {pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBg = isSelected
@@ -1347,14 +1317,13 @@ const OutboundRoutesPage = () => {
                           </td>
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
             )}
           </div>
 
-          {!loading.list && rows.length > 0 && (
+          {!isInitialLoad && rows.length > 0 && (
             <div
               style={{
                 display: "flex",

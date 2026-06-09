@@ -19,7 +19,11 @@ import {
   CircularProgress,
   Checkbox,
 } from "@mui/material";
-import { checkboxSx } from "../../../sections/advanced/advancedSharedUi";
+import {
+  advancedFormInlineFooterStyle,
+  advancedFormBtnStyle,
+  checkboxSx,
+} from "../../../sections/advanced/advancedSharedUi";
 import {
   systemFieldInputStyleNarrow as inputStyle,
   systemFieldSelectStyle as selectStyle,
@@ -1355,7 +1359,7 @@ const Management = () => {
           </div>
 
           {/* Card Body */}
-          <div style={{ padding: "24px 32px" }}>
+          <div style={{ padding: loading ? "24px 32px" : "24px 32px 0" }}>
             {loading ? (
               <div className="flex flex-col items-center justify-center min-h-[400px]">
                 <CircularProgress size={40} sx={{ color: C.primary }} />
@@ -1367,10 +1371,12 @@ const Management = () => {
               </div>
             ) : (
               <form
+                id="management-form"
                 key={formKey}
                 onSubmit={handleSave}
                 className="flex flex-col gap-2"
               >
+                <div style={{ marginBottom: 12 }}>
                 {MANAGEMENT_SECTIONS.map((section, idx) => (
                   <div key={section.section} className="flex flex-col gap-0">
                     <SectionHeading
@@ -1676,29 +1682,33 @@ const Management = () => {
                     </div>
                   </div>
                 ))}
+                </div>
               </form>
             )}
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 w-full">
-          <Btn
-            variant="primary"
-            onClick={handleSave}
-            disabled={loading}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
-            Save
-          </Btn>
-          <Btn
-            variant="cancel"
-            onClick={handleReset}
-            disabled={loading}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
-          >
-            Reset
-          </Btn>
+          {!loading && (
+            <div style={advancedFormInlineFooterStyle}>
+              <Btn
+                variant="primary"
+                type="submit"
+                form="management-form"
+                disabled={loading}
+                style={advancedFormBtnStyle}
+              >
+                Save
+              </Btn>
+              <Btn
+                variant="cancel"
+                type="button"
+                onClick={handleReset}
+                disabled={loading}
+                style={advancedFormBtnStyle}
+              >
+                Reset
+              </Btn>
+            </div>
+          )}
         </div>
       </div>
     </div>

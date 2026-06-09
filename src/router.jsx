@@ -83,6 +83,7 @@ import PINGTest from "./modules/System/System Settings/PINGTest";
 import TRACERTTest from "./modules/System/System Settings/TRACERTTest";
 import AsteriskCLI from "./modules/System/System Settings/AsteriskCLI";
 import LinuxCLI from "./modules/System/System Settings/LinuxCLI";
+import RoutingInterface from "./modules/System/System Settings/RoutingInterface";
 import ModificationRecord from "./modules/Maitenance/System Tools/ModificationRecord";
 import BackupUpload from "./modules/Maitenance/System Tools/BackupUpload";
 import FactoryReset from "./modules/Maitenance/System Tools/FactoryReset";
@@ -435,6 +436,10 @@ export const router = createBrowserRouter([
       {
         path: "/system-tools/network",
         element: <Network />,
+      },
+      {
+        path: "/system-tools/routing-interface",
+        element: <RoutingInterface />,
       },
       {
         path: "/system-tools/authorization",

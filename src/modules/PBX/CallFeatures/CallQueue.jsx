@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -33,6 +33,31 @@ import {
   ANNOUNCE_FREQ_OPTIONS,
   CALL_QUEUE_TABLE_COLUMNS,
 } from "../../../constants/CallQueueConstants";
+import {
+  C,
+  Btn,
+  TH,
+  tdStyle,
+  checkboxSx,
+  numManipulateCardStyle,
+  numManipulateToolbarStyle,
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+
+const LIST_CARD_RADIUS = 10;
+const listCardStyle = {
+  ...numManipulateCardStyle,
+  borderRadius: LIST_CARD_RADIUS,
+};
+const listToolbarStyle = {
+  ...numManipulateToolbarStyle,
+  borderTopLeftRadius: LIST_CARD_RADIUS,
+  borderTopRightRadius: LIST_CARD_RADIUS,
+};
 
 const selectSx = {
   "& .MuiOutlinedInput-input": { padding: "4px 6px", fontSize: 13 },
@@ -68,6 +93,7 @@ const CallQueue = () => {
     save: false,
     delete: false,
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [page, setPage] = useState(1);
   const [destinations, setDestinations] = useState({});
   const [voicePrompts, setVoicePrompts] = useState([]);
@@ -108,6 +134,7 @@ const CallQueue = () => {
       showMsg("error", e.message || "Failed to load queues");
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -378,8 +405,6 @@ const CallQueue = () => {
     }
   };
 
-  const handleCheckAll = () => setSelected(pagedQueues.map((q) => q._idx));
-  const handleUncheckAll = () => setSelected([]);
   const handleInverse = () =>
     setSelected(
       pagedQueues.map((q) => q._idx).filter((i) => !selected.includes(i)),
@@ -388,6 +413,24 @@ const CallQueue = () => {
     setSelected((prev) =>
       prev.includes(idx) ? prev.filter((x) => x !== idx) : [...prev, idx],
     );
+
+  const pageIndices = pagedQueues.map((q) => q._idx);
+  const allPageSelected =
+    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
+  const somePageSelected =
+    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
+
+  const handleToggleAll = () => {
+    if (!pageIndices.length) return;
+    setSelected((prev) =>
+      allPageSelected
+        ? prev.filter((i) => !pageIndices.includes(i))
+        : Array.from(new Set([...prev, ...pageIndices])),
+    );
+  };
+
+  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
+  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
 
   const extensionsList = Array.isArray(destinations.Extensions)
     ? destinations.Extensions
@@ -451,42 +494,78 @@ const CallQueue = () => {
     RING_STRATEGY_OPTIONS.find((o) => o.value === v)?.label || v;
 
   const SectionHeader = ({ title }) => (
-    <div className="px-3 py-1 border-b border-gray-300 text-[13px] font-semibold text-gray-700 bg-[#f5f7fa]">
+    <div
+      style={{
+        padding: "8px 12px",
+        fontSize: 12,
+        fontWeight: 700,
+        color: C.accent,
+        borderBottom: `1px solid ${C.cardBorder}`,
+        background: "#f8fafc",
+      }}
+    >
       {title}
     </div>
   );
 
   return (
-    <div
-      className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border"
-      style={{ backgroundColor: "#dde0e4" }}
-    >
+    <div style={pbxPageWrapStyle}>
       {/* Modal */}
       <Dialog
         open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
+        onClose={() => {
+          if (loading.save) return;
+          handleCloseModal();
+        }}
         maxWidth={false}
-        PaperProps={{ sx: { width: 1020, maxWidth: "98vw", mx: "auto", p: 0 } }}
+        className="z-50"
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        PaperProps={{
+          sx: {
+            width: 1020,
+            maxWidth: "98vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: "8px",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            backgroundColor: "#ffffff",
+            backgroundImage: "none",
+          },
+        }}
+        disableRestoreFocus
       >
         <DialogTitle
-          className="h-14 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+          sx={{
+            fontWeight: 600,
+            fontSize: "16px",
+            color: "#ffffff",
+            backgroundColor: "#1e2d42",
+            borderBottom: `1px solid ${C.cardBorder}`,
+            px: 3,
+            py: 2,
+            textAlign: "center",
+            borderTopLeftRadius: "8px",
+            borderTopRightRadius: "8px",
           }}
         >
           {editIndex !== null ? "Edit Call Queue" : "Add Call Queue"}
         </DialogTitle>
         <DialogContent
-          style={{
-            padding: "10px 8px 0 8px",
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444",
-            borderTop: "none",
+          sx={{
+            p: "24px",
+            backgroundColor: "#ffffff",
           }}
         >
-          <div className="flex flex-col w-full">
-            <div className="border-b border-gray-400 mb-2 bg-[#f1f3f6] rounded-t-md">
+          <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+            <div
+              style={{
+                borderBottom: `1px solid ${C.cardBorder}`,
+                marginBottom: 16,
+              }}
+            >
               <Tabs
                 value={activeTab}
                 onChange={(_, v) => setActiveTab(v)}
@@ -512,7 +591,14 @@ const CallQueue = () => {
             {/* ── BASIC TAB ── */}
             {activeTab === "basic" && (
               <div className="flex flex-col gap-2 w-full pb-2">
-                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}
+                >
                   <SectionHeader title="Queue Settings" />
                   <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Queue Name *">
@@ -885,7 +971,14 @@ const CallQueue = () => {
                 </div>
 
                 {/* Agents dual listbox */}
-                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}
+                >
                   <SectionHeader title="Agents" />
                   <div className="p-3">
                     <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
@@ -1078,7 +1171,14 @@ const CallQueue = () => {
             {/* ── CALLER EXPERIENCE SETTINGS TAB ── */}
             {activeTab === "caller" && (
               <div className="flex flex-col gap-2 w-full pb-2">
-                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}
+                >
                   <SectionHeader title="Caller Settings" />
                   <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Music on Hold *">
@@ -1374,7 +1474,14 @@ const CallQueue = () => {
                   </div>
                 </div>
 
-                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}
+                >
                   <SectionHeader title="Caller Position Announcements" />
                   <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Announce Position">
@@ -1431,7 +1538,14 @@ const CallQueue = () => {
                   </div>
                 </div>
 
-                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}
+                >
                   <SectionHeader title="Periodic Announcements" />
                   <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Announce Sound">
@@ -1480,7 +1594,14 @@ const CallQueue = () => {
                   </div>
                 </div>
 
-                <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}
+                >
                   <SectionHeader title="Busy Callback" />
                   <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Enable Busy Callback">
@@ -1551,280 +1672,336 @@ const CallQueue = () => {
           </div>
         </DialogContent>
 
-        <DialogActions className="p-3 justify-center gap-6">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #3E5475 0%, #2f405c 100%)",
-                color: "#fff",
-              },
-
-              "&:disabled": {
-                background: "#cbd5e1",
-                color: "#64748b",
-              },
-            }}
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+            gap: 2,
+            py: "10px",
+            px: "16px",
+            borderTop: `1px solid ${C.cardBorder}`,
+            backgroundColor: "#f8fafc",
+          }}
+        >
+          <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            startIcon={
-              loading.save && <CircularProgress size={18} color="inherit" />
-            }
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {loading.save ? "Saving..." : "Save"}
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #eef2f7 0%, #d6dde6 100%)",
-              color: "#3E5475 ",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1.5,
-              minWidth: 120,
-              minHeight: 40,
-              px: 2,
-              py: 0.5,
-              boxShadow: "0 2px 8px rgba(62, 84, 117, 0.4)",
-              textTransform: "none",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d6dde6 0%, #c2ccd9 100%)",
-                color: "#2f405c",
-              },
-
-              "&:disabled": {
-                background: "#f1f5f9",
-                color: "#94a3b8",
-              },
-            }}
+            {loading.save ? (
+              <>
+                <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
+                Saving...
+              </>
+            ) : (
+              "Save"
+            )}
+          </Btn>
+          <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
           >
             Close
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
 
-      {/* Alert */}
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
-
-      {/* Main content */}
-      <div className="w-full max-w-full mx-auto p-2">
-        <div className="w-full max-w-full mx-auto">
-          <div
-            className="rounded-t-lg h-8 flex items-center justify-center font-semibold text-[18px] text-[#ffffff] shadow-sm mt-0"
-            style={{
-              background: "linear-gradient(#3E5475 100%)",
-              boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
+      <div style={pbxPageInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
             }}
           >
-            Call Queue
-          </div>
+            {message.text}
+          </Alert>
+        )}
 
-          <div className="overflow-x-auto w-full">
-            <table className="w-full min-w-[700px] bg-[#ffffff] border-2 border-t-0 border-gray-400 rounded-b-lg shadow-sm">
-              <thead>
-                <tr>
-                  <th className="bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                  <th className="bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
-                    #
-                  </th>
-                  <th className="bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                    Queue Name
-                  </th>
-                  <th className="bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                    Queue Number
-                  </th>
-                  <th className="bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                    Ring Strategy
-                  </th>
-                  <th className="bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center">
-                    Agents
-                  </th>
-                  <th className="bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading.fetch ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="border border-gray-300 px-2 py-8 text-center"
-                    >
-                      <CircularProgress size={26} />
-                    </td>
-                  </tr>
-                ) : queues.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="border border-gray-300 px-2 py-4 text-center text-gray-500"
-                    >
-                      No queues yet. Click "Add New" to create one.
-                    </td>
-                  </tr>
-                ) : (
-                  pagedQueues.map((q, i) => (
-                    <tr key={q._idx}>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(q._idx)}
-                          onChange={() => handleSelectRow(q._idx)}
-                          disabled={loading.delete}
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {(page - 1) * itemsPerPage + i + 1}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center font-medium">
-                        {q.name || "--"}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {q.queue_number || "--"}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {ringStrategyLabel(q.ring_strategy)}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {Array.isArray(q.members) ? q.members.length : 0}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
-                          titleAccess="Edit"
-                          onClick={() => handleOpenModal(q, q._idx)}
-                        />
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+        <PbxBreadcrumb section="Call Features" current="Call Queue" />
 
-          <div className="flex flex-wrap justify-between items-center bg-gray-100 rounded-b-lg border-2 border-t-0 border-gray-400 px-2 py-2 gap-2">
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={handleCheckAll}
-                disabled={loading.delete || loading.fetch}
-                className={`bg-[#DCE6F2] text-gray-800 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-[#BFCFE5] ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
-                Check All
-              </button>
-              <button
-                onClick={handleUncheckAll}
-                disabled={loading.delete || loading.fetch}
-                className={`bg-[#DCE6F2] text-gray-800 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-[#BFCFE5] ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
-                Uncheck All
-              </button>
-              <button
+        <div style={listCardStyle}>
+          <div style={listToolbarStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.delete || loading.fetch}
-                className={`bg-[#DCE6F2] text-gray-800 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-[#BFCFE5] ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
+                disabled={loading.delete || loading.fetch || queues.length === 0}
+                style={{ height: 30 }}
               >
                 Inverse
-              </button>
-              <button
+              </Btn>
+              <Btn
+                variant="cancel"
                 onClick={handleDelete}
-                disabled={loading.delete || loading.fetch}
-                className={`bg-[#DCE6F2] text-gray-800 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-[#BFCFE5] flex items-center gap-1 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                style={{ height: 30 }}
               >
-                {loading.delete && <CircularProgress size={11} />}Delete
-              </button>
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
+                )}
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                disabled={loading.fetch || loading.save}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+              >
+                + Add New
+              </Btn>
             </div>
-            <button
-              onClick={() => handleOpenModal()}
-              disabled={loading.fetch || loading.save}
-              className={`bg-[#DCE6F2] text-gray-800 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-[80px] shadow hover:bg-[#BFCFE5] ${loading.fetch || loading.save ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              Add New
-            </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full max-w-full mx-auto bg-gray-100 rounded-lg border-2 border-gray-400 mt-1 p-1 text-xs text-gray-800">
-            <span>{queues.length} items Total</span>
-            <span>{itemsPerPage} Items/Page</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            <button
-              className="bg-[#DCE6F2] text-gray-800 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-[#BFCFE5] disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(1)}
-              disabled={page === 1}
-            >
-              First
-            </button>
-            <button
-              className="bg-[#DCE6F2] text-gray-800 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-[#BFCFE5] disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="bg-[#DCE6F2] text-gray-800 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-[#BFCFE5] disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next
-            </button>
-            <button
-              className="bg-[#DCE6F2] text-gray-800 font-semibold text-xs rounded px-2 py-0.5 min-w-[50px] shadow hover:bg-[#BFCFE5] disabled:bg-gray-100 disabled:text-gray-400"
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-            >
-              Last
-            </button>
-            <span>Go to Page</span>
-            <select
-              className="text-xs rounded border border-gray-300 px-1 py-0.5 min-w-[40px]"
-              value={page}
-              onChange={(e) => setPage(Number(e.target.value))}
-            >
-              {Array.from({ length: totalPages }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-            <span>{totalPages} Pages Total</span>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+            {isInitialLoad ? (
+              <TableListLoading />
+            ) : queues.length === 0 ? (
+              <TableListEmptyState
+                message="No call queues found."
+                onAddNew={() => handleOpenModal()}
+              />
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 700,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                      }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        disabled={loading.delete}
+                        sx={checkboxSx}
+                      />
+                    </TH>
+                    <TH style={{ width: 36 }}>#</TH>
+                    <TH>Queue Name</TH>
+                    <TH>Queue Number</TH>
+                    <TH>Ring Strategy</TH>
+                    <TH>Agents</TH>
+                    <TH style={{ width: 70, borderRight: "none" }}>Modify</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedQueues.map((q, i) => {
+                    const isSelected = selected.includes(q._idx);
+                    const isLastRow = i === pagedQueues.length - 1;
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : i % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+
+                    return (
+                      <tr
+                        key={q._idx}
+                        style={{
+                          background: rowBg,
+                          borderBottom: "1px solid #f1f5f9",
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td style={{ ...tdStyle, background: rowBg }}>
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(q._idx)}
+                            disabled={loading.delete}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                          }}
+                        >
+                          {(page - 1) * itemsPerPage + i + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {q.name || "--"}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                          }}
+                        >
+                          {q.queue_number || "--"}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                          }}
+                        >
+                          {ringStrategyLabel(q.ring_strategy)}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                          }}
+                        >
+                          {Array.isArray(q.members) ? q.members.length : 0}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            textAlign: "center",
+                            padding: "7px 8px",
+                          }}
+                        >
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => handleOpenModal(q, q._idx)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
+
+          {!isInitialLoad && queues.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+                borderBottomLeftRadius: LIST_CARD_RADIUS,
+                borderBottomRightRadius: LIST_CARD_RADIUS,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedQueues.length} record
+                {pagedQueues.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.fetch || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.fetch || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

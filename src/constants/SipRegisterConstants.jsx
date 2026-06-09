@@ -21,7 +21,6 @@ export const sipRegisterFields = [
 
 export const SIP_REGISTER_TABLE_COLUMNS = [
   { key: 'check', label: 'Check' },
-  { key: 'index', label: 'Index' },
   { key: 'trunk_id', label: 'Trunk ID' },
   { key: 'username', label: 'Username' },
   { key: 'context', label: 'Context' },

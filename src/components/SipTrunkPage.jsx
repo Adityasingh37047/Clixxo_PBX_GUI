@@ -49,7 +49,7 @@ import {
   createGlobalSipSettings,
   updateGlobalSipSettings,
   deleteGlobalSipSettings,
-  fetchSystemInfo,
+  fetchNetwork,
 } from "../api/apiService";
 
 const SipTrunkPage = () => {
@@ -173,95 +173,53 @@ const SipTrunkPage = () => {
       hasInitialLoadRef.current = true;
       fetchGlobalSipSettings();
       const loadLocalIps = async () => {
-        const ensureCurrentValue = (options) => {
-          if (!form.local_ip) return options;
-          if (options.some((opt) => opt.value === form.local_ip))
-            return options;
-          return [...options, { value: form.local_ip, label: form.local_ip }];
-        };
         try {
-          const si = await fetchSystemInfo();
-          const details = si?.details || si?.responseData || {};
-          let rawInterfaces = [];
-          if (Array.isArray(details.LAN_INTERFACES)) {
-            rawInterfaces = details.LAN_INTERFACES;
-          } else if (
-            details.LAN_INTERFACES &&
-            typeof details.LAN_INTERFACES === "object"
-          ) {
-            rawInterfaces = Object.entries(details.LAN_INTERFACES).map(
-              ([name, data]) => ({ name, data }),
-            );
-          } else if (Array.isArray(details.interfaces)) {
-            rawInterfaces = details.interfaces;
-          } else if (
-            details.network &&
-            Array.isArray(details.network.interfaces)
-          ) {
-            rawInterfaces = details.network.interfaces;
-          }
+          const netData = await fetchNetwork();
+          const allIfaces = netData?.data?.interfaces || [];
 
-          const toIp = (dataObj) => {
-            if (!dataObj || typeof dataObj !== "object") return "";
-            for (const val of Object.values(dataObj)) {
-              if (
-                typeof val === "string" &&
-                /^(\d{1,3}\.){3}\d{1,3}$/.test(val)
-              )
-                return val;
-              if (Array.isArray(val)) {
-                for (const inner of val) {
-                  if (
-                    typeof inner === "string" &&
-                    /^(\d{1,3}\.){3}\d{1,3}$/.test(inner)
-                  )
-                    return inner;
-                }
-              }
-            }
-            return "";
-          };
-
-          let lan1 = "";
-          let lan2 = "";
-          (rawInterfaces || []).forEach((iface) => {
-            const name = iface && iface.name ? String(iface.name) : "";
-            const data = iface?.data || iface;
-            if (name === "eth0" || name === "LAN 1") lan1 = toIp(data) || lan1;
-            if (name === "eth1" || name === "LAN 2") lan2 = toIp(data) || lan2;
+          // Keep only physical LAN interfaces (eth0/eth1 or enp*s*)
+          const lanIfaces = allIfaces.filter((i) => {
+            const name = (i.interface || "").toLowerCase();
+            return /^eth\d+$/.test(name) || /^enp\d+s\d+/.test(name);
           });
 
-          const orderedOptions = [];
-          orderedOptions.push({
-            value: lan1 || "lan1-unavailable",
-            label: lan1 ? `LAN 1 (${lan1})` : "LAN 1 (Unavailable)",
-            disabled: !lan1,
-          });
-          orderedOptions.push({
-            value: lan2 || "lan2-unavailable",
-            label: lan2 ? `LAN 2 (${lan2})` : "LAN 2 (Unavailable)",
-            disabled: !lan2,
-          });
+          const orderedOptions = lanIfaces.map((iface, idx) => ({
+            value: iface.ipAddress || `lan${idx + 1}-unavailable`,
+            label: iface.ipAddress
+              ? `LAN ${idx + 1} (${iface.ipAddress})`
+              : `LAN ${idx + 1} (Unavailable)`,
+            disabled: !iface.ipAddress,
+          }));
+
           orderedOptions.push({ value: "0.0.0.0", label: "Any LAN (0.0.0.0)" });
 
-          setLocalIpOptions(ensureCurrentValue(orderedOptions));
+          // Keep current form value selectable even if not in the list
+          if (
+            form.local_ip &&
+            !orderedOptions.some((opt) => opt.value === form.local_ip)
+          ) {
+            orderedOptions.unshift({
+              value: form.local_ip,
+              label: form.local_ip,
+            });
+          }
+
+          setLocalIpOptions(orderedOptions);
         } catch (error) {
-          console.warn("Failed to load system info for LAN IPs", error);
-          setLocalIpOptions(
-            ensureCurrentValue([
-              {
-                value: "lan1-unavailable",
-                label: "LAN 1 (Unavailable)",
-                disabled: true,
-              },
-              {
-                value: "lan2-unavailable",
-                label: "LAN 2 (Unavailable)",
-                disabled: true,
-              },
-              { value: "0.0.0.0", label: "Any LAN (0.0.0.0)" },
-            ]),
-          );
+          console.warn("Failed to load network interfaces for Local IP", error);
+          setLocalIpOptions([
+            {
+              value: "lan1-unavailable",
+              label: "LAN 1 (Unavailable)",
+              disabled: true,
+            },
+            {
+              value: "lan2-unavailable",
+              label: "LAN 2 (Unavailable)",
+              disabled: true,
+            },
+            { value: "0.0.0.0", label: "Any LAN (0.0.0.0)" },
+          ]);
         }
       };
       loadLocalIps();
@@ -750,8 +708,7 @@ const SipTrunkPage = () => {
                             <EditDocumentIcon
                               titleAccess="Edit"
                               onClick={() =>
-                                !loading.delete &&
-                                handleOpenModal(reg, realIdx)
+                                !loading.delete && handleOpenModal(reg, realIdx)
                               }
                               style={{
                                 cursor: loading.delete
@@ -783,7 +740,9 @@ const SipTrunkPage = () => {
 
           {registers.length > 0 && (
             <div style={systemSettingsPaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}>
+              <span
+                style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}
+              >
                 Showing {registers.length} record
                 {registers.length !== 1 ? "s" : ""}
               </span>
@@ -874,7 +833,7 @@ const SipTrunkPage = () => {
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
-              marginTop: 8,
+              marginTop: 22,
             }}
           >
             {SIP_TRUNK_FIELDS.map((field) => {

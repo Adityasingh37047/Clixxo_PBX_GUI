@@ -158,7 +158,7 @@ const Sidebar = ({
   // Desktop: right submenu always open (clicked section, else default)
   const activeSection = isMobile
     ? activeMenu
-    : activeMenu ?? defaultOpenSectionId;
+    : (activeMenu ?? defaultOpenSectionId);
 
   // ─── Notify Layout on EVERY width change (hover + click both) ─────────────
   useEffect(() => {
@@ -367,7 +367,9 @@ const Sidebar = ({
             sx={{
               margin: 0,
               "& .MuiTypography-root": {
-                color: hasActiveChild ? SIDEBAR_TEXT_ACTIVE : SIDEBAR_TEXT_MUTED,
+                color: hasActiveChild
+                  ? SIDEBAR_TEXT_ACTIVE
+                  : SIDEBAR_TEXT_MUTED,
                 fontWeight: 700,
                 fontSize: 10,
                 letterSpacing: "0.08em",
@@ -536,9 +538,7 @@ const Sidebar = ({
         sx={{
           cursor: "pointer",
           position: "relative",
-          backgroundColor: isCurrentActive
-            ? SUBMENU_ACTIVE_BG
-            : "transparent",
+          backgroundColor: isCurrentActive ? SUBMENU_ACTIVE_BG : "transparent",
           borderBottom: `1px solid ${SIDEBAR_BORDER}`,
           borderLeft: isCurrentActive
             ? `3px solid ${SIDEBAR_ACCENT}`
@@ -569,7 +569,9 @@ const Sidebar = ({
         <ListItemIcon sx={{ minWidth: 0, marginBottom: isMobile ? 0 : -0.5 }}>
           <IconComponent
             sx={{
-              color: isCurrentActive ? SIDEBAR_TEXT_ICON_ACTIVE : SIDEBAR_TEXT_MUTED,
+              color: isCurrentActive
+                ? SIDEBAR_TEXT_ICON_ACTIVE
+                : SIDEBAR_TEXT_MUTED,
               fontSize: isMobile ? 18 : isTablet ? 20 : 21,
             }}
           />
@@ -580,7 +582,9 @@ const Sidebar = ({
             sx={{
               textAlign: "center",
               "& .MuiTypography-root": {
-                color: isCurrentActive ? SIDEBAR_TEXT_ACTIVE : SIDEBAR_TEXT_MUTED,
+                color: isCurrentActive
+                  ? SIDEBAR_TEXT_ACTIVE
+                  : SIDEBAR_TEXT_MUTED,
                 fontWeight: 700,
                 fontSize: isTablet ? 10.5 : 11,
                 lineHeight: 1.2,
@@ -660,6 +664,7 @@ const Sidebar = ({
             minWidth: LEFT_W,
             width: LEFT_W,
             background: SIDEBAR_RAIL_BG,
+            borderTop: `1px solid ${SIDEBAR_BORDER}`,
             borderRight: `1px solid ${SIDEBAR_BORDER}`,
             overflowY: "auto",
             overflowX: "hidden",
@@ -679,6 +684,7 @@ const Sidebar = ({
             style={{
               width: isMobile ? `calc(100vw - ${LEFT_W}px)` : RIGHT_W,
               background: SIDEBAR_RAIL_BG,
+              borderTop: `1px solid ${SIDEBAR_BORDER}`,
               borderRight: `1px solid ${SIDEBAR_BORDER}`,
               overflowY: "auto",
               overflowX: "hidden",

@@ -68,6 +68,7 @@ const SipToSipAccountPage = () => {
   const [form, setForm] = useState(SIP_TO_SIP_INITIAL_FORM);
   const [editIndex, setEditIndex] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasInitialLoadRef = useRef(false);
 
   const showMessageFn = (type, text) => {
@@ -157,6 +158,7 @@ const SipToSipAccountPage = () => {
       showMessageFn("error", e.message || "Failed to load accounts");
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -815,8 +817,49 @@ const SipToSipAccountPage = () => {
             </div>
           </div>
 
-          {/* Table */}
           <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+            {isInitialLoad ? (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  padding: 48,
+                }}
+              >
+                <CircularProgress size={28} style={{ color: C.accent }} />
+              </div>
+            ) : accounts.length === 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 240,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#3E5475",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  No SIP To SIP accounts found.
+                </div>
+                <Btn
+                  variant="cancel"
+                  onClick={() => handleOpenModal()}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                >
+                  + Add New
+                </Btn>
+              </div>
+            ) : (
             <table
               style={{
                 width: "100%",
@@ -873,31 +916,7 @@ const SipToSipAccountPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading.fetch ? (
-                  <tr>
-                    <td
-                      colSpan={SIP_TO_SIP_TABLE_COLUMNS.length + 2}
-                      style={{ textAlign: "center", padding: "48px 0" }}
-                    >
-                      <CircularProgress size={28} style={{ color: C.accent }} />
-                    </td>
-                  </tr>
-                ) : accounts.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={SIP_TO_SIP_TABLE_COLUMNS.length + 2}
-                      style={{
-                        textAlign: "center",
-                        padding: "36px 0",
-                        color: C.mutedText,
-                        fontSize: 13,
-                      }}
-                    >
-                      No accounts found.
-                    </td>
-                  </tr>
-                ) : (
-                  pagedAccounts.map((item, idx) => {
+                  {pagedAccounts.map((item, idx) => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSel = selected.includes(realIdx);
                     const isLastRow = idx === pagedAccounts.length - 1;
@@ -957,7 +976,9 @@ const SipToSipAccountPage = () => {
                           >
                             {col.key === "password"
                               ? "*".repeat(item.password?.length || 0)
-                              : item[col.key] || "--"}
+                              : col.key === "index"
+                                ? realIdx + 1
+                                : item[col.key] || "--"}
                           </td>
                         ))}
                         <td
@@ -979,13 +1000,13 @@ const SipToSipAccountPage = () => {
                         </td>
                       </tr>
                     );
-                  })
-                )}
+                  })}
               </tbody>
             </table>
+            )}
           </div>
 
-          {!loading.fetch && accounts.length > 0 && (
+          {!isInitialLoad && accounts.length > 0 && (
             <SipPcmPagination
               page={page}
               totalPages={totalPages}

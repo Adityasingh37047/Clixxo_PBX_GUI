@@ -597,6 +597,11 @@ export const SIDEBAR_SECTIONS = [
         items: [
           { id: "sysNetwork", title: "Network", path: "/system-tools/network" },
           {
+            id: "sysRoutingInterface",
+            title: "Routing Interface",
+            path: "/system-tools/routing-interface",
+          },
+          {
             id: "sysManagement",
             title: "Management",
             path: "/system-tools/management",

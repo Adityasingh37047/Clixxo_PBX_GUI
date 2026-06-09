@@ -10,15 +10,13 @@ export const SIP_TO_SIP_FIELDS = [
 ];
 
 export const SIP_TO_SIP_TABLE_COLUMNS = [
-  { key: 'check', label: 'Check' },
-  { key: 'index', label: 'Index' },
+  { key: 'index', label: 'ID' },
   { key: 'extension', label: 'Extension' },
   { key: 'context', label: 'Context' },
   { key: 'allow_codecs', label: 'Allow Codecs' },
   { key: 'contact', label: 'Contact' },
   { key: 'password', label: 'Password' },
   { key: 'status', label: 'Status' },
-  { key: 'modify', label: 'Modify' },
 ];
 
 export const SIP_TO_SIP_INITIAL_FORM = SIP_TO_SIP_FIELDS.reduce((acc, field) => {

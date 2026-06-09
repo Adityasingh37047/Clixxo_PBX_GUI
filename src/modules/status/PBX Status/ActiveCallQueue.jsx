@@ -5,110 +5,29 @@ import {
   fetchCallQueueQueueStats,
 } from "../../../api/apiService";
 import { CircularProgress } from "@mui/material";
+import {
+  C,
+  Btn,
+  PageBreadcrumb,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+  TableListLoading,
+  TableListEmptyState,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  sipPcmPrimaryBtnStyle,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const POLL_INTERVAL = 5000;
 
-// ── Color palette (matches IP→PSTN Routing Rule) ─────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  cardHeader: "#1e2d42",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
-  successGreen: "#16a34a",
-  errorRed: "#dc2626",
-  amber: "#d97706",
-  purple: "#8b5cf6",
-  teal: "#0e7490",
-  darkGreen: "#3E5475",
-};
-
 const CARD_RADIUS = 10;
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-  const baseBg = s.background;
-
-  return (
-    <button
-      type={type || "button"}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
+const successGreen = "#16a34a";
+const cardHeader = "#1e2d42";
+const teal = "#0e7490";
 
 const toolbarStyle = {
   display: "flex",
@@ -136,7 +55,7 @@ const AnsweredRateBar = ({ rate }) => (
     <div
       style={{
         width: `${Math.min(Number(rate) || 0, 100)}%`,
-        background: C.successGreen,
+        background: successGreen,
         height: "100%",
         borderRadius: 3,
         transition: "width 0.3s ease",
@@ -232,7 +151,7 @@ const RatePill = ({ value }) => (
   <span
     style={{
       background: Number(value) > 0 ? "#dcfce7" : "#f1f5f9",
-      color: Number(value) > 0 ? C.successGreen : C.labelText,
+      color: Number(value) > 0 ? successGreen : C.labelText,
       padding: "2px 9px",
       borderRadius: 10,
       fontSize: 10.5,
@@ -370,57 +289,19 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
     : agentData;
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>Status</span>
-          <span>&gt;</span>
-          <span>PBX Status</span>
-          <span>&gt;</span>
-          <span>Active Call Queue</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Call Queue Statistics
-          </span>
-        </div>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
+        <PageBreadcrumb
+          segments={[
+            "Status",
+            "PBX Status",
+            "Active Call Queue",
+            "Call Queue Statistics",
+          ]}
+        />
 
-        {/* Main card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar: tabs + actions */}
-          <div
-            style={{
-              ...toolbarStyle,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {[
                 { key: "agent", label: "Agent Statistics" },
@@ -463,11 +344,11 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                   setAgentData([]);
                   setQueueData([]);
                 }}
-                style={{ height: 30 }}
+                style={sipPcmCancelBtnStyle}
               >
                 Clear
               </Btn>
-              <Btn variant="cancel" onClick={onBack} style={{ height: 30 }}>
+              <Btn variant="cancel" onClick={onBack} style={sipPcmCancelBtnStyle}>
                 ← Back
               </Btn>
             </div>
@@ -872,67 +753,17 @@ const ActiveCallQueue = () => {
   const sel = selectedQueue ? norm(selectedQueue) : null;
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>Status</span>
-          <span>&gt;</span>
-          <span>PBX Status</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Active Call Queue
-          </span>
-        </div>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
+        <PageBreadcrumb
+          segments={["Status", "PBX Status", "Active Call Queue"]}
+        />
 
-        {/* Main card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              ...toolbarStyle,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={sipPcmCardStyle}>
+          <div style={sipPcmToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {hasLoaded && queueList.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={sipPcmSelectedBadgeStyle}>
                   {queueList.length} queue{queueList.length !== 1 ? "s" : ""}
                 </span>
               )}
@@ -947,7 +778,7 @@ const ActiveCallQueue = () => {
                 variant="cancel"
                 onClick={() => loadActivity(false)}
                 disabled={isRefreshing}
-                style={{ height: 30 }}
+                style={sipPcmCancelBtnStyle}
               >
                 {isRefreshing ? (
                   <>
@@ -961,7 +792,7 @@ const ActiveCallQueue = () => {
               <Btn
                 variant="primary"
                 onClick={() => setShowStats(true)}
-                style={{ height: 30 }}
+                style={sipPcmPrimaryBtnStyle}
               >
                 Call Queue Statistics
               </Btn>
@@ -988,29 +819,14 @@ const ActiveCallQueue = () => {
 
             {/* Initial load */}
             {!hasLoaded && queueList.length === 0 && !error && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
+              <TableListLoading />
             )}
 
-            {/* Empty state */}
             {hasLoaded && !error && queueList.length === 0 && (
-              <div
-                style={{
-                  padding: "48px 0",
-                  textAlign: "center",
-                  color: C.mutedText,
-                  fontSize: 13,
-                }}
-              >
-                No active queues found.
-              </div>
+              <TableListEmptyState
+                message="No active queues found."
+                showButton={false}
+              />
             )}
 
             {/* Main content */}
@@ -1099,7 +915,7 @@ const ActiveCallQueue = () => {
                         alignItems: "center",
                         gap: 4,
                         // background: "#dcfce7",
-                        color: C.successGreen,
+                        color: successGreen,
                         fontSize: 12,
                         fontWeight: 700,
                         padding: "1px 8px",
@@ -1112,7 +928,7 @@ const ActiveCallQueue = () => {
                           width: 5,
                           height: 5,
                           borderRadius: "50%",
-                          background: C.successGreen,
+                          background: successGreen,
                         }}
                       />
                       {n.status}
@@ -1179,7 +995,7 @@ const ActiveCallQueue = () => {
                           alignItems: "center",
                           gap: 4,
                           // background: "#dcfce7",
-                          color: C.successGreen,
+                          color: successGreen,
                           fontSize: 12,
                           fontWeight: 700,
                           padding: "2px 10px",
@@ -1191,7 +1007,7 @@ const ActiveCallQueue = () => {
                             width: 6,
                             height: 6,
                             borderRadius: "50%",
-                            background: C.successGreen,
+                            background: successGreen,
                           }}
                         />
                         {sel.status}
@@ -1230,22 +1046,22 @@ const ActiveCallQueue = () => {
                   <StatCard
                     label="Total Calls"
                     value={sel.totalCalls}
-                    color={C.darkGreen}
+                    color={C.accent}
                   />
                   <StatCard
                     label="Answered Calls"
                     value={sel.answeredCalls}
-                    color={C.darkGreen}
+                    color={C.accent}
                   />
                   <StatCard
                     label="Waiting Calls"
                     value={sel.waitingCalls}
-                    color={C.darkGreen}
+                    color={C.accent}
                   />
                   <StatCard
                     label="Abandoned Calls"
                     value={sel.abandonedCalls}
-                    color={C.darkGreen}
+                    color={C.accent}
                   />
                 </div>
 
@@ -1260,22 +1076,22 @@ const ActiveCallQueue = () => {
                   <StatCard
                     label="Total Agents"
                     value={sel.totalAgents}
-                    color={C.darkGreen}
+                    color={C.accent}
                   />
                   <StatCard
                     label="Active Agents"
                     value={sel.activeAgents}
-                    color={C.darkGreen}
+                    color={C.accent}
                   />
                   <StatCard
                     label="Idle Agents"
                     value={sel.idleAgents}
-                    color={C.darkGreen}
+                    color={C.accent}
                   />
                   <StatCard
                     label="On Call Agents"
                     value={sel.onCallAgents}
-                    color={C.darkGreen}
+                    color={C.accent}
                   />
                 </div>
 

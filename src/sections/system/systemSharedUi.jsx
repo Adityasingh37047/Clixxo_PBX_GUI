@@ -106,3 +106,9 @@ export const systemModalSelectSx = {
 };
 
 export const inputInteraction = nativeFieldInteraction;
+
+/**
+ * Native fill boxes on System Settings forms (Network, Routing Interface, …).
+ * Overrides index.css 4px !important — matches systemFieldInputStyle (10px, 34px).
+ */
+export const SYSTEM_SETTINGS_NATIVE_FIELD_CLASS = "system-settings-native-field";

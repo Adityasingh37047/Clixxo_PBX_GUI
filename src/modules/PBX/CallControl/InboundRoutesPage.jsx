@@ -22,6 +22,13 @@ import {
   listSipRegistrations,
   updateInboundRoute,
 } from "../../../api/apiService";
+import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const T38_OPTIONS = ["Yes", "No"];
@@ -323,6 +330,7 @@ const InboundRoutesPage = () => {
     delete: false,
     trunks: false,
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasLoadedTrunksRef = useRef(false);
 
   const [editId, setEditId] = useState(null);
@@ -488,6 +496,7 @@ const InboundRoutesPage = () => {
       setRows([]);
     } finally {
       setLoading((prev) => ({ ...prev, list: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -882,14 +891,8 @@ const InboundRoutesPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 24,
-      }}
-    >
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
         {/* Alert */}
         {message.text && (
           <Alert
@@ -908,15 +911,7 @@ const InboundRoutesPage = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb */}
-        <div style={{ marginBottom: 12 }}>
-          <span style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Call Control &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              Inbound Routes
-            </span>
-          </span>
-        </div>
+        <PbxBreadcrumb section="Call Control" current="Inbound Routes" />
 
         {/* Main Card */}
         <div
@@ -1008,17 +1003,13 @@ const InboundRoutesPage = () => {
 
           {/* Table */}
           <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
-            {loading.list ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
+            {isInitialLoad ? (
+              <TableListLoading />
+            ) : rows.length === 0 ? (
+              <TableListEmptyState
+                message="No inbound routes found."
+                onAddNew={handleOpenAddModal}
+              />
             ) : (
               <table
                 style={{
@@ -1054,23 +1045,7 @@ const InboundRoutesPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={9}
-                        style={{
-                          textAlign: "center",
-                          padding: "36px 0",
-                          color: C.mutedText,
-                          fontSize: 13,
-                        }}
-                      >
-                        No inbound routes yet. Click &quot;+ Add New&quot; to
-                        create one.
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedRows.map((row, idx) => {
+                  {pagedRows.map((row, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const rowBg = isSelected
@@ -1234,15 +1209,14 @@ const InboundRoutesPage = () => {
                           </td>
                         </tr>
                       );
-                    })
-                  )}
+                    })}
                 </tbody>
               </table>
             )}
           </div>
 
           {/* Pagination */}
-          {!loading.list && rows.length > 0 && (
+          {!isInitialLoad && rows.length > 0 && (
             <div
               style={{
                 display: "flex",

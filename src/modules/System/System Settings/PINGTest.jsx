@@ -186,7 +186,7 @@ const PINGTest = () => {
         // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
         const lanIfaces = allIfaces.filter((i) => {
           const kn = (i.interface || "").toLowerCase();
-          return /^eth\d+$/.test(kn) || /^enp\d+s\d+$/.test(kn);
+          return /^eth\d+$/.test(kn) || /^enp\d+s\d+/.test(kn);
         });
 
         // Sequential "LAN 1", "LAN 2", … — never rely on the API name field
@@ -422,10 +422,7 @@ const PINGTest = () => {
         });
         return true; // Success
       } else {
-        showToast(
-          Apiresponse.message || "Server error occurred",
-          "error",
-        );
+        showToast(Apiresponse.message || "Server error occurred", "error");
         stopPingOnError();
         return false; // Failed
       }
@@ -654,7 +651,6 @@ const PINGTest = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };

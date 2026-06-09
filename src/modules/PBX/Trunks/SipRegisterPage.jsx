@@ -14,11 +14,11 @@ import {
 } from "../../../constants/SipRegisterConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -45,207 +45,54 @@ import {
   deleteSipTrunk,
   fetchSystemInfo,
 } from "../../../api/apiService";
-
-// ── Color palette ────────────────────────────────────────────────────────────
-const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
-};
-
-const CARD_RADIUS = 20;
-
-const TABLE_C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#e2e8f0",
-  cardBorderSoft: "#f1f5f9",
-  labelText: "#64748b",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#2563eb",
-  errorRed: "#ef4444",
-};
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  title,
-  type,
-  hoverBehavior = "background",
-}) => {
-  const variants = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-   cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-  };
-
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#e2e8f0";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = extraStyle?.background || s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const TH = ({ children, style: extra }) => (
-  <th style={{
-      background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
-  }}>
-    {children}
-  </th>
-);
-
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  whiteSpace: "nowrap",
-};
-
-const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const TableBtn = ({ children, onClick, disabled, variant = "default", style: extraStyle }) => {
-  const variants = {
-    default: { background: "#1e293b", color: "#fff", border: "1px solid #9ca3af" },
-    outline: { background: TABLE_C.cardBg, color: TABLE_C.labelText, border: `0.5px solid ${TABLE_C.cardBorder}` },
-    danger: { background: "#fef2f2", color: TABLE_C.errorRed, border: "0.5px solid #fecaca" },
-    accent: { background: TABLE_C.cardBg, color: TABLE_C.accent, border: `0.5px solid ${TABLE_C.cardBorder}` },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        ...s, fontSize: 11, fontWeight: 600, padding: "5px 14px", borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1,
-        display: "flex", alignItems: "center", gap: 5,
-        transition: "opacity 0.15s ease", whiteSpace: "nowrap", ...extraStyle,
-      }}
-      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.opacity = "0.82"; }}
-      onMouseLeave={(e) => { if (!disabled) e.currentTarget.style.opacity = "1"; }}
-    >
-      {children}
-    </button>
-  );
-};
+import {
+  C,
+  CARD_RADIUS,
+  Btn,
+  TH,
+  tdStyle,
+  checkboxSx,
+  OUTLINED_BORDER,
+  OUTLINED_HOVER,
+  OUTLINED_FOCUS,
+  numManipulateCardStyle,
+  numManipulateToolbarStyle,
+  numManipulatePaginationStyle,
+  TRUNK_TABLE_SCROLL_CLASS,
+  trunkTableScrollStyle,
+  trunkTableInnerStyle,
+  trunkModalPaperSx,
+  trunkImportModalPaperSx,
+  trunkModalTitleStyle,
+  trunkModalFormPanelStyle,
+  trunkModalActionsStyle,
+  trunkModalPrimaryBtnStyle,
+  trunkModalCancelBtnStyle,
+  trunkToolbarBtnStyle,
+  trunkAddNewBtnStyle,
+  trunkSelectionBadgeStyle,
+  TrunkModalSectionHeading,
+  TRUNK_SECTION_HEADING_COLOR,
+  TRUNK_FIELD_LABEL_COLOR,
+  trunkAdaptTextFieldSx,
+  trunkAdaptRowActionBtnSx,
+  trunkDodCompactInputStyle,
+  trunkDodMultiSelectStyle,
+  TRUNK_DOD_MULTI_SELECT_CLASS,
+  getTrunkDodMultiSelectSize,
+  getTrunkDodMultiSelectHeightPx,
+  trunkDodToolbarBtnStyle,
+  trunkDodTransferBtnStyle,
+  nativeFieldInteraction,
+  muiTextFieldSx,
+} from "../../../sections/trunk/trunkSharedUi";
+import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
 
 const Pill = ({ text, bg, color }) => (
   <span
@@ -281,6 +128,7 @@ const SipRegisterPage = () => {
     save: false,
     delete: false,
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -316,6 +164,7 @@ const SipRegisterPage = () => {
 
   // Fields to hide from the table
   const HIDDEN_TABLE_FIELDS = [
+    "index",
     "password",
     "provider",
     "Domain name",
@@ -368,6 +217,34 @@ const SipRegisterPage = () => {
       ),
     [dodAvailableExtensions, dodMemberExtensions],
   );
+
+  const dodAvailableSelectedInList = useMemo(
+    () =>
+      dodAvailableSelected.filter((id) =>
+        dodAvailableList.some((t) => t.value === id),
+      ),
+    [dodAvailableSelected, dodAvailableList],
+  );
+
+  const dodAvailableOptionCount = useMemo(() => {
+    if (
+      dodAvailableExtensions.length === 0 &&
+      !dodHasLoadedExtensionsRef.current
+    ) {
+      return 1;
+    }
+    return dodAvailableList.length || 1;
+  }, [dodAvailableExtensions.length, dodAvailableList.length]);
+
+  const dodSelectedOptionCount = dodMemberExtensions.length || 1;
+
+  const dodSyncedOptionCount = Math.max(
+    dodAvailableOptionCount,
+    dodSelectedOptionCount,
+  );
+  const dodSyncedSelectSize = getTrunkDodMultiSelectSize(dodSyncedOptionCount);
+  const dodSyncedSelectHeightPx =
+    getTrunkDodMultiSelectHeightPx(dodSyncedOptionCount);
 
   const resetDodAddForm = () => {
     setDodAddName("");
@@ -467,12 +344,19 @@ const SipRegisterPage = () => {
   const filteredRows = searchQuery.trim()
     ? trunks.filter((r) =>
         [r.trunk_id, r.username, r.provider, r.registerStatus].some((v) =>
-          String(v || "").toLowerCase().includes(searchQuery.toLowerCase()),
+          String(v || "")
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()),
         ),
       )
     : trunks;
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
-  const pagedRows = filteredRows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const pagedRows = filteredRows.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage,
+  );
+  const dataEmpty = trunks.length === 0;
+  const searchEmpty = !dataEmpty && filteredRows.length === 0;
   // legacy alias kept for modal code that may reference pagedTrunks
   const pagedTrunks = pagedRows;
 
@@ -501,7 +385,7 @@ const SipRegisterPage = () => {
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, [trunks, page]);
+  }, [trunks, page, filteredRows.length, pagedRows.length]);
 
   // Load ETH port dropdown options when SIP Register modal opens.
   // This keeps the menu consistent and shows VPN options only when VPN interfaces are detected.
@@ -1018,6 +902,7 @@ const SipRegisterPage = () => {
       }
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
   // Modal logic
@@ -1520,14 +1405,20 @@ const SipRegisterPage = () => {
   // Table selection logic (trunk_id based)
   const allPageSelected =
     pagedRows.length > 0 &&
-    pagedRows.map((r) => r.trunk_id).filter(Boolean).every((id) => selectedIds.includes(id));
+    pagedRows
+      .map((r) => r.trunk_id)
+      .filter(Boolean)
+      .every((id) => selectedIds.includes(id));
   const somePageSelected =
-    pagedRows.some((r) => r.trunk_id && selectedIds.includes(r.trunk_id)) && !allPageSelected;
+    pagedRows.some((r) => r.trunk_id && selectedIds.includes(r.trunk_id)) &&
+    !allPageSelected;
 
   const handleToggleRow = (trunk_id) => {
     if (!trunk_id) return;
     setSelectedIds((prev) =>
-      prev.includes(trunk_id) ? prev.filter((id) => id !== trunk_id) : [...prev, trunk_id],
+      prev.includes(trunk_id)
+        ? prev.filter((id) => id !== trunk_id)
+        : [...prev, trunk_id],
     );
   };
   const handleToggleAll = () => {
@@ -1558,7 +1449,9 @@ const SipRegisterPage = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const deletePromises = selectedIds.map(async (id) => await deleteSipTrunk(id));
+      const deletePromises = selectedIds.map(
+        async (id) => await deleteSipTrunk(id),
+      );
       const results = await Promise.allSettled(deletePromises);
       const successCount = results.filter(
         (result) => result.status === "fulfilled" && result.value.response,
@@ -1570,7 +1463,9 @@ const SipRegisterPage = () => {
         try {
           await loadTrunks(true);
         } catch {
-          setTrunks((prev) => prev.filter((t) => !selectedIds.includes(t.trunk_id)));
+          setTrunks((prev) =>
+            prev.filter((t) => !selectedIds.includes(t.trunk_id)),
+          );
         }
         setSelectedIds([]);
       }
@@ -1650,15 +1545,17 @@ const SipRegisterPage = () => {
   };
 
   // Scroll handling functions
-  const handleTableScroll = (e) =>
+  const handleTableScroll = (e) => {
+    const el = e.target;
     setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
+      left: el.scrollLeft,
+      width: el.clientWidth,
+      scrollWidth: el.scrollWidth,
     });
+    setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
+  };
   const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
+    const track = e.currentTarget;
     const rect = track.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percent = Math.max(0, Math.min(1, x / rect.width));
@@ -1689,82 +1586,36 @@ const SipRegisterPage = () => {
       : 0;
 
   return (
-    <div style={{ backgroundColor: TABLE_C.pageBg, minHeight: "calc(100vh - 80px)", padding: 24 }}>
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-
-        {/* Alert banner */}
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{ position: "fixed", top: 20, right: 20, zIndex: 9999, minWidth: 300, boxShadow: 3 }}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
           >
             {message.text}
           </Alert>
         )}
 
-        {/* Breadcrumb */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Trunks &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>SIP Register</span>
-          </div>
-        </div>
+        <PbxBreadcrumb section="Trunks" current="SIP Register" />
 
-        {/* Main card */}
-          <div
-          style={{
-            background: "#ffffff",
-borderRadius: 10,
-overflow: "hidden",
-border: `1.5px solid ${C.cardBorder}`,
-boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-        {/* ── Toolbar ── */}
-          <div
-            style={{
-             display: "flex",
-alignItems: "center",
-justifyContent: "space-between",
-minHeight: 44,
-padding: "7px 14px",
-borderBottom: `1px solid ${C.cardBorder}`,
-background: "#ffffff",
-flexWrap: "wrap",
-gap: 12,
-borderTopLeftRadius: CARD_RADIUS,
-borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
-            {/* Left: page info + selection count */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flex: 1,
-                minWidth: 0,
-              }}
-            >
-              
+        <div style={numManipulateCardStyle}>
+          <div style={numManipulateToolbarStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={trunkSelectionBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-              {/* Right: search + buttons */}
             <div
               style={{
                 display: "flex",
@@ -1773,245 +1624,348 @@ borderTopRightRadius: CARD_RADIUS,
                 flexWrap: "wrap",
               }}
             >
-
-
-
-
-  <TableBtn
-    onClick={handleInverse}
-    disabled={loading.delete}
-    variant="outline"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    Inverse
-  </TableBtn>
-
-  <TableBtn
-    onClick={handleClearAll}
-    disabled={
-      loading.delete || trunks.length === 0
-    }
-    variant="danger"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  >
-    Clear All
-  </TableBtn>
-
-  <TableBtn
-    onClick={handleDelete}
-    disabled={
-      loading.delete ||
-      selectedIds.length === 0
-    }
-    variant="danger"
-    style={{
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow:
-        "0 1px 2px rgba(15, 23, 42, 0.08)",
-    }}
-  > <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} /> 
-
-     Delete
-  </TableBtn>
-   
-
-  <Btn
-    onClick={() => handleOpenModal()}
-    disabled={loading.fetch}
-   variant="primary"
-  style={{
-    height: 30,
-    padding: "6px 14px",
-    fontSize: 12,
-    borderRadius: 10,
-  }}
-  >
-    + Add New
-  </Btn>
-</div>
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete}
+                style={trunkToolbarBtnStyle}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={loading.delete || trunks.length === 0}
+                style={trunkToolbarBtnStyle}
+              >
+                Clear All
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={loading.delete || selectedIds.length === 0}
+                style={trunkToolbarBtnStyle}
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <>
+                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    Delete
+                  </>
+                )}
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                disabled={loading.fetch}
+                style={trunkAddNewBtnStyle}
+              >
+                + Add New
+              </Btn>
+            </div>
           </div>
 
-          {/* Table */}
-          <div style={{ overflowX: "auto",
-overflowY: "auto",
-flex: 1, }}>
-            {loading.fetch ? (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: 48 }}>
-                <CircularProgress size={28} style={{ color: TABLE_C.accent }} />
-              </div>
+          <div style={{ position: "relative" }}>
+            {isInitialLoad ? (
+              <TableListLoading />
+            ) : dataEmpty ? (
+              <TableListEmptyState
+                message="No SIP register trunks found."
+                onAddNew={() => handleOpenModal()}
+              />
+            ) : searchEmpty ? (
+              <TableListEmptyState
+                message={`No results for "${searchQuery}"`}
+                showButton={false}
+              />
             ) : (
-              <table style={{ width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900, }}>
-                <thead>
-                  <tr>
-                    <TH style={{width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                     }}>
-                      <Checkbox
-                        size="small"
-                        checked={allPageSelected}
-                        indeterminate={somePageSelected}
-                        onChange={handleToggleAll}
-                         sx={checkboxSx}
-                      />
-                    </TH>
-                    <TH  style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
-                    {sipRegisterFields.filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name)).map((field) => (
-                      <TH key={field.name}>{field.label}</TH>
-                    ))}
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Status</TH>
-                    <TH style={{ width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,  }}>Modify</TH>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagedRows.length === 0 ? (
+              <>
+                <div
+                  className={TRUNK_TABLE_SCROLL_CLASS}
+                  style={trunkTableScrollStyle}
+                >
+                <div style={trunkTableInnerStyle}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
+                  }}
+                >
+                  <thead>
                     <tr>
-                      <td colSpan={sipRegisterFields.filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name)).length + 4}
-                        style={{ textAlign: "center", padding: "36px 0", color: TABLE_C.mutedText, fontSize: 13 }}>
-                        {searchQuery ? `No results for "${searchQuery}"` : "No records found."}
-                      </td>
+                      <TH
+                        style={{
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={handleToggleAll}
+                          sx={checkboxSx}
+                        />
+                      </TH>
+                      <TH
+                        style={{
+                          width: 50,
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        ID
+                      </TH>
+                      {sipRegisterFields
+                        .filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name))
+                        .map((field) => (
+                          <TH key={field.name}>{field.label}</TH>
+                        ))}
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Status
+                      </TH>
+                      <TH
+                        style={{
+                          width: 60,
+                          borderRight: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        Modify
+                      </TH>
                     </tr>
-                  ) : (
-                    pagedRows.map((trunk, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = trunk.trunk_id && selectedIds.includes(trunk.trunk_id);
-                      const rowBg = isSelected ? "#e0f2fe" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
-                      const status = String(trunk.registerStatus || "").toLowerCase();
-                      const statusBg = "transparent";
-                      const statusColor =
-                        status === "registered"
-                          ? "#166534"
-                          : status === "unregistered" || status === "unregistered"
-                            ? "#991b1b"
-                            : status === "pending"
-                              ? "#d97706"
-                              : "#475569";
-                      return (
-                        <tr
-                          key={trunk.trunk_id || idx}
-                          style={{ background: rowBg, borderBottom: "1px solid #f1f5f9", transition: "background 0.15s ease" }}
-                          onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "#f8fafc"; }}
-                          onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = rowBg; }}
-                        >
-                          <td style={{ ...tdStyle, background: rowBg,}}>
-                            <Checkbox
-                              size="small"
-                              disabled={!trunk.trunk_id}
-                              checked={!!trunk.trunk_id && selectedIds.includes(trunk.trunk_id)}
-                              onChange={() => handleToggleRow(trunk.trunk_id)}
-                             sx={checkboxSx}
-
-                            />
-                          </td>
-                          <td style={{ ...tdStyle, background: rowBg}}>
-                            {(page - 1) * itemsPerPage + idx + 1}
-                          </td>
-                          {sipRegisterFields.filter((f) => !HIDDEN_TABLE_FIELDS.includes(f.name)).map((field) => {
-                            const value = trunk[field.name];
-                            const hasValue = value !== undefined && value !== null && value !== "";
-                            const displayValue = hasValue && SIP_PREFIX_FIELDS.includes(field.name)
-                              ? `sip:${value}` : hasValue ? value : "—";
-                            return (
-                              <td key={field.name} style={{ ...tdStyle, background: rowBg,padding: "10px 14px", fontSize: 13, color: TABLE_C.valueText, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRight: "1px solid #f1f5f9", fontWeight: field.name === "trunk_id" ? 600 : 400 }}>
-                                {displayValue}
-                              </td>
-                            );
-                          })}
-                          <td style={{ ...tdStyle, background: rowBg, }}>
-                            {trunk.registerStatus ? (
-                              <Pill
-                                text={trunk.registerStatus}
-                                bg={statusBg}
-                                color={statusColor}
+                  </thead>
+                  <tbody>
+                    {pagedRows.map((trunk, idx) => {
+                        const realIdx = (page - 1) * itemsPerPage + idx;
+                        const isSelected =
+                          trunk.trunk_id &&
+                          selectedIds.includes(trunk.trunk_id);
+                        const isLastRow = idx === pagedRows.length - 1;
+                        const rowBg = isSelected
+                          ? "#f0f9ff"
+                          : idx % 2 === 1
+                            ? "#f8fafc"
+                            : "#ffffff";
+                        const lastRowCellStyle = isLastRow
+                          ? { borderBottom: "none" }
+                          : {};
+                        const status = String(
+                          trunk.registerStatus || "",
+                        ).toLowerCase();
+                        const statusBg = "transparent";
+                        const statusColor =
+                          status === "registered"
+                            ? "#16A34A"
+                            : status === "unregistered" ||
+                                status === "unregistered"
+                              ? "#DC2626"
+                              : status === "pending"
+                                ? "#d97706"
+                                : "#475569";
+                        return (
+                          <tr
+                            key={trunk.trunk_id || idx}
+                            style={{
+                              background: rowBg,
+                              borderBottom: isLastRow
+                                ? "none"
+                                : `1px solid ${C.cardBorder}`,
+                              transition: "background-color 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = "#f1f5f9";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected)
+                                e.currentTarget.style.background = rowBg;
+                            }}
+                          >
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                borderLeft: "none",
+                                ...lastRowCellStyle,
+                                ...(isLastRow
+                                  ? { borderBottomLeftRadius: CARD_RADIUS }
+                                  : {}),
+                              }}
+                            >
+                              <Checkbox
+                                size="small"
+                                disabled={!trunk.trunk_id}
+                                checked={
+                                  !!trunk.trunk_id &&
+                                  selectedIds.includes(trunk.trunk_id)
+                                }
+                                onChange={() => handleToggleRow(trunk.trunk_id)}
+                                sx={checkboxSx}
                               />
-                            ) : (
-                              <span style={{ color: TABLE_C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td style={{ ...tdStyle, background: rowBg, }}>
-                           <IconButton
-  size="small"
-  disabled={loading.delete}
-  onClick={() =>
-    !loading.delete && handleOpenModal(trunk, realIdx)
-  }
-  sx={{
-    color: "#2563eb",
-    opacity: 0.7,
-    transition: "opacity 0.15s ease",
-
-    "&:hover": {
-      background: "transparent",
-      opacity: 1,
-    },
-  }}
->
-  <EditDocumentIcon
-
-  />
-</IconButton>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+                            </td>
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {(page - 1) * itemsPerPage + idx + 1}
+                            </td>
+                            {sipRegisterFields
+                              .filter(
+                                (f) => !HIDDEN_TABLE_FIELDS.includes(f.name),
+                              )
+                              .map((field) => {
+                                const value = trunk[field.name];
+                                const hasValue =
+                                  value !== undefined &&
+                                  value !== null &&
+                                  value !== "";
+                                const displayValue =
+                                  hasValue &&
+                                  SIP_PREFIX_FIELDS.includes(field.name)
+                                    ? `sip:${value}`
+                                    : hasValue
+                                      ? value
+                                      : "—";
+                                return (
+                                  <td
+                                    key={field.name}
+                                    style={{
+                                      ...tdStyle,
+                                      background: rowBg,
+                                      fontWeight:
+                                        field.name === "trunk_id" ? 600 : 400,
+                                      ...lastRowCellStyle,
+                                    }}
+                                  >
+                                    {displayValue}
+                                  </td>
+                                );
+                              })}
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {trunk.registerStatus ? (
+                                <Pill
+                                  text={trunk.registerStatus}
+                                  bg={statusBg}
+                                  color={statusColor}
+                                />
+                              ) : (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+                            <td
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                borderRight: "none",
+                                ...lastRowCellStyle,
+                                ...(isLastRow
+                                  ? { borderBottomRightRadius: CARD_RADIUS }
+                                  : {}),
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <EditDocumentIcon
+                                  titleAccess="Edit"
+                                  style={{
+                                    cursor: loading.delete
+                                      ? "not-allowed"
+                                      : "pointer",
+                                    color: "#2563eb",
+                                    fontSize: 22,
+                                    opacity: loading.delete ? 0.4 : 0.7,
+                                    transition: "opacity 0.15s ease",
+                                  }}
+                                  onClick={() =>
+                                    !loading.delete &&
+                                    handleOpenModal(trunk, realIdx)
+                                  }
+                                  onMouseEnter={(e) => {
+                                    if (!loading.delete)
+                                      e.currentTarget.style.opacity = "1";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!loading.delete)
+                                      e.currentTarget.style.opacity = "0.7";
+                                  }}
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+                </div>
+                </div>
+              </>
             )}
           </div>
 
-          {/* Pagination */}
-          {!loading.fetch && filteredRows.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px", borderTop: `1px solid ${TABLE_C.cardBorder}`, background: "#ffffff" }}>
-<span
-  style={{
-    fontSize: 11,
-    color: TABLE_C.mutedText,
-  }}
->
-  Showing {filteredRows.length} record
-  {filteredRows.length !== 1 ? "s" : ""} on
-  page {page}
-</span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                
-                <TableBtn onClick={() => handlePageChange(page - 1)} disabled={page <= 1} variant="outline">
+          {!isInitialLoad && filteredRows.length > 0 && (
+            <div
+              style={{
+                ...numManipulatePaginationStyle,
+                borderTop: "none",
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {filteredRows.length} record
+                {filteredRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1}
+                  variant="outline"
+                >
                   ← Prev
-                </TableBtn>
-                <span style={{ fontSize: 11, fontWeight: 600, color: TABLE_C.accent, background: "#e0f2fe", padding: "5px 14px", borderRadius: 6, border: `0.5px solid ${TABLE_C.cardBorder}` }}>
-                  Page {page}
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `1px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
                 </span>
-                <TableBtn onClick={() => handlePageChange(page + 1)} disabled={page >= totalPages} variant="outline">
+                <Btn
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages}
+                  variant="outline"
+                >
                   Next →
-                </TableBtn>
-                
-                
-                
+                </Btn>
               </div>
             </div>
           )}
@@ -2021,36 +1975,70 @@ minWidth: 900, }}>
       {/* Import Modal */}
       <Dialog
         open={showImportModal}
-        onClose={() => { if (!importLoading) { setShowImportModal(false); setImportFile(null); } }}
+        onClose={() => {
+          if (!importLoading) {
+            setShowImportModal(false);
+            setImportFile(null);
+          }
+        }}
         maxWidth={false}
-        PaperProps={{ sx: { width: 420, maxWidth: "96vw", mx: "auto", p: 0 } }}
+        className="z-50"
+        PaperProps={{ sx: trunkImportModalPaperSx }}
       >
-        <DialogTitle style={{ background: "#1e2d42", color: "#fff", fontWeight: 700, fontSize: 15, textAlign: "center", padding: "14px 24px" }}>
+        <DialogTitle style={trunkModalTitleStyle}>
           Import SIP Trunks
         </DialogTitle>
-        <DialogContent style={{ backgroundColor: C.pageBg, padding: "20px 24px 12px" }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div className="flex flex-col gap-4 pt-1">
-            <p className="text-[13px] text-gray-600">Select a CSV or JSON file to import.</p>
+            <p className="text-[13px] text-gray-600">
+              Select a CSV or JSON file to import.
+            </p>
             <div
               className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
               onClick={() => importFileRef.current?.click()}
             >
               <div className="text-gray-500 text-[13px] mb-1">
                 {importFile ? (
-                  <span className="text-green-700 font-semibold">{importFile.name}</span>
+                  <span className="text-green-700 font-semibold">
+                    {importFile.name}
+                  </span>
                 ) : (
-                  <span>Click to choose file <span className="text-gray-400">(CSV / JSON)</span></span>
+                  <span>
+                    Click to choose file{" "}
+                    <span className="text-gray-400">(CSV / JSON)</span>
+                  </span>
                 )}
               </div>
-              <input ref={importFileRef} type="file" accept=".csv,.json" className="hidden" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
+              <input
+                ref={importFileRef}
+                type="file"
+                accept=".csv,.json"
+                className="hidden"
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+              />
             </div>
           </div>
         </DialogContent>
-        <DialogActions style={{ backgroundColor: C.pageBg, justifyContent: "center", gap: 16, padding: "12px 24px 16px" }}>
-          <Btn onClick={handleImportSubmit} disabled={importLoading || !importFile}>
+        <DialogActions style={trunkModalActionsStyle}>
+          <Btn
+            variant="primary"
+            onClick={handleImportSubmit}
+            disabled={importLoading || !importFile}
+            style={trunkModalPrimaryBtnStyle}
+          >
             {importLoading ? "Importing..." : "Import"}
           </Btn>
-          <Btn onClick={() => { setShowImportModal(false); setImportFile(null); }} disabled={importLoading} variant="outline">Cancel</Btn>
+          <Btn
+            variant="cancel"
+            onClick={() => {
+              setShowImportModal(false);
+              setImportFile(null);
+            }}
+            disabled={importLoading}
+            style={trunkModalCancelBtnStyle}
+          >
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
 
@@ -2060,85 +2048,62 @@ minWidth: 900, }}>
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
         className="z-50"
-        sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: 8 } }}
-      PaperProps={{
-  sx: {
-   width: 1050,
-maxWidth: "96vw",
-    mx: "auto",
-    p: 0,
-    borderRadius: "8px",
-    overflow: "hidden",
-    boxShadow:
-      "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-  },
-}}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        PaperProps={{ sx: trunkModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
       >
-      <DialogTitle
-        style={{
-          background: "#1e2d42",
-          color: "#ffffff",
-          fontWeight: 600,
-          fontSize: 16,
-          padding: "16px 24px",
-          textAlign: "center",
-          borderTopLeftRadius: 8,
-          borderTopRightRadius: 8,
-        }}
-      >
-  {editIndex !== null ? "Edit SIP Register" : "Add Trunk"}
-</DialogTitle>
+        <DialogTitle style={trunkModalTitleStyle}>
+          {editIndex !== null ? "Edit SIP Register" : "Add SIP Register"}
+        </DialogTitle>
 
-      <div style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}>
-        <div style={{ display: "flex", width: "100%" }}>
-          {[
-            { id: "basic", label: "BASIC" },
-            { id: "codec", label: "CODEC" },
-            { id: "advance", label: "ADVANCE" },
-            { id: "dod", label: "DOD" },
-            { id: "adapt", label: "ADAPT CALLER ID" },
-          ].map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setModalTab(t.id)}
-              style={{
-                flex: 1,
-                height: 48,
-                fontSize: 12,
-                fontWeight: 600,
-                border: "none",
-                borderBottom:
-                  modalTab === t.id
-                    ? "2px solid #3E5475"
-                    : "2px solid transparent",
-                color:
-                  modalTab === t.id
-                    ? "#3E5475"
-                    : "#374151",
-                background: "transparent",
-                cursor: "pointer",
-                textAlign: "center",
-                textTransform: "none",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div
+          style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}
+        >
+          <div style={{ display: "flex", width: "100%" }}>
+            {[
+              { id: "basic", label: "BASIC" },
+              { id: "codec", label: "CODEC" },
+              { id: "advance", label: "ADVANCE" },
+              { id: "dod", label: "DOD" },
+              { id: "adapt", label: "ADAPT CALLER ID" },
+            ].map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setModalTab(t.id)}
+                style={{
+                  flex: 1,
+                  height: 45,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  border: "none",
+                  borderBottom:
+                    modalTab === t.id
+                      ? "2px solid #3E5475"
+                      : "2px solid transparent",
+                  color: modalTab === t.id ? "#3E5475" : "#374151",
+                  background: "transparent",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  textTransform: "none",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-<DialogContent
-  style={{
-    padding: "24px",
-    backgroundColor: "#ffffff",
-  }}
->
-    <style>
-      {`
+        <DialogContent
+          style={{
+            padding: "20px",
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <style>
+            {`
         .sip-reg .MuiOutlinedInput-root,
         .sip-reg .MuiSelect-root,
         .sip-reg .MuiSelect-select,
@@ -2148,1539 +2113,1229 @@ maxWidth: "96vw",
         }
 
         .sip-reg .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
-          border-color: ${C.cardBorder} !important;
+          border-color: ${OUTLINED_BORDER} !important;
           border-width: 1px !important;
         }
 
         .sip-reg .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-          border-color: #64748b !important;
+          border-color: ${OUTLINED_HOVER} !important;
         }
 
         .sip-reg .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-          border-color: #0284c7 !important;
+          border-color: ${OUTLINED_FOCUS} !important;
+          border-width: 2px !important;
         }
 
         
 
+        .sip-reg label,
+        .sip-reg .MuiFormControlLabel-label,
+        .sip-reg .MuiInputLabel-root {
+          color: ${TRUNK_FIELD_LABEL_COLOR} !important;
+        }
+
         .sip-reg label {
           text-align: left !important;
         }
-      `}
-    </style>
 
-    <div
-      className="sip-reg"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 14,
-        width: "100%",
-        background: "#f8fafc",
-        border: `1px solid ${C.cardBorder}`,
-        borderRadius: 8,
-        padding: 20,
-      }}
-    >
-              {modalTab === "basic" && (
-                <div className="p-3 sm:p-5">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
-                    <div className="space-y-0.5">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Trunk Type <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <RadioGroup
-                            row
-                            value={form.ui_trunk_type}
-                            onChange={(e) =>
-                              handleChange("ui_trunk_type", e.target.value)
-                            }
-                          >
-                            <FormControlLabel
-                              value="sip"
-                              control={<Radio size="small" />}
-                              label="SIP"
-                            />
-                          </RadioGroup>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Trunk Name <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.trunk_id || ""}
-                            onChange={(e) =>
-                              handleChange("trunk_id", e.target.value)
-                            }
-                            error={!!validationErrors.trunk_id}
-                            placeholder="Trunk Name"
-                            disabled={editIndex !== null}
-                         inputProps={{ style: { fontSize: 13} }}
-                          />
-                          {validationErrors.trunk_id && (
-                            <div className="text-red-500 text-xs mt-0.5">
-                              {validationErrors.trunk_id}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Select Country <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl
-                            fullWidth
-                            size="small"
-                            error={!!validationErrors.ui_country}
-                          >
-                            <MuiSelect
-                              value={form.ui_country}
-                              onChange={(e) =>
-                                handleChange("ui_country", e.target.value)
-                              }
-                            sx={{ fontSize: 13}}
-                            >
-                              {SIP_REGISTER_COUNTRY_OPTIONS.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                          {validationErrors.ui_country && (
-                            <div className="text-red-500 text-xs mt-0.5">
-                              {validationErrors.ui_country}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Transport
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_transport}
-                              onChange={(e) =>
-                                handleChange("ui_transport", e.target.value)
-                              }
-                                sx={{ fontSize: 13}}
-                            >
-                              {SIP_REGISTER_TRANSPORT_OPTIONS.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Enable SRTP
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={!!form.ui_enable_srtp}
-                                onChange={(e) =>
-                                  handleChange(
-                                    "ui_enable_srtp",
-                                    e.target.checked,
-                                  )
-                                }
-                                size="small"
-                              />
-                            }
-                            label=""
-                             sx={{
-checkboxSx
-}}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Register <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_register}
-                              onChange={(e) =>
-                                handleChange("ui_register", e.target.value)
-                              }
-                                 sx={{ fontSize: 13}}
-                            >
-                              {SIP_REGISTER_YES_NO.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      {form.ui_register === "Yes" && (
-                        <>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                              Username <span className="text-red-500">*</span>
-                            </label>
-                            <div className="flex-1 min-w-0">
-                              <TextField
-                                size="small"
-                                fullWidth
-                                value={form.username || ""}
-                                onChange={(e) =>
-                                  handleChange("username", e.target.value)
-                                }
-                                error={!!validationErrors.username}
-                                placeholder="Username"
-                                inputProps={{ style: { fontSize: 14 } }}
-                              />
-                              {validationErrors.username && (
-                                <div className="text-red-500 text-xs mt-0.5">
-                                  {validationErrors.username}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                              Auth Username
-                            </label>
-                            <div className="flex-1 min-w-0">
-                              <TextField
-                                size="small"
-                                fullWidth
-                                value={form.auth_username || ""}
-                                onChange={(e) =>
-                                  handleChange("auth_username", e.target.value)
-                                }
-                                inputProps={{ style: { fontSize: 14 } }}
-                                placeholder="Auth Username"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                              RegFail Retry{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <div className="flex-1 min-w-0">
-                              <TextField
-                                size="small"
-                                fullWidth
-                                value={form.ui_reg_fail_retry || ""}
-                                onChange={(e) =>
-                                  handleChange(
-                                    "ui_reg_fail_retry",
-                                    e.target.value,
-                                  )
-                                }
-                                error={!!validationErrors.ui_reg_fail_retry}
-                                placeholder="30"
-                                inputProps={{ style: { fontSize: 14 } }}
-                              />
-                              {validationErrors.ui_reg_fail_retry && (
-                                <div className="text-red-500 text-xs mt-0.5">
-                                  {validationErrors.ui_reg_fail_retry}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Outbound CallerId Source
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_outbound_cid_source}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_outbound_cid_source",
-                                  e.target.value,
-                                )
-                              }
-                              displayEmpty
-                               sx={{ fontSize: 13}}
-                            >
-                              {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
-                                (c) => (
-                                  <MenuItem key={c || "_empty"} value={c}>
-                                    {c || <em>—</em>}
-                                  </MenuItem>
-                                ),
-                              )}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                    
-                      
-                      
-                    </div>
-                    <div className="space-y-0.5">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Record
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_record}
-                              onChange={(e) =>
-                                handleChange("ui_record", e.target.value)
-                              }
-                              sx={{ fontSize: 13}}
-                            >
-                              {SIP_REGISTER_YES_NO.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Enabled <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_enabled}
-                              onChange={(e) =>
-                                handleChange("ui_enabled", e.target.value)
-                              }
-                                sx={{ fontSize: 13}}
-                            >
-                              {SIP_REGISTER_YES_NO.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Eth Port <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_eth_port}
-                              onChange={(e) =>
-                                handleChange("ui_eth_port", e.target.value)
-                              }
-                              
-                                sx={{ fontSize: 13}}
-                            >
-                              {(ethPortOptions.length
-                                ? ethPortOptions
-                                : SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({
-                                    value: v,
-                                    label: v,
-                                  }))
-                              ).map((opt) => (
-                                <MenuItem key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                              Trunk IP/Domain{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <div className="flex-1 min-w-0">
-                              <TextField
-                                size="small"
-                                fullWidth
-                                value={form.provider || ""}
-                                onChange={(e) =>
-                                  handleChange("provider", e.target.value)
-                                }
-                                error={!!validationErrors.provider}
-                                placeholder="host:port or domain"
-                                 inputProps={{ style: { fontSize: 13} }}
-                              />
-                              {validationErrors.provider && (
-                                <div className="text-red-500 text-xs mt-0.5">
-                                  {validationErrors.provider}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Show Outbound CallerID Name
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={!!form.ui_show_outbound_cid_name}
-                                onChange={(e) =>
-                                  handleChange(
-                                    "ui_show_outbound_cid_name",
-                                    e.target.checked,
-                                  )
-                                }
-                                size="small"
-                              />
-                            }
-                            label=""
-                            sx={checkboxSx}
-                          />
-                        </div>
-                      </div>
-                          {form.ui_show_outbound_cid_name && (
-  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-    <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-      Outbound CallerId Name
-    </label>
-    <div className="flex-1 min-w-0">
-      <TextField
-        size="small"
-        fullWidth
-        value={form.ui_outbound_cid_name}
-        onChange={(e) =>
-          handleChange("ui_outbound_cid_name", e.target.value)
+        .sip-reg .MuiFormControlLabel-label,
+        .sip-reg .MuiInputLabel-root {
+          font-size: 13px !important;
+          font-weight: 600 !important;
         }
-         inputProps={{ style: { fontSize: 13} }}
 
-      />
-    </div>
-  </div>
-)}
+        .sip-reg select.${TRUNK_DOD_MULTI_SELECT_CLASS} {
+          border: 1px solid ${OUTLINED_BORDER};
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
 
-<div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-  <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-    Outbound CallerId Number
-  </label>
-  <div className="flex-1 min-w-0">
-    <TextField
-      size="small"
-      fullWidth
-      value={form.ui_outbound_cid_number}
-      onChange={(e) =>
-        handleChange("ui_outbound_cid_number", e.target.value)
-      }
-        inputProps={{ style: { fontSize: 13} }}
-    />
-  </div>
-</div>
+        .sip-reg select.${TRUNK_DOD_MULTI_SELECT_CLASS}:hover:not(:focus) {
+          border-color: ${OUTLINED_HOVER};
+        }
 
-                      {form.ui_register === "Yes" && (
-                        <>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                              Password <span className="text-red-500">*</span>
-                            </label>
-                            <div className="flex-1 min-w-0">
-                              <TextField
-                                type={showPassword ? "text" : "password"}
-                                size="small"
-                                fullWidth
-                                value={form.password || ""}
-                                onChange={(e) =>
-                                  handleChange("password", e.target.value)
-                                }
-                                error={!!validationErrors.password}
-                                inputProps={{ style: { fontSize: 14 } }}
-                                InputProps={{
-                                  endAdornment: (
-                                    <InputAdornment position="end">
-                                      <IconButton
-                                        size="small"
-                                        onClick={togglePasswordVisibility}
-                                        edge="end"
-                                      >
-                                        {showPassword ? (
-                                          <VisibilityOff fontSize="small" />
-                                        ) : (
-                                          <Visibility fontSize="small" />
-                                        )}
-                                      </IconButton>
-                                    </InputAdornment>
-                                  ),
-                                }}
-                              />
-                              {validationErrors.password && (
-                                <div className="text-red-500 text-xs mt-0.5">
-                                  {validationErrors.password}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+        .sip-reg select.${TRUNK_DOD_MULTI_SELECT_CLASS}:focus {
+          border-color: ${OUTLINED_FOCUS};
+          box-shadow: 0 0 0 1px ${OUTLINED_FOCUS};
+          outline: none;
+        }
+      `}
+          </style>
 
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                              Expire Seconds{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <div className="flex-1 min-w-0">
-                              <TextField
-                                size="small"
-                                fullWidth
-                                value={form.expire_in_sec || ""}
-                                onChange={(e) =>
-                                  handleChange("expire_in_sec", e.target.value)
-                                }
-                                error={!!validationErrors.expire_in_sec}
-                                inputProps={{ style: { fontSize: 14 } }}
-                              />
-                              {validationErrors.expire_in_sec && (
-                                <div className="text-red-500 text-xs mt-0.5">
-                                  {validationErrors.expire_in_sec}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                              Match Username{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <div className="flex-1 min-w-0">
-                              <FormControl
-                                fullWidth
-                                size="small"
-                                error={!!validationErrors.ui_match_username}
-                              >
-                                <MuiSelect
-                                  value={form.ui_match_username || "Yes"}
-                                  onChange={(e) =>
-                                    handleChange(
-                                      "ui_match_username",
-                                      e.target.value,
-                                    )
-                                  }
-                                  sx={{ fontSize: 14 }}
-                                >
-                                  {SIP_REGISTER_YES_NO.map((c) => (
-                                    <MenuItem key={c} value={c}>
-                                      {c}
-                                    </MenuItem>
-                                  ))}
-                                </MuiSelect>
-                              </FormControl>
-                              {validationErrors.ui_match_username && (
-                                <div className="text-red-500 text-xs mt-0.5">
-                                  {validationErrors.ui_match_username}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                              Enable Proxy
-                            </label>
-                            <div className="flex-1 min-w-0 flex items-center">
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={!!form.ui_enable_proxy}
-                                    onChange={(e) =>
-                                      handleChange(
-                                        "ui_enable_proxy",
-                                        e.target.checked,
-                                      )
-                                    }
-                                    size="small"
-                                  />
-                                }
-                                label=""
-                                sx={checkboxSx}
-                              />
-                            </div>
-                          </div>
-
-                          {form.ui_enable_proxy && (
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                              <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                                Proxy IP <span className="text-red-500">*</span>
-                              </label>
-                              <div className="flex-1 min-w-0">
-                                <TextField
-                                  size="small"
-                                  fullWidth
-                                  value={form.ui_proxy_ip || ""}
-                                  onChange={(e) =>
-                                    handleChange("ui_proxy_ip", e.target.value)
-                                  }
-                                  error={!!validationErrors.ui_proxy_ip}
-                                  inputProps={{ style: { fontSize: 14 } }}
-                                />
-                                {validationErrors.ui_proxy_ip && (
-                                  <div className="text-red-500 text-xs mt-0.5">
-                                    {validationErrors.ui_proxy_ip}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {modalTab === "codec" && (
-                <div className="p-3 sm:p-5">
-                  <p className="text-sm text-gray-600 mb-3">
-                    Select codecs allowed on this trunk (required).
-                  </p>
-                  <FormGroup row sx={{ flexWrap: "wrap", gap: 1 }}>
-                    {CODEC_OPTIONS.map((codec) => (
-                      <FormControlLabel
-                        key={codec.value}
-                        control={
-                          <Checkbox
-                            checked={isCodecSelected(codec.value)}
-                            onChange={(e) =>
-                              handleCodecChange(codec.value, e.target.checked)
-                            }
-                            size="small"
-                          />
-                        }
-                        label={codec.label}
-                        sx={{
-                          "& .MuiFormControlLabel-label": { fontSize: 14 },
-                        }}
-                      />
-                    ))}
-                  </FormGroup>
-                  {validationErrors.allow_codecs && (
-                    <div className="text-red-500 text-xs mt-2">
-                      {validationErrors.allow_codecs}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {modalTab === "advance" && (
-                <div className="p-3 sm:p-5 space-y-6">
-                  <div className="hidden">
-                    <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
-                      SIP registration
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                          SIP Header
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.sip_header || ""}
-                            onChange={(e) =>
-                              handleChange("sip_header", e.target.value)
-                            }
-                            error={!!validationErrors.sip_header}
-                            placeholder="+91...@sip.domain"
-                            inputProps={{ style: { fontSize: 14 } }}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <span className="text-sm text-gray-600">
-                                    sip:
-                                  </span>
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                          {validationErrors.sip_header && (
-                            <div className="text-red-500 text-xs mt-0.5">
-                              {validationErrors.sip_header}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                          Server Domain
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.server_domain || ""}
-                            onChange={(e) =>
-                              handleChange("server_domain", e.target.value)
-                            }
-                            error={!!validationErrors.server_domain}
-                            inputProps={{ style: { fontSize: 14 } }}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <span className="text-sm text-gray-600">
-                                    sip:
-                                  </span>
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                          {validationErrors.server_domain && (
-                            <div className="text-red-500 text-xs mt-0.5">
-                              {validationErrors.server_domain}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                          Client Domain
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.client_domain || ""}
-                            onChange={(e) =>
-                              handleChange("client_domain", e.target.value)
-                            }
-                            error={!!validationErrors.client_domain}
-                            inputProps={{ style: { fontSize: 14 } }}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <span className="text-sm text-gray-600">
-                                    sip:
-                                  </span>
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                          {validationErrors.client_domain && (
-                            <div className="text-red-500 text-xs mt-0.5">
-                              {validationErrors.client_domain}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                          Outbound Proxy
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form["Outbound Proxy"] || ""}
-                            onChange={(e) =>
-                              handleChange("Outbound Proxy", e.target.value)
-                            }
-                            inputProps={{ style: { fontSize: 14 } }}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <span className="text-sm text-gray-600">
-                                    sip:
-                                  </span>
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                          Identifier IP
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.identity_ip || ""}
-                            onChange={(e) =>
-                              handleChange("identity_ip", e.target.value)
-                            }
-                            error={!!validationErrors.identity_ip}
-                            inputProps={{ style: { fontSize: 14 } }}
-                          />
-                          {validationErrors.identity_ip && (
-                            <div className="text-red-500 text-xs mt-0.5">
-                              {validationErrors.identity_ip}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
-                      VoIP Settings
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                      {[
-                        ["Get CalledID Type", "ui_get_called_id_type"],
-                        ["OPTIONS Interval (s)", "ui_options_interval"],
-                        ["TX Volume", "ui_tx_volume"],
-                        ["RX Volume", "ui_rx_volume"],
-                        ["From User", "from_user"],
-                        ["From Domain", "Domain name"],
-                      ].map(([lbl, key]) => (
-                        <div
-                          key={key}
-                          className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1"
+          <div className="sip-reg" style={trunkModalFormPanelStyle}>
+            {modalTab === "basic" && (
+              <div className="p-3 sm:p-5">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
+                  <div className="space-y-0.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Trunk Type <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <RadioGroup
+                          row
+                          value={form.ui_trunk_type}
+                          onChange={(e) =>
+                            handleChange("ui_trunk_type", e.target.value)
+                          }
                         >
-                          <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                            {lbl}
+                          <FormControlLabel
+                            value="sip"
+                            control={<Radio size="small" />}
+                            label="SIP"
+                          />
+                        </RadioGroup>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Trunk Name <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.trunk_id || ""}
+                          onChange={(e) =>
+                            handleChange("trunk_id", e.target.value)
+                          }
+                          error={!!validationErrors.trunk_id}
+                          placeholder="Trunk Name"
+                          disabled={editIndex !== null}
+                          inputProps={{ style: { fontSize: 13 } }}
+                        />
+                        {validationErrors.trunk_id && (
+                          <div className="text-red-500 text-xs mt-0.5">
+                            {validationErrors.trunk_id}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Select Country <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl
+                          fullWidth
+                          size="small"
+                          error={!!validationErrors.ui_country}
+                        >
+                          <MuiSelect
+                            value={form.ui_country}
+                            onChange={(e) =>
+                              handleChange("ui_country", e.target.value)
+                            }
+                            sx={{ fontSize: 13 }}
+                          >
+                            {SIP_REGISTER_COUNTRY_OPTIONS.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                        {validationErrors.ui_country && (
+                          <div className="text-red-500 text-xs mt-0.5">
+                            {validationErrors.ui_country}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Transport
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_transport}
+                            onChange={(e) =>
+                              handleChange("ui_transport", e.target.value)
+                            }
+                            sx={{ fontSize: 13 }}
+                          >
+                            {SIP_REGISTER_TRANSPORT_OPTIONS.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Enable SRTP
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={!!form.ui_enable_srtp}
+                              onChange={(e) =>
+                                handleChange("ui_enable_srtp", e.target.checked)
+                              }
+                              size="small"
+                            />
+                          }
+                          label=""
+                          sx={{
+                            checkboxSx,
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Register <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_register}
+                            onChange={(e) =>
+                              handleChange("ui_register", e.target.value)
+                            }
+                            sx={{ fontSize: 13 }}
+                          >
+                            {SIP_REGISTER_YES_NO.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    {form.ui_register === "Yes" && (
+                      <>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            Username <span className="text-red-500">*</span>
                           </label>
                           <div className="flex-1 min-w-0">
                             <TextField
                               size="small"
                               fullWidth
-                              value={form[key] || ""}
+                              value={form.username || ""}
                               onChange={(e) =>
-                                handleChange(key, e.target.value)
+                                handleChange("username", e.target.value)
+                              }
+                              error={!!validationErrors.username}
+                              placeholder="Username"
+                              inputProps={{ style: { fontSize: 14 } }}
+                            />
+                            {validationErrors.username && (
+                              <div className="text-red-500 text-xs mt-0.5">
+                                {validationErrors.username}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            Auth Username
+                          </label>
+                          <div className="flex-1 min-w-0">
+                            <TextField
+                              size="small"
+                              fullWidth
+                              value={form.auth_username || ""}
+                              onChange={(e) =>
+                                handleChange("auth_username", e.target.value)
                               }
                               inputProps={{ style: { fontSize: 14 } }}
+                              placeholder="Auth Username"
                             />
                           </div>
                         </div>
-                      ))}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Send Privacy ID
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_send_privacy_id}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_send_privacy_id",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ fontSize: 14 }}
-                            >
-                              {SIP_REGISTER_YES_NO.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Sip Force Contact
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_sip_force_contact || ""}
-                              displayEmpty
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_sip_force_contact",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ fontSize: 14 }}
-                            >
-                              <MenuItem value="">
-                                <em>—</em>
-                              </MenuItem>
-                              {SIP_REGISTER_YES_NO.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
-                      Outbound parameters
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          P-Preferred-Identity
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_p_preferred_identity || "None"}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            RegFail Retry{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className="flex-1 min-w-0">
+                            <TextField
+                              size="small"
+                              fullWidth
+                              value={form.ui_reg_fail_retry || ""}
                               onChange={(e) =>
                                 handleChange(
-                                  "ui_p_preferred_identity",
+                                  "ui_reg_fail_retry",
                                   e.target.value,
                                 )
                               }
-                              sx={{ fontSize: 14 }}
-                            >
-                              {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
+                              error={!!validationErrors.ui_reg_fail_retry}
+                              placeholder="30"
+                              inputProps={{ style: { fontSize: 14 } }}
+                            />
+                            {validationErrors.ui_reg_fail_retry && (
+                              <div className="text-red-500 text-xs mt-0.5">
+                                {validationErrors.ui_reg_fail_retry}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Remote-Party-ID
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_remote_party_id || "None"}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_remote_party_id",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ fontSize: 14 }}
-                            >
-                              {REMOTE_PARTY_ID_OPTIONS.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          P-Asserted-Identity
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_p_asserted_identity || "None"}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_p_asserted_identity",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ fontSize: 14 }}
-                            >
-                              {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Contact
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_contact_mode || "Trunk User Name"}
-                              onChange={(e) =>
-                                handleChange("ui_contact_mode", e.target.value)
-                              }
-                              sx={{ fontSize: 14 }}
-                            >
-                              {CONTACT_MODE_OPTIONS.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
-                      Other Settings
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Limit Max Calls
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.ui_limit_max_calls}
-                            onChange={(e) =>
-                              handleChange("ui_limit_max_calls", e.target.value)
-                            }
-                            inputProps={{ style: { fontSize: 14 } }}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Enable Early Session
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_enable_early_session}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_enable_early_session",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ fontSize: 14 }}
-                            >
-                              {SIP_REGISTER_YES_NO.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Enable Early Media
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_enable_early_media}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_enable_early_media",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ fontSize: 14 }}
-                            >
-                              {SIP_REGISTER_YES_NO.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          User Phone
-                        </label>
-                        <div className="flex-1 min-w-0 flex items-center">
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={!!form.ui_user_phone}
-                                onChange={(e) =>
-                                  handleChange(
-                                    "ui_user_phone",
-                                    e.target.checked,
-                                  )
-                                }
-                                size="small"
-                              />
-                            }
-                            label=""
-                            sx={checkboxSx}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Call Timeout(s)
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.ui_call_timeout}
-                            onChange={(e) =>
-                              handleChange("ui_call_timeout", e.target.value)
-                            }
-                            inputProps={{ style: { fontSize: 14 } }}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          DTMF Transmit Mode
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <FormControl fullWidth size="small">
-                            <MuiSelect
-                              value={form.ui_dtmf_transmit}
-                              onChange={(e) =>
-                                handleChange("ui_dtmf_transmit", e.target.value)
-                              }
-                              sx={{ fontSize: 14 }}
-                            >
-                              {SIP_REGISTER_DTMF_OPTIONS.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          Max Call Duration (s)
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.ui_max_call_duration}
+                      </>
+                    )}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Outbound CallerId Source
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_outbound_cid_source}
                             onChange={(e) =>
                               handleChange(
-                                "ui_max_call_duration",
+                                "ui_outbound_cid_source",
                                 e.target.value,
                               )
                             }
+                            displayEmpty
+                            sx={{ fontSize: 13 }}
+                          >
+                            {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
+                              (c) => (
+                                <MenuItem key={c || "_empty"} value={c}>
+                                  {c || <em>—</em>}
+                                </MenuItem>
+                              ),
+                            )}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Record
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_record}
+                            onChange={(e) =>
+                              handleChange("ui_record", e.target.value)
+                            }
+                            sx={{ fontSize: 13 }}
+                          >
+                            {SIP_REGISTER_YES_NO.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Enabled <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_enabled}
+                            onChange={(e) =>
+                              handleChange("ui_enabled", e.target.value)
+                            }
+                            sx={{ fontSize: 13 }}
+                          >
+                            {SIP_REGISTER_YES_NO.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Eth Port <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_eth_port}
+                            onChange={(e) =>
+                              handleChange("ui_eth_port", e.target.value)
+                            }
+                            sx={{ fontSize: 13 }}
+                          >
+                            {(ethPortOptions.length
+                              ? ethPortOptions
+                              : SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({
+                                  value: v,
+                                  label: v,
+                                }))
+                            ).map((opt) => (
+                              <MenuItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Trunk IP/Domain <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.provider || ""}
+                          onChange={(e) =>
+                            handleChange("provider", e.target.value)
+                          }
+                          error={!!validationErrors.provider}
+                          placeholder="host:port or domain"
+                          inputProps={{ style: { fontSize: 13 } }}
+                        />
+                        {validationErrors.provider && (
+                          <div className="text-red-500 text-xs mt-0.5">
+                            {validationErrors.provider}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Show Outbound CallerID Name
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={!!form.ui_show_outbound_cid_name}
+                              onChange={(e) =>
+                                handleChange(
+                                  "ui_show_outbound_cid_name",
+                                  e.target.checked,
+                                )
+                              }
+                              size="small"
+                            />
+                          }
+                          label=""
+                          sx={checkboxSx}
+                        />
+                      </div>
+                    </div>
+                    {form.ui_show_outbound_cid_name && (
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                        <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          Outbound CallerId Name
+                        </label>
+                        <div className="flex-1 min-w-0">
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={form.ui_outbound_cid_name}
+                            onChange={(e) =>
+                              handleChange(
+                                "ui_outbound_cid_name",
+                                e.target.value,
+                              )
+                            }
+                            inputProps={{ style: { fontSize: 13 } }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Outbound CallerId Number
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.ui_outbound_cid_number}
+                          onChange={(e) =>
+                            handleChange(
+                              "ui_outbound_cid_number",
+                              e.target.value,
+                            )
+                          }
+                          inputProps={{ style: { fontSize: 13 } }}
+                        />
+                      </div>
+                    </div>
+
+                    {form.ui_register === "Yes" && (
+                      <>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            Password <span className="text-red-500">*</span>
+                          </label>
+                          <div className="flex-1 min-w-0">
+                            <TextField
+                              type={showPassword ? "text" : "password"}
+                              size="small"
+                              fullWidth
+                              value={form.password || ""}
+                              onChange={(e) =>
+                                handleChange("password", e.target.value)
+                              }
+                              error={!!validationErrors.password}
+                              inputProps={{ style: { fontSize: 14 } }}
+                              InputProps={{
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    <IconButton
+                                      size="small"
+                                      onClick={togglePasswordVisibility}
+                                      edge="end"
+                                    >
+                                      {showPassword ? (
+                                        <VisibilityOff fontSize="small" />
+                                      ) : (
+                                        <Visibility fontSize="small" />
+                                      )}
+                                    </IconButton>
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                            {validationErrors.password && (
+                              <div className="text-red-500 text-xs mt-0.5">
+                                {validationErrors.password}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            Expire Seconds{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className="flex-1 min-w-0">
+                            <TextField
+                              size="small"
+                              fullWidth
+                              value={form.expire_in_sec || ""}
+                              onChange={(e) =>
+                                handleChange("expire_in_sec", e.target.value)
+                              }
+                              error={!!validationErrors.expire_in_sec}
+                              inputProps={{ style: { fontSize: 14 } }}
+                            />
+                            {validationErrors.expire_in_sec && (
+                              <div className="text-red-500 text-xs mt-0.5">
+                                {validationErrors.expire_in_sec}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            Match Username{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className="flex-1 min-w-0">
+                            <FormControl
+                              fullWidth
+                              size="small"
+                              error={!!validationErrors.ui_match_username}
+                            >
+                              <MuiSelect
+                                value={form.ui_match_username || "Yes"}
+                                onChange={(e) =>
+                                  handleChange(
+                                    "ui_match_username",
+                                    e.target.value,
+                                  )
+                                }
+                                sx={{ fontSize: 14 }}
+                              >
+                                {SIP_REGISTER_YES_NO.map((c) => (
+                                  <MenuItem key={c} value={c}>
+                                    {c}
+                                  </MenuItem>
+                                ))}
+                              </MuiSelect>
+                            </FormControl>
+                            {validationErrors.ui_match_username && (
+                              <div className="text-red-500 text-xs mt-0.5">
+                                {validationErrors.ui_match_username}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            Enable Proxy
+                          </label>
+                          <div className="flex-1 min-w-0 flex items-center">
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={!!form.ui_enable_proxy}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "ui_enable_proxy",
+                                      e.target.checked,
+                                    )
+                                  }
+                                  size="small"
+                                />
+                              }
+                              label=""
+                              sx={checkboxSx}
+                            />
+                          </div>
+                        </div>
+
+                        {form.ui_enable_proxy && (
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                            <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                              Proxy IP <span className="text-red-500">*</span>
+                            </label>
+                            <div className="flex-1 min-w-0">
+                              <TextField
+                                size="small"
+                                fullWidth
+                                value={form.ui_proxy_ip || ""}
+                                onChange={(e) =>
+                                  handleChange("ui_proxy_ip", e.target.value)
+                                }
+                                error={!!validationErrors.ui_proxy_ip}
+                                inputProps={{ style: { fontSize: 14 } }}
+                              />
+                              {validationErrors.ui_proxy_ip && (
+                                <div className="text-red-500 text-xs mt-0.5">
+                                  {validationErrors.ui_proxy_ip}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {modalTab === "codec" && (
+              <div className="p-3 sm:p-5 flex flex-col items-center">
+                <p
+                  className="text-[13px] mb-3 text-center"
+                  style={{
+                    color: TRUNK_SECTION_HEADING_COLOR,
+                    fontWeight: 600,
+                  }}
+                >
+                  Select codecs allowed on this trunk (required).
+                </p>
+                <FormGroup
+                  row
+                  sx={{ flexWrap: "wrap", gap: 1, justifyContent: "center" }}
+                >
+                  {CODEC_OPTIONS.map((codec) => (
+                    <FormControlLabel
+                      key={codec.value}
+                      control={
+                        <Checkbox
+                          checked={isCodecSelected(codec.value)}
+                          onChange={(e) =>
+                            handleCodecChange(codec.value, e.target.checked)
+                          }
+                          size="small"
+                        />
+                      }
+                      label={codec.label}
+                      sx={{
+                        "& .MuiFormControlLabel-label": {
+                          fontSize: 13,
+                          color: TRUNK_FIELD_LABEL_COLOR,
+                          fontWeight: 600,
+                        },
+                      }}
+                    />
+                  ))}
+                </FormGroup>
+                {validationErrors.allow_codecs && (
+                  <div className="text-red-500 text-xs mt-2 text-center">
+                    {validationErrors.allow_codecs}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {modalTab === "advance" && (
+              <div className="p-3 sm:p-5 space-y-6">
+                <div className="hidden">
+                  <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
+                    SIP registration
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                        SIP Header
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.sip_header || ""}
+                          onChange={(e) =>
+                            handleChange("sip_header", e.target.value)
+                          }
+                          error={!!validationErrors.sip_header}
+                          placeholder="+91...@sip.domain"
+                          inputProps={{ style: { fontSize: 14 } }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <span className="text-sm text-gray-600">
+                                  sip:
+                                </span>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        {validationErrors.sip_header && (
+                          <div className="text-red-500 text-xs mt-0.5">
+                            {validationErrors.sip_header}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                        Server Domain
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.server_domain || ""}
+                          onChange={(e) =>
+                            handleChange("server_domain", e.target.value)
+                          }
+                          error={!!validationErrors.server_domain}
+                          inputProps={{ style: { fontSize: 14 } }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <span className="text-sm text-gray-600">
+                                  sip:
+                                </span>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        {validationErrors.server_domain && (
+                          <div className="text-red-500 text-xs mt-0.5">
+                            {validationErrors.server_domain}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                        Client Domain
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.client_domain || ""}
+                          onChange={(e) =>
+                            handleChange("client_domain", e.target.value)
+                          }
+                          error={!!validationErrors.client_domain}
+                          inputProps={{ style: { fontSize: 14 } }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <span className="text-sm text-gray-600">
+                                  sip:
+                                </span>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        {validationErrors.client_domain && (
+                          <div className="text-red-500 text-xs mt-0.5">
+                            {validationErrors.client_domain}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                        Outbound Proxy
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form["Outbound Proxy"] || ""}
+                          onChange={(e) =>
+                            handleChange("Outbound Proxy", e.target.value)
+                          }
+                          inputProps={{ style: { fontSize: 14 } }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <span className="text-sm text-gray-600">
+                                  sip:
+                                </span>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                        Identifier IP
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.identity_ip || ""}
+                          onChange={(e) =>
+                            handleChange("identity_ip", e.target.value)
+                          }
+                          error={!!validationErrors.identity_ip}
+                          inputProps={{ style: { fontSize: 14 } }}
+                        />
+                        {validationErrors.identity_ip && (
+                          <div className="text-red-500 text-xs mt-0.5">
+                            {validationErrors.identity_ip}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <TrunkModalSectionHeading title="VoIP Settings" isFirst />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                    {[
+                      ["Get CalledID Type", "ui_get_called_id_type"],
+                      ["OPTIONS Interval (s)", "ui_options_interval"],
+                      ["TX Volume", "ui_tx_volume"],
+                      ["RX Volume", "ui_rx_volume"],
+                      ["From User", "from_user"],
+                      ["From Domain", "Domain name"],
+                    ].map(([lbl, key]) => (
+                      <div
+                        key={key}
+                        className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1"
+                      >
+                        <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          {lbl}
+                        </label>
+                        <div className="flex-1 min-w-0">
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={form[key] || ""}
+                            onChange={(e) => handleChange(key, e.target.value)}
                             inputProps={{ style: { fontSize: 14 } }}
                           />
                         </div>
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-sm text-gray-700 font-medium sm:w-[11rem] sm:text-right shrink-0">
-                          DNIS
-                        </label>
-                        <div className="flex-1 min-w-0 flex items-center">
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={!!form.ui_dnis}
-                                onChange={(e) =>
-                                  handleChange("ui_dnis", e.target.checked)
-                                }
-                                size="small"
-                              />
+                    ))}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Send Privacy ID
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_send_privacy_id}
+                            onChange={(e) =>
+                              handleChange("ui_send_privacy_id", e.target.value)
                             }
-                            label=""
-                            sx={checkboxSx}
-                          />
-                        </div>
+                            sx={{ fontSize: 14 }}
+                          >
+                            {SIP_REGISTER_YES_NO.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
                       </div>
                     </div>
-                    {form.ui_dnis && (
-                      <div className="mt-3 bg-white border border-gray-200 rounded-md p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="text-sm font-semibold text-gray-800">
-                            DNIS Settings
-                          </div>
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              setDnisRows((r) => [
-                                ...r,
-                                {
-                                  dnisNumber: "",
-                                  dnisName: "",
-                                  replaceCid: "No",
-                                },
-                              ])
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Sip Force Contact
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_sip_force_contact || ""}
+                            displayEmpty
+                            onChange={(e) =>
+                              handleChange(
+                                "ui_sip_force_contact",
+                                e.target.value,
+                              )
                             }
-                            sx={{ border: "1px solid #ccc", borderRadius: 1 }}
-                            aria-label="add dnis row"
+                            sx={{ fontSize: 14 }}
                           >
-                            <AddIcon fontSize="small" />
-                          </IconButton>
-                        </div>
-
-                        <div className="overflow-x-auto border border-gray-200 rounded">
-                          <table className="w-full min-w-[520px] text-sm">
-                            <thead>
-                              <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
-                                <th className="p-2 text-left font-medium">
-                                  DNIS Number
-                                </th>
-                                <th className="p-2 text-left font-medium">
-                                  DNIS Name
-                                </th>
-                                <th className="p-2 text-left font-medium">
-                                  Replace CID
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {dnisRows.map((row, i) => (
-                                <tr
-                                  key={i}
-                                  className="border-b border-gray-100"
-                                >
-                                  <td className="p-1">
-                                    <TextField
-                                      size="small"
-                                      fullWidth
-                                      value={row.dnisNumber}
-                                      onChange={(e) =>
-                                        setDnisRows((prev) =>
-                                          prev.map((x, j) =>
-                                            j === i
-                                              ? {
-                                                  ...x,
-                                                  dnisNumber: e.target.value,
-                                                }
-                                              : x,
-                                          ),
-                                        )
-                                      }
-                                      inputProps={{ style: { fontSize: 13 } }}
-                                    />
-                                  </td>
-                                  <td className="p-1">
-                                    <TextField
-                                      size="small"
-                                      fullWidth
-                                      value={row.dnisName}
-                                      onChange={(e) =>
-                                        setDnisRows((prev) =>
-                                          prev.map((x, j) =>
-                                            j === i
-                                              ? {
-                                                  ...x,
-                                                  dnisName: e.target.value,
-                                                }
-                                              : x,
-                                          ),
-                                        )
-                                      }
-                                      inputProps={{ style: { fontSize: 13 } }}
-                                    />
-                                  </td>
-                                  <td className="p-1 w-[180px]">
-                                    <FormControl fullWidth size="small">
-                                      <MuiSelect
-                                        value={row.replaceCid || "No"}
-                                        onChange={(e) =>
-                                          setDnisRows((prev) =>
-                                            prev.map((x, j) =>
-                                              j === i
-                                                ? {
-                                                    ...x,
-                                                    replaceCid: e.target.value,
-                                                  }
-                                                : x,
-                                            ),
-                                          )
-                                        }
-                                        sx={{ fontSize: 14 }}
-                                      >
-                                        {SIP_REGISTER_YES_NO.map((c) => (
-                                          <MenuItem key={c} value={c}>
-                                            {c}
-                                          </MenuItem>
-                                        ))}
-                                      </MuiSelect>
-                                    </FormControl>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                            <MenuItem value="">
+                              <em>—</em>
+                            </MenuItem>
+                            {SIP_REGISTER_YES_NO.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {modalTab === "dod" && (
-                <div className="p-3 sm:p-5">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {["ADD", "DELETE", "IMPORT", "EXPORT"].map((lbl) => (
-                      <button
-                        key={lbl}
-                        type="button"
-                        className="bg-gray-900 text-white text-xs font-semibold px-3 py-1.5 rounded shadow hover:bg-gray-800"
-                        onClick={() => {
-                          if (lbl === "ADD") handleOpenDodAddModal();
-                          else if (lbl === "DELETE") {
-                            if (!dodSelected.length) {
-                              showMessage("error", "Select DOD rows to delete");
-                              return;
+                <div>
+                  <TrunkModalSectionHeading title="Outbound parameters" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        P-Preferred-Identity
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_p_preferred_identity || "None"}
+                            onChange={(e) =>
+                              handleChange(
+                                "ui_p_preferred_identity",
+                                e.target.value,
+                              )
                             }
-                            setDodRows((rows) =>
-                              rows.filter((_, i) => !dodSelected.includes(i)),
-                            );
-                            setDodSelected([]);
-                          } else
-                            showMessage(
-                              "info",
-                              `${lbl} is not connected to the API yet.`,
-                            );
-                        }}
-                      >
-                        {lbl}
-                      </button>
-                    ))}
-                  </div>
-                  {showDodAddModal ? (
-                    <div className="mt-2 bg-white border border-gray-200 rounded-md p-3 sm:p-4 shadow-sm">
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-3">
-                            <label
-                              className="text-sm text-gray-700 font-medium whitespace-nowrap"
-                              style={{ width: 140 }}
-                            >
-                              DOD Name <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
-                              value={dodAddName}
-                              onChange={(e) => setDodAddName(e.target.value)}
-                            />
-                          </div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <label
-                              className="text-sm text-gray-700 font-medium whitespace-nowrap"
-                              style={{ width: 140 }}
-                            >
-                              DOD Number <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
-                              value={dodAddNumber}
-                              onChange={(e) => setDodAddNumber(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-1">
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="text-xs font-semibold text-[#325a84]">
-                            Available
-                          </div>
-                          <div className="text-xs font-semibold text-[#325a84]">
-                            Selected
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
-                          <div>
-                            <select
-                              multiple
-                              value={dodAvailableSelected}
-                              onChange={(e) =>
-                                setDodAvailableSelected(
-                                  Array.from(
-                                    e.target.selectedOptions,
-                                    (opt) => opt.value,
-                                  ),
-                                )
-                              }
-                              className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
-                            >
-                              {dodAvailableExtensions.length === 0 &&
-                              !dodHasLoadedExtensionsRef.current ? (
-                                <option>Loading extensions...</option>
-                              ) : dodAvailableList.length === 0 ? (
-                                <option disabled>No extensions</option>
-                              ) : (
-                                dodAvailableList.map((t) => (
-                                  <option key={t.value} value={t.value}>
-                                    {getDodExtLabel(t.value)}
-                                  </option>
-                                ))
-                              )}
-                            </select>
-                          </div>
-
-                          <div className="flex flex-col gap-1 pt-7">
-                            <button
-                              type="button"
-                              className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                              onClick={dodAddSelectedMembers}
-                            >
-                              &gt;
-                            </button>
-                            <button
-                              type="button"
-                              className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                              onClick={dodAddAllMembers}
-                            >
-                              &gt;&gt;
-                            </button>
-                          </div>
-
-                          <div>
-                            <select
-                              multiple
-                              value={dodChosenSelected}
-                              onChange={(e) =>
-                                setDodChosenSelected(
-                                  Array.from(
-                                    e.target.selectedOptions,
-                                    (opt) => opt.value,
-                                  ),
-                                )
-                              }
-                              className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
-                            >
-                              {dodMemberExtensions.length === 0 ? (
-                                <option disabled>No selected extensions</option>
-                              ) : (
-                                dodMemberExtensions.map((id) => (
-                                  <option key={id} value={id}>
-                                    {getDodExtLabel(id)}
-                                  </option>
-                                ))
-                              )}
-                            </select>
-                          </div>
-
-                          <div className="flex flex-col gap-1 pt-7">
-                            <button
-                              type="button"
-                              className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                              onClick={dodRemoveSelectedMembers}
-                            >
-                              &lt;
-                            </button>
-                            <button
-                              type="button"
-                              className="h-8 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                              onClick={dodRemoveAllMembers}
-                            >
-                              &lt;&lt;
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-center gap-4 mt-4">
-                        <button
-                          type="button"
-                          className="bg-gray-900 text-white text-xs font-semibold px-4 py-2 rounded shadow hover:bg-gray-800"
-                          onClick={handleConfirmDodAdd}
-                        >
-                          ENSURE
-                        </button>
-                        <button
-                          type="button"
-                          className="bg-gray-300 text-gray-700 text-xs font-semibold px-4 py-2 rounded shadow hover:bg-gray-400"
-                          onClick={() => {
-                            setShowDodAddModal(false);
-                            resetDodAddForm();
-                          }}
-                        >
-                          CANCEL
-                        </button>
+                            sx={{ fontSize: 14 }}
+                          >
+                            {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
                       </div>
                     </div>
-                  ) : (
-                    <div className="overflow-x-auto border border-gray-200 rounded">
-                      <table className="w-full min-w-[480px] text-sm">
-                        <thead>
-                          <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
-                            <th className="p-2 w-10 text-left">
-                              <input
-                                type="checkbox"
-                                aria-label="select all dod"
-                                onChange={(e) =>
-                                  e.target.checked
-                                    ? setDodSelected(dodRows.map((_, i) => i))
-                                    : setDodSelected([])
-                                }
-                                checked={
-                                  dodRows.length > 0 &&
-                                  dodSelected.length === dodRows.length
-                                }
-                              />
-                            </th>
-                            <th className="p-2 text-left font-medium">
-                              DOD Number
-                            </th>
-                            <th className="p-2 text-left font-medium">
-                              DOD Name
-                            </th>
-                            <th className="p-2 text-left font-medium">
-                              Bind Extension
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {dodRows.length === 0 ? (
-                            <tr>
-                              <td
-                                colSpan={4}
-                                className="p-6 text-center text-gray-400"
-                              >
-                                No DOD entries. Click ADD to add a row.
-                              </td>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Remote-Party-ID
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_remote_party_id || "None"}
+                            onChange={(e) =>
+                              handleChange("ui_remote_party_id", e.target.value)
+                            }
+                            sx={{ fontSize: 14 }}
+                          >
+                            {REMOTE_PARTY_ID_OPTIONS.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        P-Asserted-Identity
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_p_asserted_identity || "None"}
+                            onChange={(e) =>
+                              handleChange(
+                                "ui_p_asserted_identity",
+                                e.target.value,
+                              )
+                            }
+                            sx={{ fontSize: 14 }}
+                          >
+                            {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Contact
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_contact_mode || "Trunk User Name"}
+                            onChange={(e) =>
+                              handleChange("ui_contact_mode", e.target.value)
+                            }
+                            sx={{ fontSize: 14 }}
+                          >
+                            {CONTACT_MODE_OPTIONS.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <TrunkModalSectionHeading title="Other Settings" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Limit Max Calls
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.ui_limit_max_calls}
+                          onChange={(e) =>
+                            handleChange("ui_limit_max_calls", e.target.value)
+                          }
+                          inputProps={{ style: { fontSize: 14 } }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Enable Early Session
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_enable_early_session}
+                            onChange={(e) =>
+                              handleChange(
+                                "ui_enable_early_session",
+                                e.target.value,
+                              )
+                            }
+                            sx={{ fontSize: 14 }}
+                          >
+                            {SIP_REGISTER_YES_NO.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Enable Early Media
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_enable_early_media}
+                            onChange={(e) =>
+                              handleChange(
+                                "ui_enable_early_media",
+                                e.target.value,
+                              )
+                            }
+                            sx={{ fontSize: 14 }}
+                          >
+                            {SIP_REGISTER_YES_NO.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        User Phone
+                      </label>
+                      <div className="flex-1 min-w-0 flex items-center">
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={!!form.ui_user_phone}
+                              onChange={(e) =>
+                                handleChange("ui_user_phone", e.target.checked)
+                              }
+                              size="small"
+                            />
+                          }
+                          label=""
+                          sx={checkboxSx}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Call Timeout(s)
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.ui_call_timeout}
+                          onChange={(e) =>
+                            handleChange("ui_call_timeout", e.target.value)
+                          }
+                          inputProps={{ style: { fontSize: 14 } }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        DTMF Transmit Mode
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <FormControl fullWidth size="small">
+                          <MuiSelect
+                            value={form.ui_dtmf_transmit}
+                            onChange={(e) =>
+                              handleChange("ui_dtmf_transmit", e.target.value)
+                            }
+                            sx={{ fontSize: 14 }}
+                          >
+                            {SIP_REGISTER_DTMF_OPTIONS.map((c) => (
+                              <MenuItem key={c} value={c}>
+                                {c}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        Max Call Duration (s)
+                      </label>
+                      <div className="flex-1 min-w-0">
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={form.ui_max_call_duration}
+                          onChange={(e) =>
+                            handleChange("ui_max_call_duration", e.target.value)
+                          }
+                          inputProps={{ style: { fontSize: 14 } }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        DNIS
+                      </label>
+                      <div className="flex-1 min-w-0 flex items-center">
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={!!form.ui_dnis}
+                              onChange={(e) =>
+                                handleChange("ui_dnis", e.target.checked)
+                              }
+                              size="small"
+                            />
+                          }
+                          label=""
+                          sx={checkboxSx}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {form.ui_dnis && (
+                    <div className="mt-3 bg-white border border-gray-200 rounded-md p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div
+                          className="font-semibold"
+                          style={{
+                            fontSize: 13,
+                            color: TRUNK_SECTION_HEADING_COLOR,
+                          }}
+                        >
+                          DNIS Settings
+                        </div>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            setDnisRows((r) => [
+                              ...r,
+                              {
+                                dnisNumber: "",
+                                dnisName: "",
+                                replaceCid: "No",
+                              },
+                            ])
+                          }
+                          sx={{ border: "1px solid #ccc", borderRadius: 1 }}
+                          aria-label="add dnis row"
+                        >
+                          <AddIcon fontSize="small" />
+                        </IconButton>
+                      </div>
+
+                      <div className="overflow-x-auto border border-gray-200 rounded">
+                        <table className="w-full min-w-[520px] text-sm">
+                          <thead>
+                            <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                              <th className="p-2 text-left font-medium">
+                                DNIS Number
+                              </th>
+                              <th className="p-2 text-left font-medium">
+                                DNIS Name
+                              </th>
+                              <th className="p-2 text-left font-medium">
+                                Replace CID
+                              </th>
                             </tr>
-                          ) : (
-                            dodRows.map((row, i) => (
+                          </thead>
+                          <tbody>
+                            {dnisRows.map((row, i) => (
                               <tr key={i} className="border-b border-gray-100">
-                                <td className="p-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={dodSelected.includes(i)}
-                                    onChange={() =>
-                                      setDodSelected((s) =>
-                                        s.includes(i)
-                                          ? s.filter((x) => x !== i)
-                                          : [...s, i],
-                                      )
-                                    }
-                                  />
-                                </td>
                                 <td className="p-1">
                                   <TextField
                                     size="small"
                                     fullWidth
-                                    value={row.dodNumber}
+                                    value={row.dnisNumber}
                                     onChange={(e) =>
-                                      setDodRows((rows) =>
-                                        rows.map((x, j) =>
+                                      setDnisRows((prev) =>
+                                        prev.map((x, j) =>
                                           j === i
                                             ? {
                                                 ...x,
-                                                dodNumber: e.target.value,
+                                                dnisNumber: e.target.value,
                                               }
                                             : x,
                                         ),
@@ -3693,12 +3348,15 @@ checkboxSx
                                   <TextField
                                     size="small"
                                     fullWidth
-                                    value={row.dodName}
+                                    value={row.dnisName}
                                     onChange={(e) =>
-                                      setDodRows((rows) =>
-                                        rows.map((x, j) =>
+                                      setDnisRows((prev) =>
+                                        prev.map((x, j) =>
                                           j === i
-                                            ? { ...x, dodName: e.target.value }
+                                            ? {
+                                                ...x,
+                                                dnisName: e.target.value,
+                                              }
                                             : x,
                                         ),
                                       )
@@ -3706,164 +3364,544 @@ checkboxSx
                                     inputProps={{ style: { fontSize: 13 } }}
                                   />
                                 </td>
-                                <td className="p-1">
-                                  <TextField
-                                    size="small"
-                                    fullWidth
-                                    value={
-                                      Array.isArray(row.bindExtensions)
-                                        ? row.bindExtensions.join(", ")
-                                        : row.bindExtension || ""
-                                    }
-                                    onChange={(e) => {
-                                      const raw = e.target.value || "";
-                                      const list = raw
-                                        .split(",")
-                                        .map((s) => s.trim())
-                                        .filter(Boolean);
-                                      setDodRows((rows) =>
-                                        rows.map((x, j) =>
-                                          j === i
-                                            ? {
-                                                ...x,
-                                                bindExtensions: list,
-                                                bindExtension: raw,
-                                              }
-                                            : x,
-                                        ),
-                                      );
-                                    }}
-                                    inputProps={{ style: { fontSize: 13 } }}
-                                  />
+                                <td className="p-1 w-[180px]">
+                                  <FormControl fullWidth size="small">
+                                    <MuiSelect
+                                      value={row.replaceCid || "No"}
+                                      onChange={(e) =>
+                                        setDnisRows((prev) =>
+                                          prev.map((x, j) =>
+                                            j === i
+                                              ? {
+                                                  ...x,
+                                                  replaceCid: e.target.value,
+                                                }
+                                              : x,
+                                          ),
+                                        )
+                                      }
+                                      sx={{ fontSize: 14 }}
+                                    >
+                                      {SIP_REGISTER_YES_NO.map((c) => (
+                                        <MenuItem key={c} value={c}>
+                                          {c}
+                                        </MenuItem>
+                                      ))}
+                                    </MuiSelect>
+                                  </FormControl>
                                 </td>
                               </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   )}
                 </div>
-              )}
+              </div>
+            )}
 
-              {modalTab === "adapt" && (
-                <div className="p-3 sm:p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-gray-800">
-                      Adapt Caller ID
-                    </h3>
-                    <IconButton
-                      size="small"
-                      onClick={() =>
-                        setAdaptRows((r) => [
-                          ...r,
-                          { matchMode: "", strip: "", prepend: "" },
-                        ])
-                      }
-                      sx={{ border: "1px solid #ccc", borderRadius: 1 }}
-                      aria-label="add adapt row"
+            {modalTab === "dod" && (
+              <div className="p-3 sm:p-5">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {["ADD", "DELETE", "IMPORT", "EXPORT"].map((lbl) => (
+                    <Btn
+                      key={lbl}
+                      type="button"
+                      variant="cancel"
+                      style={trunkDodToolbarBtnStyle}
+                      onClick={() => {
+                        if (lbl === "ADD") handleOpenDodAddModal();
+                        else if (lbl === "DELETE") {
+                          if (!dodSelected.length) {
+                            showMessage("error", "Select DOD rows to delete");
+                            return;
+                          }
+                          setDodRows((rows) =>
+                            rows.filter((_, i) => !dodSelected.includes(i)),
+                          );
+                          setDodSelected([]);
+                        } else
+                          showMessage(
+                            "info",
+                            `${lbl} is not connected to the API yet.`,
+                          );
+                      }}
                     >
-                      <AddIcon fontSize="small" />
-                    </IconButton>
-                  </div>
-                  <div className="hidden sm:grid grid-cols-[1fr_1fr_1fr] gap-2 text-xs font-medium text-gray-600 border-b border-gray-200 pb-2 mb-2">
-                    <span>Match Mode</span>
-                    <span>Strip</span>
-                    <span>Prepend</span>
-                  </div>
-                  <div className="space-y-2">
-                    {adaptRows.map((row, i) => (
-                      <div
-                        key={i}
-                        className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center"
-                      >
-                        <TextField
-                          size="small"
-                          label="Match Mode"
-                          placeholder="Match"
-                          value={row.matchMode}
-                          onChange={(e) =>
-                            setAdaptRows((r) =>
-                              r.map((x, j) =>
-                                j === i
-                                  ? { ...x, matchMode: e.target.value }
-                                  : x,
-                              ),
-                            )
-                          }
-                          InputLabelProps={{ shrink: true }}
-                        />
-                        <TextField
-                          size="small"
-                          label="Strip"
-                          placeholder="Strip"
-                          value={row.strip}
-                          onChange={(e) =>
-                            setAdaptRows((r) =>
-                              r.map((x, j) =>
-                                j === i ? { ...x, strip: e.target.value } : x,
-                              ),
-                            )
-                          }
-                          InputLabelProps={{ shrink: true }}
-                        />
-                        <TextField
-                          size="small"
-                          label="Prepend"
-                          placeholder="Prepend"
-                          value={row.prepend}
-                          onChange={(e) =>
-                            setAdaptRows((r) =>
-                              r.map((x, j) =>
-                                j === i ? { ...x, prepend: e.target.value } : x,
-                              ),
-                            )
-                          }
-                          InputLabelProps={{ shrink: true }}
+                      {lbl}
+                    </Btn>
+                  ))}
+                </div>
+                {showDodAddModal ? (
+                  <div className="mt-2 bg-white border border-gray-200 rounded-md p-3 sm:p-4 shadow-sm">
+                    <div className="flex flex-col items-center gap-3 mb-4">
+                      <div className="flex items-center gap-8 w-full max-w-[400px]">
+                        <label
+                          className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
+                          style={{ width: 110 }}
+                        >
+                          DOD Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          className="flex-1 min-w-0"
+                          style={trunkDodCompactInputStyle}
+                          value={dodAddName}
+                          onChange={(e) => setDodAddName(e.target.value)}
+                          {...nativeFieldInteraction}
                         />
                       </div>
-                    ))}
+                      <div className="flex items-center gap-8 w-full max-w-[400px]">
+                        <label
+                          className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
+                          style={{ width: 110 }}
+                        >
+                          DOD Number <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          className="flex-1 min-w-0"
+                          style={trunkDodCompactInputStyle}
+                          value={dodAddNumber}
+                          onChange={(e) => setDodAddNumber(e.target.value)}
+                          {...nativeFieldInteraction}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-1">
+                      <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
+                        <div>
+                          <div className="text-xs font-semibold text-[#325a84] text-center mb-1.5">
+                            Available
+                          </div>
+                          <select
+                            multiple
+                            size={dodSyncedSelectSize}
+                            className={TRUNK_DOD_MULTI_SELECT_CLASS}
+                            value={dodAvailableSelectedInList}
+                            onChange={(e) =>
+                              setDodAvailableSelected(
+                                Array.from(
+                                  e.target.selectedOptions,
+                                  (opt) => opt.value,
+                                ),
+                              )
+                            }
+                            style={{
+                              ...trunkDodMultiSelectStyle,
+                              height: dodSyncedSelectHeightPx,
+                            }}
+                          >
+                            {dodAvailableExtensions.length === 0 &&
+                            !dodHasLoadedExtensionsRef.current ? (
+                              <option disabled value="">
+                                Loading extensions...
+                              </option>
+                            ) : dodAvailableList.length === 0 ? (
+                              <option disabled value="">
+                                No extensions
+                              </option>
+                            ) : (
+                              dodAvailableList.map((t) => (
+                                <option key={t.value} value={t.value}>
+                                  {getDodExtLabel(t.value)}
+                                </option>
+                              ))
+                            )}
+                          </select>
+                        </div>
+
+                        <div
+                          className="flex flex-col gap-1 justify-center"
+                          style={{
+                            marginTop: 22,
+                            height: dodSyncedSelectHeightPx,
+                          }}
+                        >
+                          <button
+                            type="button"
+                            style={trunkDodTransferBtnStyle}
+                            onClick={dodAddSelectedMembers}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#b6c2d3";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "#cbd5e1";
+                            }}
+                          >
+                            &gt;
+                          </button>
+                          <button
+                            type="button"
+                            style={trunkDodTransferBtnStyle}
+                            onClick={dodAddAllMembers}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#b6c2d3";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "#cbd5e1";
+                            }}
+                          >
+                            &gt;&gt;
+                          </button>
+                        </div>
+
+                        <div>
+                          <div className="text-xs font-semibold text-[#325a84] text-center mb-1.5">
+                            Selected
+                          </div>
+                          <select
+                            multiple
+                            size={dodSyncedSelectSize}
+                            className={TRUNK_DOD_MULTI_SELECT_CLASS}
+                            value={dodChosenSelected}
+                            onChange={(e) =>
+                              setDodChosenSelected(
+                                Array.from(
+                                  e.target.selectedOptions,
+                                  (opt) => opt.value,
+                                ),
+                              )
+                            }
+                            style={{
+                              ...trunkDodMultiSelectStyle,
+                              height: dodSyncedSelectHeightPx,
+                            }}
+                          >
+                            {dodMemberExtensions.length === 0 ? (
+                              <option disabled value="">
+                                No selected extensions
+                              </option>
+                            ) : (
+                              dodMemberExtensions.map((id) => (
+                                <option key={id} value={id}>
+                                  {getDodExtLabel(id)}
+                                </option>
+                              ))
+                            )}
+                          </select>
+                        </div>
+
+                        <div
+                          className="flex flex-col gap-1 justify-center"
+                          style={{
+                            marginTop: 22,
+                            height: dodSyncedSelectHeightPx,
+                          }}
+                        >
+                          <button
+                            type="button"
+                            style={trunkDodTransferBtnStyle}
+                            onClick={dodRemoveSelectedMembers}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#b6c2d3";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "#cbd5e1";
+                            }}
+                          >
+                            &lt;
+                          </button>
+                          <button
+                            type="button"
+                            style={trunkDodTransferBtnStyle}
+                            onClick={dodRemoveAllMembers}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = "#b6c2d3";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "#cbd5e1";
+                            }}
+                          >
+                            &lt;&lt;
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center gap-4 mt-4">
+                      <Btn
+                        type="button"
+                        variant="primary"
+                        onClick={handleConfirmDodAdd}
+                        style={trunkDodToolbarBtnStyle}
+                      >
+                        ENSURE
+                      </Btn>
+                      <Btn
+                        type="button"
+                        variant="cancel"
+                        onClick={() => {
+                          setShowDodAddModal(false);
+                          resetDodAddForm();
+                        }}
+                        style={trunkDodToolbarBtnStyle}
+                      >
+                        CANCEL
+                      </Btn>
+                    </div>
                   </div>
+                ) : (
+                  <div className="overflow-x-auto border border-gray-200 rounded">
+                    <table className="w-full min-w-[480px] text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                          <th className="p-2 w-10 text-left">
+                            <input
+                              type="checkbox"
+                              aria-label="select all dod"
+                              onChange={(e) =>
+                                e.target.checked
+                                  ? setDodSelected(dodRows.map((_, i) => i))
+                                  : setDodSelected([])
+                              }
+                              checked={
+                                dodRows.length > 0 &&
+                                dodSelected.length === dodRows.length
+                              }
+                            />
+                          </th>
+                          <th className="p-2 text-left font-medium">
+                            DOD Number
+                          </th>
+                          <th className="p-2 text-left font-medium">
+                            DOD Name
+                          </th>
+                          <th className="p-2 text-left font-medium">
+                            Bind Extension
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dodRows.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="p-6 text-center text-gray-400"
+                            >
+                              No DOD entries. Click ADD to add a row.
+                            </td>
+                          </tr>
+                        ) : (
+                          dodRows.map((row, i) => (
+                            <tr key={i} className="border-b border-gray-100">
+                              <td className="p-2">
+                                <input
+                                  type="checkbox"
+                                  checked={dodSelected.includes(i)}
+                                  onChange={() =>
+                                    setDodSelected((s) =>
+                                      s.includes(i)
+                                        ? s.filter((x) => x !== i)
+                                        : [...s, i],
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td className="p-1">
+                                <TextField
+                                  size="small"
+                                  fullWidth
+                                  value={row.dodNumber}
+                                  onChange={(e) =>
+                                    setDodRows((rows) =>
+                                      rows.map((x, j) =>
+                                        j === i
+                                          ? {
+                                              ...x,
+                                              dodNumber: e.target.value,
+                                            }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                  sx={muiTextFieldSx}
+                                  inputProps={{ style: { fontSize: 13 } }}
+                                />
+                              </td>
+                              <td className="p-1">
+                                <TextField
+                                  size="small"
+                                  fullWidth
+                                  value={row.dodName}
+                                  onChange={(e) =>
+                                    setDodRows((rows) =>
+                                      rows.map((x, j) =>
+                                        j === i
+                                          ? { ...x, dodName: e.target.value }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                  sx={muiTextFieldSx}
+                                  inputProps={{ style: { fontSize: 13 } }}
+                                />
+                              </td>
+                              <td className="p-1">
+                                <TextField
+                                  size="small"
+                                  fullWidth
+                                  value={
+                                    Array.isArray(row.bindExtensions)
+                                      ? row.bindExtensions.join(", ")
+                                      : row.bindExtension || ""
+                                  }
+                                  onChange={(e) => {
+                                    const raw = e.target.value || "";
+                                    const list = raw
+                                      .split(",")
+                                      .map((s) => s.trim())
+                                      .filter(Boolean);
+                                    setDodRows((rows) =>
+                                      rows.map((x, j) =>
+                                        j === i
+                                          ? {
+                                              ...x,
+                                              bindExtensions: list,
+                                              bindExtension: raw,
+                                            }
+                                          : x,
+                                      ),
+                                    );
+                                  }}
+                                  sx={muiTextFieldSx}
+                                  inputProps={{ style: { fontSize: 13 } }}
+                                />
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {modalTab === "adapt" && (
+              <div className="p-3 sm:p-5">
+                <div
+                  className="grid gap-2 items-center text-[12px] font-semibold border-b border-gray-200 pb-2 mb-3"
+                  style={{
+                    gridTemplateColumns: "1fr 1fr 1fr 32px",
+                  }}
+                >
+                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>
+                    Match Mode
+                  </span>
+                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>Strip</span>
+                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>
+                    Prepend
+                  </span>
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      setAdaptRows((r) => [
+                        ...r,
+                        { matchMode: "", strip: "", prepend: "" },
+                      ])
+                    }
+                    sx={trunkAdaptRowActionBtnSx}
+                    aria-label="add adapt row"
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
                 </div>
-              )}
-            </div>
+                <div className="space-y-2">
+                  {adaptRows.map((row, i) => (
+                    <div
+                      key={i}
+                      className="grid gap-2 items-center"
+                      style={{
+                        gridTemplateColumns:
+                          adaptRows.length > 1
+                            ? "1fr 1fr 1fr 32px"
+                            : "1fr 1fr 1fr",
+                      }}
+                    >
+                      <TextField
+                        size="small"
+                        placeholder="Match"
+                        value={row.matchMode}
+                        onChange={(e) =>
+                          setAdaptRows((r) =>
+                            r.map((x, j) =>
+                              j === i ? { ...x, matchMode: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        sx={trunkAdaptTextFieldSx}
+                      />
+                      <TextField
+                        size="small"
+                        placeholder="Strip"
+                        value={row.strip}
+                        onChange={(e) =>
+                          setAdaptRows((r) =>
+                            r.map((x, j) =>
+                              j === i ? { ...x, strip: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        sx={trunkAdaptTextFieldSx}
+                      />
+                      <TextField
+                        size="small"
+                        placeholder="Prepend"
+                        value={row.prepend}
+                        onChange={(e) =>
+                          setAdaptRows((r) =>
+                            r.map((x, j) =>
+                              j === i ? { ...x, prepend: e.target.value } : x,
+                            ),
+                          )
+                        }
+                        sx={trunkAdaptTextFieldSx}
+                      />
+                      {adaptRows.length > 1 && (
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            setAdaptRows((r) => r.filter((_, j) => j !== i))
+                          }
+                          sx={trunkAdaptRowActionBtnSx}
+                          aria-label="remove adapt row"
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </DialogContent>
 
-          <DialogActions
-  style={{
-    display: "flex",
-    justifyContent: "center",
-    gap: 16,
-    padding: "16px 24px",
-    background: "#f8fafc",
-    borderTop: "1px solid #e2e8f0",
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-  }}
->
-  <Btn
-    variant="primary"
-    onClick={handleSave}
-    disabled={loading.save}
-    startIcon={
-      loading.save && (
-        <CircularProgress size={20} color="inherit" />
-      )
-    }
-    style={{ minWidth: 100, height: 33, fontSize: 13 }}
-  >
-    {loading.save ? "Saving..." : "Save"}
-  </Btn>
-
-  <Btn
-    variant="cancel"
-    onClick={handleCloseModal}
-    disabled={loading.save}
-    style={{ minWidth: 100, height: 33 }}
-  >
-    Close
-  </Btn>
-</DialogActions>                  
+        <DialogActions style={trunkModalActionsStyle}>
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading.save}
+            style={trunkModalPrimaryBtnStyle}
+          >
+            {loading.save ? (
+              <>
+                <CircularProgress size={14} color="inherit" />
+                Saving...
+              </>
+            ) : (
+              "Save"
+            )}
+          </Btn>
+          <Btn
+            variant="cancel"
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            style={trunkModalCancelBtnStyle}
+          >
+            Close
+          </Btn>
+        </DialogActions>
       </Dialog>
     </div>
   );

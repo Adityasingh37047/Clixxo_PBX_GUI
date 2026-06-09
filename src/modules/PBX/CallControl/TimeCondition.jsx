@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import { CircularProgress } from "@mui/material";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import { Alert, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import {
   TC_TITLE,
   TC_TYPES,
@@ -19,6 +20,31 @@ import {
   deleteTimeCondition,
   deleteAllTimeConditions,
 } from "../../../api/apiService";
+import {
+  C,
+  Btn,
+  TH,
+  tdStyle,
+  checkboxSx,
+  numManipulateCardStyle,
+  numManipulateToolbarStyle,
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+
+const LIST_CARD_RADIUS = 10;
+const listCardStyle = {
+  ...numManipulateCardStyle,
+  borderRadius: LIST_CARD_RADIUS,
+};
+const listToolbarStyle = {
+  ...numManipulateToolbarStyle,
+  borderTopLeftRadius: LIST_CARD_RADIUS,
+  borderTopRightRadius: LIST_CARD_RADIUS,
+};
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const pad = (n) => String(n ?? 0).padStart(2, "0");
@@ -199,6 +225,7 @@ const TimeCondition = () => {
     save: false,
     delete: false,
   });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [toast, setToast] = useState({ msg: "", type: "" });
   const hasLoaded = useRef(false);
 
@@ -227,6 +254,7 @@ const TimeCondition = () => {
       showToast(e?.message || "Failed to load time conditions", "error");
     } finally {
       setLoading((p) => ({ ...p, fetch: false }));
+      setIsInitialLoad(false);
     }
   };
 
@@ -242,8 +270,6 @@ const TimeCondition = () => {
     setSelected((s) =>
       s.includes(idx) ? s.filter((i) => i !== idx) : [...s, idx],
     );
-  const handleCheckAll = () => setSelected(rows.map((_, i) => i));
-  const handleUncheckAll = () => setSelected([]);
 
   // ── delete ────────────────────────────────────────────────────────────────
   const handleDelete = async () => {
@@ -420,260 +446,345 @@ const TimeCondition = () => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div
-      style={{
-        backgroundColor: "#eef2f7",
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      {/* Toast */}
-      {toast.msg && (
-        <div
-          style={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 280,
-            background: toast.type === "error" ? "#fef2f2" : "#f0fdf4",
-            border: `1px solid ${toast.type === "error" ? "#fca5a5" : "#86efac"}`,
-            color: toast.type === "error" ? "#b91c1c" : "#15803d",
-            borderRadius: 6,
-            padding: "10px 16px",
-            fontSize: 13,
-            fontWeight: 600,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-          }}
-        >
-          {toast.msg}
-        </div>
-      )}
-
-      {/* Breadcrumb */}
-      <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 12 }}>
-        PBX &rsaquo; Call Features &rsaquo; <span style={{ color: '#1e293b', fontWeight: 600 }}>{TC_TITLE}</span>
-      </div>
-
-      <div className="w-full max-w-full mx-auto">
-        {/* Blue header bar */}
-        <div
-          style={{
-            borderRadius: "8px 8px 0 0",
-            height: 36,
-            background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 100%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: 700,
-            fontSize: 15,
-            color: "#fff",
-            boxShadow: "0 2px 8px rgba(80,160,255,0.10)",
-          }}
-        >
-          {TC_TITLE}
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-175 bg-white border-2 border-t-0 border-gray-400">
-            <thead>
-              <tr>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center"></th>
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-10 text-center">
-                  #
-                </th>
-                {TC_TABLE_COLUMNS.map((c) => (
-                  <th
-                    key={c.key}
-                    className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 text-center"
-                  >
-                    {c.label}
-                  </th>
-                ))}
-                <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-3 py-2 w-16 text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading.fetch ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="border border-gray-300 px-2 py-4 text-center"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <CircularProgress size={20} />
-                      <span>Loading...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="border border-gray-300 px-2 py-4 text-center text-gray-500"
-                  >
-                    No time conditions yet. Click &quot;Add New&quot; to create
-                    one.
-                  </td>
-                </tr>
-              ) : (
-                pagedRows.map((row, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
-                  return (
-                    <tr
-                      key={row.id}
-                      style={{
-                        background: realIdx % 2 === 0 ? "#ffffff" : "#f8fafc",
-                      }}
-                    >
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(realIdx)}
-                          onChange={() => handleSelectRow(realIdx)}
-                          disabled={loading.delete}
-                        />
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center text-sm">
-                        {realIdx + 1}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center text-sm font-medium">
-                        {row.name}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center text-sm">
-                        {typeLabel(row.type)}
-                      </td>
-                      <td
-                        className="border border-gray-300 px-2 py-1 text-sm"
-                        style={{ maxWidth: 320 }}
-                      >
-                        {settingsSummary(row)}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        <EditDocumentIcon
-                          className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100"
-                          titleAccess="Edit"
-                          onClick={() => openEdit(row)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Controls bar */}
-        <div className="flex flex-wrap justify-between items-center bg-[#e3e7ef] rounded-b-lg border border-t-0 border-gray-300 px-2 py-2 gap-2">
-          <div className="flex flex-wrap gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 cursor-pointer font-semibold text-xs rounded px-3 py-1 min-w-20 shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleCheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Check All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold cursor-pointer text-xs rounded px-3 py-1 min-w-20 shadow hover:bg-gray-400 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleUncheckAll}
-              disabled={loading.delete || loading.fetch}
-            >
-              Uncheck All
-            </button>
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-20 shadow hover:bg-gray-400 flex items-center gap-1 ${loading.delete || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={handleDelete}
-              disabled={loading.delete || loading.fetch}
-            >
-              {loading.delete && <CircularProgress size={12} />}
-              Delete
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <button
-              className={`bg-gray-300 text-gray-700 font-semibold text-xs cursor-pointer rounded px-3 py-1 min-w-20 shadow hover:bg-gray-400 ${loading.save || loading.fetch ? "opacity-50 cursor-not-allowed" : ""}`}
-              onClick={openAdd}
-              disabled={loading.save || loading.fetch}
-            >
-              Add New
-            </button>
-          </div>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex flex-wrap items-center gap-2 w-full bg-gray-200 rounded-lg border border-gray-300 border-t-0 mt-1 p-1 text-xs text-gray-700">
-            <span>{rows.length} items</span>
-            <span>
-              {page}/{totalPages}
-            </span>
-            {[
-              ["First", 1],
-              ["Prev", page - 1],
-              ["Next", page + 1],
-              ["Last", totalPages],
-            ].map(([lbl, p]) => (
-              <button
-                key={lbl}
-                onClick={() => setPage(Math.max(1, Math.min(totalPages, p)))}
-                disabled={
-                  lbl === "First" || lbl === "Prev"
-                    ? page === 1
-                    : page === totalPages
-                }
-                className="bg-gray-300 text-gray-700 font-semibold rounded px-2 py-0.5 min-w-11.5 shadow hover:bg-gray-400 disabled:opacity-40"
-              >
-                {lbl}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ── Modal ─────────────────────────────────────────────────────────── */}
-      {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            zIndex: 1200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 8,
-              width: 680,
-              maxWidth: "96vw",
-              display: "flex",
-              flexDirection: "column",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
+    <div style={pbxPageWrapStyle}>
+      <div style={pbxPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type === "error" ? "error" : "success"}
+            onClose={() => setToast({ msg: "", type: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
             }}
           >
-            {/* Modal header */}
+            {toast.msg}
+          </Alert>
+        )}
+
+        <PbxBreadcrumb section="Call Control" current={TC_TITLE} />
+
+        <div style={listCardStyle}>
+          <div style={listToolbarStyle}>
             <div
               style={{
-                background: "linear-gradient(to bottom, #5A6F8F, #3E5475)",
-                color: "#fff",
-                padding: "12px 20px",
-                fontWeight: 700,
-                fontSize: 15,
-                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
               }}
             >
-              {editId !== null ? "Edit Time Condition" : "Add Time Condition"}
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
             </div>
 
-            {/* Modal body */}
-            <div style={{ padding: "20px 24px", background: "#f8fafc" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="danger"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} />
+                ) : (
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                )}
+                Delete
+              </Btn>
+              <Btn
+                onClick={openAdd}
+                disabled={loading.save || loading.fetch}
+                variant="primary"
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
+
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+            {isInitialLoad ? (
+              <TableListLoading />
+            ) : rows.length === 0 ? (
+              <TableListEmptyState
+                message="No time conditions found."
+                onAddNew={openAdd}
+              />
+            ) : (
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH style={{ width: 40, padding: 0, borderLeft: "none" }} />
+                    <TH style={{ width: 36 }}>#</TH>
+                    {TC_TABLE_COLUMNS.map((c) => (
+                      <TH key={c.key}>{c.label}</TH>
+                    ))}
+                    <TH style={{ width: 70, borderRight: "none" }}>Actions</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedRows.map((row, idx) => {
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+
+                    return (
+                      <tr
+                        key={row.id}
+                        style={{
+                          background: rowBg,
+                          borderBottom: "1px solid #f1f5f9",
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td style={{ ...tdStyle, background: rowBg }}>
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(realIdx)}
+                            disabled={loading.delete}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 500,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.name}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {typeLabel(row.type)}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            maxWidth: 320,
+                            whiteSpace: "normal",
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {settingsSummary(row)}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            textAlign: "center",
+                            padding: "7px 8px",
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                            borderRight: "none",
+                          }}
+                        >
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => openEdit(row)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {!isInitialLoad && rows.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+                borderBottomLeftRadius: LIST_CARD_RADIUS,
+                borderBottomRightRadius: LIST_CARD_RADIUS,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {rows.length} record{rows.length !== 1 ? "s" : ""} on
+                page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={() =>
+                    setPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Dialog
+        open={showModal}
+        onClose={() => {
+          if (loading.save) return;
+          closeModal();
+        }}
+        maxWidth={false}
+        className="z-50"
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        PaperProps={{
+          sx: {
+            width: 680,
+            maxWidth: "96vw",
+            mx: "auto",
+            borderRadius: "8px",
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            backgroundColor: "#ffffff",
+            backgroundImage: "none",
+          },
+        }}
+        disableRestoreFocus
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: 600,
+            fontSize: "16px",
+            color: "#ffffff",
+            backgroundColor: "#1e2d42",
+            borderBottom: `1px solid ${C.cardBorder}`,
+            px: 3,
+            py: 2,
+            textAlign: "center",
+            borderTopLeftRadius: "8px",
+            borderTopRightRadius: "8px",
+          }}
+        >
+          {editId !== null ? "Edit Time Condition" : "Add Time Condition"}
+        </DialogTitle>
+
+        <DialogContent sx={{ p: "24px", backgroundColor: "#ffffff" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+              marginTop: 22,
+            }}
+          >
               {/* Name */}
               <FieldRow label="Name" required>
                 <input
@@ -913,63 +1024,44 @@ const TimeCondition = () => {
                   </FieldRow>
                 </>
               )}
-            </div>
-
-            {/* Modal footer */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 16,
-                padding: "12px 24px",
-                borderTop: "1px solid #e2e8f0",
-                background: "#fff",
-              }}
-            >
-              <button
-                onClick={handleSave}
-                disabled={loading.save}
-                style={{
-                  background: "linear-gradient(to bottom, #5A6F8F, #3E5475)",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 4,
-                  padding: "7px 28px",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  minWidth: 100,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
-                {loading.save && (
-                  <CircularProgress size={14} style={{ color: "#fff" }} />
-                )}
-                Save
-              </button>
-              <button
-                onClick={closeModal}
-                disabled={loading.save}
-                style={{
-                  background: "#f1f5f9",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 4,
-                  padding: "7px 28px",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  minWidth: 100,
-                }}
-              >
-                Cancel
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+            gap: 2,
+            py: "10px",
+            px: "16px",
+            borderTop: `1px solid ${C.cardBorder}`,
+            backgroundColor: "#f8fafc",
+          }}
+        >
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading.save}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save ? (
+              <>
+                <CircularProgress size={14} sx={{ color: "#fff" }} />
+                Saving...
+              </>
+            ) : (
+              "Save"
+            )}
+          </Btn>
+          <Btn
+            variant="cancel"
+            onClick={closeModal}
+            disabled={loading.save}
+            style={{ minWidth: 100, height: 33 }}
+          >
+            Close
+          </Btn>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
