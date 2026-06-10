@@ -1066,28 +1066,6 @@ const BlockedListPage = () => {
                 padding: 16,
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: 12,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: C.labelText,
-                }}
-              >
-                <span>Block Settings</span>
-
-                <div
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    background: C.cardBorder,
-                    marginLeft: 12,
-                  }}
-                />
-              </div>
-
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{
