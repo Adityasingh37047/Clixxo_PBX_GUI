@@ -70,12 +70,10 @@ import {
   trunkAdaptTextFieldSx,
   trunkAdaptRowActionBtnSx,
   trunkDodCompactInputStyle,
-  trunkDodMultiSelectStyle,
-  TRUNK_DOD_MULTI_SELECT_CLASS,
-  getTrunkDodMultiSelectSize,
-  getTrunkDodMultiSelectHeightPx,
   trunkDodToolbarBtnStyle,
-  trunkDodTransferBtnStyle,
+  PbxDualListBtn,
+  pbxDualListLabelStyle,
+  pbxDualListSelectStyle,
   nativeFieldInteraction,
   muiTextFieldSx,
 } from "../../../shared/pbxSharedUi";
@@ -95,6 +93,8 @@ import {
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
 } from "../../../shared/pbxSharedUi";
+
+const DOD_DUAL_LIST_LABEL_OFFSET = 28;
 
 const Pill = ({ text, bg, color }) => (
   <span
@@ -532,26 +532,6 @@ const SipRegisterPage = () => {
       ),
     [dodAvailableSelected, dodAvailableList],
   );
-
-  const dodAvailableOptionCount = useMemo(() => {
-    if (
-      dodAvailableExtensions.length === 0 &&
-      !dodHasLoadedExtensionsRef.current
-    ) {
-      return 1;
-    }
-    return dodAvailableList.length || 1;
-  }, [dodAvailableExtensions.length, dodAvailableList.length]);
-
-  const dodSelectedOptionCount = dodMemberExtensions.length || 1;
-
-  const dodSyncedOptionCount = Math.max(
-    dodAvailableOptionCount,
-    dodSelectedOptionCount,
-  );
-  const dodSyncedSelectSize = getTrunkDodMultiSelectSize(dodSyncedOptionCount);
-  const dodSyncedSelectHeightPx =
-    getTrunkDodMultiSelectHeightPx(dodSyncedOptionCount);
 
   const resetDodAddForm = () => {
     setDodAddName("");
@@ -2500,20 +2480,6 @@ const SipRegisterPage = () => {
           font-weight: 600 !important;
         }
 
-        .sip-reg select.${TRUNK_DOD_MULTI_SELECT_CLASS} {
-          border: 1px solid ${OUTLINED_BORDER};
-          transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .sip-reg select.${TRUNK_DOD_MULTI_SELECT_CLASS}:hover:not(:focus) {
-          border-color: ${OUTLINED_HOVER};
-        }
-
-        .sip-reg select.${TRUNK_DOD_MULTI_SELECT_CLASS}:focus {
-          border-color: ${OUTLINED_FOCUS};
-          box-shadow: 0 0 0 1px ${OUTLINED_FOCUS};
-          outline: none;
-        }
       `}
           </style>
 
@@ -3823,16 +3789,19 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
 
-                    <div className="mt-1">
-                      <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
+                    <div style={{ marginTop: 4 }}>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 48px 1fr",
+                          gap: 12,
+                          alignItems: "start",
+                        }}
+                      >
                         <div>
-                          <div className="text-xs font-semibold text-[#3E5475] text-center mb-1.5">
-                            Available
-                          </div>
+                          <div style={pbxDualListLabelStyle}>Available</div>
                           <select
                             multiple
-                            size={dodSyncedSelectSize}
-                            className={TRUNK_DOD_MULTI_SELECT_CLASS}
                             value={dodAvailableSelectedInList}
                             onChange={(e) =>
                               setDodAvailableSelected(
@@ -3842,10 +3811,7 @@ const SipRegisterPage = () => {
                                 ),
                               )
                             }
-                            style={{
-                              ...trunkDodMultiSelectStyle,
-                              height: dodSyncedSelectHeightPx,
-                            }}
+                            style={pbxDualListSelectStyle}
                           >
                             {dodAvailableExtensions.length === 0 &&
                             !dodHasLoadedExtensionsRef.current ? (
@@ -3867,48 +3833,33 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div
-                          className="flex flex-col gap-1 justify-center"
                           style={{
-                            marginTop: 22,
-                            height: dodSyncedSelectHeightPx,
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "space-between",
+                            height: pbxDualListSelectStyle.height,
+                            paddingTop: DOD_DUAL_LIST_LABEL_OFFSET,
+                            boxSizing: "content-box",
                           }}
                         >
-                          <button
-                            type="button"
-                            style={trunkDodTransferBtnStyle}
-                            onClick={dodAddSelectedMembers}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "#b6c2d3";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "#cbd5e1";
-                            }}
-                          >
+                          <PbxDualListBtn onClick={dodAddSelectedMembers}>
                             &gt;
-                          </button>
-                          <button
-                            type="button"
-                            style={trunkDodTransferBtnStyle}
-                            onClick={dodAddAllMembers}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "#b6c2d3";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "#cbd5e1";
-                            }}
-                          >
+                          </PbxDualListBtn>
+                          <PbxDualListBtn onClick={dodAddAllMembers}>
                             &gt;&gt;
-                          </button>
+                          </PbxDualListBtn>
+                          <PbxDualListBtn onClick={dodRemoveSelectedMembers}>
+                            &lt;
+                          </PbxDualListBtn>
+                          <PbxDualListBtn onClick={dodRemoveAllMembers}>
+                            &lt;&lt;
+                          </PbxDualListBtn>
                         </div>
 
                         <div>
-                          <div className="text-xs font-semibold text-[#3E5475] text-center mb-1.5">
-                            Selected
-                          </div>
+                          <div style={pbxDualListLabelStyle}>Selected</div>
                           <select
                             multiple
-                            size={dodSyncedSelectSize}
-                            className={TRUNK_DOD_MULTI_SELECT_CLASS}
                             value={dodChosenSelected}
                             onChange={(e) =>
                               setDodChosenSelected(
@@ -3918,10 +3869,7 @@ const SipRegisterPage = () => {
                                 ),
                               )
                             }
-                            style={{
-                              ...trunkDodMultiSelectStyle,
-                              height: dodSyncedSelectHeightPx,
-                            }}
+                            style={pbxDualListSelectStyle}
                           >
                             {dodMemberExtensions.length === 0 ? (
                               <option disabled value="">
@@ -3935,41 +3883,6 @@ const SipRegisterPage = () => {
                               ))
                             )}
                           </select>
-                        </div>
-
-                        <div
-                          className="flex flex-col gap-1 justify-center"
-                          style={{
-                            marginTop: 22,
-                            height: dodSyncedSelectHeightPx,
-                          }}
-                        >
-                          <button
-                            type="button"
-                            style={trunkDodTransferBtnStyle}
-                            onClick={dodRemoveSelectedMembers}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "#b6c2d3";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "#cbd5e1";
-                            }}
-                          >
-                            &lt;
-                          </button>
-                          <button
-                            type="button"
-                            style={trunkDodTransferBtnStyle}
-                            onClick={dodRemoveAllMembers}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = "#b6c2d3";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = "#cbd5e1";
-                            }}
-                          >
-                            &lt;&lt;
-                          </button>
                         </div>
                       </div>
                     </div>

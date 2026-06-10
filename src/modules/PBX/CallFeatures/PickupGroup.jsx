@@ -72,17 +72,12 @@ const codecDualListBtnStyle = {
   textAlign: "center",
 };
 
-const codecDualListReorderBtnStyle = {
-  ...codecDualListBtnStyle,
-  fontWeight: 400,
-};
-
-const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const CodecDualListBtn = ({ onClick, title, children }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    style={codecDualListBtnStyle}
     onMouseEnter={(e) => {
       e.currentTarget.style.backgroundColor = "#c5cbd3";
     }}
@@ -585,56 +580,6 @@ const PickupGroup = () => {
     setChosenSelected([]);
   };
 
-  const moveMemberToBottom = () => {
-    if (!chosenSelected.length) return;
-    setMemberExtensions((prev) => {
-      const rest = prev.filter((id) => !chosenSelected.includes(id));
-      const chosen = prev.filter((id) => chosenSelected.includes(id));
-      return [...rest, ...chosen];
-    });
-  };
-
-  const moveMemberUp = () => {
-    if (!chosenSelected.length) return;
-    setMemberExtensions((prev) => {
-      const arr = [...prev];
-      for (let i = 1; i < arr.length; i++) {
-        if (
-          chosenSelected.includes(arr[i]) &&
-          !chosenSelected.includes(arr[i - 1])
-        ) {
-          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
-        }
-      }
-      return arr;
-    });
-  };
-
-  const moveMemberDown = () => {
-    if (!chosenSelected.length) return;
-    setMemberExtensions((prev) => {
-      const arr = [...prev];
-      for (let i = arr.length - 2; i >= 0; i--) {
-        if (
-          chosenSelected.includes(arr[i]) &&
-          !chosenSelected.includes(arr[i + 1])
-        ) {
-          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-        }
-      }
-      return arr;
-    });
-  };
-
-  const moveMemberToTop = () => {
-    if (!chosenSelected.length) return;
-    setMemberExtensions((prev) => {
-      const chosen = prev.filter((id) => chosenSelected.includes(id));
-      const rest = prev.filter((id) => !chosenSelected.includes(id));
-      return [...chosen, ...rest];
-    });
-  };
-
   return (
     <div style={pbxPageWrapStyle}>
       <div style={pbxPageInnerStyle}>
@@ -1092,7 +1037,7 @@ const PickupGroup = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 48px 1fr 48px",
+                      gridTemplateColumns: "1fr 48px 1fr",
                       gap: 12,
                     }}
                   >
@@ -1190,43 +1135,6 @@ const PickupGroup = () => {
                           ))
                         )}
                       </select>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                        paddingTop: 28,
-                      }}
-                    >
-                      <CodecDualListBtn
-                        reorder
-                        title="Move to bottom"
-                        onClick={moveMemberToBottom}
-                      >
-                        vv
-                      </CodecDualListBtn>
-                      <CodecDualListBtn
-                        reorder
-                        title="Move up"
-                        onClick={moveMemberUp}
-                      >
-                        ^
-                      </CodecDualListBtn>
-                      <CodecDualListBtn
-                        reorder
-                        title="Move down"
-                        onClick={moveMemberDown}
-                      >
-                        v
-                      </CodecDualListBtn>
-                      <CodecDualListBtn
-                        reorder
-                        title="Move to top"
-                        onClick={moveMemberToTop}
-                      >
-                        ^^
-                      </CodecDualListBtn>
                     </div>
                   </div>
                 </div>

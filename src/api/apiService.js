@@ -1260,6 +1260,11 @@ const buildSipExtensionPayload = (accountData = {}) => ({
   ring_simultaneously: accountData.ring_simultaneously,
   mobility_prefix: accountData.mobility_prefix,
   mobility_timeout: accountData.mobility_timeout,
+  monitor_allow: accountData.monitor_allow,
+  monitor_allowed_extensions: Array.isArray(accountData.monitor_allowed_extensions)
+    ? accountData.monitor_allowed_extensions
+    : [],
+  monitor_mode: accountData.monitor_mode,
   secretary_enabled: accountData.secretary_enabled,
   secretary_service_enabled: accountData.secretary_service_enabled,
   secretary_service: accountData.secretary_service,

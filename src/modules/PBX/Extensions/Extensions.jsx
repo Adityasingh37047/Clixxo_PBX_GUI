@@ -50,21 +50,21 @@ import {
   PbxModalTabs,
   PbxModalSectionHeading,
   pbxModalCancelBtnStyle,
-  PbxToolbarSearchBar,
-} from "../../../shared/pbxSharedUi";
-import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
   sipPcmSelectedBadgeStyle,
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
-} from "../../../shared/pbxSharedUi";
-import {
   modalTextFieldSx,
   modalSelectSx,
   gatedModalFieldSx,
+  PbxDualListBtn,
+  pbxDualListLabelStyle,
+  pbxDualListSelectStyle,
 } from "../../../shared/pbxSharedUi";
+
+const MONITOR_DUAL_LIST_LABEL_OFFSET = 28;
 
 // ── Pill badge ────────────────────────────────────────────────────────────────
 const Pill = ({ text, bg, color }) => (
@@ -161,6 +161,7 @@ const SipAccountPage = () => {
   const [importLoading, setImportLoading] = useState(false);
   const importFileRef = React.useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [bulkForm, setBulkForm] = useState({
     startExtension: "",
@@ -1105,15 +1106,63 @@ const SipAccountPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <PbxToolbarSearchBar
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(1);
+              {/* Search */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: C.cardBg,
+                  border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
+                  borderRadius: 10,
+                  padding: "5px 12px",
+                  transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+                  boxShadow: searchFocused
+                    ? "0 0 0 3px rgba(62,84,117,0.10)"
+                    : "none",
                 }}
-                placeholder="Search extension, context, status..."
-                fitPlaceholder
-              />
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: searchFocused ? C.accent : C.mutedText,
+                  }}
+                >
+                  🔍
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  placeholder="Search extension, context, status..."
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    fontSize: 12,
+                    color: C.valueText,
+                    outline: "none",
+                    width: 240,
+                    minWidth: 180,
+                  }}
+                />
+                {searchQuery && (
+                  <span
+                    onClick={() => setSearchQuery("")}
+                    style={{
+                      fontSize: 11,
+                      color: C.mutedText,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✕
+                  </span>
+                )}
+              </div>
 
               <Btn
                 onClick={handleDelete}
@@ -2342,7 +2391,7 @@ const SipAccountPage = () => {
                   >
                     <span
                       style={{
-                        minWidth: 100,
+                        minWidth: 140,
                         fontSize: 13,
                         fontWeight: 600,
                         color: C.labelText,
@@ -2892,6 +2941,62 @@ const SipAccountPage = () => {
                     </FieldRow>
                   )}
                 </SectionCard>
+
+                {/* Monitor */}
+                <SectionCard title="Monitor">
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "8px 32px",
+                    }}
+                  >
+                    <FieldRow label="Allow Being Monitored:">
+                      <FormControl fullWidth size="small">
+                        <MuiSelect
+                          value={form.monitor_allow || "disable"}
+                          onChange={(e) =>
+                            handleChange("monitor_allow", e.target.value)
+                          }
+                          sx={modalSelectSx}
+                        >
+                          <MenuItem value="disable">Disable</MenuItem>
+                          <MenuItem value="enable_all">Enable All</MenuItem>
+                          <MenuItem value="extensions">Extensions</MenuItem>
+                        </MuiSelect>
+                      </FormControl>
+                    </FieldRow>
+                    <FieldRow label="Monitor Mode:">
+                      <FormControl fullWidth size="small">
+                        <MuiSelect
+                          value={form.monitor_mode || "none"}
+                          onChange={(e) =>
+                            handleChange("monitor_mode", e.target.value)
+                          }
+                          sx={modalSelectSx}
+                        >
+                          <MenuItem value="none">None</MenuItem>
+                          <MenuItem value="all">All</MenuItem>
+                          <MenuItem value="listen">Listen</MenuItem>
+                          <MenuItem value="whisper">Whisper</MenuItem>
+                          <MenuItem value="barge_in">Barge-in</MenuItem>
+                        </MuiSelect>
+                      </FormControl>
+                    </FieldRow>
+                  </div>
+                  {form.monitor_allow === "extensions" && (
+                    <MonitorDualListbox
+                      available={extensionOptions.filter(
+                        (e) =>
+                          !(form.monitor_allowed_extensions || []).includes(e),
+                      )}
+                      selected={form.monitor_allowed_extensions || []}
+                      onChange={(newSelected) =>
+                        handleChange("monitor_allowed_extensions", newSelected)
+                      }
+                    />
+                  )}
+                </SectionCard>
               </div>
             )}
 
@@ -3213,6 +3318,102 @@ const SipAccountPage = () => {
 };
 
 // ── Small helper components (inline, no extra file needed) ────────────────────
+const MonitorDualListbox = ({ available, selected, onChange }) => {
+  const [leftSel, setLeftSel] = React.useState([]);
+  const [rightSel, setRightSel] = React.useState([]);
+
+  const addSelected = () => {
+    if (!leftSel.length) return;
+    onChange([...selected, ...leftSel.filter((e) => !selected.includes(e))]);
+    setLeftSel([]);
+  };
+  const addAll = () => {
+    onChange([...selected, ...available]);
+    setLeftSel([]);
+  };
+  const removeSelected = () => {
+    if (!rightSel.length) return;
+    onChange(selected.filter((e) => !rightSel.includes(e)));
+    setRightSel([]);
+  };
+  const removeAll = () => {
+    onChange([]);
+    setRightSel([]);
+  };
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 48px 1fr",
+        gap: 12,
+        alignItems: "start",
+        marginTop: 12,
+      }}
+    >
+      <div>
+        <div style={pbxDualListLabelStyle}>Available</div>
+        <select
+          multiple
+          value={leftSel}
+          onChange={(e) =>
+            setLeftSel(Array.from(e.target.selectedOptions, (o) => o.value))
+          }
+          style={pbxDualListSelectStyle}
+        >
+          {available.length === 0 ? (
+            <option disabled>No extensions available</option>
+          ) : (
+            available.map((ext) => (
+              <option key={ext} value={ext}>
+                {ext}
+              </option>
+            ))
+          )}
+        </select>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          height: pbxDualListSelectStyle.height,
+          paddingTop: MONITOR_DUAL_LIST_LABEL_OFFSET,
+          boxSizing: "content-box",
+        }}
+      >
+        <PbxDualListBtn onClick={addSelected}>&gt;</PbxDualListBtn>
+        <PbxDualListBtn onClick={addAll}>&gt;&gt;</PbxDualListBtn>
+        <PbxDualListBtn onClick={removeSelected}>&lt;</PbxDualListBtn>
+        <PbxDualListBtn onClick={removeAll}>&lt;&lt;</PbxDualListBtn>
+      </div>
+
+      <div>
+        <div style={pbxDualListLabelStyle}>Selected</div>
+        <select
+          multiple
+          value={rightSel}
+          onChange={(e) =>
+            setRightSel(Array.from(e.target.selectedOptions, (o) => o.value))
+          }
+          style={pbxDualListSelectStyle}
+        >
+          {selected.length === 0 ? (
+            <option disabled>No selected extensions</option>
+          ) : (
+            selected.map((ext) => (
+              <option key={ext} value={ext}>
+                {ext}
+              </option>
+            ))
+          )}
+        </select>
+      </div>
+    </div>
+  );
+};
+
 const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
   <div
     style={{

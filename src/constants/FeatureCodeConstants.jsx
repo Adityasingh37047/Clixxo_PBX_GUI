@@ -115,6 +115,31 @@ export const FEATURE_CODE_SECTIONS = [
     title: "CC Route",
     fields: [[{ key: "cc_route", label: "CC Route", type: "text", span: 1 }]],
   },
+  {
+    title: "Call Monitor",
+    fields: [
+      [
+        { key: "monitor_listen", label: "Listen", type: "text" },
+        { key: "monitor_barge_in", label: "Barge-in", type: "text" },
+      ],
+      [
+        { key: "monitor_whisper", label: "Whisper", type: "text" },
+        { key: "monitor_force_hangup", label: "Force Hangup", type: "text" },
+      ],
+      [
+        { key: "monitor_listen_local", label: "Listen Local", type: "text" },
+        { key: "monitor_listen_remote", label: "Listen Remote", type: "text" },
+      ],
+      [
+        {
+          key: "monitor_force_hangup_on_monitor",
+          label: "Force Hangup on monitor",
+          type: "text",
+          span: 1,
+        },
+      ],
+    ],
+  },
 ];
 
 export const FEATURE_CODE_INITIAL_FORM = {
@@ -134,6 +159,13 @@ export const FEATURE_CODE_INITIAL_FORM = {
   multiparty_conference_code: "*0",
   multiparty_conference_return_code: "",
   cc_route: "*7",
+  monitor_listen: "*90",
+  monitor_barge_in: "*92",
+  monitor_whisper: "*91",
+  monitor_force_hangup: "*6",
+  monitor_listen_local: "*93",
+  monitor_listen_remote: "*94",
+  monitor_force_hangup_on_monitor: "*64",
 };
 
 export const FORM_TO_API = {
@@ -153,6 +185,13 @@ export const FORM_TO_API = {
   multiparty_conference_code: "multiparty_conference_code",
   multiparty_conference_return_code: "multiparty_conference_return_code",
   cc_route: "cc_route",
+  monitor_listen: "monitor_listen_code",
+  monitor_barge_in: "monitor_barge_code",
+  monitor_whisper: "monitor_whisper_code",
+  monitor_force_hangup: "force_hangup_code",
+  monitor_listen_local: "monitor_listen_local_code",
+  monitor_listen_remote: "monitor_listen_remote_code",
+  monitor_force_hangup_on_monitor: "force_hangup_monitor_code",
 };
 
 export const API_TO_FORM = Object.fromEntries(
