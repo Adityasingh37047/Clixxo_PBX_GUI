@@ -27,13 +27,6 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -47,6 +40,59 @@ strongText: "#0f172a",
 accent: "#3E5475",
 amber: "#dc2626",
 };
+
+const codecDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
 
 const CARD_RADIUS = 20;
 // ── Shared UI Components ──────────────────────────────────────────────────────
@@ -539,6 +585,57 @@ const PickupGroup = () => {
     setChosenSelected([]);
   };
 
+  const moveMemberToBottom = () => {
+    if (!chosenSelected.length) return;
+    setMemberExtensions((prev) => {
+      const rest = prev.filter((id) => !chosenSelected.includes(id));
+      const chosen = prev.filter((id) => chosenSelected.includes(id));
+      return [...rest, ...chosen];
+    });
+  };
+
+  const moveMemberUp = () => {
+    if (!chosenSelected.length) return;
+    setMemberExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = 1; i < arr.length; i++) {
+        if (
+          chosenSelected.includes(arr[i]) &&
+          !chosenSelected.includes(arr[i - 1])
+        ) {
+          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+        }
+      }
+      return arr;
+    });
+  };
+
+  const moveMemberDown = () => {
+    if (!chosenSelected.length) return;
+    setMemberExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 2; i >= 0; i--) {
+        if (
+          chosenSelected.includes(arr[i]) &&
+          !chosenSelected.includes(arr[i + 1])
+        ) {
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        }
+      }
+      return arr;
+    });
+  };
+
+  const moveMemberToTop = () => {
+    if (!chosenSelected.length) return;
+    setMemberExtensions((prev) => {
+      const chosen = prev.filter((id) => chosenSelected.includes(id));
+      const rest = prev.filter((id) => !chosenSelected.includes(id));
+      return [...chosen, ...rest];
+    });
+  };
+
+
   return (
     <div style={pbxPageWrapStyle}>
       <div style={pbxPageInnerStyle}>
@@ -569,9 +666,31 @@ const PickupGroup = () => {
         <PbxBreadcrumb section="Call Features" current="Pickup Group" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+           background: "#ffffff",
+borderRadius: 10,
+overflow: "hidden",
+border: `1.5px solid ${C.cardBorder}`,
+boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+          display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -582,7 +701,17 @@ const PickupGroup = () => {
             >
               
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -602,7 +731,13 @@ const PickupGroup = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={sipPcmCancelBtnStyle}
+                style={{
+    background: "#cbd5e1",
+    color: "#374151",
+    border: "1px solid #cbd5e1",
+    boxShadow:
+      "0 1px 2px rgba(15, 23, 42, 0.08)",
+  }}
               >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -773,13 +908,51 @@ minWidth: 900,
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              recordLabel="record"
-              onPageChange={(p) => setPage(p)}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.list || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.list || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -816,21 +989,34 @@ minWidth: 900,
                 padding: "20px 24px 16px",
               }}
             >
-              <div style={{ marginBottom: 20, position: "relative" }}>
-                <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                <span
-style={{
-                          fontSize: 14,
-                          fontWeight: 700,
-                          color: C.accent,
-                          marginBottom: 6,
-                          textAlign: "center",
-                        }}
-                >
-                  Pickup Group
-                </span>
-              </div>
+             <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 20,
+  }}
+>
+  <span
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.labelText,
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Pickup Group
+  </span>
 
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{
@@ -865,20 +1051,19 @@ style={{
               <div
   style={{
     display: "grid",
-    gridTemplateColumns: "1fr 50px 1fr",
+    gridTemplateColumns: "1fr 48px 1fr 48px",
     gap: 12,
-    alignItems: "start",
   }}
 >
                     <div>
                       <div
                       style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.accent,
-                          marginBottom: 6,
-                          textAlign: "center",
-                        }}
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#325a84",
+                        textAlign: "center",
+                        marginBottom: 8,
+                      }}
                       >
                         Available
                       </div>
@@ -893,16 +1078,7 @@ style={{
                             ),
                           )
                         }
-                        style={{
-                          width: "100%",
-                          height: 160,
-                          border: `1px solid ${C.cardBorder}`,
-                          borderRadius: 4,
-                          padding: 8,
-                          fontSize: 13,
-                          outline: "none",
-                      backgroundColor: "#fff",
-                        }}
+                        style={codecDualListSelectStyle}
                       >
                         {loading.extensions ? (
                           <option disabled>Loading...</option>
@@ -921,70 +1097,32 @@ style={{
   style={{
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 24, // label ki height jitna
-    height: 160,   // same as select box
+    gap: 4,
+    paddingTop: 28,
   }}
 >
-  <Btn
-    onClick={addSelectedMembers}
-    variant="outline"
-    style={{
-      width: 44,
-      height: "100%",
-      fontSize: 12,
-    }}
-  >
+  <CodecDualListBtn onClick={addSelectedMembers}>
     &gt;
-  </Btn>
-
-  <Btn
-    onClick={addAllMembers}
-    variant="outline"
-    style={{
-      width: 44,
-      height: "100%",
-      fontSize: 12,
-    }}
-  >
+  </CodecDualListBtn>
+  <CodecDualListBtn onClick={addAllMembers}>
     &gt;&gt;
-  </Btn>
-
-  <Btn
-    onClick={removeSelectedMembers}
-    variant="outline"
-    style={{
-      width: 44,
-      height: "100%",
-      fontSize: 12,
-    }}
-  >
+  </CodecDualListBtn>
+  <CodecDualListBtn onClick={removeSelectedMembers}>
     &lt;
-  </Btn>
-
-  <Btn
-    onClick={removeAllMembers}
-    variant="outline"
-    style={{
-      width: 44,
-      height: "100%",
-      fontSize: 12,
-    }}
-  >
+  </CodecDualListBtn>
+  <CodecDualListBtn onClick={removeAllMembers}>
     &lt;&lt;
-  </Btn>
+  </CodecDualListBtn>
 </div>
                     <div>
                       <div
                         style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.accent,
-                          marginBottom: 6,
-                          textAlign: "center",
-                        }}
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#325a84",
+                        textAlign: "center",
+                        marginBottom: 8,
+                      }}
                       >
                         Selected
                       </div>
@@ -999,16 +1137,7 @@ style={{
                             ),
                           )
                         }
-                        style={{
-                          width: "100%",
-                          height: 160,
-                          border: `1px solid ${C.cardBorder}`,
-                          borderRadius: 4,
-                          padding: 8,
-                          fontSize: 13,
-                          outline: "none",
-                          background: "#fff",
-                        }}
+                        style={codecDualListSelectStyle}
                       >
                         {memberExtensions.length === 0 ? (
                           <option disabled>No selected members</option>
@@ -1021,6 +1150,39 @@ style={{
                         )}
                       </select>
                     </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                    paddingTop: 28,
+                  }}
+                >
+                  <CodecDualListBtn
+                    reorder
+                    title="Move to bottom"
+                    onClick={moveMemberToBottom}
+                  >
+                    vv
+                  </CodecDualListBtn>
+                  <CodecDualListBtn reorder title="Move up" onClick={moveMemberUp}>
+                    ^
+                  </CodecDualListBtn>
+                  <CodecDualListBtn
+                    reorder
+                    title="Move down"
+                    onClick={moveMemberDown}
+                  >
+                    v
+                  </CodecDualListBtn>
+                  <CodecDualListBtn
+                    reorder
+                    title="Move to top"
+                    onClick={moveMemberToTop}
+                  >
+                    ^^
+                  </CodecDualListBtn>
+                </div>
                   </div>
                 </div>
               </div>

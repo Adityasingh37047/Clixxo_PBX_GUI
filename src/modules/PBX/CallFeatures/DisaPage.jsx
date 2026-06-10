@@ -1,9 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
-import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Button,
@@ -37,13 +33,6 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
 
 const SECOND_DIAL_OPTIONS = ["Enable", "Disable"];
 const TRANSPARENT_OPTIONS = ["Enable", "Disable"];
@@ -77,6 +66,58 @@ amber: "#dc2626",
 
 const CARD_RADIUS = 10;
 
+const codecDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
 
 
 // Shared Btn component copied/adapted from OutboundRoutesPage for visual parity
@@ -248,24 +289,36 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
 );
 
 const SectionHeading = ({ title }) => (
-  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      margin: "16px 0 16px 0",
+    }}
+  >
     <span
       style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
+        fontSize: 12,
+        fontWeight: 700,
+        color: C.labelText,
+        textTransform: "uppercase",
+        letterSpacing: "0.04em",
       }}
     >
       {title}
     </span>
+
+    <div
+      style={{
+        flex: 1,
+        height: 1,
+        background: C.cardBorder,
+        marginLeft: 12,
+      }}
+    />
   </div>
 );
+
 
 // ── API Helpers ───────────────────────────────────────────────────────────────
 const normalizeList = (raw) => {
@@ -684,9 +737,31 @@ const DisaPage = () => {
         <PbxBreadcrumb section="Call Features" current="DISA" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: CARD_RADIUS,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -697,7 +772,17 @@ const DisaPage = () => {
             >
              
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -718,7 +803,12 @@ const DisaPage = () => {
                 }
                 variant="outline"
                 hoverBehavior="opacity"
-                style={sipPcmCancelBtnStyle}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -995,13 +1085,51 @@ const DisaPage = () => {
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              recordLabel="record"
-              onPageChange={(p) => setPage(p)}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.list || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.list || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -1112,7 +1240,16 @@ const DisaPage = () => {
                               secondDial: e.target.value,
                             }))
                           }
-                          sx={{ fontSize: 13  ,backgroundColor: "#fff" }}
+                                                 sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {SECOND_DIAL_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1277,7 +1414,16 @@ const DisaPage = () => {
                               transparent: e.target.value,
                             }))
                           }
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff" }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {TRANSPARENT_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1302,7 +1448,16 @@ const DisaPage = () => {
                               enabled: e.target.value === "Yes",
                             }))
                           }
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff" }}
+                                                     sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {ENABLE_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1324,20 +1479,21 @@ const DisaPage = () => {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 40px 1fr",
+                    gridTemplateColumns: "1fr 48px 1fr 48px",
                     gap: 12,
+                    marginTop: 16,
                   }}
                 >
                   <div>
                     <div
                       style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.accent,
-                      marginBottom: 6,
-                      textAlign: "center",
-                    }}
-                  >
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: "#325a84",
+                        textAlign: "center",
+                        marginBottom: 6,
+                      }}
+                    >
                       Available Routes
                     </div>
                     <select
@@ -1350,16 +1506,7 @@ const DisaPage = () => {
                           ).filter((n) => Number.isFinite(n)),
                         )
                       }
-                      style={{
-                        width: "100%",
-                        height: 160,
-                        border: `1px solid ${C.cardBorder}`,
-                        borderRadius: 4,
-                        padding: 8,
-                        fontSize: 13,
-                        outline: "none",
-                        background: "#fff",
-                      }}
+                      style={codecDualListSelectStyle}
                     >
                       {availableRoutes.length === 0 ? (
                         <option disabled>No routes available</option>
@@ -1376,122 +1523,94 @@ const DisaPage = () => {
                     style={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: 8,
-                      justifyContent: "center",
-                      paddingTop: 24,
+                      gap: 4,
+                      paddingTop: 28,
                     }}
                   >
-                    <Btn
-                      onClick={addSelectedToChosen}
-                      variant="outline"
-                      style={{ padding: "4px 0", fontSize: 12 }}
-                    >
+                    <CodecDualListBtn onClick={addSelectedToChosen}>
                       &gt;
-                    </Btn>
-                    <Btn
-                      onClick={addAllToChosen}
-                      variant="outline"
-                      style={{ padding: "4px 0", fontSize: 12 }}
-                    >
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={addAllToChosen}>
                       &gt;&gt;
-                    </Btn>
-                    <Btn
-                      onClick={removeSelectedFromChosen}
-                      variant="outline"
-                      style={{ padding: "4px 0", fontSize: 12 }}
-                    >
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeSelectedFromChosen}>
                       &lt;
-                    </Btn>
-                    <Btn
-                      onClick={removeAllFromChosen}
-                      variant="outline"
-                      style={{ padding: "4px 0", fontSize: 12 }}
-                    >
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeAllFromChosen}>
                       &lt;&lt;
-                    </Btn>
+                    </CodecDualListBtn>
                   </div>
-                  <div style={{ display: "flex", gap: 12 }}>
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.accent,
-                          marginBottom: 6,
-                          textAlign: "center",
-                        }}
-                      >
-                        Selected Routes
-                      </div>
-                      <select
-                        multiple
-                        value={chosenSelected.map(String)}
-                        onChange={(e) =>
-                          setChosenSelected(
-                            Array.from(e.target.selectedOptions, (opt) =>
-                              Number(opt.value),
-                            ).filter((n) => Number.isFinite(n)),
-                          )
-                        }
-                        style={{
-                          width: "100%",
-                          height: 160,
-                          border: `1px solid ${C.cardBorder}`,
-                          borderRadius: 4,
-                          padding: 8,
-                          fontSize: 13,
-                          outline: "none",
-                          background: "#fff",
-                        }}
-                      >
-                        {chosenRoutes.length === 0 ? (
-                          <option disabled>No selected routes</option>
-                        ) : (
-                          chosenRoutes.map((id) => (
-                            <option key={id} value={id}>
-                              {routeNameById.get(id) || `ID:${id}`}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
+                  <div>
                     <div
                       style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                        paddingTop: 24,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: "#325a84",
+                        textAlign: "center",
+                        marginBottom: 6,
                       }}
                     >
-                      <Btn
-                        onClick={moveChosenTop}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 14 }}
-                      >
-                        <VerticalAlignTopIcon sx={{ fontSize: 16 }} />
-                      </Btn>
-                      <Btn
-                        onClick={moveChosenUp}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 14 }}
-                      >
-                        <KeyboardArrowUpIcon sx={{ fontSize: 16 }} />
-                      </Btn>
-                      <Btn
-                        onClick={moveChosenDown}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 14 }}
-                      >
-                        <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
-                      </Btn>
-                      <Btn
-                        onClick={moveChosenBottom}
-                        variant="outline"
-                        style={{ padding: "4px 0", fontSize: 14 }}
-                      >
-                        <VerticalAlignBottomIcon sx={{ fontSize: 16 }} />
-                      </Btn>
+                      Selected Routes
                     </div>
+                    <select
+                      multiple
+                      value={chosenSelected.map(String)}
+                      onChange={(e) =>
+                        setChosenSelected(
+                          Array.from(e.target.selectedOptions, (opt) =>
+                            Number(opt.value),
+                          ).filter((n) => Number.isFinite(n)),
+                        )
+                      }
+                      style={codecDualListSelectStyle}
+                    >
+                      {chosenRoutes.length === 0 ? (
+                        <option disabled>No selected routes</option>
+                      ) : (
+                        chosenRoutes.map((id) => (
+                          <option key={id} value={id}>
+                            {routeNameById.get(id) || `ID:${id}`}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      paddingTop: 28,
+                    }}
+                  >
+                    <CodecDualListBtn
+                      reorder
+                      title="Move to bottom"
+                      onClick={moveChosenBottom}
+                    >
+                      vv
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveChosenUp}
+                    >
+                      ^
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move down"
+                      onClick={moveChosenDown}
+                    >
+                      v
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move to top"
+                      onClick={moveChosenTop}
+                    >
+                      ^^
+                    </CodecDualListBtn>
                   </div>
                 </div>
               </div>

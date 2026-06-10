@@ -29,13 +29,6 @@ import {
   pbxPageWrapStyle,
   pbxPageInnerStyle,
 } from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
 
 import {
   listIvrDestinations,
@@ -164,6 +157,59 @@ accent: "#3E5475",
 amber: "#dc2626",
 };
 const CARD_RADIUS = 20;
+
+const codecDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const Btn = ({
@@ -1265,9 +1311,31 @@ const IVRPage = () => {
         <PbxBreadcrumb section="Call Features" current="IVR" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+            background: "#ffffff",
+borderRadius: 10,
+overflow: "hidden",
+border: `1.5px solid ${C.cardBorder}`,
+boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+alignItems: "center",
+justifyContent: "space-between",
+minHeight: 44,
+padding: "7px 14px",
+borderBottom: `1px solid ${C.cardBorder}`,
+background: "#ffffff",
+flexWrap: "wrap",
+gap: 12,
+borderTopLeftRadius: CARD_RADIUS,
+borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1278,7 +1346,17 @@ const IVRPage = () => {
             >
              
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -1365,7 +1443,12 @@ const IVRPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                  style={sipPcmCancelBtnStyle}
+                  style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1631,13 +1714,51 @@ minWidth: 900,
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              recordLabel="record"
-              onPageChange={(p) => setPage(p)}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.list || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.list || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -1732,24 +1853,34 @@ minWidth: 900,
                                     }}
                                   >
                                     {/* ── Naya "Basic" Heading ── */}
-                                    <div style={{ marginBottom: 20, position: "relative" }}>
-                                      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                                      <span
-                                        style={{
-                                          position: "absolute",
-                                          top: -10,
-                                          left: 0,
-                                          background: "#fff",       
-                                          paddingRight: 8,
-                                          fontSize: 13,
-                                          fontWeight: 600,
-                                          color: C.mutedText,
-                                        }}
-                                      >
-                                        Basic
-                                      </span>
-                                    </div>
+                                  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    marginBottom: 20,
+  }}
+>
+ <span
+  style={{
+    fontSize: 12,
+    fontWeight: 700,
+    color: C.labelText,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  }}
+>
+  BASIC
+</span>
 
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
                 {/* 2-Column Grid for Basic fields */}
                 <div
                   style={{
@@ -1803,7 +1934,16 @@ minWidth: 900,
                           <MuiSelect
                             value={greetLong}
                             onChange={(e) => setGreetLong(e.target.value)}
-                            sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
+                                                      sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                           >
                             {greetLongOptions.map((opt) => (
                               <MenuItem
@@ -1843,7 +1983,16 @@ minWidth: 900,
                           <MuiSelect
                             value={greetShort}
                             onChange={(e) => setGreetShort(e.target.value)}
-                            sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
+                                                      sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                           >
                             {greetShortOptions.map((opt) => (
                               <MenuItem
@@ -1917,7 +2066,16 @@ minWidth: 900,
                         <MuiSelect
                           value={checkVoicemail}
                           onChange={(e) => setCheckVoicemail(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {CHECK_VOICEMAIL_OPTIONS.map((opt) => (
                             <MenuItem
@@ -2022,7 +2180,16 @@ minWidth: 900,
                         <MuiSelect
                           value={enabled}
                           onChange={(e) => setEnabled(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {ENABLE_OPTIONS.map((opt) => (
                             <MenuItem
@@ -2042,7 +2209,16 @@ minWidth: 900,
                         <MuiSelect
                           value={directExtension}
                           onChange={(e) => setDirectExtension(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                   sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {DIRECT_EXTENSION_OPTIONS.map((opt) => (
                             <MenuItem
@@ -2062,7 +2238,16 @@ minWidth: 900,
                         <MuiSelect
                           value={fxoFlashTransfer}
                           onChange={(e) => setFxoFlashTransfer(e.target.value)}
-                          sx={{ fontSize: 13   ,backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {FXO_FLASH_TRANSFER_OPTIONS.map((opt) => (
                             <MenuItem
@@ -2111,7 +2296,7 @@ minWidth: 900,
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 40px 1fr",
+                        gridTemplateColumns: "1fr 48px 1fr 48px",
                         gap: 12,
                         marginTop: 16,
                       }}
@@ -2120,10 +2305,10 @@ minWidth: 900,
                         <div
                           style={{
                             fontSize: 12,
-                            fontWeight: 700,
-                            color: C.mutedText,
-                            marginBottom: 6,
+                            fontWeight: 600,
+                            color: "#325a84",
                             textAlign: "center",
+                            marginBottom: 8,
                           }}
                         >
                           Available Routes
@@ -2138,16 +2323,7 @@ minWidth: 900,
                               ).filter((n) => Number.isFinite(n)),
                             )
                           }
-                          style={{
-                            width: "100%",
-                            height: 160,
-                            border: `1px solid ${C.cardBorder}`,
-                            borderRadius: 4,
-                            padding: 8,
-                            fontSize: 13,
-                            outline: "none",
-                            background: "#f8fafc",
-                          }}
+                          style={codecDualListSelectStyle}
                         >
                           {loading.outboundRoutes ? (
                             <option disabled>Loading routes...</option>
@@ -2166,145 +2342,124 @@ minWidth: 900,
                         style={{
                           display: "flex",
                           flexDirection: "column",
-                          gap: 8,
-                          justifyContent: "center",
-                          paddingTop: 24,
+                          gap: 4,
+                          paddingTop: 28,
                         }}
                       >
-                        <Btn
-                          onClick={addSelectedOutboundRoutes}
-                          variant="outline"
-                          style={{ padding: "4px 0", fontSize: 12 }}
-                        >
+                        <CodecDualListBtn onClick={addSelectedOutboundRoutes}>
                           &gt;
-                        </Btn>
-                        <Btn
-                          onClick={addAllOutboundRoutes}
-                          variant="outline"
-                          style={{ padding: "4px 0", fontSize: 12 }}
-                        >
+                        </CodecDualListBtn>
+                        <CodecDualListBtn onClick={addAllOutboundRoutes}>
                           &gt;&gt;
-                        </Btn>
-                        <Btn
-                          onClick={removeSelectedOutboundRoutes}
-                          variant="outline"
-                          style={{ padding: "4px 0", fontSize: 12 }}
-                        >
+                        </CodecDualListBtn>
+                        <CodecDualListBtn onClick={removeSelectedOutboundRoutes}>
                           &lt;
-                        </Btn>
-                        <Btn
-                          onClick={removeAllOutboundRoutes}
-                          variant="outline"
-                          style={{ padding: "4px 0", fontSize: 12 }}
-                        >
+                        </CodecDualListBtn>
+                        <CodecDualListBtn onClick={removeAllOutboundRoutes}>
                           &lt;&lt;
-                        </Btn>
+                        </CodecDualListBtn>
                       </div>
-                      <div style={{ display: "flex", gap: 12 }}>
-                        <div style={{ flex: 1 }}>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: C.accent,
-                              marginBottom: 6,
-                              textAlign: "center",
-                            }}
-                          >
-                            Selected Routes
-                          </div>
-                          <select
-                            multiple
-                            value={chosenSelected.map(String)}
-                            onChange={(e) =>
-                              setChosenSelected(
-                                Array.from(e.target.selectedOptions, (opt) =>
-                                  Number(opt.value),
-                                ).filter((n) => Number.isFinite(n)),
-                              )
-                            }
-                            style={{
-                              width: "100%",
-                              height: 160,
-                              border: `1px solid ${C.cardBorder}`,
-                              borderRadius: 4,
-                              padding: 8,
-                              fontSize: 13,
-                              outline: "none",
-                              background: "#fff",
-                            }}
-                          >
-                            {selectedOutboundRouteIds.length === 0 ? (
-                              <option disabled>No selected routes</option>
-                            ) : (
-                              selectedOutboundRouteIds.map((id) => (
-                                <option key={id} value={id}>
-                                  {getOutboundRouteLabel(id)}
-                                </option>
-                              ))
-                            )}
-                          </select>
-                        </div>
+                      <div>
                         <div
                           style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 4,
-                            paddingTop: 24,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: "#325a84",
+                            textAlign: "center",
+                            marginBottom: 8,
                           }}
                         >
-                          <Btn
-                            onClick={moveOutboundTop}
-                            variant="outline"
-                            style={{ padding: "4px 0", fontSize: 14 }}
-                          >
-                            &#8679;
-                          </Btn>
-                          <Btn
-                            onClick={moveOutboundUp}
-                            variant="outline"
-                            style={{ padding: "4px 0", fontSize: 14 }}
-                          >
-                            &#8593;
-                          </Btn>
-                          <Btn
-                            onClick={moveOutboundDown}
-                            variant="outline"
-                            style={{ padding: "4px 0", fontSize: 14 }}
-                          >
-                            &#8595;
-                          </Btn>
-                          <Btn
-                            onClick={moveOutboundBottom}
-                            variant="outline"
-                            style={{ padding: "4px 0", fontSize: 14 }}
-                          >
-                            &#8681;
-                          </Btn>
+                          Selected Routes
                         </div>
+                        <select
+                          multiple
+                          value={chosenSelected.map(String)}
+                          onChange={(e) =>
+                            setChosenSelected(
+                              Array.from(e.target.selectedOptions, (opt) =>
+                                Number(opt.value),
+                              ).filter((n) => Number.isFinite(n)),
+                            )
+                          }
+                          style={codecDualListSelectStyle}
+                        >
+                          {selectedOutboundRouteIds.length === 0 ? (
+                            <option disabled>No selected routes</option>
+                          ) : (
+                            selectedOutboundRouteIds.map((id) => (
+                              <option key={id} value={id}>
+                                {getOutboundRouteLabel(id)}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                          paddingTop: 28,
+                        }}
+                      >
+                        <CodecDualListBtn
+                          reorder
+                          title="Move to bottom"
+                          onClick={moveOutboundBottom}
+                        >
+                          vv
+                        </CodecDualListBtn>
+                        <CodecDualListBtn reorder title="Move up" onClick={moveOutboundUp}>
+                          ^
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
+                          reorder
+                          title="Move down"
+                          onClick={moveOutboundDown}
+                        >
+                          v
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
+                          reorder
+                          title="Move to top"
+                          onClick={moveOutboundTop}
+                        >
+                          ^^
+                        </CodecDualListBtn>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* Advanced Divider */}
-                <div style={{ margin: "32px 0 20px 0", position: "relative" }}>
-                  <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: -10,
-                      left: 0,
-                      background: "#fff",
-                      paddingRight: 8,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.mutedText,
-                    }}
-                  >
-                    Advanced
-                  </span>
-                </div>
+             <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    margin: "32px 0 20px 0",
+  }}
+>
+  <span
+    style={{
+      fontSize: 12,
+      fontWeight: 700,
+      color: C.labelText,
+      textTransform: "uppercase",
+      letterSpacing: "0.04em",
+    }}
+  >
+    Advanced
+  </span>
+
+  <div
+    style={{
+      flex: 1,
+      height: 1,
+      background: C.cardBorder,
+      marginLeft: 12,
+    }}
+  />
+</div>
 
                 {/* Advanced Section 2-Column Grid */}
                 <div
@@ -2327,7 +2482,16 @@ minWidth: 900,
                         <MuiSelect
                           value={invalidSound}
                           onChange={(e) => setInvalidSound(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {invalidSoundOptions.map((opt) => (
                             <MenuItem
@@ -2347,7 +2511,16 @@ minWidth: 900,
                         <MuiSelect
                           value={exitSound}
                           onChange={(e) => setExitSound(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                    sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {exitSoundOptions.map((opt) => (
                             <MenuItem
@@ -2374,7 +2547,16 @@ minWidth: 900,
                           renderValue={(value) =>
                             value ? formatActionLabel(value) : "Select action"
                           }
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
+                                                     sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           <MenuItem value="" sx={{ fontSize: 13 }}>
                             <em>Select action</em>
@@ -2429,7 +2611,16 @@ minWidth: 900,
                           value={ringBack}
                           onChange={(e) => setRingBack(e.target.value)}
                           MenuProps={{ PaperProps: { sx: { maxHeight: 360 } } }}
-                          sx={{ fontSize: 13,backgroundColor: "#fff", }}
+                                                   sx={{
+      fontSize: 13,
+      backgroundColor: "#fff",
+      height: 32,
+      "& .MuiSelect-select": {
+        padding: "6px 8px",
+        display: "flex",
+        alignItems: "center",
+      },
+    }}
                         >
                           {ringBack &&
                             !ringBackAllValues.includes(ringBack) && (
@@ -2530,23 +2721,39 @@ minWidth: 900,
                 }}
               >
                 <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
-                >
-                  Option
-                </span>
+  style={{
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
+>
+  Option
+</span>
                 <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
+                  style={{
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
                 >
                   Destination
                 </span>
                 <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
+                 style={{
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
                 >
                   Target
                 </span>
               </div>
               <div
-                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                style={{
+    fontSize: 13,
+    fontWeight: 700,
+    color: C.labelText,
+  }}
               >
                 {KEYS.map((key) => (
                   <div
