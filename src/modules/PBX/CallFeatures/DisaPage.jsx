@@ -1535,16 +1535,16 @@ const DisaPage = () => {
                 >
                   <div>
                     <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: "#325a84",
-                        textAlign: "center",
-                        marginBottom: 6,
-                      }}
-                    >
-                      Available Routes
-                    </div>
+  style={{
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#325a84",
+    textAlign: "center",
+    marginBottom: 8,
+  }}
+>
+  Available Routes
+</div>
                     <select
                       multiple
                       value={availableSelected.map(String)}
@@ -1573,7 +1573,7 @@ const DisaPage = () => {
                       display: "flex",
                       flexDirection: "column",
                       gap: 4,
-                      paddingTop: 28,
+                      paddingTop: 24,
                     }}
                   >
                     <CodecDualListBtn onClick={addSelectedToChosen}>
@@ -1629,7 +1629,7 @@ const DisaPage = () => {
                       display: "flex",
                       flexDirection: "column",
                       gap: 4,
-                      paddingTop: 28,
+                      paddingTop: 24,
                     }}
                   >
                     <CodecDualListBtn
