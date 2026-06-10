@@ -30,7 +30,14 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../shared/pbxSharedUi";
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 
@@ -727,31 +734,9 @@ const PrivateGroup = () => {
         <PbxBreadcrumb section="Call Features" current="Private Group" />
 
         {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={sipPcmCardStyle}>
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -791,16 +776,9 @@ const PrivateGroup = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                {" "}
-                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                style={sipPcmCancelBtnStyle}
+              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                 Delete
               </Btn>
 
               <Btn
@@ -1143,16 +1121,7 @@ const PrivateGroup = () => {
                     <MuiSelect
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "#fff",
-                        height: 32,
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
+                      sx={{ fontSize: 13,backgroundColor: "#fff", }}
                     >
                       <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                         Yes
@@ -1167,14 +1136,14 @@ const PrivateGroup = () => {
 
               <SectionHeading title="Member Extensions" />
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr 48px",
-                  gap: 12,
-                  marginTop: 16,
-                }}
-              >
+             <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 40px 1fr",
+    gap: 12,
+    alignItems: "start",
+  }}
+>
                 <div>
                   <div
                     style={{
@@ -1214,14 +1183,25 @@ const PrivateGroup = () => {
                   </select>
                 </div>
                 <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <CodecDualListBtn onClick={addSelectedMembers}>
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22, // Available/Selected label ki height
+    height: 160,   // select box ki height
+  }}
+>
+                  <Btn
+                    onClick={addSelectedMembers}
+                    variant="outline"
+                   style={{
+  width: 40,
+  height: "100%",
+  fontSize: 12,
+}}
+                  >
                     &gt;
                   </CodecDualListBtn>
                   <CodecDualListBtn onClick={addAllMembers}>
@@ -1269,43 +1249,6 @@ const PrivateGroup = () => {
                       ))
                     )}
                   </select>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <CodecDualListBtn
-                    reorder
-                    title="Move to bottom"
-                    onClick={moveMemberToBottom}
-                  >
-                    vv
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move up"
-                    onClick={moveMemberUp}
-                  >
-                    ^
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move down"
-                    onClick={moveMemberDown}
-                  >
-                    v
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move to top"
-                    onClick={moveMemberToTop}
-                  >
-                    ^^
-                  </CodecDualListBtn>
                 </div>
               </div>
             </div>

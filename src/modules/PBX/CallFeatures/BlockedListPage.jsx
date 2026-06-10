@@ -28,7 +28,14 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../shared/pbxSharedUi";
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
@@ -517,31 +524,9 @@ const BlockedListPage = () => {
         <PbxBreadcrumb section="Call Features" current="Blocked List" />
 
         {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={sipPcmCardStyle}>
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -660,12 +645,7 @@ const BlockedListPage = () => {
                   loading.delete || loading.fetch || selected.length === 0
                 }
                 variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={sipPcmCancelBtnStyle}
               >
                 {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
@@ -1066,27 +1046,18 @@ const BlockedListPage = () => {
                 padding: 16,
               }}
             >
-              <div
+              <h3
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: 12,
                   fontSize: 14,
                   fontWeight: 700,
                   color: C.labelText,
+                  marginBottom: 12,
+                  borderBottom: `1px solid ${C.cardBorder}`,
+                  paddingBottom: 6,
                 }}
               >
-                <span>Block Settings</span>
-
-                <div
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    background: C.cardBorder,
-                    marginLeft: 12,
-                  }}
-                />
-              </div>
+                Block Settings
+              </h3>
 
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
@@ -1155,12 +1126,6 @@ const BlockedListPage = () => {
                         sx={{
                           fontSize: 13,
                           backgroundColor: "#fff",
-                          height: 32, // Name ke equal
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
                         }}
                       >
                         <MenuItem
@@ -1284,16 +1249,7 @@ const BlockedListPage = () => {
                       <MuiSelect
                         value={direction}
                         onChange={(e) => setDirection(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff" }}
                       >
                         <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
                           Inbound
@@ -1326,16 +1282,7 @@ const BlockedListPage = () => {
                       <MuiSelect
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff" }}
                       >
                         <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                           Yes

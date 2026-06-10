@@ -32,7 +32,14 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../shared/pbxSharedUi";
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 // Verify this matches your actual import path
 const PAGING_ITEMS_PER_PAGE = 20;
@@ -50,6 +57,59 @@ const C = {
   accent: "#3E5475",
   amber: "#dc2626",
 };
+
+const codecDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
 
 const codecDualListSelectStyle = {
   width: "100%",
@@ -789,12 +849,7 @@ const Paging = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={sipPcmCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1113,14 +1168,7 @@ const Paging = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{
-          sx: {
-            width: 800,
-            maxWidth: "96vw",
-
-            borderRadius: 2,
-          },
-        }}
+        PaperProps={{ sx: { width: 760, maxWidth: "96vw", borderRadius: 2 } }}
       >
         <DialogTitle
           style={{
@@ -1204,16 +1252,7 @@ const Paging = () => {
                       <MuiSelect
                         value={pagingType}
                         onChange={(e) => setPagingType(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
                       >
                         {PAGING_TYPE_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1245,22 +1284,22 @@ const Paging = () => {
               <SectionHeading title="Member Extensions" />
 
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr 48px",
-                  gap: 12,
-                  marginTop: 16,
-                }}
-              >
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 40px 1fr",
+    gap: 12,
+    alignItems: "start",
+  }}
+>
                 <div>
                   <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#325a84",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
+                   style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: C.accent,
+                        marginBottom: 6,
+                        textAlign: "center",
+                      }}
                   >
                     Available
                   </div>
@@ -1290,15 +1329,28 @@ const Paging = () => {
                     )}
                   </select>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <CodecDualListBtn onClick={addSelectedMembers}>
+              <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+    height: 160,
+  }}
+>
+                  <Btn
+                    onClick={addSelectedMembers}
+                    variant="outline"
+                    style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
+                  >
                     &gt;
                   </CodecDualListBtn>
                   <CodecDualListBtn onClick={addAllMembers}>
@@ -1311,78 +1363,116 @@ const Paging = () => {
                     &lt;&lt;
                   </CodecDualListBtn>
                 </div>
-                <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#325a84",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    Selected
+                <div style={{ display: "flex", gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: C.accent,
+                        marginBottom: 6,
+                        textAlign: "center",
+                      }}
+                    >
+                      Selected
+                    </div>
+                    <select
+                      multiple
+                      value={chosenSelected}
+                      onChange={(e) =>
+                        setChosenSelected(
+                          Array.from(
+                            e.target.selectedOptions,
+                            (opt) => opt.value,
+                          ),
+                        )
+                      }
+                      style={{
+                        width: "100%",
+                        height: 160,
+                        border: `1px solid ${C.cardBorder}`,
+                        borderRadius: 4,
+                        padding: 8,
+                        fontSize: 13,
+                        outline: "none",
+                        background: "#fff",
+                      }}
+                    >
+                      {memberExtensions.length === 0 ? (
+                        <option disabled>No selected members</option>
+                      ) : (
+                        memberExtensions.map((id) => (
+                          <option key={id} value={id}>
+                            {getExtLabel(id)}
+                          </option>
+                        ))
+                      )}
+                    </select>
                   </div>
-                  <select
-                    multiple
-                    value={chosenSelected}
-                    onChange={(e) =>
-                      setChosenSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={codecDualListSelectStyle}
-                  >
-                    {memberExtensions.length === 0 ? (
-                      <option disabled>No selected members</option>
-                    ) : (
-                      memberExtensions.map((id) => (
-                        <option key={id} value={id}>
-                          {getExtLabel(id)}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
                 <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+    height: 160,
+  }}
+>
+                    <Btn
+                      onClick={() => handleReorderSelected("top")}
+                      variant="outline"
+                      style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
+                    >
+                      <VerticalAlignTopIcon sx={{ fontSize: 16 }} />
+                    </Btn>
+                    <Btn
+                      onClick={() => handleReorderSelected("up")}
+                      variant="outline"
+                    style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
+                    >
+                      <KeyboardArrowUpIcon sx={{ fontSize: 16 }} />
+                    </Btn>
+                    <Btn
+                      onClick={() => handleReorderSelected("down")}
+                      variant="outline"
+                     style={{
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
+                    >
+                      <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
+                    </Btn>
+                    <Btn
+                      onClick={() => handleReorderSelected("bottom")}
+                      variant="outline"
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <CodecDualListBtn
-                    reorder
-                    title="Move to bottom"
-                    onClick={() => handleReorderSelected("bottom")}
-                  >
-                    vv
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move up"
-                    onClick={() => handleReorderSelected("up")}
-                  >
-                    ^
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move down"
-                    onClick={() => handleReorderSelected("down")}
-                  >
-                    v
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move to top"
-                    onClick={() => handleReorderSelected("top")}
-                  >
-                    ^^
-                  </CodecDualListBtn>
+  width: 40,
+  height: "100%",
+  minWidth: 40,
+  padding: 0,
+  fontSize: 12,
+}}
+                    >
+                      <VerticalAlignBottomIcon sx={{ fontSize: 16 }} />
+                    </Btn>
+                  </div>
                 </div>
               </div>
             </div>

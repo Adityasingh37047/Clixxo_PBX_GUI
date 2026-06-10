@@ -28,7 +28,14 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../shared/pbxSharedUi";
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 import {
   listIvrDestinations,
@@ -1308,31 +1315,9 @@ const IVRPage = () => {
         <PbxBreadcrumb section="Call Features" current="IVR" />
 
         {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={sipPcmCardStyle}>
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -1439,12 +1424,7 @@ const IVRPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={sipPcmCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1887,34 +1867,24 @@ const IVRPage = () => {
                     }}
                   >
                     {/* ── Naya "Basic" Heading ── */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        marginBottom: 20,
-                      }}
-                    >
+                    <div style={{ marginBottom: 20, position: "relative" }}>
+                      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
                       <span
                         style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.labelText,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
+                          position: "absolute",
+                          top: -10,
+                          left: 0,
+                          background: "#fff",
+                          paddingRight: 8,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: C.mutedText,
                         }}
                       >
-                        BASIC
+                        Basic
                       </span>
-
-                      <div
-                        style={{
-                          flex: 1,
-                          height: 1,
-                          background: C.cardBorder,
-                          marginLeft: 12,
-                        }}
-                      />
                     </div>
+
                     {/* 2-Column Grid for Basic fields */}
                     <div
                       style={{
@@ -1976,16 +1946,7 @@ const IVRPage = () => {
                               <MuiSelect
                                 value={greetLong}
                                 onChange={(e) => setGreetLong(e.target.value)}
-                                sx={{
-                                  fontSize: 13,
-                                  backgroundColor: "#fff",
-                                  height: 32,
-                                  "& .MuiSelect-select": {
-                                    padding: "6px 8px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                  },
-                                }}
+                                sx={{ fontSize: 13, backgroundColor: "#fff" }}
                               >
                                 {greetLongOptions.map((opt) => (
                                   <MenuItem
@@ -2025,16 +1986,7 @@ const IVRPage = () => {
                               <MuiSelect
                                 value={greetShort}
                                 onChange={(e) => setGreetShort(e.target.value)}
-                                sx={{
-                                  fontSize: 13,
-                                  backgroundColor: "#fff",
-                                  height: 32,
-                                  "& .MuiSelect-select": {
-                                    padding: "6px 8px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                  },
-                                }}
+                                sx={{ fontSize: 13, backgroundColor: "#fff" }}
                               >
                                 {greetShortOptions.map((opt) => (
                                   <MenuItem
@@ -2120,16 +2072,7 @@ const IVRPage = () => {
                               onChange={(e) =>
                                 setCheckVoicemail(e.target.value)
                               }
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
                             >
                               {CHECK_VOICEMAIL_OPTIONS.map((opt) => (
                                 <MenuItem
@@ -2258,16 +2201,7 @@ const IVRPage = () => {
                             <MuiSelect
                               value={enabled}
                               onChange={(e) => setEnabled(e.target.value)}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
                             >
                               {ENABLE_OPTIONS.map((opt) => (
                                 <MenuItem
@@ -2289,16 +2223,7 @@ const IVRPage = () => {
                               onChange={(e) =>
                                 setDirectExtension(e.target.value)
                               }
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
                             >
                               {DIRECT_EXTENSION_OPTIONS.map((opt) => (
                                 <MenuItem
@@ -2320,16 +2245,7 @@ const IVRPage = () => {
                               onChange={(e) =>
                                 setFxoFlashTransfer(e.target.value)
                               }
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
                             >
                               {FXO_FLASH_TRANSFER_OPTIONS.map((opt) => (
                                 <MenuItem
@@ -2378,7 +2294,7 @@ const IVRPage = () => {
                         <div
                           style={{
                             display: "grid",
-                            gridTemplateColumns: "1fr 48px 1fr 48px",
+                            gridTemplateColumns: "1fr 40px 1fr",
                             gap: 12,
                             marginTop: 16,
                           }}
@@ -2387,10 +2303,10 @@ const IVRPage = () => {
                             <div
                               style={{
                                 fontSize: 12,
-                                fontWeight: 600,
-                                color: "#325a84",
+                                fontWeight: 700,
+                                color: C.mutedText,
+                                marginBottom: 6,
                                 textAlign: "center",
-                                marginBottom: 8,
                               }}
                             >
                               Available Routes
@@ -2405,7 +2321,16 @@ const IVRPage = () => {
                                   ).filter((n) => Number.isFinite(n)),
                                 )
                               }
-                              style={codecDualListSelectStyle}
+                              style={{
+                                width: "100%",
+                                height: 160,
+                                border: `1px solid ${C.cardBorder}`,
+                                borderRadius: 4,
+                                padding: 8,
+                                fontSize: 13,
+                                outline: "none",
+                                background: "#f8fafc",
+                              }}
                             >
                               {loading.outboundRoutes ? (
                                 <option disabled>Loading routes...</option>
@@ -2424,98 +2349,123 @@ const IVRPage = () => {
                             style={{
                               display: "flex",
                               flexDirection: "column",
-                              gap: 4,
-                              paddingTop: 28,
+                              gap: 8,
+                              justifyContent: "center",
+                              paddingTop: 24,
                             }}
                           >
-                            <CodecDualListBtn
+                            <Btn
                               onClick={addSelectedOutboundRoutes}
+                              variant="outline"
+                              style={{ padding: "4px 0", fontSize: 12 }}
                             >
                               &gt;
-                            </CodecDualListBtn>
-                            <CodecDualListBtn onClick={addAllOutboundRoutes}>
+                            </Btn>
+                            <Btn
+                              onClick={addAllOutboundRoutes}
+                              variant="outline"
+                              style={{ padding: "4px 0", fontSize: 12 }}
+                            >
                               &gt;&gt;
-                            </CodecDualListBtn>
-                            <CodecDualListBtn
+                            </Btn>
+                            <Btn
                               onClick={removeSelectedOutboundRoutes}
+                              variant="outline"
+                              style={{ padding: "4px 0", fontSize: 12 }}
                             >
                               &lt;
-                            </CodecDualListBtn>
-                            <CodecDualListBtn onClick={removeAllOutboundRoutes}>
+                            </Btn>
+                            <Btn
+                              onClick={removeAllOutboundRoutes}
+                              variant="outline"
+                              style={{ padding: "4px 0", fontSize: 12 }}
+                            >
                               &lt;&lt;
-                            </CodecDualListBtn>
+                            </Btn>
                           </div>
-                          <div>
+                          <div style={{ display: "flex", gap: 12 }}>
+                            <div style={{ flex: 1 }}>
+                              <div
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  color: C.accent,
+                                  marginBottom: 6,
+                                  textAlign: "center",
+                                }}
+                              >
+                                Selected Routes
+                              </div>
+                              <select
+                                multiple
+                                value={chosenSelected.map(String)}
+                                onChange={(e) =>
+                                  setChosenSelected(
+                                    Array.from(
+                                      e.target.selectedOptions,
+                                      (opt) => Number(opt.value),
+                                    ).filter((n) => Number.isFinite(n)),
+                                  )
+                                }
+                                style={{
+                                  width: "100%",
+                                  height: 160,
+                                  border: `1px solid ${C.cardBorder}`,
+                                  borderRadius: 4,
+                                  padding: 8,
+                                  fontSize: 13,
+                                  outline: "none",
+                                  background: "#fff",
+                                }}
+                              >
+                                {selectedOutboundRouteIds.length === 0 ? (
+                                  <option disabled>No selected routes</option>
+                                ) : (
+                                  selectedOutboundRouteIds.map((id) => (
+                                    <option key={id} value={id}>
+                                      {getOutboundRouteLabel(id)}
+                                    </option>
+                                  ))
+                                )}
+                              </select>
+                            </div>
                             <div
                               style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: "#325a84",
-                                textAlign: "center",
-                                marginBottom: 8,
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 4,
+                                paddingTop: 24,
                               }}
                             >
-                              Selected Routes
+                              <Btn
+                                onClick={moveOutboundTop}
+                                variant="outline"
+                                style={{ padding: "4px 0", fontSize: 14 }}
+                              >
+                                &#8679;
+                              </Btn>
+                              <Btn
+                                onClick={moveOutboundUp}
+                                variant="outline"
+                                style={{ padding: "4px 0", fontSize: 14 }}
+                              >
+                                &#8593;
+                              </Btn>
+                              <Btn
+                                onClick={moveOutboundDown}
+                                variant="outline"
+                                style={{ padding: "4px 0", fontSize: 14 }}
+                              >
+                                &#8595;
+                              </Btn>
+                              <Btn
+                                onClick={moveOutboundBottom}
+                                variant="outline"
+                                style={{ padding: "4px 0", fontSize: 14 }}
+                              >
+                                &#8681;
+                              </Btn>
                             </div>
-                            <select
-                              multiple
-                              value={chosenSelected.map(String)}
-                              onChange={(e) =>
-                                setChosenSelected(
-                                  Array.from(e.target.selectedOptions, (opt) =>
-                                    Number(opt.value),
-                                  ).filter((n) => Number.isFinite(n)),
-                                )
-                              }
-                              style={codecDualListSelectStyle}
-                            >
-                              {selectedOutboundRouteIds.length === 0 ? (
-                                <option disabled>No selected routes</option>
-                              ) : (
-                                selectedOutboundRouteIds.map((id) => (
-                                  <option key={id} value={id}>
-                                    {getOutboundRouteLabel(id)}
-                                  </option>
-                                ))
-                              )}
-                            </select>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 4,
-                              paddingTop: 28,
-                            }}
-                          >
-                            <CodecDualListBtn
-                              reorder
-                              title="Move to bottom"
-                              onClick={moveOutboundBottom}
-                            >
-                              vv
-                            </CodecDualListBtn>
-                            <CodecDualListBtn
-                              reorder
-                              title="Move up"
-                              onClick={moveOutboundUp}
-                            >
-                              ^
-                            </CodecDualListBtn>
-                            <CodecDualListBtn
-                              reorder
-                              title="Move down"
-                              onClick={moveOutboundDown}
-                            >
-                              v
-                            </CodecDualListBtn>
-                            <CodecDualListBtn
-                              reorder
-                              title="Move to top"
-                              onClick={moveOutboundTop}
-                            >
-                              ^^
-                            </CodecDualListBtn>
                           </div>
                         </div>
                       </div>
@@ -2523,32 +2473,23 @@ const IVRPage = () => {
 
                     {/* Advanced Divider */}
                     <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        margin: "32px 0 20px 0",
-                      }}
+                      style={{ margin: "32px 0 20px 0", position: "relative" }}
                     >
+                      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
                       <span
                         style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.labelText,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
+                          position: "absolute",
+                          top: -10,
+                          left: 0,
+                          background: "#fff",
+                          paddingRight: 8,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: C.mutedText,
                         }}
                       >
                         Advanced
                       </span>
-
-                      <div
-                        style={{
-                          flex: 1,
-                          height: 1,
-                          background: C.cardBorder,
-                          marginLeft: 12,
-                        }}
-                      />
                     </div>
 
                     {/* Advanced Section 2-Column Grid */}
@@ -2572,16 +2513,7 @@ const IVRPage = () => {
                             <MuiSelect
                               value={invalidSound}
                               onChange={(e) => setInvalidSound(e.target.value)}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
                             >
                               {invalidSoundOptions.map((opt) => (
                                 <MenuItem
@@ -2601,16 +2533,7 @@ const IVRPage = () => {
                             <MuiSelect
                               value={exitSound}
                               onChange={(e) => setExitSound(e.target.value)}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
                             >
                               {exitSoundOptions.map((opt) => (
                                 <MenuItem
@@ -2639,16 +2562,7 @@ const IVRPage = () => {
                                   ? formatActionLabel(value)
                                   : "Select action"
                               }
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
                             >
                               <MenuItem value="" sx={{ fontSize: 13 }}>
                                 <em>Select action</em>
@@ -2711,16 +2625,7 @@ const IVRPage = () => {
                               MenuProps={{
                                 PaperProps: { sx: { maxHeight: 360 } },
                               }}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
                             >
                               {ringBack &&
                                 !ringBackAllValues.includes(ringBack) && (
@@ -2827,7 +2732,7 @@ const IVRPage = () => {
                       style={{
                         fontSize: 13,
                         fontWeight: 700,
-                        color: C.labelText,
+                        color: C.mutedText,
                       }}
                     >
                       Option
@@ -2836,7 +2741,7 @@ const IVRPage = () => {
                       style={{
                         fontSize: 13,
                         fontWeight: 700,
-                        color: C.labelText,
+                        color: C.mutedText,
                       }}
                     >
                       Destination
@@ -2845,7 +2750,7 @@ const IVRPage = () => {
                       style={{
                         fontSize: 13,
                         fontWeight: 700,
-                        color: C.labelText,
+                        color: C.mutedText,
                       }}
                     >
                       Target
@@ -2853,9 +2758,9 @@ const IVRPage = () => {
                   </div>
                   <div
                     style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: C.labelText,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
                     }}
                   >
                     {KEYS.map((key) => (

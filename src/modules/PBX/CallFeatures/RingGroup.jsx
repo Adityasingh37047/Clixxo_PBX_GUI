@@ -33,7 +33,14 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../shared/pbxSharedUi";
+} from "../../../sections/numManipulate/numManipulateSharedUi";
+import {
+  sipPcmCardStyle,
+  sipPcmToolbarStyle,
+  sipPcmSelectedBadgeStyle,
+  sipPcmCancelBtnStyle,
+  SipPcmPagination,
+} from "../../../sections/sip/sipPcmSharedUi";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const RING_STRATEGY_OPTIONS = ["simultaneous", "sequential", "random"];
@@ -896,49 +903,12 @@ const RingGroup = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb + Last Updated */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ fontSize: 11, color: C.mutedText }}>
-            PBX &rsaquo; Call Features &rsaquo;{" "}
-            <span style={{ color: "#1e293b", fontWeight: 600 }}>
-              Ring Group
-            </span>
-          </div>
-        </div>
+        <PbxBreadcrumb section="Call Features" current="Ring Group" />
 
         {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={sipPcmCardStyle}>
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+          <div style={sipPcmToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -978,16 +948,9 @@ const RingGroup = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-              >
-                {" "}
-                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                style={sipPcmCancelBtnStyle}
+              > <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                 Delete
               </Btn>
               <Btn
                 onClick={handleOpenAddModal}
@@ -1334,34 +1297,21 @@ const RingGroup = () => {
                 padding: "20px 24px 16px",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: 20,
-                }}
-              >
+              <div style={{ marginBottom: 20, position: "relative" }}>
+                <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
                 <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: C.labelText,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                  }}
+                   style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: C.accent,
+                        marginBottom: 6,
+                        textAlign: "center",
+                      }}
                 >
                   Ring Group
                 </span>
-
-                <div
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    background: C.cardBorder,
-                    marginLeft: 12,
-                  }}
-                />
               </div>
+
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{
@@ -1395,16 +1345,7 @@ const RingGroup = () => {
                       <MuiSelect
                         value={ringStrategy}
                         onChange={(e) => setRingStrategy(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
                       >
                         {RING_STRATEGY_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1420,16 +1361,7 @@ const RingGroup = () => {
                       <MuiSelect
                         value={ringTimeout}
                         onChange={(e) => setRingTimeout(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
+                        sx={{ fontSize: 13 , backgroundColor: "#fff",}}
                       >
                         {RING_TIMEOUT_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1463,16 +1395,7 @@ const RingGroup = () => {
                         onChange={(e) =>
                           setExtensionAnswerConfirm(e.target.value)
                         }
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
                       >
                         {EXTENSION_ANSWER_CONFIRM_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1515,16 +1438,7 @@ const RingGroup = () => {
                             setTimeoutDestinationType(e.target.value);
                             setTimeoutDestinationValue("");
                           }}
-                          sx={{
-                            fontSize: 13,
-                            backgroundColor: "#fff",
-                            height: 32,
-                            "& .MuiSelect-select": {
-                              padding: "6px 8px",
-                              display: "flex",
-                              alignItems: "center",
-                            },
-                          }}
+                          sx={{ fontSize: 13, backgroundColor: "#fff", }}
                         >
                           <MenuItem value="" sx={{ fontSize: 13 }}>
                             <em>Select type</em>
@@ -1533,16 +1447,7 @@ const RingGroup = () => {
                             <MenuItem
                               key={opt.value}
                               value={opt.value}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13, backgroundColor: "#fff", }}
                             >
                               {opt.label}
                             </MenuItem>
@@ -1558,16 +1463,7 @@ const RingGroup = () => {
                             onChange={(e) =>
                               setTimeoutDestinationValue(e.target.value)
                             }
-                            sx={{
-                              fontSize: 13,
-                              backgroundColor: "#fff",
-                              height: 32,
-                              "& .MuiSelect-select": {
-                                padding: "6px 8px",
-                                display: "flex",
-                                alignItems: "center",
-                              },
-                            }}
+                            sx={{ fontSize: 13 , backgroundColor: "#fff",}}
                           >
                             <MenuItem value="" sx={{ fontSize: 13 }}>
                               <em>Select value</em>
@@ -1576,16 +1472,7 @@ const RingGroup = () => {
                               <MenuItem
                                 key={opt.value}
                                 value={opt.value}
-                                sx={{
-                                  fontSize: 13,
-                                  backgroundColor: "#fff",
-                                  height: 32,
-                                  "& .MuiSelect-select": {
-                                    padding: "6px 8px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                  },
-                                }}
+                                sx={{ fontSize: 13, backgroundColor: "#fff", }}
                               >
                                 {opt.label}
                               </MenuItem>
@@ -1601,16 +1488,7 @@ const RingGroup = () => {
                       <MuiSelect
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
                       >
                         {ENABLE_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1627,16 +1505,7 @@ const RingGroup = () => {
                         value={ringBack}
                         onChange={(e) => setRingBack(e.target.value)}
                         MenuProps={RING_BACK_MENU_PROPS}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
+                        sx={{ fontSize: 13, backgroundColor: "#fff",}}
                       >
                         {ringBack && !ringBackAllValues.includes(ringBack) && (
                           <MenuItem value={ringBack} sx={{ fontSize: 13 }}>
@@ -1740,14 +1609,14 @@ const RingGroup = () => {
                 >
                   Member Extensions <span style={{ color: C.errorRed }}>*</span>
                 </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 48px 1fr 48px",
-                    gap: 12,
-                    marginTop: 16,
-                  }}
-                >
+              <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 40px 1fr",
+    gap: 12,
+    alignItems: "start",
+  }}
+>
                   <div>
                     <div
                       style={{
@@ -1786,15 +1655,26 @@ const RingGroup = () => {
                       )}
                     </select>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 28,
-                    }}
-                  >
-                    <CodecDualListBtn onClick={addSelectedMembers}>
+                 <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 24, // Available/Selected label ki height
+    height: 180,   // same as select height
+  }}
+>
+                    <Btn
+                      onClick={addSelectedMembers}
+                      variant="outline"
+                   style={{
+      width: 44,
+      height: "100%",
+      fontSize: 12,
+    }}
+                    >
                       &gt;
                     </CodecDualListBtn>
                     <CodecDualListBtn onClick={addAllMembers}>
@@ -1842,43 +1722,6 @@ const RingGroup = () => {
                         ))
                       )}
                     </select>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 28,
-                    }}
-                  >
-                    <CodecDualListBtn
-                      reorder
-                      title="Move to bottom"
-                      onClick={moveMemberToBottom}
-                    >
-                      vv
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move up"
-                      onClick={moveMemberUp}
-                    >
-                      ^
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move down"
-                      onClick={moveMemberDown}
-                    >
-                      v
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move to top"
-                      onClick={moveMemberToTop}
-                    >
-                      ^^
-                    </CodecDualListBtn>
                   </div>
                 </div>
               </div>
