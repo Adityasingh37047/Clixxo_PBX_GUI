@@ -35,14 +35,7 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -820,9 +813,31 @@ const ConferencePage = () => {
         <PbxBreadcrumb section="Call Features" current="Conference" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -941,7 +956,12 @@ const ConferencePage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={sipPcmCancelBtnStyle}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
@@ -1384,7 +1404,16 @@ const ConferencePage = () => {
                             MenuProps={{
                               PaperProps: { sx: { maxHeight: 280 } },
                             }}
-                            sx={{ fontSize: 13, background: "#fff" }}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
                           >
                             {(greetingOptions.length
                               ? greetingOptions
@@ -1406,7 +1435,16 @@ const ConferencePage = () => {
                             fullWidth
                             value={announce}
                             onChange={(e) => setAnnounce(e.target.value)}
-                            sx={{ fontSize: 13, background: "#fff" }}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
                           >
                             {YES_NO_OPTIONS.map((opt) => (
                               <MenuItem
@@ -1425,7 +1463,16 @@ const ConferencePage = () => {
                             fullWidth
                             value={record}
                             onChange={(e) => setRecord(e.target.value)}
-                            sx={{ fontSize: 13, background: "#fff" }}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
                           >
                             {YES_NO_OPTIONS.map((opt) => (
                               <MenuItem
@@ -1454,7 +1501,16 @@ const ConferencePage = () => {
                             fullWidth
                             value={enabled}
                             onChange={(e) => setEnabled(e.target.value)}
-                            sx={{ fontSize: 13, background: "#fff" }}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
                           >
                             {ENABLE_OPTIONS.map((opt) => (
                               <MenuItem
@@ -1511,7 +1567,16 @@ const ConferencePage = () => {
                                 setParticipantPassword("");
                               }
                             }}
-                            sx={{ fontSize: 13, background: "#fff" }}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
                           >
                             {YES_NO_OPTIONS.map((opt) => (
                               <MenuItem

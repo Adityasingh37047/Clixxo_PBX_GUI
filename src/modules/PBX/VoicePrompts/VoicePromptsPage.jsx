@@ -69,18 +69,19 @@ const voicePromptChooseFileBtnStyle = {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
+pageBg: "#f8fafc",
+cardBg: "#ffffff",
+cardBorder: "#9CA3AF",
+labelText: "#3E5475",
+valueText: "#0f172a",
+mutedText: "#94a3b8",
+strongText: "#0f172a",
+accent: "#3E5475",
+amber: "#dc2626",
 };
 
 const CARD_RADIUS = 20;
+
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
@@ -119,26 +120,6 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
       {label} {required && <span style={{ color: C.errorRed }}>*</span>}
     </label>
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
   </div>
 );
 
@@ -676,20 +657,20 @@ const VoicePromptsPage = () => {
                         gap: 4,
                       }}
                     >
-                      <Checkbox
-                        checked={playCallForwardingPrompt}
-                        onChange={(e) =>
-                          setPlayCallForwardingPrompt(e.target.checked)
-                        }
-                        size="small"
-                        sx={{
-                          padding: "1px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-                          alignSelf: "flex-start",
-                        }}
-                      />
+                     <Checkbox
+  checked={playCallForwardingPrompt}
+  onChange={(e) =>
+    setPlayCallForwardingPrompt(e.target.checked)
+  }
+  size="small"
+  sx={{
+    padding: "1px",
+    color: "#64748b",
+    "&.Mui-checked": { color: "#0284c7" },
+    "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+    alignSelf: "flex-start",
+  }}
+/>
                       <span style={{ fontSize: 11, color: C.mutedText }}>
                         If enabled, the system plays default forwarding prompt
                         before transfer.
@@ -828,27 +809,27 @@ const VoicePromptsPage = () => {
                       showButton={false}
                     />
                   ) : (
-                    <table
-                      style={{
-                        width: "100%",
-                        borderCollapse: "collapse",
-                        minWidth: 600,
-                      }}
-                    >
-                      <thead>
-                        <tr>
-                          <TH style={{ textAlign: "left", paddingLeft: 16 }}>
-                            File Name
-                          </TH>
-                          <TH style={{ textAlign: "left", paddingLeft: 16 }}>
-                            Category
-                          </TH>
-                          <TH>File Size</TH>
-                          <TH>Uploaded</TH>
-                          <TH style={{ width: 100 }}>Tools</TH>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      minWidth: 600,
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <TH style={{ textAlign: "left", paddingLeft: 16 }}>
+                          File Name
+                        </TH>
+                        <TH style={{ textAlign: "left", paddingLeft: 16 }}>
+                          Category
+                        </TH>
+                        <TH>File Size</TH>
+                        <TH>Uploaded</TH>
+                        <TH style={{ width: 100 }}>Tools</TH>
+                      </tr>
+                    </thead>
+                    <tbody>
                         {mohFiles.map((item, idx) => (
                           <tr
                             key={item.id}
@@ -1020,8 +1001,8 @@ const VoicePromptsPage = () => {
                             </td>
                           </tr>
                         ))}
-                      </tbody>
-                    </table>
+                    </tbody>
+                  </table>
                   )}
                 </div>
 
@@ -1173,27 +1154,27 @@ const VoicePromptsPage = () => {
                       showButton={false}
                     />
                   ) : (
-                    <table
-                      style={{
-                        width: "100%",
-                        borderCollapse: "collapse",
-                        minWidth: 700,
-                      }}
-                    >
-                      <thead>
-                        <tr>
-                          <TH style={{ textAlign: "left", paddingLeft: 16 }}>
-                            Recording Name
-                          </TH>
-                          <TH style={{ textAlign: "left", paddingLeft: 16 }}>
-                            File Name
-                          </TH>
-                          <TH>File Size</TH>
-                          <TH>Uploaded</TH>
-                          <TH style={{ width: 120 }}>Tools</TH>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      minWidth: 700,
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <TH style={{ textAlign: "left", paddingLeft: 16 }}>
+                          Recording Name
+                        </TH>
+                        <TH style={{ textAlign: "left", paddingLeft: 16 }}>
+                          File Name
+                        </TH>
+                        <TH>File Size</TH>
+                        <TH>Uploaded</TH>
+                        <TH style={{ width: 120 }}>Tools</TH>
+                      </tr>
+                    </thead>
+                    <tbody>
                         {customItems.map((item, idx) => (
                           <tr
                             key={item.id}
@@ -1355,8 +1336,8 @@ const VoicePromptsPage = () => {
                             </td>
                           </tr>
                         ))}
-                      </tbody>
-                    </table>
+                    </tbody>
+                  </table>
                   )}
                 </div>
 

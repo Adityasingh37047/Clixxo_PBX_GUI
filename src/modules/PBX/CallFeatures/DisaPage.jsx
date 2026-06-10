@@ -32,14 +32,7 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 const SECOND_DIAL_OPTIONS = ["Enable", "Disable"];
 const TRANSPARENT_OPTIONS = ["Enable", "Disable"];
@@ -71,6 +64,59 @@ const C = {
 };
 
 const CARD_RADIUS = 10;
+
+const codecDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
 
 // Shared Btn component copied/adapted from OutboundRoutesPage for visual parity
 const Btn = ({
@@ -752,7 +798,12 @@ const DisaPage = () => {
                 }
                 variant="outline"
                 hoverBehavior="opacity"
-                style={sipPcmCancelBtnStyle}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
@@ -1230,7 +1281,16 @@ const DisaPage = () => {
                               secondDial: e.target.value,
                             }))
                           }
-                          sx={{ fontSize: 13, backgroundColor: "#fff" }}
+                          sx={{
+                            fontSize: 13,
+                            backgroundColor: "#fff",
+                            height: 32,
+                            "& .MuiSelect-select": {
+                              padding: "6px 8px",
+                              display: "flex",
+                              alignItems: "center",
+                            },
+                          }}
                         >
                           {SECOND_DIAL_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1403,7 +1463,16 @@ const DisaPage = () => {
                               transparent: e.target.value,
                             }))
                           }
-                          sx={{ fontSize: 13, backgroundColor: "#fff" }}
+                          sx={{
+                            fontSize: 13,
+                            backgroundColor: "#fff",
+                            height: 32,
+                            "& .MuiSelect-select": {
+                              padding: "6px 8px",
+                              display: "flex",
+                              alignItems: "center",
+                            },
+                          }}
                         >
                           {TRANSPARENT_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1428,7 +1497,16 @@ const DisaPage = () => {
                               enabled: e.target.value === "Yes",
                             }))
                           }
-                          sx={{ fontSize: 13, backgroundColor: "#fff" }}
+                          sx={{
+                            fontSize: 13,
+                            backgroundColor: "#fff",
+                            height: 32,
+                            "& .MuiSelect-select": {
+                              padding: "6px 8px",
+                              display: "flex",
+                              alignItems: "center",
+                            },
+                          }}
                         >
                           {ENABLE_OPTIONS.map((opt) => (
                             <MenuItem

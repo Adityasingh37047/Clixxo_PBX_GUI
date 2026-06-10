@@ -88,33 +88,22 @@ const Btn = ({
 };
 
 const SectionHeading = ({ title }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      marginBottom: 6,
-    }}
-  >
+  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
-        fontSize: 12,
-        fontWeight: 700,
-        color: C.labelText,
-        textTransform: "uppercase",
-        letterSpacing: "0.04em",
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#fff",
+        paddingRight: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.mutedText,
       }}
     >
       {title}
     </span>
-
-    <div
-      style={{
-        flex: 1,
-        height: 1,
-        background: C.cardBorder,
-        marginLeft: 12,
-      }}
-    />
   </div>
 );
 
