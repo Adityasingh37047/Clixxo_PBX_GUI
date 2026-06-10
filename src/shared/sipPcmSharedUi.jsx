@@ -14,15 +14,15 @@ import {
   pbxBreadcrumbStyle,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../numManipulate/numManipulateSharedUi";
+} from "./numManipulateSharedUi";
 import {
   OUTLINED_BORDER,
   OUTLINED_HOVER,
   OUTLINED_FOCUS,
   muiSelectSx,
   nativeFieldInteraction,
-} from "../shared/outlinedFieldUi";
-import { systemToolsFieldInputStyleSmall } from "../systemTools/systemToolsSharedUi";
+} from "./outlinedFieldUi";
+import { systemToolsFieldInputStyleSmall } from "./systemToolsSharedUi";
 
 export { C, Btn, TH, tdStyle, CARD_RADIUS, TableListLoading, TableListEmptyState, PbxBreadcrumb, pbxBreadcrumbStyle, pbxPageWrapStyle, pbxPageInnerStyle };
 

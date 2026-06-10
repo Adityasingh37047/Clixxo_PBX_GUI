@@ -20,7 +20,7 @@ import {
   AdvancedPageShell,
   AdvancedFormCard,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const CDR_LABEL_WIDTH = 190;
 const CDR_FIELD_GAP = 16;

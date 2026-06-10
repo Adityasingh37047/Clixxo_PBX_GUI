@@ -21,21 +21,14 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-  import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   PbxBreadcrumb,
   TableListLoading,
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 import {
   listIvrDestinations,
@@ -153,17 +146,70 @@ const normalizeDestinationOptions = (list) => {
 
 // ── Color Palette (CDR Style) ─────────────────────────────────────────────────
 const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 const CARD_RADIUS = 20;
+
+const codecDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const Btn = ({
@@ -193,7 +239,7 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -278,23 +324,21 @@ const Btn = ({
   );
 };
 
-
 const TH = ({ children, style: extra }) => (
   <th
     style={{
       background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
-
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
     }}
   >
     {children}
@@ -311,12 +355,11 @@ const tdStyle = {
 };
 
 const checkboxSx = {
-padding: "1px",
-color: "#3E5475",
-"&.Mui-checked": { color: "#0284c7" },
-"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-
 
 const FieldRow = ({ label, children, required }) => (
   <div
@@ -1265,9 +1308,31 @@ const IVRPage = () => {
         <PbxBreadcrumb section="Call Features" current="IVR" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1276,9 +1341,18 @@ const IVRPage = () => {
                 flexWrap: "wrap",
               }}
             >
-             
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -1359,18 +1433,23 @@ const IVRPage = () => {
               >
                 Next →
               </Btn> */}
-<Btn
+              <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                  style={sipPcmCancelBtnStyle}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
-              
+
               {/* <Btn
                 onClick={fetchInitialData}
                 disabled={loading.list}
@@ -1382,27 +1461,25 @@ const IVRPage = () => {
                   "Refresh"
                 )}
               </Btn> */}
-              
+
               <Btn
-  onClick={handleOpenAddModal}
-  disabled={loading.list}
-  variant="primary"
-  style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-  }}
->
-  + Add New
-</Btn>
+                onClick={handleOpenAddModal}
+                disabled={loading.list}
+                variant="primary"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+                  color: "#fff",
+                  border: "1px solid #5A6F8F",
+                }}
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{overflowX: "auto",
-overflowY: "auto",
-flex: 1,}}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1419,211 +1496,252 @@ flex: 1,}}>
               <table
                 style={{
                   width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                      sx={checkboxSx} 
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Name</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >IVR Number</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Enabled</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Direct Outbound</TH>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Name
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      IVR Number
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Enabled
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Direct Outbound
+                    </TH>
                     <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
                       Outbound Routes
                     </TH>
-                    <TH style={{width: 70,
+                    <TH
+                      style={{
+                        width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10, }}>Modify</TH>
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const rowBg = isSelected
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
 
-                      return (
-                        <tr
-                          key={row.id || realIdx}
+                    return (
+                      <tr
+                        key={row.id || realIdx}
+                        style={{
+                          background: rowBg,
+                          borderBottom: "1px solid #f1f5f9",
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
+                            ...tdStyle,
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
-                          <td
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleToggleRow(realIdx)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.name}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
                             style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              color: C.valueText,
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                             sx={checkboxSx} 
-                            />
-                          </td>
-                          <td
+                            {row.ivrNumber}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
                             style={{
-                              ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              color:
+                                row.enabled === "Yes" ? "#166534" : "#475569",
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 72,
                             }}
                           >
-                            {realIdx + 1}
-                          </td>
-                          <td
+                            {row.enabled}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
                             style={{
-                                ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              color: row.directOutbound ? "#166534" : "#475569",
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 72,
                             }}
                           >
-                            {row.name}
-                          </td>
-                          <td
-                            style={{
-                                ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <span
-                              style={{
-                                color: C.valueText,
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              {row.ivrNumber}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <span
-                              style={{
-                                color:
-                                  row.enabled === "Yes" ? "#166534" : "#475569",
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 72,
-                              }}
-                            >
-                              {row.enabled}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                                ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <span
-                              style={{
-                                color: row.directOutbound
-                                  ? "#166534"
-                                  : "#475569",
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 72,
-                              }}
-                            >
-                              {row.directOutbound ? "Yes" : "No"}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                                ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.memberOutboundIds?.length > 0 ? (
-                              row.memberOutboundIds
-                                .map(getOutboundRouteLabel)
-                                .join(", ")
-                            ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                           <EditDocumentIcon
-  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-  titleAccess="Edit"
-  onClick={() => handleOpenEditModal(row)}
-/>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                            {row.directOutbound ? "Yes" : "No"}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.memberOutboundIds?.length > 0 ? (
+                            row.memberOutboundIds
+                              .map(getOutboundRouteLabel)
+                              .join(", ")
+                          ) : (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => handleOpenEditModal(row)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -1631,13 +1749,51 @@ minWidth: 900,
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              recordLabel="record"
-              onPageChange={(p) => setPage(p)}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.list || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.list || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -1647,977 +1803,1135 @@ minWidth: 900,
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-            sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: 8 } }}
-     PaperProps={{
-  sx: {
-    width: 900,
-    maxWidth: "96vw",
-    mx: "auto",
-    p: 0,
-  },
-}}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 8 } }}
+        PaperProps={{
+          sx: {
+            width: 900,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+          },
+        }}
       >
         <DialogTitle
-         style={{
-       background: "#1e2d42",
-       color: "#ffffff",
-       fontWeight: 600,
-       fontSize: 16,
-       padding: "16px 24px",
-       textAlign: "center",
-       borderTopLeftRadius: 8,
-       borderTopRightRadius: 8,
-       }}
-       > 
-
+          style={{
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
+          }}
+        >
           {editId != null ? "Edit IVR" : "Add IVR"}
         </DialogTitle>
 
-     
         <DialogContent
-  style={{
-    padding: "8px 24px 20px",
-    backgroundColor: "#ffffff",
-  }}
->
-       
-   <div
-  style={{
-    borderBottom: "1px solid #e5e7eb",
-    background: "#ffffff",
-    marginLeft: "-24px",
-    marginRight: "-24px",
-  }}
->
-  <Tabs
-    value={activeTab}
-    onChange={(_, value) => setActiveTab(value)}
-    variant="fullWidth"
-    TabIndicatorProps={{
-      style: {
-        backgroundColor: "#3E5475",
-        height: 2,
-      },
-    }}
-    sx={{
-      minHeight: 48,
+          style={{
+            padding: "8px 24px 20px",
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <div
+            style={{
+              borderBottom: "1px solid #e5e7eb",
+              background: "#ffffff",
+              marginLeft: "-24px",
+              marginRight: "-24px",
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={(_, value) => setActiveTab(value)}
+              variant="fullWidth"
+              TabIndicatorProps={{
+                style: {
+                  backgroundColor: "#3E5475",
+                  height: 2,
+                },
+              }}
+              sx={{
+                minHeight: 48,
 
-      "& .MuiTab-root": {
-        color: "#374151",
-        fontWeight: 600,
-        textTransform: "none",
-        minHeight: 48,
-      },
+                "& .MuiTab-root": {
+                  color: "#374151",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  minHeight: 48,
+                },
 
-      "& .MuiTab-root.Mui-selected": {
-        color: "#3E5475",
-      },
-    }}
-  >
-    <Tab label="BASIC" value="basic" />
-    <Tab label="KEY PRESS EVENT" value="keypress" />
-  </Tabs>
-</div>
-          <div style={{ background: "#fff", }}>
+                "& .MuiTab-root.Mui-selected": {
+                  color: "#3E5475",
+                },
+              }}
+            >
+              <Tab label="BASIC" value="basic" />
+              <Tab label="KEY PRESS EVENT" value="keypress" />
+            </Tabs>
+          </div>
+          <div style={{ background: "#fff" }}>
             <div style={{ padding: 12 }}>
-          {/* ── BASIC TAB ── */}
-          {activeTab === "basic" && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                                  <div
-                                    style={{
-                                       background: "#f5f7fa",
-                                      border: `1px solid ${C.cardBorder}`,
-                                      borderRadius: 6,
-                                      padding: "20px 24px 16px",
-                                    }}
-                                  >
-                                    {/* ── Naya "Basic" Heading ── */}
-                                    <div style={{ marginBottom: 20, position: "relative" }}>
-                                      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                                      <span
-                                        style={{
-                                          position: "absolute",
-                                          top: -10,
-                                          left: 0,
-                                          background: "#fff",       
-                                          paddingRight: 8,
-                                          fontSize: 13,
-                                          fontWeight: 600,
-                                          color: C.mutedText,
-                                        }}
-                                      >
-                                        Basic
-                                      </span>
-                                    </div>
-
-                {/* 2-Column Grid for Basic fields */}
+              {/* ── BASIC TAB ── */}
+              {activeTab === "basic" && (
                 <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "16px 40px",
-                  }}
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  {/* Left Column */}
                   <div
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 16,
+                      background: "#f5f7fa",
+                      border: `1px solid ${C.cardBorder}`,
+                      borderRadius: 6,
+                      padding: "20px 24px 16px",
                     }}
                   >
-                    <FieldRow label="Name" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",  },
-                        }}
-                      />
-                    </FieldRow>
-                    <FieldRow label="IVR Number" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type="number"
-                        value={ivrNumber}
-                        onChange={(e) => setIvrNumber(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",  },
-                        }}
-                      />
-                    </FieldRow>
-
-                    <FieldRow label="Greet Long">
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          width: "100%",
-                        }}
-                      >
-                        <FormControl size="small" fullWidth>
-                          <MuiSelect
-                            value={greetLong}
-                            onChange={(e) => setGreetLong(e.target.value)}
-                            sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
-                          >
-                            {greetLongOptions.map((opt) => (
-                              <MenuItem
-                                key={opt}
-                                value={opt}
-                                sx={{ fontSize: 13 }}
-                              >
-                                {opt}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                        <span
-                          onClick={handleGoToVoicePrompts}
-                          style={{
-                            fontSize: 11,
-                            color: "#2563eb",
-                            cursor: "pointer",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          Prompt
-                        </span>
-                      </div>
-                    </FieldRow>
-
-                    <FieldRow label="Greet Short">
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                          width: "100%",
-                        }}
-                      >
-                        <FormControl size="small" fullWidth>
-                          <MuiSelect
-                            value={greetShort}
-                            onChange={(e) => setGreetShort(e.target.value)}
-                            sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
-                          >
-                            {greetShortOptions.map((opt) => (
-                              <MenuItem
-                                key={opt}
-                                value={opt}
-                                sx={{ fontSize: 13 }}
-                              >
-                                {opt}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                        <span
-                          onClick={handleGoToVoicePrompts}
-                          style={{
-                            fontSize: 11,
-                            color: "#2563eb",
-                            cursor: "pointer",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          Prompt
-                        </span>
-                      </div>
-                    </FieldRow>
-
-                    <FieldRow label="Response Timeout(ms)" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type="number"
-                        value={responseTimeout}
-                        onChange={(e) => setResponseTimeout(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",  },
-                        }}
-                      />
-                    </FieldRow>
-
-                    <FieldRow label="Password">
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",  },
-                        }}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                size="small"
-                                onClick={() => setShowPassword(!showPassword)}
-                              >
-                                {showPassword ? (
-                                  <VisibilityOff sx={{ fontSize: 16 }} />
-                                ) : (
-                                  <Visibility sx={{ fontSize: 16 }} />
-                                )}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </FieldRow>
-
-                    <FieldRow label="Check Voicemail">
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={checkVoicemail}
-                          onChange={(e) => setCheckVoicemail(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
-                        >
-                          {CHECK_VOICEMAIL_OPTIONS.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </FieldRow>
-
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 12 }}
-                    >
-                      <label
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 170,
-                          flexShrink: 0,
-                        }}
-                      >
-                        Direct Outbound
-                      </label>
-                      <div style={{ flex: 1 }}>
-                        <Checkbox
-                          checked={directOutbound}
-                          onChange={(e) => setDirectOutbound(e.target.checked)}
-                          size="small"
-                          sx={checkboxSx} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 16,
-                    }}
-                  >
-                    <FieldRow label="Inter-Digit Timeout(ms)" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type="number"
-                        value={interDigitTimeout}
-                        onChange={(e) => setInterDigitTimeout(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",  },
-                        }}
-                      />
-                    </FieldRow>
-
-                    <FieldRow label="Max Failures" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type="number"
-                        value={maxFailures}
-                        onChange={(e) => setMaxFailures(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",  },
-                        }}
-                      />
-                    </FieldRow>
-
-                    <FieldRow label="Max Timeouts" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type="number"
-                        value={maxTimeouts}
-                        onChange={(e) => setMaxTimeouts(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px"  ,backgroundColor: "#fff", },
-                        }}
-                      />
-                    </FieldRow>
-
-                    <FieldRow label="Digit Length" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type="number"
-                        value={digitLength}
-                        onChange={(e) => setDigitLength(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",  },
-                        }}
-                      />
-                    </FieldRow>
-
-                    <FieldRow label="Enabled" required>
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={enabled}
-                          onChange={(e) => setEnabled(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
-                        >
-                          {ENABLE_OPTIONS.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </FieldRow>
-
-                    <FieldRow label="Direct Extension" required>
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={directExtension}
-                          onChange={(e) => setDirectExtension(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
-                        >
-                          {DIRECT_EXTENSION_OPTIONS.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </FieldRow>
-
-                    <FieldRow label="FXO Flash Transfer" required>
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={fxoFlashTransfer}
-                          onChange={(e) => setFxoFlashTransfer(e.target.value)}
-                          sx={{ fontSize: 13   ,backgroundColor: "#fff", }}
-                        >
-                          {FXO_FLASH_TRANSFER_OPTIONS.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </FieldRow>
-                  </div>
-                </div>
-
-                {/* Outbound Routes Section (Conditionally Rendered before Advanced) */}
-                {directOutbound && (
-                  <div
-                    style={{
-                      marginTop: 24,
-                      paddingTop: 16,
-                      borderTop: `1px dashed ${C.cardBorder}`,
-                    }}
-                  >
+                    {/* ── Naya "Basic" Heading ── */}
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 12,
-                        marginBottom: 12,
+                        marginBottom: 20,
                       }}
                     >
                       <span
                         style={{
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: 700,
                           color: C.labelText,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
                         }}
                       >
-                        Outbound Routes{" "}
-                        <span style={{ color: C.errorRed }}>*</span>
+                        BASIC
                       </span>
-                    </div>
 
+                      <div
+                        style={{
+                          flex: 1,
+                          height: 1,
+                          background: C.cardBorder,
+                          marginLeft: 12,
+                        }}
+                      />
+                    </div>
+                    {/* 2-Column Grid for Basic fields */}
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 40px 1fr",
-                        gap: 12,
-                        marginTop: 16,
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "16px 40px",
                       }}
                     >
-                      <div>
-                        <div
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: C.mutedText,
-                            marginBottom: 6,
-                            textAlign: "center",
-                          }}
-                        >
-                          Available Routes
-                        </div>
-                        <select
-                          multiple
-                          value={availableSelected.map(String)}
-                          onChange={(e) =>
-                            setAvailableSelected(
-                              Array.from(e.target.selectedOptions, (opt) =>
-                                Number(opt.value),
-                              ).filter((n) => Number.isFinite(n)),
-                            )
-                          }
-                          style={{
-                            width: "100%",
-                            height: 160,
-                            border: `1px solid ${C.cardBorder}`,
-                            borderRadius: 4,
-                            padding: 8,
-                            fontSize: 13,
-                            outline: "none",
-                            background: "#f8fafc",
-                          }}
-                        >
-                          {loading.outboundRoutes ? (
-                            <option disabled>Loading routes...</option>
-                          ) : availableOutboundList.length === 0 ? (
-                            <option disabled>No routes available</option>
-                          ) : (
-                            availableOutboundList.map((r) => (
-                              <option key={r.id} value={r.id}>
-                                {r.name}
-                              </option>
-                            ))
-                          )}
-                        </select>
-                      </div>
+                      {/* Left Column */}
                       <div
                         style={{
                           display: "flex",
                           flexDirection: "column",
-                          gap: 8,
-                          justifyContent: "center",
-                          paddingTop: 24,
+                          gap: 16,
                         }}
                       >
-                        <Btn
-                          onClick={addSelectedOutboundRoutes}
-                          variant="outline"
-                          style={{ padding: "4px 0", fontSize: 12 }}
-                        >
-                          &gt;
-                        </Btn>
-                        <Btn
-                          onClick={addAllOutboundRoutes}
-                          variant="outline"
-                          style={{ padding: "4px 0", fontSize: 12 }}
-                        >
-                          &gt;&gt;
-                        </Btn>
-                        <Btn
-                          onClick={removeSelectedOutboundRoutes}
-                          variant="outline"
-                          style={{ padding: "4px 0", fontSize: 12 }}
-                        >
-                          &lt;
-                        </Btn>
-                        <Btn
-                          onClick={removeAllOutboundRoutes}
-                          variant="outline"
-                          style={{ padding: "4px 0", fontSize: 12 }}
-                        >
-                          &lt;&lt;
-                        </Btn>
-                      </div>
-                      <div style={{ display: "flex", gap: 12 }}>
-                        <div style={{ flex: 1 }}>
+                        <FieldRow label="Name" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+                        <FieldRow label="IVR Number" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            type="number"
+                            value={ivrNumber}
+                            onChange={(e) => setIvrNumber(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+
+                        <FieldRow label="Greet Long">
                           <div
                             style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: C.accent,
-                              marginBottom: 6,
-                              textAlign: "center",
-                            }}
-                          >
-                            Selected Routes
-                          </div>
-                          <select
-                            multiple
-                            value={chosenSelected.map(String)}
-                            onChange={(e) =>
-                              setChosenSelected(
-                                Array.from(e.target.selectedOptions, (opt) =>
-                                  Number(opt.value),
-                                ).filter((n) => Number.isFinite(n)),
-                              )
-                            }
-                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
                               width: "100%",
-                              height: 160,
-                              border: `1px solid ${C.cardBorder}`,
-                              borderRadius: 4,
-                              padding: 8,
-                              fontSize: 13,
-                              outline: "none",
-                              background: "#fff",
                             }}
                           >
-                            {selectedOutboundRouteIds.length === 0 ? (
-                              <option disabled>No selected routes</option>
-                            ) : (
-                              selectedOutboundRouteIds.map((id) => (
-                                <option key={id} value={id}>
-                                  {getOutboundRouteLabel(id)}
-                                </option>
-                              ))
-                            )}
-                          </select>
-                        </div>
+                            <FormControl size="small" fullWidth>
+                              <MuiSelect
+                                value={greetLong}
+                                onChange={(e) => setGreetLong(e.target.value)}
+                                sx={{
+                                  fontSize: 13,
+                                  backgroundColor: "#fff",
+                                  height: 32,
+                                  "& .MuiSelect-select": {
+                                    padding: "6px 8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  },
+                                }}
+                              >
+                                {greetLongOptions.map((opt) => (
+                                  <MenuItem
+                                    key={opt}
+                                    value={opt}
+                                    sx={{ fontSize: 13 }}
+                                  >
+                                    {opt}
+                                  </MenuItem>
+                                ))}
+                              </MuiSelect>
+                            </FormControl>
+                            <span
+                              onClick={handleGoToVoicePrompts}
+                              style={{
+                                fontSize: 11,
+                                color: "#2563eb",
+                                cursor: "pointer",
+                                textDecoration: "underline",
+                              }}
+                            >
+                              Prompt
+                            </span>
+                          </div>
+                        </FieldRow>
+
+                        <FieldRow label="Greet Short">
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              width: "100%",
+                            }}
+                          >
+                            <FormControl size="small" fullWidth>
+                              <MuiSelect
+                                value={greetShort}
+                                onChange={(e) => setGreetShort(e.target.value)}
+                                sx={{
+                                  fontSize: 13,
+                                  backgroundColor: "#fff",
+                                  height: 32,
+                                  "& .MuiSelect-select": {
+                                    padding: "6px 8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  },
+                                }}
+                              >
+                                {greetShortOptions.map((opt) => (
+                                  <MenuItem
+                                    key={opt}
+                                    value={opt}
+                                    sx={{ fontSize: 13 }}
+                                  >
+                                    {opt}
+                                  </MenuItem>
+                                ))}
+                              </MuiSelect>
+                            </FormControl>
+                            <span
+                              onClick={handleGoToVoicePrompts}
+                              style={{
+                                fontSize: 11,
+                                color: "#2563eb",
+                                cursor: "pointer",
+                                textDecoration: "underline",
+                              }}
+                            >
+                              Prompt
+                            </span>
+                          </div>
+                        </FieldRow>
+
+                        <FieldRow label="Response Timeout(ms)" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            type="number"
+                            value={responseTimeout}
+                            onChange={(e) => setResponseTimeout(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+
+                        <FieldRow label="Password">
+                          <TextField
+                            size="small"
+                            fullWidth
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      setShowPassword(!showPassword)
+                                    }
+                                  >
+                                    {showPassword ? (
+                                      <VisibilityOff sx={{ fontSize: 16 }} />
+                                    ) : (
+                                      <Visibility sx={{ fontSize: 16 }} />
+                                    )}
+                                  </IconButton>
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        </FieldRow>
+
+                        <FieldRow label="Check Voicemail">
+                          <FormControl size="small" fullWidth>
+                            <MuiSelect
+                              value={checkVoicemail}
+                              onChange={(e) =>
+                                setCheckVoicemail(e.target.value)
+                              }
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
+                              {CHECK_VOICEMAIL_OPTIONS.map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </FieldRow>
+
                         <div
                           style={{
                             display: "flex",
-                            flexDirection: "column",
-                            gap: 4,
-                            paddingTop: 24,
+                            alignItems: "center",
+                            gap: 12,
                           }}
                         >
-                          <Btn
-                            onClick={moveOutboundTop}
-                            variant="outline"
-                            style={{ padding: "4px 0", fontSize: 14 }}
+                          <label
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: C.labelText,
+                              width: 170,
+                              flexShrink: 0,
+                            }}
                           >
-                            &#8679;
-                          </Btn>
-                          <Btn
-                            onClick={moveOutboundUp}
-                            variant="outline"
-                            style={{ padding: "4px 0", fontSize: 14 }}
-                          >
-                            &#8593;
-                          </Btn>
-                          <Btn
-                            onClick={moveOutboundDown}
-                            variant="outline"
-                            style={{ padding: "4px 0", fontSize: 14 }}
-                          >
-                            &#8595;
-                          </Btn>
-                          <Btn
-                            onClick={moveOutboundBottom}
-                            variant="outline"
-                            style={{ padding: "4px 0", fontSize: 14 }}
-                          >
-                            &#8681;
-                          </Btn>
+                            Direct Outbound
+                          </label>
+                          <div style={{ flex: 1 }}>
+                            <Checkbox
+                              checked={directOutbound}
+                              onChange={(e) =>
+                                setDirectOutbound(e.target.checked)
+                              }
+                              size="small"
+                              sx={checkboxSx}
+                            />
+                          </div>
                         </div>
+                      </div>
+
+                      {/* Right Column */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 16,
+                        }}
+                      >
+                        <FieldRow label="Inter-Digit Timeout(ms)" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            type="number"
+                            value={interDigitTimeout}
+                            onChange={(e) =>
+                              setInterDigitTimeout(e.target.value)
+                            }
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+
+                        <FieldRow label="Max Failures" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            type="number"
+                            value={maxFailures}
+                            onChange={(e) => setMaxFailures(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+
+                        <FieldRow label="Max Timeouts" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            type="number"
+                            value={maxTimeouts}
+                            onChange={(e) => setMaxTimeouts(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+
+                        <FieldRow label="Digit Length" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            type="number"
+                            value={digitLength}
+                            onChange={(e) => setDigitLength(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+
+                        <FieldRow label="Enabled" required>
+                          <FormControl size="small" fullWidth>
+                            <MuiSelect
+                              value={enabled}
+                              onChange={(e) => setEnabled(e.target.value)}
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
+                              {ENABLE_OPTIONS.map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </FieldRow>
+
+                        <FieldRow label="Direct Extension" required>
+                          <FormControl size="small" fullWidth>
+                            <MuiSelect
+                              value={directExtension}
+                              onChange={(e) =>
+                                setDirectExtension(e.target.value)
+                              }
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
+                              {DIRECT_EXTENSION_OPTIONS.map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </FieldRow>
+
+                        <FieldRow label="FXO Flash Transfer" required>
+                          <FormControl size="small" fullWidth>
+                            <MuiSelect
+                              value={fxoFlashTransfer}
+                              onChange={(e) =>
+                                setFxoFlashTransfer(e.target.value)
+                              }
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
+                              {FXO_FLASH_TRANSFER_OPTIONS.map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </FieldRow>
+                      </div>
+                    </div>
+
+                    {/* Outbound Routes Section (Conditionally Rendered before Advanced) */}
+                    {directOutbound && (
+                      <div
+                        style={{
+                          marginTop: 24,
+                          paddingTop: 16,
+                          borderTop: `1px dashed ${C.cardBorder}`,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            marginBottom: 12,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 700,
+                              color: C.labelText,
+                            }}
+                          >
+                            Outbound Routes{" "}
+                            <span style={{ color: C.errorRed }}>*</span>
+                          </span>
+                        </div>
+
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 48px 1fr 48px",
+                            gap: 12,
+                            marginTop: 16,
+                          }}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#325a84",
+                                textAlign: "center",
+                                marginBottom: 8,
+                              }}
+                            >
+                              Available Routes
+                            </div>
+                            <select
+                              multiple
+                              value={availableSelected.map(String)}
+                              onChange={(e) =>
+                                setAvailableSelected(
+                                  Array.from(e.target.selectedOptions, (opt) =>
+                                    Number(opt.value),
+                                  ).filter((n) => Number.isFinite(n)),
+                                )
+                              }
+                              style={codecDualListSelectStyle}
+                            >
+                              {loading.outboundRoutes ? (
+                                <option disabled>Loading routes...</option>
+                              ) : availableOutboundList.length === 0 ? (
+                                <option disabled>No routes available</option>
+                              ) : (
+                                availableOutboundList.map((r) => (
+                                  <option key={r.id} value={r.id}>
+                                    {r.name}
+                                  </option>
+                                ))
+                              )}
+                            </select>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 4,
+                              paddingTop: 28,
+                            }}
+                          >
+                            <CodecDualListBtn
+                              onClick={addSelectedOutboundRoutes}
+                            >
+                              &gt;
+                            </CodecDualListBtn>
+                            <CodecDualListBtn onClick={addAllOutboundRoutes}>
+                              &gt;&gt;
+                            </CodecDualListBtn>
+                            <CodecDualListBtn
+                              onClick={removeSelectedOutboundRoutes}
+                            >
+                              &lt;
+                            </CodecDualListBtn>
+                            <CodecDualListBtn onClick={removeAllOutboundRoutes}>
+                              &lt;&lt;
+                            </CodecDualListBtn>
+                          </div>
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#325a84",
+                                textAlign: "center",
+                                marginBottom: 8,
+                              }}
+                            >
+                              Selected Routes
+                            </div>
+                            <select
+                              multiple
+                              value={chosenSelected.map(String)}
+                              onChange={(e) =>
+                                setChosenSelected(
+                                  Array.from(e.target.selectedOptions, (opt) =>
+                                    Number(opt.value),
+                                  ).filter((n) => Number.isFinite(n)),
+                                )
+                              }
+                              style={codecDualListSelectStyle}
+                            >
+                              {selectedOutboundRouteIds.length === 0 ? (
+                                <option disabled>No selected routes</option>
+                              ) : (
+                                selectedOutboundRouteIds.map((id) => (
+                                  <option key={id} value={id}>
+                                    {getOutboundRouteLabel(id)}
+                                  </option>
+                                ))
+                              )}
+                            </select>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 4,
+                              paddingTop: 28,
+                            }}
+                          >
+                            <CodecDualListBtn
+                              reorder
+                              title="Move to bottom"
+                              onClick={moveOutboundBottom}
+                            >
+                              vv
+                            </CodecDualListBtn>
+                            <CodecDualListBtn
+                              reorder
+                              title="Move up"
+                              onClick={moveOutboundUp}
+                            >
+                              ^
+                            </CodecDualListBtn>
+                            <CodecDualListBtn
+                              reorder
+                              title="Move down"
+                              onClick={moveOutboundDown}
+                            >
+                              v
+                            </CodecDualListBtn>
+                            <CodecDualListBtn
+                              reorder
+                              title="Move to top"
+                              onClick={moveOutboundTop}
+                            >
+                              ^^
+                            </CodecDualListBtn>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Advanced Divider */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        margin: "32px 0 20px 0",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: C.labelText,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        Advanced
+                      </span>
+
+                      <div
+                        style={{
+                          flex: 1,
+                          height: 1,
+                          background: C.cardBorder,
+                          marginLeft: 12,
+                        }}
+                      />
+                    </div>
+
+                    {/* Advanced Section 2-Column Grid */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "16px 40px",
+                      }}
+                    >
+                      {/* Advanced Left Column */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 16,
+                        }}
+                      >
+                        <FieldRow label="Invalid Sound">
+                          <FormControl size="small" fullWidth>
+                            <MuiSelect
+                              value={invalidSound}
+                              onChange={(e) => setInvalidSound(e.target.value)}
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
+                              {invalidSoundOptions.map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </FieldRow>
+
+                        <FieldRow label="Exit Sound">
+                          <FormControl size="small" fullWidth>
+                            <MuiSelect
+                              value={exitSound}
+                              onChange={(e) => setExitSound(e.target.value)}
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
+                              {exitSoundOptions.map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </FieldRow>
+
+                        <FieldRow label="Exit Action">
+                          <FormControl size="small" fullWidth>
+                            <MuiSelect
+                              value={exitActionType || ""}
+                              displayEmpty
+                              onChange={(e) => {
+                                setExitActionType(e.target.value);
+                                setExitActionValue("");
+                              }}
+                              renderValue={(value) =>
+                                value
+                                  ? formatActionLabel(value)
+                                  : "Select action"
+                              }
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
+                              <MenuItem value="" sx={{ fontSize: 13 }}>
+                                <em>Select action</em>
+                              </MenuItem>
+                              {actionTypeOptions.map((opt) => (
+                                <MenuItem
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13, backgroundColor: "#fff" }}
+                                >
+                                  {formatActionLabel(opt)}
+                                </MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </FieldRow>
+
+                        {exitActionType && (
+                          <FieldRow label="Destination">
+                            {renderDestinationSelect(
+                              exitActionType,
+                              exitActionValue,
+                              setExitActionValue,
+                            )}
+                          </FieldRow>
+                        )}
+
+                        <FieldRow label="Caller ID Name Prefix">
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={callerIdNamePrefix}
+                            onChange={(e) =>
+                              setCallerIdNamePrefix(e.target.value)
+                            }
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+                      </div>
+
+                      {/* Advanced Right Column */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 16,
+                        }}
+                      >
+                        <FieldRow label="Ring Back" align="flex-start">
+                          <FormControl size="small" fullWidth>
+                            <MuiSelect
+                              value={ringBack}
+                              onChange={(e) => setRingBack(e.target.value)}
+                              MenuProps={{
+                                PaperProps: { sx: { maxHeight: 360 } },
+                              }}
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
+                              {ringBack &&
+                                !ringBackAllValues.includes(ringBack) && (
+                                  <MenuItem
+                                    value={ringBack}
+                                    sx={{ fontSize: 13 }}
+                                  >
+                                    {ringBack}
+                                  </MenuItem>
+                                )}
+                              {ringBackOptions.moh_categories.length > 0 && (
+                                <ListSubheader
+                                  disableSticky
+                                  sx={{
+                                    fontWeight: 700,
+                                    fontSize: 12,
+                                    lineHeight: "24px",
+                                  }}
+                                >
+                                  Music on Hold
+                                </ListSubheader>
+                              )}
+                              {ringBackOptions.moh_categories.map((opt) => (
+                                <MenuItem
+                                  key={`moh-${opt}`}
+                                  value={opt}
+                                  sx={{ pl: 3, fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                              {ringBackOptions.custom_prompts.length > 0 && (
+                                <ListSubheader
+                                  disableSticky
+                                  sx={{
+                                    fontWeight: 700,
+                                    fontSize: 12,
+                                    lineHeight: "24px",
+                                  }}
+                                >
+                                  Custom Prompt
+                                </ListSubheader>
+                              )}
+                              {ringBackOptions.custom_prompts.map((opt) => (
+                                <MenuItem
+                                  key={`prompt-${opt}`}
+                                  value={opt}
+                                  sx={{ pl: 3, fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                              {ringBackOptions.country_tones.length > 0 && (
+                                <ListSubheader
+                                  disableSticky
+                                  sx={{
+                                    fontWeight: 700,
+                                    fontSize: 12,
+                                    lineHeight: "24px",
+                                  }}
+                                >
+                                  Ring Back
+                                </ListSubheader>
+                              )}
+                              {ringBackOptions.country_tones.map((opt) => (
+                                <MenuItem
+                                  key={`tone-${opt}`}
+                                  value={opt}
+                                  sx={{ pl: 3, fontSize: 13 }}
+                                >
+                                  {opt}
+                                </MenuItem>
+                              ))}
+                            </MuiSelect>
+                          </FormControl>
+                        </FieldRow>
                       </div>
                     </div>
                   </div>
-                )}
-
-                {/* Advanced Divider */}
-                <div style={{ margin: "32px 0 20px 0", position: "relative" }}>
-                  <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: -10,
-                      left: 0,
-                      background: "#fff",
-                      paddingRight: 8,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.mutedText,
-                    }}
-                  >
-                    Advanced
-                  </span>
                 </div>
+              )}
 
-                {/* Advanced Section 2-Column Grid */}
+              {/* ── KEY PRESS TAB ── */}
+              {activeTab === "keypress" && (
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "16px 40px",
+                    background: "#f5f7fa",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 6,
+                    padding: 16,
                   }}
                 >
-                  {/* Advanced Left Column */}
                   <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 16,
-                    }}
-                  >
-                    <FieldRow label="Invalid Sound">
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={invalidSound}
-                          onChange={(e) => setInvalidSound(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
-                        >
-                          {invalidSoundOptions.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </FieldRow>
-
-                    <FieldRow label="Exit Sound">
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={exitSound}
-                          onChange={(e) => setExitSound(e.target.value)}
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
-                        >
-                          {exitSoundOptions.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </FieldRow>
-
-                    <FieldRow label="Exit Action">
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={exitActionType || ""}
-                          displayEmpty
-                          onChange={(e) => {
-                            setExitActionType(e.target.value);
-                            setExitActionValue("");
-                          }}
-                          renderValue={(value) =>
-                            value ? formatActionLabel(value) : "Select action"
-                          }
-                          sx={{ fontSize: 13 ,backgroundColor: "#fff", }}
-                        >
-                          <MenuItem value="" sx={{ fontSize: 13 }}>
-                            <em>Select action</em>
-                          </MenuItem>
-                          {actionTypeOptions.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 ,backgroundColor: "#fff",  }}
-                            >
-                              {formatActionLabel(opt)}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </FieldRow>
-
-                    {exitActionType && (
-                      <FieldRow label="Destination">
-                        {renderDestinationSelect(
-                          exitActionType,
-                          exitActionValue,
-                          setExitActionValue,
-                        )}
-                      </FieldRow>
-                    )}
-
-                    <FieldRow label="Caller ID Name Prefix">
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={callerIdNamePrefix}
-                        onChange={(e) => setCallerIdNamePrefix(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff", },
-                        }}
-                      />
-                    </FieldRow>
-                  </div>
-
-                  {/* Advanced Right Column */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 16,
-                    }}
-                  >
-                    <FieldRow label="Ring Back" align="flex-start">
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={ringBack}
-                          onChange={(e) => setRingBack(e.target.value)}
-                          MenuProps={{ PaperProps: { sx: { maxHeight: 360 } } }}
-                          sx={{ fontSize: 13,backgroundColor: "#fff", }}
-                        >
-                          {ringBack &&
-                            !ringBackAllValues.includes(ringBack) && (
-                              <MenuItem value={ringBack} sx={{ fontSize: 13 }}>
-                                {ringBack}
-                              </MenuItem>
-                            )}
-                          {ringBackOptions.moh_categories.length > 0 && (
-                            <ListSubheader
-                              disableSticky
-                              sx={{
-                                fontWeight: 700,
-                                fontSize: 12,
-                                lineHeight: "24px",
-                              }}
-                            >
-                              Music on Hold
-                            </ListSubheader>
-                          )}
-                          {ringBackOptions.moh_categories.map((opt) => (
-                            <MenuItem
-                              key={`moh-${opt}`}
-                              value={opt}
-                              sx={{ pl: 3, fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                          {ringBackOptions.custom_prompts.length > 0 && (
-                            <ListSubheader
-                              disableSticky
-                              sx={{
-                                fontWeight: 700,
-                                fontSize: 12,
-                                lineHeight: "24px",
-                              }}
-                            >
-                              Custom Prompt
-                            </ListSubheader>
-                          )}
-                          {ringBackOptions.custom_prompts.map((opt) => (
-                            <MenuItem
-                              key={`prompt-${opt}`}
-                              value={opt}
-                              sx={{ pl: 3, fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                          {ringBackOptions.country_tones.length > 0 && (
-                            <ListSubheader
-                              disableSticky
-                              sx={{
-                                fontWeight: 700,
-                                fontSize: 12,
-                                lineHeight: "24px",
-                              }}
-                            >
-                              Ring Back
-                            </ListSubheader>
-                          )}
-                          {ringBackOptions.country_tones.map((opt) => (
-                            <MenuItem
-                              key={`tone-${opt}`}
-                              value={opt}
-                              sx={{ pl: 3, fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </FieldRow>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── KEY PRESS TAB ── */}
-          {activeTab === "keypress" && (
-            <div
-              style={{
-               background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "100px 1fr 1fr",
-                  gap: 16,
-                  marginBottom: 12,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 8,
-                }}
-              >
-                <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
-                >
-                  Option
-                </span>
-                <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
-                >
-                  Destination
-                </span>
-                <span
-                  style={{ fontSize: 13, fontWeight: 700, color: C.mutedText }}
-                >
-                  Target
-                </span>
-              </div>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 12 }}
-              >
-                {KEYS.map((key) => (
-                  <div
-                    key={key}
                     style={{
                       display: "grid",
                       gridTemplateColumns: "100px 1fr 1fr",
                       gap: 16,
-                      alignItems: "center",
-                      borderBottom: `1px solid #f1f5f9`,
-                      paddingBottom: 12,
+                      marginBottom: 12,
+                      borderBottom: `1px solid ${C.cardBorder}`,
+                      paddingBottom: 8,
                     }}
                   >
                     <span
                       style={{
                         fontSize: 13,
-                        fontWeight: 600,
+                        fontWeight: 700,
                         color: C.labelText,
                       }}
                     >
-                      Digit{" "}
-                      <span
-                        style={{
-                          color: C.accent,
-                          padding: "2px 6px",
-                          background: "#f1f5f9",
-                          borderRadius: 4,
-                          marginLeft: 4,
-                        }}
-                      >
-                        {key}
-                      </span>
+                      Option
                     </span>
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={keyDestinations[key] || ""}
-                        displayEmpty
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          handleKeyDestinationChange(key, val);
-                          handleKeyDestinationValueChange(key, "");
-                        }}
-                        renderValue={(value) =>
-                          value
-                            ? formatActionLabel(value)
-                            : "Select destination"
-                        }
-                        sx={{ fontSize: 13, background: "#fff" }}
-                      >
-                        <MenuItem value="" sx={{ fontSize: 13 }}>
-                          <em>Select destination</em>
-                        </MenuItem>
-                        {keyActionTypeOptions.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {formatActionLabel(opt)}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                    <div>
-                      {renderDestinationSelect(
-                        keyDestinations[key],
-                        keyDestinationValues[key],
-                        (val) => handleKeyDestinationValueChange(key, val),
-                      )}
-                    </div>
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: C.labelText,
+                      }}
+                    >
+                      Destination
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: C.labelText,
+                      }}
+                    >
+                      Target
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: C.labelText,
+                    }}
+                  >
+                    {KEYS.map((key) => (
+                      <div
+                        key={key}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "100px 1fr 1fr",
+                          gap: 16,
+                          alignItems: "center",
+                          borderBottom: `1px solid #f1f5f9`,
+                          paddingBottom: 12,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: C.labelText,
+                          }}
+                        >
+                          Digit{" "}
+                          <span
+                            style={{
+                              color: C.accent,
+                              padding: "2px 6px",
+                              background: "#f1f5f9",
+                              borderRadius: 4,
+                              marginLeft: 4,
+                            }}
+                          >
+                            {key}
+                          </span>
+                        </span>
+                        <FormControl size="small" fullWidth>
+                          <MuiSelect
+                            value={keyDestinations[key] || ""}
+                            displayEmpty
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              handleKeyDestinationChange(key, val);
+                              handleKeyDestinationValueChange(key, "");
+                            }}
+                            renderValue={(value) =>
+                              value
+                                ? formatActionLabel(value)
+                                : "Select destination"
+                            }
+                            sx={{ fontSize: 13, background: "#fff" }}
+                          >
+                            <MenuItem value="" sx={{ fontSize: 13 }}>
+                              <em>Select destination</em>
+                            </MenuItem>
+                            {keyActionTypeOptions.map((opt) => (
+                              <MenuItem
+                                key={opt}
+                                value={opt}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {formatActionLabel(opt)}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                        <div>
+                          {renderDestinationSelect(
+                            keyDestinations[key],
+                            keyDestinationValues[key],
+                            (val) => handleKeyDestinationValueChange(key, val),
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
@@ -2645,8 +2959,8 @@ minWidth: 900,
             {loading.save
               ? "Saving..."
               : editId != null
-              ? "Update IVR"
-              : "Create IVR"}
+                ? "Update IVR"
+                : "Create IVR"}
           </Btn>
           <Btn
             onClick={handleCloseModal}

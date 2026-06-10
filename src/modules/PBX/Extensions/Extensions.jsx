@@ -25,8 +25,6 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  Tabs,
-  Tab,
   RadioGroup,
   Radio,
 } from "@mui/material";
@@ -49,7 +47,11 @@ import {
   pbxPageInnerStyle,
   TableListLoading,
   TableListEmptyState,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  PbxModalTabs,
+  PbxModalSectionHeading,
+  pbxModalCancelBtnStyle,
+  PbxToolbarSearchBar,
+} from "../../../shared/pbxSharedUi";
 import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
@@ -57,13 +59,12 @@ import {
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 import {
   modalTextFieldSx,
   modalSelectSx,
-  OUTLINED_BORDER,
-  OUTLINED_HOVER,
-} from "../../../sections/shared/outlinedFieldUi";
+  gatedModalFieldSx,
+} from "../../../shared/pbxSharedUi";
 
 // ── Pill badge ────────────────────────────────────────────────────────────────
 const Pill = ({ text, bg, color }) => (
@@ -160,7 +161,6 @@ const SipAccountPage = () => {
   const [importLoading, setImportLoading] = useState(false);
   const importFileRef = React.useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [bulkForm, setBulkForm] = useState({
     startExtension: "",
@@ -1105,63 +1105,15 @@ const SipAccountPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* Search */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background: C.cardBg,
-                  border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 10,
-                  padding: "5px 12px",
-                  transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-                  boxShadow: searchFocused
-                    ? "0 0 0 3px rgba(62,84,117,0.10)"
-                    : "none",
+              <PbxToolbarSearchBar
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
                 }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
-                  }}
-                >
-                  🔍
-                </span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1);
-                  }}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder="Search extension, context, status..."
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: 12,
-                    color: C.valueText,
-                    outline: "none",
-                    width: 240,
-                    minWidth: 180,
-                  }}
-                />
-                {searchQuery && (
-                  <span
-                    onClick={() => setSearchQuery("")}
-                    style={{
-                      fontSize: 11,
-                      color: C.mutedText,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                )}
-              </div>
+                placeholder="Search extension, context, status..."
+                fitPlaceholder
+              />
 
               <Btn
                 onClick={handleDelete}
@@ -1634,7 +1586,7 @@ const SipAccountPage = () => {
             }}
             disabled={importLoading}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={pbxModalCancelBtnStyle}
           >
             Cancel
           </Btn>
@@ -1689,52 +1641,15 @@ const SipAccountPage = () => {
               ? "Edit Extension"
               : "Add Extension"}
         </DialogTitle>
-        <div
-          style={{
-            borderBottom: `1px solid ${C.cardBorder}`,
-            background: "#ffffff",
-          }}
-        >
-          <Tabs
-            value={activeTab}
-            onChange={(_, v) => setActiveTab(v)}
-            variant="fullWidth"
-            TabIndicatorProps={{ style: { backgroundColor: "#3E5475" } }}
-            sx={{
-              "& .MuiTab-root.Mui-selected": {
-                color: "#3E5475",
-              },
-            }}
-          >
-            <Tab
-              label="BASIC"
-              value="basic"
-              sx={{
-                color: "#374151",
-                fontWeight: 600,
-                textTransform: "none",
-              }}
-            />
-            <Tab
-              label="FEATURES"
-              value="features"
-              sx={{
-                color: "#374151",
-                fontWeight: 600,
-                textTransform: "none",
-              }}
-            />
-            <Tab
-              label="ADVANCED"
-              value="advanced"
-              sx={{
-                color: "#374151",
-                fontWeight: 600,
-                textTransform: "none",
-              }}
-            />
-          </Tabs>
-        </div>
+        <PbxModalTabs
+          value={activeTab}
+          onChange={setActiveTab}
+          tabs={[
+            { id: "basic", label: "BASIC" },
+            { id: "features", label: "FEATURES" },
+            { id: "advanced", label: "ADVANCED" },
+          ]}
+        />
 
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           {/* Tab content container matching PcmPstnPage styling */}
@@ -2297,125 +2212,119 @@ const SipAccountPage = () => {
                     const cfRuleEnabled =
                       (form[`cf_${rule.key}_enabled`] || "disabled") ===
                       "enabled";
-                    const cfFieldSx = {
-                      ...modalSelectSx,
-                      backgroundColor: cfRuleEnabled ? "#fff" : "#f1f5f9",
-                      cursor: cfRuleEnabled ? "pointer" : "not-allowed",
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: cfRuleEnabled
-                          ? OUTLINED_HOVER
-                          : OUTLINED_BORDER,
-                      },
-                      "&.Mui-disabled": {
-                        cursor: "not-allowed",
-                      },
-                    };
+                    const cfFieldSx = gatedModalFieldSx(cfRuleEnabled);
 
                     return (
-                    <div
-                      key={rule.key}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        flexWrap: "wrap",
-                        paddingBottom: 6,
-                      }}
-                    >
-                      <span
+                      <div
+                        key={rule.key}
                         style={{
-                          minWidth: 100,
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: C.labelText,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          paddingBottom: 6,
                         }}
                       >
-                        {rule.label}
-                      </span>
-                      <RadioGroup
-                        row
-                        value={form[`cf_${rule.key}_enabled`] || "disabled"}
-                        onChange={(e) =>
-                          handleChange(`cf_${rule.key}_enabled`, e.target.value)
-                        }
-                        sx={{ flexWrap: "nowrap" }}
-                      >
-                        <FormControlLabel
-                          value="disabled"
-                          control={<Radio size="small" />}
-                          label="Disabled"
-                          sx={{
-                            mr: 1.5,
-                            whiteSpace: "nowrap",
-                            "& .MuiFormControlLabel-label": { fontSize: 12 },
+                        <span
+                          style={{
+                            minWidth: 100,
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: C.labelText,
                           }}
-                        />
-                        <FormControlLabel
-                          value="enabled"
-                          control={<Radio size="small" />}
-                          label="Enabled"
-                          sx={{
-                            mr: 0,
-                            whiteSpace: "nowrap",
-                            "& .MuiFormControlLabel-label": { fontSize: 12 },
-                          }}
-                        />
-                      </RadioGroup>
-                      <FormControl
-                        size="small"
-                        disabled={!cfRuleEnabled}
-                        sx={{ minWidth: 150 }}
-                      >
-                        <MuiSelect
-                          value={form[`cf_${rule.key}_number`] || ""}
-                          displayEmpty
-                          disabled={!cfRuleEnabled}
+                        >
+                          {rule.label}
+                        </span>
+                        <RadioGroup
+                          row
+                          value={form[`cf_${rule.key}_enabled`] || "disabled"}
                           onChange={(e) =>
                             handleChange(
-                              `cf_${rule.key}_number`,
+                              `cf_${rule.key}_enabled`,
                               e.target.value,
                             )
                           }
-                          sx={cfFieldSx}
+                          sx={{ flexWrap: "nowrap" }}
                         >
-                          <MenuItem value="">
-                            <em>Destination Number</em>
-                          </MenuItem>
-                          {extensionOptions.map((ext) => (
-                            <MenuItem key={ext} value={ext}>
-                              {ext}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                      <span
-                        style={{
-                          fontSize: 12,
-                          color: "#374151",
-                        }}
-                      >
-                        Time Condition
-                      </span>
-                      <FormControl
-                        size="small"
-                        disabled={!cfRuleEnabled}
-                        sx={{ minWidth: 90 }}
-                      >
-                        <MuiSelect
-                          value={form[`cf_${rule.key}_time`] || "all"}
+                          <FormControlLabel
+                            value="disabled"
+                            control={<Radio size="small" />}
+                            label="Disabled"
+                            sx={{
+                              mr: 1.5,
+                              whiteSpace: "nowrap",
+                              "& .MuiFormControlLabel-label": { fontSize: 12 },
+                            }}
+                          />
+                          <FormControlLabel
+                            value="enabled"
+                            control={<Radio size="small" />}
+                            label="Enabled"
+                            sx={{
+                              mr: 0,
+                              whiteSpace: "nowrap",
+                              "& .MuiFormControlLabel-label": { fontSize: 12 },
+                            }}
+                          />
+                        </RadioGroup>
+                        <FormControl
+                          size="small"
                           disabled={!cfRuleEnabled}
-                          onChange={(e) =>
-                            handleChange(`cf_${rule.key}_time`, e.target.value)
-                          }
-                          sx={cfFieldSx}
+                          sx={{ minWidth: 150 }}
                         >
-                          <MenuItem value="all">All</MenuItem>
-                          <MenuItem value="work_time">Work Time</MenuItem>
-                          <MenuItem value="holiday">Holiday</MenuItem>
-                          <MenuItem value="custom">Custom</MenuItem>
-                        </MuiSelect>
-                      </FormControl>
-                    </div>
+                          <MuiSelect
+                            value={form[`cf_${rule.key}_number`] || ""}
+                            displayEmpty
+                            disabled={!cfRuleEnabled}
+                            onChange={(e) =>
+                              handleChange(
+                                `cf_${rule.key}_number`,
+                                e.target.value,
+                              )
+                            }
+                            sx={cfFieldSx}
+                          >
+                            <MenuItem value="">
+                              <em>Destination Number</em>
+                            </MenuItem>
+                            {extensionOptions.map((ext) => (
+                              <MenuItem key={ext} value={ext}>
+                                {ext}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FormControl>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            color: "#374151",
+                          }}
+                        >
+                          Time Condition
+                        </span>
+                        <FormControl
+                          size="small"
+                          disabled={!cfRuleEnabled}
+                          sx={{ minWidth: 90 }}
+                        >
+                          <MuiSelect
+                            value={form[`cf_${rule.key}_time`] || "all"}
+                            disabled={!cfRuleEnabled}
+                            onChange={(e) =>
+                              handleChange(
+                                `cf_${rule.key}_time`,
+                                e.target.value,
+                              )
+                            }
+                            sx={cfFieldSx}
+                          >
+                            <MenuItem value="all">All</MenuItem>
+                            <MenuItem value="work_time">Work Time</MenuItem>
+                            <MenuItem value="holiday">Holiday</MenuItem>
+                            <MenuItem value="custom">Custom</MenuItem>
+                          </MuiSelect>
+                        </FormControl>
+                      </div>
                     );
                   })}
                 </SectionCard>
@@ -2468,16 +2377,28 @@ const SipAccountPage = () => {
                         }}
                       />
                     </RadioGroup>
-                    <span style={{ fontSize: 11, color: C.mutedText }}>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: "#374151",
+                      }}
+                    >
                       Time Condition
                     </span>
-                    <FormControl size="small" sx={{ minWidth: 90 }}>
+                    <FormControl
+                      size="small"
+                      disabled={form.follow_me_enabled !== "enabled"}
+                      sx={{ minWidth: 90 }}
+                    >
                       <MuiSelect
                         value={form.follow_me_time || "all"}
+                        disabled={form.follow_me_enabled !== "enabled"}
                         onChange={(e) =>
                           handleChange("follow_me_time", e.target.value)
                         }
-                        sx={modalSelectSx}
+                        sx={gatedModalFieldSx(
+                          form.follow_me_enabled === "enabled",
+                        )}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -2697,16 +2618,26 @@ const SipAccountPage = () => {
                         }}
                       />
                     </RadioGroup>
-                    <span style={{ fontSize: 11, color: C.mutedText }}>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: "#374151",
+                      }}
+                    >
                       Time Condition
                     </span>
-                    <FormControl size="small" sx={{ minWidth: 90 }}>
+                    <FormControl
+                      size="small"
+                      disabled={form.dnd_enabled !== "enabled"}
+                      sx={{ minWidth: 90 }}
+                    >
                       <MuiSelect
                         value={form.dnd_time || "all"}
+                        disabled={form.dnd_enabled !== "enabled"}
                         onChange={(e) =>
                           handleChange("dnd_time", e.target.value)
                         }
-                        sx={modalSelectSx}
+                        sx={gatedModalFieldSx(form.dnd_enabled === "enabled")}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -2822,6 +2753,7 @@ const SipAccountPage = () => {
                       <TextField
                         type="text"
                         value={form.mobility_prefix || ""}
+                        disabled={form.enable_mobility_extension !== "yes"}
                         onChange={(e) =>
                           handleChange("mobility_prefix", e.target.value)
                         }
@@ -2836,7 +2768,11 @@ const SipAccountPage = () => {
                             boxSizing: "border-box",
                           },
                         }}
-                        sx={modalTextFieldSx}
+                        sx={gatedModalFieldSx(
+                          form.enable_mobility_extension === "yes",
+                          modalTextFieldSx,
+                          "text",
+                        )}
                       />
                     </FieldRow>
                     <FieldRow label="Ring Simultaneously:" labelWidth={200}>
@@ -2854,16 +2790,23 @@ const SipAccountPage = () => {
                       </FormControl>
                     </FieldRow>
                     <FieldRow label="Timeout">
-                      <FormControl fullWidth size="small">
+                      <FormControl
+                        fullWidth
+                        size="small"
+                        disabled={form.ring_simultaneously !== "yes"}
+                      >
                         <MuiSelect
                           value={Number(form.mobility_timeout || 30)}
+                          disabled={form.ring_simultaneously !== "yes"}
                           onChange={(e) =>
                             handleChange(
                               "mobility_timeout",
                               Number(e.target.value),
                             )
                           }
-                          sx={modalSelectSx}
+                          sx={gatedModalFieldSx(
+                            form.ring_simultaneously === "yes",
+                          )}
                         >
                           {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                             <MenuItem key={v} value={v}>
@@ -3259,7 +3202,7 @@ const SipAccountPage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>
@@ -3270,34 +3213,6 @@ const SipAccountPage = () => {
 };
 
 // ── Small helper components (inline, no extra file needed) ────────────────────
-const EXTENSION_MODAL_BG = "#f8fafc";
-const EXTENSION_SECTION_HEADING_COLOR = "#30415A";
-
-const ExtensionSectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 12px 0" : "16px 0 12px 0",
-      position: "relative",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: EXTENSION_MODAL_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: EXTENSION_SECTION_HEADING_COLOR,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
-
 const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
   <div
     style={{
@@ -3339,7 +3254,7 @@ const ErrMsg = ({ children }) => (
 
 const SectionCard = ({ title, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <ExtensionSectionHeading title={title} isFirst={isFirst} />
+    <PbxModalSectionHeading title={title} isFirst={isFirst} />
     <div>{children}</div>
   </div>
 );

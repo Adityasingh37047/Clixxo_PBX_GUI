@@ -13,7 +13,7 @@ import {
   AdvancedFormCard,
   FieldRow,
   wavFileNoteStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 /** Choose file & Upload — same size; gray cancel styling on file picker */
 const cueToneFileBtnStyle = { height: 30, fontSize: 12, minWidth: 100 };

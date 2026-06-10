@@ -11,7 +11,7 @@ import {
   advancedBlueBarStyle,
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const checkPara = (value) => {
   const numTest = /^[1234567890]*$/;

@@ -24,7 +24,10 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  formatPbxItemListDisplay,
+  PBX_LIST_TRUNCATE_THRESHOLD,
+  pbxModalCancelBtnStyle,
+} from "../../../shared/pbxSharedUi";
 import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
@@ -32,7 +35,7 @@ import {
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -106,7 +109,7 @@ const Btn = ({
       case "danger":
         return "#b91c1c";
       case "cancel":
-        return "#e2e8f0";
+        return "#b6c2d3";
       case "outline":
       case "default":
       default:
@@ -201,16 +204,6 @@ const checkboxSx = {
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const EXTENSIONS_DISPLAY_LIMIT = 6;
-
-const formatExtensionsDisplay = (extensions) => {
-  if (!extensions?.length) return "";
-  if (extensions.length <= EXTENSIONS_DISPLAY_LIMIT) {
-    return extensions.join(", ");
-  }
-  return `${extensions.slice(0, EXTENSIONS_DISPLAY_LIMIT).join(", ")}....`;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -694,8 +687,14 @@ const ExtensionGroupsPage = () => {
                             }}
                           >
                             {row.extensions?.length > 0 ? (
-                              <span title={row.extensions.join(", ")}>
-                                {formatExtensionsDisplay(row.extensions)}
+                              <span
+                                title={
+                                  row.extensions.length > PBX_LIST_TRUNCATE_THRESHOLD
+                                    ? row.extensions.join(", ")
+                                    : undefined
+                                }
+                              >
+                                {formatPbxItemListDisplay(row.extensions)}
                               </span>
                             ) : (
                               <span style={{ color: C.mutedText }}></span>
@@ -949,7 +948,7 @@ const ExtensionGroupsPage = () => {
   onClick={handleCloseModal}
   disabled={loading.save}
 variant="cancel"
-  style={{ minWidth: 100, height: 33 }}
+  style={pbxModalCancelBtnStyle}
 >
   Cancel
 </Btn>

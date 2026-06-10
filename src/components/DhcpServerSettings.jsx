@@ -12,11 +12,9 @@ import { Alert, Checkbox } from "@mui/material";
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../sections/advanced/advancedSharedUi";
-import {
   systemFieldInputStyleNarrow as inputStyle,
   inputInteraction,
-} from "../sections/system/systemSharedUi";
+} from "../shared/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",

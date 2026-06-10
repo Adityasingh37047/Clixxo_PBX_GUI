@@ -23,7 +23,7 @@ import {
   sipPcmAuthInputInteraction,
   TableListLoading,
   PbxBreadcrumb,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 const LABEL_W = 220;
 

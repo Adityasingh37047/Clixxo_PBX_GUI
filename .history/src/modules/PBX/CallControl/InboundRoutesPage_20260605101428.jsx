@@ -146,7 +146,7 @@ const C = {
   accent: "#3E5475",
   amber: "#dc2626",
 };
- const CARD_RADIUS = 20;
+const CARD_RADIUS = 20;
 
 const Btn = ({
   children,
@@ -182,16 +182,16 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
-    
+
     danger: {
       background: "#fef2f2",
       color: C.errorRed,
       border: `0.5px solid #fecaca`,
     },
     accent: {
-    background: C.cardBg,
-  color: C.labelText,
-  border: `1px solid ${C.cardBorder}`,
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
   const s = variants[variant] || variants.default;
@@ -231,7 +231,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-        background: "#F8FAFC",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -913,7 +913,6 @@ const InboundRoutesPage = () => {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              
               {selected.length > 0 && (
                 <span
                   style={{
@@ -938,7 +937,6 @@ const InboundRoutesPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              
               <Btn
                 onClick={handleDelete}
                 disabled={
@@ -999,7 +997,16 @@ const InboundRoutesPage = () => {
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 40, padding: 0, borderLeft: "none", position: "sticky", top: 0, zIndex: 10 }}>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
@@ -1009,16 +1016,53 @@ const InboundRoutesPage = () => {
                         sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>#</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Name</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>DID Pattern</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Caller ID Pattern</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Destination</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Enabled</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: 16, position: "sticky", top: 0, zIndex: 10 }}>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      #
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Name
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      DID Pattern
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Caller ID Pattern
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Destination
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Enabled
+                    </TH>
+                    <TH
+                      style={{
+                        textAlign: "left",
+                        paddingLeft: 16,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       Member Trunks
                     </TH>
-                    <TH style={{ width: 70, borderRight: "none", position: "sticky", top: 0, zIndex: 10 }}>Actions</TH>
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Actions
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1337,13 +1381,14 @@ const InboundRoutesPage = () => {
         <DialogContent
           style={{ backgroundColor: C.pageBg, padding: "20px 24px 12px" }}
         >
-          <div  style={{
+          <div
+            style={{
               display: "flex",
               flexDirection: "column",
               gap: 12,
               paddingTop: 4,
             }}
-            >
+          >
             <p style={{ fontSize: 13, color: "#475569", margin: 0 }}>
               Select a CSV or JSON file to import.
             </p>
@@ -1385,13 +1430,13 @@ const InboundRoutesPage = () => {
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
             variant="default"
-             style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+            style={{
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+              color: "#fff",
+              border: "1px solid #5A6F8F",
+              boxShadow: "0 2px 8px #3E5475",
+            }}
           >
             {importLoading ? "Importing..." : "Import"}
           </Btn>
@@ -1425,11 +1470,11 @@ const InboundRoutesPage = () => {
             mx: "auto",
             p: 0,
             borderRadius: 2,
-             boxShadow:
+            boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
           },
         }}
-            disableRestoreFocus
+        disableRestoreFocus
         disableEnforceFocus
       >
         <DialogTitle
@@ -1446,14 +1491,12 @@ const InboundRoutesPage = () => {
         >
           {editId != null ? "Edit Inbound Route" : "Add Inbound Route"}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px",  background: "#ffffff" }}
-        >
+        <DialogContent style={{ padding: "20px 24px", background: "#ffffff" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Route Settings */}
             <div
               style={{
-               background: "#f5f7fa",
+                background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1490,7 +1533,7 @@ const InboundRoutesPage = () => {
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{ fontSize: 13,background: "#fff", }}
+                      sx={{ fontSize: 13, background: "#fff" }}
                     >
                       {ENABLE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1530,7 +1573,7 @@ const InboundRoutesPage = () => {
                       onChange={(e) =>
                         setEnableMobilityExtension(e.target.value)
                       }
-                      sx={{ fontSize: 13, background: "#fff", }}
+                      sx={{ fontSize: 13, background: "#fff" }}
                     >
                       {MOBILITY_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1553,7 +1596,7 @@ const InboundRoutesPage = () => {
                     <Select
                       value={sendRingTone}
                       onChange={(e) => setSendRingTone(e.target.value)}
-                      sx={{ fontSize: 13,background: "#fff", }}
+                      sx={{ fontSize: 13, background: "#fff" }}
                     >
                       {SEND_RINGTONE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1569,7 +1612,7 @@ const InboundRoutesPage = () => {
                     <Select
                       value={enableT38}
                       onChange={(e) => setEnableT38(e.target.value)}
-                      sx={{ fontSize: 13, background: "#fff", }}
+                      sx={{ fontSize: 13, background: "#fff" }}
                     >
                       {T38_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1584,7 +1627,7 @@ const InboundRoutesPage = () => {
                     <Select
                       value={enableTimeCondition}
                       onChange={(e) => setEnableTimeCondition(e.target.value)}
-                      sx={{ fontSize: 13 , background: "#fff",}}
+                      sx={{ fontSize: 13, background: "#fff" }}
                     >
                       {TIME_CONDITION_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
@@ -1614,7 +1657,7 @@ const InboundRoutesPage = () => {
                       }}
                       displayEmpty
                       MenuProps={SELECT_MENU_PROPS}
-                      sx={{ fontSize: 13 , background: "#fff", }}
+                      sx={{ fontSize: 13, background: "#fff" }}
                     >
                       <MenuItem value="">
                         <em>Select</em>
@@ -1680,7 +1723,7 @@ const InboundRoutesPage = () => {
             {/* Member Trunks */}
             <div
               style={{
-                 background: "#f5f7fa",
+                background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
@@ -1941,8 +1984,8 @@ const InboundRoutesPage = () => {
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-           variant="primary"
- style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <>
@@ -1956,8 +1999,8 @@ const InboundRoutesPage = () => {
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
-           variant="cancel"
-  style={{ minWidth: 100, height: 33 }}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>

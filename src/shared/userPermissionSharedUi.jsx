@@ -1,14 +1,14 @@
 /**
  * User Permission — fill-box borders match PBX Extension Group › Group Name.
  */
-import { C } from "../numManipulate/numManipulateSharedUi";
+import { C } from "./numManipulateSharedUi";
 import {
   OUTLINED_BORDER,
   OUTLINED_HOVER,
   OUTLINED_FOCUS,
   muiTextFieldSx,
   nativeFieldInteraction,
-} from "../shared/outlinedFieldUi";
+} from "./outlinedFieldUi";
 
 export { C, OUTLINED_BORDER, OUTLINED_HOVER, OUTLINED_FOCUS, muiTextFieldSx };
 

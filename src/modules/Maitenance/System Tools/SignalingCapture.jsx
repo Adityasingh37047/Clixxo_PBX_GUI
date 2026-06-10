@@ -14,7 +14,7 @@ import {
   SYSTEM_TOOLS_FILL_BG_EDITABLE,
   SYSTEM_TOOLS_FILL_BG_READ_ONLY,
   inputInteraction,
-} from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 
 const C = {
   pageBg: "#f8fafc",

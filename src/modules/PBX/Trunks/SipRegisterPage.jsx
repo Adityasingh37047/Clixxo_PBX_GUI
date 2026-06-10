@@ -47,7 +47,6 @@ import {
 } from "../../../api/apiService";
 import {
   C,
-  CARD_RADIUS,
   Btn,
   TH,
   tdStyle,
@@ -79,14 +78,15 @@ import {
   trunkDodTransferBtnStyle,
   nativeFieldInteraction,
   muiTextFieldSx,
-} from "../../../sections/trunk/trunkSharedUi";
+} from "../../../shared/pbxSharedUi";
 import {
   PbxBreadcrumb,
   TableListLoading,
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  PbxModalTabs,
+} from "../../../shared/pbxSharedUi";
 import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
@@ -94,7 +94,7 @@ import {
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 const Pill = ({ text, bg, color }) => (
   <span
@@ -159,6 +159,16 @@ const sipRegisterIdCellStyle = {
   width: 44,
   minWidth: 44,
   maxWidth: 44,
+  textAlign: "center",
+  padding: "6px 2px",
+};
+
+const sipRegisterIdCenterWrapStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+  textAlign: "center",
 };
 
 const sipRegisterStatusCellStyle = {
@@ -175,59 +185,60 @@ const sipRegisterModifyCellStyle = {
   borderRight: "none",
 };
 
-const SIP_REGISTER_LONG_TEXT_FIELDS = new Set([
-  "username",
-  "auth_username",
-  "server_domain",
-  "client_domain",
-  "identity_ip",
-]);
+/** 100% — headers may use 2 lines; data stays single line */
+const sipRegisterHeaderCellStyle100 = {
+  whiteSpace: "normal",
+  overflow: "visible",
+  fontSize: 10,
+  letterSpacing: "0.04em",
+  padding: "6px 4px",
+  lineHeight: 1.15,
+  verticalAlign: "middle",
+  wordBreak: "break-word",
+};
 
-const sipRegisterShortCellStyle = {
-  overflow: "hidden",
-  textOverflow: "ellipsis",
+const sipRegisterDataCellStyle100 = {
   whiteSpace: "nowrap",
+  overflow: "visible",
+  fontSize: 11,
+  paddingLeft: 5,
+  paddingRight: 5,
+  lineHeight: 1.3,
+  verticalAlign: "middle",
 };
 
-const sipRegisterLongTextCellStyle = {
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "clip",
+const SIP_REGISTER_TABLE_HEADER_LABELS = {
+  trunk_id: "Trunk ID",
+  username: "Username",
+  auth_username: "Auth User",
+  server_domain: "Server Domain",
+  client_domain: "Client Domain",
+  identity_ip: "Ident. IP",
 };
 
-const getSipRegisterDataCellStyle = (zoomed, fieldName) => {
-  if (zoomed) return sipRegisterZoomCellStyle;
-  if (SIP_REGISTER_LONG_TEXT_FIELDS.has(fieldName)) {
-    return sipRegisterLongTextCellStyle;
-  }
-  return sipRegisterShortCellStyle;
-};
+const getSipRegisterDataCellStyle = (zoomed) =>
+  zoomed ? sipRegisterZoomCellStyle : sipRegisterDataCellStyle100;
 
-const getSipRegisterHeaderCellStyle = (zoomed, fieldName) => {
-  if (zoomed) return sipRegisterZoomCellStyle;
-  if (fieldName && SIP_REGISTER_LONG_TEXT_FIELDS.has(fieldName)) {
-    return sipRegisterLongTextCellStyle;
-  }
-  return sipRegisterShortCellStyle;
-};
+const getSipRegisterHeaderCellStyle = (zoomed) =>
+  zoomed ? sipRegisterZoomCellStyle : sipRegisterHeaderCellStyle100;
 
 const sipRegisterFieldColumnWidths = {
-  trunk_id: 90,
-  username: 300,
-  auth_username: 140,
-  server_domain: 260,
-  client_domain: 260,
-  identity_ip: 200,
+  trunk_id: 100,
+  username: 140,
+  auth_username: 130,
+  server_domain: 240,
+  client_domain: 320,
+  identity_ip: 130,
 };
 
-/** 100% zoom — all % widths so long SIP values fit without horizontal scroll */
+/** 100% zoom — fits headers + longest SIP value on one line, no horizontal scroll */
 const sipRegisterFieldColumnPercents = {
-  trunk_id: "4%",
-  username: "26%",
-  auth_username: "5%",
-  server_domain: "21%",
-  client_domain: "21%",
-  identity_ip: "7%",
+  trunk_id: "7%",
+  username: "10%",
+  auth_username: "9%",
+  server_domain: "15%",
+  client_domain: "28%",
+  identity_ip: "10%",
 };
 
 const SIP_REGISTER_ZOOM_TABLE_WIDTH = Math.max(
@@ -249,10 +260,19 @@ const sipRegisterZoomCellStyle = {
 };
 
 const sipRegisterFixedCellStyle = (baseStyle, zoomed) =>
-  zoomed ? { ...baseStyle, maxWidth: "none" } : baseStyle;
+  zoomed
+    ? { ...baseStyle, maxWidth: "none" }
+    : {
+        ...baseStyle,
+        width: undefined,
+        minWidth: undefined,
+        maxWidth: undefined,
+      };
 
-/** Ctrl+/- zoom on Windows often leaves visualViewport.scale at 1.0 */
+/** Locked at ~100% browser zoom. Do NOT refresh while Ctrl+/- shrinks innerWidth. */
 const sipRegisterZoomBaselineRef = { innerWidth: 0, dpr: 1 };
+/** Ctrl+/− steps from 100% (Chrome: 100→110→125…; ≥2 ≈ 125%). */
+const sipRegisterZoomStepsRef = { current: 0 };
 
 const lockSipRegisterZoomBaseline = (force = false) => {
   const iw = window.innerWidth;
@@ -263,24 +283,50 @@ const lockSipRegisterZoomBaseline = (force = false) => {
   }
 };
 
-const isSipRegisterBrowserZoomedIn = () => {
+const syncSipRegisterZoomBaselineIfWindowWidened = () => {
   const iw = window.innerWidth;
   const baseW = sipRegisterZoomBaselineRef.innerWidth;
-  const scale = window.visualViewport?.scale ?? 1;
+  if (!baseW || !iw) return;
+  if (iw > baseW) {
+    sipRegisterZoomBaselineRef.innerWidth = iw;
+    sipRegisterZoomBaselineRef.dpr = window.devicePixelRatio || 1;
+  }
+};
 
-  if (scale > 0 && scale < 1.05) return false;
-  if (scale >= 1.09) return true;
+/** Scroll at ≥115% (Ctrl+ ×2 ≈ 125%). ≤100% incl. 90%/80% = no scroll. */
+const SIP_REGISTER_ZOOM_SCROLL_MIN = 1.14;
+const SIP_REGISTER_ZOOM_SCROLL_STEPS = 2;
 
-  if (baseW > 0 && iw > 0 && iw < baseW * 0.96 && baseW / iw >= 1.09) {
+const isSipRegisterBrowserZoomedIn = () => {
+  if (sipRegisterZoomStepsRef.current >= SIP_REGISTER_ZOOM_SCROLL_STEPS) {
     return true;
   }
+  if (sipRegisterZoomStepsRef.current > 0) {
+    return false;
+  }
+
+  const scale = window.visualViewport?.scale ?? 1;
+  if (scale > 0 && scale < 1.05) return false;
+  if (scale >= SIP_REGISTER_ZOOM_SCROLL_MIN) return true;
+  if (Math.round(scale * 100) >= 115) return true;
+
+  const baseW = sipRegisterZoomBaselineRef.innerWidth;
+  const iw = window.innerWidth;
+  if (baseW > 0 && iw > 0) {
+    if (iw > baseW * 1.02) return false;
+    if (baseW / iw >= SIP_REGISTER_ZOOM_SCROLL_MIN) return true;
+  }
+
+  const baseDpr = sipRegisterZoomBaselineRef.dpr;
+  const dpr = window.devicePixelRatio || 1;
+  if (baseDpr > 0 && dpr / baseDpr >= SIP_REGISTER_ZOOM_SCROLL_MIN) return true;
 
   return false;
 };
 
 const scheduleSipRegisterZoomMeasure = (measure) => {
   requestAnimationFrame(measure);
-  [50, 150, 300, 500].forEach((ms) => setTimeout(measure, ms));
+  [50, 150, 300, 600, 900].forEach((ms) => setTimeout(measure, ms));
 };
 
 const useSipRegisterBrowserZoom110 = () => {
@@ -288,40 +334,53 @@ const useSipRegisterBrowserZoom110 = () => {
 
   useEffect(() => {
     const measure = () => {
+      const scale = window.visualViewport?.scale ?? 1;
       const iw = window.innerWidth;
-      if (!iw) return;
+      const baseW = sipRegisterZoomBaselineRef.innerWidth;
 
-      if (!sipRegisterZoomBaselineRef.innerWidth) {
+      if (
+        sipRegisterZoomStepsRef.current <= 0 &&
+        (scale < 1.05 || (baseW && iw > 0 && iw >= baseW * 0.98))
+      ) {
         lockSipRegisterZoomBaseline(true);
+      } else if (iw > baseW) {
+        syncSipRegisterZoomBaselineIfWindowWidened();
       }
 
-      if (!isSipRegisterBrowserZoomedIn()) {
-        lockSipRegisterZoomBaseline(true);
-        setHighZoom(false);
-        return;
-      }
+      setHighZoom(isSipRegisterBrowserZoomedIn());
+    };
 
-      setHighZoom(true);
+    const bumpZoomSteps = (delta) => {
+      sipRegisterZoomStepsRef.current = Math.max(
+        -5,
+        Math.min(10, sipRegisterZoomStepsRef.current + delta),
+      );
     };
 
     const onWheel = (e) => {
-      if (e.ctrlKey) scheduleSipRegisterZoomMeasure(measure);
+      if (!e.ctrlKey) return;
+      if (e.deltaY < 0) bumpZoomSteps(1);
+      else if (e.deltaY > 0) bumpZoomSteps(-1);
+      scheduleSipRegisterZoomMeasure(measure);
     };
 
     const onKeyDown = (e) => {
-      if (
-        e.ctrlKey &&
-        (e.key === "+" ||
-          e.key === "-" ||
-          e.key === "=" ||
-          e.key === "0" ||
-          e.key === "_")
-      ) {
+      if (!e.ctrlKey) return;
+      if (e.key === "+" || e.key === "=") {
+        bumpZoomSteps(1);
+        scheduleSipRegisterZoomMeasure(measure);
+      } else if (e.key === "-" || e.key === "_") {
+        bumpZoomSteps(-1);
+        scheduleSipRegisterZoomMeasure(measure);
+      } else if (e.key === "0") {
+        sipRegisterZoomStepsRef.current = 0;
+        lockSipRegisterZoomBaseline(true);
         scheduleSipRegisterZoomMeasure(measure);
       }
     };
 
     lockSipRegisterZoomBaseline(true);
+    sipRegisterZoomStepsRef.current = 0;
     measure();
 
     window.addEventListener("resize", measure);
@@ -388,9 +447,15 @@ const SipRegisterPage = () => {
     scrollWidth: 0,
   });
   const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
+  const [tableContainerWidth, setTableContainerWidth] = useState(0);
   const allowHorizontalScroll = useSipRegisterBrowserZoom110();
   const tableMinWidth = allowHorizontalScroll
-    ? SIP_REGISTER_ZOOM_TABLE_WIDTH
+    ? Math.max(
+        SIP_REGISTER_ZOOM_TABLE_WIDTH,
+        tableContainerWidth > 0
+          ? tableContainerWidth + 120
+          : SIP_REGISTER_ZOOM_TABLE_WIDTH,
+      )
     : "100%";
 
   useEffect(() => {
@@ -398,6 +463,27 @@ const SipRegisterPage = () => {
       tableScrollRef.current.scrollLeft = 0;
     }
   }, [allowHorizontalScroll, tableMinWidth]);
+
+  useEffect(() => {
+    const el = tableScrollRef.current;
+    if (!el) return undefined;
+
+    const measureContainer = () => {
+      setTableContainerWidth(el.clientWidth);
+    };
+
+    measureContainer();
+    const ro = new ResizeObserver(measureContainer);
+    ro.observe(el);
+    window.addEventListener("resize", measureContainer);
+    window.visualViewport?.addEventListener("resize", measureContainer);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measureContainer);
+      window.visualViewport?.removeEventListener("resize", measureContainer);
+    };
+  }, [trunks.length, allowHorizontalScroll]);
 
   const visibleFieldsCount = SIP_REGISTER_VISIBLE_TABLE_FIELDS.length;
   const PREFERRED_ASSERTED_IDENTITY_OPTIONS = [
@@ -1944,18 +2030,20 @@ const SipRegisterPage = () => {
                         borderCollapse: "separate",
                         borderSpacing: 0,
                         tableLayout: allowHorizontalScroll ? "auto" : "fixed",
-                        minWidth: allowHorizontalScroll ? tableMinWidth : "100%",
+                        minWidth: allowHorizontalScroll
+                          ? tableMinWidth
+                          : "100%",
                       }}
                     >
                       <colgroup>
                         <col
                           style={{
-                            width: allowHorizontalScroll ? 40 : "2.5%",
+                            width: allowHorizontalScroll ? 40 : "3%",
                           }}
                         />
                         <col
                           style={{
-                            width: allowHorizontalScroll ? 44 : "2.5%",
+                            width: allowHorizontalScroll ? 44 : "3%",
                           }}
                         />
                         {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
@@ -1970,12 +2058,12 @@ const SipRegisterPage = () => {
                         ))}
                         <col
                           style={{
-                            width: allowHorizontalScroll ? 104 : "6%",
+                            width: allowHorizontalScroll ? 104 : "8%",
                           }}
                         />
                         <col
                           style={{
-                            width: allowHorizontalScroll ? 72 : "4%",
+                            width: allowHorizontalScroll ? 72 : "6%",
                           }}
                         />
                       </colgroup>
@@ -2008,12 +2096,13 @@ const SipRegisterPage = () => {
                                 sipRegisterIdCellStyle,
                                 allowHorizontalScroll,
                               ),
+                              textAlign: "center",
                               position: "sticky",
                               top: 0,
                               zIndex: 10,
                             }}
                           >
-                            ID
+                            <div style={sipRegisterIdCenterWrapStyle}>ID</div>
                           </TH>
                           {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
                             <TH
@@ -2021,16 +2110,19 @@ const SipRegisterPage = () => {
                               title={field.label}
                               style={getSipRegisterHeaderCellStyle(
                                 allowHorizontalScroll,
-                                field.name,
                               )}
                             >
-                              {field.label}
+                              {SIP_REGISTER_TABLE_HEADER_LABELS[field.name] ??
+                                field.label}
                             </TH>
                           ))}
                           <TH
                             style={{
                               ...sipRegisterFixedCellStyle(
                                 sipRegisterStatusCellStyle,
+                                allowHorizontalScroll,
+                              ),
+                              ...getSipRegisterHeaderCellStyle(
                                 allowHorizontalScroll,
                               ),
                               position: "sticky",
@@ -2044,6 +2136,9 @@ const SipRegisterPage = () => {
                             style={{
                               ...sipRegisterFixedCellStyle(
                                 sipRegisterModifyCellStyle,
+                                allowHorizontalScroll,
+                              ),
+                              ...getSipRegisterHeaderCellStyle(
                                 allowHorizontalScroll,
                               ),
                               position: "sticky",
@@ -2136,7 +2231,9 @@ const SipRegisterPage = () => {
                                   ...lastRowCellStyle,
                                 }}
                               >
-                                {(page - 1) * itemsPerPage + idx + 1}
+                                <div style={sipRegisterIdCenterWrapStyle}>
+                                  {(page - 1) * itemsPerPage + idx + 1}
+                                </div>
                               </td>
                               {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map(
                                 (field) => {
@@ -2163,7 +2260,6 @@ const SipRegisterPage = () => {
                                           field.name === "trunk_id" ? 600 : 400,
                                         ...getSipRegisterDataCellStyle(
                                           allowHorizontalScroll,
-                                          field.name,
                                         ),
                                         ...lastRowCellStyle,
                                       }}
@@ -2344,44 +2440,17 @@ const SipRegisterPage = () => {
           {editIndex !== null ? "Edit SIP Register" : "Add SIP Register"}
         </DialogTitle>
 
-        <div
-          style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}
-        >
-          <div style={{ display: "flex", width: "100%" }}>
-            {[
-              { id: "basic", label: "BASIC" },
-              { id: "codec", label: "CODEC" },
-              { id: "advance", label: "ADVANCE" },
-              { id: "dod", label: "DOD" },
-              { id: "adapt", label: "ADAPT CALLER ID" },
-            ].map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setModalTab(t.id)}
-                style={{
-                  flex: 1,
-                  height: 45,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  border: "none",
-                  borderBottom:
-                    modalTab === t.id
-                      ? "2px solid #3E5475"
-                      : "2px solid transparent",
-                  color: modalTab === t.id ? "#3E5475" : "#374151",
-                  background: "transparent",
-                  cursor: "pointer",
-                  textAlign: "center",
-                  textTransform: "none",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <PbxModalTabs
+          value={modalTab}
+          onChange={setModalTab}
+          tabs={[
+            { id: "basic", label: "BASIC" },
+            { id: "codec", label: "CODEC" },
+            { id: "advance", label: "ADVANCE" },
+            { id: "dod", label: "DOD" },
+            { id: "adapt", label: "ADAPT CALLER ID" },
+          ]}
+        />
 
         <DialogContent
           style={{
@@ -3757,7 +3826,7 @@ const SipRegisterPage = () => {
                     <div className="mt-1">
                       <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                         <div>
-                          <div className="text-xs font-semibold text-[#325a84] text-center mb-1.5">
+                          <div className="text-xs font-semibold text-[#3E5475] text-center mb-1.5">
                             Available
                           </div>
                           <select
@@ -3833,7 +3902,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div>
-                          <div className="text-xs font-semibold text-[#325a84] text-center mb-1.5">
+                          <div className="text-xs font-semibold text-[#3E5475] text-center mb-1.5">
                             Selected
                           </div>
                           <select

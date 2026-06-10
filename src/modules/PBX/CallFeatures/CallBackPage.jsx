@@ -32,14 +32,7 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
@@ -50,13 +43,11 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-    accent: "#3E5475",
+  accent: "#3E5475",
   strongText: "#0f172a",
-    amber: "#dc2626",
+  amber: "#dc2626",
   successGreen: "#22c55e",
   errorRed: "#ef4444",
-
- 
 };
 
 const CARD_RADIUS = 20;
@@ -89,7 +80,7 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -178,7 +169,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-    background: "#F8FAFC",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -195,7 +186,6 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
-
 
 const tdStyle = {
   padding: "7px 14px",
@@ -543,9 +533,31 @@ const CallBackPage = () => {
         <PbxBreadcrumb section="Call Features" current="CallBack" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -554,9 +566,18 @@ const CallBackPage = () => {
                 flexWrap: "wrap",
               }}
             >
-            
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -637,18 +658,23 @@ const CallBackPage = () => {
               >
                 Next →
               </Btn> */}
- <Btn
+              <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
                 variant="danger"
-                   style={sipPcmCancelBtnStyle}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
-               <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-               Delete
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
-            
+
               {/* <Btn
                 onClick={loadRows}
                 disabled={loading.fetch}
@@ -660,28 +686,25 @@ const CallBackPage = () => {
                   "Refresh"
                 )}
               </Btn> */}
-             
-             <Btn
-  onClick={handleOpenAddModal}
-  disabled={loading.fetch}
-  variant="primary"
-     style={{
+
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.fetch}
+                variant="primary"
+                style={{
                   height: 30,
                   padding: "6px 14px",
                   fontSize: 12,
                   borderRadius: 10,
                 }}
->
-  + Add New
-</Btn>
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto",
-            overflowY: "auto",
-            flex: 1,
-          }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -697,205 +720,248 @@ const CallBackPage = () => {
             ) : (
               <table
                 style={{
-                 width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{    width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                         sx={checkboxSx}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36,
+                    <TH
+                      style={{
+                        width: 36,
                         position: "sticky",
                         top: 0,
-                        zIndex: 10, }}>ID</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Name</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Delay (s)</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Strip</TH>
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Name
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Delay (s)
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Strip
+                    </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Prepend
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Destination
                     </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Through</TH>
-                    <TH style={{  width: 70,
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Through
+                    </TH>
+                    <TH
+                      style={{
+                        width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>Modify</TH>
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const rowBg = isSelected
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
 
-                      return (
-                        <tr
-                          key={row.id || realIdx}
+                    return (
+                      <tr
+                        key={row.id || realIdx}
+                        style={{
+                          background: rowBg,
+                          borderBottom: "1px solid #f1f5f9",
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
+                            ...tdStyle,
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
-                          <td
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleToggleRow(realIdx)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.name}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
                             style={{
-                             ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              color: C.valueText,
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                           sx={checkboxSx}
-                            />
-                          </td>
-                          <td
+                            {row.delay}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.strip || "—"}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.prepend || "—"}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.destination || "—"}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
                             style={{
-                                 ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              color: row.throughAuto
+                                ? "#166534"
+                                : row.throughFromComeIn
+                                  ? C.accent
+                                  : "#475569",
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 72,
                             }}
                           >
-                            {realIdx + 1}
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.name}
-                          </td>
-                          <td
-                            style={{
-                                ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <span
-                              style={{
-                                color: C.valueText,
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              {row.delay}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                                 ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.strip || "—"}
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.prepend || "—"}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.destination || "—"}
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <span
-                              style={{
-                                color: row.throughAuto
-                                  ? "#166534"
-                                  : row.throughFromComeIn
-                                    ? C.accent
-                                    : "#475569",
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 72,
-                                
-                              }}
-                            >
-                              {renderThrough(row)}
-                            </span>
-                          </td>
-                          <td
-                            style={{   ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom, }}
-                          >
-                            <EditDocumentIcon
-  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-  titleAccess="Edit"
-  onClick={() => handleOpenEditModal(row)}
-/>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                            {renderThrough(row)}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => handleOpenEditModal(row)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -903,13 +969,51 @@ minWidth: 900,
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              recordLabel="record"
-              onPageChange={(p) => setPage(p)}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.fetch || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.fetch || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -935,7 +1039,7 @@ minWidth: 900,
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor:"#ffffff", }}
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
@@ -946,18 +1050,27 @@ minWidth: 900,
                 padding: 16,
               }}
             >
-              <h3
+              <div
                 style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 12,
                   fontSize: 14,
                   fontWeight: 700,
                   color: C.labelText,
-                  marginBottom: 12,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
                 }}
               >
-                CallBack Settings
-              </h3>
+                <span>CallBack Settings</span>
+
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: C.cardBorder,
+                    marginLeft: 12,
+                  }}
+                />
+              </div>
 
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
@@ -992,7 +1105,11 @@ minWidth: 900,
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff", },
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
                       }}
                     />
                   </div>
@@ -1019,7 +1136,11 @@ minWidth: 900,
                       value={strip}
                       onChange={(e) => setStrip(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" , backgroundColor: "#fff",},
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
                       }}
                     />
                   </div>
@@ -1044,7 +1165,16 @@ minWidth: 900,
                         value={destination}
                         onChange={(e) => setDestination(e.target.value)}
                         displayEmpty
-                        sx={{ fontSize: 13, backgroundColor: "#fff", }}
+                        sx={{
+                          fontSize: 13,
+                          backgroundColor: "#fff",
+                          height: 32,
+                          "& .MuiSelect-select": {
+                            padding: "6px 8px",
+                            display: "flex",
+                            alignItems: "center",
+                          },
+                        }}
                       >
                         <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                           <span style={{ color: C.mutedText }}>
@@ -1089,7 +1219,11 @@ minWidth: 900,
                       value={delay}
                       onChange={(e) => setDelay(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff", },
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
                       }}
                     />
                   </div>
@@ -1115,7 +1249,11 @@ minWidth: 900,
                       value={prepend}
                       onChange={(e) => setPrepend(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" ,backgroundColor: "#fff",},
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
                       }}
                     />
                   </div>
@@ -1188,7 +1326,6 @@ minWidth: 900,
                     marginTop: 16,
                     paddingTop: 16,
                     borderTop: `1px dashed ${C.cardBorder}`,
-                    
                   }}
                 >
                   <div
@@ -1197,7 +1334,6 @@ minWidth: 900,
                       alignItems: "center",
                       marginBottom: 8,
                       paddingLeft: 102,
-                      
                     }}
                   >
                     <div
@@ -1217,7 +1353,6 @@ minWidth: 900,
                         fontWeight: 600,
                         color: C.mutedText,
                         textAlign: "center",
-                        
                       }}
                     >
                       Order
@@ -1240,15 +1375,50 @@ minWidth: 900,
                           <MuiSelect
                             value=""
                             displayEmpty
-                            sx={{ fontSize: 13 }}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
                           >
-                            <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                            <MenuItem
+                              value=""
+                              disabled
+                              sx={{
+                                fontSize: 13,
+                                backgroundColor: "#fff",
+                                height: 32,
+                                "& .MuiSelect-select": {
+                                  padding: "6px 8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                },
+                              }}
+                            >
                               {trunkOptions.length
                                 ? "Select trunk"
                                 : "No trunks"}
                             </MenuItem>
                             {trunkOptions.map((t) => (
-                              <MenuItem key={t} value={t} sx={{ fontSize: 13 }}>
+                              <MenuItem
+                                key={t}
+                                value={t}
+                                sx={{
+                                  fontSize: 13,
+                                  backgroundColor: "#fff",
+                                  height: 32,
+                                  "& .MuiSelect-select": {
+                                    padding: "6px 8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  },
+                                }}
+                              >
                                 {t}
                               </MenuItem>
                             ))}
@@ -1257,12 +1427,33 @@ minWidth: 900,
                       </div>
                       <div style={{ width: 80 }}>
                         <FormControl size="small" fullWidth>
-                          <MuiSelect value={0} sx={{ fontSize: 13 }}>
+                          <MuiSelect
+                            value={0}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
+                          >
                             {orderOptions.map((val) => (
                               <MenuItem
                                 key={val}
                                 value={val}
-                                sx={{ fontSize: 13 }}
+                                sx={{
+                                  fontSize: 13,
+                                  backgroundColor: "#fff",
+                                  height: 32,
+                                  "& .MuiSelect-select": {
+                                    padding: "6px 8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  },
+                                }}
                               >
                                 {val}
                               </MenuItem>
@@ -1291,12 +1482,9 @@ minWidth: 900,
             onClick={handleSave}
             disabled={loading.save}
             variant="primary"
-           style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {loading.save ? (
-              <CircularProgress
-              />
-            ) : null}
+            {loading.save ? <CircularProgress /> : null}
             {loading.save
               ? "Saving..."
               : editId != null
@@ -1307,7 +1495,7 @@ minWidth: 900,
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-             style={{ minWidth: 100, height: 33 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>
@@ -1379,7 +1567,7 @@ minWidth: 900,
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
             variant="primary"
-             style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             Import
           </Btn>
@@ -1390,7 +1578,7 @@ minWidth: 900,
             }}
             disabled={importLoading}
             variant="cancel"
-             style={{ minWidth: 100, height: 33 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>

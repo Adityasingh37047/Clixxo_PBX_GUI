@@ -11,6 +11,7 @@ import {
   FormControl,
   MenuItem,
   Select,
+  TextField,
 } from "@mui/material";
 import {
   createOutboundRoute,
@@ -26,7 +27,24 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  formatPbxItemListDisplay,
+  PBX_LIST_TRUNCATE_THRESHOLD,
+  PbxModalSectionHeading,
+  PbxDualListBtn,
+  pbxDualListLabelStyle,
+  pbxDualListSelectStyle,
+  pbxModalCancelBtnStyle,
+} from "../../../shared/pbxSharedUi";
+import {
+  getNativeFieldInteraction,
+  modalSelectSx,
+  modalTextFieldFullSx,
+  nativeFieldInputStyle,
+} from "../../../shared/pbxSharedUi";
+import {
+  trunkModalPaperSx,
+  trunkModalTitleStyle,
+} from "../../../shared/pbxSharedUi";
 import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
@@ -34,7 +52,7 @@ import {
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const PASSWORD_OPTIONS = ["None", "Single Pin"];
@@ -55,7 +73,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#9CA3AF",
 
-  labelText: "#64748b",
+  labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
 
@@ -122,7 +140,7 @@ const Btn = ({
       case "danger":
         return "#b91c1c";
       case "cancel":
-        return "#e2e8f0";
+        return "#b6c2d3";
       case "outline":
       case "default":
       default:
@@ -215,6 +233,131 @@ const checkboxSx = {
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const OUTBOUND_MODAL_LABEL_WIDTH = 185;
+const OUTBOUND_MODAL_FIELD_WIDTH = 210;
+const OUTBOUND_RIGHT_LABEL_PADDING_LEFT = 28;
+
+const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: wide ? "flex-start" : "center",
+      gap: 12,
+      width: "100%",
+      minHeight: 36,
+    }}
+  >
+    <label
+      style={{
+        fontSize: 13,
+        color: C.labelText,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        textAlign: "left",
+        minWidth: labelWidth,
+        width: "auto",
+        flexShrink: 0,
+        paddingTop: wide ? 4 : 0,
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
+  </div>
+);
+
+const outboundModalControlSx = {
+  ...modalTextFieldFullSx,
+  "& .MuiOutlinedInput-root": {
+    ...modalTextFieldFullSx["& .MuiOutlinedInput-root"],
+    height: 36,
+    minHeight: 36,
+  },
+};
+
+const OutboundLeftField = ({ children }) => (
+  <div
+    style={{
+      width: OUTBOUND_MODAL_FIELD_WIDTH,
+      maxWidth: "100%",
+      minHeight: 36,
+      display: "flex",
+      alignItems: "center",
+    }}
+  >
+    {children}
+  </div>
+);
+
+const OutboundRightRow = ({
+  label,
+  children,
+  fieldWidth = OUTBOUND_MODAL_FIELD_WIDTH,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      width: "100%",
+      minHeight: 36,
+    }}
+  >
+    <label
+      style={{
+        fontSize: 13,
+        color: C.labelText,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        textAlign: "left",
+        width: OUTBOUND_MODAL_LABEL_WIDTH,
+        minWidth: OUTBOUND_MODAL_LABEL_WIDTH,
+        flexShrink: 0,
+        paddingLeft: OUTBOUND_RIGHT_LABEL_PADDING_LEFT,
+        boxSizing: "border-box",
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ width: fieldWidth, flexShrink: 0 }}>{children}</div>
+  </div>
+);
+
+const outboundRightColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  width: "100%",
+};
+
+const SectionCard = ({ title, children, isFirst = false }) => (
+  <div style={{ marginBottom: 8 }}>
+    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <div>{children}</div>
+  </div>
+);
+
+const outboundCompactInputStyle = {
+  ...nativeFieldInputStyle,
+  width: "100%",
+  height: 36,
+  padding: "7px 10px",
+};
+
+const outboundPatternActionBtnStyle = {
+  height: 32,
+  width: 32,
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: "pointer",
+  borderRadius: 4,
+  padding: 0,
+  lineHeight: 1,
 };
 
 const OutboundRoutesPage = () => {
@@ -1220,9 +1363,21 @@ const OutboundRoutesPage = () => {
                             }}
                           >
                             {row.memberExtensions?.length > 0 ? (
-                              row.memberExtensions
-                                .map(getExtensionLabel)
-                                .join(", ")
+                              <span
+                                title={
+                                  row.memberExtensions.length >
+                                  PBX_LIST_TRUNCATE_THRESHOLD
+                                    ? row.memberExtensions
+                                        .map(getExtensionLabel)
+                                        .join(", ")
+                                    : undefined
+                                }
+                              >
+                                {formatPbxItemListDisplay(
+                                  row.memberExtensions,
+                                  { mapItem: getExtensionLabel },
+                                )}
+                              </span>
                             ) : (
                               <span style={{ color: C.mutedText }}>—</span>
                             )}
@@ -1238,7 +1393,20 @@ const OutboundRoutesPage = () => {
                             }}
                           >
                             {row.memberTrunks?.length > 0 ? (
-                              row.memberTrunks.map(getTrunkLabel).join(", ")
+                              <span
+                                title={
+                                  row.memberTrunks.length >
+                                  PBX_LIST_TRUNCATE_THRESHOLD
+                                    ? row.memberTrunks
+                                        .map(getTrunkLabel)
+                                        .join(", ")
+                                    : undefined
+                                }
+                              >
+                                {formatPbxItemListDisplay(row.memberTrunks, {
+                                  mapItem: getTrunkLabel,
+                                })}
+                              </span>
                             ) : (
                               <span style={{ color: C.mutedText }}>—</span>
                             )}
@@ -1305,668 +1473,538 @@ const OutboundRoutesPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        className="z-50"
-        PaperProps={{
-          sx: {
-            width: 900,
-            maxWidth: "96vw",
-            mx: "auto",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
-        }}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        PaperProps={{ sx: trunkModalPaperSx }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#ffffff",
-            fontWeight: 600,
-            fontSize: 16,
-            padding: "16px 24px",
-            textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-          }}
-        >
+        <DialogTitle style={trunkModalTitleStyle}>
           {editId != null ? "Edit Outbound Route" : "Add Outbound Route"}
         </DialogTitle>
-        <DialogContent
-          style={{
-            padding: "24px",
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <style>
-            {`
-              .outbound-route-modal label {
-                color: ${C.labelText} !important;
-                text-align: left !important;
-              }
-
-              .outbound-route-modal input:not([type="checkbox"]),
-              .outbound-route-modal select {
-                height: 32px;
-                background: #ffffff !important;
-                border-color: ${C.cardBorder} !important;
-                font-size: 13px !important;
-                box-sizing: border-box;
-              }
-
-              .outbound-route-modal input:not([type="checkbox"]):hover,
-              .outbound-route-modal select:hover {
-                border-color: #64748b !important;
-              }
-            `}
-          </style>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
-            className="outbound-route-modal flex flex-col gap-3 w-full"
             style={{
-              background: "transparent",
-              border: "none",
-              borderRadius: 0,
-              padding: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
+              overflow: "hidden",
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
             }}
           >
             <div
-              className="rounded-md overflow-hidden"
               style={{
-                background: "#f8fafc",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 8,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "8px 28px",
+                alignItems: "start",
               }}
             >
-              <div
-                className="px-3 py-1.5 text-[13px] font-semibold"
-               style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Outbound Call Routing
-              </div>
-              <div className="p-4 flex flex-col gap-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                  <div className="flex flex-col gap-2">
-                    <div
-                      className="flex items-center gap-2"
-                      style={{ minHeight: 32 }}
-                    >
-                      <label
-                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: 170, marginRight: 10 }}
-                      >
-                        Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                  }}
+                >
+                  <FieldRow label="Name *">
+                    <OutboundLeftField>
+                      <TextField
+                        size="small"
+                        fullWidth
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        sx={outboundModalControlSx}
                       />
-                    </div>
-
-                    <div
-                      className="flex items-center gap-2"
-                      style={{ minHeight: 32 }}
-                    >
-                      <label
-                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: 170, marginRight: 10 }}
-                      >
-                        Priority <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
+                    </OutboundLeftField>
+                  </FieldRow>
+                  <FieldRow label="Priority *">
+                    <OutboundLeftField>
+                      <TextField
+                        size="small"
+                        fullWidth
                         value={priority}
                         onChange={(e) => setPriority(e.target.value)}
+                        sx={outboundModalControlSx}
                       />
-                    </div>
-
-                    <div
-                      className="flex items-center gap-2"
-                      style={{ minHeight: 32 }}
-                    >
-                      <label
-                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: 170, marginRight: 10 }}
-                      >
-                        Description
-                      </label>
-                      <input
-                        className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
+                    </OutboundLeftField>
+                  </FieldRow>
+                  <FieldRow label="Description">
+                    <OutboundLeftField>
+                      <TextField
+                        size="small"
+                        fullWidth
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
+                        sx={outboundModalControlSx}
                       />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <div
-                      className="flex items-center gap-2"
-                      style={{ minHeight: 32 }}
-                    >
-                      <label
-                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: 190, marginRight: 10 }}
-                      >
-                        Next Route
-                      </label>
-                      <input
-                        type="checkbox"
-                        checked={nextRoute}
-                        onChange={(e) => setNextRoute(e.target.checked)}
-                      />
-                    </div>
-
-                    <div
-                      className="flex items-center gap-2"
-                      style={{ minHeight: 32 }}
-                    >
-                      <label
-                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: 190, marginRight: 10 }}
-                      >
-                        Enabled <span className="text-red-500">*</span>
-                      </label>
-                      <div className="flex-1">
-                        <FormControl size="small" fullWidth>
-                          <Select
-                            value={enabled}
-                            onChange={(e) => setEnabled(e.target.value)}
-                          >
-                            {ENABLE_OPTIONS.map((opt) => (
-                              <MenuItem key={opt} value={opt}>
-                                {opt}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </div>
-                    </div>
-
-                    <div
-                      className="flex items-center gap-2"
-                      style={{ minHeight: 32 }}
-                    >
-                      <label
-                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: 190, marginRight: 10 }}
-                      >
-                        Password
-                      </label>
-                      <div className="flex-1">
-                        <FormControl size="small" fullWidth>
-                          <Select
-                            value={passwordType}
-                            onChange={(e) => {
-                              setPasswordType(e.target.value);
-                              if (e.target.value !== "Single Pin")
-                                setSinglePin("");
-                            }}
-                          >
-                            {PASSWORD_OPTIONS.map((opt) => (
-                              <MenuItem key={opt} value={opt}>
-                                {opt}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </div>
-                    </div>
-
-                    {passwordType === "Single Pin" && (
-                      <div
-                        className="flex items-center gap-2"
-                        style={{ minHeight: 32 }}
-                      >
-                        <label
-                          className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                          style={{ width: 190, marginRight: 10 }}
+                    </OutboundLeftField>
+                  </FieldRow>
+                  <FieldRow label="Rmemory Hunt">
+                    <OutboundLeftField>
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={rememoryHunt}
+                          onChange={(e) => setRememoryHunt(e.target.value)}
+                          sx={modalSelectSx}
                         >
-                          Enter Password
-                        </label>
-                        <input
-                          className="flex-1 border border-gray-300 rounded px-2 py-1 text-[14px] outline-none"
-                          value={singlePin}
-                          onChange={(e) => setSinglePin(e.target.value)}
-                        />
-                      </div>
-                    )}
+                          {REMEMORY_HUNT_OPTIONS.map((opt) => (
+                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                              {opt}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </OutboundLeftField>
+                  </FieldRow>
+                </div>
 
-                    <div
-                      className="flex items-center gap-2"
-                      style={{ minHeight: 32 }}
-                    >
-                      <label
-                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: 190, marginRight: 10 }}
+                <div style={outboundRightColStyle}>
+                  <OutboundRightRow label="Next Route">
+                    <Checkbox
+                      checked={nextRoute}
+                      onChange={(e) => setNextRoute(e.target.checked)}
+                      sx={checkboxSx}
+                    />
+                  </OutboundRightRow>
+                  <OutboundRightRow label="Enabled *">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={enabled}
+                        onChange={(e) => setEnabled(e.target.value)}
+                        sx={modalSelectSx}
                       >
-                        Rmemory Hunt
-                      </label>
-                      <div className="flex-1">
-                        <FormControl size="small" fullWidth>
-                          <Select
-                            value={rememoryHunt}
-                            onChange={(e) => setRememoryHunt(e.target.value)}
-                          >
-                            {REMEMORY_HUNT_OPTIONS.map((opt) => (
-                              <MenuItem key={opt} value={opt}>
-                                {opt}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </div>
-                    </div>
-
-                  <div
-  className="flex items-center gap-2"
-  style={{ minHeight: 32 }}
->
-                      <label
-                        className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: 190, marginRight: 10 }}
-                      >
-                        Time Condition
-                      </label>
-                      <div className="flex items-center gap-3">
-                        {TIME_CONDITION_OPTIONS.map((opt) => (
-                          <label
-                            key={opt}
-                            className="text-[13px] text-gray-700 flex items-center gap-1"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={timeConditions.includes(opt)}
-                              onChange={() => toggleTimeCondition(opt)}
-                              disabled={
-                                opt === "Holiday" &&
-                                !timeConditions.includes("All")
-                              }
-                            />
+                        {ENABLE_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                             {opt}
-                          </label>
+                          </MenuItem>
                         ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-
-           <div className="flex flex-col gap-2">
-  <label className="text-[14px] text-gray-700 font-medium">
-    Dial Patterns
-  </label>
-
-  {/* Header */}
-  <div className="hidden md:grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_50px] gap-2 items-center">
-    <div className="text-[12px] text-gray-600 font-medium">Patterns</div>
-    <div className="text-[12px] text-gray-600 font-medium">Strip</div>
-    <div className="text-[12px] text-gray-600 font-medium">Front</div>
-    <div className="text-[12px] text-gray-600 font-medium">Suffix</div>
-    <div className="text-[12px] text-gray-600 font-medium">Delay</div>
-    <div />
-  </div>
-
-  {dialPatterns.map((item, index) => (
-    <div
-      key={`pattern-${index}`}
-      className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_50px] gap-2 items-center"
-    >
-      <input
-        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-        value={item.pattern}
-        onChange={(e) =>
-          updateDialPattern(index, "pattern", e.target.value)
-        }
-      />
-
-      <input
-        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-        value={item.strip}
-        onChange={(e) =>
-          updateDialPattern(index, "strip", e.target.value)
-        }
-      />
-
-      <input
-        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-        value={item.front}
-        onChange={(e) =>
-          updateDialPattern(index, "front", e.target.value)
-        }
-      />
-
-      <input
-        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-        value={item.suffix}
-        onChange={(e) =>
-          updateDialPattern(index, "suffix", e.target.value)
-        }
-      />
-
-      <input
-        className="w-full border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-        placeholder="Unit is ms"
-        value={item.delay}
-        onChange={(e) =>
-          updateDialPattern(index, "delay", e.target.value)
-        }
-      />
-
-      <div className="flex gap-1">
-        <button
-          type="button"
-          className="h-7 w-7 border border-gray-400 bg-[#d9dde3] text-sm font-semibold"
-          onClick={addDialPattern}
-        >
-          +
-        </button>
-
-        <button
-          type="button"
-          className="h-7 w-7 border border-gray-400 bg-[#d9dde3] text-sm font-semibold"
-          onClick={() => removeDialPatternAt(index)}
-          disabled={dialPatterns.length <= 1}
-        >
-          x
-        </button>
-      </div>
-    </div>
-  ))}
-</div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-[14px] text-gray-700 font-medium">
-                    Caller Number Conversion
-                  </label>
-                  <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <div className="text-[12px] text-gray-600 font-medium">
-                      Strip
-                    </div>
-                    <div className="text-[12px] text-gray-600 font-medium">
-                      Front
-                    </div>
-                    <div className="text-[12px] text-gray-600 font-medium">
-                      Suffix
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <input
-                      className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                      value={callerConversion.strip}
-                      onChange={(e) =>
-                        setCallerConversion((prev) => ({
-                          ...prev,
-                          strip: e.target.value,
-                        }))
-                      }
-                    />
-                    <input
-                      className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                      value={callerConversion.front}
-                      onChange={(e) =>
-                        setCallerConversion((prev) => ({
-                          ...prev,
-                          front: e.target.value,
-                        }))
-                      }
-                    />
-                    <input
-                      className="border border-gray-300 rounded px-2 py-1 text-[13px] outline-none"
-                      value={callerConversion.suffix}
-                      onChange={(e) =>
-                        setCallerConversion((prev) => ({
-                          ...prev,
-                          suffix: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 mt-1">
-                  <label className="text-[14px] text-gray-700 font-medium">
-                    
-                    Member Extensions <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
-                    <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
-                        Available
-                      </div>
-                      <select
-                        multiple
-                        value={availableExtensionSelected}
-                        onChange={(e) =>
-                          setAvailableExtensionSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value,
-                            ),
-                          )
-                        }
-                         className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
-  style={{ height: "180px" }}
+                      </Select>
+                    </FormControl>
+                  </OutboundRightRow>
+                  <OutboundRightRow label="Password">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={passwordType}
+                        onChange={(e) => {
+                          setPasswordType(e.target.value);
+                          if (e.target.value !== "Single Pin") setSinglePin("");
+                        }}
+                        sx={modalSelectSx}
                       >
-                        {loading.members ? (
-                          <option>Loading extensions...</option>
-                        ) : extensionAvailableList.length === 0 ? (
-                          <option disabled>No extensions</option>
-                        ) : (
-                          extensionAvailableList.map((item) => (
-                            <option key={item.id} value={item.id}>
-                              {item.label}
-                            </option>
-                          ))
-                        )}
-                      </select>
+                        {PASSWORD_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </OutboundRightRow>
+                  {passwordType === "Single Pin" && (
+                    <OutboundRightRow label="Enter Password">
+                      <TextField
+                        size="small"
+                        fullWidth
+                        value={singlePin}
+                        onChange={(e) => setSinglePin(e.target.value)}
+                        sx={outboundModalControlSx}
+                      />
+                    </OutboundRightRow>
+                  )}
+                  <OutboundRightRow label="Time Condition" fieldWidth={280}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {TIME_CONDITION_OPTIONS.map((opt) => (
+                        <label
+                          key={opt}
+                          style={{
+                            fontSize: 13,
+                            color: C.valueText,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={timeConditions.includes(opt)}
+                            onChange={() => toggleTimeCondition(opt)}
+                            disabled={
+                              opt === "Holiday" &&
+                              !timeConditions.includes("All")
+                            }
+                          />
+                          {opt}
+                        </label>
+                      ))}
                     </div>
-
-                    <div className="flex flex-col gap-1 pt-7">
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={addSelectedExtensions}
-                      >
-                        &gt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={addAllExtensions}
-                      >
-                        &gt;&gt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={removeSelectedExtensions}
-                      >
-                        &lt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={removeAllExtensions}
-                      >
-                        &lt;&lt;
-                      </button>
-                    </div>
-
-                    <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
-                        Selected
-                      </div>
-                      <select
-                        multiple
-                        value={chosenExtensionSelected}
-                        onChange={(e) =>
-                          setChosenExtensionSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value,
-                            ),
-                          )
-                        }
-                       className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
-  style={{ height: "180px" }}
-
-                      >
-                        {memberExtensions.length === 0 ? (
-                          <option disabled>No selected extensions</option>
-                        ) : (
-                          memberExtensions.map((id) => (
-                            <option key={id} value={id}>
-                              {getExtensionLabel(id)}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to bottom" onClick={moveExtToBottom}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,3 7,8 12,3" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="2" y1="11" x2="12" y2="11" stroke="#333" strokeWidth="2" strokeLinecap="round"/></svg>
-                      </button>
-                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move up" onClick={moveExtUp}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,9 7,4 12,9" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move down" onClick={moveExtDown}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,5 7,10 12,5" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to top" onClick={moveExtToTop}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="3" x2="12" y2="3" stroke="#333" strokeWidth="2" strokeLinecap="round"/><polyline points="2,11 7,6 12,11" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 mt-1">
-                  <label className="text-[14px] text-gray-700 font-medium">
-                    Member Trunks <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
-                    <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
-                        Available
-                      </div>
-                      <select
-                        multiple
-                        value={availableTrunkSelected}
-                        onChange={(e) =>
-                          setAvailableTrunkSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value,
-                            ),
-                          )
-                        }
-                         className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
-  style={{ height: "180px" }}
-
-                      >
-                        {loading.trunks ? (
-                          <option>Loading trunks...</option>
-                        ) : trunkAvailableList.length === 0 ? (
-                          <option disabled>No trunks</option>
-                        ) : (
-                          trunkAvailableList.map((item) => (
-                            <option key={item.id} value={item.id}>
-                              {item.label}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 pt-7">
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={addSelectedTrunks}
-                      >
-                        &gt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={addAllTrunks}
-                      >
-                        &gt;&gt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={removeSelectedTrunks}
-                      >
-                        &lt;
-                      </button>
-                      <button
-                        type="button"
-                        className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold"
-                        onClick={removeAllTrunks}
-                      >
-                        &lt;&lt;
-                      </button>
-                    </div>
-
-                    <div>
-                      <div className="text-[13px] font-semibold text-[#325a84] text-center mb-2">
-                        Selected
-                      </div>
-                      <select
-                        multiple
-                        value={chosenTrunkSelected}
-                        onChange={(e) =>
-                          setChosenTrunkSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value,
-                            ),
-                          )
-                        }
-                        className="w-full border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
-  style={{ height: "180px" }}
-
-  
-                      >
-                        {memberTrunks.length === 0 ? (
-                          <option disabled>No selected trunks</option>
-                        ) : (
-                          memberTrunks.map((id) => (
-                            <option key={id} value={id}>
-                              {getTrunkLabel(id)}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 pt-7">
-                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to bottom" onClick={moveTrunkToBottom}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,3 7,8 12,3" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="2" y1="11" x2="12" y2="11" stroke="#333" strokeWidth="2" strokeLinecap="round"/></svg>
-                      </button>
-                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move up" onClick={moveTrunkUp}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,9 7,4 12,9" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move down" onClick={moveTrunkDown}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="2,5 7,10 12,5" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                      <button type="button" className="h-9 w-full flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]" title="Move to top" onClick={moveTrunkToTop}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="3" x2="12" y2="3" stroke="#333" strokeWidth="2" strokeLinecap="round"/><polyline points="2,11 7,6 12,11" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      </button>
-                    </div>
-                  </div>
+                  </OutboundRightRow>
                 </div>
               </div>
+
+              <div style={{ marginTop: 12 }}>
+                <PbxModalSectionHeading title="Dial Patterns" />
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 72px",
+                    gap: 8,
+                    alignItems: "center",
+                    marginBottom: 6,
+                  }}
+                >
+                  {["Patterns", "Strip", "Front", "Suffix", "Delay"].map(
+                    (heading) => (
+                      <div
+                        key={heading}
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                        }}
+                      >
+                        {heading}
+                      </div>
+                    ),
+                  )}
+                  <div />
+                </div>
+                {dialPatterns.map((item, index) => (
+                  <div
+                    key={`pattern-${index}`}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 72px",
+                      gap: 8,
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    {(["pattern", "strip", "front", "suffix", "delay"]).map(
+                      (field) => (
+                        <input
+                          key={field}
+                          style={outboundCompactInputStyle}
+                          placeholder={
+                            field === "delay" ? "Unit is ms" : undefined
+                          }
+                          value={item[field]}
+                          onChange={(e) =>
+                            updateDialPattern(index, field, e.target.value)
+                          }
+                          {...getNativeFieldInteraction()}
+                        />
+                      ),
+                    )}
+                    <div style={{ display: "flex", gap: 4 }}>
+                      <button
+                        type="button"
+                        style={outboundPatternActionBtnStyle}
+                        onClick={addDialPattern}
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        style={{
+                          ...outboundPatternActionBtnStyle,
+                          opacity: dialPatterns.length <= 1 ? 0.5 : 1,
+                        }}
+                        onClick={() => removeDialPatternAt(index)}
+                        disabled={dialPatterns.length <= 1}
+                      >
+                        x
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 8 }}>
+                <PbxModalSectionHeading title="Caller Number Conversion" />
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: 8,
+                    marginBottom: 6,
+                  }}
+                >
+                  {["Strip", "Front", "Suffix"].map((heading) => (
+                    <div
+                      key={heading}
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
+                    >
+                      {heading}
+                    </div>
+                  ))}
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: 8,
+                  }}
+                >
+                  {(["strip", "front", "suffix"]).map((field) => (
+                    <input
+                      key={field}
+                      style={outboundCompactInputStyle}
+                      value={callerConversion[field]}
+                      onChange={(e) =>
+                        setCallerConversion((prev) => ({
+                          ...prev,
+                          [field]: e.target.value,
+                        }))
+                      }
+                      {...getNativeFieldInteraction()}
+                    />
+                  ))}
+                </div>
             </div>
+
+            <SectionCard title="Member Extensions *">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 48px 1fr 48px",
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div style={pbxDualListLabelStyle}>Available</div>
+                  <select
+                    multiple
+                    size={6}
+                    value={availableExtensionSelected}
+                    onChange={(e) =>
+                      setAvailableExtensionSelected(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value,
+                        ),
+                      )
+                    }
+                    style={pbxDualListSelectStyle}
+                  >
+                    {loading.members ? (
+                      <option>Loading extensions...</option>
+                    ) : extensionAvailableList.length === 0 ? (
+                      <option disabled>No extensions</option>
+                    ) : (
+                      extensionAvailableList.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.label}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                    paddingTop: 28,
+                  }}
+                >
+                  <PbxDualListBtn onClick={addSelectedExtensions}>
+                    &gt;
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={addAllExtensions}>&gt;&gt;</PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeSelectedExtensions}>
+                    &lt;
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeAllExtensions}>
+                    &lt;&lt;
+                  </PbxDualListBtn>
+                </div>
+                <div>
+                  <div style={pbxDualListLabelStyle}>Selected</div>
+                  <select
+                    multiple
+                    size={6}
+                    value={chosenExtensionSelected}
+                    onChange={(e) =>
+                      setChosenExtensionSelected(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value,
+                        ),
+                      )
+                    }
+                    style={pbxDualListSelectStyle}
+                  >
+                    {memberExtensions.length === 0 ? (
+                      <option disabled>No selected extensions</option>
+                    ) : (
+                      memberExtensions.map((id) => (
+                        <option key={id} value={id}>
+                          {getExtensionLabel(id)}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                    paddingTop: 28,
+                  }}
+                >
+                  <PbxDualListBtn
+                    reorder
+                    title="Move to bottom"
+                    onClick={moveExtToBottom}
+                  >
+                    vv
+                  </PbxDualListBtn>
+                  <PbxDualListBtn reorder title="Move up" onClick={moveExtUp}>
+                    ^
+                  </PbxDualListBtn>
+                  <PbxDualListBtn reorder title="Move down" onClick={moveExtDown}>
+                    v
+                  </PbxDualListBtn>
+                  <PbxDualListBtn reorder title="Move to top" onClick={moveExtToTop}>
+                    ^^
+                  </PbxDualListBtn>
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Member Trunks *">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 48px 1fr 48px",
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div style={pbxDualListLabelStyle}>Available</div>
+                  <select
+                    multiple
+                    size={6}
+                    value={availableTrunkSelected}
+                    onChange={(e) =>
+                      setAvailableTrunkSelected(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value,
+                        ),
+                      )
+                    }
+                    style={pbxDualListSelectStyle}
+                  >
+                    {loading.trunks ? (
+                      <option>Loading trunks...</option>
+                    ) : trunkAvailableList.length === 0 ? (
+                      <option disabled>No trunks</option>
+                    ) : (
+                      trunkAvailableList.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.label}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                    paddingTop: 28,
+                  }}
+                >
+                  <PbxDualListBtn onClick={addSelectedTrunks}>&gt;</PbxDualListBtn>
+                  <PbxDualListBtn onClick={addAllTrunks}>&gt;&gt;</PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeSelectedTrunks}>&lt;</PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeAllTrunks}>&lt;&lt;</PbxDualListBtn>
+                </div>
+                <div>
+                  <div style={pbxDualListLabelStyle}>Selected</div>
+                  <select
+                    multiple
+                    size={6}
+                    value={chosenTrunkSelected}
+                    onChange={(e) =>
+                      setChosenTrunkSelected(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (opt) => opt.value,
+                        ),
+                      )
+                    }
+                    style={pbxDualListSelectStyle}
+                  >
+                    {memberTrunks.length === 0 ? (
+                      <option disabled>No selected trunks</option>
+                    ) : (
+                      memberTrunks.map((id) => (
+                        <option key={id} value={id}>
+                          {getTrunkLabel(id)}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                    paddingTop: 28,
+                  }}
+                >
+                  <PbxDualListBtn
+                    reorder
+                    title="Move to bottom"
+                    onClick={moveTrunkToBottom}
+                  >
+                    vv
+                  </PbxDualListBtn>
+                  <PbxDualListBtn reorder title="Move up" onClick={moveTrunkUp}>
+                    ^
+                  </PbxDualListBtn>
+                  <PbxDualListBtn
+                    reorder
+                    title="Move down"
+                    onClick={moveTrunkDown}
+                  >
+                    v
+                  </PbxDualListBtn>
+                  <PbxDualListBtn
+                    reorder
+                    title="Move to top"
+                    onClick={moveTrunkToTop}
+                  >
+                    ^^
+                  </PbxDualListBtn>
+                </div>
+              </div>
+            </SectionCard>
           </div>
         </DialogContent>
         <DialogActions
@@ -1976,7 +2014,7 @@ const OutboundRoutesPage = () => {
             gap: 16,
             padding: "16px 24px",
             background: "#f8fafc",
-            borderTop: "1px solid #e2e8f0",
+            borderTop: `1px solid ${C.cardBorder}`,
             borderBottomLeftRadius: 8,
             borderBottomRightRadius: 8,
           }}
@@ -1994,7 +2032,7 @@ const OutboundRoutesPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-              style={{ minWidth: 100, height: 33 }}
+              style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>

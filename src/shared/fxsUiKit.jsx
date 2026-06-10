@@ -11,7 +11,7 @@ import {
   numManipulateCardStyle as baseCardStyle,
   numManipulateToolbarStyle as baseToolbarStyle,
   numManipulatePaginationStyle as basePaginationStyle,
-} from "../numManipulate/numManipulateSharedUi";
+} from "./numManipulateSharedUi";
 import {
   OUTLINED_BORDER,
   OUTLINED_HOVER,
@@ -22,7 +22,7 @@ import {
   nativeFieldSelectStyle,
   nativeFieldInteraction,
   getNativeFieldInteraction,
-} from "../shared/outlinedFieldUi";
+} from "./outlinedFieldUi";
 
 export { C, Btn, TH, tdStyle, checkboxSx };
 

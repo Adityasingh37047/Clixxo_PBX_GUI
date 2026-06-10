@@ -35,14 +35,7 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -51,17 +44,16 @@ const YES_NO_OPTIONS = ["Yes", "No"];
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
-
 
 const CARD_RADIUS = 20;
 // ── Shared: Action Button ────────────────────────────────────────────────────
@@ -92,7 +84,7 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -176,23 +168,23 @@ const Btn = ({
     </button>
   );
 };
-  
+
 // ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-     background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
     }}
   >
     {children}
@@ -200,21 +192,20 @@ letterSpacing: "0.14em",
 );
 
 const tdStyle = {
-padding: "7px 14px",
-fontSize: 13,
-color: C.valueText,
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
 };
 const checkboxSx = {
-padding: "1px",
-color: "#3E5475",
-"&.Mui-checked": { color: "#0284c7" },
-"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-
 
 const FieldRow = ({ label, children, required }) => (
   <div
@@ -822,9 +813,31 @@ const ConferencePage = () => {
         <PbxBreadcrumb section="Call Features" current="Conference" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -833,9 +846,18 @@ const ConferencePage = () => {
                 flexWrap: "wrap",
               }}
             >
-              
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -934,31 +956,35 @@ const ConferencePage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={sipPcmCancelBtnStyle}
-              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-             Delete
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                {" "}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
-            <Btn
-  onClick={handleOpenAddModal}
-  disabled={loading.list}
-  variant="primary"
-  style={{
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.list}
+                variant="primary"
+                style={{
                   height: 30,
                   padding: "6px 14px",
                   fontSize: 12,
                   borderRadius: 10,
                 }}
->
-  + Add New
-</Btn>
-
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto",
-overflowY: "auto",
-flex: 1,}}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -974,162 +1000,202 @@ flex: 1,}}>
             ) : (
               <table
                 style={{
-                 
-width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                      sx={checkboxSx}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH  style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
-                    <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Room Name</TH>
-                    <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Conference Number</TH>
-                    <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Enabled</TH>
-                    <TH  style={{ position: "sticky", top: 0, zIndex: 10 }}>Max Members</TH>
-                    <TH style={{ width: 70,
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Room Name
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Conference Number
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Enabled
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Max Members
+                    </TH>
+                    <TH
+                      style={{
+                        width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>Modify</TH>
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const rowBg = isSelected
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
 
-                      return (
-                        <tr
-                          key={row.id || realIdx}
+                    return (
+                      <tr
+                        key={row.id || realIdx}
+                        style={{
+                          background: rowBg,
+                          borderBottom: "1px solid #f1f5f9",
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
+                            ...tdStyle,
                             background: rowBg,
-                            borderBottom: "1px solid #f1f5f9",
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
-                          <td
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleToggleRow(realIdx)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.roomName}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.conferenceNumber}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
                             style={{
-                                 ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              color:
+                                row.enabled === "Yes" ? "#166534" : "#475569",
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 72,
                             }}
                           >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                              sx={checkboxSx}
-                            />
-                          </td>
-                          <td
-                            style={{
-                                 ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {realIdx + 1}
-                          </td>
-                          <td
-                            style={{
-                                ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.roomName}
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.conferenceNumber}
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <span
-                              style={{
-                                color:
-                                  row.enabled === "Yes" ? "#166534" : "#475569",
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 72,
-                              }}
-                            >
-                              {row.enabled}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.maxMembers}
-                          </td>
-                          <td
-                            style={{
-                               ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
+                            {row.enabled}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.maxMembers}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
                           <EditDocumentIcon
-  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-  titleAccess="Edit"
-  onClick={() => handleOpenEditModal(row)}
-/>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => handleOpenEditModal(row)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -1137,36 +1203,74 @@ minWidth: 900,
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              recordLabel="record"
-              onPageChange={(p) => setPage(p)}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.list || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.list || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
 
       {/* ── Add/Edit Modal ── */}
-  <Dialog
-  open={showModal}
-  onClose={loading.save ? null : handleCloseModal}
-  maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-      pt: 6,
-    },
-  }}
-  PaperProps={{
-    sx: {
-      width: 880,
-      maxWidth: "96vw",
-      borderRadius: 2,
-    },
-  }}
->
+      <Dialog
+        open={showModal}
+        onClose={loading.save ? null : handleCloseModal}
+        maxWidth={false}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 6,
+          },
+        }}
+        PaperProps={{
+          sx: {
+            width: 880,
+            maxWidth: "96vw",
+            borderRadius: 2,
+          },
+        }}
+      >
         <DialogTitle
           sx={{
             background: "#1e2d42",
@@ -1180,490 +1284,615 @@ minWidth: 900,
           {editId != null ? "Edit Conference" : "Add Conference"}
         </DialogTitle>
 
-     
-             <DialogContent
-       style={{
-         padding: "8px 24px 20px",
-         backgroundColor: "#ffffff",
-       }}
-     >
-       
-<div
-  style={{
-    borderBottom: "1px solid #e5e7eb",
-    background: "#ffffff",
-    marginLeft: "-24px",
-    marginRight: "-24px",
-  }}
->
-  <Tabs
-    value={activeTab}
-    onChange={(_, value) => setActiveTab(value)}
-    variant="fullWidth"
-    TabIndicatorProps={{
-      style: {
-        backgroundColor: "#3E5475",
-        height: 2,
-      },
-    }}
-    sx={{
-      minHeight: 48,
+        <DialogContent
+          style={{
+            padding: "8px 24px 20px",
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <div
+            style={{
+              borderBottom: "1px solid #e5e7eb",
+              background: "#ffffff",
+              marginLeft: "-24px",
+              marginRight: "-24px",
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={(_, value) => setActiveTab(value)}
+              variant="fullWidth"
+              TabIndicatorProps={{
+                style: {
+                  backgroundColor: "#3E5475",
+                  height: 2,
+                },
+              }}
+              sx={{
+                minHeight: 48,
 
-      "& .MuiTab-root": {
-        color: "#374151",
-        fontWeight: 600,
-        textTransform: "none",
-        minHeight: 48,
-      },
+                "& .MuiTab-root": {
+                  color: "#374151",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  minHeight: 48,
+                },
 
-      "& .MuiTab-root.Mui-selected": {
-        color: "#3E5475",
-      },
-    }}
-  >
-    <Tab
-      label="BASIC"
-      value="basic"
-    />
+                "& .MuiTab-root.Mui-selected": {
+                  color: "#3E5475",
+                },
+              }}
+            >
+              <Tab label="BASIC" value="basic" />
 
-    <Tab
-      label="ADVANCED SETTINGS"
-      value="advanced"
-    />
-  </Tabs>
-</div>
-        <div style={{ background: "#ffffff" }}>
-  <div
-  style={{
-    padding: 12,
-  }}
->
-          {/* ── BASIC TAB ── */}
-          {activeTab === "basic" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div
-                style={{
-                background: "#f5f7fa",
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: 16,
-                }}
-              >
-                {/* 2-Column Grid (Top-to-Bottom) */}
+              <Tab label="ADVANCED SETTINGS" value="advanced" />
+            </Tabs>
+          </div>
+          <div style={{ background: "#ffffff" }}>
+            <div
+              style={{
+                padding: 12,
+              }}
+            >
+              {/* ── BASIC TAB ── */}
+              {activeTab === "basic" && (
                 <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "16px 32px",
-                  }}
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  {/* Left Column */}
                   <div
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 16,
+                      background: "#f5f7fa",
+                      border: `1px solid ${C.cardBorder}`,
+                      borderRadius: 6,
+                      padding: 16,
                     }}
                   >
-                    <FieldRow label="Room Name" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={roomName}
-                        onChange={(e) => setRoomName(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,   background: "#fff", },
+                    {/* 2-Column Grid (Top-to-Bottom) */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "16px 32px",
+                      }}
+                    >
+                      {/* Left Column */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 16,
                         }}
-                      />
-                    </FieldRow>
-                    <FieldRow label="Conference Number" required>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={conferenceNumber}
-                        onChange={(e) => setConferenceNumber(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,   background: "#fff", },
-                        }}
-                      />
-                    </FieldRow>
-                    <FieldRow label="Greeting">
-                      <MuiSelect
-                        size="small"
-                        fullWidth
-                        value={greeting}
-                        onChange={(e) => setGreeting(e.target.value)}
-                        MenuProps={{ PaperProps: { sx: { maxHeight: 280 } } }}
-                        sx={{ fontSize: 13    ,background: "#fff", }}
                       >
-                        {(greetingOptions.length
-                          ? greetingOptions
-                          : ["Default"]
-                        ).map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FieldRow>
-                    <FieldRow label="Announce">
-                      <MuiSelect
-                        size="small"
-                        fullWidth
-                        value={announce}
-                        onChange={(e) => setAnnounce(e.target.value)}
-                        sx={{ fontSize: 13,background: "#fff", }}
-                      >
-                        {YES_NO_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FieldRow>
-                    <FieldRow label="Record">
-                      <MuiSelect
-                        size="small"
-                        fullWidth
-                        value={record}
-                        onChange={(e) => setRecord(e.target.value)}
-                        sx={{ fontSize: 13  ,background: "#fff",}}
-                      >
-                        {YES_NO_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FieldRow>
-                  </div>
+                        <FieldRow label="Room Name" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={roomName}
+                            onChange={(e) => setRoomName(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                background: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+                        <FieldRow label="Conference Number" required>
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={conferenceNumber}
+                            onChange={(e) =>
+                              setConferenceNumber(e.target.value)
+                            }
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                background: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+                        <FieldRow label="Greeting">
+                          <MuiSelect
+                            size="small"
+                            fullWidth
+                            value={greeting}
+                            onChange={(e) => setGreeting(e.target.value)}
+                            MenuProps={{
+                              PaperProps: { sx: { maxHeight: 280 } },
+                            }}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
+                          >
+                            {(greetingOptions.length
+                              ? greetingOptions
+                              : ["Default"]
+                            ).map((opt) => (
+                              <MenuItem
+                                key={opt}
+                                value={opt}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {opt}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FieldRow>
+                        <FieldRow label="Announce">
+                          <MuiSelect
+                            size="small"
+                            fullWidth
+                            value={announce}
+                            onChange={(e) => setAnnounce(e.target.value)}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
+                          >
+                            {YES_NO_OPTIONS.map((opt) => (
+                              <MenuItem
+                                key={opt}
+                                value={opt}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {opt}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FieldRow>
+                        <FieldRow label="Record">
+                          <MuiSelect
+                            size="small"
+                            fullWidth
+                            value={record}
+                            onChange={(e) => setRecord(e.target.value)}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
+                          >
+                            {YES_NO_OPTIONS.map((opt) => (
+                              <MenuItem
+                                key={opt}
+                                value={opt}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {opt}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FieldRow>
+                      </div>
 
-                  {/* Right Column */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 16,
-                    }}
-                  >
-                    <FieldRow label="Enabled" required>
-                      <MuiSelect
-                        size="small"
-                        fullWidth
-                        value={enabled}
-                        onChange={(e) => setEnabled(e.target.value)}
-                        sx={{ fontSize: 13 ,background: "#fff",}}
+                      {/* Right Column */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 16,
+                        }}
                       >
-                        {ENABLE_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FieldRow>
-                    <FieldRow label="Schedule Start">
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type="datetime-local"
-                        value={scheduleStart}
-                        onChange={(e) => setScheduleStart(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,background: "#fff", },
-                        }}
-                      />
-                    </FieldRow>
-                    <FieldRow label="Schedule End">
-                      <TextField
-                        size="small"
-                        fullWidth
-                        type="datetime-local"
-                        value={scheduleEnd}
-                        onChange={(e) => setScheduleEnd(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px" ,background: "#fff", },
-                        }}
-                      />
-                    </FieldRow>
-                    <FieldRow label="Pin">
-                      <MuiSelect
-                        size="small"
-                        fullWidth
-                        value={pinEnabled}
-                        onChange={(e) => {
-                          setPinEnabled(e.target.value);
-                          if (e.target.value === "No") {
-                            setModeratorPassword("");
-                            setParticipantPassword("");
-                          }
-                        }}
-                        sx={{ fontSize: 13 ,background: "#fff", }}
-                      >
-                        {YES_NO_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FieldRow>
-                    {pinEnabled === "Yes" && (
-                      <>
-                        <FieldRow label="Moderator Password">
+                        <FieldRow label="Enabled" required>
+                          <MuiSelect
+                            size="small"
+                            fullWidth
+                            value={enabled}
+                            onChange={(e) => setEnabled(e.target.value)}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
+                          >
+                            {ENABLE_OPTIONS.map((opt) => (
+                              <MenuItem
+                                key={opt}
+                                value={opt}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {opt}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FieldRow>
+                        <FieldRow label="Schedule Start">
                           <TextField
                             size="small"
                             fullWidth
-                            value={moderatorPassword}
-                            onChange={(e) =>
-                              setModeratorPassword(e.target.value)
-                            }
+                            type="datetime-local"
+                            value={scheduleStart}
+                            onChange={(e) => setScheduleStart(e.target.value)}
                             inputProps={{
-                              style: { fontSize: 13, padding: "6px 8px"  ,background: "#fff",},
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                background: "#fff",
+                              },
                             }}
                           />
                         </FieldRow>
-                        <FieldRow label="Participant Password">
+                        <FieldRow label="Schedule End">
                           <TextField
                             size="small"
                             fullWidth
-                            value={participantPassword}
-                            onChange={(e) =>
-                              setParticipantPassword(e.target.value)
-                            }
+                            type="datetime-local"
+                            value={scheduleEnd}
+                            onChange={(e) => setScheduleEnd(e.target.value)}
                             inputProps={{
-                              style: { fontSize: 13, padding: "6px 8px" ,background: "#fff", },
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                background: "#fff",
+                              },
                             }}
                           />
                         </FieldRow>
-                      </>
-                    )}
-                    <FieldRow label="Max Members">
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={maxMembers}
-                        onChange={(e) => setMaxMembers(e.target.value)}
-                        inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px"  ,background: "#fff",},
+                        <FieldRow label="Pin">
+                          <MuiSelect
+                            size="small"
+                            fullWidth
+                            value={pinEnabled}
+                            onChange={(e) => {
+                              setPinEnabled(e.target.value);
+                              if (e.target.value === "No") {
+                                setModeratorPassword("");
+                                setParticipantPassword("");
+                              }
+                            }}
+                            sx={{
+                              fontSize: 13,
+                              backgroundColor: "#fff",
+                              height: 32,
+                              "& .MuiSelect-select": {
+                                padding: "6px 8px",
+                                display: "flex",
+                                alignItems: "center",
+                              },
+                            }}
+                          >
+                            {YES_NO_OPTIONS.map((opt) => (
+                              <MenuItem
+                                key={opt}
+                                value={opt}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {opt}
+                              </MenuItem>
+                            ))}
+                          </MuiSelect>
+                        </FieldRow>
+                        {pinEnabled === "Yes" && (
+                          <>
+                            <FieldRow label="Moderator Password">
+                              <TextField
+                                size="small"
+                                fullWidth
+                                value={moderatorPassword}
+                                onChange={(e) =>
+                                  setModeratorPassword(e.target.value)
+                                }
+                                inputProps={{
+                                  style: {
+                                    fontSize: 13,
+                                    padding: "6px 8px",
+                                    background: "#fff",
+                                  },
+                                }}
+                              />
+                            </FieldRow>
+                            <FieldRow label="Participant Password">
+                              <TextField
+                                size="small"
+                                fullWidth
+                                value={participantPassword}
+                                onChange={(e) =>
+                                  setParticipantPassword(e.target.value)
+                                }
+                                inputProps={{
+                                  style: {
+                                    fontSize: 13,
+                                    padding: "6px 8px",
+                                    background: "#fff",
+                                  },
+                                }}
+                              />
+                            </FieldRow>
+                          </>
+                        )}
+                        <FieldRow label="Max Members">
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={maxMembers}
+                            onChange={(e) => setMaxMembers(e.target.value)}
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                background: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+                      </div>
+                    </div>
+
+                    {/* Moderator Selection Full Width Row */}
+                    <div
+                      style={{
+                        marginTop: 24,
+                        paddingTop: 16,
+                        borderTop: `1px dashed ${C.cardBorder}`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 24,
                         }}
-                      />
-                    </FieldRow>
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: C.accent,
+                              marginBottom: 6,
+                              textAlign: "center",
+                            }}
+                          >
+                            Moderator Member (Extensions)
+                          </div>
+                          <div
+                            style={{
+                              border: `1px solid ${C.cardBorder}`,
+                              background: "#fff",
+                              borderRadius: 4,
+                              padding: 8,
+                              height: 160,
+                              overflowY: "auto",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 6,
+                            }}
+                          >
+                            {availableExtensions.map((ext) => (
+                              <label
+                                key={ext.value}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={moderatorMembers.includes(ext.value)}
+                                  onChange={() =>
+                                    toggleModeratorMember(ext.value)
+                                  }
+                                  style={{ cursor: "pointer" }}
+                                />
+                                <span
+                                  style={{ fontSize: 13, color: C.labelText }}
+                                >
+                                  {ext.label}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: C.accent,
+                              marginBottom: 6,
+                              textAlign: "center",
+                            }}
+                          >
+                            Extension Group
+                          </div>
+                          <div
+                            style={{
+                              border: `1px solid ${C.cardBorder}`,
+                              background: "#fff",
+                              borderRadius: 4,
+                              padding: 8,
+                              height: 160,
+                              overflowY: "auto",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 6,
+                            }}
+                          >
+                            {extensionGroups.map((group) => (
+                              <label
+                                key={group.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedGroupIds.includes(
+                                    String(group.id),
+                                  )}
+                                  onChange={() => toggleExtensionGroup(group)}
+                                  style={{ cursor: "pointer" }}
+                                />
+                                <span
+                                  style={{ fontSize: 13, color: C.labelText }}
+                                >
+                                  {group.name}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: C.errorRed,
+                          marginTop: 8,
+                        }}
+                      >
+                        Note: Selecting an extension group will include all
+                        members in that group when a moderator dials this
+                        conference number.
+                      </div>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                {/* Moderator Selection Full Width Row */}
+              {/* ── ADVANCED SETTINGS TAB ── */}
+              {activeTab === "advanced" && (
                 <div
                   style={{
-                    marginTop: 24,
-                    paddingTop: 16,
-                    borderTop: `1px dashed ${C.cardBorder}`,
+                    background: "#f5f7fa",
+                    border: `1px solid ${C.cardBorder}`,
+                    borderRadius: 6,
+                    padding: 16,
                   }}
                 >
                   <div
                     style={{
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
-                      gap: 24,
+                      gap: "16px 32px",
                     }}
                   >
-                    <div>
-                      <div
-                        style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.accent,
-                      marginBottom: 6,
-                      textAlign: "center",
-                    }}
-                  
-                      >
-                        Moderator Member (Extensions)
-                      </div>
-                      <div
-                        style={{
-                          border: `1px solid ${C.cardBorder}`,
-                          background: "#fff",
-                          borderRadius: 4,
-                          padding: 8,
-                          height: 160,
-                          overflowY: "auto",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 6,
-                        }}
-                      >
-                        {availableExtensions.map((ext) => (
-                          <label
-                            key={ext.value}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              cursor: "pointer",
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={moderatorMembers.includes(ext.value)}
-                              onChange={() => toggleModeratorMember(ext.value)}
-                              style={{ cursor: "pointer" }}
-                            />
-                            <span style={{ fontSize: 13, color: C.labelText }}>
-                              {ext.label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 16,
+                      }}
+                    >
+                      <FieldRow label="Wait for Moderator">
+                        <MuiSelect
+                          size="small"
+                          fullWidth
+                          value={waitForModerator}
+                          onChange={(e) => setWaitForModerator(e.target.value)}
+                          sx={{ fontSize: 13, background: "#fff" }}
+                        >
+                          {YES_NO_OPTIONS.map((opt) => (
+                            <MenuItem
+                              key={opt}
+                              value={opt}
+                              sx={{ fontSize: 13 }}
+                            >
+                              {opt}
+                            </MenuItem>
+                          ))}
+                        </MuiSelect>
+                      </FieldRow>
+                      <FieldRow label="Say Your Name">
+                        <MuiSelect
+                          size="small"
+                          fullWidth
+                          value={sayYourName}
+                          onChange={(e) => setSayYourName(e.target.value)}
+                          sx={{ fontSize: 13, background: "#fff" }}
+                        >
+                          {YES_NO_OPTIONS.map((opt) => (
+                            <MenuItem
+                              key={opt}
+                              value={opt}
+                              sx={{ fontSize: 13 }}
+                            >
+                              {opt}
+                            </MenuItem>
+                          ))}
+                        </MuiSelect>
+                      </FieldRow>
                     </div>
-                    <div>
-                      <div
-                         style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.accent,
-                      marginBottom: 6,
-                      textAlign: "center",
-                    }}
-                  >
-                        Extension Group
-                      </div>
-                      <div
-                        style={{
-                          border: `1px solid ${C.cardBorder}`,
-                          background: "#fff",
-                          borderRadius: 4,
-                          padding: 8,
-                          height: 160,
-                          overflowY: "auto",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 6,
-                        }}
-                      >
-                        {extensionGroups.map((group) => (
-                          <label
-                            key={group.id}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              cursor: "pointer",
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedGroupIds.includes(
-                                String(group.id),
-                              )}
-                              onChange={() => toggleExtensionGroup(group)}
-                              style={{ cursor: "pointer" }}
-                            />
-                            <span style={{ fontSize: 13, color: C.labelText }}>
-                              {group.name}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 16,
+                      }}
+                    >
+                      <FieldRow label="Mute Participant">
+                        <MuiSelect
+                          size="small"
+                          fullWidth
+                          value={muteParticipant}
+                          onChange={(e) => setMuteParticipant(e.target.value)}
+                          sx={{ fontSize: 13, background: "#fff" }}
+                        >
+                          {YES_NO_OPTIONS.map((opt) => (
+                            <MenuItem
+                              key={opt}
+                              value={opt}
+                              sx={{ fontSize: 13 }}
+                            >
+                              {opt}
+                            </MenuItem>
+                          ))}
+                        </MuiSelect>
+                      </FieldRow>
+                      <FieldRow label="Allow Participant to Invite">
+                        <MuiSelect
+                          size="small"
+                          fullWidth
+                          value={allowInvite}
+                          onChange={(e) => setAllowInvite(e.target.value)}
+                          sx={{ fontSize: 13, background: "#fff" }}
+                        >
+                          {YES_NO_OPTIONS.map((opt) => (
+                            <MenuItem
+                              key={opt}
+                              value={opt}
+                              sx={{ fontSize: 13 }}
+                            >
+                              {opt}
+                            </MenuItem>
+                          ))}
+                        </MuiSelect>
+                      </FieldRow>
                     </div>
                   </div>
-                  <div
-                    style={{ fontSize: 11, color: C.errorRed, marginTop: 8 }}
-                  >
-                    Note: Selecting an extension group will include all members
-                    in that group when a moderator dials this conference number.
-                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── ADVANCED SETTINGS TAB ── */}
-          {activeTab === "advanced" && (
-            <div
-              style={{
-                 background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px 32px",
-                }}
-              >
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  <FieldRow label="Wait for Moderator">
-                    <MuiSelect
-                      size="small"
-                      fullWidth
-                      value={waitForModerator}
-                      onChange={(e) => setWaitForModerator(e.target.value)}
-                      sx={{ fontSize: 13 ,background: "#fff",}}
-                    >
-                      {YES_NO_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </MuiSelect>
-                  </FieldRow>
-                  <FieldRow label="Say Your Name">
-                    <MuiSelect
-                      size="small"
-                      fullWidth
-                      value={sayYourName}
-                      onChange={(e) => setSayYourName(e.target.value)}
-                      sx={{ fontSize: 13,background: "#fff", }}
-                    >
-                      {YES_NO_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </MuiSelect>
-                  </FieldRow>
-                </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  <FieldRow label="Mute Participant">
-                    <MuiSelect
-                      size="small"
-                      fullWidth
-                      value={muteParticipant}
-                      onChange={(e) => setMuteParticipant(e.target.value)}
-                      sx={{ fontSize: 13  ,background: "#fff",}}
-                    >
-                      {YES_NO_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </MuiSelect>
-                  </FieldRow>
-                  <FieldRow label="Allow Participant to Invite">
-                    <MuiSelect
-                      size="small"
-                      fullWidth
-                      value={allowInvite}
-                      onChange={(e) => setAllowInvite(e.target.value)}
-                      sx={{ fontSize: 13  ,background: "#fff",}}
-                    >
-                      {YES_NO_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </MuiSelect>
-                  </FieldRow>
-                </div>
-              </div>
-            </div>
-          )}
+              )}
             </div>
           </div>
         </DialogContent>
@@ -1692,8 +1921,8 @@ minWidth: 900,
             {loading.save
               ? "Saving..."
               : editId != null
-              ? "Update Conference"
-              : "Create Conference"}
+                ? "Update Conference"
+                : "Create Conference"}
           </Btn>
           <Btn
             onClick={handleCloseModal}

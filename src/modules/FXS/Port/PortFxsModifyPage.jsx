@@ -23,7 +23,7 @@ import {
   checkboxSx,
   fxsNativeFieldInputStyle,
   fxsNativeFieldInteraction,
-} from "../../../sections/fxs/fxsSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const FWD_TYPE_TO_UI = {
   no_reply: "No Reply",

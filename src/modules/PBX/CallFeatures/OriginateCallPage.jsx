@@ -24,7 +24,7 @@ import {
   sipPcmAuthInputInteraction,
   sipPcmAuthMuiSelectSx,
   PbxBreadcrumb,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 // Agar amiOriginate apiService me defined hai to isko uncomment kar lena:
 // import { amiOriginate } from "../api/apiService";

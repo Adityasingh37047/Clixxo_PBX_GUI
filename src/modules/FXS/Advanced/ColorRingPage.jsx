@@ -36,7 +36,7 @@ import {
   addHostFormPanelStyle,
   addHostModalFooterStyle,
   wavFileNoteStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const DATA_COLUMNS = COLOR_RING_TABLE_COLUMNS.filter(
   (c) => c.key !== "check" && c.key !== "modify",

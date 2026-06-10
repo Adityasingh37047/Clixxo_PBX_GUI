@@ -30,7 +30,7 @@ import {
   addHostFormPanelStyle,
   modalSelectSx,
   modalTextFieldSx,
-} from "../sections/advanced/advancedSharedUi";
+} from "../shared/e1PriSharedUi";
 
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {

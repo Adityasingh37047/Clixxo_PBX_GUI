@@ -16,7 +16,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   userPermissionFieldInputStyle as inputStyle,
   inputInteraction,
-} from "../sections/userPermission/userPermissionSharedUi";
+} from "../shared/userManageSharedUi";
 
 // ── Color palette (matches CallCount) ────────────────────────────────────────
 const C = {

@@ -15,12 +15,12 @@ import {
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 import {
   systemToolsEditableFieldInputStyle as inputStyle,
   systemToolsEditableMuiSelectSx as systemToolsMuiSelectSx,
   inputInteraction,
-} from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {

@@ -16,11 +16,11 @@ import {
   Btn,
   muiSelectSx,
   muiTextFieldSx,
-} from "../../../sections/route/routeSharedUi";
+} from "../../../shared/fxsSharedUi";
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 /** Match E1-PRI Route Routing Parameters card radii (10px, not table 20px kit). */
 const ROUTE_CARD_RADIUS = 10;

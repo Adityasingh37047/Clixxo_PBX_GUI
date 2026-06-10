@@ -18,7 +18,7 @@ import {
   FieldRow,
   advancedFormPanelStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const RINGING_SCHEME_SECTION_HEADING_COLOR = "#30415A";
 

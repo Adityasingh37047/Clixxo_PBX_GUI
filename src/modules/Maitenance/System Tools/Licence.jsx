@@ -24,7 +24,7 @@ import {
 import {
   systemToolsFieldInputStyleWhite as inputStyle,
   inputInteraction,
-} from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 
 const LICENCE_DEVICE_TYPE_STORAGE_KEY = "clixxo_licence_device_type";
 

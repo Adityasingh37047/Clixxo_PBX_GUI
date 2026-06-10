@@ -13,7 +13,7 @@ import {
   AdvancedPageShell,
   AdvancedFormCard,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const labelCellStyle = {
   fontSize: 13,

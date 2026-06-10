@@ -13,8 +13,8 @@ import {
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
-import { getUserPermissionMuiTextFieldSx } from "../../../sections/userPermission/userPermissionSharedUi";
+} from "../../../shared/userManageSharedUi";
+import { getUserPermissionMuiTextFieldSx } from "../../../shared/userManageSharedUi";
 import {
   CHANGE_PASSWORD_FIELDS,
   CHANGE_PASSWORD_INITIAL_FORM,

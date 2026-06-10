@@ -30,6 +30,6 @@ export {
   numManipulateCardStyle,
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
-} from "../numManipulate/numManipulateSharedUi";
+} from "./numManipulateSharedUi";
 
-export { muiSelectSx, muiTextFieldSx } from "../shared/outlinedFieldUi";
+export { muiSelectSx, muiTextFieldSx } from "./outlinedFieldUi";

@@ -22,12 +22,19 @@ import {
   updateCCRoute,
 } from "../../../api/apiService";
 import {
+  Btn,
   PbxBreadcrumb,
   TableListLoading,
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  pbxModalCancelBtnStyle,
+  formatPbxItemListDisplay,
+  PBX_LIST_TRUNCATE_THRESHOLD,
+  PbxModalSectionHeading,
+  pbxDualListLabelStyle,
+} from "../../../shared/pbxSharedUi";
+import { modalSelectSx } from "../../../shared/pbxSharedUi";
 import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
@@ -35,7 +42,11 @@ import {
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
+import {
+  trunkModalPaperSx,
+  trunkModalTitleStyle,
+} from "../../../shared/pbxSharedUi";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const CC_INTERVAL_OPTIONS = [
@@ -129,123 +140,10 @@ const C = {
 };
 const CARD_RADIUS = 20;
 // ── Shared UI Components ──────────────────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  title,
-  type,
-  hoverBehavior = "background",
-}) => {
-  const variants = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-   cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-  };
-
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#e2e8f0";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = extraStyle?.background || s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-         background: "#F8FAFC",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -257,7 +155,6 @@ const TH = ({ children, style: extra }) => (
       textTransform: "uppercase",
       letterSpacing: "0.14em",
       ...extra,
-
     }}
   >
     {children}
@@ -278,21 +175,91 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-const FieldRow = ({ label, children }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: wide ? "flex-start" : "center",
+      gap: 12,
+      width: "100%",
+    }}
+  >
     <label
       style={{
         fontSize: 13,
-        fontWeight: 600,
         color: C.labelText,
-        width: 170,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        textAlign: "left",
+        width: labelWidth,
         flexShrink: 0,
+        paddingTop: wide ? 4 : 0,
       }}
     >
       {label}
     </label>
-    <div style={{ flex: 1 }}>{children}</div>
+    <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
   </div>
+);
+
+const SectionCard = ({ title, children, isFirst = false }) => (
+  <div style={{ marginBottom: 8 }}>
+    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <div>{children}</div>
+  </div>
+);
+
+const ccDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const ccDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const ccDualListReorderBtnStyle = {
+  ...ccDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CcDualListBtn = ({ onClick, title, children, reorder = false }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? ccDualListReorderBtnStyle : ccDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
 );
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -623,18 +590,13 @@ const CCRoutePage = () => {
               <Btn
                 onClick={handleDelete}
                 disabled={
-                  loading.delete ||
-                  loading.fetch ||
-                  selected.length === 0
+                  loading.delete || loading.fetch || selected.length === 0
                 }
                 variant="cancel"
                 style={sipPcmCancelBtnStyle}
               >
                 {loading.delete && (
-                  <CircularProgress
-                    size={11}
-                    style={{ color: "#374151" }}
-                  />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 )}{" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -651,9 +613,7 @@ const CCRoutePage = () => {
           </div>
 
           {/* Table */}
-          <div style={{overflowX: "auto",
-overflowY: "auto",
-flex: 1, }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -664,21 +624,25 @@ flex: 1, }}>
             ) : (
               <table
                 style={{
-                 width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
@@ -687,145 +651,190 @@ minWidth: 900,
                         sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 , }} >CC Interval Time</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Through</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Record Keep Time</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }} >Enable</TH>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      CC Interval Time
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Through
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Record Keep Time
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Enable
+                    </TH>
                     <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
                       Member Extensions
                     </TH>
-                    <TH style={{ width: 70,
+                    <TH
+                      style={{
+                        width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10, }}>Modify</TH>
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const rowBg = isSelected
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
-                      return (
-                        <tr
-                          key={row.id}
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    return (
+                      <tr
+                        key={row.id}
+                        style={{
+                          background: rowBg,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
+                            ...tdStyle,
                             background: rowBg,
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleSelectRow(realIdx)}
-                          sx=  {checkboxSx}
-                            />
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {realIdx + 1}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {getCcIntervalLabel(row.ccIntervalTime)}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.through}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.recordKeepTime}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(realIdx)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {getCcIntervalLabel(row.ccIntervalTime)}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.through}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.recordKeepTime}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span style={{}}>{row.enabled}</span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.memberExtensions?.length > 0 ? (
                             <span
-                              style={{
-                        
-                              }}
+                              title={
+                                row.memberExtensions.length >
+                                PBX_LIST_TRUNCATE_THRESHOLD
+                                  ? row.memberExtensions
+                                      .map(getExtensionLabel)
+                                      .join(", ")
+                                  : undefined
+                              }
                             >
-                              {row.enabled}
+                              {formatPbxItemListDisplay(row.memberExtensions, {
+                                mapItem: getExtensionLabel,
+                              })}
                             </span>
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.memberExtensions?.length > 0 ? (
-                              row.memberExtensions
-                                .map(getExtensionLabel)
-                                .join(", ")
-                            ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              textAlign: "center",
-                              padding: "7px 8px",
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <EditDocumentIcon
-  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-  titleAccess="Edit"
-  onClick={() => handleOpenEditModal(row)}
-/>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                          ) : (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            textAlign: "center",
+                            padding: "7px 8px",
+                            borderRight: "none",
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => handleOpenEditModal(row)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -849,82 +858,44 @@ minWidth: 900,
         open={showModal}
         onClose={handleCloseModal}
         maxWidth={false}
-        sx={{
-            "& .MuiDialog-container": {
-              alignItems: "flex-start",
-              pt: 8,
-            },
-          }}
-        PaperProps={{ sx: { width: 980, maxWidth: "98vw", borderRadius: 2 } }}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        PaperProps={{ sx: trunkModalPaperSx }}
       >
-        <DialogTitle
-           style={{
-background: "#1e2d42",
-color: "#ffffff",
-fontWeight: 600,
-fontSize: 16,
-padding: "16px 24px",
-textAlign: "center",
-borderTopLeftRadius: 8,
-borderTopRightRadius: 8,
-}}
->
+        <DialogTitle style={trunkModalTitleStyle}>
           {editId != null ? "Edit CC Route" : "Add CC Route"}
         </DialogTitle>
-            <div style={{ borderBottom: "1px solid #e5e7eb", background: "#ffffff" }}></div>
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Settings Section */}
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "100%",
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+            }}
+          >
             <div
               style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                overflow: "hidden",
-                padding: 16,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "8px 32px",
               }}
             >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                CC Route Settings
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px 32px",
-                }}
-              >
-                <FieldRow label="CC Interval Time *">
+              <FieldRow label="CC Interval Time *">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={ccIntervalTime}
                       onChange={(e) => setCcIntervalTime(e.target.value)}
-                     sx={{
- 
-      borderColor: "#60a5fa",
-      backgroundColor: "#fff",
-
-}}
+                      sx={modalSelectSx}
                     >
                       {CC_INTERVAL_OPTIONS.map((o) => (
                         <MenuItem
                           key={o.value}
                           value={o.value}
-                          sx={{
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                          sx={{ fontSize: 13 }}
                         >
                           {o.label}
                         </MenuItem>
@@ -937,11 +908,7 @@ borderTopRightRadius: 8,
                     <Select
                       value={recordKeepTime}
                       onChange={(e) => setRecordKeepTime(e.target.value)}
-                     sx={{
-                      
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                      sx={modalSelectSx}
                     >
                       {RECORD_KEEP_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -956,10 +923,7 @@ borderTopRightRadius: 8,
                     <Select
                       value={through}
                       onChange={(e) => setThrough(e.target.value)}
-                     sx={{
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                      sx={modalSelectSx}
                     >
                       {THROUGH_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -974,10 +938,7 @@ borderTopRightRadius: 8,
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                      sx={modalSelectSx}
                     >
                       {ENABLE_OPTIONS.map((o) => (
                         <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
@@ -987,279 +948,158 @@ borderTopRightRadius: 8,
                     </Select>
                   </FormControl>
                 </FieldRow>
-              </div>
             </div>
 
-            {/* Extensions Selection */}
-            <div
-              style={{
-                 background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                overflow: "hidden",
-                borderRadius: 6,
-                padding: 16,
-              }}
-            >
+            <SectionCard title="Member Extensions">
               <div
                 style={{
-                   background: "#f5f7fa",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Member Extensions
-              </div>
-              <div
-                style={{
-                   
                   display: "grid",
                   gridTemplateColumns: "1fr 48px 1fr 48px",
                   gap: 12,
                 }}
               >
-                {/* Available */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.accent,
-                      marginBottom: 6,
-                      textAlign: "center",
-                    }}
-                  >
-                    Available
-                  </div>
+                  <div style={pbxDualListLabelStyle}>Available</div>
                   <select
                     multiple
+                    size={6}
                     value={availableSelected}
                     onChange={(e) =>
                       setAvailableSelected(
                         Array.from(e.target.selectedOptions, (o) => o.value),
                       )
                     }
-                     style={{
-  width: "100%",
-  height: 180,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 8,
-  fontSize: 13,
-  background: "#fff",
-  outline: "none",
-}}
+                    style={ccDualListSelectStyle}
                   >
-                    {availableList.map((item) => (
-                      <option key={item.extension} value={item.extension}>
-                        {item.label}
+                    {availableList.length === 0 ? (
+                      <option disabled value="">
+                        No extensions
                       </option>
-                    ))}
+                    ) : (
+                      availableList.map((item) => (
+                        <option key={item.extension} value={item.extension}>
+                          {item.label}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
-                {/* Move Controls */}
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: 6,
-                    justifyContent: "center",
-                    paddingTop: 24,
+                    gap: 4,
+                    paddingTop: 28,
                   }}
                 >
-                  <Btn
-                    onClick={addSelectedExtensions}
-                    variant="outline"
-                    style={{ padding: "6px 0" }}
-                  >
+                  <CcDualListBtn onClick={addSelectedExtensions}>
                     &gt;
-                  </Btn>
-                  <Btn
-                    onClick={addAllExtensions}
-                    variant="outline"
-                    style={{ padding: "6px 0" }}
-                  >
+                  </CcDualListBtn>
+                  <CcDualListBtn onClick={addAllExtensions}>
                     &gt;&gt;
-                  </Btn>
-                  <Btn
-                    onClick={removeSelectedExtensions}
-                    variant="outline"
-                    style={{ padding: "6px 0" }}
-                  >
+                  </CcDualListBtn>
+                  <CcDualListBtn onClick={removeSelectedExtensions}>
                     &lt;
-                  </Btn>
-                  <Btn
-                    onClick={removeAllExtensions}
-                    variant="outline"
-                    style={{ padding: "6px 0" }}
-                  >
+                  </CcDualListBtn>
+                  <CcDualListBtn onClick={removeAllExtensions}>
                     &lt;&lt;
-                  </Btn>
+                  </CcDualListBtn>
                 </div>
-                {/* Selected */}
                 <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: C.accent,
-                      marginBottom: 6,
-                      textAlign: "center",
-                    }}
-                  >
-                    Selected
-                  </div>
+                  <div style={pbxDualListLabelStyle}>Selected</div>
                   <select
                     multiple
+                    size={6}
                     value={chosenSelected}
                     onChange={(e) =>
                       setChosenSelected(
                         Array.from(e.target.selectedOptions, (o) => o.value),
                       )
                     }
-                    style={{
-  width: "100%",
-  height: 180,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 8,
-  fontSize: 13,
-  background: "#fff",
-  outline: "none",
-}}
+                    style={ccDualListSelectStyle}
                   >
-                    {selectedExtensions.map((ext) => (
-                      <option key={ext} value={ext}>
-                        {getExtensionLabel(ext)}
+                    {selectedExtensions.length === 0 ? (
+                      <option disabled value="">
+                        No selected extensions
                       </option>
-                    ))}
+                    ) : (
+                      selectedExtensions.map((ext) => (
+                        <option key={ext} value={ext}>
+                          {getExtensionLabel(ext)}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
-                {/* Sort Controls - EXACTLY FROM REFERENCE */}
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: 6,
-                    justifyContent: "center",
-                    paddingTop: 24,
+                    gap: 4,
+                    paddingTop: 28,
                   }}
                 >
-                  <Btn
-                    onClick={moveExtensionToBottom}
-                    variant="outline"
-                    style={{ padding: "6px 0" }}
+                  <CcDualListBtn
+                    reorder
                     title="Move to bottom"
+                    onClick={moveExtensionToBottom}
                   >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <polyline
-                        points="2,3 7,8 12,3"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <line
-                        x1="2"
-                        y1="11"
-                        x2="12"
-                        y2="11"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </Btn>
-                  <Btn
-                    onClick={moveExtensionUp}
-                    variant="outline"
-                    style={{ padding: "6px 0" }}
+                    vv
+                  </CcDualListBtn>
+                  <CcDualListBtn
+                    reorder
                     title="Move up"
+                    onClick={moveExtensionUp}
                   >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <polyline
-                        points="2,9 7,4 12,9"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Btn>
-                  <Btn
-                    onClick={moveExtensionDown}
-                    variant="outline"
-                    style={{ padding: "6px 0" }}
+                    ^
+                  </CcDualListBtn>
+                  <CcDualListBtn
+                    reorder
                     title="Move down"
+                    onClick={moveExtensionDown}
                   >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <polyline
-                        points="2,5 7,10 12,5"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Btn>
-                  <Btn
-                    onClick={moveExtensionToTop}
-                    variant="outline"
-                    style={{ padding: "6px 0" }}
+                    v
+                  </CcDualListBtn>
+                  <CcDualListBtn
+                    reorder
                     title="Move to top"
+                    onClick={moveExtensionToTop}
                   >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <line
-                        x1="2"
-                        y1="3"
-                        x2="12"
-                        y2="3"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      <polyline
-                        points="2,11 7,6 12,11"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Btn>
+                    ^^
+                  </CcDualListBtn>
                 </div>
               </div>
-            </div>
+            </SectionCard>
           </div>
         </DialogContent>
         <DialogActions
           style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+            display: "flex",
             justifyContent: "center",
-            gap: 12,
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
-  onClick={handleSave}
-  disabled={loading.save}
-  variant="primary"
- style={{ minWidth: 100, height: 33, fontSize: 13 }}
->
-  {loading.save ? "Saving..." : "Save"}
-</Btn>
+            onClick={handleSave}
+            disabled={loading.save}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save ? "Saving..." : "Save"}
+          </Btn>
           <Btn
-  onClick={handleCloseModal}
-  disabled={loading.save}
-  variant="cancel"
-   style={{ minWidth: 100, height: 33 }}
->
-  Close
-</Btn>
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            variant="cancel"
+            style={pbxModalCancelBtnStyle}
+          >
+            Close
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

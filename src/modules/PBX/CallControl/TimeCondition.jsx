@@ -1,7 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { Alert, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import {
+  Alert,
+  Checkbox,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  TextField,
+} from "@mui/material";
 import {
   TC_TITLE,
   TC_TYPES,
@@ -31,7 +41,8 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  pbxModalCancelBtnStyle,
+} from "../../../shared/pbxSharedUi";
 import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
@@ -39,7 +50,35 @@ import {
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
+import {
+  modalTextFieldFullSx,
+  nativeFieldInteraction,
+  OUTLINED_BORDER,
+} from "../../../shared/pbxSharedUi";
+
+const TC_TIME_SELECT_HEIGHT = 26;
+const TC_TIME_SELECT_WIDTH = 42;
+
+const timeSelectStyle = {
+  width: TC_TIME_SELECT_WIDTH,
+  minWidth: TC_TIME_SELECT_WIDTH,
+  maxWidth: TC_TIME_SELECT_WIDTH,
+  minHeight: TC_TIME_SELECT_HEIGHT,
+  height: TC_TIME_SELECT_HEIGHT,
+  padding: "3px 10px 3px 3px",
+  fontSize: 12,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  appearance: "auto",
+};
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const pad = (n) => String(n ?? 0).padStart(2, "0");
@@ -98,13 +137,14 @@ const apiSlotsToFormRanges = (slots) =>
   }));
 
 // ─── sub-components ───────────────────────────────────────────────────────────
-const FieldRow = ({ label, required, children }) => (
+const FieldRow = ({ label, required, children, fitContent }) => (
   <div
     style={{
       display: "flex",
       alignItems: "flex-start",
       gap: 16,
       marginBottom: 14,
+      width: fitContent ? "max-content" : "100%",
     }}
   >
     <label
@@ -113,27 +153,52 @@ const FieldRow = ({ label, required, children }) => (
         flexShrink: 0,
         fontSize: 13,
         fontWeight: 600,
-        color: "#374151",
+        color: "#30415A",
         paddingTop: 4,
       }}
     >
       {label}
       {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
     </label>
-    <div style={{ flex: 1 }}>{children}</div>
+    <div style={fitContent ? { flexShrink: 0 } : { flex: 1 }}>{children}</div>
   </div>
 );
+
+const modalCheckboxLabelSx = {
+  margin: 0,
+  whiteSpace: "nowrap",
+  "& .MuiFormControlLabel-label": {
+    fontSize: 13,
+    color: "#30415A",
+    lineHeight: 1.2,
+  },
+};
+
+const modalCheckboxAllLabelSx = {
+  ...modalCheckboxLabelSx,
+  "& .MuiFormControlLabel-label": {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#2563eb",
+    lineHeight: 1.2,
+  },
+};
 
 const CheckGroup = ({ items, checked, onChange, cols = 7 }) => {
   const allValues = items.map((item) =>
     typeof item === "object" ? item.value : item,
   );
+  const allChecked =
+    checked.length === allValues.length && allValues.length > 0;
+  const someChecked =
+    checked.length > 0 && checked.length < allValues.length;
+
   return (
     <div
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${cols}, auto)`,
-        gap: "4px 12px",
+        gap: "2px 10px",
         justifyContent: "start",
       }}
     >
@@ -141,64 +206,143 @@ const CheckGroup = ({ items, checked, onChange, cols = 7 }) => {
         const val = typeof item === "object" ? item.value : item;
         const lbl = typeof item === "object" ? item.label : item;
         return (
-          <label
+          <FormControlLabel
             key={val}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              fontSize: 13,
-              cursor: "pointer",
-              userSelect: "none",
-              whiteSpace: "nowrap",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={checked.includes(val)}
-              onChange={() => onChange(val)}
-              style={{ accentColor: "#3b82f6", width: 14, height: 14 }}
-            />
-            {lbl}
-          </label>
+            control={
+              <Checkbox
+                size="small"
+                checked={checked.includes(val)}
+                onChange={() => onChange(val)}
+                sx={checkboxSx}
+              />
+            }
+            label={lbl}
+            sx={modalCheckboxLabelSx}
+          />
         );
       })}
-      {/* All checkbox */}
-      <label
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          fontSize: 13,
-          cursor: "pointer",
-          userSelect: "none",
-          color: "#2563eb",
-          fontWeight: 600,
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={checked.length === allValues.length && allValues.length > 0}
-          onChange={() => onChange("__ALL__")}
-          style={{ accentColor: "#3b82f6", width: 14, height: 14 }}
-        />
-        All
-      </label>
+      <FormControlLabel
+        control={
+          <Checkbox
+            size="small"
+            checked={allChecked}
+            indeterminate={someChecked}
+            onChange={() => onChange("__ALL__")}
+            sx={checkboxSx}
+          />
+        }
+        label="All"
+        sx={modalCheckboxAllLabelSx}
+      />
     </div>
   );
 };
+
+const TIME_COL_LABEL_STYLE = {
+  fontSize: 11,
+  color: C.labelText,
+  fontWeight: 600,
+  textAlign: "center",
+  lineHeight: 1.2,
+  minHeight: 15,
+};
+
+const TIME_ROW_LABEL_STYLE = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#30415A",
+  flexShrink: 0,
+  paddingBottom: 2,
+};
+
+const TimeCol = ({ label, showLabel, children }) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: 2,
+      flexShrink: 0,
+    }}
+  >
+    <span
+      style={{
+        ...TIME_COL_LABEL_STYLE,
+        visibility: showLabel ? "visible" : "hidden",
+      }}
+    >
+      {label}
+    </span>
+    {children}
+  </div>
+);
+
+const TimeColon = () => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 2,
+      flexShrink: 0,
+    }}
+  >
+    <span
+      style={{
+        ...TIME_COL_LABEL_STYLE,
+        visibility: "hidden",
+      }}
+    >
+      :
+    </span>
+    <span
+      style={{
+        fontSize: 12,
+        lineHeight: 1,
+        display: "flex",
+        alignItems: "center",
+        alignSelf: "center",
+        height: TC_TIME_SELECT_HEIGHT,
+      }}
+    >
+      :
+    </span>
+  </div>
+);
+
+const TimeGroup = ({
+  showLabel,
+  hourValue,
+  minuteValue,
+  onHourChange,
+  onMinuteChange,
+  hourOptions,
+  minuteOptions,
+}) => (
+  <div style={{ display: "flex", alignItems: "flex-end", gap: 4 }}>
+    <TimeCol label="Hour" showLabel={showLabel}>
+      <TimeSelect
+        value={hourValue}
+        onChange={onHourChange}
+        options={hourOptions}
+      />
+    </TimeCol>
+    <TimeColon />
+    <TimeCol label="Minute" showLabel={showLabel}>
+      <TimeSelect
+        value={minuteValue}
+        onChange={onMinuteChange}
+        options={minuteOptions}
+      />
+    </TimeCol>
+  </div>
+);
 
 const TimeSelect = ({ value, onChange, options }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    style={{
-      border: "1px solid #cbd5e1",
-      borderRadius: 4,
-      fontSize: 12,
-      padding: "2px 4px",
-      background: "#fff",
-    }}
+    style={timeSelectStyle}
+    {...nativeFieldInteraction}
   >
     {options.map((o) => (
       <option key={o} value={o}>
@@ -555,7 +699,9 @@ const TimeCondition = () => {
                         checked={allRowsSelected}
                         indeterminate={someRowsSelected}
                         onChange={() =>
-                          allRowsSelected ? handleUncheckAll() : handleCheckAll()
+                          allRowsSelected
+                            ? handleUncheckAll()
+                            : handleCheckAll()
                         }
                         disabled={loading.delete || loading.fetch}
                         sx={checkboxSx}
@@ -752,7 +898,7 @@ const TimeCondition = () => {
         }}
         PaperProps={{
           sx: {
-            width: 680,
+            width: "max-content",
             maxWidth: "96vw",
             mx: "auto",
             borderRadius: "8px",
@@ -792,247 +938,204 @@ const TimeCondition = () => {
               borderRadius: 8,
               padding: 20,
               marginTop: 22,
+              width: "max-content",
+              maxWidth: "100%",
+              boxSizing: "border-box",
             }}
           >
-              {/* Name */}
-              <FieldRow label="Name" required>
-                <input
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, name: e.target.value }))
-                  }
-                  placeholder="Enter name"
-                  style={{
-                    width: "100%",
-                    height: 34,
-                    padding: "0 10px",
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 4,
-                    fontSize: 13,
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
-                />
-              </FieldRow>
+            {/* Name */}
+            <FieldRow label="Name" required>
+              <TextField
+                value={form.name}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, name: e.target.value }))
+                }
+                placeholder="Enter name"
+                size="small"
+                fullWidth
+                variant="outlined"
+                sx={modalTextFieldFullSx}
+              />
+            </FieldRow>
 
-              {/* Type */}
-              <FieldRow label="Type" required>
-                <div style={{ display: "flex", gap: 20 }}>
-                  {TC_TYPES.map((t) => (
-                    <label
-                      key={t.value}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        fontSize: 13,
-                        cursor: "pointer",
-                        fontWeight: form.type === t.value ? 600 : 400,
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="tc_type"
-                        value={t.value}
-                        checked={form.type === t.value}
-                        onChange={() =>
-                          setForm((p) => ({ ...p, type: t.value }))
-                        }
-                        style={{ accentColor: "#3b82f6" }}
-                      />
-                      {t.label}
-                    </label>
-                  ))}
-                </div>
-              </FieldRow>
+            {/* Type */}
+            <FieldRow label="Type" required>
+              <div style={{ display: "flex", gap: 20 }}>
+                {TC_TYPES.map((t) => (
+                  <label
+                    key={t.value}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontSize: 13,
+                      cursor: "pointer",
+                      fontWeight: form.type === t.value ? 600 : 400,
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="tc_type"
+                      value={t.value}
+                      checked={form.type === t.value}
+                      onChange={() => setForm((p) => ({ ...p, type: t.value }))}
+                      style={{ accentColor: "#3b82f6" }}
+                    />
+                    {t.label}
+                  </label>
+                ))}
+              </div>
+            </FieldRow>
 
-              {/* ── WorkTime fields ── */}
-              {form.type === "worktime" && (
-                <>
-                  <FieldRow label="Settings" required>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 6,
-                      }}
-                    >
+            {/* ── WorkTime fields ── */}
+            {form.type === "worktime" && (
+              <>
+                <FieldRow label="Settings" required fitContent>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                    }}
+                  >
+                    {form.timeRanges.map((tr, i) => (
                       <div
+                        key={i}
                         style={{
                           display: "flex",
+                          alignItems: "flex-end",
                           gap: 8,
-                          alignItems: "center",
-                          fontSize: 11,
-                          color: "#64748b",
-                          fontWeight: 600,
-                          paddingLeft: 70,
                         }}
                       >
-                        <span style={{ width: 80, textAlign: "center" }}>
-                          Hour
+                        <span style={{ ...TIME_ROW_LABEL_STYLE, width: 70 }}>
+                          StartTime
                         </span>
-                        <span style={{ width: 60, textAlign: "center" }}>
-                          Minute
-                        </span>
-                        <span style={{ width: 16 }} />
-                        <span style={{ width: 80, textAlign: "center" }}>
-                          Hour
-                        </span>
-                        <span style={{ width: 60, textAlign: "center" }}>
-                          Minute
-                        </span>
-                      </div>
-                      {form.timeRanges.map((tr, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
-                          }}
+                        <TimeGroup
+                          showLabel={i === 0}
+                          hourValue={tr.startHour}
+                          minuteValue={tr.startMinute}
+                          onHourChange={(v) =>
+                            updateTimeRange(i, "startHour", v)
+                          }
+                          onMinuteChange={(v) =>
+                            updateTimeRange(i, "startMinute", v)
+                          }
+                          hourOptions={TC_HOURS}
+                          minuteOptions={TC_MINUTES}
+                        />
+                        <span
+                          style={{ ...TIME_ROW_LABEL_STYLE, marginLeft: 4 }}
                         >
-                          <span
+                          EndTime
+                        </span>
+                        <TimeGroup
+                          showLabel={i === 0}
+                          hourValue={tr.endHour}
+                          minuteValue={tr.endMinute}
+                          onHourChange={(v) => updateTimeRange(i, "endHour", v)}
+                          onMinuteChange={(v) =>
+                            updateTimeRange(i, "endMinute", v)
+                          }
+                          hourOptions={TC_HOURS}
+                          minuteOptions={TC_MINUTES}
+                        />
+                        {i === form.timeRanges.length - 1 ? (
+                          <button
+                            onClick={addTimeRange}
                             style={{
-                              fontSize: 12,
-                              color: "#374151",
-                              width: 70,
-                              flexShrink: 0,
+                              width: 24,
+                              height: 24,
+                              borderRadius: 4,
+                              background: "#64748b",
+                              color: "#fff",
+                              border: "none",
+                              fontSize: 16,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            StartTime
-                          </span>
-                          <TimeSelect
-                            value={tr.startHour}
-                            onChange={(v) => updateTimeRange(i, "startHour", v)}
-                            options={TC_HOURS}
-                          />
-                          <span style={{ fontSize: 12 }}>:</span>
-                          <TimeSelect
-                            value={tr.startMinute}
-                            onChange={(v) =>
-                              updateTimeRange(i, "startMinute", v)
-                            }
-                            options={TC_MINUTES}
-                          />
-                          <span
+                            +
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => removeTimeRange(i)}
                             style={{
-                              fontSize: 12,
-                              color: "#374151",
-                              marginLeft: 4,
+                              width: 24,
+                              height: 24,
+                              borderRadius: 4,
+                              background: "#e2e8f0",
+                              color: "#64748b",
+                              border: "none",
+                              fontSize: 16,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            EndTime
-                          </span>
-                          <TimeSelect
-                            value={tr.endHour}
-                            onChange={(v) => updateTimeRange(i, "endHour", v)}
-                            options={TC_HOURS}
-                          />
-                          <span style={{ fontSize: 12 }}>:</span>
-                          <TimeSelect
-                            value={tr.endMinute}
-                            onChange={(v) => updateTimeRange(i, "endMinute", v)}
-                            options={TC_MINUTES}
-                          />
-                          {i === form.timeRanges.length - 1 ? (
-                            <button
-                              onClick={addTimeRange}
-                              style={{
-                                width: 24,
-                                height: 24,
-                                borderRadius: 4,
-                                background: "#64748b",
-                                color: "#fff",
-                                border: "none",
-                                fontSize: 16,
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              +
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => removeTimeRange(i)}
-                              style={{
-                                width: 24,
-                                height: 24,
-                                borderRadius: 4,
-                                background: "#e2e8f0",
-                                color: "#64748b",
-                                border: "none",
-                                fontSize: 16,
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              ×
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </FieldRow>
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </FieldRow>
 
-                  <FieldRow label="Day of Week" required>
-                    <CheckGroup
-                      items={TC_DAYS_OF_WEEK}
-                      checked={form.daysOfWeek}
-                      onChange={(v) =>
-                        toggleCheck("daysOfWeek", v, allDayValues)
-                      }
-                      cols={4}
-                    />
-                  </FieldRow>
-                </>
-              )}
+                <FieldRow label="Day of Week" required>
+                  <CheckGroup
+                    items={TC_DAYS_OF_WEEK}
+                    checked={form.daysOfWeek}
+                    onChange={(v) => toggleCheck("daysOfWeek", v, allDayValues)}
+                    cols={4}
+                  />
+                </FieldRow>
+              </>
+            )}
 
-              {/* ── Holiday fields ── */}
-              {form.type === "holiday" && (
-                <>
-                  <FieldRow label="Month" required>
-                    <CheckGroup
-                      items={TC_MONTHS}
-                      checked={form.months}
-                      onChange={(v) => toggleCheck("months", v, allMonthValues)}
-                      cols={6}
-                    />
-                  </FieldRow>
+            {/* ── Holiday fields ── */}
+            {form.type === "holiday" && (
+              <>
+                <FieldRow label="Month" required>
+                  <CheckGroup
+                    items={TC_MONTHS}
+                    checked={form.months}
+                    onChange={(v) => toggleCheck("months", v, allMonthValues)}
+                    cols={6}
+                  />
+                </FieldRow>
 
-                  <FieldRow label="Day of Month" required>
-                    <CheckGroup
-                      items={TC_DAYS_OF_MONTH.map(String)}
-                      checked={form.daysOfMonth.map(String)}
-                      onChange={(v) => {
-                        if (v === "__ALL__") {
-                          setForm((p) => ({
+                <FieldRow label="Day of Month" required>
+                  <CheckGroup
+                    items={TC_DAYS_OF_MONTH.map(String)}
+                    checked={form.daysOfMonth.map(String)}
+                    onChange={(v) => {
+                      if (v === "__ALL__") {
+                        setForm((p) => ({
+                          ...p,
+                          daysOfMonth:
+                            p.daysOfMonth.length === allDomValues.length
+                              ? []
+                              : allDomValues,
+                        }));
+                      } else {
+                        setForm((p) => {
+                          const cur = p.daysOfMonth.map(String);
+                          return {
                             ...p,
-                            daysOfMonth:
-                              p.daysOfMonth.length === allDomValues.length
-                                ? []
-                                : allDomValues,
-                          }));
-                        } else {
-                          setForm((p) => {
-                            const cur = p.daysOfMonth.map(String);
-                            return {
-                              ...p,
-                              daysOfMonth: cur.includes(v)
-                                ? cur.filter((d) => d !== v)
-                                : [...cur, v],
-                            };
-                          });
-                        }
-                      }}
-                      cols={7}
-                    />
-                  </FieldRow>
-                </>
-              )}
+                            daysOfMonth: cur.includes(v)
+                              ? cur.filter((d) => d !== v)
+                              : [...cur, v],
+                          };
+                        });
+                      }
+                    }}
+                    cols={7}
+                  />
+                </FieldRow>
+              </>
+            )}
           </div>
         </DialogContent>
 
@@ -1065,7 +1168,7 @@ const TimeCondition = () => {
             variant="cancel"
             onClick={closeModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>

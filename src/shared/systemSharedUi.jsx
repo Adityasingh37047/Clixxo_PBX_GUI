@@ -1,7 +1,7 @@
 /**
  * System › System Settings — fill-box borders match PBX Extension Group › Group Name.
  */
-import { C } from "../numManipulate/numManipulateSharedUi";
+import { C } from "./numManipulateSharedUi";
 import {
   OUTLINED_BORDER,
   OUTLINED_HOVER,
@@ -13,7 +13,7 @@ import {
   nativeFieldInputStyle,
   nativeFieldInteraction,
   getNativeFieldInteraction,
-} from "../shared/outlinedFieldUi";
+} from "./outlinedFieldUi";
 
 export {
   C,
@@ -112,3 +112,6 @@ export const inputInteraction = nativeFieldInteraction;
  * Overrides index.css 4px !important — matches systemFieldInputStyle (10px, 34px).
  */
 export const SYSTEM_SETTINGS_NATIVE_FIELD_CLASS = "system-settings-native-field";
+
+export * from "./advancedSharedUi";
+export * from "./systemSettingsTableUi";

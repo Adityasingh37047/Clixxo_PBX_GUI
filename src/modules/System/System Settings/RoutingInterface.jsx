@@ -4,12 +4,12 @@ import axiosInstance from "../../../api/axiosInstance";
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/systemSharedUi";
 import {
   systemFieldInputStyleNarrow as inputStyle,
   inputInteraction,
   SYSTEM_SETTINGS_NATIVE_FIELD_CLASS,
-} from "../../../sections/system/systemSharedUi";
+} from "../../../shared/systemSharedUi";
 
 const fetchRoutingInfo = async () => {
   const res = await axiosInstance.get("/get-routing-info");

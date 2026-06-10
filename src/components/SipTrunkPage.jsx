@@ -38,12 +38,10 @@ import {
   systemSettingsPageBadgeStyle,
   SystemSettingsBreadcrumb,
   SYSTEM_SETTINGS_CARD_RADIUS,
-} from "../sections/system/systemSettingsTableUi";
-import {
   systemModalFieldInputStyle,
   systemModalSelectSx,
   inputInteraction,
-} from "../sections/system/systemSharedUi";
+} from "../shared/systemSharedUi";
 import {
   listGlobalSipSettings,
   createGlobalSipSettings,

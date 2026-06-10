@@ -26,29 +26,22 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 
-const CARD_RADIUS = 10; 
+const CARD_RADIUS = 10;
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -77,7 +70,7 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -162,22 +155,21 @@ const Btn = ({
   );
 };
 
-
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-    background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
     }}
   >
     {children}
@@ -185,20 +177,20 @@ letterSpacing: "0.14em",
 );
 
 const tdStyle = {
-padding: "7px 14px",
-fontSize: 13,
-color: C.valueText,
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
 };
 
 const checkboxSx = {
-padding: "1px",
-color: "#3E5475",
-"&.Mui-checked": { color: "#0284c7" },
-"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const FieldRow = ({ label, children, required, align = "center" }) => (
@@ -220,22 +212,33 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
 );
 
 const SectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 16px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      margin: "16px 0 16px 0",
+    }}
+  >
     <span
       style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
+        fontSize: 12,
+        fontWeight: 700,
+        color: C.labelText,
+        textTransform: "uppercase",
+        letterSpacing: "0.04em",
       }}
     >
       {title}
     </span>
+
+    <div
+      style={{
+        flex: 1,
+        height: 1,
+        background: C.cardBorder,
+        marginLeft: 12,
+      }}
+    />
   </div>
 );
 
@@ -547,13 +550,44 @@ const SpeedDialPage = () => {
         <PbxBreadcrumb section="Call Features" current="Speed Dial" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    border: `0.5px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -573,9 +607,16 @@ const SpeedDialPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="danger"
-                style={sipPcmCancelBtnStyle}
-              >  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-              Delete
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                {" "}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
                 onClick={() => {
@@ -584,12 +625,24 @@ const SpeedDialPage = () => {
                   setImportResult(null);
                 }}
                 variant="outline"
-                style={sipPcmCancelBtnStyle}
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 ⬇ Import
               </Btn>
-              <Btn onClick={handleExport} variant="outline"
-              style={sipPcmCancelBtnStyle}
+              <Btn
+                onClick={handleExport}
+                variant="outline"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
                 ⬆ Export
               </Btn>
@@ -605,28 +658,31 @@ const SpeedDialPage = () => {
                   "Refresh"
                 )}
               </Btn> */}
-              
+
               <Btn
-  onClick={handleOpenAddModal}
-  disabled={loading.list}
-  variant="primary"
-  style={{
+                onClick={handleOpenAddModal}
+                disabled={loading.list}
+                variant="primary"
+                style={{
                   height: 30,
                   padding: "6px 14px",
                   fontSize: 12,
                   borderRadius: 10,
                 }}
->
-  + Add New
-</Btn>
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
           {/* Table */}
-          <div style={{ 
-overflowX: "auto",
-overflowY: "auto",
-flex: 1,}}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -642,21 +698,25 @@ flex: 1,}}>
             ) : (
               <table
                 style={{
-                 width: "100%",
-borderCollapse: "separate",
-borderSpacing: 0,
-tableLayout: "auto",
-minWidth: 900,
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
                 }}
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10, }}>
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
@@ -665,115 +725,156 @@ minWidth: 900,
                         sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}>ID</TH>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      ID
+                    </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Name
                     </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Speed Dial Number</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Destination</TH>
-                    <TH style={{width: 70,
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Speed Dial Number
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Destination
+                    </TH>
+                    <TH
+                      style={{
+                        width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10}}>Modify</TH>
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const rowBgColor = isSelected
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const rowBgColor = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
 
-                      return (
-                        <tr
-                          key={row.id || realIdx}
+                    return (
+                      <tr
+                        key={row.id || realIdx}
+                        style={{
+                          background: rowBgColor,
+                          borderBottom: "1px solid #f1f5f9",
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBgColor;
+                        }}
+                      >
+                        <td
                           style={{
+                            ...tdStyle,
                             background: rowBgColor,
-                            borderBottom: "1px solid #f1f5f9",
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBgColor;
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
-                          <td
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleToggleRow(realIdx)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBgColor,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBgColor,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.name}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBgColor,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
                             style={{
-                              ...tdStyle, background: rowBgColor,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                              background: "#f1f5f9",
+                              padding: "2px 8px",
+                              borderRadius: 10,
+                              fontSize: 10,
+                              fontWeight: 600,
                             }}
                           >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(realIdx)}
-                         sx={checkboxSx}
-                            />
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle, background: rowBgColor,
-                               borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {realIdx + 1}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle, background: rowBgColor,
-                               borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                              
-                            }}
-                          >
-                            {row.name}
-                          </td>
-                          <td
-                            style={{
-                           ...tdStyle, background: rowBgColor,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <span
-                              style={{
-                                background: "#f1f5f9",
-                                padding: "2px 8px",
-                                borderRadius: 10,
-                                fontSize: 10,
-                                fontWeight: 600,
-                              }}
-                            >
-                              {row.speedDialNumber}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle, background: rowBgColor,
-                               borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {row.destination}
-                          </td>
-                          <td
-                            style={{ textAlign: "center", padding: "4px 8px" ,  ...tdStyle, background: rowBgColor, borderBottom: isLastRow ? "none" : tdStyle.borderBottom,}}
-                          >
-                           <EditDocumentIcon
-  className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-  titleAccess="Edit"
-  onClick={() => handleOpenEditModal(row)}
-/>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                            {row.speedDialNumber}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBgColor,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.destination}
+                        </td>
+                        <td
+                          style={{
+                            textAlign: "center",
+                            padding: "4px 8px",
+                            ...tdStyle,
+                            background: rowBgColor,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                            titleAccess="Edit"
+                            onClick={() => handleOpenEditModal(row)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -781,13 +882,50 @@ minWidth: 900,
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              recordLabel="record"
-              onPageChange={(p) => setPage(p)}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 14px",
+                borderTop: `0.5px solid ${C.cardBorder}`,
+                background: "#f8fafc",
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.list || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.list || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -813,12 +951,12 @@ minWidth: 900,
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor:"#ffffff", }}
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                 background: "#f5f7fa",
+                background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: "20px 24px 16px",
@@ -845,7 +983,11 @@ minWidth: 900,
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px",backgroundColor: "#fff" },
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
                       }}
                     />
                   </FieldRow>
@@ -857,7 +999,11 @@ minWidth: 900,
                       value={speedDialNumber}
                       onChange={(e) => setSpeedDialNumber(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px", backgroundColor: "#fff" },
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
                       }}
                     />
                   </FieldRow>
@@ -874,7 +1020,11 @@ minWidth: 900,
                       value={destination}
                       onChange={(e) => setDestination(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px", backgroundColor: "#fff"},
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
                       }}
                     />
                   </FieldRow>
@@ -892,30 +1042,27 @@ minWidth: 900,
             gap: 12,
           }}
         >
-      <Btn
-  onClick={handleSave}
-  disabled={loading.save}
-  variant="primary"
-   style={{ minWidth: 100, height: 33, fontSize: 13 }}
->
-  {loading.save ? (
-    <CircularProgress
-      size={13}
-      sx={{ color: "#fff", mr: 1 }}
-    />
-  ) : null}
+          <Btn
+            onClick={handleSave}
+            disabled={loading.save}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save ? (
+              <CircularProgress size={13} sx={{ color: "#fff", mr: 1 }} />
+            ) : null}
 
-  {loading.save
-    ? "Saving..."
-    : editId != null
-      ? "Update Speed Dial"
-      : "Create Speed Dial"}
-</Btn>
+            {loading.save
+              ? "Saving..."
+              : editId != null
+                ? "Update Speed Dial"
+                : "Create Speed Dial"}
+          </Btn>
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-           style={{ minWidth: 100, height: 33 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>
@@ -1154,7 +1301,7 @@ minWidth: 900,
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
             variant="primary"
-             style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {importLoading ? (
               <CircularProgress size={14} sx={{ color: "#64748b", mr: 1 }} />

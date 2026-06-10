@@ -9,7 +9,7 @@ import {
   systemToolsLegacyFieldStyle as fieldStyle,
   systemToolsLegacySelectStyle as selectStyle,
   inputInteraction,
-} from './systemToolsSharedUi';
+} from '../../shared/maitenanceSharedUi';
 
 const getInitialState = () => {
   const state = {};

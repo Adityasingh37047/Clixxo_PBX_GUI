@@ -10,7 +10,7 @@ import {
 import {
   systemToolFieldInputStyle as inputStyle,
   inputInteraction,
-} from "../../../sections/system/systemSharedUi";
+} from "../../../shared/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",

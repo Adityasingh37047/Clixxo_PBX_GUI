@@ -11,11 +11,11 @@ import { Alert, CircularProgress } from "@mui/material";
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 import {
   systemToolsFieldSelectStyle as selectStyle,
   inputInteraction,
-} from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {

@@ -70,10 +70,78 @@ export const modalTextFieldSx = {
   },
 };
 
-/** Modal / form Select — full width */
+/** Modal text inputs — same 36px height + borders as modalSelectSx */
+export const modalTextFieldFullSx = {
+  ...muiTextFieldSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+/** Modal / form Select — full width, 36px height */
 export const modalSelectSx = {
   ...muiSelectSx,
   width: "100%",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    height: 36,
+    backgroundColor: "#fff",
+  },
+};
+
+/**
+ * Gated modal field — disabled look matches Call Forwarding (grey bg, not-allowed).
+ * Merges with baseSx so enabled fields keep normal hover/focus borders.
+ */
+export const gatedModalFieldSx = (
+  enabled,
+  baseSx = modalSelectSx,
+  enabledCursor = "pointer",
+) => {
+  const outlinedRootSx = baseSx["& .MuiOutlinedInput-root"] || {};
+  const outlinedInputSx = baseSx["& .MuiOutlinedInput-input"] || {};
+  const disabledBg = "#f1f5f9";
+
+  return {
+    ...baseSx,
+    backgroundColor: enabled ? "#fff" : disabledBg,
+    cursor: enabled ? enabledCursor : "not-allowed",
+    ...(!enabled && {
+      "&:hover .MuiOutlinedInput-notchedOutline": {
+        borderColor: OUTLINED_BORDER,
+      },
+    }),
+    "& .MuiOutlinedInput-root": {
+      ...outlinedRootSx,
+      backgroundColor: enabled ? "#fff" : disabledBg,
+      cursor: enabled ? enabledCursor : "not-allowed",
+      ...(!enabled && {
+        "&:hover fieldset": { borderColor: OUTLINED_BORDER },
+      }),
+    },
+    "& .MuiOutlinedInput-input, & .MuiInputBase-input": {
+      ...outlinedInputSx,
+      backgroundColor: enabled ? "#fff" : disabledBg,
+      cursor: enabled ? enabledCursor : "not-allowed",
+    },
+    "& .MuiSelect-select": {
+      cursor: enabled ? enabledCursor : "not-allowed",
+    },
+    "&.Mui-disabled, & .MuiOutlinedInput-root.Mui-disabled": {
+      cursor: "not-allowed",
+      backgroundColor: disabledBg,
+    },
+  };
 };
 
 /** Extra 1px ring on focus — border stays 1px so layout does not shift */

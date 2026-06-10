@@ -9,13 +9,13 @@ import { Alert, Checkbox } from "@mui/material";
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 import {
   systemToolsEditableFieldInputStyle,
   systemToolsEditableFieldInputStyleCompact,
   systemToolsReadOnlyFieldTextAreaStyle,
   inputInteraction,
-} from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {

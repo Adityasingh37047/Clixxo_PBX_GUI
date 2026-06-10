@@ -9,7 +9,7 @@ import {
   AdvancedFormCard,
   FieldRow,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const ActionUrlPage = () => {
   const [formData, setFormData] = useState(ACTION_URL_INITIAL_FORM);

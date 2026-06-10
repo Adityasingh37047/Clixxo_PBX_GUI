@@ -10,7 +10,8 @@ import {
   numManipulateCardStyle as baseCardStyle,
   numManipulateToolbarStyle as baseToolbarStyle,
   numManipulatePaginationStyle as basePaginationStyle,
-} from "../numManipulate/numManipulateSharedUi";
+  pbxModalCancelBtnStyle,
+} from "./numManipulateSharedUi";
 import {
   OUTLINED_BORDER,
   OUTLINED_HOVER,
@@ -19,7 +20,7 @@ import {
   muiSelectSx,
   nativeFieldInputStyle,
   nativeFieldInteraction,
-} from "../shared/outlinedFieldUi";
+} from "./outlinedFieldUi";
 
 export { C, Btn, TH, tdStyle, checkboxSx };
 
@@ -196,10 +197,7 @@ export const trunkModalPrimaryBtnStyle = {
   fontSize: 13,
 };
 
-export const trunkModalCancelBtnStyle = {
-  minWidth: 100,
-  height: 33,
-};
+export const trunkModalCancelBtnStyle = pbxModalCancelBtnStyle;
 
 export const trunkToolbarBtnStyle = { height: 30 };
 
@@ -257,29 +255,5 @@ export const TRUNK_SECTION_HEADING_COLOR = "#30415A";
 /** Field labels — Trunk Type, Get CalledID Type, ulaw, Match Mode, etc. */
 export const TRUNK_FIELD_LABEL_COLOR = "#3E5475";
 
-/** Modal section heading — matches Network page LAN 1 (line + label) */
-export const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#f8fafc",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: TRUNK_SECTION_HEADING_COLOR,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
+/** Modal section heading — aligned with PBX Add Extension modal sections */
+export { PbxModalSectionHeading as TrunkModalSectionHeading } from "./numManipulateSharedUi";

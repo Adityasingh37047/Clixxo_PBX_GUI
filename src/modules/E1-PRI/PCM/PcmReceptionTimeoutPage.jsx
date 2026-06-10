@@ -10,7 +10,7 @@ import {
   addHostFormPanelStyle,
   nativeFieldInputStyle,
   nativeFieldInteraction,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/e1PriSharedUi";
 
 // ── Color palette (same as SIPAccountGenerator) ───────────────────────────────
 const C = {

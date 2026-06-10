@@ -9,7 +9,7 @@ import {
 import {
   systemToolsLegacyFieldStyle as fieldStyle,
   inputInteraction,
-} from './systemToolsSharedUi';
+} from '../../shared/maitenanceSharedUi';
 
 function DnsTest() {
   const [domain, setDomain] = useState('');

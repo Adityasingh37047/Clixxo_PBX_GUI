@@ -23,7 +23,7 @@ import {
   sipPcmAuthInputStyle,
   sipPcmAuthInputInteraction,
   sipPcmAuthMuiSelectSx,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 import {
   listMediaSettings,
   updateMediaSettings,

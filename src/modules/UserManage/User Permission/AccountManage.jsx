@@ -20,11 +20,11 @@ import Alert from "@mui/material/Alert";
 import Checkbox from "@mui/material/Checkbox";
 import {
   addHostFormPanelStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/userManageSharedUi";
 import {
   userPermissionModalInputStyle as modalInputStyle,
   inputInteraction,
-} from "../../../sections/userPermission/userPermissionSharedUi";
+} from "../../../shared/userManageSharedUi";
 
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {

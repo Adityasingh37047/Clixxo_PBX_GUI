@@ -28,27 +28,20 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 
 const CARD_RADIUS = 20;
@@ -80,7 +73,7 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -165,23 +158,22 @@ const Btn = ({
   );
 };
 
-
 // ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
       background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
     }}
   >
     {children}
@@ -199,10 +191,10 @@ const tdStyle = {
 };
 
 const checkboxSx = {
-padding: "1px",
-color: "#3E5475",
-"&.Mui-checked": { color: "#0284c7" },
-"&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -525,9 +517,31 @@ const BlockedListPage = () => {
         <PbxBreadcrumb section="Call Features" current="Blocked List" />
 
         {/* Main Card */}
-        <div style={sipPcmCardStyle}>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
           {/* Toolbar */}
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS,
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -536,9 +550,18 @@ const BlockedListPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -620,7 +643,6 @@ const BlockedListPage = () => {
                 Next →
               </Btn> */}
 
-              
               {/* <Btn
                 onClick={loadRows}
                 disabled={loading.fetch}
@@ -638,23 +660,30 @@ const BlockedListPage = () => {
                   loading.delete || loading.fetch || selected.length === 0
                 }
                 variant="danger"
-                style={sipPcmCancelBtnStyle}
-              > <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-           Delete
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                {" "}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
-             <Btn
-  onClick={handleOpenAddModal}
-  disabled={loading.fetch}
-  variant="primary"
-  style={{
+              <Btn
+                onClick={handleOpenAddModal}
+                disabled={loading.fetch}
+                variant="primary"
+                style={{
                   height: 30,
                   padding: "6px 14px",
                   fontSize: 12,
                   borderRadius: 10,
                 }}
->
-  + Add New
-</Btn>
+              >
+                + Add New
+              </Btn>
             </div>
           </div>
 
@@ -705,42 +734,37 @@ const BlockedListPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx} 
+                        sx={checkboxSx}
                       />
                     </TH>
                     <TH
-                      style={{ width: 36, position: "sticky", top: 0, zIndex: 10  }}
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
                     >
                       ID
                     </TH>
-                    <TH
-                      style={{ position: "sticky", top: 0, zIndex: 10 }}
-                    >
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Name
                     </TH>
-                    <TH
-                      style={{ position: "sticky", top: 0, zIndex: 10 }}
-                    >
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Match Mode
                     </TH>
-                    <TH
-                      style={{ position: "sticky", top: 0, zIndex: 10 }}
-                    >
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Blocked List Number
                     </TH>
-                    <TH
-                     style={{ position: "sticky", top: 0, zIndex: 10 }}
-                    >
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Direction
                     </TH>
-                    <TH
-                      style={{ position: "sticky", top: 0, zIndex: 10 }}
-                    >
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Enable
                     </TH>
                     <TH
                       style={{
-                       width: 70,
+                        width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
@@ -753,187 +777,208 @@ const BlockedListPage = () => {
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const rowBg = isSelected
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
 
-                      const lastRowCellStyle =
-                        idx === pagedRows.length - 1 ? { borderBottom: "none" } : {};
+                    const lastRowCellStyle =
+                      idx === pagedRows.length - 1
+                        ? { borderBottom: "none" }
+                        : {};
 
-                      return (
-                        <tr
-                          key={row.id || realIdx}
+                    return (
+                      <tr
+                        key={row.id || realIdx}
+                        style={{
+                          background: rowBg,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f1f5f9";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
+                            ...tdStyle,
                             background: rowBg,
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected) e.currentTarget.style.background = rowBg;
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
-                          <td
-                            style={{
-                        ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <Checkbox
-  size="small"
-  checked={isSelected}
-  onChange={() => handleToggleRow(realIdx)}
-  sx={checkboxSx}
-/>
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            {realIdx + 1}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                              
-                            }}
-                          >
-                            {row.name}
-                          </td>
-                          <td
-                            style={{
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleToggleRow(realIdx)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
                             ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                             
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.name}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
+                            style={{
+                              color: C.valueText,
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            <span
+                            {row.matchMode}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          {row.blockedNumber}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
+                            style={{
+                              color:
+                                row.direction === "Inbound"
+                                  ? "#166534"
+                                  : row.direction === "Outbound"
+                                    ? C.accent
+                                    : "#475569",
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 72,
+                            }}
+                          >
+                            {row.direction}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <span
+                            style={{
+                              color:
+                                row.enabled === "Yes" ? "#166534" : "#475569",
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 72,
+                            }}
+                          >
+                            {row.enabled}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
                               style={{
-                                color: C.valueText,
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                cursor: "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: 0.7,
+                                transition: "opacity 0.15s ease",
                               }}
-                            >
-                              {row.matchMode}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                             ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                             
-                            }}
-                          >
-                            {row.blockedNumber}
-                          </td>
-                          <td
-                            style={{
-                             ...tdStyle,
-  background: rowBg,
-  borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            
-                            }}
-                          >
-                            <span
-                              style={{
-                                color:
-                                  row.direction === "Inbound"
-                                    ? "#166534"
-                                    : row.direction === "Outbound"
-                                      ? C.accent
-                                      : "#475569",
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 72,
-                              }}
-                            >
-                              {row.direction}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <span
-                              style={{
-                                color:
-                                  row.enabled === "Yes" ? "#166534" : "#475569",
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 72,
-                              }}
-                            >
-                              {row.enabled}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
-                            }}
-                          >
-                            <div style={{ display: "flex", justifyContent: "center" }}>
-                              <EditDocumentIcon
-                                titleAccess="Edit"
-                                onClick={() => handleOpenEditModal(row)}
-                                style={{
-                                  cursor: "pointer",
-                                  color: "#2563eb",
-                                  fontSize: 22,
-                                  opacity: 0.7,
-                                  transition: "opacity 0.15s ease",
-                                }}
-                                onMouseEnter={(e) =>
-                                  (e.currentTarget.style.opacity = "1")
-                                }
-                                onMouseLeave={(e) =>
-                                  (e.currentTarget.style.opacity = "0.7")
-                                }
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.style.opacity = "1")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.style.opacity = "0.7")
+                              }
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -941,13 +986,52 @@ const BlockedListPage = () => {
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              recordLabel="record"
-              onPageChange={(p) => setPage(p)}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "7px 14px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.fetch || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.fetch || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -972,30 +1056,37 @@ const BlockedListPage = () => {
           {editId != null ? "Edit Blocked Entry" : "Add Blocked Entry"}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "20px 24px",  background: "#ffffff", }}
-        >
+        <DialogContent style={{ padding: "20px 24px", background: "#ffffff" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                 background: "#f5f7fa",
+                background: "#f5f7fa",
                 border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
               }}
             >
-              <h3
+              <div
                 style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 12,
                   fontSize: 14,
                   fontWeight: 700,
                   color: C.labelText,
-                  marginBottom: 12,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
                 }}
               >
-                Block Settings
-              </h3>
+                <span>Block Settings</span>
+
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: C.cardBorder,
+                    marginLeft: 12,
+                  }}
+                />
+              </div>
 
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
@@ -1019,7 +1110,6 @@ const BlockedListPage = () => {
                         color: C.labelText,
                         width: 120,
                         flexShrink: 0,
-                        
                       }}
                     >
                       Name <span style={{ color: C.errorRed }}>*</span>
@@ -1030,7 +1120,11 @@ const BlockedListPage = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       inputProps={{
-                        style: { fontSize: 13, padding: "6px 8px" ,  backgroundColor: "#fff",},
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
                       }}
                     />
                   </div>
@@ -1059,9 +1153,15 @@ const BlockedListPage = () => {
                           else setSelectedExtension("");
                         }}
                         sx={{
-  fontSize: 13,
-  backgroundColor: "#fff",
-}}
+                          fontSize: 13,
+                          backgroundColor: "#fff",
+                          height: 32, // Name ke equal
+                          "& .MuiSelect-select": {
+                            padding: "6px 8px",
+                            display: "flex",
+                            alignItems: "center",
+                          },
+                        }}
                       >
                         <MenuItem
                           value="Exact Match"
@@ -1150,7 +1250,11 @@ const BlockedListPage = () => {
                         value={blockedNumber}
                         onChange={(e) => setBlockedNumber(e.target.value)}
                         inputProps={{
-                          style: { fontSize: 13, padding: "6px 8px",   backgroundColor: "#fff", },
+                          style: {
+                            fontSize: 13,
+                            padding: "6px 8px",
+                            backgroundColor: "#fff",
+                          },
                         }}
                       />
                     </div>
@@ -1180,7 +1284,16 @@ const BlockedListPage = () => {
                       <MuiSelect
                         value={direction}
                         onChange={(e) => setDirection(e.target.value)}
-                        sx={{ fontSize: 13 ,   backgroundColor: "#fff",}}
+                        sx={{
+                          fontSize: 13,
+                          backgroundColor: "#fff",
+                          height: 32,
+                          "& .MuiSelect-select": {
+                            padding: "6px 8px",
+                            display: "flex",
+                            alignItems: "center",
+                          },
+                        }}
                       >
                         <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
                           Inbound
@@ -1213,7 +1326,16 @@ const BlockedListPage = () => {
                       <MuiSelect
                         value={enabled}
                         onChange={(e) => setEnabled(e.target.value)}
-                        sx={{ fontSize: 13,  backgroundColor: "#fff", }}
+                        sx={{
+                          fontSize: 13,
+                          backgroundColor: "#fff",
+                          height: 32,
+                          "& .MuiSelect-select": {
+                            padding: "6px 8px",
+                            display: "flex",
+                            alignItems: "center",
+                          },
+                        }}
                       >
                         <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                           Yes
@@ -1239,33 +1361,33 @@ const BlockedListPage = () => {
             gap: 12,
           }}
         >
-        <Btn
-  onClick={handleSave}
-  disabled={loading.save}
-  variant="primary"
-  style={{ minWidth: 100, height: 33, fontSize: 13 }}
->
-  {loading.save ? (
-    <CircularProgress
-      size={13}
-      style={{ color: "#fff", marginRight: 8 }}
-    />
-  ) : null}
+          <Btn
+            onClick={handleSave}
+            disabled={loading.save}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save ? (
+              <CircularProgress
+                size={13}
+                style={{ color: "#fff", marginRight: 8 }}
+              />
+            ) : null}
 
-  {loading.save
-    ? "Saving..."
-    : editId != null
-      ? "Update Entry"
-      : "Create"}
-</Btn>
-         <Btn
-  onClick={handleCloseModal}
-  disabled={loading.save}
-  variant="cancel"
-   style={{ minWidth: 100, height: 33 }}
->
-  Cancel
-</Btn>
+            {loading.save
+              ? "Saving..."
+              : editId != null
+                ? "Update Entry"
+                : "Create"}
+          </Btn>
+          <Btn
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
+          >
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
 
@@ -1338,14 +1460,14 @@ const BlockedListPage = () => {
           >
             Import
           </Btn>
-         <Btn
+          <Btn
             onClick={() => {
               setShowImportModal(false);
               setImportFile(null);
             }}
             disabled={importLoading}
             variant="cancel"
-              style={{ minWidth: 100, height: 33 }}
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>

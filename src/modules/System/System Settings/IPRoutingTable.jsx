@@ -23,7 +23,7 @@ import {
   systemModalFieldInputStyle,
   systemModalSelectSx,
   inputInteraction,
-} from "../../../sections/system/systemSharedUi";
+} from "../../../shared/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",

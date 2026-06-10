@@ -12,7 +12,7 @@ import {
   AdvancedFormCard,
   FieldRow,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const AreaSelectPage = () => {
   const [formData, setFormData] = useState(AREA_SELECT_INITIAL_FORM);

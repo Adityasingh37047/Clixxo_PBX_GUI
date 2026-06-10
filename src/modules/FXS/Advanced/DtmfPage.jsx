@@ -10,7 +10,7 @@ import {
   AdvancedPageShell,
   AdvancedFormCard,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const DtmfPage = () => {
   const [formData, setFormData] = useState(DTMF_INITIAL_FORM);

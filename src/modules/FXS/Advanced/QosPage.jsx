@@ -10,7 +10,7 @@ import {
   AdvancedFormCard,
   FormEnableCheckbox,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const FIELD_LABEL_WIDTH = 170;
 const FIELD_GAP = 12;

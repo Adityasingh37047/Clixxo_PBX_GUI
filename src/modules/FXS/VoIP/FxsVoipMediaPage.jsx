@@ -14,7 +14,7 @@ import {
   getFxsNativeFieldInteraction,
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const CODEC_PRIORITY_HEADING_COLOR = "#30415A";
 
@@ -528,7 +528,7 @@ const FxsVoipMediaPage = () => {
                       style={{
                         fontSize: 12,
                         fontWeight: 600,
-                        color: "#325a84",
+                        color: "#3E5475",
                         textAlign: "center",
                         marginBottom: 8,
                       }}
@@ -588,7 +588,7 @@ const FxsVoipMediaPage = () => {
                       style={{
                         fontSize: 12,
                         fontWeight: 600,
-                        color: "#325a84",
+                        color: "#3E5475",
                         textAlign: "center",
                         marginBottom: 8,
                       }}

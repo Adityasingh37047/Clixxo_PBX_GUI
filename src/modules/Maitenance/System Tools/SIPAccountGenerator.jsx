@@ -10,7 +10,7 @@ import { Alert } from "@mui/material";
 import {
   systemToolsEditableFieldInputStyle as inputStyle,
   inputInteraction,
-} from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {

@@ -11,7 +11,7 @@ import {
   systemToolsEditableFieldSelectStyle as selectStyle,
   systemToolsReadOnlyFieldTextAreaStyle,
   inputInteraction,
-} from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {

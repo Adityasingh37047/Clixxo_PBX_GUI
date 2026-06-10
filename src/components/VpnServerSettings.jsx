@@ -16,7 +16,7 @@ import {
 import {
   muiTextFieldSx,
   systemToolsMuiSelectSx,
-} from "../sections/systemTools/systemToolsSharedUi";
+} from "../shared/maitenanceSharedUi";
 
 const VpnServerSettings = () => {
   const [form, setForm] = useState(VPN_SERVER_SETTINGS_INITIAL_FORM);

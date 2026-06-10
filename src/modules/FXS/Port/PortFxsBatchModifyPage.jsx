@@ -23,7 +23,7 @@ import {
   checkboxSx,
   fxsNativeFieldInputStyle,
   fxsNativeFieldInteraction,
-} from "../../../sections/fxs/fxsSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const dialogFieldStyle = {
   ...fxsNativeFieldInputStyle,

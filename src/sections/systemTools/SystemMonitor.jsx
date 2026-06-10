@@ -8,7 +8,7 @@ import {
 import {
   systemToolsLegacyFieldStyle as fieldStyle,
   inputInteraction,
-} from './systemToolsSharedUi';
+} from '../../shared/maitenanceSharedUi';
 
 const getInitialState = () => {
   const state = {};

@@ -2,7 +2,7 @@
  * System › System Settings table pages (IP Route Table, Global SIP, …)
  */
 import React from "react";
-import { C } from "../numManipulate/numManipulateSharedUi";
+import { C } from "./numManipulateSharedUi";
 
 export { C };
 

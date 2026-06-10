@@ -23,12 +23,12 @@ import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
   checkboxSx,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/systemSharedUi";
 import {
   systemFieldInputStyleNarrow as inputStyle,
   systemFieldSelectStyle as selectStyle,
   inputInteraction,
-} from "../../../sections/system/systemSharedUi";
+} from "../../../shared/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",

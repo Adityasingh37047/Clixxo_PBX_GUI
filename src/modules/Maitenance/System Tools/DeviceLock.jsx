@@ -7,8 +7,8 @@ import { Alert, TextField, Checkbox } from "@mui/material";
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
-import { systemToolsMuiTextFieldSx } from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
+import { systemToolsMuiTextFieldSx } from "../../../shared/maitenanceSharedUi";
 
 const C = {
   pageBg: "#f8fafc",

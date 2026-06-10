@@ -14,7 +14,7 @@ import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
 import {
   systemToolsModalInputStyle as modalInputStyle,
   getSystemToolsInputInteraction,
-} from "../../../sections/systemTools/systemToolsSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";

@@ -13,6 +13,7 @@ import {
   FormControl,
   MenuItem,
   Select,
+  TextField,
 } from "@mui/material";
 import {
   createInboundRoute,
@@ -28,7 +29,22 @@ import {
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  formatPbxItemListDisplay,
+  PBX_LIST_TRUNCATE_THRESHOLD,
+  PbxModalSectionHeading,
+  PbxDualListBtn,
+  pbxDualListLabelStyle,
+  pbxDualListSelectStyle,
+  pbxModalCancelBtnStyle,
+} from "../../../shared/pbxSharedUi";
+import {
+  modalSelectSx,
+  modalTextFieldFullSx,
+} from "../../../shared/pbxSharedUi";
+import {
+  trunkModalPaperSx,
+  trunkModalTitleStyle,
+} from "../../../shared/pbxSharedUi";
 import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
@@ -36,7 +52,7 @@ import {
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
   SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const T38_OPTIONS = ["Yes", "No"];
@@ -112,14 +128,6 @@ const DESTINATION_NEEDS_TARGET = new Set([
   "Outbound",
   "Other",
 ]);
-const SELECT_MENU_PROPS = {
-  PaperProps: {
-    sx: {
-      maxHeight: 260,
-      maxWidth: "90vw",
-    },
-  },
-};
 
 /** Dial / route number for a ring group (matches RingGroup.jsx: rg_number). */
 const getRingGroupDialNumber = (item) => {
@@ -161,7 +169,7 @@ const C = {
   accent: "#3E5475",
   amber: "#dc2626",
 };
- const CARD_RADIUS = 20;
+const CARD_RADIUS = 20;
 
 const Btn = ({
   children,
@@ -190,7 +198,7 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -218,7 +226,7 @@ const Btn = ({
       case "danger":
         return "#b91c1c";
       case "cancel":
-        return "#e2e8f0";
+        return "#b6c2d3";
       case "outline":
       case "default":
       default:
@@ -278,7 +286,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-        background: "#F8FAFC",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -311,20 +319,88 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-const FieldRow = ({ label, children }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+const INBOUND_MODAL_LABEL_WIDTH = 185;
+const INBOUND_MODAL_FIELD_WIDTH = 210;
+const INBOUND_RIGHT_LABEL_PADDING_LEFT = 28;
+
+const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: wide ? "flex-start" : "center",
+      gap: 12,
+      width: "100%",
+    }}
+  >
     <label
       style={{
         fontSize: 13,
-        fontWeight: 600,
         color: C.labelText,
-        width: 170,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        textAlign: "left",
+        minWidth: labelWidth,
+        width: "auto",
         flexShrink: 0,
+        paddingTop: wide ? 4 : 0,
       }}
     >
       {label}
     </label>
-    <div style={{ flex: 1 }}>{children}</div>
+    <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
+  </div>
+);
+
+/** Left column — same fill-box size as right; label position unchanged */
+const InboundLeftField = ({ children }) => (
+  <div style={{ width: INBOUND_MODAL_FIELD_WIDTH, maxWidth: "100%" }}>
+    {children}
+  </div>
+);
+
+const InboundRightRow = ({ label, children }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      width: "100%",
+    }}
+  >
+    <label
+      style={{
+        fontSize: 13,
+        color: C.labelText,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        textAlign: "left",
+        width: INBOUND_MODAL_LABEL_WIDTH,
+        minWidth: INBOUND_MODAL_LABEL_WIDTH,
+        flexShrink: 0,
+        paddingLeft: INBOUND_RIGHT_LABEL_PADDING_LEFT,
+        boxSizing: "border-box",
+      }}
+    >
+      {label}
+    </label>
+    <div style={{ width: INBOUND_MODAL_FIELD_WIDTH, flexShrink: 0 }}>
+      {children}
+    </div>
+  </div>
+);
+
+const inboundRightColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  width: "100%",
+};
+
+const SectionCard = ({ title, children, isFirst = false }) => (
+  <div style={{ marginBottom: 8 }}>
+    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <div>{children}</div>
   </div>
 );
 
@@ -754,18 +830,6 @@ const InboundRoutesPage = () => {
     }
   };
 
-  const inputStyle = {
-    width: "100%",
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 4,
-    padding: "6px 8px",
-    fontSize: 13,
-    outline: "none",
-    color: C.valueText,
-    background: "#fff",
-    boxSizing: "border-box",
-  };
-
   const handleDelete = async () => {
     if (selected.length === 0) {
       showAlert("Please select at least one row to delete.");
@@ -984,7 +1048,16 @@ const InboundRoutesPage = () => {
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 40, padding: 0, borderLeft: "none", position: "sticky", top: 0, zIndex: 10 }}>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
@@ -994,204 +1067,254 @@ const InboundRoutesPage = () => {
                         sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>#</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Name</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>DID Pattern</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Caller ID Pattern</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Destination</TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Enabled</TH>
-                    <TH style={{ textAlign: "left", paddingLeft: 16, position: "sticky", top: 0, zIndex: 10 }}>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      #
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Name
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      DID Pattern
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Caller ID Pattern
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Destination
+                    </TH>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                      Enabled
+                    </TH>
+                    <TH
+                      style={{
+                        textAlign: "left",
+                        paddingLeft: 16,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       Member Trunks
                     </TH>
-                    <TH style={{ width: 70, borderRight: "none", position: "sticky", top: 0, zIndex: 10 }}>Modify</TH>
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const lastRowCellStyle = isLastRow
-                        ? { borderBottom: "none" }
-                        : {};
-                      const rowBg = isSelected
-                        ? "#eff6ff"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
-                      const destinationStr =
-                        row.destination === "Extension_Range"
-                          ? `${row.destination}: ${row.extensionRange || ""}`
-                          : row.destinationTarget
-                            ? `${row.destination}: ${row.destinationTarget}`
-                            : row.destination;
-                      return (
-                        <tr
-                          key={row.id}
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+                    const rowBg = isSelected
+                      ? "#eff6ff"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const destinationStr =
+                      row.destination === "Extension_Range"
+                        ? `${row.destination}: ${row.extensionRange || ""}`
+                        : row.destinationTarget
+                          ? `${row.destination}: ${row.destinationTarget}`
+                          : row.destination;
+                    return (
+                      <tr
+                        key={row.id}
+                        style={{
+                          background: rowBg,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
+                            ...tdStyle,
                             background: rowBg,
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            width: 36,
+                            borderLeft: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
-                          <td
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(realIdx)}
+                            disabled={loading.delete}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.name}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.didPattern || (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.callerIdPattern || (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {destinationStr || (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          <span
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              width: 36,
-                              borderLeft: "none",
-                              ...lastRowCellStyle,
+                              background:
+                                row.enabled === "Yes" ? "#dcfce7" : "#f1f5f9",
+                              color:
+                                row.enabled === "Yes" ? "#15803d" : "#475569",
+                              padding: "2px 8px",
+                              borderRadius: 10,
+                              fontSize: 10,
+                              fontWeight: 600,
                             }}
                           >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleSelectRow(realIdx)}
-                              disabled={loading.delete}
-                              sx={checkboxSx}
-                            />
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {realIdx + 1}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.name}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.didPattern || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.callerIdPattern || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {destinationStr || (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
-                            }}
-                          >
+                            {row.enabled}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            whiteSpace: "normal",
+                            wordBreak: "break-all",
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.memberTrunks?.length > 0 ? (
                             <span
-                              style={{
-                                background:
-                                  row.enabled === "Yes" ? "#dcfce7" : "#f1f5f9",
-                                color:
-                                  row.enabled === "Yes" ? "#15803d" : "#475569",
-                                padding: "2px 8px",
-                                borderRadius: 10,
-                                fontSize: 10,
-                                fontWeight: 600,
-                              }}
+                              title={
+                                row.memberTrunks.length >
+                                PBX_LIST_TRUNCATE_THRESHOLD
+                                  ? row.memberTrunks
+                                      .map(getTrunkLabel)
+                                      .join(", ")
+                                  : undefined
+                              }
                             >
-                              {row.enabled}
+                              {formatPbxItemListDisplay(row.memberTrunks, {
+                                mapItem: getTrunkLabel,
+                              })}
                             </span>
-                          </td>
-                          <td
+                          ) : (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          <div
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              whiteSpace: "normal",
-                              wordBreak: "break-all",
-                              ...lastRowCellStyle,
+                              display: "flex",
+                              justifyContent: "center",
                             }}
                           >
-                            {row.memberTrunks?.length > 0 ? (
-                              row.memberTrunks.map(getTrunkLabel).join(", ")
-                            ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderRight: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <div
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
                               style={{
-                                display: "flex",
-                                justifyContent: "center",
+                                cursor: loading.delete
+                                  ? "not-allowed"
+                                  : "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: loading.delete ? 0.4 : 0.7,
+                                transition: "opacity 0.15s ease",
                               }}
-                            >
-                              <EditDocumentIcon
-                                titleAccess="Edit"
-                                onClick={() => handleOpenEditModal(row)}
-                                style={{
-                                  cursor: loading.delete
-                                    ? "not-allowed"
-                                    : "pointer",
-                                  color: "#2563eb",
-                                  fontSize: 22,
-                                  opacity: loading.delete ? 0.4 : 0.7,
-                                  transition: "opacity 0.15s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!loading.delete)
-                                    e.currentTarget.style.opacity = "1";
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!loading.delete)
-                                    e.currentTarget.style.opacity = "0.7";
-                                }}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                              onMouseEnter={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "0.7";
+                              }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -1245,13 +1368,14 @@ const InboundRoutesPage = () => {
         <DialogContent
           style={{ backgroundColor: C.pageBg, padding: "20px 24px 12px" }}
         >
-          <div  style={{
+          <div
+            style={{
               display: "flex",
               flexDirection: "column",
               gap: 12,
               paddingTop: 4,
             }}
-            >
+          >
             <p style={{ fontSize: 13, color: "#475569", margin: 0 }}>
               Select a CSV or JSON file to import.
             </p>
@@ -1293,13 +1417,13 @@ const InboundRoutesPage = () => {
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
             variant="default"
-             style={{
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
+            style={{
+              background:
+                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+              color: "#fff",
+              border: "1px solid #5A6F8F",
+              boxShadow: "0 2px 8px #3E5475",
+            }}
           >
             {importLoading ? "Importing..." : "Import"}
           </Btn>
@@ -1320,292 +1444,259 @@ const InboundRoutesPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
-          },
-        }}
-        PaperProps={{
-          sx: {
-            width: 1000,
-            maxWidth: "98vw",
-            mx: "auto",
-            p: 0,
-            borderRadius: 2,
-             boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
-        }}
-            disableRestoreFocus
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        PaperProps={{ sx: trunkModalPaperSx }}
+        disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-          }}
-        >
+        <DialogTitle style={trunkModalTitleStyle}>
           {editId != null ? "Edit Inbound Route" : "Add Inbound Route"}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px",  background: "#ffffff" }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Route Settings */}
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "100%",
+              maxWidth: "100%",
+              boxSizing: "border-box",
+              overflow: "hidden",
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+            }}
+          >
             <div
               style={{
-               background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "8px 28px",
+                alignItems: "start",
               }}
             >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Inbound Call Routing
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px 32px",
-                }}
-              >
-                <FieldRow label="Name *">
-                  <input
-                    style={inputStyle}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </FieldRow>
-                <FieldRow label="Enabled">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={enabled}
-                      onChange={(e) => setEnabled(e.target.value)}
-                      sx={{ fontSize: 13,background: "#fff", }}
-                    >
-                      {ENABLE_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-
-                <FieldRow label="DID Pattern">
-                  <input
-                    style={inputStyle}
-                    value={didPattern}
-                    onChange={(e) => setDidPattern(e.target.value)}
-                  />
-                </FieldRow>
-                <FieldRow label="Priority">
-                  <input
-                    style={inputStyle}
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
-                  />
-                </FieldRow>
-
-                <FieldRow label="Caller ID Pattern">
-                  <input
-                    style={inputStyle}
-                    value={callerIdPattern}
-                    onChange={(e) => setCallerIdPattern(e.target.value)}
-                  />
-                </FieldRow>
-                <FieldRow label="Enable Mobility Extension">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={enableMobilityExtension}
-                      onChange={(e) =>
-                        setEnableMobilityExtension(e.target.value)
-                      }
-                      sx={{ fontSize: 13, background: "#fff", }}
-                    >
-                      {MOBILITY_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-
-                <FieldRow label="Distinctive RingTone">
-                  <input
-                    style={inputStyle}
-                    value={distinctiveRingTone}
-                    onChange={(e) => setDistinctiveRingTone(e.target.value)}
-                  />
-                </FieldRow>
-                <FieldRow label="Send RingTone">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={sendRingTone}
-                      onChange={(e) => setSendRingTone(e.target.value)}
-                      sx={{ fontSize: 13,background: "#fff", }}
-                    >
-                      {SEND_RINGTONE_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-
-                <FieldRow label="Enable T.38">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={enableT38}
-                      onChange={(e) => setEnableT38(e.target.value)}
-                      sx={{ fontSize: 13, background: "#fff", }}
-                    >
-                      {T38_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-                <FieldRow label="Enable Time Condition">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={enableTimeCondition}
-                      onChange={(e) => setEnableTimeCondition(e.target.value)}
-                      sx={{ fontSize: 13 , background: "#fff",}}
-                    >
-                      {TIME_CONDITION_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-
                 <div
                   style={{
-                    gridColumn: "1 / -1",
-                    borderTop: `1px solid ${C.cardBorder}`,
-                    margin: "4px 0",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
                   }}
-                />
-
-                <FieldRow label="Destination *">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={destination}
-                      onChange={(e) => {
-                        setDestination(e.target.value);
-                        setDestinationTarget("");
-                        setExtensionRange("");
-                      }}
-                      displayEmpty
-                      MenuProps={SELECT_MENU_PROPS}
-                      sx={{ fontSize: 13 , background: "#fff", }}
-                    >
-                      <MenuItem value="">
-                        <em>Select</em>
-                      </MenuItem>
-                      {DESTINATION_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                          {opt}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-
-                {destination === "Extension_Range" ? (
-                  <FieldRow label="Extension Range *">
-                    <input
-                      style={inputStyle}
-                      value={extensionRange}
-                      onChange={(e) => setExtensionRange(e.target.value)}
-                      placeholder="100-136"
-                    />
+                >
+                  <FieldRow label="Name *">
+                    <InboundLeftField>
+                      <TextField
+                        size="small"
+                        fullWidth
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        sx={modalTextFieldFullSx}
+                      />
+                    </InboundLeftField>
                   </FieldRow>
-                ) : needsDestinationTarget ? (
-                  <FieldRow label="Destination Value *">
+                  <FieldRow label="DID Pattern">
+                    <InboundLeftField>
+                      <TextField
+                        size="small"
+                        fullWidth
+                        value={didPattern}
+                        onChange={(e) => setDidPattern(e.target.value)}
+                        sx={modalTextFieldFullSx}
+                      />
+                    </InboundLeftField>
+                  </FieldRow>
+                  <FieldRow label="Caller ID Pattern">
+                    <InboundLeftField>
+                      <TextField
+                        size="small"
+                        fullWidth
+                        value={callerIdPattern}
+                        onChange={(e) => setCallerIdPattern(e.target.value)}
+                        sx={modalTextFieldFullSx}
+                      />
+                    </InboundLeftField>
+                  </FieldRow>
+                  <FieldRow label="Distinctive RingTone">
+                    <InboundLeftField>
+                      <TextField
+                        size="small"
+                        fullWidth
+                        value={distinctiveRingTone}
+                        onChange={(e) => setDistinctiveRingTone(e.target.value)}
+                        sx={modalTextFieldFullSx}
+                      />
+                    </InboundLeftField>
+                  </FieldRow>
+                  <FieldRow label="Enable T.38">
+                    <InboundLeftField>
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={enableT38}
+                          onChange={(e) => setEnableT38(e.target.value)}
+                          sx={modalSelectSx}
+                        >
+                          {T38_OPTIONS.map((opt) => (
+                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                              {opt}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </InboundLeftField>
+                  </FieldRow>
+                  <FieldRow label="Destination *">
+                    <InboundLeftField>
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={destination}
+                          onChange={(e) => {
+                            setDestination(e.target.value);
+                            setDestinationTarget("");
+                            setExtensionRange("");
+                          }}
+                          displayEmpty
+                          sx={modalSelectSx}
+                        >
+                          <MenuItem value="">
+                            <em>Select</em>
+                          </MenuItem>
+                          {DESTINATION_OPTIONS.map((opt) => (
+                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                              {opt}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </InboundLeftField>
+                  </FieldRow>
+                </div>
+
+                <div style={inboundRightColStyle}>
+                  <InboundRightRow label="Enabled">
                     <FormControl size="small" fullWidth>
                       <Select
-                        value={destinationTarget}
-                        onChange={(e) => setDestinationTarget(e.target.value)}
-                        displayEmpty
-                        MenuProps={SELECT_MENU_PROPS}
-                        sx={{ fontSize: 13 }}
+                        value={enabled}
+                        onChange={(e) => setEnabled(e.target.value)}
+                        sx={modalSelectSx}
                       >
-                        <MenuItem
-                          value=""
-                          disabled={destinationChoices.length === 0}
-                        >
-                          <em>Select</em>
-                        </MenuItem>
-                        {destinationChoices.length === 0 ? (
-                          <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                            No options available
+                        {ENABLE_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
                           </MenuItem>
-                        ) : (
-                          destinationChoices.map((opt) => (
-                            <MenuItem
-                              key={opt.id}
-                              value={opt.id}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {opt.label}
-                            </MenuItem>
-                          ))
-                        )}
+                        ))}
                       </Select>
                     </FormControl>
-                  </FieldRow>
-                ) : (
-                  <div />
-                )}
-              </div>
+                  </InboundRightRow>
+
+                  <InboundRightRow label="Priority">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={priority}
+                      onChange={(e) => setPriority(e.target.value)}
+                      sx={modalTextFieldFullSx}
+                    />
+                  </InboundRightRow>
+
+                  <InboundRightRow label="Enable Mobility Extension">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={enableMobilityExtension}
+                        onChange={(e) =>
+                          setEnableMobilityExtension(e.target.value)
+                        }
+                        sx={modalSelectSx}
+                      >
+                        {MOBILITY_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </InboundRightRow>
+
+                  <InboundRightRow label="Send RingTone">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={sendRingTone}
+                        onChange={(e) => setSendRingTone(e.target.value)}
+                        sx={modalSelectSx}
+                      >
+                        {SEND_RINGTONE_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </InboundRightRow>
+
+                  <InboundRightRow label="Enable Time Condition">
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={enableTimeCondition}
+                        onChange={(e) => setEnableTimeCondition(e.target.value)}
+                        sx={modalSelectSx}
+                      >
+                        {TIME_CONDITION_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </InboundRightRow>
+
+                  {destination === "Extension_Range" ? (
+                    <InboundRightRow label="Extension Range *">
+                      <TextField
+                        size="small"
+                        fullWidth
+                        value={extensionRange}
+                        onChange={(e) => setExtensionRange(e.target.value)}
+                        placeholder="100-136"
+                        sx={modalTextFieldFullSx}
+                      />
+                    </InboundRightRow>
+                  ) : needsDestinationTarget ? (
+                    <InboundRightRow label="Destination Value *">
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={destinationTarget}
+                          onChange={(e) => setDestinationTarget(e.target.value)}
+                          displayEmpty
+                          sx={modalSelectSx}
+                        >
+                          <MenuItem
+                            value=""
+                            disabled={destinationChoices.length === 0}
+                          >
+                            <em>Select</em>
+                          </MenuItem>
+                          {destinationChoices.length === 0 ? (
+                            <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                              No options available
+                            </MenuItem>
+                          ) : (
+                            destinationChoices.map((opt) => (
+                              <MenuItem
+                                key={opt.id}
+                                value={opt.id}
+                                sx={{ fontSize: 13 }}
+                              >
+                                {opt.label}
+                              </MenuItem>
+                            ))
+                          )}
+                        </Select>
+                      </FormControl>
+                    </InboundRightRow>
+                  ) : null}
+                </div>
             </div>
 
-            {/* Member Trunks */}
-            <div
-              style={{
-                 background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: C.labelText,
-                  marginBottom: 14,
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                  paddingBottom: 6,
-                }}
-              >
-                Member Trunks <span style={{ color: C.errorRed }}>*</span>
-              </div>
+            <SectionCard title="Member Trunks *">
               <div
                 style={{
                   display: "grid",
@@ -1614,19 +1705,10 @@ const InboundRoutesPage = () => {
                 }}
               >
                 <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#325a84",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    Available
-                  </div>
+                  <div style={pbxDualListLabelStyle}>Available</div>
                   <select
                     multiple
+                    size={6}
                     value={availableSelected}
                     onChange={(e) =>
                       setAvailableSelected(
@@ -1636,16 +1718,7 @@ const InboundRoutesPage = () => {
                         ),
                       )
                     }
-                    style={{
-                      width: "100%",
-                      height: 160,
-                      border: `1px solid ${C.cardBorder}`,
-                      background: "#fff",
-                      borderRadius: 4,
-                      padding: "4px 8px",
-                      fontSize: 13,
-                      outline: "none",
-                    }}
+                    style={pbxDualListSelectStyle}
                   >
                     {loading.trunks ? (
                       <option>Loading trunks...</option>
@@ -1668,49 +1741,24 @@ const InboundRoutesPage = () => {
                     paddingTop: 28,
                   }}
                 >
-                  <button
-                    type="button"
-                    className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                    onClick={addSelectedTrunks}
-                  >
+                  <PbxDualListBtn onClick={addSelectedTrunks}>
                     &gt;
-                  </button>
-                  <button
-                    type="button"
-                    className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                    onClick={addAllTrunks}
-                  >
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={addAllTrunks}>
                     &gt;&gt;
-                  </button>
-                  <button
-                    type="button"
-                    className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                    onClick={removeSelectedTrunks}
-                  >
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeSelectedTrunks}>
                     &lt;
-                  </button>
-                  <button
-                    type="button"
-                    className="h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold hover:bg-[#c5cbd3]"
-                    onClick={removeAllTrunks}
-                  >
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeAllTrunks}>
                     &lt;&lt;
-                  </button>
+                  </PbxDualListBtn>
                 </div>
                 <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#325a84",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    Selected
-                  </div>
+                  <div style={pbxDualListLabelStyle}>Selected</div>
                   <select
                     multiple
+                    size={6}
                     value={chosenSelected}
                     onChange={(e) =>
                       setChosenSelected(
@@ -1720,16 +1768,7 @@ const InboundRoutesPage = () => {
                         ),
                       )
                     }
-                    style={{
-                      width: "100%",
-                      height: 160,
-                      border: `1px solid ${C.cardBorder}`,
-                      background: "#fff",
-                      borderRadius: 4,
-                      padding: "4px 8px",
-                      fontSize: 13,
-                      outline: "none",
-                    }}
+                    style={pbxDualListSelectStyle}
                   >
                     {selectedTrunks.length === 0 ? (
                       <option disabled>No selected trunks</option>
@@ -1750,107 +1789,52 @@ const InboundRoutesPage = () => {
                     paddingTop: 28,
                   }}
                 >
-                  <button
-                    type="button"
-                    className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                  <PbxDualListBtn
+                    reorder
                     title="Move to bottom"
                     onClick={moveTrunkToBottom}
                   >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <polyline
-                        points="2,3 7,8 12,3"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <line
-                        x1="2"
-                        y1="11"
-                        x2="12"
-                        y2="11"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
-                    title="Move up"
-                    onClick={moveTrunkUp}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <polyline
-                        points="2,9 7,4 12,9"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                    vv
+                  </PbxDualListBtn>
+                  <PbxDualListBtn reorder title="Move up" onClick={moveTrunkUp}>
+                    ^
+                  </PbxDualListBtn>
+                  <PbxDualListBtn
+                    reorder
                     title="Move down"
                     onClick={moveTrunkDown}
                   >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <polyline
-                        points="2,5 7,10 12,5"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                    v
+                  </PbxDualListBtn>
+                  <PbxDualListBtn
+                    reorder
                     title="Move to top"
                     onClick={moveTrunkToTop}
                   >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <line
-                        x1="2"
-                        y1="3"
-                        x2="12"
-                        y2="3"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      <polyline
-                        points="2,11 7,6 12,11"
-                        stroke="#333"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
+                    ^^
+                  </PbxDualListBtn>
                 </div>
               </div>
-            </div>
+            </SectionCard>
           </div>
         </DialogContent>
         <DialogActions
           style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+            display: "flex",
             justifyContent: "center",
             gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-           variant="primary"
- style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <>
@@ -1864,8 +1848,8 @@ const InboundRoutesPage = () => {
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
-           variant="cancel"
-  style={{ minWidth: 100, height: 33 }}
+            variant="cancel"
+            style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>

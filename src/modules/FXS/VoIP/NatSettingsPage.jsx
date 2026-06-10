@@ -17,7 +17,7 @@ import {
   nativeFieldInteraction,
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const NAT_SETTINGS_SECTION_HEADING_COLOR = "#30415A";
 

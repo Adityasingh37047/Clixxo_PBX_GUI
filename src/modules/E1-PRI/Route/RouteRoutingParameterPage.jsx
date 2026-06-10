@@ -9,11 +9,11 @@ import {
   Btn,
   CARD_RADIUS,
   muiSelectSx,
-} from "../../../sections/route/routeSharedUi";
+} from "../../../shared/e1PriSharedUi";
 import {
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/e1PriSharedUi";
 
 const cardStyle = {
   background: C.cardBg,

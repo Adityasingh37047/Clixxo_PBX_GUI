@@ -10,7 +10,7 @@ import { postLinuxCmd } from "../../../api/apiService";
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/maitenanceSharedUi";
 
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {

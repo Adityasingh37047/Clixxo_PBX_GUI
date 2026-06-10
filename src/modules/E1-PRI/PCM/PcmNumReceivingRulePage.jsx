@@ -27,7 +27,7 @@ import {
   addHostFormPanelStyle,
   modalSelectSx,
   modalTextFieldSx,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/e1PriSharedUi";
 
 // ── Color palette (matches Extensions page) ───────────────────────────────────
 const C = {

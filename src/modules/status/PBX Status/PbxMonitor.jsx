@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Tabs, Tab } from "@mui/material";
 import { monitorBoth } from "../../../api/apiService";
 import {
   C,
@@ -9,12 +9,17 @@ import {
   pbxPageInnerStyle,
   TableListLoading,
   TableListEmptyState,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  PBX_MODAL_TAB_ACTIVE_COLOR,
+  pbxHeaderTabsSx,
+  PbxToolbarSearchBar,
+} from "../../../shared/statusSharedUi";
 import {
-  sipPcmCardStyle,
+  sipPcmFormCardStyle,
+  sipPcmFormHeaderStyle,
   sipPcmToolbarStyle,
   sipPcmCancelBtnStyle,
-} from "../../../sections/sip/sipPcmSharedUi";
+  sipPcmAuthFormBtnStyle,
+} from "../../../shared/statusSharedUi";
 
 const successGreen = "#16A34A";
 const errorRed = "#DC2626";
@@ -205,7 +210,6 @@ const PbxMonitor = () => {
   const [trunkRows, setTrunkRows] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const silentRefreshRef = useRef(false);
 
@@ -335,34 +339,33 @@ const PbxMonitor = () => {
           />
         </div>
 
-        <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {["extension", "trunk"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  style={{
-                    padding: "5px 14px",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: activeTab === tab ? C.accent : C.labelText,
-                    background: activeTab === tab ? "#eff6ff" : "#f1f5f9",
-                    border:
-                      activeTab === tab
-                        ? `1px solid ${C.accent}`
-                        : `1px solid ${C.cardBorder}`,
-                    borderRadius: 999,
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {tab === "extension" ? "Extensions" : "Trunks"}
-                </button>
-              ))}
-            </div>
+        <div style={sipPcmFormCardStyle}>
+          <div style={{ ...sipPcmFormHeaderStyle, padding: "0 8px 0 6px" }}>
+            <Tabs
+              value={activeTab}
+              onChange={(_, tab) => setActiveTab(tab)}
+              variant="standard"
+              TabIndicatorProps={{
+                style: {
+                  backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR,
+                  height: 2,
+                },
+              }}
+              sx={pbxHeaderTabsSx}
+            >
+              <Tab label="EXTENSIONS" value="extension" />
+              <Tab label="TRUNKS" value="trunk" />
+            </Tabs>
+          </div>
 
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              justifyContent: "flex-end",
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -371,69 +374,17 @@ const PbxMonitor = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* Search */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  height: 30,
-                  boxSizing: "border-box",
-                  background: "#ffffff",
-                  border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 10,
-                  padding: "0 10px",
-                  transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-                  boxShadow: searchFocused
-                    ? "0 0 0 4px rgba(62, 84, 117, 0.08)"
-                    : "none",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
-                  }}
-                >
-                  🔍
-                </span>
-
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder="Search..."
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    outline: "none",
-                    width: 140,
-                    minWidth: 100,
-                    fontSize: 12,
-                    color: C.valueText,
-                  }}
-                />
-                {searchQuery && (
-                  <span
-                    onClick={() => setSearchQuery("")}
-                    style={{
-                      fontSize: 11,
-                      color: C.mutedText,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                )}
-              </div>
+              <PbxToolbarSearchBar
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+              />
 
             <Btn
               variant="cancel"
               onClick={() => loadData(false)}
               disabled={isRefreshing}
-              style={sipPcmCancelBtnStyle}
+              style={{ ...sipPcmAuthFormBtnStyle, ...sipPcmCancelBtnStyle, boxShadow: "none" }}
             >
               {isRefreshing ? (
                 <>

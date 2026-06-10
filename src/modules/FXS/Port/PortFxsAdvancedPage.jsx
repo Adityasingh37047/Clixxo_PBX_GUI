@@ -34,7 +34,7 @@ import {
   routeThExtra,
   fxsNativeFieldInputStyle,
   fxsNativeFieldInteraction,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const inputStyle = {
   ...fxsNativeFieldInputStyle,

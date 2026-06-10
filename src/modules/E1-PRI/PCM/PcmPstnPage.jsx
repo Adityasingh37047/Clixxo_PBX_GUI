@@ -11,7 +11,7 @@ import {
   addHostFormPanelStyle,
   modalSelectSx,
   modalTextFieldSx,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/e1PriSharedUi";
 
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";

@@ -35,7 +35,7 @@ import {
   addHostModalContentStyle,
   addHostFormPanelStyle,
   addHostModalFooterStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const LOCAL_STORAGE_KEY = "toneDetectorRules";
 

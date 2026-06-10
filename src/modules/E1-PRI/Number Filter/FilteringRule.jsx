@@ -14,7 +14,7 @@ import {
   addHostFormPanelStyle,
   modalSelectSx,
   modalTextFieldSx,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/e1PriSharedUi";
 import {
   Button,
   Dialog,

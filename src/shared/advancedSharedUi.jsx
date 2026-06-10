@@ -15,7 +15,7 @@ import {
   fxsNativeFieldInputStyle,
   fxsNativeFieldInteraction,
   getFxsNativeFieldInteraction,
-} from "../fxs/fxsSharedUi";
+} from "./fxsUiKit";
 import {
   muiSelectSx,
   muiTextFieldSx,
@@ -25,7 +25,7 @@ import {
   nativeFieldSelectStyle,
   nativeFieldInteraction,
   getNativeFieldInteraction,
-} from "../shared/outlinedFieldUi";
+} from "./outlinedFieldUi";
 
 export {
   C,

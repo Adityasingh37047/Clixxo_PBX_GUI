@@ -39,35 +39,95 @@ import {
   TH,
   tdStyle,
   checkboxSx,
+  numManipulateCardStyle,
+  numManipulateToolbarStyle,
   PbxBreadcrumb,
   TableListLoading,
   TableListEmptyState,
   pbxPageWrapStyle,
   pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  sipPcmPrimaryBtnStyle,
-  SipPcmPagination,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
+
+const LIST_CARD_RADIUS = 10;
+const listCardStyle = {
+  ...numManipulateCardStyle,
+  borderRadius: LIST_CARD_RADIUS,
+};
+const listToolbarStyle = {
+  ...numManipulateToolbarStyle,
+  borderTopLeftRadius: LIST_CARD_RADIUS,
+  borderTopRightRadius: LIST_CARD_RADIUS,
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
 
 const selectSx = {
-  "& .MuiOutlinedInput-input": { padding: "4px 6px", fontSize: 13 },
+  "& .MuiOutlinedInput-input": {
+    padding: "4px 6px",
+    fontSize: 13,
+    background: "#fff",
+  },
 };
-const inputProps = { style: { fontSize: 13, padding: "4px 6px" } };
+const inputProps = {
+  style: { fontSize: 13, padding: "4px 6px", background: "#fff" },
+};
 const LABEL_W = 175;
 
 const FieldRow = ({ label, children }) => (
   <div
-    className="flex items-center bg-white rounded px-2 py-0.5 gap-2"
-    style={{ minHeight: 30 }}
+    className="flex items-center rounded px-2 py-0.5 gap-2"
+    style={{
+      minHeight: 30,
+      background: "#f5f7fa",
+    }}
   >
     <label
       className="text-[13px] text-gray-700 font-medium whitespace-nowrap text-left"
-      style={{ width: LABEL_W, flexShrink: 0 }}
+      style={{
+        width: LABEL_W,
+        flexShrink: 0,
+        position: "relative",
+        left: "-16px",
+        color: C.accent,
+      }}
     >
       {label}
     </label>
@@ -491,18 +551,33 @@ const CallQueue = () => {
   const SectionHeader = ({ title }) => (
     <div
       style={{
-        padding: "8px 12px",
-        fontSize: 12,
-        fontWeight: 700,
-        color: C.accent,
-        borderBottom: `1px solid ${C.cardBorder}`,
-        background: "#f8fafc",
+        display: "flex",
+        alignItems: "center",
+        marginBottom: 4, // pehle 14 tha
       }}
     >
-      {title}
+      <span
+        style={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: C.labelText,
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+        }}
+      >
+        {title}
+      </span>
+
+      <div
+        style={{
+          flex: 1,
+          height: 1,
+          background: C.cardBorder,
+          marginLeft: 12,
+        }}
+      />
     </div>
   );
-
   return (
     <div style={pbxPageWrapStyle}>
       {/* Modal */}
@@ -554,11 +629,16 @@ const CallQueue = () => {
             backgroundColor: "#ffffff",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "100%" }}
+          >
             <div
               style={{
                 borderBottom: `1px solid ${C.cardBorder}`,
                 marginBottom: 16,
+                marginLeft: "-24px",
+                marginRight: "-24px",
+                background: "#fff",
               }}
             >
               <Tabs
@@ -567,7 +647,24 @@ const CallQueue = () => {
                 variant="fullWidth"
                 textColor="inherit"
                 TabIndicatorProps={{
-                  style: { backgroundColor: "#4a6080", height: 3 },
+                  style: {
+                    backgroundColor: "#4a6080",
+                    height: 3,
+                  },
+                }}
+                sx={{
+                  "& .MuiTab-root": {
+                    fontSize: 12,
+                    fontWeight: 600,
+                    minHeight: 34,
+                    textTransform: "none",
+                    color: "#374151 !important",
+                    opacity: 1,
+                  },
+
+                  "& .MuiTab-root.Mui-selected": {
+                    color: "#4a6080 !important",
+                  },
                 }}
               >
                 <Tab
@@ -575,6 +672,7 @@ const CallQueue = () => {
                   value="basic"
                   sx={{ fontSize: 12, fontWeight: 600, minHeight: 34 }}
                 />
+
                 <Tab
                   label="CALLER EXPERIENCE SETTINGS"
                   value="caller"
@@ -588,10 +686,10 @@ const CallQueue = () => {
               <div className="flex flex-col gap-2 w-full pb-2">
                 <div
                   style={{
-                    background: "#ffffff",
+                    background: "#f5f7fa",
                     border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    overflow: "hidden",
+                    borderRadius: 6,
+                    padding: "20px 24px 16px",
                   }}
                 >
                   <SectionHeader title="Queue Settings" />
@@ -752,12 +850,21 @@ const CallQueue = () => {
 
                     {/* Timeout Action + destination */}
                     <div
-                      className="flex items-center bg-white rounded px-2 py-0.5 gap-2"
-                      style={{ minHeight: 30 }}
+                      className="flex items-center rounded px-2 py-0.5 gap-2"
+                      style={{
+                        minHeight: 30,
+                        background: "#f5f7fa",
+                      }}
                     >
                       <label
-                        className="text-[13px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: LABEL_W, flexShrink: 0 }}
+                        className="text-[13px] font-medium whitespace-nowrap text-left"
+                        style={{
+                          width: LABEL_W,
+                          flexShrink: 0,
+                          color: C.accent,
+                          position: "relative",
+                          left: "-16px", // same as other labels
+                        }}
                       >
                         Timeout Action
                       </label>
@@ -858,12 +965,21 @@ const CallQueue = () => {
 
                     {/* Overflow Action + destination */}
                     <div
-                      className="flex items-center bg-white rounded px-2 py-0.5 gap-2"
-                      style={{ minHeight: 30 }}
+                      className="flex items-center rounded px-2 py-0.5 gap-2"
+                      style={{
+                        minHeight: 30,
+                        background: "#f5f7fa",
+                      }}
                     >
                       <label
-                        className="text-[13px] text-gray-700 font-medium whitespace-nowrap text-left"
-                        style={{ width: LABEL_W, flexShrink: 0 }}
+                        className="text-[13px] font-medium whitespace-nowrap text-left"
+                        style={{
+                          width: LABEL_W,
+                          flexShrink: 0,
+                          color: C.accent,
+                          position: "relative",
+                          left: "-16px", // same value as Timeout Action
+                        }}
                       >
                         Overflow Action
                       </label>
@@ -968,14 +1084,14 @@ const CallQueue = () => {
                 {/* Agents dual listbox */}
                 <div
                   style={{
-                    background: "#ffffff",
+                    background: "#f5f7fa",
                     border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    overflow: "hidden",
+                    borderRadius: 6,
+                    padding: "20px 24px 16px",
                   }}
                 >
                   <SectionHeader title="Agents" />
-                  <div className="p-3">
+                  <div className="pt-0 px-0 pb-3">
                     <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                       {/* Available */}
                       <div>
@@ -1004,21 +1120,28 @@ const CallQueue = () => {
                       </div>
 
                       {/* Move left↔right buttons */}
-                      <div className="flex flex-col gap-1 justify-center mt-7">
-                        {[
-                          { lbl: ">", fn: () => moveToSelected(false) },
-                          { lbl: ">>", fn: () => moveToSelected(true) },
-                          { lbl: "<", fn: () => moveToAvailable(false) },
-                          { lbl: "<<", fn: () => moveToAvailable(true) },
-                        ].map((b) => (
-                          <button
-                            key={b.lbl}
-                            onClick={b.fn}
-                            className="w-full h-9 border border-gray-500 bg-[#d9dde3] text-sm font-semibold rounded hover:bg-gray-300"
-                          >
-                            {b.lbl}
-                          </button>
-                        ))}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                          paddingTop: 28,
+                        }}
+                      >
+                        <CodecDualListBtn onClick={() => moveToSelected(false)}>
+                          &gt;
+                        </CodecDualListBtn>
+                        <CodecDualListBtn onClick={() => moveToSelected(true)}>
+                          &gt;&gt;
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
+                          onClick={() => moveToAvailable(false)}
+                        >
+                          &lt;
+                        </CodecDualListBtn>
+                        <CodecDualListBtn onClick={() => moveToAvailable(true)}>
+                          &lt;&lt;
+                        </CodecDualListBtn>
                       </div>
 
                       {/* Selected */}
@@ -1053,109 +1176,42 @@ const CallQueue = () => {
                       </div>
 
                       {/* Reorder buttons */}
-                      <div className="flex flex-col gap-1 justify-center mt-7">
-                        {/* Move to bottom */}
-                        <button
-                          onClick={moveToBottom}
-                          className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                          paddingTop: 28,
+                        }}
+                      >
+                        <CodecDualListBtn
+                          reorder
                           title="Move to bottom"
+                          onClick={moveToBottom}
                         >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 14 14"
-                            fill="none"
-                          >
-                            <polyline
-                              points="2,3 7,8 12,3"
-                              stroke="#333"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <line
-                              x1="2"
-                              y1="11"
-                              x2="12"
-                              y2="11"
-                              stroke="#333"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                            />
-                          </svg>
-                        </button>
-                        {/* Move up */}
-                        <button
-                          onClick={moveUp}
-                          className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                          vv
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
+                          reorder
                           title="Move up"
+                          onClick={moveUp}
                         >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 14 14"
-                            fill="none"
-                          >
-                            <polyline
-                              points="2,9 7,4 12,9"
-                              stroke="#333"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                        {/* Move down */}
-                        <button
-                          onClick={moveDown}
-                          className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                          ^
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
+                          reorder
                           title="Move down"
+                          onClick={moveDown}
                         >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 14 14"
-                            fill="none"
-                          >
-                            <polyline
-                              points="2,5 7,10 12,5"
-                              stroke="#333"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                        {/* Move to top */}
-                        <button
-                          onClick={moveToTop}
-                          className="h-8 w-8 flex items-center justify-center border border-gray-500 bg-[#d9dde3] hover:bg-[#c5cbd3]"
+                          v
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
+                          reorder
                           title="Move to top"
+                          onClick={moveToTop}
                         >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 14 14"
-                            fill="none"
-                          >
-                            <line
-                              x1="2"
-                              y1="3"
-                              x2="12"
-                              y2="3"
-                              stroke="#333"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                            />
-                            <polyline
-                              points="2,11 7,6 12,11"
-                              stroke="#333"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
+                          ^^
+                        </CodecDualListBtn>
                       </div>
                     </div>
                   </div>
@@ -1168,10 +1224,10 @@ const CallQueue = () => {
               <div className="flex flex-col gap-2 w-full pb-2">
                 <div
                   style={{
-                    background: "#ffffff",
+                    background: "#f5f7fa",
                     border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    overflow: "hidden",
+                    borderRadius: 6,
+                    padding: "20px 24px 16px",
                   }}
                 >
                   <SectionHeader title="Caller Settings" />
@@ -1471,10 +1527,10 @@ const CallQueue = () => {
 
                 <div
                   style={{
-                    background: "#ffffff",
+                    background: "#f5f7fa",
                     border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    overflow: "hidden",
+                    borderRadius: 6,
+                    padding: "20px 24px 16px",
                   }}
                 >
                   <SectionHeader title="Caller Position Announcements" />
@@ -1535,10 +1591,10 @@ const CallQueue = () => {
 
                 <div
                   style={{
-                    background: "#ffffff",
+                    background: "#f5f7fa",
                     border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    overflow: "hidden",
+                    borderRadius: 6,
+                    padding: "20px 24px 16px",
                   }}
                 >
                   <SectionHeader title="Periodic Announcements" />
@@ -1591,10 +1647,10 @@ const CallQueue = () => {
 
                 <div
                   style={{
-                    background: "#ffffff",
+                    background: "#f5f7fa",
                     border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    overflow: "hidden",
+                    borderRadius: 6,
+                    padding: "20px 24px 16px",
                   }}
                 >
                   <SectionHeader title="Busy Callback" />
@@ -1723,8 +1779,8 @@ const CallQueue = () => {
 
         <PbxBreadcrumb section="Call Features" current="Call Queue" />
 
-        <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+        <div style={listCardStyle}>
+          <div style={listToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -1734,7 +1790,17 @@ const CallQueue = () => {
               }}
             >
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
@@ -1751,8 +1817,10 @@ const CallQueue = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.delete || loading.fetch || queues.length === 0}
-                style={sipPcmCancelBtnStyle}
+                disabled={
+                  loading.delete || loading.fetch || queues.length === 0
+                }
+                style={{ height: 30 }}
               >
                 Inverse
               </Btn>
@@ -1762,7 +1830,7 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                style={sipPcmCancelBtnStyle}
+                style={{ height: 30 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -1777,7 +1845,12 @@ const CallQueue = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
-                style={sipPcmPrimaryBtnStyle}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
               >
                 + Add New
               </Btn>
@@ -1868,7 +1941,9 @@ const CallQueue = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
                           {(page - 1) * itemsPerPage + i + 1}
@@ -1877,7 +1952,9 @@ const CallQueue = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                             fontWeight: 600,
                           }}
                         >
@@ -1887,7 +1964,9 @@ const CallQueue = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
                           {q.queue_number || "--"}
@@ -1896,7 +1975,9 @@ const CallQueue = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
                           {ringStrategyLabel(q.ring_strategy)}
@@ -1905,7 +1986,9 @@ const CallQueue = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                           }}
                         >
                           {Array.isArray(q.members) ? q.members.length : 0}
@@ -1914,7 +1997,9 @@ const CallQueue = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
                             textAlign: "center",
                             padding: "7px 8px",
                           }}
@@ -1934,14 +2019,53 @@ const CallQueue = () => {
           </div>
 
           {!isInitialLoad && queues.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedQueues.length}
-              onPageChange={(p) =>
-                setPage(Math.min(totalPages, Math.max(1, p)))
-              }
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 18px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                gap: 8,
+                borderBottomLeftRadius: LIST_CARD_RADIUS,
+                borderBottomRightRadius: LIST_CARD_RADIUS,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedQueues.length} record
+                {pagedQueues.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.fetch || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.fetch || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>

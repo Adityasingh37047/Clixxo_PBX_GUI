@@ -17,15 +17,19 @@ import {
   pbxPageInnerStyle,
   TableListLoading,
   TableListEmptyState,
-} from "../../sections/numManipulate/numManipulateSharedUi";
+} from "../../shared/cdrSharedUi";
 import {
   sipPcmCardStyle,
   sipPcmToolbarStyle,
   sipPcmSelectedBadgeStyle,
   sipPcmCancelBtnStyle,
   SipPcmPagination,
-} from "../../sections/sip/sipPcmSharedUi";
-import { TRUNK_TABLE_SCROLL_CLASS } from "../../sections/trunk/trunkSharedUi";
+} from "../../shared/cdrSharedUi";
+import { TRUNK_TABLE_SCROLL_CLASS } from "../../shared/cdrSharedUi";
+import {
+  OUTLINED_BORDER,
+  nativeFieldInteraction,
+} from "../../shared/cdrSharedUi";
 
 // Wider columns for long data; tighter left/right gap on short-value columns
 const callCountCellPadding = "7px 6px";
@@ -428,14 +432,15 @@ const controlBase = {
   fontSize: 13,
   color: C.valueText,
   background: "#ffffff",
-  border: `1px solid ${C.cardBorder}`,
+  border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 10,
   padding: "0 12px",
   outline: "none",
   fontFamily: "Inter, sans-serif",
-  transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   width: "100%",
   boxSizing: "border-box",
+  boxShadow: "none",
 };
 
 const FilterLabel = ({ children }) => (
@@ -480,14 +485,7 @@ const FilterSelect = ({
       backgroundPosition: "right 12px center",
       paddingRight: 32,
     }}
-    onFocus={(e) => {
-      e.target.style.borderColor = C.accent;
-      e.target.style.boxShadow = `0 0 0 3px ${C.accent}18`;
-    }}
-    onBlur={(e) => {
-      e.target.style.borderColor = C.cardBorder;
-      e.target.style.boxShadow = "none";
-    }}
+    {...nativeFieldInteraction}
   >
     {options.map((opt) => (
       <option key={opt.value} value={opt.value}>
@@ -497,19 +495,14 @@ const FilterSelect = ({
   </select>
 );
 
-const FilterSearch = ({ value, onChange, onFocus, onBlur, focused }) => (
+const FilterSearch = ({ value, onChange }) => (
   <input
     type="text"
     value={value}
     onChange={onChange}
-    onFocus={onFocus}
-    onBlur={onBlur}
     placeholder="Extension, number, IP, destination…"
-    style={{
-      ...controlBase,
-      borderColor: focused ? C.accent : C.cardBorder,
-      boxShadow: focused ? `0 0 0 3px ${C.accent}18` : "none",
-    }}
+    style={controlBase}
+    {...nativeFieldInteraction}
   />
 );
 
@@ -566,7 +559,6 @@ const CallCount = () => {
 
   const [filterDraft, setFilterDraft] = useState({ ...DEFAULT_FILTERS });
   const [appliedFilters, setAppliedFilters] = useState({ ...DEFAULT_FILTERS });
-  const [searchFocused, setSearchFocused] = useState(false);
 
   const loadCdr = async (pageToLoad = page) => {
     try {
@@ -640,7 +632,6 @@ const CallCount = () => {
     setFilterDraft(resetFilters);
     setAppliedFilters(resetFilters);
     setSelectedIds([]);
-    setSearchFocused(false);
     setPage(1);
   }, []);
 
@@ -827,9 +818,6 @@ const CallCount = () => {
                   setAppliedFilters((f) => ({ ...f, search: value }));
                   setPage(1);
                 }}
-                focused={searchFocused}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
               />
             </FilterField>
 

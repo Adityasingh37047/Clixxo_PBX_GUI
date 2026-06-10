@@ -46,7 +46,8 @@ import {
   sipPcmSelectedBadgeStyle,
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
+import { pbxModalCancelBtnStyle } from "../../../shared/pbxSharedUi";
 
 const SipTrunkGroup = () => {
   const [formData, setFormData] = useState(SIP_TRUNK_GROUP_INITIAL_FORM);
@@ -888,7 +889,7 @@ const SipTrunkGroup = () => {
             onClick={() => setShowModal(false)}
             variant="cancel"
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>

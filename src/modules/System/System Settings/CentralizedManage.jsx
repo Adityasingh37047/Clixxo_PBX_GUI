@@ -10,14 +10,14 @@ import { Alert, CircularProgress, Checkbox } from "@mui/material";
 import {
   advancedFormInlineFooterStyle,
   advancedFormBtnStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/systemSharedUi";
 import { postLinuxCmd } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
 import {
   systemFieldInputStyle as inputStyle,
   systemFieldSelectStyle as selectStyle,
   inputInteraction,
-} from "../../../sections/system/systemSharedUi";
+} from "../../../shared/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",

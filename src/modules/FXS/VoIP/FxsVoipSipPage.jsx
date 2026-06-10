@@ -22,7 +22,7 @@ import {
   advancedFormInlineFooterStyle,
   nativeFieldInputStyle,
   getFxsNativeFieldInteraction,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const LOCAL_PBX_REGISTER_STATUS_TEXT = "Local PBX (registration not required)";
 

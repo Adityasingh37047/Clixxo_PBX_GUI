@@ -25,7 +25,7 @@ import {
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
   routeTableMinWidthForZoom,
-} from "../../../sections/fxs/fxsSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const routeTdStyle = {
   ...tdStyle,

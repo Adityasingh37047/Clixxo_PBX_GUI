@@ -35,7 +35,7 @@ import {
   addHostModalContentStyle,
   addHostFormPanelStyle,
   addHostModalFooterStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const DATA_COLUMNS = DIALING_RULE_TABLE_COLUMNS.filter(
   (c) => c.key !== "check" && c.key !== "modify",

@@ -19,7 +19,7 @@ import {
   Checkbox,
   Alert,
 } from "@mui/material";
-import { modalSelectSx, modalTextFieldSx } from "../../../sections/shared/outlinedFieldUi";
+import { modalSelectSx, modalTextFieldSx } from "../../../shared/e1PriSharedUi";
 import {
   listNumberManipulations,
   createNumberManipulation,

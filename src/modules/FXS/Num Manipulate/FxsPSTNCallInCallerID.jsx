@@ -31,7 +31,7 @@ import {
   numManipulateCardStyle,
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
-} from "../../../sections/fxs/fxsSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 // Stub functions when API imports are commented out
 const listNumberManipulations = async () => ({ response: true, message: [] });

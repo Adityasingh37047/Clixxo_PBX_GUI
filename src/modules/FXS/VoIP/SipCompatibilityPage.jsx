@@ -14,7 +14,7 @@ import {
   nativeFieldInteraction,
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const getInitialState = () => {
   const state = {};

@@ -28,7 +28,7 @@ import {
   addHostModalContentStyle,
   addHostFormPanelStyle,
   addHostModalFooterStyle,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const DIALING_TIMEOUT_FIELD_LABEL_WIDTH = 220;
 

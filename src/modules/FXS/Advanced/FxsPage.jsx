@@ -12,7 +12,7 @@ import {
   nativeFieldInputStyle,
   nativeFieldSelectStyle,
   nativeFieldInteraction,
-} from "../../../sections/advanced/advancedSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const inputStyle = nativeFieldInputStyle;
 const selectStyle = nativeFieldSelectStyle;

@@ -4,7 +4,7 @@ import {
   fetchCallQueueAgentStats,
   fetchCallQueueQueueStats,
 } from "../../../api/apiService";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Tabs, Tab } from "@mui/material";
 import {
   C,
   Btn,
@@ -13,14 +13,26 @@ import {
   pbxPageInnerStyle,
   TableListLoading,
   TableListEmptyState,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
+  PBX_MODAL_TAB_ACTIVE_COLOR,
+  pbxHeaderTabsSx,
+  PbxToolbarSearchBar,
+} from "../../../shared/statusSharedUi";
 import {
   sipPcmCardStyle,
+  sipPcmFormCardStyle,
+  sipPcmFormHeaderStyle,
   sipPcmToolbarStyle,
   sipPcmSelectedBadgeStyle,
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
-} from "../../../sections/sip/sipPcmSharedUi";
+  sipPcmAuthFormBtnStyle,
+} from "../../../shared/statusSharedUi";
+
+const statsToolbarBtnStyle = {
+  ...sipPcmAuthFormBtnStyle,
+  ...sipPcmCancelBtnStyle,
+  boxShadow: "none",
+};
 
 const POLL_INTERVAL = 5000;
 
@@ -201,7 +213,6 @@ const EmptyRow = ({ cols, msg = "No data available" }) => (
 const CallQueueStatistics = ({ onBack, initialQueue }) => {
   const [activeTab, setActiveTab] = useState("agent");
   const [agentSearch, setAgentSearch] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
   const [agentData, setAgentData] = useState([]);
   const [queueData, setQueueData] = useState([]);
   const [loadingAgent, setLoadingAgent] = useState(false);
@@ -300,55 +311,57 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           ]}
         />
 
-        <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {[
-                { key: "agent", label: "Agent Statistics" },
-                { key: "queue", label: "Queue Statistics" },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  style={{
-                    padding: "5px 14px",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: activeTab === tab.key ? C.accent : C.labelText,
-                    background:
-                      activeTab === tab.key ? "#eff6ff" : "#f1f5f9",
-                    border:
-                      activeTab === tab.key
-                        ? `1px solid ${C.accent}`
-                        : `1px solid ${C.cardBorder}`,
-                    borderRadius: 999,
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
+        <div style={sipPcmFormCardStyle}>
+          <div
+            style={{
+              ...sipPcmFormHeaderStyle,
+              padding: "0 8px 0 6px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={(_, tab) => setActiveTab(tab)}
+              variant="standard"
+              TabIndicatorProps={{
+                style: {
+                  backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR,
+                  height: 2,
+                },
+              }}
+              sx={{ flex: 1, minWidth: 0, ...pbxHeaderTabsSx }}
+            >
+              <Tab label="AGENT STATISTICS" value="agent" />
+              <Tab label="QUEUE STATISTICS" value="queue" />
+            </Tabs>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexShrink: 0,
+              }}
+            >
               {lastUpdated && (
                 <span style={{ fontSize: 11, color: C.mutedText }}>
                   Updated {lastUpdated.toLocaleTimeString()}
                 </span>
               )}
-            </div>
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Btn
                 variant="cancel"
                 onClick={() => {
                   setAgentData([]);
                   setQueueData([]);
                 }}
-                style={sipPcmCancelBtnStyle}
+                style={statsToolbarBtnStyle}
               >
                 Clear
               </Btn>
-              <Btn variant="cancel" onClick={onBack} style={sipPcmCancelBtnStyle}>
+              <Btn variant="cancel" onClick={onBack} style={statsToolbarBtnStyle}>
                 ← Back
               </Btn>
             </div>
@@ -373,61 +386,12 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                   {agentData.length} Agent{agentData.length !== 1 ? "s" : ""}
                 </span>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    height: 30,
-                    boxSizing: "border-box",
-                    background: "#ffffff",
-                    border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                    borderRadius: 10,
-                    padding: "0 10px",
-                    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-                    boxShadow: searchFocused
-                      ? "0 0 0 4px rgba(62, 84, 117, 0.08)"
-                      : "none",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 12,
-                      color: searchFocused ? C.accent : C.mutedText,
-                    }}
-                  >
-                    🔍
-                  </span>
-                  <input
-                    type="text"
-                    value={agentSearch}
-                    onChange={(e) => setAgentSearch(e.target.value)}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => setSearchFocused(false)}
-                    placeholder="Search agent number, name..."
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      fontSize: 11,
-                      color: C.valueText,
-                      outline: "none",
-                      width: 140,
-                      minWidth: 100,
-                    }}
-                  />
-                  {agentSearch && (
-                    <span
-                      onClick={() => setAgentSearch("")}
-                      style={{
-                        fontSize: 11,
-                        color: C.mutedText,
-                        cursor: "pointer",
-                      }}
-                    >
-                      ✕
-                    </span>
-                  )}
-                </div>
+                <PbxToolbarSearchBar
+                  value={agentSearch}
+                  onChange={(e) => setAgentSearch(e.target.value)}
+                  placeholder="Search agent number, name..."
+                  fitPlaceholder
+                />
               </div>
 
               {/* Agent table */}

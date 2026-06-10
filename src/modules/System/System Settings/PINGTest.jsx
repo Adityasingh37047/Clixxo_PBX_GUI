@@ -11,7 +11,7 @@ import {
   systemToolFieldInputStyle as inputStyle,
   systemToolFieldSelectStyle as selectStyle,
   inputInteraction,
-} from "../../../sections/system/systemSharedUi";
+} from "../../../shared/systemSharedUi";
 
 const C = {
   pageBg: "#f8fafc",

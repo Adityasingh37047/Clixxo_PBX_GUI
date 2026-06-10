@@ -31,7 +31,7 @@ import {
   fxsNativeFieldInputStyle,
   fxsNativeFieldSelectStyle,
   fxsNativeFieldInteraction,
-} from "../../../sections/fxs/fxsSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 const routeTdStyle = {
   ...tdStyle,

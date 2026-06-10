@@ -30,7 +30,7 @@ import {
   numManipulateToolbarStyle,
   numManipulatePaginationStyle,
   routeTableMinWidthForZoom,
-} from "../../../sections/fxs/fxsSharedUi";
+} from "../../../shared/fxsSharedUi";
 
 /** Compact table text — original FXS route sizing (not enlarged shared defaults) */
 const routeTdStyle = {

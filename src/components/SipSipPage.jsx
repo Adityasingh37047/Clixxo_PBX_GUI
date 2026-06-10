@@ -26,7 +26,7 @@ import {
   sipPcmCheckboxSx,
   sipPcmNativeCheckboxStyle,
   sipPcmNoteStyle,
-} from "../sections/sip/sipPcmSharedUi";
+} from "../shared/pbxSharedUi";
 import { listSipSettings, updateSipSettings } from "../api/apiService";
 import { Alert, CircularProgress } from "@mui/material";
 

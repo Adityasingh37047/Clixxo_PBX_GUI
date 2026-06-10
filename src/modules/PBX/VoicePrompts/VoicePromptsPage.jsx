@@ -13,6 +13,8 @@ import {
   TextField,
   Checkbox,
   Alert,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
@@ -35,13 +37,35 @@ import {
   uploadMohFile,
 } from "../../../api/apiService";
 import {
+  Btn,
   PbxBreadcrumb,
   TableListLoading,
   TableListEmptyState,
-  pbxPageWrapStyle,
-  pbxPageInnerStyle,
-} from "../../../sections/numManipulate/numManipulateSharedUi";
-import { sipPcmCardStyle } from "../../../sections/sip/sipPcmSharedUi";
+  PBX_MODAL_TAB_ACTIVE_COLOR,
+  pbxHeaderTabsSx,
+  pbxModalCancelBtnStyle,
+} from "../../../shared/pbxSharedUi";
+import {
+  sipPcmFormPageWrapStyle,
+  sipPcmFormPageInnerStyle,
+  sipPcmFormCardStyle,
+  sipPcmFormHeaderStyle,
+  sipPcmAuthFormBtnStyle,
+  SipPcmSectionHeading,
+} from "../../../shared/pbxSharedUi";
+
+const voicePromptPrimaryBtnStyle = sipPcmAuthFormBtnStyle;
+
+const voicePromptCancelBtnStyle = {
+  ...pbxModalCancelBtnStyle,
+  boxShadow: "none",
+};
+
+const voicePromptChooseFileBtnStyle = {
+  ...sipPcmAuthFormBtnStyle,
+  minWidth: "auto",
+  boxShadow: "none",
+};
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -60,69 +84,6 @@ const CARD_RADIUS = 20;
 
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-}) => {
-  const variants = {
-    default: {
-      background: "#1e2d42",
-      color: "#fff",
-      border: "1px solid #162233",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.errorRed,
-      border: `0.5px solid #fecaca`,
-    },
-    accent: {
-      background: C.accent,
-      color: C.cardBg,
-      border: `0.5px solid ${C.accent}`,
-    },
-  };
-  const s = variants[variant] || variants.default;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        ...s,
-        fontSize: 11,
-        fontWeight: 600,
-        padding: "5px 14px",
-        borderRadius: 6,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 5,
-        transition: "opacity 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "0.82";
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.opacity = "1";
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
 const TH = ({ children, style: extra }) => (
   <th
     style={{
@@ -159,26 +120,6 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
       {label} {required && <span style={{ color: C.errorRed }}>*</span>}
     </label>
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: "#fff",
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
-      }}
-    >
-      {title}
-    </span>
   </div>
 );
 
@@ -610,8 +551,8 @@ const VoicePromptsPage = () => {
   }, [mohAudioUrl, customAudioUrl]);
 
   return (
-    <div style={pbxPageWrapStyle}>
-      <div style={pbxPageInnerStyle}>
+    <div style={sipPcmFormPageWrapStyle}>
+      <div style={sipPcmFormPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
           <Alert
@@ -632,58 +573,35 @@ const VoicePromptsPage = () => {
 
         <PbxBreadcrumb section="Voice Prompts" current="Voice Prompts" />
 
-        <div style={sipPcmCardStyle}>
-          {/* Tabs */}
-          <div
-            style={{
-              display: "flex",
-              gap: 4,
-              
-              borderBottom: `1px solid ${C.cardBorder}`,
-              padding: "10px 14px 0 14px",
-            }}
-          >
-            {[
-              { id: "promptPreference", label: "PROMPT PREFERENCE" },
-              { id: "musicOnHold", label: "MUSIC ON HOLD" },
-              { id: "customPrompt", label: "CUSTOM PROMPT" },
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => {
-                  stopMohPlayer();
-                  stopCustomPlayer();
-                  setActiveTab(t.id);
-                }}
-                style={{
-                  background: activeTab === t.id ? C.cardBg : "transparent",
-                  color: activeTab === t.id ? C.accent : "#17181a",
-                  border:
-                    activeTab === t.id
-                      ? `1px solid ${C.cardBorder}`
-                      : "1px solid transparent",
-                  borderBottom: "none",
-                  padding: "8px 16px",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  borderRadius: "6px 6px 0 0",
-                  cursor: "pointer",
-                  letterSpacing: "0.04em",
-                  transition: "all 0.2s",
-                  position: "relative",
-                  top: activeTab === t.id ? 1 : 0,
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
+        <div style={sipPcmFormCardStyle}>
+          <div style={{ ...sipPcmFormHeaderStyle, padding: "0 8px 0 6px" }}>
+            <Tabs
+              value={activeTab}
+              onChange={(_, id) => {
+                stopMohPlayer();
+                stopCustomPlayer();
+                setActiveTab(id);
+              }}
+              variant="standard"
+              TabIndicatorProps={{
+                style: {
+                  backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR,
+                  height: 2,
+                },
+              }}
+              sx={pbxHeaderTabsSx}
+            >
+              <Tab label="PROMPT PREFERENCE" value="promptPreference" />
+              <Tab label="MUSIC ON HOLD" value="musicOnHold" />
+              <Tab label="CUSTOM PROMPT" value="customPrompt" />
+            </Tabs>
           </div>
 
           <div style={{ padding: 16 }}>
             {/* ── TAB 1: PROMPT PREFERENCE ── */}
             {activeTab === "promptPreference" && (
-              <div style={{ maxWidth: 800 }}>
-                <SectionHeading title="General Preferences" />
+              <div>
+                <SipPcmSectionHeading title="General Preferences" isFirst />
                 <div
                   style={{
                     display: "grid",
@@ -761,22 +679,14 @@ const VoicePromptsPage = () => {
                   </FieldRow>
                 </div>
                 <div style={{ marginTop: 24, display: "flex" }}>
-             <Btn
-  onClick={handleSavePreferences}
-  disabled={savingPrefs}
-  variant="default"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  {savingPrefs ? "Saving..." : "SAVE"}
-</Btn>
+                  <Btn
+                    onClick={handleSavePreferences}
+                    disabled={savingPrefs}
+                    variant="primary"
+                    style={voicePromptPrimaryBtnStyle}
+                  >
+                    {savingPrefs ? "Saving..." : "SAVE"}
+                  </Btn>
                 </div>
               </div>
             )}
@@ -784,7 +694,7 @@ const VoicePromptsPage = () => {
             {/* ── TAB 2: MUSIC ON HOLD ── */}
             {activeTab === "musicOnHold" && (
               <div>
-                <SectionHeading title="Upload New MOH File" />
+                <SipPcmSectionHeading title="Upload New MOH File" isFirst />
                 <div
                   style={{
                     display: "flex",
@@ -846,7 +756,8 @@ const VoicePromptsPage = () => {
                     />
                     <Btn
                       onClick={() => mohFileInputRef.current?.click()}
-                      variant="outline"
+                      variant="cancel"
+                      style={voicePromptChooseFileBtnStyle}
                     >
                       Choose File
                     </Btn>
@@ -865,21 +776,15 @@ const VoicePromptsPage = () => {
                   </div>
 
                   <Btn
-  onClick={handleUploadMoh}
-  variant="default"
-  style={{
-    marginLeft: "auto",
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  UPLOAD
-</Btn>
+                    onClick={handleUploadMoh}
+                    variant="primary"
+                    style={{
+                      ...voicePromptPrimaryBtnStyle,
+                      marginLeft: "auto",
+                    }}
+                  >
+                    UPLOAD
+                  </Btn>
                 </div>
                 <div
                   style={{ fontSize: 11, color: C.mutedText, marginBottom: 5 }}
@@ -888,7 +793,7 @@ const VoicePromptsPage = () => {
                   8000Hz sampling rate, mono wav, MP3 files.
                 </div>
 
-                <SectionHeading title="All Uploaded MOH Files" />
+                <SipPcmSectionHeading title="All Uploaded MOH Files" />
                 <div
                   style={{
                     overflowX: "auto",
@@ -1154,23 +1059,15 @@ const VoicePromptsPage = () => {
                   }}
                 >
                   <Btn
-  onClick={openRecordModal}
-  variant="accent"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  + RECORD NEW
-</Btn>
+                    onClick={openRecordModal}
+                    variant="primary"
+                    style={voicePromptPrimaryBtnStyle}
+                  >
+                    + RECORD NEW
+                  </Btn>
                 </div>
 
-                <SectionHeading title="Upload Custom Prompt" />
+                <SipPcmSectionHeading title="Upload Custom Prompt" isFirst />
                 <div
                   style={{
                     display: "flex",
@@ -1206,7 +1103,8 @@ const VoicePromptsPage = () => {
                     />
                     <Btn
                       onClick={() => customFileInputRef.current?.click()}
-                      variant="outline"
+                      variant="cancel"
+                      style={voicePromptChooseFileBtnStyle}
                     >
                       Choose File
                     </Btn>
@@ -1223,22 +1121,16 @@ const VoicePromptsPage = () => {
                       {customFile?.name || "No file chosen"}
                     </span>
                   </div>
-                 <Btn
-  onClick={handleUploadCustomPrompt}
-  variant="default"
-  style={{
-    marginLeft: "auto",
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  UPLOAD
-</Btn>
+                  <Btn
+                    onClick={handleUploadCustomPrompt}
+                    variant="primary"
+                    style={{
+                      ...voicePromptPrimaryBtnStyle,
+                      marginLeft: "auto",
+                    }}
+                  >
+                    UPLOAD
+                  </Btn>
                 </div>
                 <div
                   style={{ fontSize: 11, color: C.mutedText, marginBottom: 5 }}
@@ -1246,7 +1138,7 @@ const VoicePromptsPage = () => {
                   Note: supports uploading .wav, .mp3, .gsm files.
                 </div>
 
-                <SectionHeading title="Recordings" />
+                <SipPcmSectionHeading title="Recordings" />
                 <div
                   style={{
                     overflowX: "auto",
@@ -1566,34 +1458,19 @@ const VoicePromptsPage = () => {
           }}
         >
           <Btn
-  onClick={handleSaveRecordedPrompt}
-  variant="default"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background:
-      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-    color: "#fff",
-    border: "1px solid #5A6F8F",
-    boxShadow: "0 2px 8px #3E5475",
-  }}
->
-  RECORD
-</Btn>
-       <Btn
-  onClick={() => setRecordModalOpen(false)}
-  variant="outline"
-  style={{
-    padding: "8px 28px",
-    fontSize: 13,
-    background: "#cbd5e1",
-    color: "#374151",
-    border: "1px solid #cbd5e1",
-    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  }}
->
-  CANCEL
-</Btn>
+            onClick={handleSaveRecordedPrompt}
+            variant="primary"
+            style={voicePromptPrimaryBtnStyle}
+          >
+            RECORD
+          </Btn>
+          <Btn
+            onClick={() => setRecordModalOpen(false)}
+            variant="cancel"
+            style={voicePromptCancelBtnStyle}
+          >
+            CANCEL
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

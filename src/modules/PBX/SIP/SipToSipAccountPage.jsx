@@ -51,7 +51,8 @@ import {
   sipPcmSelectedBadgeStyle,
   sipPcmCancelBtnStyle,
   sipPcmPrimaryBtnStyle,
-} from "../../../sections/sip/sipPcmSharedUi";
+} from "../../../shared/pbxSharedUi";
+import { pbxModalCancelBtnStyle } from "../../../shared/pbxSharedUi";
 
 const SipToSipAccountPage = () => {
   const [accounts, setAccounts] = useState([]);
@@ -1109,7 +1110,7 @@ const SipToSipAccountPage = () => {
             onClick={handleCloseModal}
             variant="cancel"
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>
