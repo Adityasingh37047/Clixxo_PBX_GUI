@@ -29,12 +29,6 @@ import {
   listGroups,
   listPstnGroups,
 } from "../../../api/apiService";
-import {
-  addHostFormPanelStyle,
-  modalSelectSx,
-  modalTextFieldSx,
-} from "../../../shared/e1PriSharedUi";
-
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -49,6 +43,91 @@ const C = {
 };
 
 const CARD_RADIUS = 20;
+
+// ── Local modal field UI (inlined from e1PriSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+
+const muiTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": {
+      borderColor: OUTLINED_HOVER,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+  },
+};
+
+const muiSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: "#fff",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: 2,
+  },
+};
+
+const modalTextFieldSx = {
+  ...muiTextFieldSx,
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    height: 32,
+  },
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+  },
+};
+
+const modalSelectSx = {
+  ...muiSelectSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    height: 36,
+    backgroundColor: "#fff",
+  },
+};
+
+const addHostFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
 
 const Btn = ({
   children,

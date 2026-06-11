@@ -8,28 +8,380 @@ import React, {
 import { CircularProgress, Checkbox } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  C,
-  Btn,
-  TH,
-  PageBreadcrumb,
-  pbxPageWrapStyle,
-  pbxPageInnerStyle,
-  TableListLoading,
-  TableListEmptyState,
-} from "../../shared/cdrSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  SipPcmPagination,
-} from "../../shared/cdrSharedUi";
-import { TRUNK_TABLE_SCROLL_CLASS } from "../../shared/cdrSharedUi";
-import {
-  OUTLINED_BORDER,
-  nativeFieldInteraction,
-} from "../../shared/cdrSharedUi";
+
+// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+};
+
+// ── Local page UI (inlined from cdrSharedUi) ────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  form,
+  component,
+  title,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const PageBreadcrumb = ({ segments, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
+  >
+    {segments.map((label, index) => (
+      <React.Fragment key={`${label}-${index}`}>
+        {index > 0 ? <span>&gt;</span> : null}
+        <span
+          style={
+            index === segments.length - 1
+              ? { color: "#1e293b", fontWeight: 600 }
+              : undefined
+          }
+        >
+          {label}
+        </span>
+      </React.Fragment>
+    ))}
+  </div>
+);
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const SIP_PCM_TABLE_CARD_RADIUS = 10;
+
+const sipPcmCardStyle = {
+  background: "#ffffff",
+  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
+
+const sipPcmToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
+
+const sipPcmSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const sipPcmCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const sipPcmPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const sipPcmPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const SipPcmPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+  recordLabel = "record",
+  style,
+}) => (
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} {recordLabel}
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={sipPcmPageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
+
+/** Separator line left of vertical scrollbar only — see index.css `.trunk-table-scroll` */
+const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
+
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
 
 // Wider columns for long data; tighter left/right gap on short-value columns
 const callCountCellPadding = "7px 6px";

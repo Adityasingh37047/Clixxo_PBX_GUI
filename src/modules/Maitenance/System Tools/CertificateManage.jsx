@@ -5,15 +5,6 @@ import {
   CERTIFICATE_NOTE,
 } from "../../../constants/CertificateManageConstants";
 import { Alert } from "@mui/material";
-import {
-  advancedFormInlineFooterStyle,
-  advancedFormBtnStyle,
-} from "../../../shared/maitenanceSharedUi";
-import {
-  systemToolsEditableFieldInputStyleSmall as inputStyle,
-  inputInteraction,
-} from "../../../shared/maitenanceSharedUi";
-
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -30,6 +21,139 @@ const C = {
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+// ── Local field UI (inlined from maitenanceSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onFocus(e);
+  },
+  onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onBlur(e);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseEnter(e);
+  },
+  onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseLeave(e);
+  },
+};
+
+const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
+  if (!hasError) return inputInteraction;
+  const ring = (el, focused) => {
+    el.style.borderColor = errorColor;
+    el.style.borderWidth = "1px";
+    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
+  };
+  return {
+    onFocus: (e) => ring(e.target, true),
+    onBlur: (e) => ring(e.target, false),
+    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
+    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
+  };
+};
+
+const systemToolsFieldInputStyle = {
+  padding: "6px 12px",
+  borderRadius: 6,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  fontSize: 14,
+  width: "100%",
+  backgroundColor: "#f8fafc",
+  outline: "none",
+  color: "#3E5475",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  boxSizing: "border-box",
+  boxShadow: "none",
+};
+
+const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
+const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
+
+const systemToolsEditableFieldInputStyleSmall = {
+  ...systemToolsFieldInputStyle,
+  fontSize: 12,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+};
+const inputStyle = systemToolsEditableFieldInputStyleSmall;
+
+const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "calc(100% + 40px)",
+  marginLeft: -20,
+  marginRight: -20,
+  marginTop: 0,
+  marginBottom: 0,
+  padding: "10px 20px 10px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
 
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({

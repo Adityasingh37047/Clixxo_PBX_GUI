@@ -7,11 +7,6 @@ import {
 } from "../../../constants/ModificationRecordConstants";
 import { Alert, CircularProgress } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
-import {
-  advancedFormInlineFooterStyle,
-  advancedFormBtnStyle,
-} from "../../../shared/maitenanceSharedUi";
-
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -28,6 +23,32 @@ const C = {
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "calc(100% + 40px)",
+  marginLeft: -20,
+  marginRight: -20,
+  marginTop: 0,
+  marginBottom: 0,
+  padding: "10px 20px 10px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
 
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({

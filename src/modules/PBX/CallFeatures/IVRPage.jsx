@@ -23,14 +23,6 @@ import {
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
-  PbxBreadcrumb,
-  TableListLoading,
-  TableListEmptyState,
-  pbxPageWrapStyle,
-  pbxPageInnerStyle,
-} from "../../../shared/pbxSharedUi";
-
-import {
   listIvrDestinations,
   listIvrs,
   listIvrOptions,
@@ -360,6 +352,94 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
+
+
+// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
+  >
+    <span>PBX</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+  </div>
+);
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
 
 const FieldRow = ({ label, children, required }) => (
   <div
@@ -1664,7 +1744,7 @@ const IVRPage = () => {
                           <span
                             style={{
                               color:
-                                row.enabled === "Yes" ? "#166534" : "#475569",
+                                row.enabled === "Yes" ? "#16A34A" : "#475569",
                               padding: "4px 11px",
                               borderRadius: 999,
                               fontSize: 11,
@@ -1691,7 +1771,7 @@ const IVRPage = () => {
                         >
                           <span
                             style={{
-                              color: row.directOutbound ? "#166534" : "#475569",
+                              color: row.directOutbound ? "#16A34A" : "#475569",
                               padding: "4px 11px",
                               borderRadius: 999,
                               fontSize: 11,

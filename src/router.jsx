@@ -3,27 +3,27 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import { ROUTE_PATHS } from "./constants/routeConstatns";
 import SystemInfo from "./modules/status/System Status/SystemInfo";
-import PstnStatus from "./components/PstnStatus";
-import PcmInfo from "./components/PcmInfo";
+import PstnStatus from "./modules/status/System Status/PstnStatus";
+import PcmInfo from "./modules/status/System Status/PcmInfo";
 import CallCount from "./modules/CDR/CallCount";
-import WarningInfo from "./components/WarningInfo";
-import PcmPage from "./components/PcmPage";
-import IsdnPage from "./components/IsdnPage";
-import FaxFaxPage from "./components/FaxFaxPage";
-import NumberFilterPage from "./components/NumberFilterPage";
+import WarningInfo from "./modules/status/System Status/WarningInfo";
+import PcmPage from "./modules/E1-PRI/PCM/PcmPage";
+import IsdnPage from "./modules/ISDN/IsdnPage";
+import FaxFaxPage from "./modules/Fax/FaxFaxPage";
+import NumberFilterPage from "./modules/E1-PRI/Number Filter/NumberFilterPage";
 import NumManipulatePage from "./modules/FXS/Num Manipulate/NumManipulatePage";
 import VpnPage from "./modules/System/System Settings/VpnPage";
 import DhcpPage from "./modules/System/System Settings/DhcpPage";
-import SystemToolsPage from "./components/SystemToolsPage";
+import SystemToolsPage from "./modules/Maitenance/SystemToolsPage";
 import LoginPage from "./components/LoginPage";
-import SipSipPage from "./components/SipSipPage";
-import HaPage from "./components/HaPage";
-import SipTrunkPage from "./components/SipTrunkPage";
+import SipSipPage from "./modules/E1-PRI/SIP/SipSipPage";
+import HaPage from "./modules/E1-PRI/SIP/HaPage";
+import SipTrunkPage from "./modules/System/System Settings/SipTrunkPage";
 import SipRegisterPage from "./modules/PBX/Trunks/SipRegisterPage";
 import Extensions from "./modules/PBX/Extensions/Extensions";
-import SipTrunkGroup from "./modules/PBX/SIP/SipTrunkGroup";
-import SipToSipAccountPage from "./modules/PBX/SIP/SipToSipAccountPage";
-import SipMediaPage from "./modules/PBX/SIP/SipMediaPage";
+import SipTrunkGroup from "./modules/E1-PRI/SIP/SipTrunkGroup";
+import SipToSipAccountPage from "./modules/E1-PRI/SIP/SipToSipAccountPage";
+import SipMediaPage from "./modules/E1-PRI/SIP/SipMediaPage";
 import ExtensionGroupsPage from "./modules/PBX/Extensions/ExtensionGroupsPage";
 import BlockedListPage from "./modules/PBX/CallFeatures/BlockedListPage";
 import CallBackPage from "./modules/PBX/CallFeatures/CallBackPage";
@@ -33,17 +33,17 @@ import CCRoutePage from "./modules/PBX/CallControl/CCRoutePage";
 import InboundRoutesPage from "./modules/PBX/CallControl/InboundRoutesPage";
 import IVRPage from "./modules/PBX/CallFeatures/IVRPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import PcmStatusPage from "./components/PcmStatusPage";
-import PcmSettingsPage from "./components/PcmSettingsPage";
+import PcmStatusPage from "./modules/E1-PRI/PCM/PcmStatusPage";
+import PcmSettingsPage from "./modules/E1-PRI/PCM/PcmSettingsPage";
 import PcmPstnPage from "./modules/E1-PRI/PCM/PcmPstnPage";
 import PcmCircuitMaintenancePage from "./modules/E1-PRI/PCM/PcmCircuitMaintenancePage";
-import PcmPcmPage from "./components/PcmPcmPage";
+import PcmPcmPage from "./modules/E1-PRI/PCM/PcmPcmPage";
 import PcmTrunkPage from "./modules/E1-PRI/PCM/PcmTrunkPage";
-import PcmTrunkGroupPage from "./components/PcmTrunkGroupPage";
+import PcmTrunkGroupPage from "./modules/E1-PRI/PCM/PcmTrunkGroupPage";
 import PcmNumReceivingRulePage from "./modules/E1-PRI/PCM/PcmNumReceivingRulePage";
 import PcmReceptionTimeoutPage from "./modules/E1-PRI/PCM/PcmReceptionTimeoutPage";
-import IsdnIsdnPage from "./components/IsdnIsdnPage";
-import IsdnNumberParameterPage from "./components/IsdnNumberParameterPage";
+import IsdnIsdnPage from "./modules/ISDN/IsdnIsdnPage";
+import IsdnNumberParameterPage from "./modules/ISDN/IsdnNumberParameterPage";
 import RouteRoutingParameterPage from "./modules/E1-PRI/Route/RouteRoutingParameterPage";
 import RouteIpPstnPage from "./modules/E1-PRI/Route/RouteIpPstnPage";
 import RouteIPToIPPage from "./modules/E1-PRI/Route/RouteIPToIPPage";
@@ -58,11 +58,11 @@ import IPCallInOriCalleeID from "./modules/E1-PRI/Num Manipulate/IPCallInOriCall
 import PSTNCallInCallerID from "./modules/E1-PRI/Num Manipulate/PSTNCallInCallerID";
 import PSTNCallInCalleeID from "./modules/E1-PRI/Num Manipulate/PSTNCallInCalleeID";
 import PSTNCallInOriCalleeID from "./modules/E1-PRI/Num Manipulate/PSTNCallInOriCalleeID";
-import CallerIDPool from "./components/CallerIDPool";
-import CallerIDReservePool from "./components/CallerIDReservePool";
-import VpnServerSettings from "./components/VpnServerSettings";
-import VpnAccount from "./components/VpnAccount";
-import DhcpServerSettings from "./components/DhcpServerSettings";
+import CallerIDPool from "./modules/E1-PRI/Num Manipulate/CallerIDPool";
+import CallerIDReservePool from "./modules/E1-PRI/Num Manipulate/CallerIDReservePool";
+import VpnServerSettings from "./modules/System/System Settings/VpnServerSettings";
+import VpnAccount from "./modules/System/System Settings/VpnAccount";
+import DhcpServerSettings from "./modules/System/System Settings/DhcpServerSettings";
 import Network from "./modules/System/System Settings/Network";
 import Authorization from "./modules/Maitenance/System Tools/Authorization";
 import Management from "./modules/System/System Settings/Management";
@@ -70,7 +70,7 @@ import IPRoutingTable from "./modules/System/System Settings/IPRoutingTable";
 import AccessControl from "./modules/System/System Settings/AccessControl";
 import IDSSettings from "./modules/Maitenance/System Tools/IDSSettings";
 import DDOSSettings from "./modules/Maitenance/System Tools/DDOSSettings";
-import SystemToolsVPN from "./components/SystemToolsVPN";
+import SystemToolsVPN from "./modules/System/System Settings/SystemToolsVPN";
 import CertificateManage from "./modules/Maitenance/System Tools/CertificateManage";
 import CentralizedManage from "./modules/System/System Settings/CentralizedManage";
 import Radius from "./modules/Maitenance/System Tools/Radius";
@@ -129,7 +129,7 @@ import FxsToneGeneratorPage from "./modules/FXS/Advanced/ToneGeneratorPage";
 import CallQueue from "./modules/PBX/CallFeatures/CallQueue";
 import OutboundRestrictions from "./modules/PBX/CallControl/OutboundRestrictions";
 import FeatureCodePage from "./modules/PBX/Features Codes/FeatureCodePage";
-import UserManage from "./components/UserManage";
+import UserManage from "./modules/UserManage/User Permission/UserManage";
 // FXS → modules/FXS/Route pages
 import FxsRouteRoutingParameterPage from "./modules/FXS/Route/RouteRoutingParameterPage";
 import FxsRouteIpToTelPage from "./modules/FXS/Route/RouteIpToTelPage";
@@ -601,7 +601,7 @@ export const router = createBrowserRouter([
       },
       { path: ROUTE_PATHS.PORT_GROUP, element: <PortGroupPage /> },
 
-      // FXS → Route (sections/route pages — FXS-specific)
+      // FXS → Route
       {
         path: ROUTE_PATHS.FXS_ROUTE,
         element: <FxsRouteRoutingParameterPage />,
@@ -615,7 +615,7 @@ export const router = createBrowserRouter([
         element: <FxsRouteTelToIpPage />,
       },
 
-      // FXS → Num Manipulate (sections/numManipulate pages — FXS-specific)
+      // FXS → Num Manipulate
       {
         path: ROUTE_PATHS.FXS_IP_CALL_IN_CALLERID,
         element: <FxsIPCallInCallerID />,

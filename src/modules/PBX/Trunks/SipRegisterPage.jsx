@@ -36,6 +36,8 @@ import {
   Checkbox,
   Radio,
   RadioGroup,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   fetchSipAccounts,
@@ -45,54 +47,682 @@ import {
   deleteSipTrunk,
   fetchSystemInfo,
 } from "../../../api/apiService";
-import {
-  C,
-  Btn,
-  TH,
-  tdStyle,
-  checkboxSx,
-  OUTLINED_BORDER,
-  OUTLINED_HOVER,
-  OUTLINED_FOCUS,
-  TRUNK_TABLE_SCROLL_CLASS,
-  trunkTableScrollStyle,
-  trunkTableInnerStyle,
-  trunkModalPaperSx,
-  trunkImportModalPaperSx,
-  trunkModalTitleStyle,
-  trunkModalFormPanelStyle,
-  trunkModalActionsStyle,
-  trunkModalPrimaryBtnStyle,
-  trunkModalCancelBtnStyle,
-  TrunkModalSectionHeading,
-  TRUNK_SECTION_HEADING_COLOR,
-  TRUNK_FIELD_LABEL_COLOR,
-  trunkAdaptTextFieldSx,
-  trunkAdaptRowActionBtnSx,
-  trunkDodCompactInputStyle,
-  trunkDodToolbarBtnStyle,
-  PbxDualListBtn,
-  pbxDualListLabelStyle,
-  pbxDualListSelectStyle,
-  nativeFieldInteraction,
-  muiTextFieldSx,
-} from "../../../shared/pbxSharedUi";
-import {
-  PbxBreadcrumb,
-  TableListLoading,
-  TableListEmptyState,
-  pbxPageWrapStyle,
-  pbxPageInnerStyle,
-  PbxModalTabs,
-} from "../../../shared/pbxSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  sipPcmPrimaryBtnStyle,
-  SipPcmPagination,
-} from "../../../shared/pbxSharedUi";
+// ── Local page UI (inlined from pbxSharedUi) ──
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  form,
+  component,
+  title,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const checkboxSx = {
+  padding: "4px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  "& .MuiSvgIcon-root": { fontSize: 18 },
+};
+
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+
+const muiTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": {
+      borderColor: OUTLINED_HOVER,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+  },
+};
+
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
+  >
+    <span>PBX</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+  </div>
+);
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const PBX_MODAL_TAB_BAR_STYLE = {
+  borderBottom: "1px solid #e5e7eb",
+  background: "#ffffff",
+};
+
+const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+
+const pbxModalTabsSx = {
+  minHeight: 45,
+  "& .MuiTab-root": {
+    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    fontSize: 12,
+    fontWeight: 500,
+    textTransform: "none",
+    minHeight: 45,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    fontWeight: 700,
+  },
+};
+
+const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={PBX_MODAL_TAB_BAR_STYLE}>
+    <Tabs
+      value={value}
+      onChange={(_, next) => onChange(next)}
+      variant={fullWidth ? "fullWidth" : "standard"}
+      TabIndicatorProps={{
+        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+      }}
+      sx={pbxModalTabsSx}
+    >
+      {tabs.map((t) => (
+        <Tab key={t.id} label={t.label} value={t.id} />
+      ))}
+    </Tabs>
+  </div>
+);
+
+const TRUNK_SECTION_HEADING_COLOR = "#30415A";
+const TRUNK_FIELD_LABEL_COLOR = "#3E5475";
+const PBX_MODAL_SECTION_BG = "#f8fafc";
+
+const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: TRUNK_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
+
+const trunkTableScrollStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  maxHeight: 460,
+  borderBottom: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const trunkTableInnerStyle = {
+  minWidth: "100%",
+  width: "max-content",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const trunkModalPaperSx = {
+  width: 900,
+  maxWidth: "95vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const trunkImportModalPaperSx = {
+  width: 420,
+  maxWidth: "95vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const trunkModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const trunkModalFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  paddingTop: 0,
+  paddingBottom: 0,
+  boxSizing: "border-box",
+};
+
+const trunkModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: C.pageBg,
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const trunkModalPrimaryBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  fontSize: 13,
+};
+
+const trunkModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const trunkAdaptTextFieldSx = {
+  ...muiTextFieldSx,
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    height: 32,
+    fontSize: 12,
+  },
+  "& .MuiOutlinedInput-input": {
+    fontSize: 12,
+    padding: "6px 8px",
+    "&::placeholder": {
+      fontSize: 12,
+      opacity: 0.65,
+    },
+  },
+};
+
+const trunkAdaptRowActionBtnSx = {
+  border: "1px solid #cbd5e1",
+  borderRadius: 1,
+  width: 32,
+  height: 32,
+  padding: 0,
+  backgroundColor: "#cbd5e1",
+  color: "#374151",
+  "&:hover": {
+    backgroundColor: "#b6c2d3",
+  },
+};
+
+const trunkDodCompactInputStyle = {
+  height: 28,
+  width: "100%",
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 6,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  cursor: "text",
+};
+
+const trunkDodToolbarBtnStyle = {
+  height: 30,
+  fontSize: 12,
+  padding: "6px 14px",
+  borderRadius: 10,
+};
+
+const pbxDualListLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#3E5475",
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const pbxDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const pbxDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const PbxDualListBtn = ({ onClick, title, children }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={pbxDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const SIP_PCM_TABLE_CARD_RADIUS = 10;
+
+const sipPcmCardStyle = {
+  background: "#ffffff",
+  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
+
+const sipPcmToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
+
+const sipPcmPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const sipPcmSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const sipPcmCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const sipPcmPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const sipPcmPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const SipPcmPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+  recordLabel = "record",
+  style,
+}) => (
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} {recordLabel}
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={sipPcmPageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
 
 const DOD_DUAL_LIST_LABEL_OFFSET = 28;
 

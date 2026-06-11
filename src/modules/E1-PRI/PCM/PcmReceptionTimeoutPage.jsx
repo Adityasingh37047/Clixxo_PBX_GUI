@@ -6,12 +6,6 @@ import {
 } from "../../../constants/PcmReceptionTimeoutConstants";
 import { Alert } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import {
-  addHostFormPanelStyle,
-  nativeFieldInputStyle,
-  nativeFieldInteraction,
-} from "../../../shared/e1PriSharedUi";
-
 // ── Color palette (same as SIPAccountGenerator) ───────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -28,6 +22,81 @@ const C = {
 };
 
 const CARD_RADIUS = 20;
+
+// ── Local form field UI (inlined from e1PriSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInputStyle = {
+  height: 28,
+  width: 200,
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const addHostFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
 
 // ── Button Component (same as SIPAccountGenerator) ────────────────────────────
 const Btn = ({

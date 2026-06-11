@@ -18,24 +18,6 @@ import {
   updateExtensionGroup,
   deleteExtensionGroup,
 } from "../../../api/apiService";
-import {
-  PbxBreadcrumb,
-  TableListLoading,
-  TableListEmptyState,
-  pbxPageWrapStyle,
-  pbxPageInnerStyle,
-  formatPbxItemListDisplay,
-  PBX_LIST_TRUNCATE_THRESHOLD,
-  pbxModalCancelBtnStyle,
-} from "../../../shared/pbxSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  sipPcmPrimaryBtnStyle,
-  SipPcmPagination,
-} from "../../../shared/pbxSharedUi";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -205,6 +187,230 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
+
+// ── Local page UI (inlined from pbxSharedUi) ──
+const PBX_LIST_TRUNCATE_THRESHOLD = 10;
+const PBX_LIST_DISPLAY_LIMIT = 6;
+
+const formatPbxItemListDisplay = (
+  items,
+  {
+    threshold = PBX_LIST_TRUNCATE_THRESHOLD,
+    limit = PBX_LIST_DISPLAY_LIMIT,
+    mapItem = (x) => String(x),
+    separator = ", ",
+    ellipsis = "....",
+  } = {},
+) => {
+  if (!items?.length) return "";
+  const labels = items.map(mapItem).filter((v) => v !== "" && v != null);
+  if (!labels.length) return "";
+  if (labels.length <= threshold) {
+    return labels.join(separator);
+  }
+  return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
+};
+
+const pbxModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
+  >
+    <span>PBX</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+  </div>
+);
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const SIP_PCM_TABLE_CARD_RADIUS = 10;
+
+const sipPcmCardStyle = {
+  background: "#ffffff",
+  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
+
+const sipPcmToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
+
+const sipPcmPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const sipPcmSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const sipPcmCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const sipPcmPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const sipPcmPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const SipPcmPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+  recordLabel = "record",
+  style,
+}) => (
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} {recordLabel}
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={sipPcmPageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 

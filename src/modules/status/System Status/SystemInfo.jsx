@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 import { Button, CircularProgress } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { PageBreadcrumb } from "../../../shared/statusSharedUi";
 
 const REFRESH_INTERVAL_MS = 5000;
 
@@ -20,6 +19,39 @@ const C = {
   pageBg: "#eef2f7",
 };
 
+// ── Local page UI (inlined from statusSharedUi) ───────────────────────────────
+const PageBreadcrumb = ({ segments, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "nowrap",
+      whiteSpace: "nowrap",
+      lineHeight: 1.5,
+      ...style,
+    }}
+  >
+    {segments.map((label, index) => (
+      <React.Fragment key={`${label}-${index}`}>
+        {index > 0 ? <span>&gt;</span> : null}
+        <span
+          style={
+            index === segments.length - 1
+              ? { color: "#1e293b", fontWeight: 600 }
+              : undefined
+          }
+        >
+          {label}
+        </span>
+      </React.Fragment>
+    ))}
+  </div>
+);
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const renderPktsValue = (val) => {
   const str = Array.isArray(val) ? val.join("  ") : String(val ?? "");

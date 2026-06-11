@@ -19,12 +19,6 @@ import {
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { fetchNetwork, postLinuxCmd } from "../../../api/apiService";
-import {
-  systemModalFieldInputStyle,
-  systemModalSelectSx,
-  inputInteraction,
-} from "../../../shared/systemSharedUi";
-
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -41,6 +35,151 @@ const C = {
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+// ── Local field UI (inlined from systemSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInputStyle = {
+  height: 28,
+  width: 200,
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
+
+const systemModalFieldInputStyle = {
+  ...nativeFieldBase,
+  minHeight: 32,
+  height: 32,
+  width: "100%",
+  padding: "0 10px",
+  lineHeight: 1.35,
+  color: "#1e293b",
+};
+
+const muiTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+  },
+};
+
+const muiSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: "#fff",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: 2,
+  },
+};
+
+const modalSelectSx = {
+  ...muiSelectSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    height: 36,
+    backgroundColor: "#fff",
+  },
+};
+
+const systemModalSelectSx = {
+  ...modalSelectSx,
+  height: 36,
+  "& .MuiOutlinedInput-root": { height: 36 },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+};
+
 
 const CARD_RADIUS = 20;
 

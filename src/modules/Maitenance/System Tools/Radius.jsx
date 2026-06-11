@@ -12,16 +12,6 @@ import {
   FormControlLabel,
   Alert,
 } from "@mui/material";
-import {
-  advancedFormInlineFooterStyle,
-  advancedFormBtnStyle,
-} from "../../../shared/maitenanceSharedUi";
-import {
-  systemToolsEditableFieldInputStyle as inputStyle,
-  systemToolsEditableMuiSelectSx as systemToolsMuiSelectSx,
-  inputInteraction,
-} from "../../../shared/maitenanceSharedUi";
-
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -38,6 +28,195 @@ const C = {
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+// ── Local field UI (inlined from maitenanceSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onFocus(e);
+  },
+  onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onBlur(e);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseEnter(e);
+  },
+  onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseLeave(e);
+  },
+};
+
+const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
+  if (!hasError) return inputInteraction;
+  const ring = (el, focused) => {
+    el.style.borderColor = errorColor;
+    el.style.borderWidth = "1px";
+    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
+  };
+  return {
+    onFocus: (e) => ring(e.target, true),
+    onBlur: (e) => ring(e.target, false),
+    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
+    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
+  };
+};
+
+const systemToolsFieldInputStyle = {
+  padding: "6px 12px",
+  borderRadius: 6,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  fontSize: 14,
+  width: "100%",
+  backgroundColor: "#f8fafc",
+  outline: "none",
+  color: "#3E5475",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  boxSizing: "border-box",
+  boxShadow: "none",
+};
+
+const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
+const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
+
+const muiTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+  },
+};
+
+const muiSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: "#fff",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: 2,
+  },
+};
+
+const systemToolsEditableFieldInputStyle = {
+  ...systemToolsFieldInputStyle,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+};
+const systemToolsEditableMuiSelectSx = {
+  ...muiSelectSx,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+  borderRadius: "6px",
+  fontSize: 14,
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+  },
+};
+const inputStyle = systemToolsEditableFieldInputStyle;
+const systemToolsMuiSelectSx = systemToolsEditableMuiSelectSx;
+
+const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "calc(100% + 40px)",
+  marginLeft: -20,
+  marginRight: -20,
+  marginTop: 0,
+  marginBottom: 0,
+  padding: "10px 20px 10px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
 
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({

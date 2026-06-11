@@ -39,7 +39,7 @@ export const ROUTE_PATHS = {
   CALLERID_RESERVE_POOL: '/num-manipulate/callerid-reserve-pool',
   PORT_GROUP: '/port/port-group',
 
-  // FXS Configuration (sections/port + sections/advanced)
+  // FXS Configuration (modules/FXS)
   PORT_FXS: '/port/fxs-settings',
   PORT_FXS_ADVANCED: '/port/fxs-advanced',
   FXS_GENERAL: '/advanced/general',
@@ -57,12 +57,12 @@ export const ROUTE_PATHS = {
   FXS_TONE_DETECTOR: '/advanced/tone-detector',
   FXS_TONE_GENERATOR: '/advanced/tone-generator',
 
-  // FXS → Route (sections/route pages)
+  // FXS → Route (modules/FXS/Route)
   FXS_ROUTE:            '/fxs/route/routing-parameters',
   FXS_ROUTE_IP_TO_PSTN: '/fxs/route/ip-to-pstn',
   FXS_ROUTE_PSTN_TO_IP: '/fxs/route/pstn-to-ip',
 
-  // FXS → Num Manipulate (sections/numManipulate pages)
+  // FXS → Num Manipulate (modules/FXS/Num Manipulate)
   FXS_IP_CALL_IN_CALLERID:   '/fxs/num-manipulate/ip-call-in-callerid',
   FXS_IP_CALL_IN_CALLEEID:   '/fxs/num-manipulate/ip-call-in-calleeid',
   FXS_PSTN_CALL_IN_CALLERID: '/fxs/num-manipulate/pstn-call-in-callerid',

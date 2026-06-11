@@ -9,13 +9,6 @@ import {
 } from "../../../constants/SignalingCaptureConstants";
 import { Checkbox } from "@mui/material";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
-import {
-  systemToolsEditableFieldInputStyle as inputStyle,
-  SYSTEM_TOOLS_FILL_BG_EDITABLE,
-  SYSTEM_TOOLS_FILL_BG_READ_ONLY,
-  inputInteraction,
-} from "../../../shared/maitenanceSharedUi";
-
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -31,6 +24,112 @@ const C = {
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+// ── Local field UI (inlined from maitenanceSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onFocus(e);
+  },
+  onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onBlur(e);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseEnter(e);
+  },
+  onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseLeave(e);
+  },
+};
+
+const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
+  if (!hasError) return inputInteraction;
+  const ring = (el, focused) => {
+    el.style.borderColor = errorColor;
+    el.style.borderWidth = "1px";
+    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
+  };
+  return {
+    onFocus: (e) => ring(e.target, true),
+    onBlur: (e) => ring(e.target, false),
+    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
+    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
+  };
+};
+
+const systemToolsFieldInputStyle = {
+  padding: "6px 12px",
+  borderRadius: 6,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  fontSize: 14,
+  width: "100%",
+  backgroundColor: "#f8fafc",
+  outline: "none",
+  color: "#3E5475",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  boxSizing: "border-box",
+  boxShadow: "none",
+};
+
+const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
+const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
+
+const systemToolsEditableFieldInputStyle = {
+  ...systemToolsFieldInputStyle,
+  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
+};
+const inputStyle = systemToolsEditableFieldInputStyle;
+
 
 const Btn = ({
   children,

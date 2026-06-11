@@ -18,14 +18,6 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
 import Checkbox from "@mui/material/Checkbox";
-import {
-  addHostFormPanelStyle,
-} from "../../../shared/userManageSharedUi";
-import {
-  userPermissionModalInputStyle as modalInputStyle,
-  inputInteraction,
-} from "../../../shared/userManageSharedUi";
-
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -42,6 +34,101 @@ const C = {
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+// ── Local field UI (inlined from userManageSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onFocus(e);
+  },
+  onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onBlur(e);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseEnter(e);
+  },
+  onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseLeave(e);
+  },
+};
+
+const userPermissionModalInputStyle = {
+  width: "min(100%, 320px)",
+  fontSize: 13,
+  height: 32,
+  padding: "0 8px",
+  boxSizing: "border-box",
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  color: "#1e293b",
+  background: "#ffffff",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const modalInputStyle = userPermissionModalInputStyle;
+
+const addHostFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
 
 const CARD_RADIUS = 20;
 

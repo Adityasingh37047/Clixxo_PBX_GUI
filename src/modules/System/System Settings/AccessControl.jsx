@@ -15,11 +15,6 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { postLinuxCmd } from "../../../api/apiService";
 import { IPTABLES_INFO } from "../../../constants/AccessControlConstants";
-import {
-  systemModalFieldInputStyle,
-  inputInteraction,
-} from "../../../shared/systemSharedUi";
-
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -37,6 +32,82 @@ const C = {
   errorRed: "#dc2626",
   footerBg: "#ffffff",
 };
+// ── Local field UI (inlined from systemSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInputStyle = {
+  height: 28,
+  width: 200,
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
+
+const systemModalFieldInputStyle = {
+  ...nativeFieldBase,
+  minHeight: 32,
+  height: 32,
+  width: "100%",
+  padding: "0 10px",
+  lineHeight: 1.35,
+  color: "#1e293b",
+};
+
 
 const CARD_RADIUS = 20;
 

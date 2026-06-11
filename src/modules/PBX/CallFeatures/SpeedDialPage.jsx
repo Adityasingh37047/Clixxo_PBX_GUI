@@ -20,14 +20,6 @@ import {
   exportSpeedDialCsv,
   importSpeedDialCsv,
 } from "../../../api/apiService";
-import {
-  PbxBreadcrumb,
-  TableListLoading,
-  TableListEmptyState,
-  pbxPageWrapStyle,
-  pbxPageInnerStyle,
-} from "../../../shared/pbxSharedUi";
-
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -38,7 +30,9 @@ const C = {
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
-  amber: "#dc2626",
+  amber: "#DC2626",
+  successGreen: "#16A34A",
+  errorRed: "#DC2626",
 };
 
 const CARD_RADIUS = 10;
@@ -96,7 +90,7 @@ const Btn = ({
       case "accent":
         return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
       case "danger":
-        return "#b91c1c";
+        return C.errorRed;
       case "cancel":
         return "#e2e8f0";
       case "outline":
@@ -192,6 +186,94 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
+
+
+// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
+  >
+    <span>PBX</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+  </div>
+);
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
 
 const FieldRow = ({ label, children, required, align = "center" }) => (
   <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
@@ -1111,7 +1193,7 @@ const SpeedDialPage = () => {
             <div
               style={{
                 fontSize: 13,
-                color: importFile ? "#15803d" : C.mutedText,
+                color: importFile ? C.successGreen : C.mutedText,
                 fontWeight: importFile ? 600 : 400,
               }}
             >
@@ -1143,7 +1225,7 @@ const SpeedDialPage = () => {
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
-                  color: importResult.response ? "#15803d" : "#b91c1c",
+                  color: importResult.response ? C.successGreen : C.errorRed,
                   marginBottom: 4,
                 }}
               >
@@ -1169,7 +1251,7 @@ const SpeedDialPage = () => {
                 {importResult.created_count != null && (
                   <span>
                     Created:{" "}
-                    <b style={{ color: "#16a34a" }}>
+                    <b style={{ color: C.successGreen }}>
                       {importResult.created_count}
                     </b>
                   </span>
@@ -1186,7 +1268,7 @@ const SpeedDialPage = () => {
                 {importResult.would_create != null && (
                   <span>
                     Would create:{" "}
-                    <b style={{ color: "#16a34a" }}>
+                    <b style={{ color: C.successGreen }}>
                       {importResult.would_create}
                     </b>
                   </span>
@@ -1200,7 +1282,7 @@ const SpeedDialPage = () => {
                     style={{
                       fontSize: 12,
                       fontWeight: 600,
-                      color: "#b91c1c",
+                      color: C.errorRed,
                       marginBottom: 4,
                     }}
                   >
@@ -1273,7 +1355,7 @@ const SpeedDialPage = () => {
                               style={{
                                 padding: "2px 6px",
                                 borderBottom: "1px solid #fee2e2",
-                                color: "#b91c1c",
+                                color: C.errorRed,
                               }}
                             >
                               {err.error}

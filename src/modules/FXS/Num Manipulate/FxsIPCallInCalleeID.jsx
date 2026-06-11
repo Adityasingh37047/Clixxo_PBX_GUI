@@ -3,7 +3,7 @@ import {
   IP_CALL_IN_CALLEEID_FIELDS,
   IP_CALL_IN_CALLEEID_TABLE_COLUMNS,
   IP_CALL_IN_CALLEEID_INITIAL_FORM,
-} from "../../../sections/numManipulate/constants/IPCallInCalleeIDConstants";
+} from "../../../constants/FxsIPCallInCalleeIDConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -19,21 +19,249 @@ import {
   TextField,
   Alert,
 } from "@mui/material";
-import {
-  C,
-  CARD_RADIUS,
-  Btn,
-  TH,
-  tdStyle,
-  checkboxSx,
-  muiSelectSx,
-  muiTextFieldSx,
-  numManipulateCardStyle,
-  numManipulateToolbarStyle,
-  numManipulatePaginationStyle,
-} from "../../../shared/fxsSharedUi";
-
 // Stub functions when API imports are commented out
+// ── Local page UI (inlined from fxsSharedUi) ──
+
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+};
+
+const CARD_RADIUS = 10;
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  form,
+  component,
+  title,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
+
+
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+
+const muiTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": {
+      borderColor: OUTLINED_HOVER,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+  },
+};
+
+const muiSelectInnerSx = {
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: "#fff",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+};
+
+const muiSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  ...muiSelectInnerSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: 2,
+  },
+};
+
+
+const checkboxSx = {
+  padding: "4px",
+  color: "#64748b",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  "& .MuiSvgIcon-root": { fontSize: 18 },
+};
+
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const numManipulateCardStyle = {
+  background: "#ffffff",
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+};
+
+const numManipulateToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+};
+
+const numManipulatePaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
+  overflow: "hidden",
+};
+
 const listNumberManipulations = async () => ({ response: true, message: [] });
 const createNumberManipulation = async () => ({
   response: true,
@@ -436,19 +664,20 @@ const IPCallInCalleeID = () => {
         <div
           style={{
             fontSize: 12,
-            color: C.mutedText,
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           <span>FXS</span>
           <span>&gt;</span>
           <span>Num Manipulate</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             IP Call In CalleeID
           </span>
         </div>

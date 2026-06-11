@@ -11,11 +11,6 @@ import {
   Alert,
 } from "@mui/material";
 import {
-  advancedFormInlineFooterStyle,
-  advancedFormBtnStyle,
-} from "../../../shared/userManageSharedUi";
-import { getUserPermissionMuiTextFieldSx } from "../../../shared/userManageSharedUi";
-import {
   CHANGE_PASSWORD_FIELDS,
   CHANGE_PASSWORD_INITIAL_FORM,
   CHANGE_PASSWORD_NOTE,
@@ -36,6 +31,180 @@ const C = {
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+// ── Local field UI (inlined from userManageSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onFocus(e);
+  },
+  onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onBlur(e);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseEnter(e);
+  },
+  onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    nativeFieldInteraction.onMouseLeave(e);
+  },
+};
+
+const muiTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+  },
+};
+
+const userPermissionMuiTextFieldSx = {
+  ...muiTextFieldSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    height: 36,
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+  "& .MuiInputBase-input": {
+    fontSize: 13,
+    padding: "6px 10px",
+    textAlign: "center",
+  },
+};
+
+const getUserPermissionMuiTextFieldSx = ({
+  hasError = false,
+  disabled = false,
+  readOnlyLook = false,
+} = {}) => {
+  const errorColor = "#dc2626";
+  const borderDefault = hasError ? errorColor : OUTLINED_BORDER;
+  const borderHover =
+    disabled || readOnlyLook
+      ? borderDefault
+      : hasError
+        ? errorColor
+        : OUTLINED_HOVER;
+  const borderFocus = hasError ? errorColor : OUTLINED_FOCUS;
+
+  return {
+    ...userPermissionMuiTextFieldSx,
+    "& .MuiOutlinedInput-root": {
+      ...userPermissionMuiTextFieldSx["& .MuiOutlinedInput-root"],
+      backgroundColor: readOnlyLook ? "#f1f5f9" : "#fff",
+      transition: "border-color 0.2s ease",
+      "& fieldset": {
+        borderColor: borderDefault,
+        transition: "border-color 0.2s ease",
+      },
+      "&:hover fieldset": {
+        borderColor: borderHover,
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: borderFocus,
+        borderWidth: 2,
+      },
+      "&.Mui-disabled fieldset": {
+        borderColor: OUTLINED_BORDER,
+      },
+    },
+    "& .MuiInputBase-input.Mui-disabled": readOnlyLook
+      ? {
+          color: "#94a3b8",
+          WebkitTextFillColor: "#94a3b8",
+        }
+      : {},
+  };
+};
+
+const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "calc(100% + 40px)",
+  marginLeft: -20,
+  marginRight: -20,
+  marginTop: 0,
+  marginBottom: 0,
+  padding: "10px 20px 10px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
 
 const Btn = ({
   children,

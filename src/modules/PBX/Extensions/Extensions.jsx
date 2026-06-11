@@ -27,6 +27,8 @@ import {
   Checkbox,
   RadioGroup,
   Radio,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   fetchSipAccounts,
@@ -37,32 +39,588 @@ import {
   exportSipAccountsCsv,
   importSipAccountsCsv,
 } from "../../../api/apiService";
-import {
-  C,
-  Btn,
-  TH,
-  tdStyle,
-  PbxBreadcrumb,
-  pbxPageWrapStyle,
-  pbxPageInnerStyle,
-  TableListLoading,
-  TableListEmptyState,
-  PbxModalTabs,
-  PbxModalSectionHeading,
-  pbxModalCancelBtnStyle,
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  sipPcmPrimaryBtnStyle,
-  SipPcmPagination,
-  modalTextFieldSx,
-  modalSelectSx,
-  gatedModalFieldSx,
-  PbxDualListBtn,
-  pbxDualListLabelStyle,
-  pbxDualListSelectStyle,
-} from "../../../shared/pbxSharedUi";
+// ── Local page UI (inlined from pbxSharedUi) ──
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  form,
+  component,
+  title,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
+
+const pbxModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
+  whiteSpace: "nowrap",
+};
+
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
+  >
+    <span>PBX</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+  </div>
+);
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const PBX_MODAL_TAB_BAR_STYLE = {
+  borderBottom: "1px solid #e5e7eb",
+  background: "#ffffff",
+};
+
+const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+
+const pbxModalTabsSx = {
+  minHeight: 45,
+  "& .MuiTab-root": {
+    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    fontSize: 12,
+    fontWeight: 500,
+    textTransform: "none",
+    minHeight: 45,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    fontWeight: 700,
+  },
+};
+
+const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={PBX_MODAL_TAB_BAR_STYLE}>
+    <Tabs
+      value={value}
+      onChange={(_, next) => onChange(next)}
+      variant={fullWidth ? "fullWidth" : "standard"}
+      TabIndicatorProps={{
+        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+      }}
+      sx={pbxModalTabsSx}
+    >
+      {tabs.map((t) => (
+        <Tab key={t.id} label={t.label} value={t.id} />
+      ))}
+    </Tabs>
+  </div>
+);
+
+const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const PbxModalSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const SIP_PCM_TABLE_CARD_RADIUS = 10;
+
+const sipPcmCardStyle = {
+  background: "#ffffff",
+  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
+
+const sipPcmToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
+
+const sipPcmPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const sipPcmSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const sipPcmCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const sipPcmPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const sipPcmPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const SipPcmPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+  recordLabel = "record",
+  style,
+}) => (
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} {recordLabel}
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={sipPcmPageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
+
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+
+const muiTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": {
+      borderColor: OUTLINED_HOVER,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+  },
+};
+
+const muiSelectInnerSx = {
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: "#fff",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+};
+
+const muiSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  ...muiSelectInnerSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: 2,
+  },
+};
+
+const modalTextFieldSx = {
+  ...muiTextFieldSx,
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    height: 32,
+  },
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+  },
+};
+
+const modalSelectSx = {
+  ...muiSelectSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    height: 36,
+    backgroundColor: "#fff",
+  },
+};
+
+const gatedModalFieldSx = (
+  enabled,
+  baseSx = modalSelectSx,
+  enabledCursor = "pointer",
+) => {
+  const outlinedRootSx = baseSx["& .MuiOutlinedInput-root"] || {};
+  const outlinedInputSx = baseSx["& .MuiOutlinedInput-input"] || {};
+  const disabledBg = "#f1f5f9";
+
+  return {
+    ...baseSx,
+    backgroundColor: enabled ? "#fff" : disabledBg,
+    cursor: enabled ? enabledCursor : "not-allowed",
+    ...(!enabled && {
+      "&:hover .MuiOutlinedInput-notchedOutline": {
+        borderColor: OUTLINED_BORDER,
+      },
+    }),
+    "& .MuiOutlinedInput-root": {
+      ...outlinedRootSx,
+      backgroundColor: enabled ? "#fff" : disabledBg,
+      cursor: enabled ? enabledCursor : "not-allowed",
+      ...(!enabled && {
+        "&:hover fieldset": { borderColor: OUTLINED_BORDER },
+      }),
+    },
+    "& .MuiOutlinedInput-input, & .MuiInputBase-input": {
+      ...outlinedInputSx,
+      backgroundColor: enabled ? "#fff" : disabledBg,
+      cursor: enabled ? enabledCursor : "not-allowed",
+    },
+    "& .MuiSelect-select": {
+      cursor: enabled ? enabledCursor : "not-allowed",
+    },
+    "&.Mui-disabled, & .MuiOutlinedInput-root.Mui-disabled": {
+      cursor: "not-allowed",
+      backgroundColor: disabledBg,
+    },
+  };
+};
+
+const pbxDualListLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#3E5475",
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const pbxDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const pbxDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const PbxDualListBtn = ({ onClick, title, children }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={pbxDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
 
 const MONITOR_DUAL_LIST_LABEL_OFFSET = 28;
 
@@ -447,8 +1005,16 @@ const SipAccountPage = () => {
           (item.adv_call_prohibition ?? item.call_prohibition)
             ? "enable"
             : "disable",
+
         rx_volume: Number(item.adv_rx_volume ?? item.rx_volume ?? 0),
         tx_volume: Number(item.adv_tx_volume ?? item.tx_volume ?? 0),
+        monitor_allow: item.monitor_allow || "disable",
+        monitor_allowed_extensions: Array.isArray(
+          item.monitor_allowed_extensions,
+        )
+          ? item.monitor_allowed_extensions
+          : [],
+        monitor_mode: item.monitor_mode || "none",
       }));
   };
 
@@ -522,6 +1088,13 @@ const SipAccountPage = () => {
       ring_simultaneously: uiData.ring_simultaneously || "no",
       mobility_prefix: uiData.mobility_prefix || "",
       mobility_timeout: Number(uiData.mobility_timeout || 30),
+      monitor_allow: uiData.monitor_allow || "disable",
+      monitor_allowed_extensions: Array.isArray(
+        uiData.monitor_allowed_extensions,
+      )
+        ? uiData.monitor_allowed_extensions
+        : [],
+      monitor_mode: uiData.monitor_mode || "none",
       secretary_enabled: toggleToBool(uiData.secretary_service),
       secretary_service_enabled: toggleToBool(uiData.secretary_service),
       secretary_service: toggleToBool(uiData.secretary_service),

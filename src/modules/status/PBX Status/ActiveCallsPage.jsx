@@ -27,6 +27,40 @@ const C = {
 
 const CARD_RADIUS = 10;
 
+/** Same breadcrumb as System Info — inline, no shared import */
+const PageBreadcrumb = ({ segments, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "nowrap",
+      whiteSpace: "nowrap",
+      lineHeight: 1.5,
+      ...style,
+    }}
+  >
+    {segments.map((label, index) => (
+      <React.Fragment key={`${label}-${index}`}>
+        {index > 0 ? <span>&gt;</span> : null}
+        <span
+          style={
+            index === segments.length - 1
+              ? { color: "#1e293b", fontWeight: 600 }
+              : undefined
+          }
+        >
+          {label}
+        </span>
+      </React.Fragment>
+    ))}
+  </div>
+);
+
 const Btn = ({
   children,
   onClick,
@@ -496,35 +530,15 @@ const ActiveCallsPage = () => {
 
   return (
     <div
-      className="min-h-full w-full flex flex-col justify-start"
       style={{
-        background: C.pageBg,
+        backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
         padding: 16,
-        fontFamily: "Inter, sans-serif",
+        boxSizing: "border-box",
       }}
     >
       <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>Status</span>
-          <span>&gt;</span>
-          <span>PBX Status</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Active Calls
-          </span>
-        </div>
+        <PageBreadcrumb segments={["Status", "PBX Status", "Active Calls"]} />
 
         {/* Main card */}
         <div

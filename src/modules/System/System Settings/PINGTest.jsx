@@ -7,12 +7,6 @@ import {
   PING_SOURCE_OPTIONS,
   PING_BUTTONS,
 } from "../../../constants/PINGTestConstants";
-import {
-  systemToolFieldInputStyle as inputStyle,
-  systemToolFieldSelectStyle as selectStyle,
-  inputInteraction,
-} from "../../../shared/systemSharedUi";
-
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -25,6 +19,94 @@ const C = {
   mutedText: "#94a3b8",
   errorRed: "#dc2626",
 };
+// ── Local field UI (inlined from systemSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInputStyle = {
+  height: 28,
+  width: 200,
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
+
+const systemToolFieldInputStyle = {
+  ...nativeFieldBase,
+  width: "100%",
+  padding: "6px 10px",
+  borderRadius: 10,
+  boxSizing: "border-box",
+  background: "#fff",
+  lineHeight: 1.4,
+  minHeight: 34,
+};
+
+const systemToolFieldSelectStyle = {
+  ...systemToolFieldInputStyle,
+  appearance: "auto",
+  minHeight: 36,
+  paddingTop: 7,
+  paddingBottom: 7,
+  lineHeight: 1.35,
+};
+
+const inputStyle = systemToolFieldInputStyle;
+const selectStyle = systemToolFieldSelectStyle;
 
 const Btn = ({
   children,
@@ -210,6 +292,23 @@ const PINGTest = () => {
             options.push({
               value: iface.ipAddress,
               label: `VLAN ${vlanId}:${iface.ipAddress}`,
+            });
+          }
+        }
+
+        // VPN / non-LAN interfaces (tap0, tun0, vpn_vpn, etc.)
+        const lanIfaceSet = new Set(lanIfaces.map((i) => i.interface));
+        for (const iface of allIfaces) {
+          const kn = (iface.interface || "").toLowerCase();
+          if (
+            iface.ipAddress &&
+            !lanIfaceSet.has(iface.interface) &&
+            kn !== "lo" &&
+            !/^eth\d+\.\d+$/.test(kn)
+          ) {
+            options.push({
+              value: iface.ipAddress,
+              label: `VPN (${iface.interface}):${iface.ipAddress}`,
             });
           }
         }

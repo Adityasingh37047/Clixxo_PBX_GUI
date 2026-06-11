@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Alert, CircularProgress } from "@mui/material";
 import axiosInstance from "../../../api/axiosInstance";
-import {
-  advancedFormInlineFooterStyle,
-  advancedFormBtnStyle,
-} from "../../../shared/systemSharedUi";
-import {
-  systemFieldInputStyleNarrow as inputStyle,
-  inputInteraction,
-  SYSTEM_SETTINGS_NATIVE_FIELD_CLASS,
-} from "../../../shared/systemSharedUi";
-
 const fetchRoutingInfo = async () => {
   const res = await axiosInstance.get("/get-routing-info");
   if (!res.data?.response)
@@ -39,6 +29,113 @@ const C = {
   primary: "#2563eb",
   gridHeaderBg: "#F8FAFC",
 };
+// ── Local field UI (inlined from systemSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInputStyle = {
+  height: 28,
+  width: 200,
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
+
+const systemFieldInputStyleNarrow = {
+  ...nativeFieldBase,
+  width: "100%",
+  padding: "6px 10px",
+  borderRadius: 10,
+  background: "#fff",
+  lineHeight: 1.4,
+  minHeight: 34,
+  maxWidth: "280px",
+};
+
+const inputStyle = systemFieldInputStyleNarrow;
+
+const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "calc(100% + 40px)",
+  marginLeft: -20,
+  marginRight: -20,
+  marginTop: 0,
+  marginBottom: 0,
+  padding: "10px 20px 10px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const SYSTEM_SETTINGS_NATIVE_FIELD_CLASS = "system-settings-native-field";
+
 
 const Btn = ({
   children,

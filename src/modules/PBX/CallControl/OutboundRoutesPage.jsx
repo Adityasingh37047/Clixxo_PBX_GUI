@@ -21,39 +21,6 @@ import {
   listSipRegistrations,
   updateOutboundRoute,
 } from "../../../api/apiService";
-import {
-  PbxBreadcrumb,
-  TableListLoading,
-  TableListEmptyState,
-  pbxPageWrapStyle,
-  pbxPageInnerStyle,
-  formatPbxItemListDisplay,
-  PBX_LIST_TRUNCATE_THRESHOLD,
-  PbxModalSectionHeading,
-  PbxDualListBtn,
-  pbxDualListLabelStyle,
-  pbxDualListSelectStyle,
-  pbxModalCancelBtnStyle,
-} from "../../../shared/pbxSharedUi";
-import {
-  getNativeFieldInteraction,
-  modalSelectSx,
-  modalTextFieldFullSx,
-  nativeFieldInputStyle,
-} from "../../../shared/pbxSharedUi";
-import {
-  trunkModalPaperSx,
-  trunkModalTitleStyle,
-} from "../../../shared/pbxSharedUi";
-import {
-  sipPcmCardStyle,
-  sipPcmToolbarStyle,
-  sipPcmSelectedBadgeStyle,
-  sipPcmCancelBtnStyle,
-  sipPcmPrimaryBtnStyle,
-  SipPcmPagination,
-} from "../../../shared/pbxSharedUi";
-
 const ENABLE_OPTIONS = ["Yes", "No"];
 const PASSWORD_OPTIONS = ["None", "Single Pin"];
 const REMEMORY_HUNT_OPTIONS = ["No", "Yes"];
@@ -76,7 +43,7 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-
+  strongText: "#0f172a",
   accent: "#2563eb",
 
   successGreen: "#22c55e",
@@ -234,6 +201,483 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
+
+// ── Local page UI (inlined from pbxSharedUi) ──
+const pbxModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
+  >
+    <span>PBX</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+  </div>
+);
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const PBX_LIST_TRUNCATE_THRESHOLD = 10;
+const PBX_LIST_DISPLAY_LIMIT = 6;
+
+const formatPbxItemListDisplay = (
+  items,
+  {
+    threshold = PBX_LIST_TRUNCATE_THRESHOLD,
+    limit = PBX_LIST_DISPLAY_LIMIT,
+    mapItem = (x) => String(x),
+    separator = ", ",
+    ellipsis = "....",
+  } = {},
+) => {
+  if (!items?.length) return "";
+  const labels = items.map(mapItem).filter((v) => v !== "" && v != null);
+  if (!labels.length) return "";
+  if (labels.length <= threshold) {
+    return labels.join(separator);
+  }
+  return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
+};
+
+const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const PbxModalSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const pbxDualListLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#3E5475",
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const pbxDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const pbxDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const PbxDualListBtn = ({ onClick, title, children }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={pbxDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+
+const muiTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": {
+      borderColor: OUTLINED_HOVER,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+  },
+};
+
+const muiSelectInnerSx = {
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: "#fff",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+};
+
+const muiSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  ...muiSelectInnerSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: 2,
+  },
+};
+
+const modalTextFieldFullSx = {
+  ...muiTextFieldSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const modalSelectSx = {
+  ...muiSelectSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    height: 36,
+    backgroundColor: "#fff",
+  },
+};
+
+const nativeFieldInputStyle = {
+  height: 28,
+  width: 200,
+  padding: "0 8px",
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: "#0f172a",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const getNativeFieldInteraction = (disabled) =>
+  disabled ? {} : nativeFieldInteraction;
+
+const trunkModalPaperSx = {
+  width: 900,
+  maxWidth: "95vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const trunkModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const SIP_PCM_TABLE_CARD_RADIUS = 10;
+
+const sipPcmCardStyle = {
+  background: "#ffffff",
+  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
+
+const sipPcmToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
+
+const sipPcmPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const sipPcmSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const sipPcmCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const sipPcmPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const sipPcmPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const SipPcmPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+  recordLabel = "record",
+  style,
+}) => (
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} {recordLabel}
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={sipPcmPageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
 
 const OUTBOUND_MODAL_LABEL_WIDTH = 185;
 const OUTBOUND_MODAL_FIELD_WIDTH = 210;
