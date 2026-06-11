@@ -876,7 +876,7 @@ const DisaPage = () => {
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
-                variant="outline"
+                variant="cancel"
                 hoverBehavior="opacity"
                 style={{
                   background: "#cbd5e1",
