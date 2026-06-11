@@ -1257,7 +1257,12 @@ const CCRoutePage = () => {
         <DialogTitle style={trunkModalTitleStyle}>
           {editId != null ? "Edit CC Route" : "Add CC Route"}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+       <DialogContent
+  style={{
+    padding: "20px",
+    backgroundColor: "#ffffff",
+  }}
+>
           <div
             style={{
               display: "flex",

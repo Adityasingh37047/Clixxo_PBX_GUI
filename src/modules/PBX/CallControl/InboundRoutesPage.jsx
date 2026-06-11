@@ -1835,7 +1835,12 @@ const InboundRoutesPage = () => {
         <DialogTitle style={trunkModalTitleStyle}>
           {editId != null ? "Edit Inbound Route" : "Add Inbound Route"}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+       <DialogContent
+  style={{
+    padding: "20px",
+    backgroundColor: "#ffffff",
+  }}
+>
           <div
             style={{
               display: "flex",

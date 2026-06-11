@@ -23,6 +23,14 @@ import {
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../shared/pbxSharedUi";
+
+import {
   listIvrDestinations,
   listIvrs,
   listIvrOptions,
@@ -1916,56 +1924,36 @@ const IVRPage = () => {
         >
           <div
             style={{
-              borderBottom: "1px solid #e5e7eb",
               background: "#ffffff",
               marginLeft: "-24px",
               marginRight: "-24px",
             }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={(_, value) => setActiveTab(value)}
-              variant="fullWidth"
-              TabIndicatorProps={{
-                style: {
-                  backgroundColor: "#3E5475",
-                  height: 2,
-                },
-              }}
-              sx={{
-                minHeight: 48,
-
-                "& .MuiTab-root": {
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  minHeight: 48,
-                },
-
-                "& .MuiTab-root.Mui-selected": {
-                  color: "#3E5475",
-                },
-              }}
-            >
-              <Tab label="BASIC" value="basic" />
-              <Tab label="KEY PRESS EVENT" value="keypress" />
-            </Tabs>
+           <PbxModalTabs
+  value={activeTab}
+  onChange={setActiveTab}
+  tabs={[
+    { id: "basic", label: "BASIC" },
+    { id: "keypress", label: "KEY PRESS EVENT" },
+  ]}
+/>
           </div>
           <div style={{ background: "#fff" }}>
-            <div style={{ padding: 12 }}>
+            <div style={{ padding: 0 }}>
               {/* ── BASIC TAB ── */}
               {activeTab === "basic" && (
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  <div
-                    style={{
-                      background: "#f5f7fa",
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 6,
-                      padding: "20px 24px 16px",
-                    }}
-                  >
+                 <div
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: "20px",
+    marginTop: 20,
+  }}
+>
                     {/* ── Naya "Basic" Heading ── */}
                     <div
                       style={{
@@ -1974,26 +1962,9 @@ const IVRPage = () => {
                         marginBottom: 20,
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.labelText,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                        }}
-                      >
-                        BASIC
-                      </span>
+                     
 
-                      <div
-                        style={{
-                          flex: 1,
-                          height: 1,
-                          background: C.cardBorder,
-                          marginLeft: 12,
-                        }}
-                      />
+                      
                     </div>
                     {/* 2-Column Grid for Basic fields */}
                     <div
@@ -2885,14 +2856,15 @@ const IVRPage = () => {
 
               {/* ── KEY PRESS TAB ── */}
               {activeTab === "keypress" && (
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: 16,
-                  }}
-                >
+              <div
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: "20px",
+    marginTop: 20,
+  }}
+>
                   <div
                     style={{
                       display: "grid",

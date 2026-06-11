@@ -1119,17 +1119,20 @@ const CallBackPage = () => {
           {editId != null ? "Edit CallBack Rule" : "Add CallBack"}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
+       <DialogContent
+  style={{
+    padding: "20px",
+    backgroundColor: "#ffffff",
+  }}
+>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
-              style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
-              }}
+             style={{
+  background: "#f5f7fa",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 6,
+  padding: "20px",
+}}
             >
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
@@ -1384,7 +1387,7 @@ const CallBackPage = () => {
                   style={{
                     marginTop: 16,
                     paddingTop: 16,
-                    borderTop: `1px dashed ${C.cardBorder}`,
+                   
                   }}
                 >
                   <div

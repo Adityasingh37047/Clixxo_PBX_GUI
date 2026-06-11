@@ -1137,15 +1137,20 @@ const BlockedListPage = () => {
           {editId != null ? "Edit Blocked Entry" : "Add Blocked Entry"}
         </DialogTitle>
 
-        <DialogContent style={{ padding: "20px 24px", background: "#ffffff" }}>
+      <DialogContent
+  style={{
+    padding: "20px",
+    backgroundColor: "#ffffff",
+  }}
+>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
               style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
-              }}
+  background: "#f5f7fa",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 6,
+  padding: "20px",
+}}
             >
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div

@@ -29,6 +29,14 @@ import {
   listRingBackOptions,
   fetchExtensionGroups,
 } from "../../../api/apiService";
+import {
+  PbxBreadcrumb,
+  TableListLoading,
+  TableListEmptyState,
+  pbxPageWrapStyle,
+  pbxPageInnerStyle,
+} from "../../../shared/pbxSharedUi";
+
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
@@ -1374,46 +1382,25 @@ const ConferencePage = () => {
         >
           <div
             style={{
-              borderBottom: "1px solid #e5e7eb",
+             
               background: "#ffffff",
               marginLeft: "-24px",
               marginRight: "-24px",
             }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={(_, value) => setActiveTab(value)}
-              variant="fullWidth"
-              TabIndicatorProps={{
-                style: {
-                  backgroundColor: "#3E5475",
-                  height: 2,
-                },
-              }}
-              sx={{
-                minHeight: 48,
-
-                "& .MuiTab-root": {
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  minHeight: 48,
-                },
-
-                "& .MuiTab-root.Mui-selected": {
-                  color: "#3E5475",
-                },
-              }}
-            >
-              <Tab label="BASIC" value="basic" />
-
-              <Tab label="ADVANCED SETTINGS" value="advanced" />
-            </Tabs>
+           <PbxModalTabs
+  value={activeTab}
+  onChange={setActiveTab}
+  tabs={[
+    { id: "basic", label: "BASIC" },
+    { id: "advanced", label: "ADVANCED SETTINGS" },
+  ]}
+/>
           </div>
           <div style={{ background: "#ffffff" }}>
             <div
               style={{
-                padding: 12,
+                padding: 0,
               }}
             >
               {/* ── BASIC TAB ── */}
@@ -1422,13 +1409,14 @@ const ConferencePage = () => {
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
                   <div
-                    style={{
-                      background: "#f5f7fa",
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 6,
-                      padding: 16,
-                    }}
-                  >
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: "20px",
+    marginTop: 20,
+  }}
+>
                     {/* 2-Column Grid (Top-to-Bottom) */}
                     <div
                       style={{
@@ -1732,7 +1720,6 @@ const ConferencePage = () => {
                       style={{
                         marginTop: 24,
                         paddingTop: 16,
-                        borderTop: `1px dashed ${C.cardBorder}`,
                       }}
                     >
                       <div
@@ -1753,6 +1740,7 @@ const ConferencePage = () => {
                             }}
                           >
                             Moderator Member (Extensions)
+                           
                           </div>
                           <div
                             style={{
@@ -1865,14 +1853,15 @@ const ConferencePage = () => {
 
               {/* ── ADVANCED SETTINGS TAB ── */}
               {activeTab === "advanced" && (
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: 16,
-                  }}
-                >
+            <div
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: "20px",
+    marginTop: 20,
+  }}
+>
                   <div
                     style={{
                       display: "grid",

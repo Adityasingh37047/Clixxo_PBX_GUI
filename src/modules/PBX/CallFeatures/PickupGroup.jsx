@@ -1037,18 +1037,21 @@ const PickupGroup = () => {
           {editId != null ? "Edit Pickup Group" : "Add Pickup Group"}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
+       <DialogContent
+  style={{
+    padding: "20px",
+    backgroundColor: "#ffffff",
+  }}
+>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
-              }}
-            >
+        <div
+style={{
+  background: "#f5f7fa",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 6,
+  padding: "20px",
+}}
+>
               <div
                 style={{
                   display: "flex",
@@ -1056,26 +1059,9 @@ const PickupGroup = () => {
                   marginBottom: 20,
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: C.labelText,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  Pickup Group
-                </span>
+              
 
-                <div
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    background: C.cardBorder,
-                    marginLeft: 12,
-                  }}
-                />
+             
               </div>
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
