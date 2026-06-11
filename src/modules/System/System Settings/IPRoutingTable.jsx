@@ -180,7 +180,6 @@ const systemModalSelectSx = {
   },
 };
 
-
 const CARD_RADIUS = 20;
 
 const TH = ({ children, style: extra }) => (
@@ -1261,6 +1260,27 @@ WantedBy=multi-user.target
           gateway: iface.activeGateway || iface.configuredGateway || "",
         }))
         .filter((o) => o.ip);
+
+      // VPN / non-LAN interfaces (tap0, tun0, vpn_vpn, etc.)
+      const lanIfaceSet = new Set(lanIfaces.map((i) => i.interface));
+      for (const iface of allIfaces) {
+        const kn = (iface.interface || "").toLowerCase();
+        if (
+          iface.ipAddress &&
+          !lanIfaceSet.has(iface.interface) &&
+          kn !== "lo" &&
+          !/^eth\d+\.\d+$/.test(kn)
+        ) {
+          options.push({
+            value: `VPN (${iface.interface}):${iface.ipAddress}`,
+            label: `VPN (${iface.interface}):${iface.ipAddress}`,
+            iface: iface.interface,
+            ip: iface.ipAddress || "",
+            mask: iface.subnetMask || "",
+            gateway: iface.activeGateway || iface.configuredGateway || "",
+          });
+        }
+      }
 
       const fallback =
         IP_ROUTING_TABLE_MODAL_FIELDS.find((f) => f.key === "networkPort")

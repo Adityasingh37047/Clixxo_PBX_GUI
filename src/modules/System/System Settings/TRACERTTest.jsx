@@ -108,7 +108,6 @@ const systemToolFieldSelectStyle = {
 const inputStyle = systemToolFieldInputStyle;
 const selectStyle = systemToolFieldSelectStyle;
 
-
 const Btn = ({
   children,
   onClick,
@@ -286,6 +285,23 @@ const TRACERTTest = () => {
             options.push({
               value: iface.ipAddress,
               label: `VLAN ${vlanId}:${iface.ipAddress}`,
+            });
+          }
+        }
+
+        // VPN / non-LAN interfaces (tap0, tun0, vpn_vpn, etc.)
+        const lanIfaceSet = new Set(lanIfaces.map((i) => i.interface));
+        for (const iface of allIfaces) {
+          const kn = (iface.interface || "").toLowerCase();
+          if (
+            iface.ipAddress &&
+            !lanIfaceSet.has(iface.interface) &&
+            kn !== "lo" &&
+            !/^eth\d+\.\d+$/.test(kn)
+          ) {
+            options.push({
+              value: iface.ipAddress,
+              label: `VPN (${iface.interface}):${iface.ipAddress}`,
             });
           }
         }
