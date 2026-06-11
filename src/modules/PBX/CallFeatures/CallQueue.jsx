@@ -216,6 +216,75 @@ const pbxPageInnerStyle = {
   margin: "0 auto",
 };
 
+const PBX_MODAL_TAB_BAR_STYLE = {
+  borderBottom: "1px solid #e5e7eb",
+  background: "#ffffff",
+};
+
+const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+
+const pbxModalTabsSx = {
+  minHeight: 45,
+  "& .MuiTab-root": {
+    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    fontSize: 12,
+    fontWeight: 500,
+    textTransform: "none",
+    minHeight: 45,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    fontWeight: 700,
+  },
+};
+
+const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={PBX_MODAL_TAB_BAR_STYLE}>
+    <Tabs
+      value={value}
+      onChange={(_, next) => onChange(next)}
+      variant={fullWidth ? "fullWidth" : "standard"}
+      TabIndicatorProps={{
+        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+      }}
+      sx={pbxModalTabsSx}
+    >
+      {tabs.map((t) => (
+        <Tab key={t.id} label={t.label} value={t.id} />
+      ))}
+    </Tabs>
+  </div>
+);
+
+const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const PbxModalSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 const PbxBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
@@ -821,7 +890,7 @@ const CallQueue = () => {
   );
   return (
     <div style={pbxPageWrapStyle}>
-      {/* Modal */}
+        {/* Modal */}
       <Dialog
         open={showModal}
         onClose={() => {
@@ -864,62 +933,32 @@ const CallQueue = () => {
         >
           {editIndex !== null ? "Edit Call Queue" : "Add Call Queue"}
         </DialogTitle>
-        <DialogContent
-          sx={{
-            p: "24px",
-            backgroundColor: "#ffffff",
-          }}
-        >
+       <DialogContent
+  sx={{
+    p: "20px",
+    backgroundColor: "#ffffff",
+  }}
+>
           <div
             style={{ display: "flex", flexDirection: "column", width: "100%" }}
           >
             <div
               style={{
-                borderBottom: `1px solid ${C.cardBorder}`,
+                 borderBottom: "0.5px solid #eef2f7",
                 marginBottom: 16,
-                marginLeft: "-24px",
-                marginRight: "-24px",
+                marginLeft: "-20px",
+marginRight: "-20px",
                 background: "#fff",
               }}
             >
-              <Tabs
-                value={activeTab}
-                onChange={(_, v) => setActiveTab(v)}
-                variant="fullWidth"
-                textColor="inherit"
-                TabIndicatorProps={{
-                  style: {
-                    backgroundColor: "#4a6080",
-                    height: 3,
-                  },
-                }}
-                sx={{
-                  "& .MuiTab-root": {
-                    fontSize: 12,
-                    fontWeight: 600,
-                    minHeight: 34,
-                    textTransform: "none",
-                    color: "#374151 !important",
-                    opacity: 1,
-                  },
-
-                  "& .MuiTab-root.Mui-selected": {
-                    color: "#4a6080 !important",
-                  },
-                }}
-              >
-                <Tab
-                  label="BASIC"
-                  value="basic"
-                  sx={{ fontSize: 12, fontWeight: 600, minHeight: 34 }}
-                />
-
-                <Tab
-                  label="CALLER EXPERIENCE SETTINGS"
-                  value="caller"
-                  sx={{ fontSize: 12, fontWeight: 600, minHeight: 34 }}
-                />
-              </Tabs>
+              <PbxModalTabs
+  value={activeTab}
+  onChange={setActiveTab}
+  tabs={[
+    { id: "basic", label: "BASIC" },
+    { id: "caller", label: "CALLER EXPERIENCE SETTINGS" },
+  ]}
+/>
             </div>
 
             {/* ── BASIC TAB ── */}

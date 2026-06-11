@@ -441,6 +441,76 @@ const TableListEmptyState = ({
   </div>
 );
 
+const PBX_MODAL_TAB_BAR_STYLE = {
+  borderBottom: "1px solid #e5e7eb",
+  background: "#ffffff",
+};
+
+const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+
+const pbxModalTabsSx = {
+  minHeight: 45,
+  "& .MuiTab-root": {
+    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    fontSize: 12,
+    fontWeight: 500,
+    textTransform: "none",
+    minHeight: 45,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    fontWeight: 700,
+  },
+};
+
+const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={PBX_MODAL_TAB_BAR_STYLE}>
+    <Tabs
+      value={value}
+      onChange={(_, next) => onChange(next)}
+      variant={fullWidth ? "fullWidth" : "standard"}
+      TabIndicatorProps={{
+        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+      }}
+      sx={pbxModalTabsSx}
+    >
+      {tabs.map((t) => (
+        <Tab key={t.id} label={t.label} value={t.id} />
+      ))}
+    </Tabs>
+  </div>
+);
+
+const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const PbxModalSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
 const FieldRow = ({ label, children, required }) => (
   <div
     style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
@@ -1879,20 +1949,27 @@ const IVRPage = () => {
       </div>
 
       {/* ── Add/Edit Modal ── */}
-      <Dialog
-        open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
-        maxWidth={false}
-        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 8 } }}
-        PaperProps={{
-          sx: {
-            width: 900,
-            maxWidth: "96vw",
-            mx: "auto",
-            p: 0,
-          },
-        }}
-      >
+   <Dialog
+  open={showModal}
+  onClose={loading.save ? null : handleCloseModal}
+  maxWidth={false}
+  sx={{
+    "& .MuiDialog-container": {
+      alignItems: "flex-start",
+      pt: 8,
+    },
+  }}
+  PaperProps={{
+    sx: {
+      width: 900,
+      maxWidth: "96vw",
+      mx: "auto",
+      p: 0,
+      borderRadius: "8px",
+      overflow: "hidden",
+    },
+  }}
+>
         <DialogTitle
           style={{
             background: "#1e2d42",
@@ -1908,93 +1985,55 @@ const IVRPage = () => {
           {editId != null ? "Edit IVR" : "Add IVR"}
         </DialogTitle>
 
-        <DialogContent
-          style={{
-            padding: "8px 24px 20px",
-            backgroundColor: "#ffffff",
-          }}
-        >
+      <DialogContent
+  style={{
+    padding: "0px 24px 20px",
+    backgroundColor: "#ffffff",
+  }}
+>
           <div
             style={{
-              borderBottom: "1px solid #e5e7eb",
+               borderBottom: "0.5px solid #eef2f7",
               background: "#ffffff",
               marginLeft: "-24px",
               marginRight: "-24px",
             }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={(_, value) => setActiveTab(value)}
-              variant="fullWidth"
-              TabIndicatorProps={{
-                style: {
-                  backgroundColor: "#3E5475",
-                  height: 2,
-                },
-              }}
-              sx={{
-                minHeight: 48,
-
-                "& .MuiTab-root": {
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  minHeight: 48,
-                },
-
-                "& .MuiTab-root.Mui-selected": {
-                  color: "#3E5475",
-                },
-              }}
-            >
-              <Tab label="BASIC" value="basic" />
-              <Tab label="KEY PRESS EVENT" value="keypress" />
-            </Tabs>
+            <PbxModalTabs
+  value={activeTab}
+  onChange={setActiveTab}
+  tabs={[
+    { id: "basic", label: "BASIC" },
+    { id: "keypress", label: "KEY PRESS EVENT" },
+  ]}
+/>
           </div>
-          <div style={{ background: "#fff" }}>
-            <div style={{ padding: 12 }}>
+        <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    width: "100%",
+    background: "#f8fafc",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 8,
+    padding: 20,
+    marginTop: 24,
+  }}
+>
+            <div style={{ padding: 0 }}>
               {/* ── BASIC TAB ── */}
               {activeTab === "basic" && (
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
                   <div
-                    style={{
-                      background: "#f5f7fa",
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 6,
-                      padding: "20px 24px 16px",
-                    }}
-                  >
+  style={{
+    padding: "0",
+  }}
+>
                     {/* ── Naya "Basic" Heading ── */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        marginBottom: 20,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.labelText,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                        }}
-                      >
-                        BASIC
-                      </span>
-
-                      <div
-                        style={{
-                          flex: 1,
-                          height: 1,
-                          background: C.cardBorder,
-                          marginLeft: 12,
-                        }}
-                      />
-                    </div>
+                    
                     {/* 2-Column Grid for Basic fields */}
                     <div
                       style={{
@@ -2432,7 +2471,7 @@ const IVRPage = () => {
                         style={{
                           marginTop: 24,
                           paddingTop: 16,
-                          borderTop: `1px dashed ${C.cardBorder}`,
+                       
                         }}
                       >
                         <div
