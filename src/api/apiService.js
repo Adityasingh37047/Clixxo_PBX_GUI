@@ -3584,3 +3584,23 @@ export const saveFxsBatch = async (data) => {
     throw error;
   }
 };
+
+export const getLicenseLimits = async () => {
+  try {
+    const response = await axiosInstance.post('/license-limits', { type: 'get' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching license limits:', error.message);
+    throw error;
+  }
+};
+
+export const updateLicenseLimits = async (data) => {
+  try {
+    const response = await axiosInstance.post('/license-limits', { type: 'update', data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating license limits:', error.message);
+    throw error;
+  }
+};

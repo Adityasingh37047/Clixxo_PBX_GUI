@@ -277,6 +277,7 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "restart", label: "Restart" },
           { id: "licence", label: "Licence" },
           { id: "sqlUpload", label: "SQL Upload" },
+          { id: "licenseLimits", label: "License Limits" },
         ],
       },
     ],

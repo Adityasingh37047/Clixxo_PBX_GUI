@@ -744,6 +744,11 @@ export const SIDEBAR_SECTIONS = [
             title: "SQL Upload",
             path: "/system-tools/sql-upload",
           },
+          {
+            id: "licenseLimits",
+            title: "License Limits",
+            path: "/system-tools/license-limits",
+          },
         ],
       },
     ],

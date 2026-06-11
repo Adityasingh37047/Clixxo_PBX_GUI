@@ -151,6 +151,7 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
 }) => {
   const styles = {
     default: {
@@ -190,6 +191,7 @@ const Btn = ({
   return (
     <button
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       style={{

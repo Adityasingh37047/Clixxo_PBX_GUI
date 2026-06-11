@@ -141,6 +141,7 @@ import FxsPSTNCallInCallerID from "./modules/FXS/Num Manipulate/FxsPSTNCallInCal
 import FxsPSTNCallInCalleeID from "./modules/FXS/Num Manipulate/FxsPSTNCallInCalleeID";
 import ActiveCallQueue from "./modules/status/PBX Status/ActiveCallQueue";
 import TimeCondition from "./modules/PBX/CallControl/TimeCondition";
+import LicenseLimits from "./modules/Maitenance/System Tools/LicenseLimits";
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
   return (
@@ -631,6 +632,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTE_PATHS.FXS_PSTN_CALL_IN_CALLEEID,
         element: <FxsPSTNCallInCalleeID />,
+      },
+      {
+        path: "/system-tools/license-limits",
+        element: <LicenseLimits />,
       },
     ],
   },

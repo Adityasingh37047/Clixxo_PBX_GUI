@@ -1,19 +1,24 @@
 export const SIP_ACCOUNT_FIELDS = [
   // BASIC -> General
   { name: "extension", label: "Extension", type: "text", defaultValue: "" },
-  { name: "context", label: "Context", type: "text", defaultValue: "" },
+  { name: "context", label: "Context", type: "text", defaultValue: "sip1" },
   {
     name: "allow_codecs",
     label: "Allow Codecs",
     type: "checkbox",
     defaultValue: "",
   },
-  { name: "password", label: "Password", type: "password", defaultValue: "" },
+  {
+    name: "password",
+    label: "Password",
+    type: "password",
+    defaultValue: "",
+  },
   {
     name: "max_registrations",
     label: "Max Registrations",
     type: "text",
-    defaultValue: "",
+    defaultValue: "3",
   },
 
   // BASIC -> User Info
