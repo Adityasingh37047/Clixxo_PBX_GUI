@@ -1049,34 +1049,7 @@ const PickupGroup = () => {
                 padding: "20px 24px 16px",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: 20,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: C.labelText,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  Pickup Group
-                </span>
-
-                <div
-                  style={{
-                    flex: 1,
-                    height: 1,
-                    background: C.cardBorder,
-                    marginLeft: 12,
-                  }}
-                />
-              </div>
+            
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{

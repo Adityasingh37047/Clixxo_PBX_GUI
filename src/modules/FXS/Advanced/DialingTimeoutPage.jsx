@@ -479,7 +479,7 @@ const advancedModalTitleStyle = {
 };
 
 const addHostModalContentStyle = {
-  padding: "24px",
+ padding: "20px 24px",
   paddingBottom: "16px",
   backgroundColor: "#ffffff",
 };

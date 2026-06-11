@@ -33,6 +33,75 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const YES_NO_OPTIONS = ["Yes", "No"];
+const PBX_MODAL_TAB_BAR_STYLE = {
+  borderBottom: "1px solid #e5e7eb",
+  background: "#ffffff",
+};
+
+const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+
+const pbxModalTabsSx = {
+  minHeight: 45,
+  "& .MuiTab-root": {
+    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    fontSize: 12,
+    fontWeight: 500,
+    textTransform: "none",
+    minHeight: 45,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    fontWeight: 700,
+  },
+};
+
+const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={PBX_MODAL_TAB_BAR_STYLE}>
+    <Tabs
+      value={value}
+      onChange={(_, next) => onChange(next)}
+      variant={fullWidth ? "fullWidth" : "standard"}
+      TabIndicatorProps={{
+        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+      }}
+      sx={pbxModalTabsSx}
+    >
+      {tabs.map((t) => (
+        <Tab key={t.id} label={t.label} value={t.id} />
+      ))}
+    </Tabs>
+  </div>
+);
+
+const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const PbxModalSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -1365,55 +1434,33 @@ const ConferencePage = () => {
         >
           {editId != null ? "Edit Conference" : "Add Conference"}
         </DialogTitle>
-
-        <DialogContent
-          style={{
-            padding: "8px 24px 20px",
-            backgroundColor: "#ffffff",
-          }}
-        >
+<DialogContent
+  style={{
+    padding: "0px 24px 20px",
+    backgroundColor: "#ffffff",
+  }}
+>
           <div
             style={{
-              borderBottom: "1px solid #e5e7eb",
+              borderBottom: "0.5px solid #eef2f7",
               background: "#ffffff",
               marginLeft: "-24px",
               marginRight: "-24px",
             }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={(_, value) => setActiveTab(value)}
-              variant="fullWidth"
-              TabIndicatorProps={{
-                style: {
-                  backgroundColor: "#3E5475",
-                  height: 2,
-                },
-              }}
-              sx={{
-                minHeight: 48,
-
-                "& .MuiTab-root": {
-                  color: "#374151",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  minHeight: 48,
-                },
-
-                "& .MuiTab-root.Mui-selected": {
-                  color: "#3E5475",
-                },
-              }}
-            >
-              <Tab label="BASIC" value="basic" />
-
-              <Tab label="ADVANCED SETTINGS" value="advanced" />
-            </Tabs>
+           <PbxModalTabs
+  value={activeTab}
+  onChange={setActiveTab}
+  tabs={[
+    { id: "basic", label: "BASIC" },
+    { id: "advanced", label: "ADVANCED SETTINGS" },
+  ]}
+/>
           </div>
           <div style={{ background: "#ffffff" }}>
             <div
               style={{
-                padding: 12,
+                padding: 0,
               }}
             >
               {/* ── BASIC TAB ── */}
@@ -1422,13 +1469,14 @@ const ConferencePage = () => {
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
                   <div
-                    style={{
-                      background: "#f5f7fa",
-                      border: `1px solid ${C.cardBorder}`,
-                      borderRadius: 6,
-                      padding: 16,
-                    }}
-                  >
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: 16,
+    marginTop: 20,
+  }}
+>
                     {/* 2-Column Grid (Top-to-Bottom) */}
                     <div
                       style={{
@@ -1732,7 +1780,7 @@ const ConferencePage = () => {
                       style={{
                         marginTop: 24,
                         paddingTop: 16,
-                        borderTop: `1px dashed ${C.cardBorder}`,
+                        
                       }}
                     >
                       <div
@@ -1865,14 +1913,15 @@ const ConferencePage = () => {
 
               {/* ── ADVANCED SETTINGS TAB ── */}
               {activeTab === "advanced" && (
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: 16,
-                  }}
-                >
+                      <div
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: 16,
+    marginTop: 20,
+  }}
+>
                   <div
                     style={{
                       display: "grid",
