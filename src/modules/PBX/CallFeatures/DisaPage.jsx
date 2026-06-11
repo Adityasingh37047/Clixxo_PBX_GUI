@@ -1268,20 +1268,17 @@ const DisaPage = () => {
           {editId != null ? "Edit DISA" : "Add DISA"}
         </DialogTitle>
 
-       <DialogContent
-  style={{
-    padding: "20px",
-    backgroundColor: "#ffffff",
-  }}
->
+        <DialogContent
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+        >
           {loading.get ? (
             <div
-           style={{
-  background: "#f5f7fa",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 6,
-  padding: "20px",
-}}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 40,
+              }}
             >
               <CircularProgress size={30} style={{ color: C.accent }} />
             </div>
@@ -1674,13 +1671,13 @@ const DisaPage = () => {
                   </div>
                   <div>
                     <div
-                   style={{
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#325a84",
-    textAlign: "center",
-    marginBottom: 8,
-  }}
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: "#325a84",
+                        textAlign: "center",
+                        marginBottom: 6,
+                      }}
                     >
                       Selected Routes
                     </div>

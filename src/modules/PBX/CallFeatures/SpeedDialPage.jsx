@@ -1032,20 +1032,17 @@ const SpeedDialPage = () => {
           {editId != null ? "Edit Speed Dial" : "Add Speed Dial"}
         </DialogTitle>
 
-      <DialogContent
-  style={{
-    padding: "20px",
-    backgroundColor: "#ffffff",
-  }}
->
+        <DialogContent
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
-            style={{
-  background: "#f5f7fa",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 6,
-  padding: "20px",
-}}
+              style={{
+                background: "#f5f7fa",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: "20px 24px 16px",
+              }}
             >
               <SectionHeading title="General Settings" />
 

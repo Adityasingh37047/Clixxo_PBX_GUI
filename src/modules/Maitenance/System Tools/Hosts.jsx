@@ -14,9 +14,6 @@ import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import CardToolbar from "../../../components/CardToolbar";
-import { cardToolbarButtonStyle } from "../../../styles/cardToolbar";
-
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -367,6 +364,34 @@ const tableContainerStyle = {
   boxShadow: C.cardShadow,
   overflow: "hidden",
 };
+
+const cardToolbarStyle = {
+  minHeight: 44,
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 12,
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+};
+
+const cardToolbarTitleStyle = {
+  fontSize: 13,
+  fontWeight: 700,
+  color: C.labelText,
+  letterSpacing: "0.02em",
+};
+
+const cardToolbarActionsStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  flexWrap: "wrap",
+};
+
+const cardToolbarButtonStyle = { height: 30 };
 
 const Hosts = () => {
   const [hosts, setHosts] = useState([]);
@@ -764,52 +789,48 @@ const Hosts = () => {
         )}
 
         <div style={tableContainerStyle}>
-          <CardToolbar
-            title="Hosts"
-            actions={
-              <>
-                <Btn
-                  onClick={handleInverse}
-                  disabled={loading.delete || loading.fetch}
-                  variant="cancel"
-                  style={cardToolbarButtonStyle}
-                >
-                  Inverse
-                </Btn>
-                <Btn
-                  onClick={handleClearAll}
-                  disabled={
-                    loading.delete || loading.fetch || hosts.length === 0
-                  }
-                  variant="cancel"
-                  style={cardToolbarButtonStyle}
-                >
-                  Clear All
-                </Btn>
-                <Btn
-                  onClick={handleDelete}
-                  disabled={
-                    loading.delete || loading.fetch || selected.length === 0
-                  }
-                  variant="cancel"
-                  startIcon={
-                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                  }
-                  style={cardToolbarButtonStyle}
-                >
-                  Delete
-                </Btn>
-                <Btn
-                  onClick={() => handleOpenModal()}
-                  disabled={loading.fetch || loading.save}
-                  variant="primary"
-                  style={cardToolbarButtonStyle}
-                >
-                  + Add New
-                </Btn>
-              </>
-            }
-          />
+          <div style={cardToolbarStyle}>
+            <span style={cardToolbarTitleStyle}>Hosts</span>
+            <div style={cardToolbarActionsStyle}>
+              <Btn
+                onClick={handleInverse}
+                disabled={loading.delete || loading.fetch}
+                variant="cancel"
+                style={cardToolbarButtonStyle}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                onClick={handleClearAll}
+                disabled={loading.delete || loading.fetch || hosts.length === 0}
+                variant="cancel"
+                style={cardToolbarButtonStyle}
+              >
+                Clear All
+              </Btn>
+              <Btn
+                onClick={handleDelete}
+                disabled={
+                  loading.delete || loading.fetch || selected.length === 0
+                }
+                variant="cancel"
+                startIcon={
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                }
+                style={cardToolbarButtonStyle}
+              >
+                Delete
+              </Btn>
+              <Btn
+                onClick={() => handleOpenModal()}
+                disabled={loading.fetch || loading.save}
+                variant="primary"
+                style={cardToolbarButtonStyle}
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
 
           {/* Table */}
           <div style={{ overflowX: "auto" }}>

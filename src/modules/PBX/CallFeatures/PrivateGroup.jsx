@@ -1127,20 +1127,17 @@ const PrivateGroup = () => {
           {editId != null ? "Edit Private Group" : "Add Private Group"}
         </DialogTitle>
 
-    <DialogContent
-  style={{
-    padding: "20px",
-    backgroundColor: "#ffffff",
-  }}
->
+        <DialogContent
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
-            style={{
-  background: "#f5f7fa",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 6,
-  padding: "20px",
-}}
+              style={{
+                background: "#f5f7fa",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 6,
+                padding: "20px 24px 16px",
+              }}
             >
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
@@ -1193,7 +1190,7 @@ const PrivateGroup = () => {
                 </FieldRow>
               </div>
 
-              <SectionHeading title="Member Extensions"  />
+              <SectionHeading title="Member Extensions" />
 
               <div
                 style={{
