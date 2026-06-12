@@ -1122,7 +1122,7 @@ const BlockedListPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 700, maxWidth: "95vw", borderRadius: 2 } }}
+        PaperProps={{ sx: { width: 560, maxWidth: "95vw", borderRadius: 2 } }}
       >
         <DialogTitle
           style={{
@@ -1147,18 +1147,95 @@ const BlockedListPage = () => {
                 padding: 16,
               }}
             >
-              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px 32px",
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
-                {/* ── LEFT COLUMN ── */}
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 160,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Name <span style={{ color: C.errorRed }}>*</span>
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 160,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Match Mode <span style={{ color: C.errorRed }}>*</span>
+                  </label>
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={matchMode}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setMatchMode(val);
+                        if (val === "Extension") setBlockedNumber("");
+                        else setSelectedExtension("");
+                      }}
+                      sx={{
+                        fontSize: 13,
+                        backgroundColor: "#fff",
+                        height: 32,
+                        "& .MuiSelect-select": {
+                          padding: "6px 8px",
+                          display: "flex",
+                          alignItems: "center",
+                        },
+                      }}
+                    >
+                      <MenuItem
+                        value="Exact Match"
+                        sx={{ fontSize: 13, fontWeight: 400 }}
+                      >
+                        Exact Match
+                      </MenuItem>
+                      <MenuItem
+                        value="Regex Match"
+                        sx={{ fontSize: 13, fontWeight: 400 }}
+                      >
+                        Regex Match
+                      </MenuItem>
+                      <MenuItem
+                        value="Extension"
+                        sx={{ fontSize: 13, fontWeight: 400 }}
+                      >
+                        Extension
+                      </MenuItem>
+                    </MuiSelect>
+                  </FormControl>
+                </div>
+
+                {matchMode === "Extension" ? (
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
@@ -1167,17 +1244,57 @@ const BlockedListPage = () => {
                         fontSize: 13,
                         fontWeight: 600,
                         color: C.labelText,
-                        width: 120,
+                        width: 160,
                         flexShrink: 0,
                       }}
                     >
-                      Name <span style={{ color: C.errorRed }}>*</span>
+                      Extension <span style={{ color: C.errorRed }}>*</span>
+                    </label>
+                    <FormControl size="small" fullWidth>
+                      <MuiSelect
+                        value={selectedExtension}
+                        onChange={(e) => setSelectedExtension(e.target.value)}
+                        displayEmpty
+                        sx={{ fontSize: 13 }}
+                      >
+                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                          <span style={{ color: C.mutedText }}>
+                            Select Extension
+                          </span>
+                        </MenuItem>
+                        {availableExtensions.map((ext) => (
+                          <MenuItem
+                            key={ext.value}
+                            value={ext.value}
+                            sx={{ fontSize: 13 }}
+                          >
+                            {ext.label}
+                          </MenuItem>
+                        ))}
+                      </MuiSelect>
+                    </FormControl>
+                  </div>
+                ) : (
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+                  >
+                    <label
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: C.labelText,
+                        width: 160,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Blocked List Number{" "}
+                      <span style={{ color: C.errorRed }}>*</span>
                     </label>
                     <TextField
-                      size="small"
                       fullWidth
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      size="small"
+                      value={blockedNumber}
+                      onChange={(e) => setBlockedNumber(e.target.value)}
                       inputProps={{
                         style: {
                           fontSize: 13,
@@ -1187,224 +1304,88 @@ const BlockedListPage = () => {
                       }}
                     />
                   </div>
+                )}
 
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 160,
+                      flexShrink: 0,
+                    }}
                   >
-                    <label
-                      style={{
+                    Blocked List Direction{" "}
+                    <span style={{ color: C.errorRed }}>*</span>
+                  </label>
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={direction}
+                      onChange={(e) => setDirection(e.target.value)}
+                      sx={{
                         fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 120,
-                        flexShrink: 0,
+                        backgroundColor: "#fff",
+                        height: 32,
+                        "& .MuiSelect-select": {
+                          padding: "6px 8px",
+                          display: "flex",
+                          alignItems: "center",
+                        },
                       }}
                     >
-                      Match Mode <span style={{ color: C.errorRed }}>*</span>
-                    </label>
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={matchMode}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setMatchMode(val);
-                          if (val === "Extension") setBlockedNumber("");
-                          else setSelectedExtension("");
-                        }}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32, // Name ke equal
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        <MenuItem
-                          value="Exact Match"
-                          sx={{ fontSize: 13, fontWeight: 400 }}
-                        >
-                          Exact Match
-                        </MenuItem>
-                        <MenuItem
-                          value="Regex Match"
-                          sx={{ fontSize: 13, fontWeight: 400 }}
-                        >
-                          Regex Match
-                        </MenuItem>
-                        <MenuItem
-                          value="Extension"
-                          sx={{ fontSize: 13, fontWeight: 400 }}
-                        >
-                          Extension
-                        </MenuItem>
-
-                        <MenuItem value="Extension" sx={{ fontSize: 13 }}>
-                          Extension
-                        </MenuItem>
-                      </MuiSelect>
-                    </FormControl>
-                  </div>
-
-                  {matchMode === "Extension" ? (
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 12 }}
-                    >
-                      <label
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 120,
-                          flexShrink: 0,
-                        }}
-                      >
-                        Extension <span style={{ color: C.errorRed }}>*</span>
-                      </label>
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={selectedExtension}
-                          onChange={(e) => setSelectedExtension(e.target.value)}
-                          displayEmpty
-                          sx={{ fontSize: 13 }}
-                        >
-                          <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                            <span style={{ color: C.mutedText }}>
-                              Select Extension
-                            </span>
-                          </MenuItem>
-                          {availableExtensions.map((ext) => (
-                            <MenuItem
-                              key={ext.value}
-                              value={ext.value}
-                              sx={{ fontSize: 13 }}
-                            >
-                              {ext.label}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FormControl>
-                    </div>
-                  ) : (
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 12 }}
-                    >
-                      <label
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 120,
-                          flexShrink: 0,
-                        }}
-                      >
-                        Blocked List Number{" "}
-                        <span style={{ color: C.errorRed }}>*</span>
-                      </label>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={blockedNumber}
-                        onChange={(e) => setBlockedNumber(e.target.value)}
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            padding: "6px 8px",
-                            backgroundColor: "#fff",
-                          },
-                        }}
-                      />
-                    </div>
-                  )}
+                      <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
+                        Inbound
+                      </MenuItem>
+                      <MenuItem value="Outbound" sx={{ fontSize: 13 }}>
+                        Outbound
+                      </MenuItem>
+                      <MenuItem value="Internal" sx={{ fontSize: 13 }}>
+                        Internal
+                      </MenuItem>
+                    </MuiSelect>
+                  </FormControl>
                 </div>
 
-                {/* ── RIGHT COLUMN ── */}
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 160,
+                      flexShrink: 0,
+                    }}
                   >
-                    <label
-                      style={{
+                    Enable <span style={{ color: C.errorRed }}>*</span>
+                  </label>
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={enabled}
+                      onChange={(e) => setEnabled(e.target.value)}
+                      sx={{
                         fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 120,
-                        flexShrink: 0,
+                        backgroundColor: "#fff",
+                        height: 32,
+                        "& .MuiSelect-select": {
+                          padding: "6px 8px",
+                          display: "flex",
+                          alignItems: "center",
+                        },
                       }}
                     >
-                      Blocked List Direction{" "}
-                      <span style={{ color: C.errorRed }}>*</span>
-                    </label>
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={direction}
-                        onChange={(e) => setDirection(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
-                          Inbound
-                        </MenuItem>
-                        <MenuItem value="Outbound" sx={{ fontSize: 13 }}>
-                          Outbound
-                        </MenuItem>
-                        <MenuItem value="Internal" sx={{ fontSize: 13 }}>
-                          Internal
-                        </MenuItem>
-                      </MuiSelect>
-                    </FormControl>
-                  </div>
-
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 120,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Enable <span style={{ color: C.errorRed }}>*</span>
-                    </label>
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={enabled}
-                        onChange={(e) => setEnabled(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        <MenuItem value="Yes" sx={{ fontSize: 13 }}>
-                          Yes
-                        </MenuItem>
-                        <MenuItem value="No" sx={{ fontSize: 13 }}>
-                          No
-                        </MenuItem>
-                      </MuiSelect>
-                    </FormControl>
-                  </div>
+                      <MenuItem value="Yes" sx={{ fontSize: 13 }}>
+                        Yes
+                      </MenuItem>
+                      <MenuItem value="No" sx={{ fontSize: 13 }}>
+                        No
+                      </MenuItem>
+                    </MuiSelect>
+                  </FormControl>
                 </div>
               </div>
             </div>

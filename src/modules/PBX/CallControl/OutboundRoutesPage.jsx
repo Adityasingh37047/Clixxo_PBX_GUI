@@ -79,7 +79,7 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -996,7 +996,7 @@ const OutboundRoutesPage = () => {
           return {
             id: String(ext ?? ""),
             label: display
-              ? `${display}-${String(ext ?? "")}`
+              ? `${String(ext ?? "")}-${display}`
               : String(ext ?? ""),
           };
         })
@@ -1349,7 +1349,10 @@ const OutboundRoutesPage = () => {
     setMemberExtensions((prev) => {
       const arr = [...prev];
       for (let i = 1; i < arr.length; i++) {
-        if (chosenExtensionSelected.includes(arr[i]) && !chosenExtensionSelected.includes(arr[i - 1]))
+        if (
+          chosenExtensionSelected.includes(arr[i]) &&
+          !chosenExtensionSelected.includes(arr[i - 1])
+        )
           [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
       }
       return arr;
@@ -1360,7 +1363,10 @@ const OutboundRoutesPage = () => {
     setMemberExtensions((prev) => {
       const arr = [...prev];
       for (let i = arr.length - 2; i >= 0; i--) {
-        if (chosenExtensionSelected.includes(arr[i]) && !chosenExtensionSelected.includes(arr[i + 1]))
+        if (
+          chosenExtensionSelected.includes(arr[i]) &&
+          !chosenExtensionSelected.includes(arr[i + 1])
+        )
           [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
       }
       return arr;
@@ -1412,7 +1418,10 @@ const OutboundRoutesPage = () => {
     setMemberTrunks((prev) => {
       const arr = [...prev];
       for (let i = 1; i < arr.length; i++) {
-        if (chosenTrunkSelected.includes(arr[i]) && !chosenTrunkSelected.includes(arr[i - 1]))
+        if (
+          chosenTrunkSelected.includes(arr[i]) &&
+          !chosenTrunkSelected.includes(arr[i - 1])
+        )
           [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
       }
       return arr;
@@ -1423,7 +1432,10 @@ const OutboundRoutesPage = () => {
     setMemberTrunks((prev) => {
       const arr = [...prev];
       for (let i = arr.length - 2; i >= 0; i--) {
-        if (chosenTrunkSelected.includes(arr[i]) && !chosenTrunkSelected.includes(arr[i + 1]))
+        if (
+          chosenTrunkSelected.includes(arr[i]) &&
+          !chosenTrunkSelected.includes(arr[i + 1])
+        )
           [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
       }
       return arr;
@@ -1569,22 +1581,6 @@ const OutboundRoutesPage = () => {
                 Delete
               </Btn>
               <Btn
-                onClick={handleCheckAll}
-                disabled={loading.delete || rows.length === 0}
-                variant="cancel"
-                style={sipPcmCancelBtnStyle}
-              >
-                Check All
-              </Btn>
-              <Btn
-                onClick={handleUncheckAll}
-                disabled={loading.delete || selected.length === 0}
-                variant="cancel"
-                style={sipPcmCancelBtnStyle}
-              >
-                Uncheck All
-              </Btn>
-              <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.save || loading.list}
                 variant="primary"
@@ -1636,7 +1632,9 @@ const OutboundRoutesPage = () => {
                         checked={allRowsSelected}
                         indeterminate={someRowsSelected}
                         onChange={() =>
-                          allRowsSelected ? handleUncheckAll() : handleCheckAll()
+                          allRowsSelected
+                            ? handleUncheckAll()
+                            : handleCheckAll()
                         }
                         sx={checkboxSx}
                       />
@@ -1684,217 +1682,216 @@ const OutboundRoutesPage = () => {
                 </thead>
                 <tbody>
                   {pagedRows.map((row, idx) => {
-                      const realIdx = (page - 1) * itemsPerPage + idx;
-                      const isSelected = selected.includes(realIdx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const lastRowCellStyle = isLastRow
-                        ? { borderBottom: "none" }
-                        : {};
-                      const rowBg = isSelected
-                        ? "#eff6ff"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
-                      return (
-                        <tr
-                          key={row.id}
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRows.length - 1;
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+                    const rowBg = isSelected
+                      ? "#eff6ff"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    return (
+                      <tr
+                        key={row.id}
+                        style={{
+                          background: rowBg,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
+                        }}
+                      >
+                        <td
                           style={{
+                            ...tdStyle,
                             background: rowBg,
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = "#f8fafc";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              e.currentTarget.style.background = rowBg;
+                            width: 36,
+                            borderLeft: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
-                          <td
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(realIdx)}
+                            disabled={loading.delete}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {realIdx + 1}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.name}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.priority}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          <span
                             style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              width: 36,
-                              borderLeft: "none",
-                              ...lastRowCellStyle,
+                              color:
+                                row.enabled === "Yes" ? "#166534" : "#475569",
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 72,
                             }}
                           >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleSelectRow(realIdx)}
-                              disabled={loading.delete}
-                              sx={checkboxSx}
-                            />
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {realIdx + 1}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.name}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.priority}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              ...lastRowCellStyle,
-                            }}
-                          >
+                            {row.enabled}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.passwordType === "Single Pin"
+                            ? `Single Pin (${row.singlePin || ""})`
+                            : row.passwordType}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            whiteSpace: "normal",
+                            wordBreak: "break-all",
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.memberExtensions?.length > 0 ? (
                             <span
-                              style={{
-                                color:
-                                  row.enabled === "Yes" ? "#166534" : "#475569",
-                                padding: "4px 11px",
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                letterSpacing: "0.01em",
-                                whiteSpace: "nowrap",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                minWidth: 72,
-                              }}
+                              title={
+                                row.memberExtensions.length >
+                                PBX_LIST_TRUNCATE_THRESHOLD
+                                  ? row.memberExtensions
+                                      .map(getExtensionLabel)
+                                      .join(", ")
+                                  : undefined
+                              }
                             >
-                              {row.enabled}
+                              {formatPbxItemListDisplay(row.memberExtensions, {
+                                mapItem: getExtensionLabel,
+                              })}
                             </span>
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.passwordType === "Single Pin"
-                              ? `Single Pin (${row.singlePin || ""})`
-                              : row.passwordType}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              whiteSpace: "normal",
-                              wordBreak: "break-all",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.memberExtensions?.length > 0 ? (
-                              <span
-                                title={
-                                  row.memberExtensions.length >
-                                  PBX_LIST_TRUNCATE_THRESHOLD
-                                    ? row.memberExtensions
-                                        .map(getExtensionLabel)
-                                        .join(", ")
-                                    : undefined
-                                }
-                              >
-                                {formatPbxItemListDisplay(
-                                  row.memberExtensions,
-                                  { mapItem: getExtensionLabel },
-                                )}
-                              </span>
-                            ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              whiteSpace: "normal",
-                              wordBreak: "break-all",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.memberTrunks?.length > 0 ? (
-                              <span
-                                title={
-                                  row.memberTrunks.length >
-                                  PBX_LIST_TRUNCATE_THRESHOLD
-                                    ? row.memberTrunks
-                                        .map(getTrunkLabel)
-                                        .join(", ")
-                                    : undefined
-                                }
-                              >
-                                {formatPbxItemListDisplay(row.memberTrunks, {
-                                  mapItem: getTrunkLabel,
-                                })}
-                              </span>
-                            ) : (
-                              <span style={{ color: C.mutedText }}>—</span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              borderRight: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "center",
-                              }}
+                          ) : (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            fontWeight: 400,
+                            whiteSpace: "normal",
+                            wordBreak: "break-all",
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.memberTrunks?.length > 0 ? (
+                            <span
+                              title={
+                                row.memberTrunks.length >
+                                PBX_LIST_TRUNCATE_THRESHOLD
+                                  ? row.memberTrunks
+                                      .map(getTrunkLabel)
+                                      .join(", ")
+                                  : undefined
+                              }
                             >
-                              <EditDocumentIcon
-                                titleAccess="Edit"
-                                onClick={() => handleOpenEditModal(row)}
-                                style={{
-                                  cursor: loading.delete
-                                    ? "not-allowed"
-                                    : "pointer",
-                                  color: "#2563eb",
-                                  fontSize: 22,
-                                  opacity: loading.delete ? 0.4 : 0.7,
-                                  transition: "opacity 0.15s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!loading.delete)
-                                    e.currentTarget.style.opacity = "1";
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!loading.delete)
-                                    e.currentTarget.style.opacity = "0.7";
-                                }}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                              {formatPbxItemListDisplay(row.memberTrunks, {
+                                mapItem: getTrunkLabel,
+                              })}
+                            </span>
+                          ) : (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
+                              style={{
+                                cursor: loading.delete
+                                  ? "not-allowed"
+                                  : "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: loading.delete ? 0.4 : 0.7,
+                                transition: "opacity 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!loading.delete)
+                                  e.currentTarget.style.opacity = "0.7";
+                              }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -1949,247 +1946,168 @@ const OutboundRoutesPage = () => {
                 alignItems: "start",
               }}
             >
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                  }}
-                >
-                  <FieldRow label="Name *">
-                    <OutboundLeftField>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        sx={outboundModalControlSx}
-                      />
-                    </OutboundLeftField>
-                  </FieldRow>
-                  <FieldRow label="Priority *">
-                    <OutboundLeftField>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={priority}
-                        onChange={(e) => setPriority(e.target.value)}
-                        sx={outboundModalControlSx}
-                      />
-                    </OutboundLeftField>
-                  </FieldRow>
-                  <FieldRow label="Description">
-                    <OutboundLeftField>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        sx={outboundModalControlSx}
-                      />
-                    </OutboundLeftField>
-                  </FieldRow>
-                  <FieldRow label="Rmemory Hunt">
-                    <OutboundLeftField>
-                      <FormControl size="small" fullWidth>
-                        <Select
-                          value={rememoryHunt}
-                          onChange={(e) => setRememoryHunt(e.target.value)}
-                          sx={modalSelectSx}
-                        >
-                          {REMEMORY_HUNT_OPTIONS.map((opt) => (
-                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </OutboundLeftField>
-                  </FieldRow>
-                </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
+              >
+                <FieldRow label="Name *">
+                  <OutboundLeftField>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      sx={outboundModalControlSx}
+                    />
+                  </OutboundLeftField>
+                </FieldRow>
+                <FieldRow label="Priority *">
+                  <OutboundLeftField>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={priority}
+                      onChange={(e) => setPriority(e.target.value)}
+                      sx={outboundModalControlSx}
+                    />
+                  </OutboundLeftField>
+                </FieldRow>
+                <FieldRow label="Description">
+                  <OutboundLeftField>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      sx={outboundModalControlSx}
+                    />
+                  </OutboundLeftField>
+                </FieldRow>
+                <FieldRow label="Rmemory Hunt">
+                  <OutboundLeftField>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={rememoryHunt}
+                        onChange={(e) => setRememoryHunt(e.target.value)}
+                        sx={modalSelectSx}
+                      >
+                        {REMEMORY_HUNT_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </OutboundLeftField>
+                </FieldRow>
+              </div>
 
-                <div style={outboundRightColStyle}>
-                  <OutboundRightRow label="Next Route">
-                    <Checkbox
-                      checked={nextRoute}
-                      onChange={(e) => setNextRoute(e.target.checked)}
-                      sx={checkboxSx}
+              <div style={outboundRightColStyle}>
+                <OutboundRightRow label="Next Route">
+                  <Checkbox
+                    checked={nextRoute}
+                    onChange={(e) => setNextRoute(e.target.checked)}
+                    sx={checkboxSx}
+                  />
+                </OutboundRightRow>
+                <OutboundRightRow label="Enabled *">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={enabled}
+                      onChange={(e) => setEnabled(e.target.value)}
+                      sx={modalSelectSx}
+                    >
+                      {ENABLE_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </OutboundRightRow>
+                <OutboundRightRow label="Password">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={passwordType}
+                      onChange={(e) => {
+                        setPasswordType(e.target.value);
+                        if (e.target.value !== "Single Pin") setSinglePin("");
+                      }}
+                      sx={modalSelectSx}
+                    >
+                      {PASSWORD_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </OutboundRightRow>
+                {passwordType === "Single Pin" && (
+                  <OutboundRightRow label="Enter Password">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={singlePin}
+                      onChange={(e) => setSinglePin(e.target.value)}
+                      sx={outboundModalControlSx}
                     />
                   </OutboundRightRow>
-                  <OutboundRightRow label="Enabled *">
-                    <FormControl size="small" fullWidth>
-                      <Select
-                        value={enabled}
-                        onChange={(e) => setEnabled(e.target.value)}
-                        sx={modalSelectSx}
-                      >
-                        {ENABLE_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </OutboundRightRow>
-                  <OutboundRightRow label="Password">
-                    <FormControl size="small" fullWidth>
-                      <Select
-                        value={passwordType}
-                        onChange={(e) => {
-                          setPasswordType(e.target.value);
-                          if (e.target.value !== "Single Pin") setSinglePin("");
-                        }}
-                        sx={modalSelectSx}
-                      >
-                        {PASSWORD_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </OutboundRightRow>
-                  {passwordType === "Single Pin" && (
-                    <OutboundRightRow label="Enter Password">
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={singlePin}
-                        onChange={(e) => setSinglePin(e.target.value)}
-                        sx={outboundModalControlSx}
-                      />
-                    </OutboundRightRow>
-                  )}
-                  <OutboundRightRow label="Time Condition" fieldWidth={280}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {TIME_CONDITION_OPTIONS.map((opt) => (
-                        <label
-                          key={opt}
-                          style={{
-                            fontSize: 13,
-                            color: C.valueText,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
-                            cursor: "pointer",
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={timeConditions.includes(opt)}
-                            onChange={() => toggleTimeCondition(opt)}
-                            disabled={
-                              opt === "Holiday" &&
-                              !timeConditions.includes("All")
-                            }
-                          />
-                          {opt}
-                        </label>
-                      ))}
-                    </div>
-                  </OutboundRightRow>
-                </div>
-              </div>
-
-              <div style={{ marginTop: 12 }}>
-                <PbxModalSectionHeading title="Dial Patterns" />
-
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns:
-                      "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 72px",
-                    gap: 8,
-                    alignItems: "center",
-                    marginBottom: 6,
-                  }}
-                >
-                  {["Patterns", "Strip", "Front", "Suffix", "Delay"].map(
-                    (heading) => (
-                      <div
-                        key={heading}
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                        }}
-                      >
-                        {heading}
-                      </div>
-                    ),
-                  )}
-                  <div />
-                </div>
-                {dialPatterns.map((item, index) => (
+                )}
+                <OutboundRightRow label="Time Condition" fieldWidth={280}>
                   <div
-                    key={`pattern-${index}`}
                     style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 72px",
-                      gap: 8,
+                      display: "flex",
                       alignItems: "center",
-                      marginBottom: 8,
+                      gap: 12,
+                      flexWrap: "wrap",
                     }}
                   >
-                    {(["pattern", "strip", "front", "suffix", "delay"]).map(
-                      (field) => (
-                        <input
-                          key={field}
-                          style={outboundCompactInputStyle}
-                          placeholder={
-                            field === "delay" ? "Unit is ms" : undefined
-                          }
-                          value={item[field]}
-                          onChange={(e) =>
-                            updateDialPattern(index, field, e.target.value)
-                          }
-                          {...getNativeFieldInteraction()}
-                        />
-                      ),
-                    )}
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button
-                        type="button"
-                        style={outboundPatternActionBtnStyle}
-                        onClick={addDialPattern}
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
+                    {TIME_CONDITION_OPTIONS.map((opt) => (
+                      <label
+                        key={opt}
                         style={{
-                          ...outboundPatternActionBtnStyle,
-                          opacity: dialPatterns.length <= 1 ? 0.5 : 1,
+                          fontSize: 13,
+                          color: C.valueText,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                          cursor: "pointer",
                         }}
-                        onClick={() => removeDialPatternAt(index)}
-                        disabled={dialPatterns.length <= 1}
                       >
-                        x
-                      </button>
-                    </div>
+                        <input
+                          type="checkbox"
+                          checked={timeConditions.includes(opt)}
+                          onChange={() => toggleTimeCondition(opt)}
+                          disabled={
+                            opt === "Holiday" && !timeConditions.includes("All")
+                          }
+                        />
+                        {opt}
+                      </label>
+                    ))}
                   </div>
-                ))}
+                </OutboundRightRow>
               </div>
+            </div>
 
-              <div style={{ marginTop: 8 }}>
-                <PbxModalSectionHeading title="Caller Number Conversion" />
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
-                    gap: 8,
-                    marginBottom: 6,
-                  }}
-                >
-                  {["Strip", "Front", "Suffix"].map((heading) => (
+            <div style={{ marginTop: 12 }}>
+              <PbxModalSectionHeading title="Dial Patterns" />
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 72px",
+                  gap: 8,
+                  alignItems: "center",
+                  marginBottom: 6,
+                }}
+              >
+                {["Patterns", "Strip", "Front", "Suffix", "Delay"].map(
+                  (heading) => (
                     <div
                       key={heading}
                       style={{
@@ -2200,30 +2118,106 @@ const OutboundRoutesPage = () => {
                     >
                       {heading}
                     </div>
-                  ))}
-                </div>
+                  ),
+                )}
+                <div />
+              </div>
+              {dialPatterns.map((item, index) => (
                 <div
+                  key={`pattern-${index}`}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gridTemplateColumns: "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 72px",
                     gap: 8,
+                    alignItems: "center",
+                    marginBottom: 8,
                   }}
                 >
-                  {(["strip", "front", "suffix"]).map((field) => (
-                    <input
-                      key={field}
-                      style={outboundCompactInputStyle}
-                      value={callerConversion[field]}
-                      onChange={(e) =>
-                        setCallerConversion((prev) => ({
-                          ...prev,
-                          [field]: e.target.value,
-                        }))
-                      }
-                      {...getNativeFieldInteraction()}
-                    />
-                  ))}
+                  {["pattern", "strip", "front", "suffix", "delay"].map(
+                    (field) => (
+                      <input
+                        key={field}
+                        style={outboundCompactInputStyle}
+                        placeholder={
+                          field === "delay" ? "Unit is ms" : undefined
+                        }
+                        value={item[field]}
+                        onChange={(e) =>
+                          updateDialPattern(index, field, e.target.value)
+                        }
+                        {...getNativeFieldInteraction()}
+                      />
+                    ),
+                  )}
+                  <div style={{ display: "flex", gap: 4 }}>
+                    <button
+                      type="button"
+                      style={outboundPatternActionBtnStyle}
+                      onClick={addDialPattern}
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      style={{
+                        ...outboundPatternActionBtnStyle,
+                        opacity: dialPatterns.length <= 1 ? 0.5 : 1,
+                      }}
+                      onClick={() => removeDialPatternAt(index)}
+                      disabled={dialPatterns.length <= 1}
+                    >
+                      x
+                    </button>
+                  </div>
                 </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 8 }}>
+              <PbxModalSectionHeading title="Caller Number Conversion" />
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 8,
+                  marginBottom: 6,
+                }}
+              >
+                {["Strip", "Front", "Suffix"].map((heading) => (
+                  <div
+                    key={heading}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.labelText,
+                    }}
+                  >
+                    {heading}
+                  </div>
+                ))}
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gap: 8,
+                }}
+              >
+                {["strip", "front", "suffix"].map((field) => (
+                  <input
+                    key={field}
+                    style={outboundCompactInputStyle}
+                    value={callerConversion[field]}
+                    onChange={(e) =>
+                      setCallerConversion((prev) => ({
+                        ...prev,
+                        [field]: e.target.value,
+                      }))
+                    }
+                    {...getNativeFieldInteraction()}
+                  />
+                ))}
+              </div>
             </div>
 
             <SectionCard title="Member Extensions *">
@@ -2274,7 +2268,9 @@ const OutboundRoutesPage = () => {
                   <PbxDualListBtn onClick={addSelectedExtensions}>
                     &gt;
                   </PbxDualListBtn>
-                  <PbxDualListBtn onClick={addAllExtensions}>&gt;&gt;</PbxDualListBtn>
+                  <PbxDualListBtn onClick={addAllExtensions}>
+                    &gt;&gt;
+                  </PbxDualListBtn>
                   <PbxDualListBtn onClick={removeSelectedExtensions}>
                     &lt;
                   </PbxDualListBtn>
@@ -2327,10 +2323,18 @@ const OutboundRoutesPage = () => {
                   <PbxDualListBtn reorder title="Move up" onClick={moveExtUp}>
                     ^
                   </PbxDualListBtn>
-                  <PbxDualListBtn reorder title="Move down" onClick={moveExtDown}>
+                  <PbxDualListBtn
+                    reorder
+                    title="Move down"
+                    onClick={moveExtDown}
+                  >
                     v
                   </PbxDualListBtn>
-                  <PbxDualListBtn reorder title="Move to top" onClick={moveExtToTop}>
+                  <PbxDualListBtn
+                    reorder
+                    title="Move to top"
+                    onClick={moveExtToTop}
+                  >
                     ^^
                   </PbxDualListBtn>
                 </div>
@@ -2382,10 +2386,18 @@ const OutboundRoutesPage = () => {
                     paddingTop: 28,
                   }}
                 >
-                  <PbxDualListBtn onClick={addSelectedTrunks}>&gt;</PbxDualListBtn>
-                  <PbxDualListBtn onClick={addAllTrunks}>&gt;&gt;</PbxDualListBtn>
-                  <PbxDualListBtn onClick={removeSelectedTrunks}>&lt;</PbxDualListBtn>
-                  <PbxDualListBtn onClick={removeAllTrunks}>&lt;&lt;</PbxDualListBtn>
+                  <PbxDualListBtn onClick={addSelectedTrunks}>
+                    &gt;
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={addAllTrunks}>
+                    &gt;&gt;
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeSelectedTrunks}>
+                    &lt;
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeAllTrunks}>
+                    &lt;&lt;
+                  </PbxDualListBtn>
                 </div>
                 <div>
                   <div style={pbxDualListLabelStyle}>Selected</div>
@@ -2467,7 +2479,7 @@ const OutboundRoutesPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-          style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save && <CircularProgress size={20} color="inherit" />}
             {loading.save ? "Saving..." : "Save"}
@@ -2476,7 +2488,7 @@ const OutboundRoutesPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-              style={pbxModalCancelBtnStyle}
+            style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>

@@ -1104,7 +1104,7 @@ const CallBackPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 700, maxWidth: "95vw", borderRadius: 2 } }}
+        PaperProps={{ sx: { width: 560, maxWidth: "95vw", borderRadius: 2 } }}
       >
         <DialogTitle
           style={{
@@ -1131,250 +1131,229 @@ const CallBackPage = () => {
                 padding: 16,
               }}
             >
-              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px 32px",
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
-                {/* ── LEFT COLUMN ── */}
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  {/* Name */}
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 90,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Name <span style={{ color: C.labelText }}>:</span>
-                    </label>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </div>
-
-                  {/* Strip */}
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 90,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Strip :
-                    </label>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      type="number"
-                      value={strip}
-                      onChange={(e) => setStrip(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </div>
-
-                  {/* Destination */}
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 90,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Destination <span style={{ color: C.labelText }}>:</span>
-                    </label>
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={destination}
-                        onChange={(e) => setDestination(e.target.value)}
-                        displayEmpty
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                          <span style={{ color: C.mutedText }}>
-                            {loading.extensions
-                              ? "Loading..."
-                              : "Select Destination"}
-                          </span>
-                        </MenuItem>
-                        {extensionOptions.map((ext) => (
-                          <MenuItem key={ext} value={ext} sx={{ fontSize: 13 }}>
-                            {ext}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  </div>
-                </div>
-
-                {/* ── RIGHT COLUMN ── */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  {/* Delay */}
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 90,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Delay (s) <span style={{ color: C.labelText }}>:</span>
-                    </label>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      type="number"
-                      value={delay}
-                      onChange={(e) => setDelay(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </div>
-
-                  {/* Prepend */}
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 90,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Prepend :
-                    </label>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={prepend}
-                      onChange={(e) => setPrepend(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </div>
-
-                  {/* Through Mode */}
-                  <div
+                  <label
                     style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: 12,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 100,
+                      flexShrink: 0,
                     }}
                   >
-                    <label
-                      style={{
+                    Name <span style={{ color: C.labelText }}>:</span>
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    inputProps={{
+                      style: {
                         fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 90,
-                        flexShrink: 0,
-                        marginTop: 4,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 100,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Strip :
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    type="number"
+                    value={strip}
+                    onChange={(e) => setStrip(e.target.value)}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 100,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Destination <span style={{ color: C.labelText }}>:</span>
+                  </label>
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={destination}
+                      onChange={(e) => setDestination(e.target.value)}
+                      displayEmpty
+                      sx={{
+                        fontSize: 13,
+                        backgroundColor: "#fff",
+                        height: 32,
+                        "& .MuiSelect-select": {
+                          padding: "6px 8px",
+                          display: "flex",
+                          alignItems: "center",
+                        },
                       }}
                     >
-                      Through :
-                    </label>
-                    <RadioGroup
-                      value={
-                        throughSelect
-                          ? "select"
-                          : throughFromComeIn
-                            ? "from_in"
-                            : "auto"
+                      <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                        <span style={{ color: C.mutedText }}>
+                          {loading.extensions
+                            ? "Loading..."
+                            : "Select Destination"}
+                        </span>
+                      </MenuItem>
+                      {extensionOptions.map((ext) => (
+                        <MenuItem key={ext} value={ext} sx={{ fontSize: 13 }}>
+                          {ext}
+                        </MenuItem>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 100,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Delay (s) <span style={{ color: C.labelText }}>:</span>
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    type="number"
+                    value={delay}
+                    onChange={(e) => setDelay(e.target.value)}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 12 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 100,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Prepend :
+                  </label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={prepend}
+                    onChange={(e) => setPrepend(e.target.value)}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 12,
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: C.labelText,
+                      width: 100,
+                      flexShrink: 0,
+                      marginTop: 4,
+                    }}
+                  >
+                    Through :
+                  </label>
+                  <RadioGroup
+                    value={
+                      throughSelect
+                        ? "select"
+                        : throughFromComeIn
+                          ? "from_in"
+                          : "auto"
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setThroughAuto(val === "auto");
+                      setThroughFromComeIn(val === "from_in");
+                      setThroughSelect(val === "select");
+                    }}
+                    sx={{ display: "flex", flexDirection: "column", gap: 0 }}
+                  >
+                    <FormControlLabel
+                      value="auto"
+                      control={<Radio size="small" sx={{ p: 0.5 }} />}
+                      label={<span style={{ fontSize: 13 }}>Auto</span>}
+                      sx={{ m: 0 }}
+                    />
+                    <FormControlLabel
+                      value="from_in"
+                      control={<Radio size="small" sx={{ p: 0.5 }} />}
+                      label={
+                        <span style={{ fontSize: 13 }}>From come in</span>
                       }
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setThroughAuto(val === "auto");
-                        setThroughFromComeIn(val === "from_in");
-                        setThroughSelect(val === "select");
-                      }}
-                      sx={{ display: "flex", flexDirection: "column", gap: 0 }}
-                    >
-                      <FormControlLabel
-                        value="auto"
-                        control={<Radio size="small" sx={{ p: 0.5 }} />}
-                        label={<span style={{ fontSize: 13 }}>Auto</span>}
-                        sx={{ m: 0 }}
-                      />
-                      <FormControlLabel
-                        value="from_in"
-                        control={<Radio size="small" sx={{ p: 0.5 }} />}
-                        label={
-                          <span style={{ fontSize: 13 }}>From come in</span>
-                        }
-                        sx={{ m: 0 }}
-                      />
-                      <FormControlLabel
-                        value="select"
-                        control={<Radio size="small" sx={{ p: 0.5 }} />}
-                        label={<span style={{ fontSize: 13 }}>Select</span>}
-                        sx={{ m: 0 }}
-                      />
-                    </RadioGroup>
-                  </div>
+                      sx={{ m: 0 }}
+                    />
+                    <FormControlLabel
+                      value="select"
+                      control={<Radio size="small" sx={{ p: 0.5 }} />}
+                      label={<span style={{ fontSize: 13 }}>Select</span>}
+                      sx={{ m: 0 }}
+                    />
+                  </RadioGroup>
                 </div>
               </div>
 
@@ -1392,7 +1371,7 @@ const CallBackPage = () => {
                       display: "flex",
                       alignItems: "center",
                       marginBottom: 8,
-                      paddingLeft: 102,
+                      paddingLeft: 112,
                     }}
                   >
                     <div
@@ -1427,8 +1406,7 @@ const CallBackPage = () => {
                         marginBottom: 8,
                       }}
                     >
-                      <div style={{ width: 90 }}></div>{" "}
-                      {/* spacer to align with labels */}
+                      <div style={{ width: 100 }}></div>
                       <div style={{ flex: 1 }}>
                         <FormControl size="small" fullWidth>
                           <MuiSelect

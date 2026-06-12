@@ -1458,7 +1458,7 @@ const InboundRoutesPage = () => {
                         zIndex: 10,
                       }}
                     >
-                      #
+                      ID
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Name
@@ -1859,224 +1859,224 @@ const InboundRoutesPage = () => {
                 alignItems: "start",
               }}
             >
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                  }}
-                >
-                  <FieldRow label="Name *">
-                    <InboundLeftField>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        sx={modalTextFieldFullSx}
-                      />
-                    </InboundLeftField>
-                  </FieldRow>
-                  <FieldRow label="DID Pattern">
-                    <InboundLeftField>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={didPattern}
-                        onChange={(e) => setDidPattern(e.target.value)}
-                        sx={modalTextFieldFullSx}
-                      />
-                    </InboundLeftField>
-                  </FieldRow>
-                  <FieldRow label="Caller ID Pattern">
-                    <InboundLeftField>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={callerIdPattern}
-                        onChange={(e) => setCallerIdPattern(e.target.value)}
-                        sx={modalTextFieldFullSx}
-                      />
-                    </InboundLeftField>
-                  </FieldRow>
-                  <FieldRow label="Distinctive RingTone">
-                    <InboundLeftField>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={distinctiveRingTone}
-                        onChange={(e) => setDistinctiveRingTone(e.target.value)}
-                        sx={modalTextFieldFullSx}
-                      />
-                    </InboundLeftField>
-                  </FieldRow>
-                  <FieldRow label="Enable T.38">
-                    <InboundLeftField>
-                      <FormControl size="small" fullWidth>
-                        <Select
-                          value={enableT38}
-                          onChange={(e) => setEnableT38(e.target.value)}
-                          sx={modalSelectSx}
-                        >
-                          {T38_OPTIONS.map((opt) => (
-                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </InboundLeftField>
-                  </FieldRow>
-                  <FieldRow label="Destination *">
-                    <InboundLeftField>
-                      <FormControl size="small" fullWidth>
-                        <Select
-                          value={destination}
-                          onChange={(e) => {
-                            setDestination(e.target.value);
-                            setDestinationTarget("");
-                            setExtensionRange("");
-                          }}
-                          displayEmpty
-                          sx={modalSelectSx}
-                        >
-                          <MenuItem value="">
-                            <em>Select</em>
-                          </MenuItem>
-                          {DESTINATION_OPTIONS.map((opt) => (
-                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </InboundLeftField>
-                  </FieldRow>
-                </div>
-
-                <div style={inboundRightColStyle}>
-                  <InboundRightRow label="Enabled">
-                    <FormControl size="small" fullWidth>
-                      <Select
-                        value={enabled}
-                        onChange={(e) => setEnabled(e.target.value)}
-                        sx={modalSelectSx}
-                      >
-                        {ENABLE_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </InboundRightRow>
-
-                  <InboundRightRow label="Priority">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
+              >
+                <FieldRow label="Name *">
+                  <InboundLeftField>
                     <TextField
                       size="small"
                       fullWidth
-                      value={priority}
-                      onChange={(e) => setPriority(e.target.value)}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      sx={modalTextFieldFullSx}
+                    />
+                  </InboundLeftField>
+                </FieldRow>
+                <FieldRow label="DID Pattern">
+                  <InboundLeftField>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={didPattern}
+                      onChange={(e) => setDidPattern(e.target.value)}
+                      sx={modalTextFieldFullSx}
+                    />
+                  </InboundLeftField>
+                </FieldRow>
+                <FieldRow label="Caller ID Pattern">
+                  <InboundLeftField>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={callerIdPattern}
+                      onChange={(e) => setCallerIdPattern(e.target.value)}
+                      sx={modalTextFieldFullSx}
+                    />
+                  </InboundLeftField>
+                </FieldRow>
+                <FieldRow label="Distinctive RingTone">
+                  <InboundLeftField>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={distinctiveRingTone}
+                      onChange={(e) => setDistinctiveRingTone(e.target.value)}
+                      sx={modalTextFieldFullSx}
+                    />
+                  </InboundLeftField>
+                </FieldRow>
+                <FieldRow label="Enable T.38">
+                  <InboundLeftField>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={enableT38}
+                        onChange={(e) => setEnableT38(e.target.value)}
+                        sx={modalSelectSx}
+                      >
+                        {T38_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </InboundLeftField>
+                </FieldRow>
+                <FieldRow label="Destination *">
+                  <InboundLeftField>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={destination}
+                        onChange={(e) => {
+                          setDestination(e.target.value);
+                          setDestinationTarget("");
+                          setExtensionRange("");
+                        }}
+                        displayEmpty
+                        sx={modalSelectSx}
+                      >
+                        <MenuItem value="">
+                          <em>Select</em>
+                        </MenuItem>
+                        {DESTINATION_OPTIONS.map((opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </InboundLeftField>
+                </FieldRow>
+              </div>
+
+              <div style={inboundRightColStyle}>
+                <InboundRightRow label="Enabled">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={enabled}
+                      onChange={(e) => setEnabled(e.target.value)}
+                      sx={modalSelectSx}
+                    >
+                      {ENABLE_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </InboundRightRow>
+
+                <InboundRightRow label="Priority">
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                    sx={modalTextFieldFullSx}
+                  />
+                </InboundRightRow>
+
+                <InboundRightRow label="Enable Mobility Extension">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={enableMobilityExtension}
+                      onChange={(e) =>
+                        setEnableMobilityExtension(e.target.value)
+                      }
+                      sx={modalSelectSx}
+                    >
+                      {MOBILITY_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </InboundRightRow>
+
+                <InboundRightRow label="Send RingTone">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={sendRingTone}
+                      onChange={(e) => setSendRingTone(e.target.value)}
+                      sx={modalSelectSx}
+                    >
+                      {SEND_RINGTONE_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </InboundRightRow>
+
+                <InboundRightRow label="Enable Time Condition">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={enableTimeCondition}
+                      onChange={(e) => setEnableTimeCondition(e.target.value)}
+                      sx={modalSelectSx}
+                    >
+                      {TIME_CONDITION_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </InboundRightRow>
+
+                {destination === "Extension_Range" ? (
+                  <InboundRightRow label="Extension Range *">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={extensionRange}
+                      onChange={(e) => setExtensionRange(e.target.value)}
+                      placeholder="100-136"
                       sx={modalTextFieldFullSx}
                     />
                   </InboundRightRow>
-
-                  <InboundRightRow label="Enable Mobility Extension">
+                ) : needsDestinationTarget ? (
+                  <InboundRightRow label="Destination Value *">
                     <FormControl size="small" fullWidth>
                       <Select
-                        value={enableMobilityExtension}
-                        onChange={(e) =>
-                          setEnableMobilityExtension(e.target.value)
-                        }
+                        value={destinationTarget}
+                        onChange={(e) => setDestinationTarget(e.target.value)}
+                        displayEmpty
                         sx={modalSelectSx}
                       >
-                        {MOBILITY_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </InboundRightRow>
-
-                  <InboundRightRow label="Send RingTone">
-                    <FormControl size="small" fullWidth>
-                      <Select
-                        value={sendRingTone}
-                        onChange={(e) => setSendRingTone(e.target.value)}
-                        sx={modalSelectSx}
-                      >
-                        {SEND_RINGTONE_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </InboundRightRow>
-
-                  <InboundRightRow label="Enable Time Condition">
-                    <FormControl size="small" fullWidth>
-                      <Select
-                        value={enableTimeCondition}
-                        onChange={(e) => setEnableTimeCondition(e.target.value)}
-                        sx={modalSelectSx}
-                      >
-                        {TIME_CONDITION_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </InboundRightRow>
-
-                  {destination === "Extension_Range" ? (
-                    <InboundRightRow label="Extension Range *">
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={extensionRange}
-                        onChange={(e) => setExtensionRange(e.target.value)}
-                        placeholder="100-136"
-                        sx={modalTextFieldFullSx}
-                      />
-                    </InboundRightRow>
-                  ) : needsDestinationTarget ? (
-                    <InboundRightRow label="Destination Value *">
-                      <FormControl size="small" fullWidth>
-                        <Select
-                          value={destinationTarget}
-                          onChange={(e) => setDestinationTarget(e.target.value)}
-                          displayEmpty
-                          sx={modalSelectSx}
+                        <MenuItem
+                          value=""
+                          disabled={destinationChoices.length === 0}
                         >
-                          <MenuItem
-                            value=""
-                            disabled={destinationChoices.length === 0}
-                          >
-                            <em>Select</em>
+                          <em>Select</em>
+                        </MenuItem>
+                        {destinationChoices.length === 0 ? (
+                          <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                            No options available
                           </MenuItem>
-                          {destinationChoices.length === 0 ? (
-                            <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                              No options available
+                        ) : (
+                          destinationChoices.map((opt) => (
+                            <MenuItem
+                              key={opt.id}
+                              value={opt.id}
+                              sx={{ fontSize: 13 }}
+                            >
+                              {opt.label}
                             </MenuItem>
-                          ) : (
-                            destinationChoices.map((opt) => (
-                              <MenuItem
-                                key={opt.id}
-                                value={opt.id}
-                                sx={{ fontSize: 13 }}
-                              >
-                                {opt.label}
-                              </MenuItem>
-                            ))
-                          )}
-                        </Select>
-                      </FormControl>
-                    </InboundRightRow>
-                  ) : null}
-                </div>
+                          ))
+                        )}
+                      </Select>
+                    </FormControl>
+                  </InboundRightRow>
+                ) : null}
+              </div>
             </div>
 
             <SectionCard title="Member Trunks *">
