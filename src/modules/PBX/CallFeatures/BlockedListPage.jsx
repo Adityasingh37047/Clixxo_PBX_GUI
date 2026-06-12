@@ -70,7 +70,7 @@ const Btn = ({
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     outline: {
       background: C.cardBg,
@@ -94,7 +94,7 @@ const Btn = ({
       case "danger":
         return "#b91c1c";
       case "cancel":
-        return "#e2e8f0";
+        return "#b6c2d3";
       case "outline":
       case "default":
       default:
@@ -151,6 +151,7 @@ const Btn = ({
   );
 };
 
+
 // ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
@@ -203,7 +204,14 @@ const pbxPageInnerStyle = {
   maxWidth: "100%",
   margin: "0 auto",
 };
-
+ const pbxModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
 const PbxBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
@@ -238,44 +246,7 @@ const TableListLoading = () => (
   </div>
 );
 
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -740,7 +711,7 @@ const BlockedListPage = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                variant="cancel"
+                 variant="cancel"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -1424,7 +1395,7 @@ const BlockedListPage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={pbxModalCancelBtnStyle}
           >
             Cancel
           </Btn>
