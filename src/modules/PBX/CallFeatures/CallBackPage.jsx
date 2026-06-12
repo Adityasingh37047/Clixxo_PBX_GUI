@@ -744,7 +744,7 @@ const CallBackPage = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                variant="danger"
+                variant="cancel"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
