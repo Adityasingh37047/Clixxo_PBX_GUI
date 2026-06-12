@@ -705,7 +705,7 @@ const SpeedDialPage = () => {
                   setShowImportModal(true);
                   setImportResult(null);
                 }}
-                variant="outline"
+                variant="cancel"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
@@ -717,7 +717,7 @@ const SpeedDialPage = () => {
               </Btn>
               <Btn
                 onClick={handleExport}
-                variant="outline"
+                variant="cancel"
                 style={{
                   background: "#cbd5e1",
                   color: "#374151",
