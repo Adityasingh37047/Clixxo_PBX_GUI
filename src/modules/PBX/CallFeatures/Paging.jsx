@@ -154,7 +154,7 @@ const Btn = ({
       case "danger":
         return "#b91c1c";
       case "cancel":
-        return "#e2e8f0";
+        return"#b6c2d3";
       case "outline":
       case "default":
       default:

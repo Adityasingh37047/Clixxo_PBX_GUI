@@ -92,7 +92,7 @@ const Btn = ({
       case "danger":
         return C.errorRed;
       case "cancel":
-        return "#e2e8f0";
+        return "#b6c2d3";
       case "outline":
       case "default":
       default:
