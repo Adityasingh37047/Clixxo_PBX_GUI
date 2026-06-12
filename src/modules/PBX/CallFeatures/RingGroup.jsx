@@ -373,22 +373,32 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
   </div>
 );
 
-const SectionHeading = ({ title }) => (
-  <div style={{ margin: "24px 0 16px 0", position: "relative" }}>
+const PBX_MODAL_SECTION_BG = "#f5f7fa";
+const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const SectionHeading = ({ title, isFirst = false, required }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: "#fff",
+        background: PBX_MODAL_SECTION_BG,
         paddingRight: 8,
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 600,
-        color: C.mutedText,
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
       }}
     >
       {title}
+      {required && <span style={{ color: C.errorRed }}> *</span>}
     </span>
   </div>
 );
@@ -1344,7 +1354,6 @@ const RingGroup = () => {
                 padding: "20px 24px 16px",
               }}
             >
-             
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{
@@ -1713,22 +1722,12 @@ const RingGroup = () => {
 
               {/* Members Dual-Listbox Section */}
               <div style={{ marginTop: 8 }}>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    marginBottom: 12,
-                  }}
-                >
-                  Member Extensions <span style={{ color: C.errorRed }}>*</span>
-                </div>
+                <SectionHeading title="Member Extensions" required />
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 48px 1fr",
                     gap: 12,
-                    marginTop: 16,
                   }}
                 >
                   <div>
@@ -1736,7 +1735,7 @@ const RingGroup = () => {
                       style={{
                         fontSize: 12,
                         fontWeight: 600,
-                        color: "#325a84",
+                        color: "#3e5475",
                         textAlign: "center",
                         marginBottom: 8,
                       }}
@@ -1795,7 +1794,7 @@ const RingGroup = () => {
                       style={{
                         fontSize: 12,
                         fontWeight: 600,
-                        color: "#325a84",
+                        color: "#3e5475",
                         textAlign: "center",
                         marginBottom: 8,
                       }}

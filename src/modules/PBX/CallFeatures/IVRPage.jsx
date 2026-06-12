@@ -503,7 +503,7 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: "#30415A",
       }}
     >
       {title}
@@ -2507,7 +2507,7 @@ const IVRPage = () => {
                               style={{
                                 fontSize: 12,
                                 fontWeight: 600,
-                                color: "#325a84",
+                                color: "#30415A",
                                 textAlign: "center",
                                 marginBottom: 8,
                               }}
@@ -2569,7 +2569,7 @@ const IVRPage = () => {
                               style={{
                                 fontSize: 12,
                                 fontWeight: 600,
-                                color: "#325a84",
+                                color: "#30415A",
                                 textAlign: "center",
                                 marginBottom: 8,
                               }}

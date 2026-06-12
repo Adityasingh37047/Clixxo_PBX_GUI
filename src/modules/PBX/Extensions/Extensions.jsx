@@ -1371,12 +1371,17 @@ const SipAccountPage = () => {
         await loadAccounts();
         setShowModal(false);
         setEditIndex(null);
+      } else if (response.limit_exceeded) {
+        showMessage(
+          "error",
+          `Maximum extension limit (${response.limit}) reached. Please upgrade your license.`,
+        );
       } else {
         showMessage(
           "error",
           editIndex !== null
             ? "Failed to update account"
-            : "Failed to create account",
+            : response.message || "Failed to create account",
         );
       }
     } catch (error) {
@@ -1401,10 +1406,6 @@ const SipAccountPage = () => {
     }
     if (Number.isNaN(count) || count <= 0) {
       showMessage("error", "Create Number must be a positive number");
-      return;
-    }
-    if (count > 30) {
-      showMessage("error", "Maximum 30 extensions can be created at once.");
       return;
     }
     if (bulkForm.passwordMode === "fixed") {
@@ -1486,8 +1487,14 @@ const SipAccountPage = () => {
           ...commonSettings,
         };
         const response = await bulkCreateSipAccounts(payload);
-        if (!response || !response.response)
+        if (!response || !response.response) {
+          if (response?.limit_exceeded) {
+            throw new Error(
+              `Maximum extension limit (${response.limit}) reached. Please upgrade your license.`,
+            );
+          }
           throw new Error(response?.message || "Bulk add failed");
+        }
       }
       showMessage(
         "success",
@@ -2487,9 +2494,9 @@ const SipAccountPage = () => {
                           {Array.from(
                             { length: 10 },
                             (_, i) => `sip${i + 1}`,
-                          ).map((ctx) => (
+                          ).map((ctx, i) => (
                             <MenuItem key={ctx} value={ctx}>
-                              {ctx}
+                              Sip {i + 1}
                             </MenuItem>
                           ))}
                         </MuiSelect>

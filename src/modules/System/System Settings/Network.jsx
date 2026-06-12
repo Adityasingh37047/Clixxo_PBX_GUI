@@ -11,7 +11,7 @@ import {
   postLinuxCmd,
   servicePing,
 } from "../../../api/apiService";
-import axiosInstance from "../../../api/axiosInstance";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -146,7 +146,6 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-
 const Btn = ({
   children,
   onClick,
@@ -155,6 +154,7 @@ const Btn = ({
   style: extraStyle,
   type,
   startIcon,
+  form,
 }) => {
   const styles = {
     default: {
@@ -201,6 +201,7 @@ const Btn = ({
   return (
     <button
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       style={{

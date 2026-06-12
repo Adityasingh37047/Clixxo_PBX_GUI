@@ -338,6 +338,36 @@ const FieldRow = ({ label, children, required }) => (
   </div>
 );
 
+const PBX_MODAL_SECTION_BG = "#f5f7fa";
+const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const SectionHeading = ({ title, isFirst = false, required }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: "#30415A",
+      }}
+    >
+      {title}
+      {required && <span style={{ color: C.errorRed }}> *</span>}
+    </span>
+  </div>
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PickupGroup = () => {
@@ -1049,7 +1079,6 @@ const PickupGroup = () => {
                 padding: "20px 24px 16px",
               }}
             >
-            
               {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
                 style={{
@@ -1077,15 +1106,7 @@ const PickupGroup = () => {
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 8 }}
                 >
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                    }}
-                  >
-                    Member <span style={{ color: C.errorRed }}>*</span>
-                  </div>
+                  <SectionHeading title="Member" required />
 
                   <div
                     style={{
@@ -1099,7 +1120,7 @@ const PickupGroup = () => {
                         style={{
                           fontSize: 12,
                           fontWeight: 600,
-                          color: "#325a84",
+                          color: "#30415A",
                           textAlign: "center",
                           marginBottom: 8,
                         }}
@@ -1158,7 +1179,7 @@ const PickupGroup = () => {
                         style={{
                           fontSize: 12,
                           fontWeight: 600,
-                          color: "#325a84",
+                          color: "#30415A",
                           textAlign: "center",
                           marginBottom: 8,
                         }}

@@ -365,34 +365,33 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
   </div>
 );
 
-const SectionHeading = ({ title }) => (
+const PBX_MODAL_SECTION_BG = "#f5f7fa";
+const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const SectionHeading = ({ title, isFirst = false, required }) => (
   <div
     style={{
-      display: "flex",
-      alignItems: "center",
-      margin: "16px 0 16px 0",
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
     }}
   >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
-        fontSize: 12,
-        fontWeight: 700,
-        color: C.labelText,
-        textTransform: "uppercase",
-        letterSpacing: "0.04em",
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: "#30415A",
       }}
     >
       {title}
+      {required && <span style={{ color: C.errorRed }}> *</span>}
     </span>
-
-    <div
-      style={{
-        flex: 1,
-        height: 1,
-        background: C.cardBorder,
-        marginLeft: 12,
-      }}
-    />
   </div>
 );
 
@@ -1252,7 +1251,9 @@ const DisaPage = () => {
         open={showModal}
         onClose={loading.save || loading.get ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 1000, maxWidth: "98vw", mx: "auto", p: 0 } }}
+        PaperProps={{
+          sx: { width: 1000, maxWidth: "98vw", mx: "auto", p: 0, borderRadius: 2 },
+        }}
       >
         <DialogTitle
           style={{
@@ -1292,7 +1293,7 @@ const DisaPage = () => {
                   padding: "20px 24px 16px",
                 }}
               >
-                <SectionHeading title="General Settings" />
+                <SectionHeading title="General Settings" isFirst />
 
                 {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
                 <div
@@ -1610,21 +1611,20 @@ const DisaPage = () => {
                     display: "grid",
                     gridTemplateColumns: "1fr 48px 1fr 48px",
                     gap: 12,
-                    marginTop: 16,
                   }}
                 >
                   <div>
                     <div
-  style={{
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#325a84",
-    textAlign: "center",
-    marginBottom: 8,
-  }}
->
-  Available Routes
-</div>
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#3e5475",
+                        textAlign: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Available Routes
+                    </div>
                     <select
                       multiple
                       value={availableSelected.map(String)}
@@ -1673,8 +1673,8 @@ const DisaPage = () => {
                     <div
                       style={{
                         fontSize: 12,
-                        fontWeight: 700,
-                        color: "#325a84",
+                        fontWeight: 600,
+                        color: "#3e5475",
                         textAlign: "center",
                         marginBottom: 6,
                       }}

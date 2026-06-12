@@ -731,21 +731,54 @@ const Pill = ({ text, bg, color }) => (
     style={{
       background: bg,
       color,
-      padding: "4px 11px",
+      padding: "4px 8px",
       borderRadius: 999,
       fontSize: 11,
-      fontWeight: 700,
+      fontWeight: 400,
       letterSpacing: "0.01em",
       whiteSpace: "nowrap",
       display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
-      minWidth: 72,
+      textAlign: "center",
+      maxWidth: "100%",
     }}
   >
     {text}
   </span>
 );
+
+/** Map backend registration_status strings to text-only pill colors */
+const getSipRegisterStatusStyle = (raw) => {
+  const s = String(raw || "")
+    .trim()
+    .toLowerCase();
+  if (!s) return { bg: "transparent", color: "#475569" };
+
+  const isFailure =
+    s === "unregistered" ||
+    s === "not registered" ||
+    s === "not registering" ||
+    s.startsWith("not regist") ||
+    s === "rejected" ||
+    s.includes("reject") ||
+    s.includes("failed") ||
+    s.includes("failure");
+
+  if (isFailure) {
+    return { bg: "transparent", color: "#c2140c" };
+  }
+
+  if (s === "pending" || s === "registering" || s.includes("pending")) {
+    return { bg: "transparent", color: "#d97706" };
+  }
+
+  if (s === "registered" || s.includes("registered")) {
+    return { bg: "transparent", color: "#16A34A" };
+  }
+
+  return { bg: "transparent", color: "#475569" };
+};
 
 const SIP_REGISTER_TABLE_WIDE_MIN = 1400;
 
@@ -802,9 +835,11 @@ const sipRegisterIdCenterWrapStyle = {
 };
 
 const sipRegisterStatusCellStyle = {
-  width: 104,
-  minWidth: 104,
-  maxWidth: 104,
+  width: 118,
+  minWidth: 118,
+  maxWidth: 118,
+  textAlign: "center",
+  padding: "7px 4px",
 };
 
 const sipRegisterModifyCellStyle = {
@@ -867,7 +902,7 @@ const sipRegisterFieldColumnPercents = {
   username: "10%",
   auth_username: "9%",
   server_domain: "15%",
-  client_domain: "28%",
+  client_domain: "18%",
   identity_ip: "10%",
 };
 
@@ -875,7 +910,7 @@ const SIP_REGISTER_ZOOM_TABLE_WIDTH = Math.max(
   SIP_REGISTER_TABLE_WIDE_MIN,
   40 +
     44 +
-    104 +
+    118 +
     72 +
     Object.values(sipRegisterFieldColumnWidths).reduce(
       (sum, width) => sum + width,
@@ -2322,8 +2357,13 @@ const SipRegisterPage = () => {
             });
           }
           closeModalAfterSuccess();
+        } else if (response.limit_exceeded) {
+          showMessage(
+            "error",
+            `Maximum trunk limit (${response.limit}) reached. Please upgrade your license.`,
+          );
         } else {
-          showMessage("error", "Failed to create trunk");
+          showMessage("error", response.message || "Failed to create trunk");
         }
       }
     } catch (error) {
@@ -2668,7 +2708,7 @@ const SipRegisterPage = () => {
                         ))}
                         <col
                           style={{
-                            width: allowHorizontalScroll ? 104 : "8%",
+                            width: allowHorizontalScroll ? 118 : "10%",
                           }}
                         />
                         <col
@@ -2740,7 +2780,9 @@ const SipRegisterPage = () => {
                               zIndex: 10,
                             }}
                           >
-                            Status
+                            <div style={sipRegisterIdCenterWrapStyle}>
+                              Status
+                            </div>
                           </TH>
                           <TH
                             style={{
@@ -2775,19 +2817,8 @@ const SipRegisterPage = () => {
                           const lastRowCellStyle = isLastRow
                             ? { borderBottom: "none" }
                             : {};
-                          const status = String(
-                            trunk.registerStatus || "",
-                          ).toLowerCase();
-                          const statusBg = "transparent";
-                          const statusColor =
-                            status === "registered"
-                              ? "#16A34A"
-                              : status === "unregistered" ||
-                                  status === "unregistered"
-                                ? "#DC2626"
-                                : status === "pending"
-                                  ? "#d97706"
-                                  : "#475569";
+                          const { bg: statusBg, color: statusColor } =
+                            getSipRegisterStatusStyle(trunk.registerStatus);
                           return (
                             <tr
                               key={trunk.trunk_id || idx}
@@ -2890,15 +2921,19 @@ const SipRegisterPage = () => {
                                   ...lastRowCellStyle,
                                 }}
                               >
-                                {trunk.registerStatus ? (
-                                  <Pill
-                                    text={trunk.registerStatus}
-                                    bg={statusBg}
-                                    color={statusColor}
-                                  />
-                                ) : (
-                                  <span style={{ color: C.mutedText }}>—</span>
-                                )}
+                                <div style={sipRegisterIdCenterWrapStyle}>
+                                  {trunk.registerStatus ? (
+                                    <Pill
+                                      text={trunk.registerStatus}
+                                      bg={statusBg}
+                                      color={statusColor}
+                                    />
+                                  ) : (
+                                    <span style={{ color: C.mutedText }}>
+                                      —
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td
                                 style={{

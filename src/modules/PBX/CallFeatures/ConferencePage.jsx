@@ -95,7 +95,7 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: "#30415A",
       }}
     >
       {title}
@@ -1793,9 +1793,9 @@ const ConferencePage = () => {
                         <div>
                           <div
                             style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: C.accent,
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: "#30415A",
                               marginBottom: 6,
                               textAlign: "center",
                             }}
@@ -1845,9 +1845,9 @@ const ConferencePage = () => {
                         <div>
                           <div
                             style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: C.accent,
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: "#30415A",
                               marginBottom: 6,
                               textAlign: "center",
                             }}
