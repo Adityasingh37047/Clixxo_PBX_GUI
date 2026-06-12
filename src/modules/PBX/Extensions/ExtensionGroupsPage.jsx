@@ -591,9 +591,6 @@ const ExtensionGroupsPage = () => {
     setSelectedExtensions([]);
   };
 
-  const handleExtensionCheckAll = () =>
-    setSelectedExtensions(availableExtensions.map((e) => e.extension));
-  const handleExtensionUncheckAll = () => setSelectedExtensions([]);
   const toggleExtension = (ext) => {
     setSelectedExtensions((prev) =>
       prev.includes(ext) ? prev.filter((e) => e !== ext) : [...prev, ext],
@@ -1047,22 +1044,6 @@ const ExtensionGroupsPage = () => {
                 >
                   Select Extensions
                 </span>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Btn
-                    onClick={handleExtensionCheckAll}
-                    variant="outline"
-                    style={{ fontSize: 10, padding: "2px 8px" }}
-                  >
-                    Check All
-                  </Btn>
-                  <Btn
-                    onClick={handleExtensionUncheckAll}
-                    variant="outline"
-                    style={{ fontSize: 10, padding: "2px 8px" }}
-                  >
-                    Uncheck All
-                  </Btn>
-                </div>
               </div>
 
               <div style={{ maxHeight: 220, overflowY: "auto", padding: 12 }}>

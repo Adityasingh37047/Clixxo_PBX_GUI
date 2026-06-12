@@ -844,23 +844,6 @@ const InboundRoutesPage = () => {
   };
   const showAlert = (text) => showMessage("error", text);
 
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const importFileRef = React.useRef(null);
-
-  const handleImportSubmit = async () => {
-    if (!importFile) {
-      showAlert("Please select a file to import");
-      return;
-    }
-    showAlert("Import API not yet configured");
-  };
-
-  const handleExport = () => {
-    showAlert("Export API not yet configured");
-  };
-
   const toUiYesNo = (value, defaultValue = "No") => {
     if (typeof value === "string") {
       const normalized = value.toLowerCase();
@@ -1191,8 +1174,6 @@ const InboundRoutesPage = () => {
     });
   };
 
-  const handleCheckAll = () => setSelected(rows.map((_, i) => i));
-  const handleUncheckAll = () => setSelected([]);
   const handleSelectRow = (idx) => {
     setSelected((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
@@ -1715,113 +1696,6 @@ const InboundRoutesPage = () => {
           )}
         </div>
       </div>
-
-      {/* Import Modal */}
-      <Dialog
-        open={showImportModal}
-        onClose={() => {
-          if (!importLoading) {
-            setShowImportModal(false);
-            setImportFile(null);
-          }
-        }}
-        maxWidth={false}
-        PaperProps={{
-          sx: {
-            width: 420,
-            maxWidth: "96vw",
-            mx: "auto",
-            p: 0,
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 15,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          Import Inbound Routes
-        </DialogTitle>
-        <DialogContent
-          style={{ backgroundColor: C.pageBg, padding: "20px 24px 12px" }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              paddingTop: 4,
-            }}
-          >
-            <p style={{ fontSize: 13, color: "#475569", margin: 0 }}>
-              Select a CSV or JSON file to import.
-            </p>
-            <div
-              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
-              onClick={() => importFileRef.current?.click()}
-            >
-              <div className="text-gray-500 text-[13px] mb-1">
-                {importFile ? (
-                  <span className="text-green-700 font-semibold">
-                    {importFile.name}
-                  </span>
-                ) : (
-                  <span>
-                    Click to choose file{" "}
-                    <span className="text-gray-400">(CSV / JSON)</span>
-                  </span>
-                )}
-              </div>
-              <input
-                ref={importFileRef}
-                type="file"
-                accept=".csv,.json"
-                className="hidden"
-                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-              />
-            </div>
-          </div>
-        </DialogContent>
-        <DialogActions
-          style={{
-            backgroundColor: C.pageBg,
-            justifyContent: "center",
-            gap: 16,
-            padding: "12px 24px 16px",
-          }}
-        >
-          <Btn
-            onClick={handleImportSubmit}
-            disabled={importLoading || !importFile}
-            variant="default"
-            style={{
-              background:
-                "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-              color: "#fff",
-              border: "1px solid #5A6F8F",
-              boxShadow: "0 2px 8px #3E5475",
-            }}
-          >
-            {importLoading ? "Importing..." : "Import"}
-          </Btn>
-          <Btn
-            onClick={() => {
-              setShowImportModal(false);
-              setImportFile(null);
-            }}
-            disabled={importLoading}
-            variant="outline"
-          >
-            Cancel
-          </Btn>
-        </DialogActions>
-      </Dialog>
 
       <Dialog
         open={showModal}

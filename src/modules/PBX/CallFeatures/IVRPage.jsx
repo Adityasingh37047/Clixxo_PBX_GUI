@@ -614,11 +614,6 @@ const IVRPage = () => {
     EMPTY_RING_BACK_OPTIONS,
   );
 
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const importFileRef = useRef(null);
-
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
@@ -1166,16 +1161,6 @@ const IVRPage = () => {
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
-  };
-
-  const handleImportSubmit = async () => {
-    if (!importFile)
-      return showMessage("error", "Please select a file to import");
-    showMessage("info", "Import API not yet configured");
-  };
-
-  const handleExport = () => {
-    showMessage("info", "Export API not yet configured");
   };
 
   // ── Dual Listbox Logic ──
@@ -2784,34 +2769,6 @@ const IVRPage = () => {
                             </MuiSelect>
                           </FormControl>
                         </FieldRow>
-
-                        {exitActionType && (
-                          <FieldRow label="Destination">
-                            {renderDestinationSelect(
-                              exitActionType,
-                              exitActionValue,
-                              setExitActionValue,
-                            )}
-                          </FieldRow>
-                        )}
-
-                        <FieldRow label="Caller ID Name Prefix">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={callerIdNamePrefix}
-                            onChange={(e) =>
-                              setCallerIdNamePrefix(e.target.value)
-                            }
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
-                          />
-                        </FieldRow>
                       </div>
 
                       {/* Advanced Right Column */}
@@ -2916,6 +2873,34 @@ const IVRPage = () => {
                             </MuiSelect>
                           </FormControl>
                         </FieldRow>
+
+                        <FieldRow label="Caller ID Name Prefix">
+                          <TextField
+                            size="small"
+                            fullWidth
+                            value={callerIdNamePrefix}
+                            onChange={(e) =>
+                              setCallerIdNamePrefix(e.target.value)
+                            }
+                            inputProps={{
+                              style: {
+                                fontSize: 13,
+                                padding: "6px 8px",
+                                backgroundColor: "#fff",
+                              },
+                            }}
+                          />
+                        </FieldRow>
+
+                        {exitActionType && (
+                          <FieldRow label="Destination">
+                            {renderDestinationSelect(
+                              exitActionType,
+                              exitActionValue,
+                              setExitActionValue,
+                            )}
+                          </FieldRow>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2925,13 +2910,9 @@ const IVRPage = () => {
               {/* ── KEY PRESS TAB ── */}
               {activeTab === "keypress" && (
                 <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: 16,
-                  }}
+                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
+                  <div style={{ padding: 0 }}>
                   <div
                     style={{
                       display: "grid",
@@ -2985,8 +2966,9 @@ const IVRPage = () => {
                           gridTemplateColumns: "100px 1fr 1fr",
                           gap: 16,
                           alignItems: "center",
-                          borderBottom: `1px solid #f1f5f9`,
+                          borderBottom: `1px solid ${C.cardBorder}`,
                           paddingBottom: 12,
+                          marginBottom: 12,
                         }}
                       >
                         <span
@@ -3048,6 +3030,7 @@ const IVRPage = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
                   </div>
                 </div>
               )}

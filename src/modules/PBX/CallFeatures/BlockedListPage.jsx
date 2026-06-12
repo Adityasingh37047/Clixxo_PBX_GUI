@@ -280,12 +280,6 @@ const BlockedListPage = () => {
   const [enabled, setEnabled] = useState("Yes");
   const [availableExtensions, setAvailableExtensions] = useState([]);
 
-  // Import modal
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const importFileRef = useRef(null);
-
   const showAlert = (type, text) => {
     setError({ type, text });
     setTimeout(() => setError({ type: "", text: "" }), 5000);
@@ -527,16 +521,6 @@ const BlockedListPage = () => {
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
-  };
-
-  const handleImportSubmit = async () => {
-    if (!importFile)
-      return showAlert("error", "Please select a file to import");
-    showAlert("info", "Import API not yet configured");
-  };
-
-  const handleExport = () => {
-    showAlert("info", "Export API not yet configured");
   };
 
   return (
@@ -1402,88 +1386,6 @@ const BlockedListPage = () => {
         </DialogActions>
       </Dialog>
 
-      {/* ── Import Modal ── */}
-      <Dialog
-        open={showImportModal}
-        onClose={() => !importLoading && setShowImportModal(false)}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { p: 0, borderRadius: 2 } }}
-      >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          Import Blocked List
-        </DialogTitle>
-        <DialogContent
-          style={{ padding: "24px 16px", backgroundColor: C.pageBg }}
-        >
-          <div
-            style={{
-              textAlign: "center",
-              border: `2px dashed ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 32,
-              cursor: "pointer",
-              background: "#fff",
-            }}
-            onClick={() => importFileRef.current?.click()}
-          >
-            <div
-              style={{
-                fontSize: 13,
-                color: importFile ? "#15803d" : C.mutedText,
-                fontWeight: importFile ? 600 : 400,
-              }}
-            >
-              {importFile ? importFile.name : "Click to choose CSV/JSON file"}
-            </div>
-            <input
-              ref={importFileRef}
-              type="file"
-              accept=".csv,.json"
-              style={{ display: "none" }}
-              onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-            />
-          </div>
-        </DialogContent>
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
-          <Btn
-            onClick={handleImportSubmit}
-            disabled={importLoading || !importFile}
-            variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
-          >
-            Import
-          </Btn>
-          <Btn
-            onClick={() => {
-              setShowImportModal(false);
-              setImportFile(null);
-            }}
-            disabled={importLoading}
-            variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
-          >
-            Cancel
-          </Btn>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 };

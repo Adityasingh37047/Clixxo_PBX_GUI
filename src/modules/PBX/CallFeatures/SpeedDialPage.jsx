@@ -293,36 +293,6 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
   </div>
 );
 
-const PBX_MODAL_SECTION_BG = "#f5f7fa";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
-
-const SectionHeading = ({ title, isFirst = false, required }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: PBX_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: "#30415A",
-      }}
-    >
-      {title}
-      {required && <span style={{ color: C.errorRed }}> *</span>}
-    </span>
-  </div>
-);
-
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SpeedDialPage = () => {
@@ -1016,7 +986,7 @@ const SpeedDialPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 760, maxWidth: "96vw", borderRadius: 2 } }}
+        PaperProps={{ sx: { width: 560, maxWidth: "96vw", borderRadius: 2 } }}
       >
         <DialogTitle
           style={{
@@ -1043,73 +1013,56 @@ const SpeedDialPage = () => {
                 padding: "20px 24px 16px",
               }}
             >
-              <SectionHeading title="General Settings" isFirst />
-
-              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "16px 32px",
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
-                {/* ── LEFT COLUMN ── */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  <FieldRow label="Name" required>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
+                <FieldRow label="Name" required>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  />
+                </FieldRow>
 
-                  <FieldRow label="Speed Dial Number" required>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={speedDialNumber}
-                      onChange={(e) => setSpeedDialNumber(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
-                </div>
+                <FieldRow label="Speed Dial Number" required>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={speedDialNumber}
+                    onChange={(e) => setSpeedDialNumber(e.target.value)}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  />
+                </FieldRow>
 
-                {/* ── RIGHT COLUMN ── */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  <FieldRow label="Destination" required>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={destination}
-                      onChange={(e) => setDestination(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
-                </div>
+                <FieldRow label="Destination" required>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
+                  />
+                </FieldRow>
               </div>
             </div>
           </div>

@@ -216,14 +216,56 @@ const PbxBreadcrumb = ({ section, current, style }) => (
 );
 const sipPcmFormPageWrapStyle = {
   ...pbxPageWrapStyle,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
 };
 
 const sipPcmFormPageInnerStyle = {
   ...pbxPageInnerStyle,
-  maxWidth: 1000,
+};
+
+const sipPcmFormContentStyle = {
+  width: "100%",
+  maxWidth: 640,
+  margin: "0 auto",
+  boxSizing: "border-box",
+};
+
+const originateFormRowStyle = {
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "flex-start",
+  width: "100%",
+};
+
+const originateLabelColStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  flex: "0 0 48%",
+  maxWidth: "48%",
+  paddingRight: 24,
+  textAlign: "left",
+  lineHeight: 1.35,
+};
+
+const originateValueColStyle = {
+  flex: "1 1 52%",
+  minWidth: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+};
+
+const originateControlSlotStyle = {
+  width: 220,
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+};
+
+const originateControlSlotWideStyle = {
+  ...originateControlSlotStyle,
+  width: 280,
 };
 
 const sipPcmFormCardStyle = {
@@ -402,27 +444,49 @@ function buildCallerId(name, number) {
   return undefined;
 }
 
-const COL_LABEL_STYLE = {
-  ...sipPcmFormLabelStyle,
-  width: 140,
-};
-
-const RIGHT_COL_LABEL_STYLE = {
-  ...sipPcmFormLabelStyle,
-  width: 120,
-};
-
-const FULL_WIDTH_INPUT_STYLE = {
+const FIELD_INPUT_STYLE = {
   ...sipPcmAuthInputStyle,
   width: "100%",
   maxWidth: "100%",
 };
 
-const FULL_WIDTH_SELECT_SX = {
+const FIELD_SELECT_SX = {
   ...sipPcmAuthMuiSelectSx,
   width: "100%",
   maxWidth: "100%",
 };
+
+const FormFieldRow = ({
+  label,
+  required = false,
+  children,
+  align = "center",
+  wide = false,
+  hideLabel = false,
+}) => (
+  <div
+    style={{
+      ...originateFormRowStyle,
+      alignItems: align === "flex-start" ? "flex-start" : "center",
+    }}
+  >
+    {hideLabel ? (
+      <span style={originateLabelColStyle} aria-hidden="true" />
+    ) : (
+      <label style={originateLabelColStyle}>
+        {label}
+        {required ? <span style={{ color: C.amber }}> *</span> : null}
+      </label>
+    )}
+    <div style={originateValueColStyle}>
+      <div
+        style={wide ? originateControlSlotWideStyle : originateControlSlotStyle}
+      >
+        {children}
+      </div>
+    </div>
+  </div>
+);
 
 const OriginateCallPage = () => {
   const [mode, setMode] = useState("simple"); // 'simple' | 'twostep'
@@ -560,86 +624,61 @@ const OriginateCallPage = () => {
             </span>
           </div>
 
-          <div style={{ padding: "16px 24px 0", boxSizing: "border-box" }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "24px 48px",
-                paddingBottom: 16,
-              }}
-            >
-              {/* ── LEFT COLUMN (Basic Info) ── */}
+          <div style={{ padding: "24px 32px 0", boxSizing: "border-box" }}>
+            <div style={sipPcmFormContentStyle}>
               <div
-                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12,
+                  paddingBottom: 16,
+                }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label style={COL_LABEL_STYLE}>
-                    Dial Extension <span style={{ color: C.amber }}>*</span>
-                  </label>
+                <FormFieldRow label="Dial Extension" required>
                   <input
                     type="text"
                     value={extension}
                     onChange={(e) => setExtension(e.target.value)}
                     placeholder="e.g. 1004"
-                    style={FULL_WIDTH_INPUT_STYLE}
+                    style={FIELD_INPUT_STYLE}
                     {...sipPcmAuthInputInteraction}
                   />
-                </div>
+                </FormFieldRow>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label style={COL_LABEL_STYLE}>Name (label only)</label>
+                <FormFieldRow label="Name (label only)">
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Optional — not sent to API"
-                    style={FULL_WIDTH_INPUT_STYLE}
+                    style={FIELD_INPUT_STYLE}
                     {...sipPcmAuthInputInteraction}
                   />
-                </div>
+                </FormFieldRow>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label style={COL_LABEL_STYLE}>Caller ID Name</label>
+                <FormFieldRow label="Caller ID Name">
                   <input
                     type="text"
                     value={callerIdName}
                     onChange={(e) => setCallerIdName(e.target.value)}
                     placeholder="e.g. Front Desk"
-                    style={FULL_WIDTH_INPUT_STYLE}
+                    style={FIELD_INPUT_STYLE}
                     {...sipPcmAuthInputInteraction}
                   />
-                </div>
+                </FormFieldRow>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <label style={COL_LABEL_STYLE}>Caller ID Number</label>
+                <FormFieldRow label="Caller ID Number">
                   <input
                     type="text"
                     value={callerIdNumber}
                     onChange={(e) => setCallerIdNumber(e.target.value)}
                     placeholder="e.g. 1000"
-                    style={FULL_WIDTH_INPUT_STYLE}
+                    style={FIELD_INPUT_STYLE}
                     {...sipPcmAuthInputInteraction}
                   />
-                </div>
-              </div>
+                </FormFieldRow>
 
-              {/* ── RIGHT COLUMN (Mode & Routing) ── */}
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 16 }}
-              >
-                <div
-                  style={{ display: "flex", alignItems: "flex-start", gap: 12 }}
-                >
-                  <label
-                    style={{
-                      ...RIGHT_COL_LABEL_STYLE,
-                      width: 100,
-                      marginTop: 4,
-                    }}
-                  >
-                    Mode <span style={{ color: C.amber }}>*</span>
-                  </label>
+                <FormFieldRow label="Mode" required align="flex-start" wide>
                   <RadioGroup
                     value={mode}
                     onChange={(e) => setMode(e.target.value)}
@@ -684,19 +723,11 @@ const OriginateCallPage = () => {
                       sx={{ m: 0 }}
                     />
                   </RadioGroup>
-                </div>
+                </FormFieldRow>
 
-                <div
-                  style={{
-                    borderRadius: 6,
-                    padding: 12,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 16,
-                  }}
-                >
-                  {mode === "simple" ? (
-                    <>
+                {mode === "simple" ? (
+                  <>
+                    <FormFieldRow hideLabel wide>
                       <div
                         style={{
                           display: "flex",
@@ -731,140 +762,98 @@ const OriginateCallPage = () => {
                           (recommended)
                         </label>
                       </div>
+                    </FormFieldRow>
 
-                      {!useFixedApp && (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                          }}
+                    {!useFixedApp && (
+                      <FormFieldRow label="Application" required>
+                        <input
+                          type="text"
+                          value={application}
+                          onChange={(e) => setApplication(e.target.value)}
+                          placeholder="Wait"
+                          style={FIELD_INPUT_STYLE}
+                          {...sipPcmAuthInputInteraction}
+                        />
+                      </FormFieldRow>
+                    )}
+
+                    <FormFieldRow
+                      label={useFixedApp ? "App Data (s)" : "Application Data"}
+                    >
+                      <input
+                        type="text"
+                        value={appData}
+                        onChange={(e) => setAppData(e.target.value)}
+                        placeholder={useFixedApp ? "30" : "1"}
+                        style={FIELD_INPUT_STYLE}
+                        {...sipPcmAuthInputInteraction}
+                      />
+                    </FormFieldRow>
+                  </>
+                ) : (
+                  <>
+                    <FormFieldRow label="Context" required>
+                      <FormControl size="small" fullWidth>
+                        <MuiSelect
+                          value={context}
+                          onChange={(e) => setContext(e.target.value)}
+                          variant="outlined"
+                          fullWidth
+                          sx={FIELD_SELECT_SX}
                         >
-                          <label style={RIGHT_COL_LABEL_STYLE}>
-                            Application{" "}
-                            <span style={{ color: C.amber }}>*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={application}
-                            onChange={(e) => setApplication(e.target.value)}
-                            placeholder="Wait"
-                            style={FULL_WIDTH_INPUT_STYLE}
-                            {...sipPcmAuthInputInteraction}
-                          />
-                        </div>
-                      )}
+                          {CONTEXT_OPTIONS.map((ctx) => (
+                            <MenuItem
+                              key={ctx}
+                              value={ctx}
+                              sx={{ fontSize: 12 }}
+                            >
+                              {ctx}
+                            </MenuItem>
+                          ))}
+                        </MuiSelect>
+                      </FormControl>
+                    </FormFieldRow>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                        }}
-                      >
-                        <label style={RIGHT_COL_LABEL_STYLE}>
-                          {useFixedApp ? "App Data (s)" : "Application Data"}
-                        </label>
-                        <input
-                          type="text"
-                          value={appData}
-                          onChange={(e) => setAppData(e.target.value)}
-                          placeholder={useFixedApp ? "30" : "1"}
-                          style={FULL_WIDTH_INPUT_STYLE}
-                          {...sipPcmAuthInputInteraction}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                        }}
-                      >
-                        <label style={RIGHT_COL_LABEL_STYLE}>
-                          Context <span style={{ color: C.amber }}>*</span>
-                        </label>
-                        <FormControl size="small" fullWidth>
-                          <MuiSelect
-                            value={context}
-                            onChange={(e) => setContext(e.target.value)}
-                            variant="outlined"
-                            fullWidth
-                            sx={FULL_WIDTH_SELECT_SX}
-                          >
-                            {CONTEXT_OPTIONS.map((ctx) => (
-                              <MenuItem
-                                key={ctx}
-                                value={ctx}
-                                sx={{ fontSize: 12 }}
-                              >
-                                {ctx}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
+                    <FormFieldRow label="Exten (B leg)" required>
+                      <input
+                        type="text"
+                        value={exten}
+                        onChange={(e) => setExten(e.target.value)}
+                        placeholder="e.g. 1005"
+                        style={FIELD_INPUT_STYLE}
+                        {...sipPcmAuthInputInteraction}
+                      />
+                    </FormFieldRow>
 
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                        }}
-                      >
-                        <label style={RIGHT_COL_LABEL_STYLE}>
-                          Exten (B leg){" "}
-                          <span style={{ color: C.amber }}>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={exten}
-                          onChange={(e) => setExten(e.target.value)}
-                          placeholder="e.g. 1005"
-                          style={FULL_WIDTH_INPUT_STYLE}
-                          {...sipPcmAuthInputInteraction}
-                        />
-                      </div>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                        }}
-                      >
-                        <label style={RIGHT_COL_LABEL_STYLE}>Priority</label>
-                        <input
-                          type="number"
-                          value={priority}
-                          onChange={(e) => setPriority(e.target.value)}
-                          placeholder="1"
-                          style={FULL_WIDTH_INPUT_STYLE}
-                          {...sipPcmAuthInputInteraction}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
+                    <FormFieldRow label="Priority">
+                      <input
+                        type="number"
+                        value={priority}
+                        onChange={(e) => setPriority(e.target.value)}
+                        placeholder="1"
+                        style={FIELD_INPUT_STYLE}
+                        {...sipPcmAuthInputInteraction}
+                      />
+                    </FormFieldRow>
+                  </>
+                )}
               </div>
-            </div>
 
-            <p
-              style={{
-                fontSize: 12,
-                color: C.mutedText,
-                marginTop: 8,
-                marginBottom: 16,
-                textAlign: "center",
-              }}
-            >
-              Bearer JWT is sent automatically when logged in. Simple mode sends
-              application + appData only (no context/exten). Two-step sends
-              context, exten, and priority.
-            </p>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: C.mutedText,
+                  marginTop: 8,
+                  marginBottom: 16,
+                  textAlign: "center",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Bearer JWT is sent automatically when logged in. Simple mode
+                sends application + appData only (no context/exten). Two-step
+                sends context, exten, and priority.
+              </p>
+            </div>
           </div>
 
           <div style={sipPcmAuthFormFooterStyle}>

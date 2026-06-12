@@ -864,23 +864,6 @@ const OutboundRoutesPage = () => {
 
   const showAlert = (text) => window.alert(text);
 
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const importFileRef = React.useRef(null);
-
-  const handleImportSubmit = async () => {
-    if (!importFile) {
-      showAlert("Please select a file to import");
-      return;
-    }
-    showAlert("Import API not yet configured");
-  };
-
-  const handleExport = () => {
-    showAlert("Export API not yet configured");
-  };
-
   const normalizeList = (raw) => {
     const list = raw?.message ?? raw?.data ?? raw;
     return Array.isArray(list) ? list : [];
@@ -1457,92 +1440,6 @@ const OutboundRoutesPage = () => {
 
   return (
     <div style={pbxPageWrapStyle}>
-      {/* Import Modal */}
-      <Dialog
-        open={showImportModal}
-        onClose={() => {
-          if (!importLoading) {
-            setShowImportModal(false);
-            setImportFile(null);
-          }
-        }}
-        maxWidth={false}
-        PaperProps={{ sx: { width: 420, maxWidth: "96vw", mx: "auto", p: 0 } }}
-      >
-        <DialogTitle
-          className="h-10 flex items-center justify-center font-semibold text-[19px] text-[#ffffff] shadow-sm mt-0"
-          style={{
-            background: "linear-gradient(#3E5475 100%)",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          Import Outbound Routes
-        </DialogTitle>
-        <DialogContent
-          style={{ backgroundColor: "#dde0e4", padding: "20px 24px 12px" }}
-        >
-          <div className="flex flex-col gap-4 pt-1">
-            <p className="text-[13px] text-gray-600">
-              Select a CSV or JSON file containing outbound route data to
-              import.
-            </p>
-            <div
-              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
-              onClick={() => importFileRef.current?.click()}
-            >
-              <div className="text-gray-500 text-[13px] mb-1">
-                {importFile ? (
-                  <span className="text-green-700 font-semibold">
-                    {importFile.name}
-                  </span>
-                ) : (
-                  <span>
-                    Click to choose file{" "}
-                    <span className="text-gray-400">(CSV / JSON)</span>
-                  </span>
-                )}
-              </div>
-              <input
-                ref={importFileRef}
-                type="file"
-                accept=".csv,.json"
-                className="hidden"
-                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-              />
-            </div>
-          </div>
-        </DialogContent>
-        <DialogActions
-          style={{
-            backgroundColor: "#dde0e4",
-            justifyContent: "center",
-            gap: 16,
-            padding: "12px 24px 16px",
-          }}
-        >
-          <Btn
-            variant="primary"
-            onClick={handleImportSubmit}
-            disabled={importLoading || !importFile}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
-          >
-            {importLoading && <CircularProgress size={16} color="inherit" />}
-            {importLoading ? "Importing..." : "Import"}
-          </Btn>
-          <Btn
-            variant="cancel"
-            onClick={() => {
-              setShowImportModal(false);
-              setImportFile(null);
-            }}
-            disabled={importLoading}
-            style={{ height: 36, padding: "0 24px", fontSize: 13 }}
-          >
-            Cancel
-          </Btn>
-        </DialogActions>
-      </Dialog>
-
       <div style={pbxPageInnerStyle}>
         <PbxBreadcrumb section="Call Control" current="Outbound Routes" />
 

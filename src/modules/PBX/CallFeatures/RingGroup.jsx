@@ -566,10 +566,14 @@ const RingGroup = () => {
           : [];
       const extensions = sipList
         .filter((e) => e && e.extension)
-        .map((e) => ({
-          value: String(e.extension),
-          label: `${(e.display_name || e.name || String(e.extension)).trim()}-${String(e.extension)}`,
-        }))
+        .map((e) => {
+          const ext = String(e.extension);
+          const display = (e.display_name || e.name || "").trim();
+          return {
+            value: ext,
+            label: display ? `${ext}-${display}` : ext,
+          };
+        })
         .sort((a, b) => {
           const an = parseInt(a.value, 10);
           const bn = parseInt(b.value, 10);

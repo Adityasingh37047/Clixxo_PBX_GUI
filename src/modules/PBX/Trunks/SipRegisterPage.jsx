@@ -448,17 +448,6 @@ const trunkModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const trunkImportModalPaperSx = {
-  width: 420,
-  maxWidth: "95vw",
-  mx: "auto",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
 const trunkModalTitleStyle = {
   background: "#1e2d42",
   color: "#ffffff",
@@ -1084,10 +1073,6 @@ const SipRegisterPage = () => {
   const hasInitialLoadRef = useRef(false);
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const importFileRef = React.useRef(null);
   const [modalTab, setModalTab] = useState("basic");
   const [dodRows, setDodRows] = useState([]);
   const [dodSelected, setDodSelected] = useState([]);
@@ -1216,10 +1201,14 @@ const SipRegisterPage = () => {
           : [];
       const exts = sipList
         .filter((e) => e && e.extension)
-        .map((e) => ({
-          value: String(e.extension),
-          label: `${(e.display_name || e.name || String(e.extension)).trim()}-${String(e.extension)}`,
-        }))
+        .map((e) => {
+          const ext = String(e.extension);
+          const display = (e.display_name || e.name || "").trim();
+          return {
+            value: ext,
+            label: display ? `${ext}-${display}` : ext,
+          };
+        })
         .sort((a, b) => {
           const an = parseInt(a.value, 10);
           const bn = parseInt(b.value, 10);
@@ -1470,18 +1459,6 @@ const SipRegisterPage = () => {
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  const handleImportSubmit = async () => {
-    if (!importFile) {
-      showMessage("error", "Please select a file to import");
-      return;
-    }
-    showMessage("info", "Import API not yet configured");
-  };
-
-  const handleExport = () => {
-    showMessage("info", "Export API not yet configured");
   };
 
   // Helper to strip "sip:" prefix for display
@@ -2410,8 +2387,6 @@ const SipRegisterPage = () => {
       sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
     );
   };
-  const handleCheckAll = () => setSelected(trunks.map((_, idx) => idx));
-  const handleUncheckAll = () => setSelected([]);
   const handleInverse = () => {
     const allIds = trunks.map((t) => t.trunk_id).filter(Boolean);
     setSelectedIds(allIds.filter((id) => !selectedIds.includes(id)));
@@ -2999,76 +2974,6 @@ const SipRegisterPage = () => {
           )}
         </div>
       </div>
-
-      {/* Import Modal */}
-      <Dialog
-        open={showImportModal}
-        onClose={() => {
-          if (!importLoading) {
-            setShowImportModal(false);
-            setImportFile(null);
-          }
-        }}
-        maxWidth={false}
-        className="z-50"
-        PaperProps={{ sx: trunkImportModalPaperSx }}
-      >
-        <DialogTitle style={trunkModalTitleStyle}>
-          Import SIP Trunks
-        </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div className="flex flex-col gap-4 pt-1">
-            <p className="text-[13px] text-gray-600">
-              Select a CSV or JSON file to import.
-            </p>
-            <div
-              className="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer hover:border-[#7B8FA8] hover:bg-[#EEF2F7] transition-colors"
-              onClick={() => importFileRef.current?.click()}
-            >
-              <div className="text-gray-500 text-[13px] mb-1">
-                {importFile ? (
-                  <span className="text-green-700 font-semibold">
-                    {importFile.name}
-                  </span>
-                ) : (
-                  <span>
-                    Click to choose file{" "}
-                    <span className="text-gray-400">(CSV / JSON)</span>
-                  </span>
-                )}
-              </div>
-              <input
-                ref={importFileRef}
-                type="file"
-                accept=".csv,.json"
-                className="hidden"
-                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-              />
-            </div>
-          </div>
-        </DialogContent>
-        <DialogActions style={trunkModalActionsStyle}>
-          <Btn
-            variant="primary"
-            onClick={handleImportSubmit}
-            disabled={importLoading || !importFile}
-            style={trunkModalPrimaryBtnStyle}
-          >
-            {importLoading ? "Importing..." : "Import"}
-          </Btn>
-          <Btn
-            variant="cancel"
-            onClick={() => {
-              setShowImportModal(false);
-              setImportFile(null);
-            }}
-            disabled={importLoading}
-            style={trunkModalCancelBtnStyle}
-          >
-            Cancel
-          </Btn>
-        </DialogActions>
-      </Dialog>
 
       {/* Modal */}
       <Dialog

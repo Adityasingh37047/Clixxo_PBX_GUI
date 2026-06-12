@@ -408,12 +408,6 @@ const PrivateGroup = () => {
   const [availableSelected, setAvailableSelected] = useState([]);
   const [chosenSelected, setChosenSelected] = useState([]);
 
-  // Import modal
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const importFileRef = useRef(null);
-
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
@@ -473,10 +467,14 @@ const PrivateGroup = () => {
           : [];
       const exts = sipList
         .filter((e) => e && e.extension)
-        .map((e) => ({
-          value: String(e.extension),
-          label: `${(e.display_name || e.name || String(e.extension)).trim()}-${String(e.extension)}`,
-        }))
+        .map((e) => {
+          const ext = String(e.extension);
+          const display = (e.display_name || e.name || "").trim();
+          return {
+            value: ext,
+            label: display ? `${ext}-${display}` : ext,
+          };
+        })
         .sort((a, b) => {
           const an = parseInt(a.value, 10);
           const bn = parseInt(b.value, 10);
@@ -670,16 +668,6 @@ const PrivateGroup = () => {
         setLoading((prev) => ({ ...prev, save: false }));
       }
     })();
-  };
-
-  const handleImportSubmit = async () => {
-    if (!importFile)
-      return showMessage("error", "Please select a file to import");
-    showMessage("info", "Import API not yet configured");
-  };
-
-  const handleExport = () => {
-    showMessage("info", "Export API not yet configured");
   };
 
   // ── Dual Listbox Logic ──
@@ -1334,88 +1322,6 @@ const PrivateGroup = () => {
         </DialogActions>
       </Dialog>
 
-      {/* ── Import Modal ── */}
-      <Dialog
-        open={showImportModal}
-        onClose={() => !importLoading && setShowImportModal(false)}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { p: 0, borderRadius: 2 } }}
-      >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          Import Private Group
-        </DialogTitle>
-        <DialogContent
-          style={{ padding: "24px 16px", backgroundColor: C.pageBg }}
-        >
-          <div
-            style={{
-              textAlign: "center",
-              border: `2px dashed ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 32,
-              cursor: "pointer",
-              background: "#fff",
-            }}
-            onClick={() => importFileRef.current?.click()}
-          >
-            <div
-              style={{
-                fontSize: 13,
-                color: importFile ? "#15803d" : C.mutedText,
-                fontWeight: importFile ? 600 : 400,
-              }}
-            >
-              {importFile ? importFile.name : "Click to choose CSV/JSON file"}
-            </div>
-            <input
-              ref={importFileRef}
-              type="file"
-              accept=".csv,.json"
-              style={{ display: "none" }}
-              onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-            />
-          </div>
-        </DialogContent>
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
-          <Btn
-            onClick={handleImportSubmit}
-            disabled={importLoading || !importFile}
-            variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
-          >
-            Import
-          </Btn>
-          <Btn
-            onClick={() => {
-              setShowImportModal(false);
-              setImportFile(null);
-            }}
-            disabled={importLoading}
-            variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
-          >
-            Cancel
-          </Btn>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 };
