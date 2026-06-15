@@ -2075,13 +2075,15 @@ const CallQueue = () => {
                 onAddNew={() => handleOpenModal()}
               />
             ) : (
-              <table
+             <table
                 style={{
                   width: "100%",
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
+
                   minWidth: 700, ...(isCompact ? { minWidth: 720 } : {}),
+
                 }}
               >
                 <thead>
@@ -2137,6 +2139,7 @@ const CallQueue = () => {
                         }}
                       >
                         <td
+
                           style={{
                             ...tdStyle,
                             background: rowBg,
@@ -2146,6 +2149,7 @@ const CallQueue = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
+
                           <Checkbox
                             size="small"
                             checked={isSelected}
@@ -2211,6 +2215,7 @@ const CallQueue = () => {
                           {Array.isArray(q.members) ? q.members.length : 0}
                         </td>
                         <td
+
                           style={{
                             ...tdStyle,
                             background: rowBg,
@@ -2223,6 +2228,7 @@ const CallQueue = () => {
                           }}
                         >
                                                     <EditDocumentIcon
+                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
                             titleAccess="Edit"
                             onClick={() => handleOpenModal(q, q._idx)}
                             style={{

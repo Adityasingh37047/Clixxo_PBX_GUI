@@ -243,7 +243,6 @@ const tdStyle = {
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
-
 const checkboxSx = {
   padding: "1px",
   color: "#3E5475",
@@ -1108,6 +1107,7 @@ const Paging = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
+                            borderRight: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,

@@ -1134,7 +1134,7 @@ const DisaPage = () => {
                         >
                           <span
                             style={{
-                              background: "#f1f5f9",
+                             
                               padding: "2px 8px",
                               borderRadius: 10,
                               fontSize: 10,
@@ -1162,6 +1162,7 @@ const DisaPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
+                            borderRight: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,

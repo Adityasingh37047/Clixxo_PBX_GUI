@@ -202,15 +202,16 @@ const TH = ({ children, style: extra }) => (
     style={{
       background: "#F8FAFC",
       color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
+      fontWeight: 600,
+      fontSize: 12,
       padding: "9px 14px",
       textAlign: "center",
       borderBottom: `1px solid ${C.cardBorder}`,
       borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.14em",
+      letterSpacing: "0.08em",
+      fontFamily: "Inter, sans-serif",
       ...extra,
     }}
   >
@@ -226,7 +227,6 @@ const tdStyle = {
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
-
 const checkboxSx = {
   padding: "1px",
   color: "#3E5475",
@@ -968,6 +968,7 @@ const PickupGroup = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
+                            borderRight: "none", 
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
