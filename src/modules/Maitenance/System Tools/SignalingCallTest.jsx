@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   SCT_TITLE,
   SCT_LABELS,
@@ -6,7 +6,17 @@ import {
   SCT_TRUNK_GROUP_OPTIONS,
   SCT_BUTTONS,
   SCT_TRACE_LABEL,
+  SCT_LOG_CANDIDATES,
+  SCT_POLL_MS,
+  SCT_POLL_DURATION_MS,
 } from "../../../constants/SignalingCallTestConstants";
+import {
+  postAsteriskCLI,
+  postLinuxCmd,
+  amiOriginate,
+  listGroups,
+} from "../../../api/apiService";
+import { Alert } from "@mui/material";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -263,21 +273,237 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 
+const extractCmdOutput = (res) =>
+  String(res?.responseData ?? res?.data ?? "").trim();
+
+const resolveAsteriskLogPath = async () => {
+  for (const path of SCT_LOG_CANDIDATES) {
+    const res = await postLinuxCmd({
+      cmd: `test -r '${path}' && echo OK || echo NO`,
+    });
+    if (extractCmdOutput(res) === "OK") return path;
+  }
+  return SCT_LOG_CANDIDATES[0];
+};
+
+const getTestTypeLabel = (value) =>
+  SCT_TEST_TYPE_OPTIONS.find((opt) => opt.value === value)?.label || value;
+
+const getTrunkGroupLabel = (value, options) =>
+  options.find((opt) => opt.value === value)?.label || value;
+
 const SignalingCallTest = () => {
   const [testType, setTestType] = useState(SCT_TEST_TYPE_OPTIONS[0].value);
   const [trunkGroup, setTrunkGroup] = useState(
     SCT_TRUNK_GROUP_OPTIONS[0].value,
   );
+  const [trunkGroupOptions, setTrunkGroupOptions] = useState(
+    SCT_TRUNK_GROUP_OPTIONS,
+  );
   const [callerId, setCallerId] = useState("");
   const [calledId, setCalledId] = useState("");
   const [originalCallee, setOriginalCallee] = useState("");
   const [trace, setTrace] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
 
-  const handleClear = () => {
+  const logPathRef = useRef("");
+  const lineCountRef = useRef(0);
+  const pollRef = useRef(null);
+  const pollStopRef = useRef(null);
+  const isRunningRef = useRef(false);
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const appendTrace = useCallback((chunk) => {
+    if (!chunk) return;
+    setTrace((prev) => (prev ? `${prev}\n${chunk}` : chunk));
+  }, []);
+
+  const stopTestSession = useCallback(async () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    if (pollStopRef.current) {
+      clearTimeout(pollStopRef.current);
+      pollStopRef.current = null;
+    }
+    if (isRunningRef.current) {
+      try {
+        await postAsteriskCLI({ command: "pjsip set logger off" });
+      } catch (_) {}
+    }
+    isRunningRef.current = false;
+    setIsRunning(false);
+  }, []);
+
+  const pollLogChunk = useCallback(async () => {
+    const logPath = logPathRef.current;
+    if (!logPath) return;
+
+    try {
+      const wcRes = await postLinuxCmd({
+        cmd: `wc -l < '${logPath}' 2>/dev/null || echo 0`,
+      });
+      const lineCount = parseInt(extractCmdOutput(wcRes), 10) || 0;
+      if (lineCount <= lineCountRef.current) return;
+
+      const newLines = lineCount - lineCountRef.current;
+      const tailRes = await postLinuxCmd({
+        cmd: `tail -n ${newLines} '${logPath}' 2>/dev/null`,
+      });
+      const chunk = extractCmdOutput(tailRes);
+      lineCountRef.current = lineCount;
+      appendTrace(chunk);
+    } catch (error) {
+      console.error("Signaling call test poll error:", error);
+    }
+  }, [appendTrace]);
+
+  const runAsteriskCmd = async (command) => {
+    const res = await postAsteriskCLI({ command });
+    if (!res?.response) {
+      throw new Error(res?.message || `Failed: ${command}`);
+    }
+    return extractCmdOutput(res);
+  };
+
+  useEffect(() => {
+    const loadTrunkGroups = async () => {
+      try {
+        const res = await listGroups();
+        const groups = Array.isArray(res?.message) ? res.message : [];
+        if (!groups.length) return;
+
+        const options = groups
+          .map((group) => {
+            const id = String(group.group_id ?? group.id ?? "").trim();
+            if (!id) return null;
+            return { value: id, label: `SIP Trunk Group[${id}]` };
+          })
+          .filter(Boolean);
+
+        if (options.length) {
+          setTrunkGroupOptions(options);
+          setTrunkGroup((prev) =>
+            options.some((opt) => opt.value === prev)
+              ? prev
+              : options[0].value,
+          );
+        }
+      } catch (error) {
+        console.warn("Failed to load SIP trunk groups:", error);
+      }
+    };
+
+    loadTrunkGroups();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (pollStopRef.current) clearTimeout(pollStopRef.current);
+      if (isRunningRef.current) {
+        postAsteriskCLI({ command: "pjsip set logger off" }).catch(() => {});
+      }
+    };
+  }, []);
+
+  const handleStart = async () => {
+    if (busy || isRunning) return;
+
+    const caller = callerId.trim();
+    const called = calledId.trim();
+    const original = originalCallee.trim();
+
+    if (!called) {
+      showToast("CalledID is required to start the test.", "error");
+      return;
+    }
+
+    setBusy(true);
+    await stopTestSession();
+
+    const header = [
+      "=== Signaling Call Test ===",
+      `Time: ${new Date().toLocaleString()}`,
+      `Test Type: ${getTestTypeLabel(testType)}`,
+      `SIP Trunk Group: ${getTrunkGroupLabel(trunkGroup, trunkGroupOptions)}`,
+      `CallerID: ${caller || "(empty)"}`,
+      `CalledID: ${called}`,
+      `Original CalleeID: ${original || "(empty)"}`,
+      "",
+    ].join("\n");
+
+    setTrace(header);
+
+    try {
+      const logPath = await resolveAsteriskLogPath();
+      logPathRef.current = logPath;
+
+      const wcRes = await postLinuxCmd({
+        cmd: `wc -l < '${logPath}' 2>/dev/null || echo 0`,
+      });
+      lineCountRef.current = parseInt(extractCmdOutput(wcRes), 10) || 0;
+
+      await runAsteriskCmd("pjsip set logger on");
+      isRunningRef.current = true;
+      setIsRunning(true);
+
+      pollRef.current = setInterval(() => {
+        pollLogChunk();
+      }, SCT_POLL_MS);
+
+      pollStopRef.current = setTimeout(async () => {
+        await stopTestSession();
+        appendTrace("\n=== Test capture ended ===");
+        showToast("Signaling call test finished.", "info");
+      }, SCT_POLL_DURATION_MS);
+
+      appendTrace("Sending test originate request...");
+      const originatePayload = { extension: called };
+      if (caller) {
+        originatePayload.callerid = `"${caller}" <${caller}>`;
+      }
+
+      const origRes = await amiOriginate(originatePayload);
+      if (origRes?.response === false) {
+        appendTrace(
+          `Originate failed: ${origRes?.message || "Unknown error"}`,
+        );
+        showToast(origRes?.message || "Originate failed.", "error");
+      } else {
+        appendTrace(
+          origRes?.message ||
+            origRes?.responseData ||
+            "Originate request sent.",
+        );
+        showToast("Signaling call test started.", "success");
+      }
+
+      await pollLogChunk();
+    } catch (error) {
+      console.error("Signaling call test error:", error);
+      await stopTestSession();
+      appendTrace(`Error: ${error.message || "Failed to start test."}`);
+      showToast(error.message || "Failed to start signaling call test.", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleClear = async () => {
+    await stopTestSession();
     setCallerId("");
     setCalledId("");
     setOriginalCallee("");
     setTrace("");
+    showToast("Form and trace cleared.", "info");
   };
 
   const inputProps = inputInteraction;
@@ -287,6 +513,23 @@ const SignalingCallTest = () => {
       className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+
       <div className="w-full" style={{ maxWidth: 1000 }}>
         {/* ── Breadcrumb ── */}
         <div
@@ -355,7 +598,7 @@ const SignalingCallTest = () => {
                 onChange={(e) => setTrunkGroup(e.target.value)}
                 {...inputProps}
               >
-                {SCT_TRUNK_GROUP_OPTIONS.map((opt) => (
+                {trunkGroupOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -426,14 +669,17 @@ const SignalingCallTest = () => {
                 <Btn
                   variant="primary"
                   type="button"
+                  onClick={handleStart}
+                  disabled={busy || isRunning}
                   style={{ minWidth: 100, height: 33, fontSize: 13 }}
                 >
-                  {SCT_BUTTONS.start}
+                  {busy ? "Starting…" : SCT_BUTTONS.start}
                 </Btn>
                 <Btn
                   variant="cancel"
                   type="button"
                   onClick={handleClear}
+                  disabled={busy}
                   style={{ minWidth: 100, height: 33, fontSize: 13 }}
                 >
                   {SCT_BUTTONS.clear}
@@ -471,7 +717,7 @@ const SignalingCallTest = () => {
               </label>
               <textarea
                 value={trace}
-                onChange={(e) => setTrace(e.target.value)}
+                readOnly
                 style={{
                   width: "100%",
                   minHeight: 220,

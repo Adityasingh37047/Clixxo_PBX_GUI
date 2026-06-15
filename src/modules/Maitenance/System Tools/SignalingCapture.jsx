@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   SC_SECTIONS,
   SC_LABELS,
@@ -6,8 +6,13 @@ import {
   SC_TS_OPTIONS,
   SC_BUTTONS,
   SC_NOTE,
+  SC_DATA_CAPTURE_PATTERN,
+  SC_TS_RECORD_PREFIX,
+  SC_E1_RECORD_PREFIX,
+  SC_CAPTURE_LOG_PATH,
+  SC_DATA_DIR,
 } from "../../../constants/SignalingCaptureConstants";
-import { Checkbox } from "@mui/material";
+import { Checkbox, Alert } from "@mui/material";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 const C = {
   pageBg: "#f8fafc",
@@ -294,6 +299,29 @@ const signalingCaptureFooterBtnStyle = {
   boxSizing: "border-box",
 };
 
+const extractCmdOutput = (res) =>
+  String(res?.responseData ?? res?.data ?? "").trim();
+
+const getDateStr = () =>
+  new Date().toISOString().split("T")[0].replace(/-/g, "_");
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const parsePcmIndex = (pcm) => {
+  const n = parseInt(String(pcm).replace(/\D/g, ""), 10);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const parseTsNumber = (ts) => {
+  const n = parseInt(String(ts).replace(/\D/g, ""), 10);
+  return Number.isFinite(n) ? n : 16;
+};
+
+const dahdiChannelFromPcmTs = (pcm, ts) =>
+  parsePcmIndex(pcm) * 32 + parseTsNumber(ts);
+
+const emptySlotSessions = () => ({ ts: [null, null], e1: [null, null] });
+
 const SignalingCapture = () => {
   // Data Capture state
   const [network, setNetwork] = useState("all");
@@ -310,6 +338,232 @@ const SignalingCapture = () => {
   const [captureProcessId, setCaptureProcessId] = useState(null);
   const [captureFileName, setCaptureFileName] = useState("");
   const [captureStatus, setCaptureStatus] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const slotSessionRef = useRef(emptySlotSessions());
+  const [slotRecording, setSlotRecording] = useState({
+    ts: [false, false],
+    e1: [false, false],
+  });
+  const [slotStopping, setSlotStopping] = useState({
+    ts: [false, false],
+    e1: [false, false],
+  });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const isAnySlotRecording = () =>
+    slotRecording.ts.some(Boolean) || slotRecording.e1.some(Boolean);
+
+  const setSlotRecordingFlag = (section, row, value) => {
+    setSlotRecording((prev) => {
+      const next = { ...prev, [section]: [...prev[section]] };
+      next[section][row] = value;
+      return next;
+    });
+  };
+
+  const setSlotStoppingFlag = (section, row, value) => {
+    setSlotStopping((prev) => {
+      const next = { ...prev, [section]: [...prev[section]] };
+      next[section][row] = value;
+      return next;
+    });
+  };
+
+  const downloadGzFileFromDevice = async (captureFileName, downloadName) => {
+    const gzFile = `${captureFileName}.gz`;
+
+    const checkRes = await postLinuxCmd({
+      cmd: `ls -la '${captureFileName}' 2>/dev/null || echo FILE_NOT_FOUND`,
+    });
+    if (extractCmdOutput(checkRes).includes("FILE_NOT_FOUND")) {
+      throw new Error("Capture file not found on server.");
+    }
+
+    const sizeCheckRes = await postLinuxCmd({
+      cmd: `wc -c < '${captureFileName}' 2>/dev/null || echo 0`,
+    });
+    const rawSize = parseInt(extractCmdOutput(sizeCheckRes), 10) || 0;
+    if (rawSize === 0) {
+      throw new Error("Capture file is empty. Generate traffic and try again.");
+    }
+
+    const gzRes = await postLinuxCmd({
+      cmd: `gzip -c '${captureFileName}' > '${gzFile}' 2>/dev/null && echo OK || echo FAILED`,
+    });
+    if (!extractCmdOutput(gzRes).includes("OK")) {
+      throw new Error("Failed to compress capture file.");
+    }
+
+    const sizeRes = await postLinuxCmd({
+      cmd: `wc -c < '${gzFile}' 2>/dev/null || echo 0`,
+    });
+    const fileSize = parseInt(extractCmdOutput(sizeRes), 10) || 0;
+    if (fileSize === 0) {
+      throw new Error("Compressed file is empty.");
+    }
+
+    const CHUNK_BYTES = 200 * 1024;
+    const numChunks = Math.ceil(fileSize / CHUNK_BYTES);
+    const binaryParts = [];
+
+    for (let i = 0; i < numChunks; i++) {
+      setCaptureStatus(
+        `Downloading… ${Math.round(((i + 1) / numChunks) * 100)}%`,
+      );
+      const chunkRes = await postLinuxCmd({
+        cmd: `dd if='${gzFile}' bs=${CHUNK_BYTES} skip=${i} count=1 2>/dev/null | base64`,
+      });
+      const chunkB64 = extractCmdOutput(chunkRes).replace(/\s+/g, "");
+      if (!chunkB64) {
+        if (i === numChunks - 1) break;
+        throw new Error(
+          `Download interrupted at chunk ${i + 1}/${numChunks}.`,
+        );
+      }
+      const raw = atob(chunkB64);
+      const bytes = new Uint8Array(raw.length);
+      for (let j = 0; j < raw.length; j++) bytes[j] = raw.charCodeAt(j);
+      binaryParts.push(bytes);
+    }
+
+    if (binaryParts.length === 0) {
+      throw new Error("No data received from device during download.");
+    }
+
+    const totalSize = binaryParts.reduce((sum, part) => sum + part.length, 0);
+    const byteArray = new Uint8Array(totalSize);
+    let offset = 0;
+    for (const part of binaryParts) {
+      byteArray.set(part, offset);
+      offset += part.length;
+    }
+
+    const blob = new Blob([byteArray], { type: "application/gzip" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = downloadName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    await postLinuxCmd({
+      cmd: `rm -f '${captureFileName}' '${gzFile}' 2>/dev/null || true`,
+    });
+  };
+
+  const downloadTextFromDevice = async (cmd, downloadName) => {
+    const res = await postLinuxCmd({ cmd });
+    const text = extractCmdOutput(res);
+    if (!text.trim()) {
+      throw new Error("No log data found on server.");
+    }
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = downloadName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const startSlotRecording = async (section, row, pcm, ts, filePrefix) => {
+    if (isCapturing || isStopping || isAnySlotRecording()) return;
+
+    const channel = dahdiChannelFromPcmTs(pcm, ts);
+    const dateStr = getDateStr();
+    const fileName = `${SC_DATA_DIR}/${filePrefix}_${pcm}_${ts}_${dateStr}.dat`;
+    const logPath = `${SC_DATA_DIR}/${filePrefix}.log`;
+
+    try {
+      await postLinuxCmd({
+        cmd: `pkill -f '${filePrefix}' 2>/dev/null || true`,
+      });
+      await delay(500);
+
+      const cmd = `sh -c "mkdir -p ${SC_DATA_DIR}; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; dahdi_monitor ${channel} '${fileName}' > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
+      const response = await postLinuxCmd({ cmd });
+
+      if (response?.response === false) {
+        const logTailRes = await postLinuxCmd({
+          cmd: `tail -n 5 '${logPath}' 2>/dev/null || true`,
+        });
+        const logTail = extractCmdOutput(logTailRes);
+        throw new Error(
+          `${response?.message || "Failed to start recording."}${logTail ? ` Log: ${logTail}` : ""}`,
+        );
+      }
+
+      const pid = extractCmdOutput(response);
+      if (!pid || !/^\d+$/.test(pid)) {
+        throw new Error(`Failed to start recording. Response: ${pid || "(no output)"}`);
+      }
+
+      await delay(400);
+      const health = await postLinuxCmd({
+        cmd: `ps -p ${pid} >/dev/null 2>&1 && echo RUNNING || echo NOT_RUNNING`,
+      });
+      if (extractCmdOutput(health) !== "RUNNING") {
+        const logTailRes = await postLinuxCmd({
+          cmd: `tail -n 3 '${logPath}' 2>/dev/null || true`,
+        });
+        throw new Error(
+          `Recording process not running.${extractCmdOutput(logTailRes) ? ` Log: ${extractCmdOutput(logTailRes)}` : ""}`,
+        );
+      }
+
+      slotSessionRef.current[section][row] = { pid, fileName, filePrefix };
+      setSlotRecordingFlag(section, row, true);
+      showToast(
+        `${section === "ts" ? "TS" : "E1"} recording started (PCM ${pcm}, TS ${parseTsNumber(ts)}).`,
+        "success",
+      );
+    } catch (error) {
+      console.error("Start slot recording error:", error);
+      showToast(error.message || "Failed to start recording.", "error");
+    }
+  };
+
+  const stopSlotRecording = async (section, row) => {
+    const session = slotSessionRef.current[section][row];
+    if (!session || slotStopping[section][row]) return;
+
+    setSlotStoppingFlag(section, row, true);
+    const { pid, fileName, filePrefix } = session;
+
+    try {
+      setCaptureStatus("Stopping recording…");
+      await postLinuxCmd({
+        cmd: `kill -TERM ${pid} 2>/dev/null; pkill -TERM -f '${filePrefix}' 2>/dev/null; sleep 2; kill -KILL ${pid} 2>/dev/null; pkill -KILL -f '${filePrefix}' 2>/dev/null; sync`,
+      });
+
+      const downloadName = `${filePrefix}_${getDateStr()}.dat.gz`;
+      await downloadGzFileFromDevice(fileName, downloadName);
+      setCaptureStatus("");
+      showToast("Recording downloaded.", "success");
+    } catch (error) {
+      console.error("Stop slot recording error:", error);
+      setCaptureStatus("");
+      showToast(error.message || "Failed to stop/download recording.", "error");
+      try {
+        await postLinuxCmd({
+          cmd: `pkill -KILL -f '${filePrefix}' 2>/dev/null || true`,
+        });
+      } catch (_) {}
+    } finally {
+      slotSessionRef.current[section][row] = null;
+      setSlotRecordingFlag(section, row, false);
+      setSlotStoppingFlag(section, row, false);
+    }
+  };
 
   // TS Recording state
   const [ts1Pcm, setTs1Pcm] = useState(SC_PCM_OPTIONS[0].value);
@@ -429,8 +683,9 @@ const SignalingCapture = () => {
 
   // Handle start data capture
   const handleStartCapture = async () => {
+    if (isCapturing || isStopping || isAnySlotRecording()) return;
+
     try {
-      // Determine interface for tcpdump
       let interfaceName = "";
       if (network === "all") {
         interfaceName = "any";
@@ -442,15 +697,10 @@ const SignalingCapture = () => {
         interfaceName = network;
       }
 
-      // Create capture file with readable date
-      const now = new Date();
-      const dateStr = now.toISOString().split("T")[0].replace(/-/g, "_"); // YYYY_MM_DD format
-      const fileName = `/mnt/data/signaling_capture_${dateStr}.pcap`;
+      const dateStr = getDateStr();
+      const fileName = `${SC_DATA_DIR}/${SC_DATA_CAPTURE_PATTERN}_${dateStr}.pcap`;
       setCaptureFileName(fileName);
 
-      // Build tcpdump command
-      // -U: packet-buffered (flushes packets to file quickly to reduce truncation risk)
-      // Important: BPF filter (if any) must be passed as a single trailing argument, without a leading 'and'
       const dest = syslogDest.trim();
       const filterExpr =
         syslogEnabled && dest
@@ -458,53 +708,46 @@ const SignalingCapture = () => {
           : "";
       const tcpdumpCmd = `tcpdump -U -i ${interfaceName} -s 0 -w '${fileName}' ${filterExpr ? `'${filterExpr}'` : ""}`;
 
-      const logPath = "/mnt/data/tcpdump_capture.log";
-
-      // Step 1: kill any existing capture (separate call so backend doesn't see "sleep")
       await postLinuxCmd({
-        cmd: `pkill -f 'tcpdump.*signaling_capture' 2>/dev/null || true`,
+        cmd: `pkill -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null || true`,
       });
-      await new Promise((r) => setTimeout(r, 800));
+      await delay(800);
 
-      // Step 2: start new capture
-      const cmd = `sh -c "mkdir -p /mnt/data; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; ${tcpdumpCmd} > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
-
+      const cmd = `sh -c "mkdir -p ${SC_DATA_DIR}; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; ${tcpdumpCmd} > /dev/null 2> '${SC_CAPTURE_LOG_PATH}' < /dev/null & echo \\$!"`;
       const response = await postLinuxCmd({ cmd });
 
       if (response?.response === false) {
         const logTailRes = await postLinuxCmd({
-          cmd: `tail -n 5 ${logPath} 2>/dev/null || true`,
+          cmd: `tail -n 5 ${SC_CAPTURE_LOG_PATH} 2>/dev/null || true`,
         });
-        const logTail = String(logTailRes?.responseData || "").trim();
-        window.alert(
-          `Failed to start capture: ${response?.message || "Unknown error"}${logTail ? `\n\nLog:\n${logTail}` : ""}`,
+        const logTail = extractCmdOutput(logTailRes);
+        showToast(
+          `Failed to start capture: ${response?.message || "Unknown error"}${logTail ? ` — ${logTail}` : ""}`,
+          "error",
         );
         return;
       }
 
-      const pid = String(response?.responseData || "").trim();
-
+      const pid = extractCmdOutput(response);
       if (pid && /^\d+$/.test(pid)) {
-        // Quick health check: ensure process exists and no immediate tcpdump error in log
-        await new Promise((r) => setTimeout(r, 400));
+        await delay(400);
         const health = await postLinuxCmd({
           cmd: `ps -p ${pid} >/dev/null 2>&1 && echo RUNNING || echo NOT_RUNNING`,
         });
-        const status = String(health?.responseData || "").trim();
+        const status = extractCmdOutput(health);
         const logTailRes = await postLinuxCmd({
-          cmd: `tail -n 3 ${logPath} 2>/dev/null || true`,
+          cmd: `tail -n 3 ${SC_CAPTURE_LOG_PATH} 2>/dev/null || true`,
         });
-        const logTail = String(logTailRes?.responseData || "").trim();
+        const logTail = extractCmdOutput(logTailRes);
         if (status !== "RUNNING") {
-          window.alert(
-            `Failed to start capture. tcpdump not running.\n${logTail ? `\nLog:\n${logTail}` : ""}`,
+          showToast(
+            `Failed to start capture. tcpdump not running.${logTail ? ` ${logTail}` : ""}`,
+            "error",
           );
           return;
         }
         setCaptureProcessId(pid);
         setIsCapturing(true);
-
-        // Show success alert
         const lanDisplay =
           network === "all"
             ? "All LAN"
@@ -513,15 +756,16 @@ const SignalingCapture = () => {
               : network === "eth1"
                 ? "LAN 2"
                 : network;
-        window.alert(`Start data capture on ${lanDisplay}!`);
+        showToast(`Data capture started on ${lanDisplay}.`, "success");
       } else {
-        window.alert(
+        showToast(
           `Failed to start data capture. Response: ${pid || "(no output)"}`,
+          "error",
         );
       }
     } catch (error) {
       console.error("Error starting data capture:", error);
-      window.alert("Error starting data capture. Please try again.");
+      showToast("Error starting data capture. Please try again.", "error");
     }
   };
 
@@ -529,19 +773,8 @@ const SignalingCapture = () => {
   const handleStopCapture = async () => {
     if (isStopping) return;
     setIsStopping(true);
-    const gzFile = captureFileName ? `${captureFileName}.gz` : "";
-
-    const cleanup = async () => {
-      try {
-        await postLinuxCmd({
-          cmd: `rm -f '${captureFileName}' '${gzFile}' /mnt/data/tcpdump_capture.log 2>/dev/null || true`,
-        });
-      } catch (_) {}
-    };
 
     try {
-      // ── Step 1: Kill tcpdump in ONE server-side command ─────────────────────
-      // TERM → 2 s grace → KILL → sync. One API call, no polling loop.
       setCaptureStatus("Stopping capture…");
       const pidTerm = captureProcessId
         ? `kill -TERM ${captureProcessId} 2>/dev/null; `
@@ -550,126 +783,50 @@ const SignalingCapture = () => {
         ? `kill -KILL ${captureProcessId} 2>/dev/null; `
         : "";
       await postLinuxCmd({
-        cmd: `${pidTerm}pkill -TERM -f 'tcpdump.*signaling_capture' 2>/dev/null; sleep 2; ${pidKill}pkill -KILL -f 'tcpdump.*signaling_capture' 2>/dev/null; sync`,
+        cmd: `${pidTerm}pkill -TERM -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null; sleep 2; ${pidKill}pkill -KILL -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null; sync`,
       });
-
-      // ── Step 2: verify file exists and has packets ──────────────────────────
-      const checkRes = await postLinuxCmd({
-        cmd: `ls -la '${captureFileName}' 2>/dev/null || echo FILE_NOT_FOUND`,
-      });
-      if (String(checkRes?.responseData || "").includes("FILE_NOT_FOUND")) {
-        window.alert("Capture file not found on server.");
-        return;
-      }
 
       const pktRes = await postLinuxCmd({
         cmd: `tcpdump -n -q -r '${captureFileName}' -c 1 2>/dev/null | wc -l`,
       });
-      const pktCount =
-        parseInt(String(pktRes?.responseData || "0").trim(), 10) || 0;
+      const pktCount = parseInt(extractCmdOutput(pktRes), 10) || 0;
       if (pktCount === 0) {
-        window.alert(
-          "Capture stopped but no packets were recorded.\nTry: All LAN, disable Syslog filter, generate traffic, then capture again.",
+        showToast(
+          "Capture stopped but no packets were recorded. Try All LAN, disable Syslog filter, generate traffic, then capture again.",
+          "warning",
         );
-        await cleanup();
-        return;
-      }
-
-      // ── Step 3: compress — check success explicitly ─────────────────────────
-      setCaptureStatus("Compressing capture file…");
-      const gzRes = await postLinuxCmd({
-        cmd: `gzip -c '${captureFileName}' > '${gzFile}' 2>/dev/null && echo OK || echo FAILED`,
-      });
-      if (!String(gzRes?.responseData || "").includes("OK")) {
-        window.alert("Failed to compress capture file. Please try again.");
-        await cleanup();
-        return;
-      }
-
-      const sizeRes = await postLinuxCmd({
-        cmd: `wc -c < '${gzFile}' 2>/dev/null || echo 0`,
-      });
-      const fileSize =
-        parseInt(String(sizeRes?.responseData || "0").trim(), 10) || 0;
-      if (fileSize === 0) {
-        window.alert("Compressed file is empty. Please try again.");
-        await cleanup();
-        return;
-      }
-
-      // ── Step 4: chunked base64 transfer (200 KB chunks) ────────────────────
-      // Decode each chunk to binary immediately — base64-joining padded chunks
-      // produces invalid base64. Iterate exactly numChunks (derived from file
-      // size) so an empty API response is treated as an error, not silent EOF.
-      const CHUNK_BYTES = 200 * 1024;
-      const numChunks = Math.ceil(fileSize / CHUNK_BYTES);
-      const binaryParts = [];
-
-      for (let i = 0; i < numChunks; i++) {
-        setCaptureStatus(
-          `Downloading… ${Math.round(((i + 1) / numChunks) * 100)}%`,
-        );
-        const chunkRes = await postLinuxCmd({
-          cmd: `dd if='${gzFile}' bs=${CHUNK_BYTES} skip=${i} count=1 2>/dev/null | base64`,
+        await postLinuxCmd({
+          cmd: `rm -f '${captureFileName}' '${captureFileName}.gz' '${SC_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
         });
-        const chunkB64 = String(chunkRes?.responseData || "").replace(
-          /\s+/g,
-          "",
-        );
-        if (!chunkB64) {
-          // Only acceptable on the very last chunk when file size is an exact multiple
-          if (i === numChunks - 1) break;
-          throw new Error(
-            `Download interrupted at chunk ${i + 1}/${numChunks}. Please try again.`,
-          );
-        }
-        const raw = atob(chunkB64);
-        const bytes = new Uint8Array(raw.length);
-        for (let j = 0; j < raw.length; j++) bytes[j] = raw.charCodeAt(j);
-        binaryParts.push(bytes);
+        return;
       }
 
-      if (binaryParts.length === 0) {
-        throw new Error("No data received from device during download.");
-      }
-
-      // ── Step 5: merge and trigger browser download ──────────────────────────
-      setCaptureStatus("Saving file…");
-      const totalSize = binaryParts.reduce((sum, p) => sum + p.length, 0);
-      const byteArray = new Uint8Array(totalSize);
-      let offset = 0;
-      for (const part of binaryParts) {
-        byteArray.set(part, offset);
-        offset += part.length;
-      }
-      const blob = new Blob([byteArray], { type: "application/gzip" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "_");
-      link.download = `signaling_capture_${dateStr}.pcap.gz`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      // ── Step 6: clean up files from device ─────────────────────────────────
-      await cleanup();
+      await downloadGzFileFromDevice(
+        captureFileName,
+        `${SC_DATA_CAPTURE_PATTERN}_${getDateStr()}.pcap.gz`,
+      );
+      await postLinuxCmd({
+        cmd: `rm -f '${SC_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
+      });
       setCaptureStatus("");
-      window.alert(
-        "Download complete! Open the .pcap.gz file directly in Wireshark.",
+      showToast(
+        "Download complete. Open the .pcap.gz file in Wireshark.",
+        "success",
       );
     } catch (error) {
       console.error("Error stopping data capture:", error);
       setCaptureStatus("");
       try {
         await postLinuxCmd({
-          cmd: `pkill -KILL -f 'tcpdump.*signaling_capture' 2>/dev/null || true`,
+          cmd: `pkill -KILL -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null || true`,
         });
-        await cleanup();
+        await postLinuxCmd({
+          cmd: `rm -f '${captureFileName}' '${captureFileName}.gz' '${SC_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
+        });
       } catch (_) {}
-      window.alert(
-        `Error during stop/download: ${error.message || "Please try again."}`,
+      showToast(
+        error.message || "Error during stop/download. Please try again.",
+        "error",
       );
     } finally {
       setIsStopping(false);
@@ -679,11 +836,70 @@ const SignalingCapture = () => {
     }
   };
 
+  const handleCleanData = async () => {
+    if (
+      isStopping ||
+      slotStopping.ts.some(Boolean) ||
+      slotStopping.e1.some(Boolean)
+    ) {
+      return;
+    }
+
+    try {
+      await postLinuxCmd({
+        cmd: `pkill -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null; pkill -f '${SC_TS_RECORD_PREFIX}' 2>/dev/null; pkill -f '${SC_E1_RECORD_PREFIX}' 2>/dev/null; pkill -f 'dahdi_monitor' 2>/dev/null; rm -f ${SC_DATA_DIR}/${SC_DATA_CAPTURE_PATTERN}_* ${SC_DATA_DIR}/${SC_TS_RECORD_PREFIX}_* ${SC_DATA_DIR}/${SC_E1_RECORD_PREFIX}_* ${SC_DATA_DIR}/${SC_TS_RECORD_PREFIX}.log ${SC_DATA_DIR}/${SC_E1_RECORD_PREFIX}.log ${SC_CAPTURE_LOG_PATH} 2>/dev/null; sync`,
+      });
+      setIsCapturing(false);
+      setCaptureProcessId(null);
+      setCaptureFileName("");
+      setCaptureStatus("");
+      slotSessionRef.current = emptySlotSessions();
+      setSlotRecording({ ts: [false, false], e1: [false, false] });
+      showToast("Capture data cleaned.", "success");
+    } catch (error) {
+      console.error("Clean data error:", error);
+      showToast(error.message || "Failed to clean capture data.", "error");
+    }
+  };
+
+  const handleDownloadLog = async () => {
+    try {
+      await downloadTextFromDevice(
+        `sh -c "for f in ${SC_CAPTURE_LOG_PATH} ${SC_DATA_DIR}/${SC_TS_RECORD_PREFIX}.log ${SC_DATA_DIR}/${SC_E1_RECORD_PREFIX}.log; do if [ -f \\\"\\$f\\\" ]; then echo \\\"=== \\$f ===\\\"; cat \\\"\\$f\\\"; echo; fi; done"`,
+        `signaling_capture_log_${getDateStr()}.txt`,
+      );
+      showToast("Log downloaded.", "success");
+    } catch (error) {
+      console.error("Download log error:", error);
+      showToast(error.message || "No log data found to download.", "warning");
+    }
+  };
+
+  const dataCaptureLocked =
+    isCapturing || isStopping || isAnySlotRecording();
+
   return (
     <div
       className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+
       <div className="w-full" style={{ maxWidth: 1000 }}>
         <div
           style={{
@@ -724,7 +940,7 @@ const SignalingCapture = () => {
                       style={{ ...inputStyle, width: "100%", minWidth: 220 }}
                       value={network}
                       onChange={(e) => setNetwork(e.target.value)}
-                      disabled={loading || isCapturing || isStopping}
+                      disabled={loading || dataCaptureLocked}
                       {...inputInteraction}
                     >
                       {loading ? (
@@ -744,7 +960,7 @@ const SignalingCapture = () => {
                     <Btn
                       variant="primary"
                       onClick={handleStartCapture}
-                      disabled={isCapturing || isStopping}
+                      disabled={dataCaptureLocked}
                       style={{ minWidth: 100, height: 33, fontSize: 13 }}
                     >
                       {SC_BUTTONS.start}
@@ -805,13 +1021,15 @@ const SignalingCapture = () => {
                     checked={syslogEnabled}
                     onChange={(e) => setSyslogEnabled(e.target.checked)}
                     id="syslog-enable"
-                    disabled={isCapturing || isStopping}
+                    disabled={dataCaptureLocked || isAnySlotRecording()}
                     sx={{
                       padding: "4px",
                       color: "#64748b",
                       "&.Mui-checked": { color: C.accent },
                       cursor:
-                        isCapturing || isStopping ? "not-allowed" : "pointer",
+                        dataCaptureLocked || isAnySlotRecording()
+                          ? "not-allowed"
+                          : "pointer",
                     }}
                   />
                   <label
@@ -820,7 +1038,9 @@ const SignalingCapture = () => {
                       fontSize: 14,
                       color: C.valueText,
                       cursor:
-                        isCapturing || isStopping ? "not-allowed" : "pointer",
+                        dataCaptureLocked || isAnySlotRecording()
+                          ? "not-allowed"
+                          : "pointer",
                     }}
                   >
                     {SC_LABELS.enable}
@@ -839,19 +1059,19 @@ const SignalingCapture = () => {
                   type="text"
                   value={syslogDest}
                   onChange={(e) => setSyslogDest(e.target.value)}
-                  disabled={!syslogEnabled || isCapturing || isStopping}
+                  disabled={!syslogEnabled || dataCaptureLocked || isAnySlotRecording()}
                   style={{
                     ...inputStyle,
                     width: "100%",
                     maxWidth: 220,
                     backgroundColor:
-                      !syslogEnabled || isCapturing || isStopping
+                      !syslogEnabled || dataCaptureLocked || isAnySlotRecording()
                         ? SYSTEM_TOOLS_FILL_BG_READ_ONLY
                         : SYSTEM_TOOLS_FILL_BG_EDITABLE,
                     opacity:
-                      !syslogEnabled || isCapturing || isStopping ? 0.6 : 1,
+                      !syslogEnabled || dataCaptureLocked || isAnySlotRecording() ? 0.6 : 1,
                     cursor:
-                      !syslogEnabled || isCapturing || isStopping
+                      !syslogEnabled || dataCaptureLocked || isAnySlotRecording()
                         ? "not-allowed"
                         : "text",
                   }}
@@ -906,6 +1126,11 @@ const SignalingCapture = () => {
                           ? setTs1Pcm(e.target.value)
                           : setTs2Pcm(e.target.value)
                       }
+                      disabled={
+                        dataCaptureLocked ||
+                        slotRecording.ts[i] ||
+                        slotStopping.ts[i]
+                      }
                       {...inputInteraction}
                     >
                       {SC_PCM_OPTIONS.map((opt) => (
@@ -922,6 +1147,11 @@ const SignalingCapture = () => {
                           ? setTs1Slot(e.target.value)
                           : setTs2Slot(e.target.value)
                       }
+                      disabled={
+                        dataCaptureLocked ||
+                        slotRecording.ts[i] ||
+                        slotStopping.ts[i]
+                      }
                       {...inputInteraction}
                     >
                       {SC_TS_OPTIONS.map((opt) => (
@@ -935,15 +1165,29 @@ const SignalingCapture = () => {
                 <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
                   <Btn
                     variant="primary"
+                    type="button"
+                    onClick={() =>
+                      startSlotRecording(
+                        "ts",
+                        i,
+                        i === 0 ? ts1Pcm : ts2Pcm,
+                        i === 0 ? ts1Slot : ts2Slot,
+                        SC_TS_RECORD_PREFIX,
+                      )
+                    }
+                    disabled={dataCaptureLocked || isAnySlotRecording()}
                     style={{ minWidth: 100, height: 33, fontSize: 13 }}
                   >
                     {SC_BUTTONS.start}
                   </Btn>
                   <Btn
                     variant="cancel"
+                    type="button"
+                    onClick={() => stopSlotRecording("ts", i)}
+                    disabled={!slotRecording.ts[i] || slotStopping.ts[i]}
                     style={{ minWidth: 100, height: 33, fontSize: 13 }}
                   >
-                    {SC_BUTTONS.stop}
+                    {slotStopping.ts[i] ? "Please wait…" : SC_BUTTONS.stop}
                   </Btn>
                 </div>
               </div>
@@ -980,6 +1224,11 @@ const SignalingCapture = () => {
                           ? setE1aPcm(e.target.value)
                           : setE1bPcm(e.target.value)
                       }
+                      disabled={
+                        dataCaptureLocked ||
+                        slotRecording.e1[i] ||
+                        slotStopping.e1[i]
+                      }
                       {...inputInteraction}
                     >
                       {SC_PCM_OPTIONS.map((opt) => (
@@ -996,6 +1245,11 @@ const SignalingCapture = () => {
                           ? setE1aSlot(e.target.value)
                           : setE1bSlot(e.target.value)
                       }
+                      disabled={
+                        dataCaptureLocked ||
+                        slotRecording.e1[i] ||
+                        slotStopping.e1[i]
+                      }
                       {...inputInteraction}
                     >
                       {SC_TS_OPTIONS.map((opt) => (
@@ -1009,15 +1263,29 @@ const SignalingCapture = () => {
                 <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
                   <Btn
                     variant="primary"
+                    type="button"
+                    onClick={() =>
+                      startSlotRecording(
+                        "e1",
+                        i,
+                        i === 0 ? e1aPcm : e1bPcm,
+                        i === 0 ? e1aSlot : e1bSlot,
+                        SC_E1_RECORD_PREFIX,
+                      )
+                    }
+                    disabled={dataCaptureLocked || isAnySlotRecording()}
                     style={{ minWidth: 100, height: 33, fontSize: 13 }}
                   >
                     {SC_BUTTONS.start}
                   </Btn>
                   <Btn
                     variant="cancel"
+                    type="button"
+                    onClick={() => stopSlotRecording("e1", i)}
+                    disabled={!slotRecording.e1[i] || slotStopping.e1[i]}
                     style={{ minWidth: 100, height: 33, fontSize: 13 }}
                   >
-                    {SC_BUTTONS.stop}
+                    {slotStopping.e1[i] ? "Please wait…" : SC_BUTTONS.stop}
                   </Btn>
                 </div>
               </div>
@@ -1029,6 +1297,8 @@ const SignalingCapture = () => {
           <Btn
             variant="primary"
             type="button"
+            onClick={handleCleanData}
+            disabled={isStopping || slotStopping.ts.some(Boolean) || slotStopping.e1.some(Boolean)}
             style={signalingCaptureFooterBtnStyle}
           >
             {SC_BUTTONS.clean}
@@ -1036,6 +1306,7 @@ const SignalingCapture = () => {
           <Btn
             variant="cancel"
             type="button"
+            onClick={handleDownloadLog}
             style={signalingCaptureFooterBtnStyle}
           >
             {SC_BUTTONS.download}

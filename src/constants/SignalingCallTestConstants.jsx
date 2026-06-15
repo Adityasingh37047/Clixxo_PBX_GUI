@@ -20,6 +20,14 @@ export const SCT_TRUNK_GROUP_OPTIONS = [
   { value: 'group1', label: 'SIP Trunk Group[1]' },
 ];
 
+export const SCT_LOG_CANDIDATES = [
+  '/var/log/asterisk/messages',
+  '/var/log/asterisk/full',
+];
+
+export const SCT_POLL_MS = 2000;
+export const SCT_POLL_DURATION_MS = 20000;
+
 // Button labels
 export const SCT_BUTTONS = {
   start: 'Start',

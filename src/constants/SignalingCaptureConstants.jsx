@@ -33,5 +33,11 @@ export const SC_BUTTONS = {
   download: 'Download Log',
 };
 
+export const SC_DATA_CAPTURE_PATTERN = 'signaling_capture';
+export const SC_TS_RECORD_PREFIX = 'signaling_ts_record';
+export const SC_E1_RECORD_PREFIX = 'signaling_e1_twoway';
+export const SC_CAPTURE_LOG_PATH = '/mnt/data/tcpdump_capture.log';
+export const SC_DATA_DIR = '/mnt/data';
+
 // Red note
 export const SC_NOTE = "Note: If capture, the function 'Remote Data Capture Config' in 'Management' would be closed.";

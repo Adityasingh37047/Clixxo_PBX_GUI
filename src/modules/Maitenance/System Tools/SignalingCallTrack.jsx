@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   SCTRACK_TITLE,
   SCTRACK_RADIO_OPTIONS,
   SCTRACK_LABELS,
   SCTRACK_BUTTONS,
+  SCTRACK_LOG_CANDIDATES,
+  SCTRACK_POLL_MS,
 } from "../../../constants/SignalingCallTrackConstants";
+import { postAsteriskCLI, postLinuxCmd } from "../../../api/apiService";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import { Alert } from "@mui/material";
 
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
@@ -244,6 +248,62 @@ const tableContainerStyle = {
   overflow: "hidden",
 };
 
+const extractCmdOutput = (res) =>
+  String(res?.responseData ?? res?.data ?? "").trim();
+
+const applyTrackFilter = (text, type, value) => {
+  if (!text) return "";
+  if (type === "none" || !String(value || "").trim()) return text;
+
+  const needle = String(value).trim().toLowerCase();
+  const lines = text.split("\n");
+
+  if (type === "caller") {
+    return lines
+      .filter((line) => {
+        const lower = line.toLowerCase();
+        if (!lower.includes(needle)) return false;
+        return (
+          lower.includes("caller") ||
+          lower.includes("from:") ||
+          lower.includes("cli") ||
+          lower.includes("from-uri") ||
+          lower.includes("from_uri")
+        );
+      })
+      .join("\n");
+  }
+
+  if (type === "callee") {
+    return lines
+      .filter((line) => {
+        const lower = line.toLowerCase();
+        if (!lower.includes(needle)) return false;
+        return (
+          lower.includes("callee") ||
+          lower.includes("to:") ||
+          lower.includes("called") ||
+          lower.includes("to-uri") ||
+          lower.includes("to_uri") ||
+          lower.includes("request-uri")
+        );
+      })
+      .join("\n");
+  }
+
+  return lines.filter((line) => line.toLowerCase().includes(needle)).join("\n");
+};
+
+const resolveAsteriskLogPath = async () => {
+  for (const path of SCTRACK_LOG_CANDIDATES) {
+    const res = await postLinuxCmd({
+      cmd: `test -r '${path}' && echo OK || echo NO`,
+    });
+    if (extractCmdOutput(res) === "OK") return path;
+  }
+  return SCTRACK_LOG_CANDIDATES[0];
+};
+
 const blueBarStyle = {
   width: "100%",
   minHeight: 44,
@@ -266,12 +326,206 @@ const SignalingCallTrack = () => {
   const [filterType, setFilterType] = useState("caller");
   const [filterValue, setFilterValue] = useState("0");
   const [trackMessage, setTrackMessage] = useState("");
+  const [isTracking, setIsTracking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const rawMessageRef = useRef("");
+  const logPathRef = useRef("");
+  const lineCountRef = useRef(0);
+  const pollRef = useRef(null);
+  const appliedFilterRef = useRef({ type: "none", value: "" });
+  const isTrackingRef = useRef(false);
+
+  useEffect(() => {
+    isTrackingRef.current = isTracking;
+  }, [isTracking]);
+
+  const refreshDisplay = useCallback(() => {
+    const { type, value } = appliedFilterRef.current;
+    setTrackMessage(applyTrackFilter(rawMessageRef.current, type, value));
+  }, []);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  const pollLogChunk = useCallback(async () => {
+    const logPath = logPathRef.current;
+    if (!logPath) return;
+
+    try {
+      const wcRes = await postLinuxCmd({
+        cmd: `wc -l < '${logPath}' 2>/dev/null || echo 0`,
+      });
+      const lineCount =
+        parseInt(extractCmdOutput(wcRes), 10) || 0;
+      if (lineCount <= lineCountRef.current) return;
+
+      const newLines = lineCount - lineCountRef.current;
+      const tailRes = await postLinuxCmd({
+        cmd: `tail -n ${newLines} '${logPath}' 2>/dev/null`,
+      });
+      const chunk = extractCmdOutput(tailRes);
+      lineCountRef.current = lineCount;
+
+      if (chunk) {
+        rawMessageRef.current = rawMessageRef.current
+          ? `${rawMessageRef.current}\n${chunk}`
+          : chunk;
+        refreshDisplay();
+      }
+    } catch (error) {
+      console.error("Call track poll error:", error);
+    }
+  }, [refreshDisplay]);
+
+  const runAsteriskCmd = async (command) => {
+    const res = await postAsteriskCLI({ command });
+    if (!res?.response) {
+      throw new Error(res?.message || `Failed: ${command}`);
+    }
+    return extractCmdOutput(res);
+  };
+
+  const handleStart = async () => {
+    if (isTracking || busy) return;
+    setBusy(true);
+    try {
+      const logPath = await resolveAsteriskLogPath();
+      logPathRef.current = logPath;
+
+      const wcRes = await postLinuxCmd({
+        cmd: `wc -l < '${logPath}' 2>/dev/null || echo 0`,
+      });
+      lineCountRef.current = parseInt(extractCmdOutput(wcRes), 10) || 0;
+
+      await runAsteriskCmd("pjsip set logger on");
+
+      stopPolling();
+      pollRef.current = setInterval(() => {
+        pollLogChunk();
+      }, SCTRACK_POLL_MS);
+
+      await pollLogChunk();
+      setIsTracking(true);
+      showToast("Call track started.", "success");
+    } catch (error) {
+      console.error("Start call track error:", error);
+      stopPolling();
+      setIsTracking(false);
+      showToast(error.message || "Failed to start call track.", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleStop = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      stopPolling();
+      try {
+        await runAsteriskCmd("pjsip set logger off");
+      } catch (error) {
+        console.warn("pjsip set logger off:", error);
+      }
+      setIsTracking(false);
+      showToast("Call track stopped.", "success");
+    } catch (error) {
+      console.error("Stop call track error:", error);
+      showToast(error.message || "Failed to stop call track.", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleFilter = () => {
+    appliedFilterRef.current = {
+      type: filterType,
+      value: filterValue.trim(),
+    };
+    refreshDisplay();
+    if (filterType === "none" || !filterValue.trim()) {
+      showToast("Filter cleared. Showing all messages.", "info");
+    } else {
+      showToast(`Filter applied (${filterType}: ${filterValue.trim()}).`, "success");
+    }
+  };
+
+  const handleClear = () => {
+    rawMessageRef.current = "";
+    setTrackMessage("");
+    if (isTracking) {
+      postLinuxCmd({
+        cmd: `wc -l < '${logPathRef.current}' 2>/dev/null || echo 0`,
+      })
+        .then((res) => {
+          lineCountRef.current = parseInt(extractCmdOutput(res), 10) || 0;
+        })
+        .catch(() => {});
+    }
+    showToast("Track message cleared.", "info");
+  };
+
+  const handleDownload = () => {
+    const content = trackMessage || rawMessageRef.current;
+    if (!content.trim()) {
+      showToast("No track message to download.", "warning");
+      return;
+    }
+    const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "_");
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `signaling_call_track_${dateStr}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast("Track message downloaded.", "success");
+  };
+
+  useEffect(() => {
+    return () => {
+      stopPolling();
+      if (isTrackingRef.current) {
+        postAsteriskCLI({ command: "pjsip set logger off" }).catch(() => {});
+      }
+    };
+  }, [stopPolling]);
 
   return (
     <div
       className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+
       <div className="w-full" style={{ maxWidth: 1000 }}>
         {/* ── Breadcrumb ── */}
         <div
@@ -372,31 +626,46 @@ const SignalingCallTrack = () => {
               }}
             >
               <Btn
+                type="button"
                 variant="primary"
+                onClick={handleStart}
+                disabled={busy || isTracking}
                 style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.start}
               </Btn>
               <Btn
+                type="button"
                 variant="cancel"
+                onClick={handleStop}
+                disabled={busy || !isTracking}
                 style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.stop}
               </Btn>
               <Btn
+                type="button"
                 variant="cancel"
+                onClick={handleFilter}
+                disabled={busy}
                 style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.filter}
               </Btn>
               <Btn
+                type="button"
                 variant="cancel"
+                onClick={handleClear}
+                disabled={busy}
                 style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.clear}
               </Btn>
               <Btn
+                type="button"
                 variant="cancel"
+                onClick={handleDownload}
+                disabled={busy}
                 style={{ minWidth: 100, height: 33, fontSize: 13 }}
               >
                 {SCTRACK_BUTTONS.download}
@@ -412,7 +681,7 @@ const SignalingCallTrack = () => {
               </label>
               <textarea
                 value={trackMessage}
-                onChange={(e) => setTrackMessage(e.target.value)}
+                readOnly
                 style={{
                   width: "100%",
                   minHeight: 220,

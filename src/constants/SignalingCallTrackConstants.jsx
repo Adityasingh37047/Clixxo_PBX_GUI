@@ -22,3 +22,10 @@ export const SCTRACK_BUTTONS = {
   clear: 'Clear',
   download: 'Download',
 };
+
+export const SCTRACK_LOG_CANDIDATES = [
+  '/var/log/asterisk/messages',
+  '/var/log/asterisk/full',
+];
+
+export const SCTRACK_POLL_MS = 2000;
