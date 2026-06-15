@@ -58,8 +58,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const Btn = ({
@@ -185,11 +185,10 @@ const tdStyle = {
 };
 
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
@@ -760,7 +759,7 @@ const getSipRegisterStatusStyle = (raw) => {
     s.includes("failure");
 
   if (isFailure) {
-    return { bg: "transparent", color: "#c2140c" };
+    return { bg: "transparent", color: "#dc2626" };
   }
 
   if (s === "pending" || s === "registering" || s.includes("pending")) {
@@ -768,7 +767,7 @@ const getSipRegisterStatusStyle = (raw) => {
   }
 
   if (s === "registered" || s.includes("registered")) {
-    return { bg: "transparent", color: "#22c55e" };
+    return { bg: "transparent", color: "#16a34a" };
   }
 
   return { bg: "transparent", color: "#475569" };
@@ -3063,6 +3062,7 @@ const SipRegisterPage = () => {
                                 handleChange("ui_enable_srtp", e.target.checked)
                               }
                               size="small"
+                              sx={checkboxSx}
                             />
                           }
                           label=""
@@ -3308,6 +3308,7 @@ const SipRegisterPage = () => {
                                 )
                               }
                               size="small"
+                              sx={checkboxSx}
                             />
                           }
                           label=""
@@ -3476,6 +3477,7 @@ const SipRegisterPage = () => {
                                     )
                                   }
                                   size="small"
+                                  sx={checkboxSx}
                                 />
                               }
                               label=""
@@ -3540,6 +3542,7 @@ const SipRegisterPage = () => {
                             handleCodecChange(codec.value, e.target.checked)
                           }
                           size="small"
+                          sx={checkboxSx}
                         />
                       }
                       label={codec.label}
@@ -3980,6 +3983,7 @@ const SipRegisterPage = () => {
                                 handleChange("ui_user_phone", e.target.checked)
                               }
                               size="small"
+                              sx={checkboxSx}
                             />
                           }
                           label=""
@@ -4054,6 +4058,7 @@ const SipRegisterPage = () => {
                                 handleChange("ui_dnis", e.target.checked)
                               }
                               size="small"
+                              sx={checkboxSx}
                             />
                           }
                           label=""

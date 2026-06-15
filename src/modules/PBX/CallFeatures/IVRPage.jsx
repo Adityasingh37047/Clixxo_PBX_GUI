@@ -146,8 +146,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 const CARD_RADIUS = 10;
 
@@ -1613,7 +1613,7 @@ const IVRPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1633,7 +1633,6 @@ const IVRPage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
                 }}
               >
                 <thead>
@@ -1710,7 +1709,6 @@ const IVRPage = () => {
                         key={row.id || realIdx}
                         style={{
                           background: rowBg,
-                          borderBottom: "1px solid #f1f5f9",
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -1726,6 +1724,7 @@ const IVRPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
+                            borderLeft: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
@@ -1798,17 +1797,11 @@ const IVRPage = () => {
                           <span
                             style={{
                               color:
-                                row.enabled === "Yes" ? "#22c55e" : "#475569",
-                              padding: "4px 11px",
-                              borderRadius: 999,
+                                row.enabled === "Yes" ? "#16a34a" : "#475569",
                               fontSize: 11,
                               fontWeight: 700,
                               letterSpacing: "0.01em",
                               whiteSpace: "nowrap",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              minWidth: 72,
                             }}
                           >
                             {row.enabled}
@@ -1825,17 +1818,11 @@ const IVRPage = () => {
                         >
                           <span
                             style={{
-                              color: row.directOutbound ? "#22c55e" : "#475569",
-                              padding: "4px 11px",
-                              borderRadius: 999,
+                              color: row.directOutbound ? "#16a34a" : "#475569",
                               fontSize: 11,
                               fontWeight: 700,
                               letterSpacing: "0.01em",
                               whiteSpace: "nowrap",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              minWidth: 72,
                             }}
                           >
                             {row.directOutbound ? "Yes" : "No"}
@@ -1865,6 +1852,7 @@ const IVRPage = () => {
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
+                            borderRight: "none",
                           }}
                         >
                                                     <EditDocumentIcon
@@ -1900,10 +1888,11 @@ const IVRPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
-                gap: 8,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>

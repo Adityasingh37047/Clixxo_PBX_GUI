@@ -123,8 +123,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 const CARD_RADIUS = 10;
 
@@ -1578,14 +1578,12 @@ const InboundRoutesPage = () => {
                         >
                           <span
                             style={{
-                              background:
-                                row.enabled === "Yes" ? "#dcfce7" : "#f1f5f9",
                               color:
-                                row.enabled === "Yes" ? "#15803d" : "#475569",
-                              padding: "2px 8px",
-                              borderRadius: 10,
-                              fontSize: 10,
-                              fontWeight: 600,
+                                row.enabled === "Yes" ? "#16a34a" : "#475569",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {row.enabled}

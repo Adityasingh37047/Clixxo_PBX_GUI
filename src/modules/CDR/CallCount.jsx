@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { CircularProgress, Checkbox } from "@mui/material";
+import { CircularProgress, Checkbox, useMediaQuery } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -304,13 +304,39 @@ const SipPcmPagination = ({
   onPageChange,
   recordLabel = "record",
   style,
+  compact = false,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
+  <div
+    style={{
+      ...sipPcmPaginationStyle,
+      ...(compact
+        ? {
+            flexDirection: "column",
+            alignItems: "stretch",
+            gap: 10,
+          }
+        : {}),
+      ...style,
+    }}
+  >
+    <span
+      style={{
+        fontSize: 11,
+        color: C.mutedText,
+        textAlign: compact ? "center" : "left",
+      }}
+    >
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
     </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: 8,
+        alignItems: "center",
+        ...(compact ? { justifyContent: "center", flexWrap: "wrap" } : {}),
+      }}
+    >
       <Btn
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
@@ -334,6 +360,8 @@ const SipPcmPagination = ({
 
 /** Separator line left of vertical scrollbar only — see index.css `.trunk-table-scroll` */
 const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
+const CALL_COUNT_TABLE_MIN_WIDTH = 1070;
+const CALL_COUNT_COMPACT_BREAKPOINT = "(max-width: 768px)";
 
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -422,9 +450,10 @@ const columns = [
   { key: "dst", label: "Call To", width: "10%" },
   { key: "dst_ip", label: "Call To IP", width: "11%" },
   { key: "call_direction", label: "Direction", width: "7%", compact: true },
-  { key: "disposition", label: "Call Status", width: "7%", compact: true },
+  { key: "disposition", label: "Call Status", width: "8%", compact: true },
   { key: "billsec", label: "Duration", width: "7%", compact: true },
-  { key: "hangup_cause", label: "Hangup Cause", width: "12%" },
+  { key: "dcontext", label: "Context", width: "6%" },
+  { key: "hangup_cause", label: "Hangup Cause", width: "10%" },
 ];
 
 const getCallCountCellPadding = (key) => {
@@ -811,8 +840,13 @@ const FilterLabel = ({ children }) => (
   </span>
 );
 
-const FilterField = ({ label, children, minWidth = 140 }) => (
-  <div style={{ minWidth, flex: "0 0 auto" }}>
+const FilterField = ({
+  label,
+  children,
+  minWidth = 140,
+  style: extraStyle,
+}) => (
+  <div style={{ minWidth, flex: "0 0 auto", ...extraStyle }}>
     {label && <FilterLabel>{label}</FilterLabel>}
     {children}
   </div>
@@ -852,7 +886,7 @@ const FilterSearch = ({ value, onChange }) => (
     type="text"
     value={value}
     onChange={onChange}
-    placeholder="Extension, number, IP, destination…"
+    placeholder="Extension, number, IP, context, destination…"
     style={controlBase}
     {...nativeFieldInteraction}
   />
@@ -899,6 +933,11 @@ const GhostBtn = ({
 };
 
 const CallCount = () => {
+  const isCompact = useMediaQuery(CALL_COUNT_COMPACT_BREAKPOINT);
+  const compactFilterFieldStyle = isCompact
+    ? { minWidth: "100%", flex: "1 1 100%", width: "100%" }
+    : undefined;
+
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -1063,7 +1102,7 @@ const CallCount = () => {
   const totalPages = Math.max(1, page + (rows.length >= limit ? 1 : 0));
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, padding: isCompact ? 12 : 16 }}>
       <div style={pbxPageInnerStyle}>
         {/* Error banner */}
         {error && (
@@ -1121,7 +1160,7 @@ const CallCount = () => {
             border: `1.5px solid ${C.cardBorder}`,
             borderRadius: 10,
             boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-            padding: "7px 14px",
+            padding: isCompact ? "12px" : "7px 14px",
             marginBottom: 16,
           }}
         >
@@ -1133,7 +1172,11 @@ const CallCount = () => {
               gap: 12,
             }}
           >
-            <FilterField label="Call Status" minWidth={200}>
+            <FilterField
+              label="Call Status"
+              minWidth={200}
+              style={compactFilterFieldStyle}
+            >
               <FilterSelect
                 aria-label="Call Status"
                 value={filterDraft.callStatus}
@@ -1147,7 +1190,11 @@ const CallCount = () => {
               />
             </FilterField>
 
-            <FilterField label="Direction" minWidth={200}>
+            <FilterField
+              label="Direction"
+              minWidth={200}
+              style={compactFilterFieldStyle}
+            >
               <FilterSelect
                 aria-label="Direction"
                 value={filterDraft.direction}
@@ -1161,7 +1208,11 @@ const CallCount = () => {
               />
             </FilterField>
 
-            <FilterField label="Search" minWidth={230}>
+            <FilterField
+              label="Search"
+              minWidth={230}
+              style={compactFilterFieldStyle}
+            >
               <FilterSearch
                 value={filterDraft.search}
                 onChange={(e) => {
@@ -1178,7 +1229,9 @@ const CallCount = () => {
                 display: "flex",
                 alignItems: "flex-end",
                 gap: 10,
-                flex: "0 0 auto",
+                flex: isCompact ? "1 1 100%" : "0 0 auto",
+                width: isCompact ? "100%" : undefined,
+                justifyContent: isCompact ? "flex-end" : undefined,
                 paddingBottom: 0,
               }}
             >
@@ -1236,7 +1289,14 @@ const CallCount = () => {
         </div>
 
         <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch" }
+                : {}),
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {selectedIds.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
@@ -1251,6 +1311,9 @@ const CallCount = () => {
                 alignItems: "center",
                 gap: 10,
                 flexWrap: "wrap",
+                ...(isCompact
+                  ? { width: "100%", justifyContent: "flex-end" }
+                  : {}),
               }}
             >
               <Btn
@@ -1296,11 +1359,17 @@ const CallCount = () => {
             <>
               <div
                 className={TRUNK_TABLE_SCROLL_CLASS}
-                style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}
+                style={{
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
+                  WebkitOverflowScrolling: "touch",
+                }}
               >
                 <table
                   style={{
                     width: "100%",
+                    minWidth: CALL_COUNT_TABLE_MIN_WIDTH,
                     borderCollapse: "separate",
                     borderSpacing: 0,
                     tableLayout: "fixed",
@@ -1577,6 +1646,20 @@ const CallCount = () => {
                             </td>
 
                             <td
+                              title={row.dcontext || ""}
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("dcontext"),
+                                background: rowBg,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {row.dcontext || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+
+                            <td
                               title={row.hangup_cause || ""}
                               style={{
                                 ...callCountTableTdStyle,
@@ -1605,6 +1688,7 @@ const CallCount = () => {
                   totalPages={totalPages}
                   recordCount={filteredData.length}
                   recordLabel="record"
+                  compact={isCompact}
                   onPageChange={(p) => {
                     if (p < page) handlePrev();
                     else if (p > page) handleNext();
@@ -1620,10 +1704,12 @@ const CallCount = () => {
             width: "100%",
             display: "flex",
             justifyContent: "center",
-            marginTop: 20,
-            fontSize: 13,
+            marginTop: isCompact ? 14 : 20,
+            padding: isCompact ? "0 4px" : 0,
+            fontSize: isCompact ? 12 : 13,
             fontWeight: 700,
             color: "#DC2626",
+            textAlign: "center",
           }}
         >
           <span>Only latest 500 records shown</span>

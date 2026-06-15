@@ -49,8 +49,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const CARD_RADIUS = 10;
@@ -902,7 +902,7 @@ const VoicePromptsPage = () => {
   size="small"
   sx={{
     padding: "1px",
-    color: "#64748b",
+    color: "#3E5475",
     "&.Mui-checked": { color: "#0284c7" },
     "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
     alignSelf: "flex-start",
@@ -1246,17 +1246,13 @@ const VoicePromptsPage = () => {
                       alignItems: "center",
                       gap: 12,
                       marginTop: 16,
-                      background: "#f0fdf4",
-                      padding: "8px 16px",
-                      borderRadius: 6,
-                      border: "1px solid #86efac",
                     }}
                   >
                     <span
                       style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#166534",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "#16a34a",
                       }}
                     >
                       Now Playing:
@@ -1577,17 +1573,13 @@ const VoicePromptsPage = () => {
                       alignItems: "center",
                       gap: 12,
                       marginTop: 16,
-                      background: "#f0fdf4",
-                      padding: "8px 16px",
-                      borderRadius: 6,
-                      border: "1px solid #86efac",
                     }}
                   >
                     <span
                       style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#166534",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "#16a34a",
                       }}
                     >
                       Now Playing:

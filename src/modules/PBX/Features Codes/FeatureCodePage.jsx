@@ -20,8 +20,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const CARD_RADIUS = 10;

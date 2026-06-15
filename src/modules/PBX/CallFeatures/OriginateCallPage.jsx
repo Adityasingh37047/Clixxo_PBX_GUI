@@ -87,8 +87,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const CARD_RADIUS = 10;
@@ -665,7 +665,7 @@ const OriginateCallPage = () => {
                   />
                 </FormFieldRow>
 
-                <FormFieldRow label="Mode" required align="flex-start" wide>
+                <FormFieldRow label="Mode" required align="flex-start">
                   <RadioGroup
                     value={mode}
                     onChange={(e) => setMode(e.target.value)}
@@ -714,12 +714,13 @@ const OriginateCallPage = () => {
 
                 {mode === "simple" ? (
                   <>
-                    <FormFieldRow hideLabel wide>
+                    <FormFieldRow hideLabel>
                       <div
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: 8,
+                          width: "100%",
                         }}
                       >
                         <Checkbox
@@ -728,8 +729,8 @@ const OriginateCallPage = () => {
                           onChange={(e) => setUseFixedApp(e.target.checked)}
                           size="small"
                           sx={{
-                            p: 0,
-                            color: "#64748b",
+                            padding: "1px",
+                            color: "#3E5475",
                             "&.Mui-checked": { color: "#0284c7" },
                             "&.MuiCheckbox-indeterminate": {
                               color: "#0284c7",

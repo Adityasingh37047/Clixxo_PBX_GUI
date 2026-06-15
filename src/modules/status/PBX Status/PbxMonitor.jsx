@@ -748,7 +748,21 @@ const PbxMonitor = () => {
         </div>
 
         <div style={sipPcmFormCardStyle}>
-          <div style={{ ...sipPcmFormHeaderStyle, padding: "0 8px 0 6px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "0 8px 0 6px",
+              background: C.cardBg,
+              borderBottom: `1px solid ${C.cardBorder}`,
+              borderTopLeftRadius: SIP_PCM_FORM_HEADER_RADIUS,
+              borderTopRightRadius: SIP_PCM_FORM_HEADER_RADIUS,
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
             <Tabs
               value={activeTab}
               onChange={(_, tab) => setActiveTab(tab)}
@@ -764,22 +778,15 @@ const PbxMonitor = () => {
               <Tab label="EXTENSIONS" value="extension" />
               <Tab label="TRUNKS" value="trunk" />
             </Tabs>
-          </div>
 
-          <div
-            style={{
-              ...sipPcmToolbarStyle,
-              borderTopLeftRadius: 0,
-              borderTopRightRadius: 0,
-              justifyContent: "flex-end",
-            }}
-          >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
                 flexWrap: "wrap",
+                marginLeft: "auto",
+                padding: "7px 6px 7px 0",
               }}
             >
               <PbxToolbarSearchBar
@@ -788,21 +795,25 @@ const PbxMonitor = () => {
                 placeholder="Search..."
               />
 
-            <Btn
-              variant="cancel"
-              onClick={() => loadData(false)}
-              disabled={isRefreshing}
-              style={{ ...sipPcmAuthFormBtnStyle, ...sipPcmCancelBtnStyle, boxShadow: "none" }}
-            >
-              {isRefreshing ? (
-                <>
-                  <CircularProgress size={14} sx={{ color: "inherit" }} />
-                  Refreshing...
-                </>
-              ) : (
-                "Refresh"
-              )}
-            </Btn>
+              <Btn
+                variant="cancel"
+                onClick={() => loadData(false)}
+                disabled={isRefreshing}
+                style={{
+                  ...sipPcmAuthFormBtnStyle,
+                  ...sipPcmCancelBtnStyle,
+                  boxShadow: "none",
+                }}
+              >
+                {isRefreshing ? (
+                  <>
+                    <CircularProgress size={14} sx={{ color: "inherit" }} />
+                    Refreshing...
+                  </>
+                ) : (
+                  "Refresh"
+                )}
+              </Btn>
             </div>
           </div>
 

@@ -47,8 +47,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
 };
 
 const Btn = ({
@@ -1691,17 +1691,11 @@ const OutboundRoutesPage = () => {
                           <span
                             style={{
                               color:
-                                row.enabled === "Yes" ? "#166534" : "#475569",
-                              padding: "4px 11px",
-                              borderRadius: 999,
+                                row.enabled === "Yes" ? "#16a34a" : "#475569",
                               fontSize: 11,
                               fontWeight: 700,
                               letterSpacing: "0.01em",
                               whiteSpace: "nowrap",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              minWidth: 72,
                             }}
                           >
                             {row.enabled}
@@ -1935,6 +1929,7 @@ const OutboundRoutesPage = () => {
                   <Checkbox
                     checked={nextRoute}
                     onChange={(e) => setNextRoute(e.target.checked)}
+                    size="small"
                     sx={checkboxSx}
                   />
                 </OutboundRightRow>

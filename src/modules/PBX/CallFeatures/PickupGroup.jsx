@@ -31,8 +31,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const codecDualListSelectStyle = {
@@ -808,7 +808,7 @@ const PickupGroup = () => {
           {/* Table */}
           <div
             style={{
-              overflowX: "auto",
+              overflowX: "hidden",
               overflowY: "auto",
               flex: 1,
             }}
@@ -827,7 +827,6 @@ const PickupGroup = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
                 }}
               >
                 <thead>
@@ -895,7 +894,6 @@ const PickupGroup = () => {
                         key={row.id || realIdx}
                         style={{
                           background: rowBg,
-                          borderBottom: "1px solid #f1f5f9",
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -911,6 +909,7 @@ const PickupGroup = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
+                            borderLeft: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
@@ -969,6 +968,7 @@ const PickupGroup = () => {
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
+                            borderRight: "none",
                           }}
                         >
                                                     <EditDocumentIcon
@@ -1004,10 +1004,11 @@ const PickupGroup = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
-                gap: 8,
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>

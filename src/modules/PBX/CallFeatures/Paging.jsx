@@ -41,8 +41,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const codecDualListSelectStyle = {
@@ -890,7 +890,7 @@ const Paging = () => {
           {/* Table */}
           <div
             style={{
-              overflowX: "auto",
+              overflowX: "hidden",
               overflowY: "auto",
               flex: 1,
             }}
@@ -909,7 +909,6 @@ const Paging = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
                 }}
               >
                 <thead>
@@ -987,7 +986,6 @@ const Paging = () => {
                         key={row.id || realIdx}
                         style={{
                           background: rowBg,
-                          borderBottom: "1px solid #f1f5f9",
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -1003,6 +1001,7 @@ const Paging = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
+                            borderLeft: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
@@ -1109,6 +1108,7 @@ const Paging = () => {
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
+                            borderRight: "none",
                           }}
                         >
                                                     <EditDocumentIcon
@@ -1144,9 +1144,11 @@ const Paging = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
+                padding: "7px 14px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>

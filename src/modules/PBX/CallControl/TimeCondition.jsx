@@ -41,8 +41,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const Btn = ({
@@ -168,11 +168,10 @@ const tdStyle = {
 };
 
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 const pbxModalCancelBtnStyle = {

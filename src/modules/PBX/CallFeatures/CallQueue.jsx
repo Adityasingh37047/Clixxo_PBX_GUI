@@ -44,8 +44,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const CARD_RADIUS = 10;
@@ -173,11 +173,10 @@ const tdStyle = {
 };
 
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 const numManipulateCardStyle = {
@@ -277,7 +276,7 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: "#30415A",
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
       }}
     >
       {title}
@@ -425,7 +424,6 @@ const FieldRow = ({ label, children }) => (
     className="flex items-center rounded px-2 py-0.5 gap-2"
     style={{
       minHeight: 30,
-      background: "#f5f7fa",
     }}
   >
     <label
@@ -857,31 +855,6 @@ const CallQueue = () => {
   const ringStrategyLabel = (v) =>
     RING_STRATEGY_OPTIONS.find((o) => o.value === v)?.label || v;
 
-  const SectionHeader = ({ title, isFirst = true }) => (
-    <div
-      style={{
-        margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-        position: "relative",
-        width: "100%",
-      }}
-    >
-      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-      <span
-        style={{
-          position: "absolute",
-          top: -10,
-          left: 0,
-          background: "#f5f7fa",
-          paddingRight: 8,
-          fontSize: 14,
-          fontWeight: 600,
-          color: "#30415A",
-        }}
-      >
-        {title}
-      </span>
-    </div>
-  );
   return (
     <div style={pbxPageWrapStyle}>
         {/* Modal */}
@@ -927,47 +900,44 @@ const CallQueue = () => {
         >
           {editIndex !== null ? "Edit Call Queue" : "Add Call Queue"}
         </DialogTitle>
-       <DialogContent
-  sx={{
-    p: "20px",
-    backgroundColor: "#ffffff",
-  }}
->
+        <PbxModalTabs
+          value={activeTab}
+          onChange={setActiveTab}
+          tabs={[
+            { id: "basic", label: "BASIC" },
+            { id: "caller", label: "CALLER EXPERIENCE SETTINGS" },
+          ]}
+        />
+        <DialogContent
+          sx={{
+            p: "24px",
+            backgroundColor: "#ffffff",
+          }}
+        >
           <div
-            style={{ display: "flex", flexDirection: "column", width: "100%" }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "100%",
+              background: PBX_MODAL_SECTION_BG,
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+            }}
           >
-            <div
-              style={{
-                 borderBottom: "0.5px solid #eef2f7",
-                marginBottom: 16,
-                marginLeft: "-20px",
-marginRight: "-20px",
-                background: "#fff",
-              }}
-            >
-              <PbxModalTabs
-  value={activeTab}
-  onChange={setActiveTab}
-  tabs={[
-    { id: "basic", label: "BASIC" },
-    { id: "caller", label: "CALLER EXPERIENCE SETTINGS" },
-  ]}
-/>
-            </div>
-
             {/* ── BASIC TAB ── */}
             {activeTab === "basic" && (
-              <div className="flex flex-col gap-2 w-full pb-2">
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: "20px 24px 16px",
-                  }}
-                >
-                  <SectionHeader title="Queue Settings" />
-                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  paddingBottom: 8,
+                }}
+              >
+                <SectionCard title="Queue Settings" isFirst>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Queue Name *">
                       <TextField
                         size="small"
@@ -1127,7 +1097,6 @@ marginRight: "-20px",
                       className="flex items-center rounded px-2 py-0.5 gap-2"
                       style={{
                         minHeight: 30,
-                        background: "#f5f7fa",
                       }}
                     >
                       <label
@@ -1242,7 +1211,6 @@ marginRight: "-20px",
                       className="flex items-center rounded px-2 py-0.5 gap-2"
                       style={{
                         minHeight: 30,
-                        background: "#f5f7fa",
                       }}
                     >
                       <label
@@ -1353,19 +1321,10 @@ marginRight: "-20px",
                       />
                     </FieldRow>
                   </div>
-                </div>
+                </SectionCard>
 
-                {/* Agents dual listbox */}
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: "20px 24px 16px",
-                  }}
-                >
-                  <SectionHeader title="Agents" />
-                  <div className="pt-0 px-0 pb-3">
+                <SectionCard title="Agents">
+                  <div className="pt-0 px-0 pb-1">
                     <div className="grid grid-cols-[1fr_48px_1fr_48px] gap-3 items-start">
                       {/* Available */}
                       <div>
@@ -1489,23 +1448,22 @@ marginRight: "-20px",
                       </div>
                     </div>
                   </div>
-                </div>
+                </SectionCard>
               </div>
             )}
 
             {/* ── CALLER EXPERIENCE SETTINGS TAB ── */}
             {activeTab === "caller" && (
-              <div className="flex flex-col gap-2 w-full pb-2">
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: "20px 24px 16px",
-                  }}
-                >
-                  <SectionHeader title="Caller Settings" />
-                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  paddingBottom: 8,
+                }}
+              >
+                <SectionCard title="Caller Settings" isFirst>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Music on Hold *">
                       <FormControl fullWidth size="small">
                         <MuiSelect
@@ -1593,7 +1551,7 @@ marginRight: "-20px",
                           handleChange("join_when_no_agent", e.target.checked)
                         }
                         size="small"
-                        sx={{ p: 0 }}
+                        sx={checkboxSx}
                       />
                     </FieldRow>
 
@@ -1797,18 +1755,10 @@ marginRight: "-20px",
                       </FormControl>
                     </FieldRow>
                   </div>
-                </div>
+                </SectionCard>
 
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: "20px 24px 16px",
-                  }}
-                >
-                  <SectionHeader title="Caller Position Announcements" />
-                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                <SectionCard title="Caller Position Announcements">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Announce Position">
                       <Checkbox
                         checked={!!form.announce_position}
@@ -1816,7 +1766,7 @@ marginRight: "-20px",
                           handleChange("announce_position", e.target.checked)
                         }
                         size="small"
-                        sx={{ p: 0 }}
+                        sx={checkboxSx}
                       />
                     </FieldRow>
                     <FieldRow label="Call Duration(s)">
@@ -1840,7 +1790,7 @@ marginRight: "-20px",
                           handleChange("announce_hold_time", e.target.checked)
                         }
                         size="small"
-                        sx={{ p: 0 }}
+                        sx={checkboxSx}
                       />
                     </FieldRow>
                     <FieldRow label="Announce Frequency(s)">
@@ -1861,18 +1811,10 @@ marginRight: "-20px",
                       </FormControl>
                     </FieldRow>
                   </div>
-                </div>
+                </SectionCard>
 
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: "20px 24px 16px",
-                  }}
-                >
-                  <SectionHeader title="Periodic Announcements" />
-                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                <SectionCard title="Periodic Announcements">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Announce Sound">
                       <FormControl fullWidth size="small">
                         <MuiSelect
@@ -1917,18 +1859,10 @@ marginRight: "-20px",
                       </FormControl>
                     </FieldRow>
                   </div>
-                </div>
+                </SectionCard>
 
-                <div
-                  style={{
-                    background: "#f5f7fa",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                    padding: "20px 24px 16px",
-                  }}
-                >
-                  <SectionHeader title="Busy Callback" />
-                  <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                <SectionCard title="Busy Callback">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <FieldRow label="Enable Busy Callback">
                       <FormControl fullWidth size="small">
                         <MuiSelect
@@ -1991,7 +1925,7 @@ marginRight: "-20px",
                       </FormControl>
                     </FieldRow>
                   </div>
-                </div>
+                </SectionCard>
               </div>
             )}
           </div>
@@ -2131,7 +2065,7 @@ marginRight: "-20px",
             </div>
           </div>
 
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : queues.length === 0 ? (
@@ -2190,7 +2124,6 @@ marginRight: "-20px",
                         key={q._idx}
                         style={{
                           background: rowBg,
-                          borderBottom: "1px solid #f1f5f9",
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -2202,7 +2135,16 @@ marginRight: "-20px",
                             e.currentTarget.style.background = rowBg;
                         }}
                       >
-                        <td style={{ ...tdStyle, background: rowBg }}>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            background: rowBg,
+                            borderLeft: "none",
+                            borderBottom: isLastRow
+                              ? "none"
+                              : tdStyle.borderBottom,
+                          }}
+                        >
                           <Checkbox
                             size="small"
                             checked={isSelected}
@@ -2274,6 +2216,7 @@ marginRight: "-20px",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
+                            borderRight: "none",
                             textAlign: "center",
                             padding: "7px 8px",
                           }}
@@ -2310,10 +2253,9 @@ marginRight: "-20px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 18px",
+                padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
                 background: "#ffffff",
-                gap: 8,
                 borderBottomLeftRadius: LIST_CARD_RADIUS,
                 borderBottomRightRadius: LIST_CARD_RADIUS,
               }}
@@ -2358,5 +2300,12 @@ marginRight: "-20px",
     </div>
   );
 };
+
+const SectionCard = ({ title, children, isFirst = false }) => (
+  <div style={{ marginBottom: 8 }}>
+    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <div>{children}</div>
+  </div>
+);
 
 export default CallQueue;

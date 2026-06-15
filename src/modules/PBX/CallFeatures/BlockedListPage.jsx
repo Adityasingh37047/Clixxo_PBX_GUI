@@ -35,8 +35,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const CARD_RADIUS = 10;
@@ -726,7 +726,7 @@ const BlockedListPage = () => {
           {/* Table */}
           <div
             style={{
-              overflowX: "auto",
+              overflowX: "hidden",
               overflowY: "auto",
               flex: 1,
             }}
@@ -750,7 +750,6 @@ const BlockedListPage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
                 }}
               >
                 <thead>
@@ -816,6 +815,9 @@ const BlockedListPage = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
                     const rowBg = isSelected
                       ? "#e0f2fe"
                       : idx % 2 === 1
@@ -842,9 +844,8 @@ const BlockedListPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            borderLeft: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
                           <Checkbox
@@ -858,9 +859,7 @@ const BlockedListPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {realIdx + 1}
@@ -869,9 +868,7 @@ const BlockedListPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.name}
@@ -880,23 +877,16 @@ const BlockedListPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <span
                             style={{
                               color: C.valueText,
-                              padding: "4px 11px",
-                              borderRadius: 999,
                               fontSize: 11,
                               fontWeight: 700,
                               letterSpacing: "0.01em",
                               whiteSpace: "nowrap",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
                             }}
                           >
                             {row.matchMode}
@@ -906,9 +896,7 @@ const BlockedListPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.blockedNumber}
@@ -917,29 +905,21 @@ const BlockedListPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <span
                             style={{
                               color:
                                 row.direction === "Inbound"
-                                  ? "#22c55e"
+                                  ? "#16a34a"
                                   : row.direction === "Outbound"
                                     ? C.accent
                                     : "#475569",
-                              padding: "4px 11px",
-                              borderRadius: 999,
                               fontSize: 11,
                               fontWeight: 700,
                               letterSpacing: "0.01em",
                               whiteSpace: "nowrap",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              minWidth: 72,
                             }}
                           >
                             {row.direction}
@@ -949,25 +929,17 @@ const BlockedListPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <span
                             style={{
                               color:
-                                row.enabled === "Yes" ? "#22c55e" : "#475569",
-                              padding: "4px 11px",
-                              borderRadius: 999,
+                                row.enabled === "Yes" ? "#16a34a" : "#475569",
                               fontSize: 11,
                               fontWeight: 700,
                               letterSpacing: "0.01em",
                               whiteSpace: "nowrap",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              minWidth: 72,
                             }}
                           >
                             {row.enabled}
@@ -977,9 +949,8 @@ const BlockedListPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
                           <div
@@ -1092,7 +1063,6 @@ const BlockedListPage = () => {
             <div
               style={{
                 background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
                 borderRadius: 6,
                 padding: 16,
               }}

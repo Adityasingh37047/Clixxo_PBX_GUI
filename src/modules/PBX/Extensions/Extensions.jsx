@@ -50,8 +50,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#ef4444",
-  successGreen: "#22c55e",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const Btn = ({
@@ -673,7 +673,7 @@ const statusStyle = (s) => {
     return { color: C.accent };
   }
 
-  return { bg: "#f1f5f9", color: "#475569" };
+  return { color: "#475569" };
 };
 // ── Constants ─────────────────────────────────────────────────────────────────
 const FOLLOW_ME_TIMEOUT_OPTIONS = [
@@ -2128,7 +2128,7 @@ const SipAccountPage = () => {
               <span
                 style={{
                   fontSize: 13,
-                  color: importFile ? "#15803d" : "#64748b",
+                  color: importFile ? "#16a34a" : "#64748b",
                   fontWeight: importFile ? 600 : 400,
                 }}
               >
@@ -2556,10 +2556,7 @@ const SipAccountPage = () => {
                                     )
                                   }
                                   size="small"
-                                  sx={{
-                                    padding: "9px 4px",
-                                    "& .MuiSvgIcon-root": { fontSize: 15 },
-                                  }}
+                                  sx={extensionTableCheckboxSx}
                                 />
                               }
                               label={codec.label}

@@ -31,8 +31,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
 };
 
 const CARD_RADIUS = 10;
@@ -717,7 +717,7 @@ const SpeedDialPage = () => {
           {/* Table */}
           <div
             style={{
-              overflowX: "auto",
+              overflowX: "hidden",
               overflowY: "auto",
               flex: 1,
             }}
@@ -736,7 +736,6 @@ const SpeedDialPage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
                 }}
               >
                 <thead>
@@ -807,7 +806,6 @@ const SpeedDialPage = () => {
                         key={row.id || realIdx}
                         style={{
                           background: rowBgColor,
-                          borderBottom: "1px solid #f1f5f9",
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -823,6 +821,7 @@ const SpeedDialPage = () => {
                           style={{
                             ...tdStyle,
                             background: rowBgColor,
+                            borderLeft: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
@@ -898,6 +897,7 @@ const SpeedDialPage = () => {
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
+                            borderRight: "none",
                           }}
                         >
                                                     <EditDocumentIcon
@@ -933,9 +933,11 @@ const SpeedDialPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "10px 14px",
-                borderTop: `0.5px solid ${C.cardBorder}`,
-                background: "#f8fafc",
+                padding: "7px 14px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
               }}
             >
               <span style={{ fontSize: 11, color: C.mutedText }}>
