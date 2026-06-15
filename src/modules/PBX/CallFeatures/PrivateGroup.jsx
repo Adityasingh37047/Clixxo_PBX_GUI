@@ -1001,6 +1001,7 @@ const PrivateGroup = () => {
                             padding: "7px 8px",
                             ...tdStyle,
                             background: rowBg,
+                            borderRight: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,

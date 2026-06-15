@@ -860,26 +860,16 @@ const SpeedDialPage = () => {
                           {row.name}
                         </td>
                         <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBgColor,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
-                          <span
-                            style={{
-                              background: "#f1f5f9",
-                              padding: "2px 8px",
-                              borderRadius: 10,
-                              fontSize: 10,
-                              fontWeight: 600,
-                            }}
-                          >
-                            {row.speedDialNumber}
-                          </span>
-                        </td>
+  style={{
+    ...tdStyle,
+    background: rowBgColor,
+    borderBottom: isLastRow
+      ? "none"
+      : tdStyle.borderBottom,
+  }}
+>
+  {row.speedDialNumber}
+</td>
                         <td
                           style={{
                             ...tdStyle,
@@ -897,6 +887,7 @@ const SpeedDialPage = () => {
                             padding: "4px 8px",
                             ...tdStyle,
                             background: rowBgColor,
+                            borderRight: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,

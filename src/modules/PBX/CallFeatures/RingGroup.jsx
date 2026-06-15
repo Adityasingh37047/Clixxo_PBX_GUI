@@ -264,7 +264,7 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 const checkboxSx = {
-  padding: "1px",
+  padding: "1px", 
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
@@ -1121,6 +1121,7 @@ const RingGroup = () => {
                             e.currentTarget.style.background = rowBg;
                         }}
                       >
+
                         <td
                           style={{
                             ...tdStyle,
@@ -1131,6 +1132,8 @@ const RingGroup = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
+
+                   
                           <Checkbox
                             size="small"
                             checked={isSelected}
@@ -1180,22 +1183,22 @@ const RingGroup = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <span
-                            style={{
-                              color: C.valueText,
-                              padding: "4px 11px",
-                              borderRadius: 999,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {row.ringStrategy}
-                          </span>
+                       <span
+  style={{
+    color: "#334155",
+    padding: "4px 11px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 500,
+    letterSpacing: "0",
+    whiteSpace: "nowrap",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  {row.ringStrategy}
+</span>
                         </td>
                         <td
                           style={{
@@ -1236,10 +1239,12 @@ const RingGroup = () => {
                             padding: "7px 8px",
                             ...tdStyle,
                             background: rowBg,
+                            
+                            borderRight: "none",
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
-                            borderRight: "none",
+                            
                           }}
                         >
                                                     <EditDocumentIcon
@@ -1380,23 +1385,23 @@ const RingGroup = () => {
                     />
                   </FieldRow>
 
-                  <FieldRow label="Ring Strategy" required>
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={ringStrategy}
-                        onChange={(e) => setRingStrategy(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        {RING_STRATEGY_OPTIONS.map((opt) => (
+                    <FieldRow label="Ring Strategy" required>
+                      <FormControl size="small" fullWidth>
+                        <MuiSelect
+                          value={ringStrategy}
+                          onChange={(e) => setRingStrategy(e.target.value)}
+                          sx={{
+                            fontSize: 13,
+                            backgroundColor: "#fff",
+                            height: 32,
+                            "& .MuiSelect-select": {
+                              padding: "6px 8px",
+                              display: "flex",
+                              alignItems: "center",
+                            },
+                          }}
+                        >
+                          {RING_STRATEGY_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                             {opt}
                           </MenuItem>
