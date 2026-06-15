@@ -865,8 +865,8 @@ const DisaPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                hoverBehavior="opacity"
-                style={{
+                  
+                   style={{
                   background: "#cbd5e1",
                   color: "#374151",
                   border: "1px solid #cbd5e1",
