@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Alert,
+import {Alert,
   Button,
   Checkbox,
   CircularProgress,
@@ -13,8 +12,7 @@ import {
   FormControl,
   MenuItem,
   Select,
-  TextField,
-} from "@mui/material";
+  TextField, useMediaQuery } from "@mui/material";
 import {
   createInboundRoute,
   deleteInboundRoute,
@@ -111,6 +109,8 @@ const getRingGroupDialNumber = (item) => {
     return String(n).trim();
   return "";
 };
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
@@ -776,6 +776,7 @@ const SectionCard = ({ title, children, isFirst = false }) => (
 );
 
 const InboundRoutesPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -1316,7 +1317,7 @@ const InboundRoutesPage = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Alert */}
         {message.text && (
@@ -1339,7 +1340,7 @@ const InboundRoutesPage = () => {
         <PbxBreadcrumb section="Call Control" current="Inbound Routes" />
 
         <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
@@ -1381,7 +1382,7 @@ const InboundRoutesPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1396,7 +1397,7 @@ const InboundRoutesPage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
+                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1707,7 +1708,7 @@ const InboundRoutesPage = () => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                 gap: "8px 28px",
                 alignItems: "start",
               }}

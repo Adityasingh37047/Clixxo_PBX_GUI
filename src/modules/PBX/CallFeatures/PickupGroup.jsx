@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Alert,
+import {Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -10,8 +9,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Checkbox,
-} from "@mui/material";
+  Checkbox, useMediaQuery } from "@mui/material";
 import {
   createPickupGroup,
   deletePickupGroup,
@@ -20,6 +18,8 @@ import {
   updatePickupGroup,
 } from "../../../api/apiService";
 import { PICKUP_GROUP_ITEMS_PER_PAGE } from "../../../constants/PickupGroupConstants";
+const PBX_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -373,6 +373,7 @@ const SectionHeading = ({ title, isFirst = false, required }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PickupGroup = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -685,7 +686,7 @@ const PickupGroup = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
@@ -736,8 +737,7 @@ const PickupGroup = () => {
               flexWrap: "wrap",
               gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
             <div
               style={{
@@ -811,6 +811,9 @@ const PickupGroup = () => {
               overflowX: "hidden",
               overflowY: "auto",
               flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
             }}
           >
             {isInitialLoad ? (
@@ -1113,7 +1116,7 @@ const PickupGroup = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 48px 1fr",
+                      gridTemplateColumns: "1fr 48px 1fr", ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
                       gap: 12,
                     }}
                   >

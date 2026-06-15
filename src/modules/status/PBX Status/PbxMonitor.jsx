@@ -419,6 +419,17 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
+const monitorFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
+
 const sipPcmAuthFormBtnStyle = {
   minWidth: 110,
   height: 34,
@@ -551,15 +562,15 @@ const TypePill = ({ text }) => (
 );
 
 const tableWrapStyle = {
-  overflowX: "auto",
+  width: "100%",
+  overflowX: "hidden",
 };
 
 const tableStyle = {
   width: "100%",
-  minWidth: 900,
   borderCollapse: "separate",
   borderSpacing: 0,
-  tableLayout: "auto",
+  tableLayout: "fixed",
 };
 
 const TH = ({ children, width, align = "center", style: extra }) => (
@@ -684,30 +695,75 @@ const PbxMonitor = () => {
     (r) => normalizeStatus(r.status) === "registered",
   ).length;
 
-  const filteredExtensions = extensionRows.filter(
-    (r) =>
-      !searchQuery ||
-      String(r.extension).includes(searchQuery) ||
-      (r.name || "").toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredExtensions = extensionRows.filter((r) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    const status = getStatus(r.status).text.toLowerCase();
+    return (
+      String(r.extension ?? "").toLowerCase().includes(q) ||
+      (r.name || "").toLowerCase().includes(q) ||
+      status.includes(q) ||
+      (r.ip_port || "").toLowerCase().includes(q)
+    );
+  });
 
-  const filteredTrunks = trunkRows.filter(
-    (r) =>
-      !searchQuery ||
-      (r.trunk_name || "").toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredTrunks = trunkRows.filter((r) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    const status = getStatus(r.status).text.toLowerCase();
+    return (
+      (r.trunk_name || "").toLowerCase().includes(q) ||
+      (r.type || "sip").toLowerCase().includes(q) ||
+      status.includes(q) ||
+      (r.host_ip_port || "").toLowerCase().includes(q)
+    );
+  });
 
   const tableRows =
     activeTab === "extension" ? filteredExtensions : filteredTrunks;
+  const searchPlaceholder =
+    activeTab === "extension"
+      ? "Search extension, name, status, IP & port..."
+      : "Search trunk name, type, status, host...";
   const emptyMessage =
     activeTab === "extension"
       ? "No extensions found."
       : "No trunks found.";
+  const recordLabel =
+    activeTab === "extension"
+      ? `extension${tableRows.length !== 1 ? "s" : ""}`
+      : `trunk${tableRows.length !== 1 ? "s" : ""}`;
 
   return (
     <div style={pbxPageWrapStyle}>
       <div style={pbxPageInnerStyle}>
-        <PageBreadcrumb segments={["Status", "PBX Status", "PBX Monitor"]} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            marginBottom: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <PageBreadcrumb
+            segments={["Status", "PBX Status", "PBX Monitor"]}
+            style={{ marginBottom: 0 }}
+          />
+          {lastUpdated && (
+            <span
+              style={{
+                fontSize: 11,
+                color: C.mutedText,
+                flexShrink: 0,
+                marginLeft: "auto",
+              }}
+            >
+              Updated {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
 
         {/* Stats */}
         <div
@@ -792,7 +848,8 @@ const PbxMonitor = () => {
               <PbxToolbarSearchBar
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
+                placeholder={searchPlaceholder}
+                fitPlaceholder
               />
 
               <Btn
@@ -828,9 +885,9 @@ const PbxMonitor = () => {
                 <thead>
                   <tr>
                     <TH>Status</TH>
-                    <TH align="center">Extension</TH>
-                    <TH align="left">Name</TH>
-                    <TH align="center">Type</TH>
+                    <TH>Extension</TH>
+                    <TH>Name</TH>
+                    <TH>Type</TH>
                     <TH style={{ borderRight: "none" }}>IP & Port</TH>
                   </tr>
                 </thead>
@@ -859,14 +916,21 @@ const PbxMonitor = () => {
                         }}
                       >
                         <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                          <StatusBadge tone={status.tone} text={status.text} />
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <StatusBadge tone={status.tone} text={status.text} />
+                          </div>
                         </TD>
 
                         <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                           {row.extension}
                         </TD>
 
-                        <TD align="left" bg={rowBg} style={lastRowCellStyle}>
+                        <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                           {row.name}
                         </TD>
 
@@ -891,8 +955,8 @@ const PbxMonitor = () => {
                 <thead>
                   <tr>
                     <TH>Status</TH>
-                    <TH align="left">Trunk Name</TH>
-                    <TH align="center">Type</TH>
+                    <TH>Trunk Name</TH>
+                    <TH>Type</TH>
                     <TH style={{ borderRight: "none" }}>Host</TH>
                   </tr>
                 </thead>
@@ -921,10 +985,17 @@ const PbxMonitor = () => {
                         }}
                       >
                         <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                          <StatusBadge tone={status.tone} text={status.text} />
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <StatusBadge tone={status.tone} text={status.text} />
+                          </div>
                         </TD>
 
-                        <TD align="left" bg={rowBg} style={lastRowCellStyle}>
+                        <TD align="center" bg={rowBg} style={lastRowCellStyle}>
                           {row.trunk_name}
                         </TD>
 
@@ -946,6 +1017,14 @@ const PbxMonitor = () => {
               </table>
             )}
           </div>
+          )}
+
+          {hasLoaded && tableRows.length > 0 && (
+            <div style={monitorFooterStyle}>
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {tableRows.length} {recordLabel}
+              </span>
+            </div>
           )}
         </div>
       </div>

@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Alert,
+import {Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -13,8 +12,7 @@ import {
   MenuItem,
   Select as MuiSelect,
   Checkbox,
-  TextField,
-} from "@mui/material";
+  TextField, useMediaQuery } from "@mui/material";
 
 import {
   createPrivateGroup,
@@ -25,6 +23,8 @@ import {
 } from "../../../api/apiService";
 import { PRIVATE_GROUP_ITEMS_PER_PAGE } from "../../../constants/PrivateGroupConstants";
 const ENABLE_OPTIONS = ["Yes", "No"];
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -379,6 +379,7 @@ const SectionHeading = ({ title, isFirst = false, required }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PrivateGroup = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -699,7 +700,7 @@ const PrivateGroup = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
@@ -750,8 +751,7 @@ const PrivateGroup = () => {
               flexWrap: "wrap",
               gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
             <div
               style={{
@@ -821,7 +821,7 @@ const PrivateGroup = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1121,7 +1121,7 @@ const PrivateGroup = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                   gap: "16px 32px",
                 }}
               >
@@ -1173,7 +1173,7 @@ const PrivateGroup = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr",
+                  gridTemplateColumns: "1fr 48px 1fr", ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
                   gap: 12,
                 }}
               >

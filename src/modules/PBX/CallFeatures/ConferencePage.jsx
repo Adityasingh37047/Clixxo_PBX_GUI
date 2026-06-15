@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  Button,
+import {Button,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -15,8 +14,7 @@ import {
   Tooltip,
   Alert,
   Tabs,
-  Tab,
-} from "@mui/material";
+  Tab, useMediaQuery } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   listConferences,
@@ -102,6 +100,8 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
     </span>
   </div>
 );
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -380,6 +380,7 @@ const FieldRow = ({ label, children, required }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ConferencePage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const normalizeModeratorValue = (value) => String(value ?? "").trim();
   const normalizeExtensionValue = (value) => {
     const raw = String(value ?? "").trim();
@@ -939,7 +940,7 @@ const ConferencePage = () => {
   }, [moderatorMembers, extensionGroups]);
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
@@ -984,8 +985,7 @@ const ConferencePage = () => {
               flexWrap: "wrap",
               gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
             <div
               style={{
@@ -1133,7 +1133,7 @@ const ConferencePage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1486,7 +1486,7 @@ const ConferencePage = () => {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
+                        gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                         gap: "16px 32px",
                       }}
                     >
@@ -1791,7 +1791,7 @@ const ConferencePage = () => {
                       <div
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
+                          gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                           gap: 24,
                         }}
                       >
@@ -1930,7 +1930,7 @@ const ConferencePage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
+                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "16px 32px",
                     }}
                   >

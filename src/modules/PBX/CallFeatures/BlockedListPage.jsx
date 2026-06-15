@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import {
-  Alert,
+import {Alert,
   Button,
   Dialog,
   DialogTitle,
@@ -12,8 +11,7 @@ import {
   Select as MuiSelect,
   MenuItem,
   FormControl,
-  Checkbox,
-} from "@mui/material";
+  Checkbox, useMediaQuery } from "@mui/material";
 
 import {
   fetchBlockedList,
@@ -23,6 +21,8 @@ import {
   listConferenceExtensions,
 } from "../../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -253,6 +253,7 @@ const TableListLoading = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BlockedListPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -524,7 +525,7 @@ const BlockedListPage = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {error.text && (
@@ -575,8 +576,7 @@ const BlockedListPage = () => {
               flexWrap: "wrap",
               gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
             <div
               style={{
@@ -729,6 +729,9 @@ const BlockedListPage = () => {
               overflowX: "hidden",
               overflowY: "auto",
               flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
             }}
           >
             {isInitialLoad ? (

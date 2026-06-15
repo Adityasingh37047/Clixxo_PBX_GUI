@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Alert,
+import {Alert,
   Button,
   CircularProgress,
   Checkbox,
@@ -12,8 +11,7 @@ import {
   DialogTitle,
   FormControl,
   MenuItem,
-  Select,
-} from "@mui/material";
+  Select, useMediaQuery } from "@mui/material";
 import {
   createCCRoute,
   deleteCCRoute,
@@ -21,6 +19,8 @@ import {
   fetchCCRoutes,
   updateCCRoute,
 } from "../../../api/apiService";
+const PBX_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 const CC_INTERVAL_OPTIONS = [
   { value: "10", label: "10s" },
@@ -656,6 +656,7 @@ const CcDualListBtn = ({ onClick, title, children, reorder = false }) => (
 
 // ── Main Component ────────────────────────────────────────────────────────────
 const CCRoutePage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -946,7 +947,7 @@ const CCRoutePage = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* ── Error / Success Floating Banner ── */}
         {message.text && (
@@ -969,7 +970,7 @@ const CCRoutePage = () => {
         <PbxBreadcrumb section="Call Control" current="CC Route" />
 
         <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
             <div
               style={{
                 display: "flex",
@@ -1011,7 +1012,7 @@ const CCRoutePage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1026,7 +1027,7 @@ const CCRoutePage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
+                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1290,7 +1291,7 @@ const CCRoutePage = () => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                 gap: "8px 32px",
               }}
             >

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Button,
+import {Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -15,8 +14,7 @@ import {
   Alert,
   Tabs,
   Tab,
-  CircularProgress,
-} from "@mui/material";
+  CircularProgress, useMediaQuery } from "@mui/material";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -37,6 +35,8 @@ import {
   updateVoicePromptPreferences,
   uploadMohFile,
 } from "../../../api/apiService";
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -464,6 +464,7 @@ const toMessageText = (msg, fallback) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const VoicePromptsPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [activeTab, setActiveTab] = useState("promptPreference");
   const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -788,7 +789,7 @@ const VoicePromptsPage = () => {
   }, [mohAudioUrl, customAudioUrl]);
 
   return (
-    <div style={sipPcmFormPageWrapStyle}>
+    <div style={{ ...sipPcmFormPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={sipPcmFormPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
@@ -811,7 +812,9 @@ const VoicePromptsPage = () => {
         <PbxBreadcrumb section="Voice Prompts" current="Voice Prompts" />
 
         <div style={sipPcmFormCardStyle}>
-          <div style={{ ...sipPcmFormHeaderStyle, padding: "0 8px 0 6px" }}>
+          <div
+            style={{ ...sipPcmFormHeaderStyle, padding: "0 8px 0 6px", ...(isCompact ? { flexDirection: "column", alignItems: "stretch" } : {}) }}
+          >
             <Tabs
               value={activeTab}
               onChange={(_, id) => {
@@ -1050,7 +1053,7 @@ const VoicePromptsPage = () => {
                     style={{
                       width: "100%",
                       borderCollapse: "collapse",
-                      minWidth: 600,
+                      minWidth: 600, ...(isCompact ? { minWidth: 720 } : {}),
                     }}
                   >
                     <thead>
@@ -1387,7 +1390,7 @@ const VoicePromptsPage = () => {
                     style={{
                       width: "100%",
                       borderCollapse: "collapse",
-                      minWidth: 700,
+                      minWidth: 700, ...(isCompact ? { minWidth: 720 } : {}),
                     }}
                   >
                     <thead>

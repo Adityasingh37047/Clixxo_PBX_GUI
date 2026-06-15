@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Alert, CircularProgress } from "@mui/material";
+import {Alert, CircularProgress, useMediaQuery } from "@mui/material";
 import { getFeatureCodes, updateFeatureCodes } from "../../../api/apiService";
 import {
   FEATURE_CODE_SECTIONS,
@@ -8,6 +8,8 @@ import {
   API_TO_FORM,
   NUMERIC_KEYS,
 } from "../../../constants/FeatureCodeConstants";
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
@@ -384,6 +386,7 @@ const formToApi = (form) => {
 };
 
 const FeatureCodePage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [form, setForm] = useState({ ...FEATURE_CODE_INITIAL_FORM });
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
@@ -441,7 +444,7 @@ const FeatureCodePage = () => {
   };
 
   return (
-    <div style={sipPcmFormPageWrapStyle}>
+    <div style={{ ...sipPcmFormPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={sipPcmFormPageInnerStyle}>
         {message.text && (
           <div
@@ -492,7 +495,7 @@ const FeatureCodePage = () => {
                               key={rowIdx}
                               style={{
                                 display: "grid",
-                                gridTemplateColumns: "1fr 1fr",
+                                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                               }}
                             >
                               {isRight && <div />}
@@ -532,7 +535,7 @@ const FeatureCodePage = () => {
                             key={rowIdx}
                             style={{
                               display: "grid",
-                              gridTemplateColumns: "1fr 1fr",
+                              gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                             }}
                           >
                             {row.map((field) => (

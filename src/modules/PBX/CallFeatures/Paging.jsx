@@ -5,8 +5,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
 import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Alert,
+import {Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -17,8 +16,7 @@ import {
   MenuItem,
   Select as MuiSelect,
   Checkbox,
-  TextField,
-} from "@mui/material";
+  TextField, useMediaQuery } from "@mui/material";
 import {
   createPagingGroup,
   deletePagingGroup,
@@ -29,6 +27,8 @@ import {
 // Verify this matches your actual import path
 const PAGING_ITEMS_PER_PAGE = 20;
 const PAGING_TYPE_OPTIONS = ["one-way", "two-way"];
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -396,6 +396,7 @@ const SectionHeading = ({ title, isFirst = false, required }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Paging = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -768,7 +769,7 @@ const Paging = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
@@ -819,8 +820,7 @@ const Paging = () => {
               flexWrap: "wrap",
               gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
             <div
               style={{
@@ -893,6 +893,9 @@ const Paging = () => {
               overflowX: "hidden",
               overflowY: "auto",
               flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
             }}
           >
             {isInitialLoad ? (
@@ -1234,7 +1237,7 @@ const Paging = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                   gap: "16px 32px",
                 }}
               >

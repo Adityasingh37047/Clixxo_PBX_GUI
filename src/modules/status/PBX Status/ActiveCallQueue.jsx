@@ -10,7 +10,7 @@ import {
   fetchCallQueueAgentStats,
   fetchCallQueueQueueStats,
 } from "../../../api/apiService";
-import { CircularProgress, Tabs, Tab } from "@mui/material";
+import { CircularProgress, Tabs, Tab, useMediaQuery } from "@mui/material";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
@@ -245,6 +245,7 @@ const PBX_TOOLBAR_SEARCH_INPUT_FONT = {
   fontSize: 12,
   fontFamily: "Inter, sans-serif",
   letterSpacing: "normal",
+  fontWeight: 400,
 };
 
 const PbxToolbarSearchBar = ({
@@ -311,6 +312,7 @@ const PbxToolbarSearchBar = ({
         minWidth: fitPlaceholder ? "auto" : width,
         flexShrink: 0,
         position: "relative",
+        fontWeight: 400,
       }}
       onMouseEnter={setHover}
       onMouseLeave={handleMouseLeave}
@@ -328,7 +330,9 @@ const PbxToolbarSearchBar = ({
           }}
         />
       ) : null}
-      <span style={{ fontSize: 12, color: C.mutedText, flexShrink: 0 }}>🔍</span>
+      <span style={{ fontSize: 12, color: C.mutedText, flexShrink: 0 }}>
+        🔍
+      </span>
       <input
         ref={inputRef}
         type="text"
@@ -423,16 +427,6 @@ const sipPcmToolbarStyle = {
   borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
 };
 
-const sipPcmSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
 const sipPcmCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
@@ -471,16 +465,15 @@ const successGreen = "#16a34a";
 const cardHeader = "#1e2d42";
 const teal = "#0e7490";
 
-const toolbarStyle = {
+const statsFooterStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
   background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
 };
 
 // ── Shared: Answered rate progress bar ───────────────────────────────────────
@@ -588,6 +581,100 @@ const tableStyle = {
   borderSpacing: 0,
 };
 
+const statsTableWrapStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  overflowX: "hidden",
+};
+
+const statsTableStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "fixed",
+};
+
+/** Statistics headings: wrap inside column, centered with side spacing */
+const statsThStyle = {
+  textAlign: "center",
+  boxSizing: "border-box",
+  verticalAlign: "middle",
+  whiteSpace: "normal",
+  wordBreak: "break-word",
+  overflowWrap: "break-word",
+  padding: "8px 5px",
+  lineHeight: 1.35,
+  letterSpacing: "0.06em",
+};
+
+const statsTdWrapStyle = {
+  textAlign: "center",
+  whiteSpace: "normal",
+  wordBreak: "break-word",
+  overflow: "hidden",
+  boxSizing: "border-box",
+  verticalAlign: "middle",
+};
+
+const StatsTH = ({ children, style: extra }) => (
+  <TH align="center" style={{ ...statsThStyle, ...extra }}>
+    {children}
+  </TH>
+);
+
+const StatsTD = ({ children, bg, mono, muted, style: extra }) => (
+  <TD
+    align="center"
+    bg={bg}
+    mono={mono}
+    muted={muted}
+    style={{ ...statsTdWrapStyle, ...extra }}
+  >
+    <div style={{ width: "100%", textAlign: "center" }}>
+      {children != null && children !== "" ? (
+        children
+      ) : (
+        <span style={{ color: C.mutedText }}>—</span>
+      )}
+    </div>
+  </TD>
+);
+
+const AGENT_STATS_COL_WIDTHS = [
+  "8%",
+  "9%",
+  "9%",
+  "9%",
+  "8%",
+  "12%",
+  "16%",
+  "11%",
+  "9%",
+  "10%",
+];
+
+const QUEUE_STATS_COL_WIDTHS = [
+  "8%",
+  "11%",
+  "9%",
+  "8%",
+  "12%",
+  "11%",
+  "11%",
+  "12%",
+  "12%",
+  "15%",
+];
+
+const StatsColGroup = ({ widths }) => (
+  <colgroup>
+    {widths.map((width, index) => (
+      <col key={index} style={{ width }} />
+    ))}
+  </colgroup>
+);
+
 // ── Shared: Rate pill ─────────────────────────────────────────────────────────
 const RatePill = ({ value }) => (
   <span
@@ -640,7 +727,11 @@ const EmptyRow = ({ cols, msg = "No data available" }) => (
 // ═══════════════════════════════════════════════════════════════════════════
 // CALL QUEUE STATISTICS VIEW
 // ═══════════════════════════════════════════════════════════════════════════
+const STATS_COMPACT_MQ = "(max-width: 768px)";
+const STATS_TABLE_MIN_WIDTH = 900;
+
 const CallQueueStatistics = ({ onBack, initialQueue }) => {
+  const isCompact = useMediaQuery(STATS_COMPACT_MQ);
   const [activeTab, setActiveTab] = useState("agent");
   const [agentSearch, setAgentSearch] = useState("");
   const [agentData, setAgentData] = useState([]);
@@ -730,16 +821,43 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
     : agentData;
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
-        <PageBreadcrumb
-          segments={[
-            "Status",
-            "PBX Status",
-            "Active Call Queue",
-            "Call Queue Statistics",
-          ]}
-        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            marginBottom: 16,
+            flexWrap: "wrap",
+            ...(isCompact
+              ? { flexDirection: "column", alignItems: "flex-start", gap: 6 }
+              : {}),
+          }}
+        >
+          <PageBreadcrumb
+            segments={[
+              "Status",
+              "PBX Status",
+              "Active Call Queue",
+              "Call Queue Statistics",
+            ]}
+            style={{ marginBottom: 0 }}
+          />
+          {lastUpdated && (
+            <span
+              style={{
+                fontSize: 11,
+                color: C.mutedText,
+                flexShrink: 0,
+                ...(isCompact ? { marginLeft: 0 } : { marginLeft: "auto" }),
+              }}
+            >
+              Updated {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
 
         <div style={sipPcmFormCardStyle}>
           <div
@@ -750,6 +868,10 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
               alignItems: "center",
               justifyContent: "space-between",
               gap: 12,
+              flexWrap: "wrap",
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch" }
+                : {}),
             }}
           >
             <Tabs
@@ -762,7 +884,12 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                   height: 2,
                 },
               }}
-              sx={{ flex: 1, minWidth: 0, ...pbxHeaderTabsSx }}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                width: isCompact ? "100%" : undefined,
+                ...pbxHeaderTabsSx,
+              }}
             >
               <Tab label="AGENT STATISTICS" value="agent" />
               <Tab label="QUEUE STATISTICS" value="queue" />
@@ -774,12 +901,24 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                 alignItems: "center",
                 gap: 8,
                 flexShrink: 0,
+                flexWrap: "wrap",
+                marginLeft: "auto",
+                ...(isCompact
+                  ? {
+                      width: "100%",
+                      marginLeft: 0,
+                      justifyContent: "flex-end",
+                    }
+                  : {}),
               }}
             >
-              {lastUpdated && (
-                <span style={{ fontSize: 11, color: C.mutedText }}>
-                  Updated {lastUpdated.toLocaleTimeString()}
-                </span>
+              {activeTab === "agent" && (
+                <PbxToolbarSearchBar
+                  value={agentSearch}
+                  onChange={(e) => setAgentSearch(e.target.value)}
+                  placeholder="Search agent number, name..."
+                  fitPlaceholder
+                />
               )}
               <Btn
                 variant="cancel"
@@ -791,7 +930,11 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
               >
                 Clear
               </Btn>
-              <Btn variant="cancel" onClick={onBack} style={statsToolbarBtnStyle}>
+              <Btn
+                variant="cancel"
+                onClick={onBack}
+                style={statsToolbarBtnStyle}
+              >
                 ← Back
               </Btn>
             </div>
@@ -800,47 +943,44 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           {/* ── AGENT STATISTICS TAB ── */}
           {activeTab === "agent" && (
             <>
-              {/* Toolbar */}
-              <div style={toolbarStyle}>
-                <span
+              {/* Agent table */}
+              <div
+                style={{
+                  ...statsTableWrapStyle,
+                  ...(isCompact
+                    ? {
+                        overflowX: "auto",
+                        WebkitOverflowScrolling: "touch",
+                      }
+                    : {}),
+                }}
+              >
+                <table
                   style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
+                    ...statsTableStyle,
+                    ...(isCompact
+                      ? {
+                          minWidth: STATS_TABLE_MIN_WIDTH,
+                          tableLayout: "auto",
+                        }
+                      : {}),
                   }}
                 >
-                  {agentData.length} Agent{agentData.length !== 1 ? "s" : ""}
-                </span>
-
-                <PbxToolbarSearchBar
-                  value={agentSearch}
-                  onChange={(e) => setAgentSearch(e.target.value)}
-                  placeholder="Search agent number, name..."
-                  fitPlaceholder
-                />
-              </div>
-
-              {/* Agent table */}
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ ...tableStyle, minWidth: 900 }}>
+                  <StatsColGroup widths={AGENT_STATS_COL_WIDTHS} />
                   <thead>
                     <tr>
-                      <TH align="center">Agent No.</TH>
-                      <TH align="left">Agent Name</TH>
-                      <TH align="center">Online Time</TH>
-                      <TH align="center">Total Calls</TH>
-                      <TH align="center">Answered</TH>
-                      <TH align="center">Answered Rate</TH>
-                      <TH align="center">Caller Hangup (Ring)</TH>
-                      <TH align="center">Avg Talk Time</TH>
-                      <TH align="center">Idle Time</TH>
-                      <TH align="center" style={{ borderRight: "none" }}>
+                      <StatsTH>Agent No.</StatsTH>
+                      <StatsTH>Agent Name</StatsTH>
+                      <StatsTH>Online Time</StatsTH>
+                      <StatsTH>Total Calls</StatsTH>
+                      <StatsTH>Answered</StatsTH>
+                      <StatsTH>Answered Rate</StatsTH>
+                      <StatsTH>Caller Hangup (Ring)</StatsTH>
+                      <StatsTH>Avg Talk Time</StatsTH>
+                      <StatsTH>Idle Time</StatsTH>
+                      <StatsTH style={{ borderRight: "none" }}>
                         Avg Idle Time
-                      </TH>
+                      </StatsTH>
                     </tr>
                   </thead>
                   <tbody>
@@ -857,115 +997,130 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       />
                     ) : (
                       filteredAgents.map((row, i) => {
-                        const rowBg =
-                          i % 2 === 1 ? "#f8fafc" : "#ffffff";
-                        const isLastRow =
-                          i === filteredAgents.length - 1;
+                        const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                        const isLastRow = i === filteredAgents.length - 1;
                         const lastRowCellStyle = isLastRow
                           ? { borderBottom: "none" }
                           : {};
 
                         return (
-                        <tr
-                          key={i}
-                          style={{
-                            background: rowBg,
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "#f1f5f9";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = rowBg;
-                          }}
-                        >
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            <strong style={{ color: C.valueText }}>
-                              {row.agent_number ?? row.agentNumber ?? "—"}
-                            </strong>
-                          </TD>
-                          <TD align="left" bg={rowBg} style={lastRowCellStyle}>
-                            {row.agent_name ?? row.agentName ?? null}
-                          </TD>
-                          <TD align="center" mono bg={rowBg} style={lastRowCellStyle}>
-                            {row.online_time ?? row.onlineTime ?? null}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            {row.total_calls ?? row.totalCalls ?? 0}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            {row.answered_calls ?? row.answeredCalls ?? 0}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            <RatePill
-                              value={row.answered_rate ?? row.answeredRate ?? 0}
-                            />
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            {row.caller_hangup_while_agent_ring ??
-                              row.callerHangup ??
-                              0}
-                          </TD>
-                          <TD align="center" mono bg={rowBg} style={lastRowCellStyle}>
-                            {row.avg_talk_time ?? row.averageTalkTime ?? null}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            {row.idle_time ?? row.idleTime ?? null}
-                          </TD>
-                          <TD
-                            align="center"
-                            bg={rowBg}
-                            style={{ ...lastRowCellStyle, borderRight: "none" }}
+                          <tr
+                            key={i}
+                            style={{
+                              background: rowBg,
+                              transition: "background 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = "#f1f5f9";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = rowBg;
+                            }}
                           >
-                            {row.avg_idle_time ?? row.averageIdleTime ?? null}
-                          </TD>
-                        </tr>
-                      );
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              <strong style={{ color: C.valueText }}>
+                                {row.agent_number ?? row.agentNumber ?? "—"}
+                              </strong>
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.agent_name ?? row.agentName ?? null}
+                            </StatsTD>
+                            <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
+                              {row.online_time ?? row.onlineTime ?? null}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.total_calls ?? row.totalCalls ?? 0}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.answered_calls ?? row.answeredCalls ?? 0}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              <RatePill
+                                value={
+                                  row.answered_rate ?? row.answeredRate ?? 0
+                                }
+                              />
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.caller_hangup_while_agent_ring ??
+                                row.callerHangup ??
+                                0}
+                            </StatsTD>
+                            <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
+                              {row.avg_talk_time ?? row.averageTalkTime ?? null}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.idle_time ?? row.idleTime ?? null}
+                            </StatsTD>
+                            <StatsTD
+                              bg={rowBg}
+                              style={{
+                                ...lastRowCellStyle,
+                                borderRight: "none",
+                              }}
+                            >
+                              {row.avg_idle_time ?? row.averageIdleTime ?? null}
+                            </StatsTD>
+                          </tr>
+                        );
                       })
                     )}
                   </tbody>
                 </table>
               </div>
+
+              {agentData.length > 0 && (
+                <div style={statsFooterStyle}>
+                  <span style={{ fontSize: 11, color: C.mutedText }}>
+                    Showing {filteredAgents.length} Agent
+                    {filteredAgents.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              )}
             </>
           )}
 
           {/* ── QUEUE STATISTICS TAB ── */}
           {activeTab === "queue" && (
             <>
-              {/* Toolbar */}
-              <div style={toolbarStyle}>
-                <span
+              {/* Queue table */}
+              <div
+                style={{
+                  ...statsTableWrapStyle,
+                  ...(isCompact
+                    ? {
+                        overflowX: "auto",
+                        WebkitOverflowScrolling: "touch",
+                      }
+                    : {}),
+                }}
+              >
+                <table
                   style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
+                    ...statsTableStyle,
+                    ...(isCompact
+                      ? {
+                          minWidth: STATS_TABLE_MIN_WIDTH,
+                          tableLayout: "auto",
+                        }
+                      : {}),
                   }}
                 >
-                  {queueData.length} Queue{queueData.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-
-              {/* Queue table */}
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ ...tableStyle, minWidth: 800 }}>
+                  <StatsColGroup widths={QUEUE_STATS_COL_WIDTHS} />
                   <thead>
                     <tr>
-                      <TH align="center">Queue No.</TH>
-                      <TH align="left">Queue Name</TH>
-                      <TH align="center">Total Calls</TH>
-                      <TH align="center">Answered</TH>
-                      <TH align="center">Answered Rate</TH>
-                      <TH align="center">Avg Wait Time</TH>
-                      <TH align="center">Avg Talk Time</TH>
-                      <TH align="center">Caller Hangup</TH>
-                      <TH align="center">Timeout Calls</TH>
-                      <TH align="center" style={{ borderRight: "none" }}>
+                      <StatsTH>Queue No.</StatsTH>
+                      <StatsTH>Queue Name</StatsTH>
+                      <StatsTH>Total Calls</StatsTH>
+                      <StatsTH>Answered</StatsTH>
+                      <StatsTH>Answered Rate</StatsTH>
+                      <StatsTH>Avg Wait Time</StatsTH>
+                      <StatsTH>Avg Talk Time</StatsTH>
+                      <StatsTH>Caller Hangup</StatsTH>
+                      <StatsTH>Timeout Calls</StatsTH>
+                      <StatsTH style={{ borderRight: "none" }}>
                         Callback Calls
-                      </TH>
+                      </StatsTH>
                     </tr>
                   </thead>
                   <tbody>
@@ -975,74 +1130,86 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       <EmptyRow cols={10} msg="No queue data available" />
                     ) : (
                       queueData.map((row, i) => {
-                        const rowBg =
-                          i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                        const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
                         const isLastRow = i === queueData.length - 1;
                         const lastRowCellStyle = isLastRow
                           ? { borderBottom: "none" }
                           : {};
 
                         return (
-                        <tr
-                          key={i}
-                          style={{
-                            background: rowBg,
-                            transition: "background 0.15s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "#f1f5f9";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = rowBg;
-                          }}
-                        >
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            <strong style={{ color: C.valueText }}>
-                              {row.queue_number ?? row.queueNumber ?? "—"}
-                            </strong>
-                          </TD>
-                          <TD align="left" bg={rowBg} style={lastRowCellStyle}>
-                            {row.queue_name ?? row.queueName ?? null}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            {row.total_calls ?? row.totalCalls ?? 0}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            {row.answered_calls ?? row.answeredCalls ?? 0}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            <RatePill
-                              value={row.answered_rate ?? row.answeredRate ?? 0}
-                            />
-                          </TD>
-                          <TD align="center" mono bg={rowBg} style={lastRowCellStyle}>
-                            {row.average_wait_time ?? row.avgWaitTime ?? null}
-                          </TD>
-                          <TD align="center" mono bg={rowBg} style={lastRowCellStyle}>
-                            {row.average_talk_time ?? row.avgTalkTime ?? null}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            {row.caller_hangup ?? row.callerHangup ?? 0}
-                          </TD>
-                          <TD align="center" bg={rowBg} style={lastRowCellStyle}>
-                            {row.call_queue_timeout_calls ??
-                              row.timeoutCalls ??
-                              0}
-                          </TD>
-                          <TD
-                            align="center"
-                            bg={rowBg}
-                            style={{ ...lastRowCellStyle, borderRight: "none" }}
+                          <tr
+                            key={i}
+                            style={{
+                              background: rowBg,
+                              transition: "background 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = "#f1f5f9";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = rowBg;
+                            }}
                           >
-                            {row.callback_calls ?? row.callbackCalls ?? 0}
-                          </TD>
-                        </tr>
-                      );
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              <strong style={{ color: C.valueText }}>
+                                {row.queue_number ?? row.queueNumber ?? "—"}
+                              </strong>
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.queue_name ?? row.queueName ?? null}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.total_calls ?? row.totalCalls ?? 0}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.answered_calls ?? row.answeredCalls ?? 0}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              <RatePill
+                                value={
+                                  row.answered_rate ?? row.answeredRate ?? 0
+                                }
+                              />
+                            </StatsTD>
+                            <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
+                              {row.average_wait_time ?? row.avgWaitTime ?? null}
+                            </StatsTD>
+                            <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
+                              {row.average_talk_time ?? row.avgTalkTime ?? null}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.caller_hangup ?? row.callerHangup ?? 0}
+                            </StatsTD>
+                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                              {row.call_queue_timeout_calls ??
+                                row.timeoutCalls ??
+                                0}
+                            </StatsTD>
+                            <StatsTD
+                              bg={rowBg}
+                              style={{
+                                ...lastRowCellStyle,
+                                borderRight: "none",
+                              }}
+                            >
+                              {row.callback_calls ?? row.callbackCalls ?? 0}
+                            </StatsTD>
+                          </tr>
+                        );
                       })
                     )}
                   </tbody>
                 </table>
               </div>
+
+              {queueData.length > 0 && (
+                <div style={statsFooterStyle}>
+                  <span style={{ fontSize: 11, color: C.mutedText }}>
+                    Showing {queueData.length} Queue
+                    {queueData.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -1149,25 +1316,50 @@ const ActiveCallQueue = () => {
   return (
     <div style={pbxPageWrapStyle}>
       <div style={pbxPageInnerStyle}>
-        <PageBreadcrumb
-          segments={["Status", "PBX Status", "Active Call Queue"]}
-        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            marginBottom: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <PageBreadcrumb
+            segments={["Status", "PBX Status", "Active Call Queue"]}
+            style={{ marginBottom: 0 }}
+          />
+          {lastUpdated && (
+            <span
+              style={{
+                fontSize: 11,
+                color: C.mutedText,
+                flexShrink: 0,
+                marginLeft: "auto",
+              }}
+            >
+              Updated {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
 
         <div style={sipPcmCardStyle}>
           <div style={sipPcmToolbarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {hasLoaded && queueList.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
-                  {queueList.length} queue{queueList.length !== 1 ? "s" : ""}
-                </span>
-              )}
-              {lastUpdated && (
-                <span style={{ fontSize: 11, color: C.mutedText }}>
-                  Updated {lastUpdated.toLocaleTimeString()}
-                </span>
-              )}
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {hasLoaded && queueList.length > 0 && (
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {queueList.length} queue
+                {queueList.length !== 1 ? "s" : ""}
+              </span>
+            )}
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                marginLeft: "auto",
+              }}
+            >
               <Btn
                 variant="cancel"
                 onClick={() => loadActivity(false)}
@@ -1225,321 +1417,335 @@ const ActiveCallQueue = () => {
 
             {/* Main content */}
             {queueList.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                gap: 16,
-                alignItems: "flex-start",
-              }}
-            >
-            {/* ── LEFT: Queue list ── */}
-            <div style={{ width: 190, flexShrink: 0 }}>
               <div
                 style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: C.mutedText,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                  marginBottom: 8,
-                }}
-              >
-                Call Queues ({queueList.length})
-              </div>
-              {queueList.map((q, i) => {
-                const n = norm(q);
-                const isSelected = sel?.number === n.number;
-                return (
-                  <div
-                    key={i}
-                    onClick={() => setSelectedQueue(q)}
-                    style={{
-                      background: isSelected ? "#f0f9ff" : C.cardBg,
-                      border: `1px solid ${isSelected ? C.accent : C.cardBorder}`,
-                      borderLeft: `3px solid ${isSelected ? C.accent : "transparent"}`,
-                      borderRadius: CARD_RADIUS,
-                      padding: "10px 12px",
-                      marginBottom: 8,
-                      cursor: "pointer",
-                      transition: "all 0.15s ease",
-                      boxShadow: isSelected
-                        ? `0 0 0 1px ${C.accent}20`
-                        : "0 1px 3px rgba(0,0,0,0.04)",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isSelected)
-                        e.currentTarget.style.background = "#f8fafc";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isSelected)
-                        e.currentTarget.style.background = C.cardBg;
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: C.accent,
-                        marginBottom: 4,
-                      }}
-                    >
-                      {n.number}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: C.mutedText,
-                        marginBottom: 8,
-                      }}
-                    >
-                      {n.name}
-                    </div>
-
-                    {/* Active badge */}
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        // background: "#dcfce7",
-                        color: successGreen,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        padding: "1px 8px",
-                        borderRadius: 10,
-                        marginBottom: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 5,
-                          height: 5,
-                          borderRadius: "50%",
-                          background: successGreen,
-                        }}
-                      />
-                      {n.status}
-                    </span>
-
-                    <AnsweredRateBar rate={n.answeredRate} />
-                    <div
-                      style={{ fontSize: 10, color: C.mutedText, marginTop: 4 }}
-                    >
-                      Answered Rate: {n.answeredRate}%
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* ── RIGHT: Detail panel ── */}
-            {sel && (
-              <div
-                style={{
-                  flex: 1,
                   display: "flex",
                   flexDirection: "column",
-                  gap: 12,
+                  gap: 16,
                 }}
               >
-                {/* Queue header card */}
                 <div
                   style={{
-                    background: C.cardBg,
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: CARD_RADIUS,
-                    padding: "12px 18px",
                     display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                    gap: 16,
+                    alignItems: "flex-start",
                   }}
                 >
-                  <div>
+                  {/* ── LEFT: Queue list ── */}
+                  <div style={{ width: 190, flexShrink: 0 }}>
                     <div
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        marginBottom: 10,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: C.mutedText,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        marginBottom: 8,
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: 18,
-                          fontWeight: 700,
-                          color: C.valueText,
-                        }}
-                      >
-                        {sel.number}
-                      </span>
-                      <span style={{ fontSize: 13, color: C.labelText }}>
-                        ({sel.name})
-                      </span>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          // background: "#dcfce7",
-                          color: successGreen,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          padding: "2px 10px",
-                          borderRadius: 10,
-                        }}
-                      >
-                        <span
+                      Call Queues ({queueList.length})
+                    </div>
+                    {queueList.map((q, i) => {
+                      const n = norm(q);
+                      const isSelected = sel?.number === n.number;
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => setSelectedQueue(q)}
                           style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: "50%",
-                            background: successGreen,
+                            background: isSelected ? "#f0f9ff" : C.cardBg,
+                            border: `1px solid ${isSelected ? C.accent : C.cardBorder}`,
+                            borderLeft: `3px solid ${isSelected ? C.accent : "transparent"}`,
+                            borderRadius: CARD_RADIUS,
+                            padding: "10px 12px",
+                            marginBottom: 8,
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                            boxShadow: isSelected
+                              ? `0 0 0 1px ${C.accent}20`
+                              : "0 1px 3px rgba(0,0,0,0.04)",
                           }}
-                        />
-                        {sel.status}
-                      </span>
-                    </div>
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
-                    >
-                      <span style={{ fontSize: 11, color: C.labelText }}>
-                        Answered Rate
-                      </span>
-                      <div style={{ width: 160 }}>
-                        <AnsweredRateBar rate={sel.answeredRate} />
-                      </div>
-                      <span
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: C.valueText,
-                        }}
-                      >
-                        {sel.answeredRate}%
-                      </span>
-                    </div>
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = C.cardBg;
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 700,
+                              color: C.accent,
+                              marginBottom: 4,
+                            }}
+                          >
+                            {n.number}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: C.mutedText,
+                              marginBottom: 8,
+                            }}
+                          >
+                            {n.name}
+                          </div>
+
+                          {/* Active badge */}
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              // background: "#dcfce7",
+                              color: successGreen,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              padding: "1px 8px",
+                              borderRadius: 10,
+                              marginBottom: 8,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 5,
+                                height: 5,
+                                borderRadius: "50%",
+                                background: successGreen,
+                              }}
+                            />
+                            {n.status}
+                          </span>
+
+                          <AnsweredRateBar rate={n.answeredRate} />
+                          <div
+                            style={{
+                              fontSize: 10,
+                              color: C.mutedText,
+                              marginTop: 4,
+                            }}
+                          >
+                            Answered Rate: {n.answeredRate}%
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
 
-                {/* Call metrics — 4 cards */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(4,1fr)",
-                    gap: 10,
-                  }}
-                >
-                  <StatCard
-                    label="Total Calls"
-                    value={sel.totalCalls}
-                    color={C.accent}
-                  />
-                  <StatCard
-                    label="Answered Calls"
-                    value={sel.answeredCalls}
-                    color={C.accent}
-                  />
-                  <StatCard
-                    label="Waiting Calls"
-                    value={sel.waitingCalls}
-                    color={C.accent}
-                  />
-                  <StatCard
-                    label="Abandoned Calls"
-                    value={sel.abandonedCalls}
-                    color={C.accent}
-                  />
-                </div>
-
-                {/* Agent metrics — 4 cards */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(4,1fr)",
-                    gap: 10,
-                  }}
-                >
-                  <StatCard
-                    label="Total Agents"
-                    value={sel.totalAgents}
-                    color={C.accent}
-                  />
-                  <StatCard
-                    label="Active Agents"
-                    value={sel.activeAgents}
-                    color={C.accent}
-                  />
-                  <StatCard
-                    label="Idle Agents"
-                    value={sel.idleAgents}
-                    color={C.accent}
-                  />
-                  <StatCard
-                    label="On Call Agents"
-                    value={sel.onCallAgents}
-                    color={C.accent}
-                  />
-                </div>
-
-                {/* Timing — 2 cards */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2,1fr)",
-                    gap: 10,
-                  }}
-                >
-                  {[
-                    { label: "Average Waiting Time", value: sel.avgWaitTime },
-                    { label: "Average Talking Time", value: sel.avgTalkTime },
-                  ].map(({ label, value }) => (
+                  {/* ── RIGHT: Detail panel ── */}
+                  {sel && (
                     <div
-                      key={label}
                       style={{
-                        background: C.cardBg,
-                        border: `1px solid ${C.cardBorder}`,
-                        borderRadius: CARD_RADIUS,
-                        padding: "12px 18px",
+                        flex: 1,
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                        flexDirection: "column",
+                        gap: 12,
                       }}
                     >
-                      <span
+                      {/* Queue header card */}
+                      <div
                         style={{
-                          fontSize: 12,
-                          color: C.labelText,
-                          fontWeight: 500,
+                          background: C.cardBg,
+                          border: `1px solid ${C.cardBorder}`,
+                          borderRadius: CARD_RADIUS,
+                          padding: "12px 18px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                         }}
                       >
-                        {label}
-                      </span>
-                      <span
+                        <div>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              marginBottom: 10,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: 18,
+                                fontWeight: 700,
+                                color: C.valueText,
+                              }}
+                            >
+                              {sel.number}
+                            </span>
+                            <span style={{ fontSize: 13, color: C.labelText }}>
+                              ({sel.name})
+                            </span>
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                // background: "#dcfce7",
+                                color: successGreen,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                padding: "2px 10px",
+                                borderRadius: 10,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  background: successGreen,
+                                }}
+                              />
+                              {sel.status}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                            }}
+                          >
+                            <span style={{ fontSize: 11, color: C.labelText }}>
+                              Answered Rate
+                            </span>
+                            <div style={{ width: 160 }}>
+                              <AnsweredRateBar rate={sel.answeredRate} />
+                            </div>
+                            <span
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color: C.valueText,
+                              }}
+                            >
+                              {sel.answeredRate}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Call metrics — 4 cards */}
+                      <div
                         style={{
-                          fontSize: 15,
-                          fontWeight: 700,
-                          color: C.accent,
-                          fontFamily: "monospace",
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4,1fr)",
+                          gap: 10,
                         }}
                       >
-                        {value}
-                      </span>
+                        <StatCard
+                          label="Total Calls"
+                          value={sel.totalCalls}
+                          color={C.accent}
+                        />
+                        <StatCard
+                          label="Answered Calls"
+                          value={sel.answeredCalls}
+                          color={C.accent}
+                        />
+                        <StatCard
+                          label="Waiting Calls"
+                          value={sel.waitingCalls}
+                          color={C.accent}
+                        />
+                        <StatCard
+                          label="Abandoned Calls"
+                          value={sel.abandonedCalls}
+                          color={C.accent}
+                        />
+                      </div>
+
+                      {/* Agent metrics — 4 cards */}
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4,1fr)",
+                          gap: 10,
+                        }}
+                      >
+                        <StatCard
+                          label="Total Agents"
+                          value={sel.totalAgents}
+                          color={C.accent}
+                        />
+                        <StatCard
+                          label="Active Agents"
+                          value={sel.activeAgents}
+                          color={C.accent}
+                        />
+                        <StatCard
+                          label="Idle Agents"
+                          value={sel.idleAgents}
+                          color={C.accent}
+                        />
+                        <StatCard
+                          label="On Call Agents"
+                          value={sel.onCallAgents}
+                          color={C.accent}
+                        />
+                      </div>
+
+                      {/* Timing — 2 cards */}
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(2,1fr)",
+                          gap: 10,
+                        }}
+                      >
+                        {[
+                          {
+                            label: "Average Waiting Time",
+                            value: sel.avgWaitTime,
+                          },
+                          {
+                            label: "Average Talking Time",
+                            value: sel.avgTalkTime,
+                          },
+                        ].map(({ label, value }) => (
+                          <div
+                            key={label}
+                            style={{
+                              background: C.cardBg,
+                              border: `1px solid ${C.cardBorder}`,
+                              borderRadius: CARD_RADIUS,
+                              padding: "12px 18px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: 12,
+                                color: C.labelText,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {label}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 700,
+                                color: C.accent,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
-            )}
-            </div>
-          </div>
             )}
           </div>
         </div>

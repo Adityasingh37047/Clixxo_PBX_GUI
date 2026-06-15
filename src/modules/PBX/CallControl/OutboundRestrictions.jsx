@@ -1,9 +1,20 @@
-import React from 'react'
+import React from "react";
+import { useMediaQuery } from "@mui/material";
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const OutboundRestrictions = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   return (
-    <div>Outbound Restrictions</div>
-  )
-}
+    <div
+      style={{
+        padding: isCompact ? 8 : 16,
+        minHeight: "calc(100vh - 80px)",
+      }}
+    >
+      Outbound Restrictions
+    </div>
+  );
+};
 
-export default OutboundRestrictions
+export default OutboundRestrictions;

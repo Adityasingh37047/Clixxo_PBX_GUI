@@ -18,8 +18,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Dialog,
+import {Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -37,8 +36,7 @@ import {
   Radio,
   RadioGroup,
   Tabs,
-  Tab,
-} from "@mui/material";
+  Tab, useMediaQuery } from "@mui/material";
 import {
   fetchSipAccounts,
   listSipTrunks,
@@ -47,6 +45,8 @@ import {
   deleteSipTrunk,
   fetchSystemInfo,
 } from "../../../api/apiService";
+const PBX_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
   pageBg: "#f8fafc",
@@ -988,6 +988,7 @@ const scheduleSipRegisterZoomMeasure = (measure) => {
 };
 
 const useSipRegisterBrowserZoom110 = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [highZoom, setHighZoom] = useState(false);
 
   useEffect(() => {
@@ -2434,7 +2435,7 @@ const SipRegisterPage = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {message.text && (
           <Alert
@@ -2456,7 +2457,7 @@ const SipRegisterPage = () => {
         <PbxBreadcrumb section="Trunks" current="SIP Register" />
 
         <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
@@ -4264,7 +4265,7 @@ const SipRegisterPage = () => {
                       <div
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 48px 1fr",
+                          gridTemplateColumns: "1fr 48px 1fr", ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
                           gap: 12,
                           alignItems: "start",
                         }}

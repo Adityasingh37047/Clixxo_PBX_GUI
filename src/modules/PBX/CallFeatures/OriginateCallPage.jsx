@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import {
-  CircularProgress,
+import {CircularProgress,
   FormControl,
   Select as MuiSelect,
   MenuItem,
@@ -8,8 +7,9 @@ import {
   FormControlLabel,
   Radio,
   Checkbox,
-  Alert,
-} from "@mui/material";
+  Alert, useMediaQuery } from "@mui/material";
+const PBX_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Local page UI (pilot: inlined from pbxSharedUi / sipPcmSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -476,6 +476,7 @@ const FormFieldRow = ({
 );
 
 const OriginateCallPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [mode, setMode] = useState("simple"); // 'simple' | 'twostep'
 
   // Left Column States
@@ -569,7 +570,7 @@ const OriginateCallPage = () => {
   };
 
   return (
-    <div style={sipPcmFormPageWrapStyle}>
+    <div style={{ ...sipPcmFormPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={sipPcmFormPageInnerStyle}>
         {message.text && (
           <div

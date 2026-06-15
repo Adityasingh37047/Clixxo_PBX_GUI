@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Dialog,
+import {Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -8,8 +7,7 @@ import {
   CircularProgress,
   Checkbox,
   FormControlLabel,
-  Alert,
-} from "@mui/material";
+  Alert, useMediaQuery } from "@mui/material";
 
 import {
   fetchSipAccounts,
@@ -20,6 +18,8 @@ import {
 } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color palette (matches PBX / CDR) ────────────────────────────────────────
 
@@ -417,6 +417,7 @@ const SipPcmPagination = ({
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ExtensionGroupsPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState({
     fetch: false,
@@ -639,7 +640,7 @@ const ExtensionGroupsPage = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Error Banner */}
         {/* ── Error / Success Floating Banner ── */}
@@ -663,7 +664,7 @@ const ExtensionGroupsPage = () => {
         <PbxBreadcrumb section="Extensions" current="Extension Group" />
 
         <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selectedIds.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
@@ -786,7 +787,7 @@ const ExtensionGroupsPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : dataEmpty ? (

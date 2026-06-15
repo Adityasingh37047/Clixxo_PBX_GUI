@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Button,
+import {Button,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -10,8 +9,7 @@ import {
   DialogTitle,
   Checkbox,
   TextField,
-  Alert,
-} from "@mui/material";
+  Alert, useMediaQuery } from "@mui/material";
 import {
   createSpeedDial,
   deleteSpeedDial,
@@ -20,6 +18,8 @@ import {
   exportSpeedDialCsv,
   importSpeedDialCsv,
 } from "../../../api/apiService";
+const PBX_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -296,6 +296,7 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SpeedDialPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -566,7 +567,7 @@ const SpeedDialPage = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
@@ -611,8 +612,7 @@ const SpeedDialPage = () => {
               flexWrap: "wrap",
               gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
@@ -720,6 +720,9 @@ const SpeedDialPage = () => {
               overflowX: "hidden",
               overflowY: "auto",
               flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
             }}
           >
             {isInitialLoad ? (

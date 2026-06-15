@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Alert,
+import {Alert,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -12,8 +11,7 @@ import {
   FormControl,
   MenuItem,
   Select,
-  TextField,
-} from "@mui/material";
+  TextField, useMediaQuery } from "@mui/material";
 import {
   createOutboundRoute,
   deleteOutboundRoute,
@@ -200,6 +198,8 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const pbxModalCancelBtnStyle = {
@@ -804,6 +804,7 @@ const outboundPatternActionBtnStyle = {
 };
 
 const OutboundRoutesPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -1450,7 +1451,7 @@ const OutboundRoutesPage = () => {
     rows.some((_, index) => selected.includes(index)) && !allRowsSelected;
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {message.text && (
           <Alert
@@ -1472,7 +1473,7 @@ const OutboundRoutesPage = () => {
         <PbxBreadcrumb section="Call Control" current="Outbound Routes" />
 
         <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
             <div
               style={{
                 display: "flex",
@@ -1516,8 +1517,7 @@ const OutboundRoutesPage = () => {
             </div>
           </div>
 
-          <div
-            style={{
+          <div style={{
               overflowX: "auto",
               overflowY: "auto",
               flex: 1,
@@ -1537,7 +1537,7 @@ const OutboundRoutesPage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
+                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1860,7 +1860,7 @@ const OutboundRoutesPage = () => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                 gap: "8px 28px",
                 alignItems: "start",
               }}

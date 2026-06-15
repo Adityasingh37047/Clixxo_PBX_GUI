@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Dialog,
+import {Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -15,8 +14,7 @@ import {
   Tabs,
   Tab,
   Checkbox,
-  ListSubheader,
-} from "@mui/material";
+  ListSubheader, useMediaQuery } from "@mui/material";
 import {
   fetchCallQueues,
   createCallQueue,
@@ -33,6 +31,8 @@ import {
   ANNOUNCE_FREQ_OPTIONS,
   CALL_QUEUE_TABLE_COLUMNS,
 } from "../../../constants/CallQueueConstants";
+const PBX_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Local page UI (pilot: inlined from pbxSharedUi) ──
 const C = {
   pageBg: "#f8fafc",
@@ -443,6 +443,7 @@ const FieldRow = ({ label, children }) => (
 );
 
 const CallQueue = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [queues, setQueues] = useState([]);
   const [form, setForm] = useState({ ...CALL_QUEUE_INITIAL_FORM });
   const [showModal, setShowModal] = useState(false);
@@ -856,7 +857,7 @@ const CallQueue = () => {
     RING_STRATEGY_OPTIONS.find((o) => o.value === v)?.label || v;
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
         {/* Modal */}
       <Dialog
         open={showModal}
@@ -2065,7 +2066,7 @@ const CallQueue = () => {
             </div>
           </div>
 
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : queues.length === 0 ? (
@@ -2080,7 +2081,7 @@ const CallQueue = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 700,
+                  minWidth: 700, ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>

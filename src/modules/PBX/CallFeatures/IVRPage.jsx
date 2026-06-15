@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import {
-  Button,
+import {Button,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -19,8 +18,7 @@ import {
   InputAdornment,
   Alert,
   Tabs,
-  Tab,
-} from "@mui/material";
+  Tab, useMediaQuery } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   listIvrDestinations,
@@ -33,6 +31,8 @@ import {
   getIvr,
   setIvrKeys,
 } from "../../../api/apiService";
+
+const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Constants & Helpers ───────────────────────────────────────────────────────
 const ENABLE_OPTIONS = ["Yes", "No"];
@@ -534,6 +534,7 @@ const FieldRow = ({ label, children, required }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const IVRPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -1419,7 +1420,7 @@ const IVRPage = () => {
   };
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
@@ -1464,8 +1465,7 @@ const IVRPage = () => {
               flexWrap: "wrap",
               gap: 12,
               borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
             <div
               style={{
@@ -1613,7 +1613,7 @@ const IVRPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -2023,7 +2023,7 @@ const IVRPage = () => {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
+                        gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                         gap: "16px 40px",
                       }}
                     >
@@ -2659,7 +2659,7 @@ const IVRPage = () => {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
+                        gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                         gap: "16px 40px",
                       }}
                     >

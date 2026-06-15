@@ -9,7 +9,7 @@ import {
   PCM_LOOPBACK_BUTTONS,
   PCM0_BUTTONS,
 } from "../../../constants/PcmCircuitMaintenanceConstants";
-import { Checkbox, Tooltip } from "@mui/material";
+import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 import { listPstn, listChannelState } from "../../../api/apiService";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import RingVolumeIcon from "@mui/icons-material/RingVolume";
@@ -472,9 +472,12 @@ const checkboxSx = {
 };
 
 const PAGE_CHROME_OFFSET = 80; // navbar + layout padding
+const PCM_COMPACT_MQ = "(max-width: 768px)";
 
 const PcmCircuitMaintenancePage = () => {
   const highZoom = useBrowserZoom110();
+  const isCompact = useMediaQuery(PCM_COMPACT_MQ);
+  const channelScroll = highZoom || isCompact;
 
   // State for checkboxes and table data
   const [maintenanceChecked, setMaintenanceChecked] = useState(false);
@@ -493,6 +496,10 @@ const PcmCircuitMaintenancePage = () => {
   const [contentOverflows, setContentOverflows] = useState(false);
 
   const measurePageFit = useCallback(() => {
+    if (isCompact) {
+      setContentOverflows(true);
+      return;
+    }
     if (!isBrowserZoomAtLeast110()) {
       setContentOverflows(false);
       return;
@@ -503,7 +510,7 @@ const PcmCircuitMaintenancePage = () => {
     const available = window.innerHeight - PAGE_CHROME_OFFSET;
     const totalContent = contentEl.scrollHeight + 32; // page padding (16 × 2)
     setContentOverflows(totalContent > available + 1);
-  }, []);
+  }, [isCompact]);
 
   useEffect(() => {
     const schedule = () => requestAnimationFrame(measurePageFit);
@@ -548,11 +555,11 @@ const PcmCircuitMaintenancePage = () => {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [measurePageFit, spansData.length, channels.length, highZoom]);
+  }, [measurePageFit, spansData.length, channels.length, highZoom, isCompact]);
 
   useEffect(() => {
     measurePageFit();
-  }, [contentOverflows, measurePageFit, highZoom]);
+  }, [contentOverflows, measurePageFit, highZoom, isCompact]);
 
   // Map API channel state -> icon index (same as PSTN Status page)
   const stateToIconIndex = (state) => {
@@ -750,7 +757,7 @@ const PcmCircuitMaintenancePage = () => {
 
   // PCM Maintenance section
   const renderPcmMaintenance = () => (
-    <div style={{ ...topConfigCardStyle, marginBottom: highZoom ? 25 : 14 }}>
+    <div style={{ ...topConfigCardStyle, marginBottom: channelScroll ? 25 : 14 }}>
       <div style={topConfigSectionHeaderStyle}>PCM Maintenance</div>
       <div style={{ overflowX: "hidden" }}>
         <table style={tableStyle}>
@@ -820,16 +827,27 @@ const PcmCircuitMaintenancePage = () => {
           </tbody>
         </table>
       </div>
-      <div style={topConfigActionBarStyle}>
+      <div
+        style={{
+          ...topConfigActionBarStyle,
+          ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
+        }}
+      >
         <Btn onClick={() => setMaintenanceChecked(true)}>Check All</Btn>
         <Btn onClick={() => setMaintenanceChecked(false)}>Uncheck All</Btn>
         <Btn onClick={() => setMaintenanceChecked((v) => !v)}>Inverse</Btn>
         <Btn disabled={!maintenanceChecked}>Block</Btn>
         <Btn disabled={!maintenanceChecked}>Unblock</Btn>
-        <Btn disabled={!maintenanceChecked} style={{ minWidth: 180 }}>
+        <Btn
+          disabled={!maintenanceChecked}
+          style={isCompact ? { minWidth: 0 } : { minWidth: 180 }}
+        >
           Physical Connect
         </Btn>
-        <Btn disabled={!maintenanceChecked} style={{ minWidth: 180 }}>
+        <Btn
+          disabled={!maintenanceChecked}
+          style={isCompact ? { minWidth: 0 } : { minWidth: 180 }}
+        >
           Physical Disconnect
         </Btn>
       </div>
@@ -839,7 +857,7 @@ const PcmCircuitMaintenancePage = () => {
   // PCM LoopBack Config section
   const renderPcmLoopback = () => (
     <div
-      style={{ ...topConfigCardLastStyle, marginBottom: highZoom ? 25 : 14 }}
+      style={{ ...topConfigCardLastStyle, marginBottom: channelScroll ? 25 : 14 }}
     >
       <div style={topConfigSectionHeaderStyle}>PCM LoopBack Config</div>
       <div style={{ overflowX: "hidden" }}>
@@ -910,17 +928,31 @@ const PcmCircuitMaintenancePage = () => {
           </tbody>
         </table>
       </div>
-      <div style={topConfigActionBarStyle}>
+      <div
+        style={{
+          ...topConfigActionBarStyle,
+          ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
+        }}
+      >
         <Btn onClick={() => setLoopbackChecked(true)}>Check All</Btn>
         <Btn onClick={() => setLoopbackChecked(false)}>Uncheck All</Btn>
         <Btn onClick={() => setLoopbackChecked((v) => !v)}>Inverse</Btn>
-        <Btn disabled={!loopbackChecked} style={{ minWidth: 160 }}>
+        <Btn
+          disabled={!loopbackChecked}
+          style={isCompact ? { minWidth: 0 } : { minWidth: 160 }}
+        >
           Local LoopBack
         </Btn>
-        <Btn disabled={!loopbackChecked} style={{ minWidth: 160 }}>
+        <Btn
+          disabled={!loopbackChecked}
+          style={isCompact ? { minWidth: 0 } : { minWidth: 160 }}
+        >
           Remote LoopBack
         </Btn>
-        <Btn disabled={!loopbackChecked} style={{ minWidth: 120 }}>
+        <Btn
+          disabled={!loopbackChecked}
+          style={isCompact ? { minWidth: 0 } : { minWidth: 120 }}
+        >
           UnLoopBack
         </Btn>
       </div>
@@ -939,35 +971,35 @@ const PcmCircuitMaintenancePage = () => {
 
   const channelThFit = (extra = {}) => ({
     ...channelThStyle,
-    whiteSpace: highZoom ? "nowrap" : "normal",
-    padding: highZoom ? "6px 2px" : "3px 1px",
-    fontSize: highZoom ? 10 : 9,
+    whiteSpace: channelScroll ? "nowrap" : "normal",
+    padding: channelScroll ? "6px 2px" : "3px 1px",
+    fontSize: channelScroll ? 10 : 9,
     overflow: "hidden",
     ...extra,
   });
 
   const channelLabelThFit = (extra = {}) => ({
     ...channelThFit({ borderLeft: "none", ...extra }),
-    width: highZoom ? CHANNEL_LABEL_COL_WIDTH : "8%",
-    minWidth: highZoom ? CHANNEL_LABEL_COL_WIDTH : 0,
-    maxWidth: highZoom ? CHANNEL_LABEL_COL_WIDTH : "8%",
+    width: channelScroll ? CHANNEL_LABEL_COL_WIDTH : "8%",
+    minWidth: channelScroll ? CHANNEL_LABEL_COL_WIDTH : 0,
+    maxWidth: channelScroll ? CHANNEL_LABEL_COL_WIDTH : "8%",
   });
 
   const channelLabelTdFit = (extra = {}) => ({
     ...channelRowLabelStyle,
-    width: highZoom ? 72 : "8%",
-    minWidth: highZoom ? 72 : 0,
-    maxWidth: highZoom ? 72 : "8%",
-    fontSize: highZoom ? 11 : 10,
-    padding: highZoom ? "6px 4px" : "4px 2px",
-    whiteSpace: highZoom ? "nowrap" : "normal",
+    width: channelScroll ? 72 : "8%",
+    minWidth: channelScroll ? 72 : 0,
+    maxWidth: channelScroll ? 72 : "8%",
+    fontSize: channelScroll ? 11 : 10,
+    padding: channelScroll ? "6px 4px" : "4px 2px",
+    whiteSpace: channelScroll ? "nowrap" : "normal",
     ...extra,
   });
 
   const channelDataTdFit = (extra = {}) => ({
     ...channelTdStyle,
-    padding: highZoom ? "4px 2px" : "2px 1px",
-    fontSize: highZoom ? 12 : 10,
+    padding: channelScroll ? "4px 2px" : "2px 1px",
+    fontSize: channelScroll ? 12 : 10,
     overflow: "hidden",
     ...extra,
   });
@@ -976,7 +1008,7 @@ const PcmCircuitMaintenancePage = () => {
     ...channelDataTdFit(extra),
     textAlign: "center",
     verticalAlign: "middle",
-    padding: highZoom ? "6px 2px" : "5px 1px",
+    padding: channelScroll ? "6px 2px" : "5px 1px",
   });
 
   // Update PCM0_HEADERS in the component
@@ -1003,9 +1035,9 @@ const PcmCircuitMaintenancePage = () => {
 
   const renderPcm0 = () => {
     return (
-      <div style={{ ...channelCardStyle, marginBottom: highZoom ? 24 : 12 }}>
+      <div style={{ ...channelCardStyle, marginBottom: channelScroll ? 24 : 12 }}>
         <div style={sectionHeaderStyle}>PCM 0</div>
-        <AdaptiveChannelTable channelCount={32} scrollEnabled={highZoom}>
+        <AdaptiveChannelTable channelCount={32} scrollEnabled={channelScroll}>
           <thead>
             <tr>
               <th style={channelLabelThFit()}>Channel No.</th>
@@ -1157,7 +1189,12 @@ const PcmCircuitMaintenancePage = () => {
             </tr>
           </tbody>
         </AdaptiveChannelTable>
-        <div style={actionBarStyle}>
+        <div
+          style={{
+            ...actionBarStyle,
+            ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
+          }}
+        >
           <Btn onClick={handleCheckAll}>Check All</Btn>
           <Btn onClick={handleUncheckAll}>Uncheck All</Btn>
           <Btn onClick={handleInverse}>Inverse</Btn>
@@ -1185,14 +1222,14 @@ const PcmCircuitMaintenancePage = () => {
     return (
       <div
         key={span.spanId}
-        style={{ ...channelCardStyle, marginBottom: highZoom ? 24 : 12 }}
+        style={{ ...channelCardStyle, marginBottom: channelScroll ? 24 : 12 }}
       >
         <div style={sectionHeaderStyle}>
           {span.name} · {span.ip}
         </div>
         <AdaptiveChannelTable
           channelCount={span.channelRanges.length}
-          scrollEnabled={highZoom}
+          scrollEnabled={channelScroll}
         >
           <thead>
             <tr>
@@ -1332,12 +1369,12 @@ const PcmCircuitMaintenancePage = () => {
     <div
       style={{
         backgroundColor: C.pageBg,
-        padding: 16,
+        padding: isCompact ? 8 : 16,
         boxSizing: "border-box",
         width: "100%",
         maxWidth: "100vw",
         overflowX: "hidden",
-        ...(highZoom || contentOverflows
+        ...(highZoom || isCompact || contentOverflows
           ? { minHeight: "calc(100vh - 80px)", overflowY: "auto" }
           : {
               height: "calc(100vh - 80px)",
@@ -1351,7 +1388,7 @@ const PcmCircuitMaintenancePage = () => {
         style={{
           maxWidth: "100%",
           margin: "0 auto",
-          overflow: "hidden",
+          overflow: isCompact ? "visible" : "hidden",
         }}
       >
         {/* Breadcrumb */}
@@ -1359,11 +1396,12 @@ const PcmCircuitMaintenancePage = () => {
           style={{
             fontSize: 12,
             color: C.mutedText,
-            marginBottom: highZoom ? 16 : 10,
+            marginBottom: channelScroll ? 16 : 10,
             fontWeight: 400,
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           <span>E1-PRI</span>

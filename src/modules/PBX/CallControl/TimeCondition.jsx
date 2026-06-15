@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Alert,
+import {Alert,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -10,8 +9,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  TextField,
-} from "@mui/material";
+  TextField, useMediaQuery } from "@mui/material";
 import {
   TC_TITLE,
   TC_TYPES,
@@ -30,6 +28,8 @@ import {
   deleteTimeCondition,
   deleteAllTimeConditions,
 } from "../../../api/apiService";
+const PBX_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
   pageBg: "#f8fafc",
@@ -759,6 +759,7 @@ const TimeSelect = ({ value, onChange, options }) => (
 
 // ─── main component ──────────────────────────────────────────────────────────
 const TimeCondition = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -997,7 +998,7 @@ const TimeCondition = () => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         {toast.msg && (
           <Alert
@@ -1019,7 +1020,7 @@ const TimeCondition = () => {
         <PbxBreadcrumb section="Call Control" current={TC_TITLE} />
 
         <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
             <div
               style={{
                 display: "flex",
@@ -1069,7 +1070,7 @@ const TimeCondition = () => {
             </div>
           </div>
 
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1084,7 +1085,7 @@ const TimeCondition = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
+                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
