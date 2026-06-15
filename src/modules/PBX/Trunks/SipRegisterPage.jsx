@@ -988,7 +988,6 @@ const scheduleSipRegisterZoomMeasure = (measure) => {
 };
 
 const useSipRegisterBrowserZoom110 = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [highZoom, setHighZoom] = useState(false);
 
   useEffect(() => {
@@ -1061,6 +1060,8 @@ const useSipRegisterBrowserZoom110 = () => {
 };
 
 const SipRegisterPage = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+
   // State
   const [trunks, setTrunks] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
