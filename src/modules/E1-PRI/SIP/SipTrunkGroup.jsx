@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SIP_TRUNK_GROUP_FIELDS,
   SIP_TRUNK_GROUP_INITIAL_FORM,
@@ -27,9 +27,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 // ── Local page UI (inlined from e1PriSharedUi)
 const C = {
@@ -463,12 +461,86 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
+const getGroupIdValue = (group) =>
+  String(group?.group_id ?? group?.groupId ?? "").trim();
+
+const resolveGroupIdValue = (group) => {
+  const explicit = getGroupIdValue(group);
+  if (explicit) return explicit;
+  const recordId = group?.id;
+  return recordId !== undefined && recordId !== null
+    ? String(recordId).trim()
+    : "";
+};
+
+const IGNORED_GROUP_REF_VALUES = new Set([
+  "",
+  "any",
+  "Any",
+  "undefined",
+  "null",
+]);
+
+const SIP_ROUTE_REF_FIELDS = [
+  "call_source",
+  "callSource",
+  "source_group",
+  "source_group_id",
+  "sip_trunk_group",
+  "sip_trunk_group_id",
+];
+
+const SIP_MANIP_REF_FIELDS = [
+  "call_initiator",
+  "callInitiator",
+  "callInitiatorId",
+  "call_initiator_id",
+  "sip_trunk_group",
+  "sip_trunk_group_id",
+];
+
+const SIP_MANIPULATION_TYPES = [
+  "ip_in_callerid",
+  "ip_in_calleeid",
+  "ip_in_oricalleeid",
+];
+
+const normalizeGroupRefValue = (value) => String(value ?? "").trim();
+
+const matchesGroupReference = (value, groupKey) => {
+  const normalized = normalizeGroupRefValue(value);
+  if (IGNORED_GROUP_REF_VALUES.has(normalized)) return false;
+  return normalized === groupKey;
+};
+
+const itemReferencesGroup = (item, fields, groupKey) =>
+  fields.some((field) => matchesGroupReference(item?.[field], groupKey));
+
+const getRouteList = (response) =>
+  Array.isArray(response?.message)
+    ? response.message
+    : Array.isArray(response?.data)
+      ? response.data
+      : [];
+
+const countGroupsWithSameKey = (allGroups, groupKey) =>
+  allGroups.filter((g) => resolveGroupIdValue(g) === groupKey).length;
+
+const normalizeGroupIdForApi = (value) => {
+  const trimmed = String(value ?? "").trim();
+  if (/^\d+$/.test(trimmed)) {
+    return parseInt(trimmed, 10);
+  }
+  return trimmed;
+};
+
 
 const SipTrunkGroup = () => {
   const [formData, setFormData] = useState(SIP_TRUNK_GROUP_INITIAL_FORM);
   const [groups, setGroups] = useState([]);
   const [trunkIds, setTrunkIds] = useState([]);
   const [editIndex, setEditIndex] = useState(-1);
+  const [editingRecordId, setEditingRecordId] = useState(null);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState({
@@ -485,6 +557,21 @@ const SipTrunkGroup = () => {
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
+  const pageIndices = pagedGroups.map(
+    (_, idx) => (page - 1) * itemsPerPage + idx,
+  );
+  const allPageSelected =
+    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
+  const somePageSelected =
+    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
+
+  const handleTogglePageSelection = () => {
+    if (allPageSelected) {
+      setSelected((sel) => sel.filter((i) => !pageIndices.includes(i)));
+    } else {
+      setSelected((sel) => Array.from(new Set([...sel, ...pageIndices])));
+    }
+  };
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
@@ -598,35 +685,73 @@ const SipTrunkGroup = () => {
       showMessage("error", "Group ID is required.");
       return;
     }
-    const isDuplicate = groups.some((group, index) => {
-      if (editIndex !== -1 && index === editIndex) return false;
-      return String(group.group_id ?? "").trim() === desiredGroupId;
-    });
-    if (isDuplicate) {
-      showMessage(
-        "error",
-        `Group ID "${desiredGroupId}" already exists. Please choose a different Group ID.`,
-      );
-      return;
+
+    const editingRecord =
+      editingRecordId != null
+        ? groups.find((group) => String(group.id) === String(editingRecordId))
+        : editIndex !== -1
+          ? groups[editIndex]
+          : null;
+    const originalGroupId = editingRecord
+      ? resolveGroupIdValue(editingRecord)
+      : "";
+    const groupIdUnchanged =
+      editingRecord != null && desiredGroupId === originalGroupId;
+
+    if (!groupIdUnchanged) {
+      const isDuplicate = groups.some((group) => {
+        if (
+          editingRecordId != null &&
+          String(group.id) === String(editingRecordId)
+        ) {
+          return false;
+        }
+        return resolveGroupIdValue(group) === desiredGroupId;
+      });
+      if (isDuplicate) {
+        showMessage(
+          "error",
+          `Group ID "${desiredGroupId}" already exists. Please choose a different Group ID.`,
+        );
+        return;
+      }
     }
     setLoading((prev) => ({ ...prev, save: true }));
     try {
-      const response = await addGroup({
-        sip_trunk_id: formData.sip_trunk_id,
-        group_id: formData.group_id,
-      });
+      const payload = {
+        sip_trunk_id: String(formData.sip_trunk_id ?? "").trim(),
+        group_id: normalizeGroupIdForApi(desiredGroupId),
+      };
+      const response =
+        editingRecordId != null
+          ? await addGroup({
+              id: String(editingRecordId),
+              ...payload,
+            })
+          : await addGroup(payload);
       if (response.response) {
-        showMessage("success", response.message || "Saved successfully");
+        showMessage(
+          "success",
+          response.message ||
+            (editingRecordId != null
+              ? "Updated successfully"
+              : "Saved successfully"),
+        );
         setShowModal(false);
         setFormData(SIP_TRUNK_GROUP_INITIAL_FORM);
         setEditIndex(-1);
+        setEditingRecordId(null);
         await fetchGroups();
       } else {
         showMessage("error", response.message || "Save failed");
       }
     } catch (error) {
       console.error("Error saving group:", error);
-      showMessage("error", "Network error. Please check your connection.");
+      const apiMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Network error. Please check your connection.";
+      showMessage("error", apiMessage);
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
@@ -635,16 +760,7 @@ const SipTrunkGroup = () => {
   const handleAddNew = () => {
     setFormData(SIP_TRUNK_GROUP_INITIAL_FORM);
     setEditIndex(-1);
-    setShowModal(true);
-  };
-
-  const handleEdit = (idx) => {
-    const group = groups[idx];
-    setFormData({
-      sip_trunk_id: group.sip_trunk_id,
-      group_id: group.group_id,
-    });
-    setEditIndex(idx);
+    setEditingRecordId(null);
     setShowModal(true);
   };
 
@@ -654,9 +770,6 @@ const SipTrunkGroup = () => {
       sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
     );
   };
-  const handleCheckAll = () =>
-    setSelected(pagedGroups.map((_, idx) => (page - 1) * itemsPerPage + idx));
-  const handleUncheckAll = () => setSelected([]);
   const handleInverse = () =>
     setSelected(
       pagedGroups
@@ -675,20 +788,39 @@ const SipTrunkGroup = () => {
       return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      for (const idx of selected) {
-        const group = groups[idx];
-        const inUse = await isGroupReferenced(group.group_id);
-        if (inUse) {
+      const groupsToDelete = selected
+        .map((idx) => groups[idx])
+        .filter(Boolean);
+      let remainingGroups = [...groups];
+      let deletedCount = 0;
+
+      for (const group of groupsToDelete) {
+        const reference = await isGroupReferenced(group, remainingGroups);
+        if (reference.inUse) {
           showMessage(
             "error",
-            "The SIP trunk group cannot be deleted because it is quoted by the routing rule!",
+            `SIP Trunk Group "${resolveGroupIdValue(group)}" cannot be deleted because it is used by ${reference.reason}. Remove or update that rule first.`,
           );
           continue;
         }
-        await deleteGroup(group.id);
+        const response = await deleteGroup(group.id);
+        if (response?.response === false) {
+          showMessage("error", response.message || "Failed to delete group.");
+          continue;
+        }
+        deletedCount += 1;
+        remainingGroups = remainingGroups.filter((g) => g.id !== group.id);
       }
       await fetchGroups();
       setSelected([]);
+      if (deletedCount > 0) {
+        showMessage(
+          "success",
+          deletedCount === 1
+            ? "SIP trunk group deleted successfully."
+            : `${deletedCount} SIP trunk group(s) deleted successfully.`,
+        );
+      }
     } catch (error) {
       console.error("Error deleting groups:", error);
       showMessage("error", "Network error. Please check your connection.");
@@ -701,20 +833,37 @@ const SipTrunkGroup = () => {
     if (!window.confirm("Are you sure you want to delete all groups?")) return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
+      let remainingGroups = [...groups];
+      let deletedCount = 0;
+
       for (const group of groups) {
-        const inUse = await isGroupReferenced(group.group_id);
-        if (inUse) {
+        const reference = await isGroupReferenced(group, remainingGroups);
+        if (reference.inUse) {
           showMessage(
             "error",
-            `Group ${group.group_id} cannot be deleted because it is quoted by the routing rule!`,
+            `SIP Trunk Group "${resolveGroupIdValue(group)}" cannot be deleted because it is used by ${reference.reason}. Remove or update that rule first.`,
           );
           continue;
         }
-        await deleteGroup(group.id);
+        const response = await deleteGroup(group.id);
+        if (response?.response === false) {
+          showMessage("error", response.message || "Failed to delete group.");
+          continue;
+        }
+        deletedCount += 1;
+        remainingGroups = remainingGroups.filter((g) => g.id !== group.id);
       }
       await fetchGroups();
       setSelected([]);
       setPage(1);
+      if (deletedCount > 0) {
+        showMessage(
+          "success",
+          deletedCount === groups.length
+            ? "All SIP trunk groups deleted successfully."
+            : `${deletedCount} SIP trunk group(s) deleted successfully.`,
+        );
+      }
     } catch (error) {
       console.error("Error clearing all groups:", error);
       showMessage("error", "Network error. Please check your connection.");
@@ -737,11 +886,11 @@ const SipTrunkGroup = () => {
     )
       return;
     try {
-      const inUse = await isGroupReferenced(group.group_id);
-      if (inUse) {
+      const reference = await isGroupReferenced(group, groups);
+      if (reference.inUse) {
         showMessage(
           "error",
-          "The SIP trunk group cannot be deleted because it is quoted by the routing rule!",
+          `SIP Trunk Group "${resolveGroupIdValue(group)}" cannot be deleted because it is used by ${reference.reason}. Remove or update that rule first.`,
         );
         return;
       }
@@ -754,93 +903,68 @@ const SipTrunkGroup = () => {
     }
   };
 
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
-
   useEffect(() => {
     // Fetch trunk IDs and groups on component mount
     fetchTrunkIds();
     fetchGroups();
   }, []);
 
-  // Check if SIP trunk group is referenced by routing rules (exact field checks; avoid substring false positives)
-  const isGroupReferenced = async (groupId) => {
+  // Block delete only when this is the last row for a Group ID still used in routes.
+  const isGroupReferenced = async (group, allGroups = groups) => {
+    const gid = resolveGroupIdValue(group);
+    if (!gid) return { inUse: false };
+
+    if (countGroupsWithSameKey(allGroups, gid) > 1) {
+      return { inUse: false };
+    }
+
     try {
-      const gid = String(groupId);
-      // Only IP->PSTN routes should reference SIP trunk groups as call_source
-      const res = await listIpPstnRoutes("ip_to_pstn");
-      const list = (res && (res.message || res.data)) || [];
-      const foundInRoutes = list.some((item) => {
-        try {
-          const candidates = [
-            item?.call_source,
-            item?.callSource,
-            item?.source_group,
-            item?.source_group_id,
-            item?.sip_trunk_group,
-            item?.sip_trunk_group_id,
-          ]
-            .filter((v) => v !== undefined && v !== null)
-            .map((v) => String(v));
-          return candidates.some((v) => v === gid);
-        } catch {
-          return false;
-        }
-      });
-
-      if (foundInRoutes) return true;
-
-      // Also check number manipulation rules (they may reference SIP trunk groups via call_initiator)
-      try {
-        const manipRes = await listNumberManipulations();
-        const manipList =
-          (manipRes && (manipRes.message || manipRes.data)) || [];
-        const foundInManip = manipList.some((item) => {
-          try {
-            const candidates = [
-              item?.call_initiator,
-              item?.callInitiator,
-              item?.callInitiatorId,
-              item?.call_initiator_id,
-              item?.call_source,
-              item?.callSource,
-              item?.sip_trunk_group,
-              item?.sip_trunk_group_id,
-            ]
-              .filter((v) => v !== undefined && v !== null)
-              .map((v) => String(v));
-            return candidates.some((v) => v === gid);
-          } catch {
-            return false;
-          }
-        });
-        if (foundInManip) return true;
-      } catch (e) {
-        console.warn("Number manipulation reference check failed:", e?.message);
+      const ipToPstnRes = await listIpPstnRoutes("ip_to_pstn");
+      const ipToPstnHit = getRouteList(ipToPstnRes).find((item) =>
+        itemReferencesGroup(item, SIP_ROUTE_REF_FIELDS, gid),
+      );
+      if (ipToPstnHit) {
+        return {
+          inUse: true,
+          reason: `IP→PSTN route${ipToPstnHit.id != null ? ` #${ipToPstnHit.id}` : ""}`,
+        };
       }
 
-      return false;
+      const ipToIpRes = await listIpPstnRoutes("ip_to_ip");
+      const ipToIpHit = getRouteList(ipToIpRes).find((item) =>
+        itemReferencesGroup(item, SIP_ROUTE_REF_FIELDS, gid),
+      );
+      if (ipToIpHit) {
+        return {
+          inUse: true,
+          reason: `IP→IP route${ipToIpHit.id != null ? ` #${ipToIpHit.id}` : ""}`,
+        };
+      }
+
+      for (const manipulationType of SIP_MANIPULATION_TYPES) {
+        try {
+          const manipRes = await listNumberManipulations(manipulationType);
+          const manipHit = getRouteList(manipRes).find((item) =>
+            itemReferencesGroup(item, SIP_MANIP_REF_FIELDS, gid),
+          );
+          if (manipHit) {
+            return {
+              inUse: true,
+              reason: `number manipulation rule (${manipulationType.replaceAll("_", " ")})${manipHit.id != null ? ` #${manipHit.id}` : ""}`,
+            };
+          }
+        } catch (e) {
+          console.warn(
+            `Number manipulation reference check failed for ${manipulationType}:`,
+            e?.message,
+          );
+        }
+      }
+
+      return { inUse: false };
     } catch (e) {
       console.warn("Reference check failed:", e?.message);
-      return false;
+      return { inUse: false };
     }
   };
 
@@ -988,37 +1112,18 @@ const SipTrunkGroup = () => {
                   >
                     <Checkbox
                       size="small"
-                      checked={
-                        selected.length > 0 && selected.length === groups.length
-                      }
-                      indeterminate={
-                        selected.length > 0 && selected.length < groups.length
-                      }
-                      onChange={
-                        selected.length === groups.length
-                          ? handleUncheckAll
-                          : handleCheckAll
-                      }
+                      checked={allPageSelected}
+                      indeterminate={somePageSelected}
+                      onChange={handleTogglePageSelection}
                       disabled={loading.delete}
                       sx={sipPcmCheckboxSx}
                     />
                   </TH>
                   {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                    (c) => c.key !== "check" && c.key !== "modify",
+                    (c) => c.key !== "check",
                   ).map((col) => (
                     <TH key={col.key}>{col.label}</TH>
                   ))}
-                  <TH
-                    style={{
-                      width: 70,
-                      borderRight: "none",
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
-                    Actions
-                  </TH>
                 </tr>
               </thead>
               <tbody>
@@ -1064,7 +1169,7 @@ const SipTrunkGroup = () => {
                           />
                         </td>
                         {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                          (c) => c.key !== "check" && c.key !== "modify",
+                          (c) => c.key !== "check",
                         ).map((col) => {
                           let value = item[col.key];
                           if (col.key === "index") value = realIdx + 1;
@@ -1087,21 +1192,6 @@ const SipTrunkGroup = () => {
                             </td>
                           );
                         })}
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                            titleAccess="Edit"
-                            onClick={() => handleEdit(realIdx)}
-                          />
-                        </td>
                       </tr>
                     );
                   })}
@@ -1148,7 +1238,7 @@ const SipTrunkGroup = () => {
             padding: "14px 24px",
           }}
         >
-          {editIndex !== -1 ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
+          {editingRecordId != null ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
         </DialogTitle>
         <DialogContent
           style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}

@@ -438,6 +438,58 @@ export const SIDEBAR_SECTIONS = [
     path: "/E1-PRI",
     submenuItems: [
       {
+        id: "sip",
+        title: "SIP",
+        icon: PhoneIcon,
+        hasSubmenu: true,
+        path: "/sip",
+        items: [
+          { id: "sipMain", title: "SIP", path: "/sip/sip" },
+          // { id: 'sipHa', title: 'HA', path: '/sip/ha' },
+          {
+            id: "sipToSipAccount",
+            title: "SIP To SIP Account",
+            path: "/sip/sip-to-sip-account",
+          },
+          {
+            id: "sipTrunkGroup",
+            title: "SIP Trunk Group",
+            path: "/sip/sip-trunk-group",
+          },
+          { id: "sipMedia", title: "Media", path: "/sip/media" },
+        ],
+      },
+      {
+        id: "pcm",
+        title: "PCM",
+        icon: ComputerIcon,
+        hasSubmenu: true,
+        path: ROUTE_PATHS.PCM,
+        items: [
+          { id: "pcmPstn", title: "PSTN", path: "/pcm/pstn" },
+          {
+            id: "pcmCircuitMaintenance",
+            title: "Circuit Maintenance",
+            path: "/pcm/circuit-maintenance",
+          },
+          {
+            id: "pcmTrunkGroup",
+            title: "PCM Trunk Group",
+            path: "/pcm/pcm-trunk-group",
+          },
+          {
+            id: "pcmNumReceivingRule",
+            title: "Num-Receiving Rule",
+            path: "/pcm/num-receiving-rule",
+          },
+          {
+            id: "pcmReceptionTimeout",
+            title: "Reception Timeout",
+            path: "/pcm/reception-timeout",
+          },
+        ],
+      },
+      {
         id: "route",
         title: "Route",
         icon: RouteIcon,
@@ -452,36 +504,6 @@ export const SIDEBAR_SECTIONS = [
           { id: "ipToPstn", title: "IP->PSTN", path: "/route/ip-to-pstn" },
           { id: "ipToIp", title: "IP->IP", path: "/route/ip-to-ip" },
           { id: "pstnToIp", title: "PSTN->IP", path: "/route/pstn-to-ip" },
-        ],
-      },
-
-      {
-        id: "numberfilter",
-        title: "Number Filter",
-        icon: FilterListIcon,
-        hasSubmenu: true,
-        path: ROUTE_PATHS.NUMBER_FILTER,
-        items: [
-          {
-            id: "whitelist",
-            title: "Whitelist",
-            path: "/number-filter/whitelist",
-          },
-          {
-            id: "blacklist",
-            title: "Blacklist",
-            path: "/number-filter/blacklist",
-          },
-          {
-            id: "numberPool",
-            title: "Number Pool",
-            path: "/number-filter/number-pool",
-          },
-          {
-            id: "filteringRule",
-            title: "Filtering Rule",
-            path: "/number-filter/filtering-rule",
-          },
         ],
       },
 
@@ -526,56 +548,34 @@ export const SIDEBAR_SECTIONS = [
           // { id: 'callerIDReservePool', title: 'CallerID Reserve Pool', path: ROUTE_PATHS.CALLERID_RESERVE_POOL },
         ],
       },
+
       {
-        id: "pcm",
-        title: "PCM",
-        icon: ComputerIcon,
+        id: "numberfilter",
+        title: "Number Filter",
+        icon: FilterListIcon,
         hasSubmenu: true,
-        path: ROUTE_PATHS.PCM,
+        path: ROUTE_PATHS.NUMBER_FILTER,
         items: [
-          { id: "pcmPstn", title: "PSTN", path: "/pcm/pstn" },
           {
-            id: "pcmCircuitMaintenance",
-            title: "Circuit Maintenance",
-            path: "/pcm/circuit-maintenance",
+            id: "whitelist",
+            title: "Whitelist",
+            path: "/number-filter/whitelist",
           },
           {
-            id: "pcmTrunkGroup",
-            title: "PCM Trunk Group",
-            path: "/pcm/pcm-trunk-group",
+            id: "blacklist",
+            title: "Blacklist",
+            path: "/number-filter/blacklist",
           },
           {
-            id: "pcmNumReceivingRule",
-            title: "Num-Receiving Rule",
-            path: "/pcm/num-receiving-rule",
+            id: "numberPool",
+            title: "Number Pool",
+            path: "/number-filter/number-pool",
           },
           {
-            id: "pcmReceptionTimeout",
-            title: "Reception Timeout",
-            path: "/pcm/reception-timeout",
+            id: "filteringRule",
+            title: "Filtering Rule",
+            path: "/number-filter/filtering-rule",
           },
-        ],
-      },
-      {
-        id: "sip",
-        title: "SIP",
-        icon: PhoneIcon,
-        hasSubmenu: true,
-        path: "/sip",
-        items: [
-          { id: "sipMain", title: "SIP", path: "/sip/sip" },
-          // { id: 'sipHa', title: 'HA', path: '/sip/ha' },
-          {
-            id: "sipToSipAccount",
-            title: "SIP To SIP Account",
-            path: "/sip/sip-to-sip-account",
-          },
-          {
-            id: "sipTrunkGroup",
-            title: "SIP Trunk Group",
-            path: "/sip/sip-trunk-group",
-          },
-          { id: "sipMedia", title: "Media", path: "/sip/media" },
         ],
       },
     ],

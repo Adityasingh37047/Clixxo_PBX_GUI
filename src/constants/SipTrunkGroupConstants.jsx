@@ -23,5 +23,4 @@ export const SIP_TRUNK_GROUP_TABLE_COLUMNS = [
   { key: "index", label: "Id" },
   { key: "sip_trunk_id", label: "SIP Trunk ID" },
   { key: "group_id", label: "Group ID" },
-  { key: "modify", label: "Modify" },
 ];

@@ -277,8 +277,8 @@ const Network = () => {
   const [arpMode, setArpMode] = useState("1");
   const [loading, setLoading] = useState(true); // Start with loading true for initial load
   const [error, setError] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
   const [resetting, setResetting] = useState(false);
-  const [resetSuccess, setResetSuccess] = useState(false);
   // Error states for each field
   const [ipErrors, setIpErrors] = useState([]);
   const [subnetErrors, setSubnetErrors] = useState([]);
@@ -318,6 +318,11 @@ const Network = () => {
 
   const pingIntervalRef = useRef(null);
   const restartTimeoutRef = useRef(null);
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
+  };
 
   function isValidIPv4(ip) {
     return /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
@@ -651,15 +656,13 @@ const Network = () => {
     setProgressMessage("");
     try {
       setResetting(true);
-      setResetSuccess(false);
       setError("");
 
       const resp = await resetNetworkSettings();
 
       if (resp.response) {
         await loadNetworkData();
-        setResetSuccess(true);
-        setTimeout(() => setResetSuccess(false), 3000);
+        showToast("Network settings reset successfully.", "success");
       } else {
         throw new Error(resp.message || "Reset operation failed");
       }
@@ -827,8 +830,9 @@ const Network = () => {
 
     if (dhcpCount > 1) {
       setLoading(false);
-      window.alert(
+      showToast(
         "Only one interface can be set to DHCP at a time. Please change the others back to Static and try again.",
+        "warning",
       );
       return;
     }
@@ -1017,8 +1021,9 @@ const Network = () => {
               const vlanRes = await postLinuxCmd({ cmd });
               const out = String(vlanRes?.responseData || "").trim();
               if (!/VLAN_CREATED/.test(out)) {
-                window.alert(
-                  `VLAN create command did not confirm success. Output: \n${out || "(no output)"}`,
+                showToast(
+                  `VLAN create command did not confirm success. Output:\n${out || "(no output)"}`,
+                  "warning",
                 );
               }
             }
@@ -1075,7 +1080,6 @@ const Network = () => {
         errorMessage = error.message;
       }
 
-      window.alert(errorMessage);
       setError(errorMessage);
     } finally {
       if (!networkRestarting) {
@@ -1123,6 +1127,26 @@ const Network = () => {
             }}
           >
             {error}
+          </Alert>
+        )}
+
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: error ? 88 : 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              maxWidth: 500,
+              whiteSpace: "pre-line",
+              wordBreak: "break-word",
+              boxShadow: 3,
+            }}
+          >
+            {toast.msg}
           </Alert>
         )}
 

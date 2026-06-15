@@ -3,7 +3,7 @@ import {
   ROUTE_SETTINGS_OPTIONS,
   ROUTE_SETTINGS_DEFAULTS,
 } from "../../../constants/RouteRoutingParameterPageConstants";
-import { Select, MenuItem, FormControl, CircularProgress } from "@mui/material";
+import { Select, MenuItem, FormControl, CircularProgress, Alert } from "@mui/material";
 
 // ── Local page UI (inlined from e1PriSharedUi) ──
 const C = {
@@ -227,12 +227,18 @@ const labelStyle = {
 const RouteRoutingParameterPage = () => {
   const [settings, setSettings] = useState({ ...ROUTE_SETTINGS_DEFAULTS });
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
+  };
 
   const handleSave = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      alert("Settings Saved Successfully!");
+      showToast("Route settings saved successfully.");
     }, 800);
   };
 
@@ -266,6 +272,23 @@ const RouteRoutingParameterPage = () => {
         padding: 16,
       }}
     >
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
+        >
+          {toast.msg}
+        </Alert>
+      )}
+
       <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
         <div
           style={{

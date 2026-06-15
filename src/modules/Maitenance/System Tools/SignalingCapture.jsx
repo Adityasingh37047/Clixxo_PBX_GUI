@@ -489,7 +489,7 @@ const SignalingCapture = () => {
       });
       await delay(500);
 
-      const cmd = `sh -c "mkdir -p ${SC_DATA_DIR}; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; dahdi_monitor ${channel} '${fileName}' > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
+      const cmd = `sh -c "mkdir -p ${SC_DATA_DIR}; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; dahdi_monitor ${channel} -f '${fileName}' > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
       const response = await postLinuxCmd({ cmd });
 
       if (response?.response === false) {

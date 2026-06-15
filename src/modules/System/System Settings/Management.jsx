@@ -292,8 +292,14 @@ const Management = () => {
   const [formKey, setFormKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "success" });
   const [fieldErrors, setFieldErrors] = useState({});
   const [lanIps, setLanIps] = useState({ lan1: "", lan2: "" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
+  };
 
   // Function to detect if NTP is configured in the system
   const detectNtpStatus = async () => {
@@ -329,7 +335,7 @@ const Management = () => {
     }
   };
 
-  const fetchManagementData = async () => {
+  const fetchManagementData = async ({ preserveFormOnError = false } = {}) => {
     try {
       setLoading(true);
       setError("");
@@ -480,32 +486,47 @@ const Management = () => {
     } catch (error) {
       console.error("Error fetching management parameters:", error);
 
+      const reportLoadError = (msg) => {
+        if (preserveFormOnError) {
+          showToast(
+            `Settings were saved, but could not refresh from the server.\n\n${msg}`,
+            "warning",
+          );
+        } else {
+          setError(msg);
+        }
+      };
+
       // Handle different types of errors
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        setError(
+        reportLoadError(
           "Request timeout (20 seconds exceeded). Please check your connection and try again.",
         );
       } else if (error.response?.status === 404) {
-        setError(
+        reportLoadError(
           "Management configuration not found. Please contact administrator.",
         );
       } else if (error.response?.status >= 500) {
-        setError("Server error. Please try again later or contact support.");
+        reportLoadError(
+          "Server error loading management settings (HTTP 500). The PBX API failed on GET /get-management-parameters — check device server logs.",
+        );
       } else if (
         error.message?.includes("Network Error") ||
         error.message?.includes("Failed to fetch")
       ) {
-        setError(
+        reportLoadError(
           "Network connection failed. Please check your internet connection.",
         );
       } else {
-        setError(
+        reportLoadError(
           error.message ||
             "Failed to load management parameters. Please refresh the page and try again.",
         );
       }
 
-      setForm(MANAGEMENT_INITIAL_FORM);
+      if (!preserveFormOnError) {
+        setForm(MANAGEMENT_INITIAL_FORM);
+      }
     } finally {
       setLoading(false);
     }
@@ -1232,7 +1253,10 @@ const Management = () => {
           }
         }
 
-        alert(message);
+        showToast(
+          message.trim(),
+          failedCommands.length > 0 ? "warning" : "success",
+        );
 
         // If system time was changed, reload page to update navbar immediately
         if (systemTimeChanged) {
@@ -1243,8 +1267,8 @@ const Management = () => {
             window.location.reload();
           }, 1500);
         } else {
-          // Refresh data after save
-          await fetchManagementData();
+          // Refresh data after save; keep current form if server reload fails
+          await fetchManagementData({ preserveFormOnError: true });
         }
       } else {
         throw new Error(response.message || "Failed to save settings");
@@ -1292,6 +1316,7 @@ const Management = () => {
         console.log("Reset successful, fetching default values...");
         // After successful reset, fetch the default values
         await fetchManagementData();
+        showToast("Management parameters reset successfully.", "success");
       } else {
         throw new Error(resetResponse.message || "Reset operation failed");
       }
@@ -1416,6 +1441,26 @@ const Management = () => {
             }}
           >
             {typeof error === "string" ? error : JSON.stringify(error)}
+          </Alert>
+        )}
+
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: error ? 88 : 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              maxWidth: 500,
+              whiteSpace: "pre-line",
+              wordBreak: "break-word",
+              boxShadow: 3,
+            }}
+          >
+            {toast.msg}
           </Alert>
         )}
 

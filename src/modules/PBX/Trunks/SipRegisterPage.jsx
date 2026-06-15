@@ -18,7 +18,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {Dialog,
+import {
+  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -36,7 +37,9 @@ import {Dialog,
   Radio,
   RadioGroup,
   Tabs,
-  Tab, useMediaQuery } from "@mui/material";
+  Tab,
+  useMediaQuery,
+} from "@mui/material";
 import {
   fetchSipAccounts,
   listSipTrunks,
@@ -759,7 +762,7 @@ const getSipRegisterStatusStyle = (raw) => {
     s.includes("failure");
 
   if (isFailure) {
-    return { bg: "transparent", color: "#dc2626" };
+    return { bg: "transparent", color: "#51555A" };
   }
 
   if (s === "pending" || s === "registering" || s.includes("pending")) {
@@ -2458,7 +2461,14 @@ const SipRegisterPage = () => {
         <PbxBreadcrumb section="Trunks" current="SIP Register" />
 
         <div style={sipPcmCardStyle}>
-          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
@@ -4266,7 +4276,10 @@ const SipRegisterPage = () => {
                       <div
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 48px 1fr", ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
+                          gridTemplateColumns: "1fr 48px 1fr",
+                          ...(isCompact
+                            ? { gridTemplateColumns: "1fr", gap: 12 }
+                            : {}),
                           gap: 12,
                           alignItems: "start",
                         }}
