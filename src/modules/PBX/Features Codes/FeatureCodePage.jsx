@@ -20,9 +20,11 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
@@ -47,9 +49,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",

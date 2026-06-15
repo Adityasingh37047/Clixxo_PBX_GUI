@@ -41,6 +41,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
 const codecDualListSelectStyle = {
@@ -404,15 +406,12 @@ const Paging = () => {
     list: false,
   });
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasLoadedExtensionsRef = useRef(false);
 
   // Search & Pagination
   const itemsPerPage = PAGING_ITEMS_PER_PAGE || 20;
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
 
   // Modal State
   const [editId, setEditId] = useState(null);
@@ -458,7 +457,6 @@ const Paging = () => {
         return;
       }
       setRows(normalizePagingList(res));
-      setLastUpdated(new Date());
     } catch (err) {
       showMessage("error", err?.message || "Failed to load paging groups.");
       setRows([]);
@@ -514,15 +512,7 @@ const Paging = () => {
   };
 
   // ── Search & Pagination ──
-  const filteredRows = searchQuery.trim()
-    ? rows.filter((r) =>
-        [r.name, r.number].some((v) =>
-          String(v || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-        ),
-      )
-    : rows;
+  const filteredRows = rows;
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
   const pagedRows = filteredRows.slice(
@@ -912,11 +902,6 @@ const Paging = () => {
                 message="No paging groups found."
                 onAddNew={handleOpenAddModal}
               />
-            ) : searchQuery && filteredRows.length === 0 ? (
-              <TableListEmptyState
-                message={`No results for "${searchQuery}"`}
-                showButton={false}
-              />
             ) : (
               <table
                 style={{
@@ -1126,10 +1111,22 @@ const Paging = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                                    <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
                           />
                         </td>
                       </tr>

@@ -30,7 +30,6 @@ import {
   createIvr,
   updateIvr,
   deleteIvr,
-  fetchSipAccounts,
   getIvr,
   setIvrKeys,
 } from "../../../api/apiService";
@@ -147,8 +146,10 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 const codecDualListSelectStyle = {
   width: "100%",
@@ -546,7 +547,6 @@ const IVRPage = () => {
     ivrOptions: false,
   });
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasLoadedOutboundRoutesRef = useRef(false);
 
@@ -790,7 +790,6 @@ const IVRPage = () => {
         setDestinationMap({});
         setDestinationOptions([]);
       }
-      setLastUpdated(new Date());
     } catch (err) {
       showMessage("error", err?.message || "Failed to load IVR data.");
     } finally {
@@ -1679,7 +1678,7 @@ const IVRPage = () => {
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Direct Outbound
                     </TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Outbound Routes
                     </TH>
                     <TH
@@ -1799,7 +1798,7 @@ const IVRPage = () => {
                           <span
                             style={{
                               color:
-                                row.enabled === "Yes" ? "#16A34A" : "#475569",
+                                row.enabled === "Yes" ? "#22c55e" : "#475569",
                               padding: "4px 11px",
                               borderRadius: 999,
                               fontSize: 11,
@@ -1826,7 +1825,7 @@ const IVRPage = () => {
                         >
                           <span
                             style={{
-                              color: row.directOutbound ? "#16A34A" : "#475569",
+                              color: row.directOutbound ? "#22c55e" : "#475569",
                               padding: "4px 11px",
                               borderRadius: 999,
                               fontSize: 11,
@@ -1868,10 +1867,22 @@ const IVRPage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                                    <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
                           />
                         </td>
                       </tr>
@@ -2106,7 +2117,7 @@ const IVRPage = () => {
                               onClick={handleGoToVoicePrompts}
                               style={{
                                 fontSize: 11,
-                                color: "#2563eb",
+                                color: C.accent,
                                 cursor: "pointer",
                                 textDecoration: "underline",
                               }}
@@ -2155,7 +2166,7 @@ const IVRPage = () => {
                               onClick={handleGoToVoicePrompts}
                               style={{
                                 fontSize: 11,
-                                color: "#2563eb",
+                                color: C.accent,
                                 cursor: "pointer",
                                 textDecoration: "underline",
                               }}

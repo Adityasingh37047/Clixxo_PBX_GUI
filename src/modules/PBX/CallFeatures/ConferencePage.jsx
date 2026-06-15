@@ -113,12 +113,12 @@ const C = {
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
-  amber: "#DC2626",
-  successGreen: "#16A34A",
-  errorRed: "#DC2626",
+  amber: "#dc2626",
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -399,7 +399,6 @@ const ConferencePage = () => {
   });
   const [message, setMessage] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Search & Pagination
@@ -493,7 +492,6 @@ const ConferencePage = () => {
           : [],
       }));
       setRows(mapped);
-      setLastUpdated(new Date());
 
       try {
         setLoading((prev) => ({ ...prev, ext: true }));
@@ -538,7 +536,7 @@ const ConferencePage = () => {
           })
           .filter(Boolean);
         setExtensionGroups(groupList);
-      } catch (err) {
+      } catch {
         try {
           const extRes = await listConferenceExtensions();
           const extRaw = Array.isArray(extRes?.message)
@@ -595,7 +593,7 @@ const ConferencePage = () => {
           new Set(customPrompts.filter(Boolean)),
         );
         setGreetingOptions(["Default", ...uniqueCustomPrompts]);
-      } catch (err) {
+      } catch {
         setGreetingOptions(["Default"]);
       }
     } catch (err) {
@@ -1302,7 +1300,7 @@ const ConferencePage = () => {
                           <span
                             style={{
                               color:
-                                row.enabled === "Yes" ? "#16A34A" : "#475569",
+                                row.enabled === "Yes" ? "#22c55e" : "#475569",
                               padding: "4px 11px",
                               borderRadius: 999,
                               fontSize: 11,
@@ -1338,10 +1336,22 @@ const ConferencePage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                                    <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
                           />
                         </td>
                       </tr>

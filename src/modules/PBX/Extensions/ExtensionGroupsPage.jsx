@@ -24,17 +24,19 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 // ── Color palette (matches PBX / CDR) ────────────────────────────────────────
 
 const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -434,7 +436,6 @@ const ExtensionGroupsPage = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
 
   const hasInitialLoadRef = useRef(false);
 
@@ -462,7 +463,6 @@ const ExtensionGroupsPage = () => {
             : [],
         })),
       );
-      setLastUpdated(new Date());
     } catch (err) {
       showMessage("error", err?.message || "Failed to load extension groups.");
     } finally {
@@ -531,10 +531,17 @@ const ExtensionGroupsPage = () => {
 
     setLoading((p) => ({ ...p, delete: true }));
     setMessage({ type: "", text: "" });
+    const deleteCount = selectedIds.length;
     try {
       await Promise.all(selectedIds.map((id) => deleteExtensionGroup(id)));
       setSelectedIds([]);
       await loadGroups();
+      showMessage(
+        "success",
+        deleteCount === 1
+          ? "Extension group deleted successfully."
+          : `${deleteCount} extension groups deleted successfully.`,
+      );
     } catch (err) {
       showMessage("error", err?.message || "Failed to delete some groups.");
     } finally {
@@ -610,13 +617,20 @@ const ExtensionGroupsPage = () => {
     setMessage({ type: "", text: "" });
 
     try {
-      if (editGroupId != null) {
+      const isUpdate = editGroupId != null;
+      if (isUpdate) {
         await updateExtensionGroup({ id: editGroupId, name, extensions });
       } else {
         await createExtensionGroup({ name, extensions });
       }
       await loadGroups();
       handleCloseModal();
+      showMessage(
+        "success",
+        isUpdate
+          ? "Extension group updated successfully."
+          : "Extension group created successfully.",
+      );
     } catch (err) {
       showMessage("error", err?.message || "Failed to save group.");
     } finally {
@@ -916,7 +930,7 @@ const ExtensionGroupsPage = () => {
                                 justifyContent: "center",
                               }}
                             >
-                              <EditDocumentIcon
+                                                            <EditDocumentIcon
                                 titleAccess="Edit"
                                 onClick={() => handleOpenEditModal(row)}
                                 style={{
@@ -924,6 +938,13 @@ const ExtensionGroupsPage = () => {
                                   color: "#2563eb",
                                   fontSize: 22,
                                   opacity: 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.opacity = "0.7";
                                 }}
                               />
                             </div>

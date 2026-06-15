@@ -110,8 +110,10 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const Btn = ({
@@ -137,9 +139,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -896,6 +895,12 @@ const CCRoutePage = () => {
 
   const handleDelete = async () => {
     if (selected.length === 0) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selected.length} record(s)?`,
+      )
+    )
+      return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       const ids = selected.map((i) => rows[i]?.id).filter(Boolean);
@@ -1066,7 +1071,7 @@ const CCRoutePage = () => {
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Enable
                     </TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Member Extensions
                     </TH>
                     <TH
@@ -1219,10 +1224,22 @@ const CCRoutePage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                                    <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
                           />
                         </td>
                       </tr>

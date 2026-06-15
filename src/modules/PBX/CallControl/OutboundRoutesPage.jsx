@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
+  Alert,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -44,12 +45,10 @@ const C = {
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
-  accent: "#2563eb",
-
+  accent: "#3E5475",
+  amber: "#dc2626",
   successGreen: "#22c55e",
   errorRed: "#ef4444",
-
-  purple: "#8b5cf6",
 };
 
 const Btn = ({
@@ -862,7 +861,12 @@ const OutboundRoutesPage = () => {
     );
   }, [rows]);
 
-  const showAlert = (text) => window.alert(text);
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+  };
+  const showAlert = (text) => showMessage("error", text);
 
   const normalizeList = (raw) => {
     const list = raw?.message ?? raw?.data ?? raw;
@@ -1146,6 +1150,12 @@ const OutboundRoutesPage = () => {
       showAlert("Please select at least one row to delete.");
       return;
     }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selected.length} record(s)?`,
+      )
+    )
+      return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       const idsToDelete = selected
@@ -1157,7 +1167,7 @@ const OutboundRoutesPage = () => {
       const failed = results.find((r) => !r?.response);
       if (failed)
         showAlert(failed?.message || "Failed to delete one or more routes.");
-      else showAlert("Outbound route(s) deleted successfully.");
+      else showMessage("success", "Outbound route(s) deleted successfully.");
       await fetchOutboundRoutes();
       setSelected([]);
       setPage(1);
@@ -1251,7 +1261,8 @@ const OutboundRoutesPage = () => {
         showAlert(res?.message || "Failed to save outbound route.");
         return;
       }
-      showAlert(
+      showMessage(
+        "success",
         editId != null
           ? "Outbound route updated successfully."
           : "Outbound route created successfully.",
@@ -1441,6 +1452,23 @@ const OutboundRoutesPage = () => {
   return (
     <div style={pbxPageWrapStyle}>
       <div style={pbxPageInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
         <PbxBreadcrumb section="Call Control" current="Outbound Routes" />
 
         <div style={sipPcmCardStyle}>

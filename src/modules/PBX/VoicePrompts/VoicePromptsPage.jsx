@@ -40,19 +40,20 @@ import {
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-pageBg: "#f8fafc",
-cardBg: "#ffffff",
-cardBorder: "#9CA3AF",
-labelText: "#3E5475",
-valueText: "#0f172a",
-mutedText: "#94a3b8",
-strongText: "#0f172a",
-accent: "#3E5475",
-amber: "#dc2626",
-errorRed: "#ef4444",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const Btn = ({
@@ -78,9 +79,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -468,7 +466,6 @@ const toMessageText = (msg, fallback) => {
 const VoicePromptsPage = () => {
   const [activeTab, setActiveTab] = useState("promptPreference");
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [lastUpdated, setLastUpdated] = useState(null);
 
   const [playCallForwardingPrompt, setPlayCallForwardingPrompt] =
     useState(false);
@@ -476,7 +473,6 @@ const VoicePromptsPage = () => {
 
   const [mohCategoryName, setMohCategoryName] = useState("");
   const [mohFile, setMohFile] = useState(null);
-  const [mohClasses, setMohClasses] = useState([]);
   const [mohFiles, setMohFiles] = useState([]);
   const [mohLoading, setMohLoading] = useState(false);
 
@@ -517,24 +513,8 @@ const VoicePromptsPage = () => {
         const msg = prefRes?.message ?? prefRes?.data ?? {};
         setPromptMohCategory(String(msg?.music_on_hold || "default"));
         setPlayCallForwardingPrompt(!!msg?.play_call_forwarding_prompt);
-        const prefClasses = Array.isArray(msg?.moh_classes)
-          ? msg.moh_classes
-          : [];
-        if (prefClasses.length > 0) {
-          setMohClasses(
-            prefClasses.map((x) => String(x).trim()).filter(Boolean),
-          );
-        }
       }
     } catch {}
-
-    try {
-      const clsRes = await listMohClasses();
-      if (clsRes?.response) setMohClasses(normalizeMohClassList(clsRes));
-      else setMohClasses([]);
-    } catch {
-      setMohClasses([]);
-    }
 
     await loadMohFiles();
 
@@ -579,7 +559,6 @@ const VoicePromptsPage = () => {
       setCustomItems([]);
     } finally {
       setCustomLoading(false);
-      setLastUpdated(new Date());
     }
   };
 
@@ -635,15 +614,9 @@ const VoicePromptsPage = () => {
   const refreshMohClasses = async () => {
     try {
       const clsRes = await listMohClasses();
-      if (!clsRes?.response) {
-        setMohClasses([]);
-        return [];
-      }
-      const classes = normalizeMohClassList(clsRes);
-      setMohClasses(classes);
-      return classes;
+      if (!clsRes?.response) return [];
+      return normalizeMohClassList(clsRes);
     } catch {
-      setMohClasses([]);
       return [];
     }
   };
@@ -687,7 +660,6 @@ const VoicePromptsPage = () => {
       if (!res?.response)
         return showMsg("error", res?.message || "Upload failed.");
 
-      setMohClasses((prev) => Array.from(new Set([...prev, trimmedCategory])));
       await refreshMohClasses();
       setPromptMohCategory(trimmedCategory);
       setMohCategoryName("");
@@ -1083,12 +1055,8 @@ const VoicePromptsPage = () => {
                   >
                     <thead>
                       <tr>
-                        <TH style={{ textAlign: "left", paddingLeft: 16 }}>
-                          File Name
-                        </TH>
-                        <TH style={{ textAlign: "left", paddingLeft: 16 }}>
-                          Category
-                        </TH>
+                        <TH>File Name</TH>
+                        <TH>Category</TH>
                         <TH>File Size</TH>
                         <TH>Uploaded</TH>
                         <TH style={{ width: 100 }}>Tools</TH>
@@ -1172,7 +1140,7 @@ const VoicePromptsPage = () => {
                                           0,
                                         );
                                       } catch (e) {
-                                        showMessage(
+                                        showMsg(
                                           "error",
                                           e?.message || "Failed to play file.",
                                         );
@@ -1199,7 +1167,7 @@ const VoicePromptsPage = () => {
                                           item.filename,
                                         );
                                       } catch (e) {
-                                        showMessage(
+                                        showMsg(
                                           "error",
                                           e?.message ||
                                             "Failed to download file.",
@@ -1229,7 +1197,7 @@ const VoicePromptsPage = () => {
                                           filename: item.filename,
                                         });
                                         if (!res?.response)
-                                          return showMessage(
+                                          return showMsg(
                                             "error",
                                             res?.message ||
                                               "Failed to delete file.",
@@ -1244,12 +1212,12 @@ const VoicePromptsPage = () => {
                                           );
                                         }
                                         await loadMohFiles();
-                                        showMessage(
+                                        showMsg(
                                           "success",
                                           "File deleted successfully.",
                                         );
                                       } catch (e) {
-                                        showMessage(
+                                        showMsg(
                                           "error",
                                           e?.message ||
                                             "Failed to delete file.",
@@ -1428,12 +1396,8 @@ const VoicePromptsPage = () => {
                   >
                     <thead>
                       <tr>
-                        <TH style={{ textAlign: "left", paddingLeft: 16 }}>
-                          Recording Name
-                        </TH>
-                        <TH style={{ textAlign: "left", paddingLeft: 16 }}>
-                          File Name
-                        </TH>
+                        <TH>Recording Name</TH>
+                        <TH>File Name</TH>
                         <TH>File Size</TH>
                         <TH>Uploaded</TH>
                         <TH style={{ width: 120 }}>Tools</TH>
@@ -1518,7 +1482,7 @@ const VoicePromptsPage = () => {
                                           0,
                                         );
                                       } catch (e) {
-                                        showMessage(
+                                        showMsg(
                                           "error",
                                           e?.message || "Failed to play file.",
                                         );
@@ -1544,7 +1508,7 @@ const VoicePromptsPage = () => {
                                           item.fileName,
                                         );
                                       } catch (e) {
-                                        showMessage(
+                                        showMsg(
                                           "error",
                                           e?.message ||
                                             "Failed to download file.",
@@ -1573,18 +1537,18 @@ const VoicePromptsPage = () => {
                                           filename: item.fileName,
                                         });
                                         if (!res?.response)
-                                          return showMessage(
+                                          return showMsg(
                                             "error",
                                             res?.message ||
                                               "Failed to delete file.",
                                           );
                                         await refreshCustomPrompts();
-                                        showMessage(
+                                        showMsg(
                                           "success",
                                           "File deleted successfully.",
                                         );
                                       } catch (e) {
-                                        showMessage(
+                                        showMsg(
                                           "error",
                                           e?.message ||
                                             "Failed to delete file.",

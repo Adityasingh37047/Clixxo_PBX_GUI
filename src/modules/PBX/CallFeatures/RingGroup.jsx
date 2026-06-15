@@ -67,8 +67,10 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 const codecDualListSelectStyle = {
   width: "100%",
@@ -418,16 +420,12 @@ const RingGroup = () => {
     ringBackOptions: false,
   });
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasLoadedDataRef = useRef(false);
 
   // Search & Pagination
   const itemsPerPage = RING_GROUP_ITEMS_PER_PAGE;
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-
   // Form state
   const [editId, setEditId] = useState(null);
   const [name, setName] = useState("");
@@ -462,11 +460,6 @@ const RingGroup = () => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
-
-  const timeoutTypeLabel = (value) =>
-    TIMEOUT_DESTINATION_OPTIONS.find((o) => o.value === value)?.label ||
-    value ||
-    "";
 
   const mapApiToRow = (r) => ({
     id: r.id,
@@ -536,7 +529,6 @@ const RingGroup = () => {
           ? res.data
           : [];
       setRows(list.map(mapApiToRow));
-      setLastUpdated(new Date());
     } catch (err) {
       showMessage("error", err?.message || "Failed to load ring groups.");
       setRows([]);
@@ -618,15 +610,7 @@ const RingGroup = () => {
   };
 
   // ── Search & Pagination Logic ──
-  const filteredRows = searchQuery.trim()
-    ? rows.filter((r) =>
-        [r.name, r.ringGroupNumber].some((v) =>
-          String(v || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-        ),
-      )
-    : rows;
+  const filteredRows = rows;
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
   const pagedRows = filteredRows.slice(
@@ -740,10 +724,12 @@ const RingGroup = () => {
         const toDelete = filteredRows.filter((_, idx) =>
           selected.includes(idx),
         );
+        let deleteFailed = false;
         for (const row of toDelete) {
           if (row.id != null) {
             const res = await deleteRingGroup(row.id);
             if (res?.response === false) {
+              deleteFailed = true;
               showMessage(
                 "error",
                 res?.message || "Failed to delete ring group.",
@@ -754,6 +740,14 @@ const RingGroup = () => {
         }
         setSelected([]);
         await refreshRingGroups();
+        if (!deleteFailed) {
+          showMessage(
+            "success",
+            toDelete.length === 1
+              ? "Ring group deleted successfully."
+              : `${toDelete.length} ring groups deleted successfully.`,
+          );
+        }
       } catch (err) {
         showMessage("error", err?.message || "Failed to delete ring group(s).");
       } finally {
@@ -894,11 +888,6 @@ const RingGroup = () => {
   const timeoutValueOptions = getTimeoutValueOptions();
   const shouldShowTimeoutValue = Boolean(timeoutDestinationType);
 
-  const ringBackMenuCount =
-    ringBackOptions.moh_categories.length +
-    ringBackOptions.custom_prompts.length +
-    ringBackOptions.country_tones.length;
-
   const ringBackAllValues = useMemo(
     () => [
       ...ringBackOptions.moh_categories,
@@ -1037,11 +1026,6 @@ const RingGroup = () => {
               <TableListEmptyState
                 message="No ring groups found."
                 onAddNew={handleOpenAddModal}
-              />
-            ) : searchQuery && filteredRows.length === 0 ? (
-              <TableListEmptyState
-                message={`No results for "${searchQuery}"`}
-                showButton={false}
               />
             ) : (
               <table
@@ -1223,7 +1207,7 @@ const RingGroup = () => {
                           <span
                             style={{
                               color:
-                                row.enabled === "Yes" ? "#16A34A" : "#475569",
+                                row.enabled === "Yes" ? "#22c55e" : "#475569",
                               padding: "4px 11px",
                               borderRadius: 999,
                               fontSize: 11,
@@ -1261,10 +1245,22 @@ const RingGroup = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                                    <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
                           />
                         </td>
                       </tr>

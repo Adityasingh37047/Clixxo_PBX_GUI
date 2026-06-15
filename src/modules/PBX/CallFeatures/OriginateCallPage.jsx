@@ -87,9 +87,11 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
@@ -113,9 +115,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -270,7 +269,7 @@ const originateControlSlotWideStyle = {
 
 const sipPcmFormCardStyle = {
   background: "#ffffff",
-  borderRadius: 10,
+  borderRadius: CARD_RADIUS,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
   boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
@@ -293,18 +292,6 @@ const sipPcmFormHeaderStyle = {
 
 const SIP_PCM_AUTH_FIELD_WIDTH = 200;
 const SIP_PCM_FORM_FIELD_HEIGHT = 32;
-
-const sipPcmFormLabelStyle = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "left",
-  width: 320,
-  marginRight: 10,
-  lineHeight: 1.4,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-};
 
 const systemToolsFieldInputStyleSmall = {
   padding: "6px 12px",

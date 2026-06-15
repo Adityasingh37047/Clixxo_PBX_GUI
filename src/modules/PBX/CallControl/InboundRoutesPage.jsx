@@ -112,20 +112,6 @@ const getRingGroupDialNumber = (item) => {
   return "";
 };
 
-/** If dest_value was saved as DB id, map to rg_number for display and API. */
-const resolveRingGroupDestValue = (rawDestValue, ringGroupRows) => {
-  if (rawDestValue == null || rawDestValue === "") return "";
-  const s = String(rawDestValue).trim();
-  if (!Array.isArray(ringGroupRows) || ringGroupRows.length === 0) return s;
-  if (ringGroupRows.some((g) => getRingGroupDialNumber(g) === s)) return s;
-  const byId = ringGroupRows.find((g) => String(g?.id) === s);
-  if (byId) {
-    const num = getRingGroupDialNumber(byId);
-    return num || s;
-  }
-  return s;
-};
-
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -137,8 +123,10 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
@@ -921,11 +909,6 @@ const InboundRoutesPage = () => {
     };
   };
 
-  const normalizeList = (raw) => {
-    const list = raw?.message ?? raw?.data ?? raw;
-    return Array.isArray(list) ? list : [];
-  };
-
   const fetchInboundRoutes = async () => {
     setLoading((prev) => ({ ...prev, list: true }));
     try {
@@ -1199,6 +1182,12 @@ const InboundRoutesPage = () => {
       showAlert("Please select at least one row to delete.");
       return;
     }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selected.length} record(s)?`,
+      )
+    )
+      return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       const idsToDelete = selected
@@ -1456,15 +1445,7 @@ const InboundRoutesPage = () => {
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Enabled
                     </TH>
-                    <TH
-                      style={{
-                        textAlign: "left",
-                        paddingLeft: 16,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Member Trunks
                     </TH>
                     <TH

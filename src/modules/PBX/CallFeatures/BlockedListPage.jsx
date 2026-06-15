@@ -35,9 +35,11 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
@@ -261,7 +263,6 @@ const BlockedListPage = () => {
   });
   const [error, setError] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Search & Pagination
@@ -315,7 +316,6 @@ const BlockedListPage = () => {
               : "Yes",
         })),
       );
-      setLastUpdated(new Date());
     } catch (err) {
       showAlert("error", err?.message || "Failed to load blocked list.");
     } finally {
@@ -822,11 +822,6 @@ const BlockedListPage = () => {
                         ? "#f8fafc"
                         : "#ffffff";
 
-                    const lastRowCellStyle =
-                      idx === pagedRows.length - 1
-                        ? { borderBottom: "none" }
-                        : {};
-
                     return (
                       <tr
                         key={row.id || realIdx}
@@ -931,7 +926,7 @@ const BlockedListPage = () => {
                             style={{
                               color:
                                 row.direction === "Inbound"
-                                  ? "#16A34A"
+                                  ? "#22c55e"
                                   : row.direction === "Outbound"
                                     ? C.accent
                                     : "#475569",
@@ -962,7 +957,7 @@ const BlockedListPage = () => {
                           <span
                             style={{
                               color:
-                                row.enabled === "Yes" ? "#16A34A" : "#475569",
+                                row.enabled === "Yes" ? "#22c55e" : "#475569",
                               padding: "4px 11px",
                               borderRadius: 999,
                               fontSize: 11,

@@ -53,6 +53,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
 const CARD_RADIUS = 10;
@@ -458,7 +460,6 @@ const DisaPage = () => {
     get: false,
   });
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [editId, setEditId] = useState(null);
@@ -468,9 +469,6 @@ const DisaPage = () => {
   // Search & Pagination
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-
   // Outbound routes state
   const [allOutboundRoutes, setAllOutboundRoutes] = useState([]);
   const [availableSelected, setAvailableSelected] = useState([]);
@@ -496,7 +494,6 @@ const DisaPage = () => {
         return;
       }
       setRows(normalizeList(res).map(mapDisaFromApi));
-      setLastUpdated(new Date());
     } catch {
       setRows([]);
     } finally {
@@ -527,15 +524,7 @@ const DisaPage = () => {
   }, []);
 
   // ── Search & Pagination ──
-  const filteredRows = searchQuery.trim()
-    ? rows.filter((r) =>
-        [r.name].some((v) =>
-          String(v || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-        ),
-      )
-    : rows;
+  const filteredRows = rows;
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
   const pagedRows = filteredRows.slice(
@@ -919,11 +908,6 @@ const DisaPage = () => {
                 message="No DISA entries found."
                 onAddNew={handleOpenAddModal}
               />
-            ) : searchQuery && filteredRows.length === 0 ? (
-              <TableListEmptyState
-                message={`No results for "${searchQuery}"`}
-                showButton={false}
-              />
             ) : (
               <table
                 style={{
@@ -982,7 +966,7 @@ const DisaPage = () => {
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Pin Type
                     </TH>
-                    <TH style={{ textAlign: "left", paddingLeft: "16px" }}>
+                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Outbound Routes
                     </TH>
                     <TH
@@ -1102,7 +1086,7 @@ const DisaPage = () => {
                             style={{
                               color:
                                 row.secondDial === "Enable"
-                                  ? "#16A34A"
+                                  ? "#22c55e"
                                   : "#C2410C",
                               padding: "2px 8px",
                               borderRadius: 10,
@@ -1126,7 +1110,7 @@ const DisaPage = () => {
                             style={{
                               color:
                                 row.transparent === "Enable"
-                                  ? "#16A34A"
+                                  ? "#22c55e"
                                   : "#C2410C",
                               padding: "2px 8px",
                               borderRadius: 10,
@@ -1181,10 +1165,22 @@ const DisaPage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                                    <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
                           />
                         </td>
                       </tr>

@@ -41,6 +41,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
 const Btn = ({
@@ -66,9 +68,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -586,7 +585,7 @@ const modalCheckboxAllLabelSx = {
   "& .MuiFormControlLabel-label": {
     fontSize: 13,
     fontWeight: 600,
-    color: "#2563eb",
+    color: C.accent,
     lineHeight: 1.2,
   },
 };

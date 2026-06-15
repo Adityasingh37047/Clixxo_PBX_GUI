@@ -50,6 +50,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
 const Btn = ({
@@ -75,9 +77,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -671,7 +670,7 @@ const statusStyle = (s) => {
   }
 
   if (v === "pending") {
-    return { color: "#2563eb" };
+    return { color: C.accent };
   }
 
   return { bg: "#f1f5f9", color: "#475569" };
@@ -720,7 +719,6 @@ const SipAccountPage = () => {
   const importFileRef = React.useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [bulkForm, setBulkForm] = useState({
     startExtension: "",
     createNumber: "",
@@ -1135,7 +1133,6 @@ const SipAccountPage = () => {
       const response = await fetchSipAccounts();
       if (response.response && response.message) {
         setAccounts(transformApiToUi(response.message));
-        setLastUpdated(new Date());
       } else {
         showMessage("error", "Failed to load SIP accounts");
       }
@@ -1541,46 +1538,6 @@ const SipAccountPage = () => {
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
-  };
-
-  const handleClearAll = async () => {
-    if (!accounts.length) {
-      showMessage("info", "No accounts to clear");
-      return;
-    }
-    if (
-      !window.confirm(
-        "Are you sure you want to delete ALL SIP accounts? This cannot be undone.",
-      )
-    )
-      return;
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const results = await Promise.allSettled(
-        accounts.map((a) => deleteSipAccount(a.extension, a.context)),
-      );
-      const ok = results.filter(
-        (r) => r.status === "fulfilled" && r.value.response,
-      ).length;
-      if (ok) {
-        showMessage("success", `All ${ok} account(s) deleted`);
-        setSelected([]);
-        setPage(1);
-      }
-      await loadAccounts();
-    } catch (error) {
-      showMessage("error", error.message || "Failed to clear all accounts");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-
-  // ── Pagination helpers ─────────────────────────────────────────────────────
-  const handlePrev = () => {
-    if (page > 1) setPage(page - 1);
-  };
-  const handleNext = () => {
-    if (page < totalPages) setPage(page + 1);
   };
 
   const handleImportSubmit = async () => {

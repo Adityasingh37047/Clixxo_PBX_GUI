@@ -58,6 +58,8 @@ const C = {
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#ef4444",
+  successGreen: "#22c55e",
 };
 
 const Btn = ({
@@ -83,9 +85,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -723,7 +722,7 @@ const Pill = ({ text, bg, color }) => (
       padding: "4px 8px",
       borderRadius: 999,
       fontSize: 11,
-      fontWeight: 400,
+      fontWeight: 700,
       letterSpacing: "0.01em",
       whiteSpace: "nowrap",
       display: "inline-flex",
@@ -736,6 +735,12 @@ const Pill = ({ text, bg, color }) => (
     {text}
   </span>
 );
+
+const formatSipRegisterStatusLabel = (raw) => {
+  const s = String(raw || "").trim();
+  if (s.toLowerCase() === "not registering") return "Not registered";
+  return s;
+};
 
 /** Map backend registration_status strings to text-only pill colors */
 const getSipRegisterStatusStyle = (raw) => {
@@ -763,7 +768,7 @@ const getSipRegisterStatusStyle = (raw) => {
   }
 
   if (s === "registered" || s.includes("registered")) {
-    return { bg: "transparent", color: "#16A34A" };
+    return { bg: "transparent", color: "#22c55e" };
   }
 
   return { bg: "transparent", color: "#475569" };
@@ -832,9 +837,9 @@ const sipRegisterStatusCellStyle = {
 };
 
 const sipRegisterModifyCellStyle = {
-  width: 72,
-  minWidth: 72,
-  maxWidth: 72,
+  width: 70,
+  minWidth: 70,
+  maxWidth: 70,
   padding: "7px 6px",
   borderRight: "none",
 };
@@ -1085,18 +1090,7 @@ const SipRegisterPage = () => {
   const [ethPortOptions, setEthPortOptions] = useState(
     SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),
   );
-  const [ethPortLoading, setEthPortLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [lastUpdated, setLastUpdated] = useState(null);
-
-  // Scroll state for custom horizontal scrollbar
   const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
   const [tableContainerWidth, setTableContainerWidth] = useState(0);
   const allowHorizontalScroll = useSipRegisterBrowserZoom110();
   const tableMinWidth = allowHorizontalScroll
@@ -1135,7 +1129,6 @@ const SipRegisterPage = () => {
     };
   }, [trunks.length, allowHorizontalScroll]);
 
-  const visibleFieldsCount = SIP_REGISTER_VISIBLE_TABLE_FIELDS.length;
   const PREFERRED_ASSERTED_IDENTITY_OPTIONS = [
     "None",
     "Extension Number",
@@ -1282,24 +1275,13 @@ const SipRegisterPage = () => {
   // Pagination + Search
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
-  const filteredRows = searchQuery.trim()
-    ? trunks.filter((r) =>
-        [r.trunk_id, r.username, r.provider, r.registerStatus].some((v) =>
-          String(v || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-        ),
-      )
-    : trunks;
+  const filteredRows = trunks;
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
   const pagedRows = filteredRows.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
   const dataEmpty = trunks.length === 0;
-  const searchEmpty = !dataEmpty && filteredRows.length === 0;
-  // legacy alias kept for modal code that may reference pagedTrunks
-  const pagedTrunks = pagedRows;
 
   // Load trunks on component mount
   useEffect(() => {
@@ -1309,42 +1291,6 @@ const SipRegisterPage = () => {
       loadTrunks();
     }
   }, []);
-
-  // Update scroll state when data changes
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-        setShowCustomScrollbar(
-          allowHorizontalScroll && el.scrollWidth > el.clientWidth,
-        );
-      }
-    };
-    update();
-    const raf = requestAnimationFrame(update);
-    window.addEventListener("resize", update);
-    const vv = window.visualViewport;
-    vv?.addEventListener("resize", update);
-    vv?.addEventListener("scroll", update);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", update);
-      vv?.removeEventListener("resize", update);
-      vv?.removeEventListener("scroll", update);
-    };
-  }, [
-    trunks,
-    page,
-    filteredRows.length,
-    pagedRows.length,
-    tableMinWidth,
-    allowHorizontalScroll,
-  ]);
 
   // Load ETH port dropdown options when SIP Register modal opens.
   // This keeps the menu consistent and shows VPN options only when VPN interfaces are detected.
@@ -1366,7 +1312,6 @@ const SipRegisterPage = () => {
     };
 
     const loadEthPortOptions = async () => {
-      setEthPortLoading(true);
       try {
         const sysInfo = await fetchSystemInfo();
         const details = sysInfo?.details || {};
@@ -1447,8 +1392,6 @@ const SipRegisterPage = () => {
         setEthPortOptions(
           SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),
         );
-      } finally {
-        setEthPortLoading(false);
       }
     };
 
@@ -1465,14 +1408,6 @@ const SipRegisterPage = () => {
   const stripSipPrefix = (value) => {
     if (!value) return "";
     return value.replace(/^sip:/i, "");
-  };
-
-  // Helper to add "sip:" prefix for API
-  const addSipPrefix = (value) => {
-    if (!value) return "";
-    // Don't add if already has sip: prefix
-    if (value.toLowerCase().startsWith("sip:")) return value;
-    return `sip:${value}`;
   };
 
   // Fields that require "sip:" prefix
@@ -1885,12 +1820,16 @@ const SipRegisterPage = () => {
       setEditIndex(null);
       setDodRows([]);
     }
+    setShowDodAddModal(false);
+    resetDodAddForm();
     setShowModal(true);
   };
   const handleCloseModal = () => {
     setShowModal(false);
     setEditIndex(null);
     setModalTab("basic");
+    setShowDodAddModal(false);
+    resetDodAddForm();
     setDodRows([]);
     setDodSelected([]);
     setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
@@ -2382,11 +2321,6 @@ const SipRegisterPage = () => {
         : Array.from(new Set([...prev, ...pageIds])),
     );
   };
-  const handleSelectRow = (idx) => {
-    setSelected((sel) =>
-      sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
-    );
-  };
   const handleInverse = () => {
     const allIds = trunks.map((t) => t.trunk_id).filter(Boolean);
     setSelectedIds(allIds.filter((id) => !selectedIds.includes(id)));
@@ -2396,6 +2330,12 @@ const SipRegisterPage = () => {
       showMessage("error", "Please select trunks to delete");
       return;
     }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedIds.length} trunk(s)?`,
+      )
+    )
+      return;
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
@@ -2494,47 +2434,6 @@ const SipRegisterPage = () => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
   };
 
-  // Scroll handling functions
-  const handleTableScroll = (e) => {
-    const el = e.target;
-    setScrollState({
-      left: el.scrollLeft,
-      width: el.clientWidth,
-      scrollWidth: el.scrollWidth,
-    });
-    setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-  };
-  const handleScrollbarDrag = (e) => {
-    const track = e.currentTarget;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
-
-  // Calculate scrollbar thumb dimensions
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
-
   return (
     <div style={pbxPageWrapStyle}>
       <div style={pbxPageInnerStyle}>
@@ -2624,16 +2523,10 @@ const SipRegisterPage = () => {
                 message="No SIP register trunks found."
                 onAddNew={() => handleOpenModal()}
               />
-            ) : searchEmpty ? (
-              <TableListEmptyState
-                message={`No results for "${searchQuery}"`}
-                showButton={false}
-              />
             ) : (
               <>
                 <div
                   ref={tableScrollRef}
-                  onScroll={handleTableScroll}
                   className={TRUNK_TABLE_SCROLL_CLASS}
                   style={{
                     ...trunkTableScrollStyle,
@@ -2899,7 +2792,9 @@ const SipRegisterPage = () => {
                                 <div style={sipRegisterIdCenterWrapStyle}>
                                   {trunk.registerStatus ? (
                                     <Pill
-                                      text={trunk.registerStatus}
+                                      text={formatSipRegisterStatusLabel(
+                                        trunk.registerStatus,
+                                      )}
                                       bg={statusBg}
                                       color={statusColor}
                                     />
@@ -4324,10 +4219,11 @@ const SipRegisterPage = () => {
                     </Btn>
                   ))}
                 </div>
+
                 {showDodAddModal ? (
                   <div className="mt-2 bg-white border border-gray-200 rounded-md p-3 sm:p-4 shadow-sm">
-                    <div className="flex flex-col items-center gap-3 mb-4">
-                      <div className="flex items-center gap-8 w-full max-w-[400px]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-4 w-full">
+                      <div className="flex items-center gap-8 min-w-0">
                         <label
                           className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
                           style={{ width: 110 }}
@@ -4342,7 +4238,7 @@ const SipRegisterPage = () => {
                           {...nativeFieldInteraction}
                         />
                       </div>
-                      <div className="flex items-center gap-8 w-full max-w-[400px]">
+                      <div className="flex items-center gap-8 min-w-0">
                         <label
                           className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
                           style={{ width: 110 }}

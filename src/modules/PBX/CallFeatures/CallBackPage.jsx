@@ -43,7 +43,7 @@ const C = {
   errorRed: "#ef4444",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 // ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
@@ -298,7 +298,6 @@ const CallBackPage = () => {
   });
   const [error, setError] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Search & Pagination
@@ -314,7 +313,7 @@ const CallBackPage = () => {
   const [strip, setStrip] = useState("");
   const [prepend, setPrepend] = useState("");
   const [destination, setDestination] = useState("");
-  const [throughAuto, setThroughAuto] = useState(true);
+  const [, setThroughAuto] = useState(true);
   const [throughFromComeIn, setThroughFromComeIn] = useState(false);
   const [throughSelect, setThroughSelect] = useState(false);
   const [extensionOptions, setExtensionOptions] = useState([]);
@@ -345,7 +344,6 @@ const CallBackPage = () => {
           throughSelect: item.through_mode === "select",
         })),
       );
-      setLastUpdated(new Date());
     } catch (err) {
       showAlert("error", err?.message || "Failed to load callbacks.");
     } finally {
@@ -990,7 +988,7 @@ const CallBackPage = () => {
                           <span
                             style={{
                               color: row.throughAuto
-                                ? "#16A34A"
+                                ? "#22c55e"
                                 : row.throughFromComeIn
                                   ? C.accent
                                   : "#475569",
@@ -1018,10 +1016,22 @@ const CallBackPage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                                    <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
                           />
                         </td>
                       </tr>

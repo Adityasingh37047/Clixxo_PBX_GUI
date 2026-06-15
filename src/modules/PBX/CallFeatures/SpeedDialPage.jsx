@@ -30,9 +30,9 @@ const C = {
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
-  amber: "#DC2626",
-  successGreen: "#16A34A",
-  errorRed: "#DC2626",
+  amber: "#dc2626",
+  successGreen: "#22c55e",
+  errorRed: "#ef4444",
 };
 
 const CARD_RADIUS = 10;
@@ -305,14 +305,11 @@ const SpeedDialPage = () => {
     delete: false,
   });
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Search & Pagination
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
 
   // Form state
   const [editId, setEditId] = useState(null);
@@ -354,7 +351,6 @@ const SpeedDialPage = () => {
         return;
       }
       setRows(normalizeList(res).map(mapFromApi));
-      setLastUpdated(new Date());
     } catch (err) {
       showMessage("error", err?.message || "Failed to load speed dials.");
       setRows([]);
@@ -369,15 +365,7 @@ const SpeedDialPage = () => {
   }, []);
 
   // ── Search & Pagination Logic ──
-  const filteredRows = searchQuery.trim()
-    ? rows.filter((r) =>
-        [r.name, r.speedDialNumber, r.destination].some((v) =>
-          String(v || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-        ),
-      )
-    : rows;
+  const filteredRows = rows;
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
   const pagedRows = filteredRows.slice(
@@ -635,7 +623,7 @@ const SpeedDialPage = () => {
                     fontSize: 11,
                     fontWeight: 600,
                     padding: "3px 10px",
-                    borderRadius: 20,
+                    borderRadius: 10,
                     border: `0.5px solid ${C.accent}`,
                   }}
                 >
@@ -740,11 +728,6 @@ const SpeedDialPage = () => {
               <TableListEmptyState
                 message="No speed dials found."
                 onAddNew={handleOpenAddModal}
-              />
-            ) : searchQuery && filteredRows.length === 0 ? (
-              <TableListEmptyState
-                message={`No results for "${searchQuery}"`}
-                showButton={false}
               />
             ) : (
               <table
@@ -917,10 +900,22 @@ const SpeedDialPage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
+                                                    <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.7";
+                            }}
                           />
                         </td>
                       </tr>

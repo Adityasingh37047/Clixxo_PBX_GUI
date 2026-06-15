@@ -31,7 +31,6 @@ import {
   fetchNetwork,
 } from "../../../api/apiService";
 
-
 // ── Local page UI (inlined from systemSharedUi) ──
 const C = {
   pageBg: "#f8fafc",
@@ -532,13 +531,24 @@ const SipTrunkPage = () => {
             return /^eth\d+$/.test(name) || /^enp\d+s\d+/.test(name);
           });
 
-          const orderedOptions = lanIfaces.map((iface, idx) => ({
-            value: iface.ipAddress || `lan${idx + 1}-unavailable`,
-            label: iface.ipAddress
-              ? `LAN ${idx + 1} (${iface.ipAddress})`
-              : `LAN ${idx + 1} (Unavailable)`,
-            disabled: !iface.ipAddress,
-          }));
+          const orderedOptions = [];
+          lanIfaces.forEach((iface, idx) => {
+            orderedOptions.push({
+              value: iface.ipAddress || `lan${idx + 1}-unavailable`,
+              label: iface.ipAddress
+                ? `LAN ${idx + 1} (${iface.ipAddress})`
+                : `LAN ${idx + 1} (Unavailable)`,
+              disabled: !iface.ipAddress,
+            });
+            const ipv6 =
+              iface.ipv6Address || iface.ipv6 || iface.ipv6_address || "";
+            if (ipv6) {
+              orderedOptions.push({
+                value: ipv6,
+                label: `LAN ${idx + 1} IPv6 (${ipv6})`,
+              });
+            }
+          });
 
           orderedOptions.push({ value: "0.0.0.0", label: "Any LAN (0.0.0.0)" });
 
