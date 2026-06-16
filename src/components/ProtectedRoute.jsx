@@ -1,6 +1,6 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import useAuth from "../context/useAuth";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -8,18 +8,22 @@ const ProtectedRoute = ({ children }) => {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div style={{
-        minHeight: 'calc(100vh - 80px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#e3e7ef',
-        boxSizing: 'border-box'
-      }}>
-        <div style={{
-          fontSize: 18,
-          color: '#666'
-        }}>
+      <div
+        style={{
+          minHeight: "calc(100vh - 80px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#e3e7ef",
+          boxSizing: "border-box",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 18,
+            color: "#666",
+          }}
+        >
           Loading...
         </div>
       </div>
@@ -33,4 +37,4 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-export default ProtectedRoute; 
+export default ProtectedRoute;

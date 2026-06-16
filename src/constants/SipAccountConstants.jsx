@@ -20,6 +20,12 @@ export const SIP_ACCOUNT_FIELDS = [
     type: "text",
     defaultValue: "3",
   },
+  {
+    name: "transport",
+    label: "Transport",
+    type: "select",
+    defaultValue: "udp",
+  },
 
   // BASIC -> User Info
   { name: "user_name", label: "Name", type: "text", defaultValue: "" },

@@ -1,9 +1,9 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { canAccessLicence } from '../constants/authAccess';
-import { ROUTE_PATHS } from '../constants/routeConstatns';
-import Licence from '../modules/Maitenance/System Tools/Licence';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import useAuth from "../context/useAuth";
+import { canAccessLicence } from "../constants/authAccess";
+import { ROUTE_PATHS } from "../constants/routeConstatns";
+import Licence from "../modules/Maitenance/System Tools/Licence";
 
 /** Renders Licence only for allowed users; otherwise redirects home. */
 const LicenceRouteGate = () => {

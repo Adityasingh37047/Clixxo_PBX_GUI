@@ -1,18 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { fetchLogin } from "../api/apiService";
 import { canWrite as canWriteUser, isReadOnlyUser } from "../utils/permissions";
-
-// Create the context
-const AuthContext = createContext();
-
-// Custom hook to use the auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+import AuthContext from "./authContextInstance";
 
 // Auth Provider component
 export const AuthProvider = ({ children }) => {
@@ -30,7 +19,7 @@ export const AuthProvider = ({ children }) => {
       ip === "localhost" || ip === "127.0.0.1" || ip === "0.0.0.0";
 
     if (isLocalhost) {
-      let testIp = "192.168.0.99";
+      let testIp = "192.168.0.157";
       // Local development → backend usually runs on 5000
       return `https://${testIp}:443/api`;
     } else {

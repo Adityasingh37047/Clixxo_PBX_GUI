@@ -400,6 +400,60 @@ const systemModalSelectSx = {
     boxSizing: "border-box",
   },
 };
+
+const localIpSelectSx = {
+  ...systemModalSelectSx,
+  width: "100%",
+  maxWidth: 320,
+  "& .MuiSelect-select": {
+    ...systemModalSelectSx["& .MuiSelect-select"],
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    display: "block",
+    maxWidth: "100%",
+  },
+};
+
+const modalFieldControlStyle = {
+  width: 320,
+  maxWidth: "100%",
+  minWidth: 0,
+  flexShrink: 0,
+};
+
+const modalFieldRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  maxWidth: 502,
+  margin: "0 auto",
+};
+
+const getLocalIpDisplayLabel = (option, fallback = "") => {
+  if (!option) return fallback;
+  return option.shortLabel || option.label || fallback;
+};
+
+const buildLanIpv4Option = (idx, ipAddress) => ({
+  value: ipAddress || `lan${idx + 1}-unavailable`,
+  label: ipAddress
+    ? `LAN ${idx + 1} (${ipAddress})`
+    : `LAN ${idx + 1} (Unavailable)`,
+  shortLabel: ipAddress
+    ? `LAN ${idx + 1} (${ipAddress})`
+    : `LAN ${idx + 1} (Unavailable)`,
+  disabled: !ipAddress,
+});
+
+const buildLanIpv6Option = (idx, ipv6) => ({
+  value: ipv6,
+  label: `LAN ${idx + 1} IPv6 (${ipv6})`,
+  shortLabel: `LAN ${idx + 1} IPv6`,
+  title: ipv6,
+});
 const SipTrunkPage = () => {
   // State
   const [registers, setRegisters] = useState([]);
@@ -476,7 +530,7 @@ const SipTrunkPage = () => {
     if (raw === undefined || raw === null || raw === "") return "--";
     if (field.name === "local_ip") {
       const match = localIpOptions.find((option) => option.value === raw);
-      if (match) return match.label;
+      if (match) return getLocalIpDisplayLabel(match, raw);
     }
     if (field.type === "select" && Array.isArray(field.options)) {
       const match = field.options.find((option) => option.value === raw);
@@ -533,20 +587,13 @@ const SipTrunkPage = () => {
 
           const orderedOptions = [];
           lanIfaces.forEach((iface, idx) => {
-            orderedOptions.push({
-              value: iface.ipAddress || `lan${idx + 1}-unavailable`,
-              label: iface.ipAddress
-                ? `LAN ${idx + 1} (${iface.ipAddress})`
-                : `LAN ${idx + 1} (Unavailable)`,
-              disabled: !iface.ipAddress,
-            });
+            orderedOptions.push(
+              buildLanIpv4Option(idx, iface.ipAddress),
+            );
             const ipv6 =
               iface.ipv6Address || iface.ipv6 || iface.ipv6_address || "";
             if (ipv6) {
-              orderedOptions.push({
-                value: ipv6,
-                label: `LAN ${idx + 1} IPv6 (${ipv6})`,
-              });
+              orderedOptions.push(buildLanIpv6Option(idx, ipv6));
             }
           });
 
@@ -1215,13 +1262,11 @@ const SipTrunkPage = () => {
                 <div
                   key={field.name}
                   style={{
-                    display: "flex",
+                    ...modalFieldRowStyle,
                     alignItems:
                       field.type === "checkbox" && field.name === "allow_codecs"
                         ? "flex-start"
                         : "center",
-                    justifyContent: "center",
-                    gap: 12,
                   }}
                 >
                   <label
@@ -1237,13 +1282,7 @@ const SipTrunkPage = () => {
                   >
                     {field.label}:
                   </label>
-                  <div
-                    style={{
-                      width: "min(100%, 320px)",
-                      display: "flex",
-                      flex: 1,
-                    }}
-                  >
+                  <div style={modalFieldControlStyle}>
                     {field.type === "select" ? (
                       <div className="w-full">
                         <MuiSelect
@@ -1253,10 +1292,30 @@ const SipTrunkPage = () => {
                           }
                           displayEmpty
                           fullWidth
+                          renderValue={
+                            field.name === "local_ip"
+                              ? (selected) =>
+                                  getLocalIpDisplayLabel(
+                                    selectOptions.find(
+                                      (option) => option.value === selected,
+                                    ),
+                                    selected,
+                                  )
+                              : undefined
+                          }
                           sx={{
-                            ...systemModalSelectSx,
+                            ...(field.name === "local_ip"
+                              ? localIpSelectSx
+                              : systemModalSelectSx),
                             borderRadius: "4px",
                             fontSize: 13,
+                          }}
+                          MenuProps={{
+                            PaperProps: {
+                              sx: {
+                                maxWidth: 360,
+                              },
+                            },
                           }}
                         >
                           {selectOptions.map((option) => (
@@ -1264,9 +1323,27 @@ const SipTrunkPage = () => {
                               key={option.value}
                               value={option.value}
                               disabled={option.disabled}
-                              sx={{ fontSize: 13 }}
+                              title={option.title || option.label}
+                              sx={{ fontSize: 13, maxWidth: 360 }}
                             >
-                              {option.label}
+                              {field.name === "local_ip" && option.title ? (
+                                <div style={{ minWidth: 0, width: "100%" }}>
+                                  <div>{option.shortLabel || option.label}</div>
+                                  <div
+                                    style={{
+                                      fontSize: 11,
+                                      color: "#64748b",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {option.value}
+                                  </div>
+                                </div>
+                              ) : (
+                                option.label
+                              )}
                             </MenuItem>
                           ))}
                         </MuiSelect>

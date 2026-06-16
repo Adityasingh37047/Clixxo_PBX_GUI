@@ -5,7 +5,7 @@ import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import MenuIcon from "@mui/icons-material/Menu";
 import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import useAuth from "../context/useAuth";
 import { postLinuxCmd } from "../api/apiService";
 
 const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {

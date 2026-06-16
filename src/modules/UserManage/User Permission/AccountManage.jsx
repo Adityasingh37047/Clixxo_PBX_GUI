@@ -11,7 +11,7 @@ import {
   fetchAccountManageUpdate,
   fetchAccountManageDelete,
 } from "../../../api/apiService";
-import { useAuth } from "../../../context/AuthContext";
+import useAuth from "../../../context/useAuth";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -128,7 +128,6 @@ const addHostFormPanelStyle = {
   borderRadius: 8,
   padding: 20,
 };
-
 
 const CARD_RADIUS = 20;
 

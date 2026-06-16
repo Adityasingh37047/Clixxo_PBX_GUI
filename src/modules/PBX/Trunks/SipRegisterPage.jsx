@@ -762,7 +762,7 @@ const getSipRegisterStatusStyle = (raw) => {
     s.includes("failure");
 
   if (isFailure) {
-    return { bg: "transparent", color: "#51555A" };
+    return { bg: "transparent", color: "#dc2626" };
   }
 
   if (s === "pending" || s === "registering" || s.includes("pending")) {
@@ -991,6 +991,7 @@ const scheduleSipRegisterZoomMeasure = (measure) => {
 };
 
 const useSipRegisterBrowserZoom110 = () => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [highZoom, setHighZoom] = useState(false);
 
   useEffect(() => {
@@ -1063,8 +1064,6 @@ const useSipRegisterBrowserZoom110 = () => {
 };
 
 const SipRegisterPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
-
   // State
   const [trunks, setTrunks] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -1096,6 +1095,7 @@ const SipRegisterPage = () => {
   );
   const tableScrollRef = useRef(null);
   const [tableContainerWidth, setTableContainerWidth] = useState(0);
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const allowHorizontalScroll = useSipRegisterBrowserZoom110();
   const tableMinWidth = allowHorizontalScroll
     ? Math.max(

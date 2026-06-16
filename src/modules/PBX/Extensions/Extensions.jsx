@@ -8,7 +8,8 @@ import {
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {Button,
+import {
+  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,7 +28,9 @@ import {Button,
   RadioGroup,
   Radio,
   Tabs,
-  Tab, useMediaQuery } from "@mui/material";
+  Tab,
+  useMediaQuery,
+} from "@mui/material";
 import {
   fetchSipAccounts,
   createSipAccount,
@@ -933,6 +936,7 @@ const SipAccountPage = () => {
         from_domain: item.from_domain || item["Domain name"] || "",
         contact_user: item.contact_user || item["Contact User"] || "",
         outbound_proxy: item.outbound_proxy || item["Outbound Proxy"] || "",
+        transport: item.transport || "udp",
         status: item.status || "",
         enable_srtp: boolToYesNo(item.adv_enable_srtp ?? item.enable_srtp),
         sip_bypass_media: (() => {
@@ -1099,6 +1103,7 @@ const SipAccountPage = () => {
       secretary_service: toggleToBool(uiData.secretary_service),
       secretary_extension: uiData.secretary_extension || "",
       secretary_number: uiData.secretary_extension || "",
+      transport: uiData.transport || "udp",
       from_domain: uiData.from_domain,
       contact_user: uiData.contact_user,
       outbound_proxy: uiData.outbound_proxy,
@@ -1377,9 +1382,10 @@ const SipAccountPage = () => {
       } else {
         showMessage(
           "error",
-          editIndex !== null
-            ? "Failed to update account"
-            : response.message || "Failed to create account",
+          response.message ||
+            (editIndex !== null
+              ? "Failed to update account"
+              : "Failed to create account"),
         );
       }
     } catch (error) {
@@ -1618,7 +1624,14 @@ const SipAccountPage = () => {
         <PbxBreadcrumb section="Extensions" current="Extensions" />
 
         <div style={sipPcmCardStyle}>
-          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1764,11 +1777,12 @@ const SipAccountPage = () => {
             />
           ) : (
             <>
-              <div style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              flex: 1,
-            }}
+              <div
+                style={{
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
+                }}
               >
                 <table
                   style={{
@@ -1776,7 +1790,8 @@ const SipAccountPage = () => {
                     borderCollapse: "separate",
                     borderSpacing: 0,
                     tableLayout: "auto",
-                    minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
+                    minWidth: 900,
+                    ...(isCompact ? { minWidth: 720 } : {}),
                   }}
                 >
                   <thead>
@@ -2265,7 +2280,8 @@ const SipAccountPage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: "1fr 1fr",
+                      ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "8px 32px",
                     }}
                   >
@@ -2532,6 +2548,23 @@ const SipAccountPage = () => {
                       />
                     </FieldRow>
 
+                    <FieldRow label="Transport:">
+                      <FormControl fullWidth size="small">
+                        <MuiSelect
+                          value={form.transport || "udp"}
+                          onChange={(e) =>
+                            handleChange("transport", e.target.value)
+                          }
+                          sx={modalSelectSx}
+                        >
+                          <MenuItem value="udp">udp</MenuItem>
+                          <MenuItem value="tcp">tcp</MenuItem>
+                          <MenuItem value="udp-ipv6">udp-ipv6</MenuItem>
+                          <MenuItem value="tcp-ipv6">tcp-ipv6</MenuItem>
+                        </MuiSelect>
+                      </FormControl>
+                    </FieldRow>
+
                     <div style={{ gridColumn: "1 / -1" }}>
                       <FieldRow label="Allow Codecs:" wide>
                         <FormGroup
@@ -2584,7 +2617,8 @@ const SipAccountPage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: "1fr 1fr",
+                      ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "8px 32px",
                     }}
                   >
@@ -2691,7 +2725,8 @@ const SipAccountPage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: "1fr 1fr",
+                      ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "8px 32px",
                     }}
                   >
@@ -3307,7 +3342,8 @@ const SipAccountPage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: "1fr 1fr",
+                      ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "8px 32px",
                       paddingTop: 4,
                     }}
@@ -3481,7 +3517,8 @@ const SipAccountPage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: "1fr 1fr",
+                      ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "8px 32px",
                     }}
                   >
@@ -3549,7 +3586,8 @@ const SipAccountPage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: "1fr 1fr",
+                      ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "8px 32px",
                     }}
                   >
@@ -3589,7 +3627,8 @@ const SipAccountPage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: "1fr 1fr",
+                      ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "8px 32px",
                     }}
                   >
@@ -3764,7 +3803,8 @@ const SipAccountPage = () => {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: "1fr 1fr",
+                      ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                       gap: "8px 32px",
                     }}
                   >
@@ -3879,7 +3919,8 @@ const MonitorDualListbox = ({ available, selected, onChange }) => {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "1fr 48px 1fr", ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
+        gridTemplateColumns: "1fr 48px 1fr",
+        ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
         gap: 12,
         alignItems: "start",
         marginTop: 12,

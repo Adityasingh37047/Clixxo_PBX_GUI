@@ -12,7 +12,8 @@ import {
   updateUserAccess,
   deleteUser,
 } from "../../../api/apiService";
-import { useAuth } from "../../../context/AuthContext";
+import useAuth from "../../../context/useAuth";
+
 // ── Color palette (matches CallCount) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -114,7 +115,6 @@ const userPermissionFieldInputStyle = {
 };
 
 const inputStyle = userPermissionFieldInputStyle;
-
 
 // ── Button Component ──────────────────────────────────────────────────────────
 const Btn = ({

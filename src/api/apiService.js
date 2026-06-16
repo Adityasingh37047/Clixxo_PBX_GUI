@@ -1273,6 +1273,7 @@ const buildSipExtensionPayload = (accountData = {}) => ({
   from_domain: accountData.from_domain,
   contact_user: accountData.contact_user,
   outbound_proxy: accountData.outbound_proxy,
+  transport: accountData.transport,
 
   // Advanced fields
   adv_enable_srtp: accountData.adv_enable_srtp,
@@ -2695,6 +2696,19 @@ export const createFinalNumberFilter = async (data) => {
     return response.data;
   } catch (error) {
     console.error('Error creating final number filter:', error.message);
+    throw error;
+  }
+};
+
+export const updateFinalNumberFilter = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/finalnumberfilter', {
+      type: 'update',
+      data: { id, ...data }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating final number filter:', error.message);
     throw error;
   }
 };

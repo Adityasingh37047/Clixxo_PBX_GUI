@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { fetchChangePassword } from "../../../api/apiService";
-import { useAuth } from "../../../context/AuthContext";
+import useAuth from "../../../context/useAuth";
 import { useNavigate } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import {
-  IconButton,
-  InputAdornment,
-  TextField,
-  Alert,
-} from "@mui/material";
+import { IconButton, InputAdornment, TextField, Alert } from "@mui/material";
 import {
   CHANGE_PASSWORD_FIELDS,
   CHANGE_PASSWORD_INITIAL_FORM,
@@ -204,7 +199,6 @@ const advancedFormBtnStyle = {
   lineHeight: "34px",
   boxSizing: "border-box",
 };
-
 
 const Btn = ({
   children,
@@ -510,7 +504,10 @@ const ChangePassword = () => {
           <form onSubmit={handleSave} className="w-full">
             <div
               className="w-full px-5 pt-3 pb-0 flex flex-col items-center"
-              style={{ borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
+              style={{
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+              }}
             >
               <div
                 className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center"
