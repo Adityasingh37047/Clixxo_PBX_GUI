@@ -445,15 +445,24 @@ const callCountTableCheckboxSx = {
 // ── Column definitions ────────────────────────────────────────────────────────
 const columns = [
   { key: "calldate", label: "Start", width: "12%" },
-  { key: "src", label: "Call From", width: "10%" },
-  { key: "src_ip", label: "Call From IP", width: "11%" },
-  { key: "dst", label: "Call To", width: "10%" },
-  { key: "dst_ip", label: "Call To IP", width: "11%" },
-  { key: "call_direction", label: "Direction", width: "7%", compact: true },
+
+  { key: "src", label: "Call From", width: "8%" },          // 10 → 8
+
+  { key: "src_ip", label: "Call From IP", width: "10%" },   // 11 → 10
+
+  { key: "dst", label: "Call To", width: "8%" },            // 10 → 8
+
+  { key: "dst_ip", label: "Call To IP", width: "10%" },     // 11 → 10
+
+  { key: "call_direction", label: "Direction", width: "6%", compact: true }, // 7 → 6
+
   { key: "disposition", label: "Call Status", width: "8%", compact: true },
+
   { key: "billsec", label: "Duration", width: "7%", compact: true },
-  { key: "dcontext", label: "Context", width: "6%" },
-  { key: "hangup_cause", label: "Hangup Cause", width: "10%" },
+
+  { key: "dcontext", label: "Context", width: "5%" },       // 6 → 5
+
+  { key: "hangup_cause", label: "Hangup Cause", width: "16%" }, // 10 → 16
 ];
 
 const getCallCountCellPadding = (key) => {
@@ -1372,7 +1381,7 @@ const CallCount = () => {
                     minWidth: CALL_COUNT_TABLE_MIN_WIDTH,
                     borderCollapse: "separate",
                     borderSpacing: 0,
-                    tableLayout: "fixed",
+                    tableLayout: "auto",
                   }}
                 >
                   <colgroup>
@@ -1402,19 +1411,7 @@ const CallCount = () => {
                           sx={callCountTableCheckboxSx}
                         />
                       </TH>
-                      <TH
-                        style={{
-                          width: "2.5%",
-                          ...callCountTableThStyle,
-                          padding: "9px 0",
-                          textAlign: "center",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        ID
-                      </TH>
+                      
                       {columns.map((col, colIdx) => (
                         <TH
                           key={col.key}
@@ -1507,16 +1504,7 @@ const CallCount = () => {
                               />
                             </td>
 
-                            <td
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: callCountCellPadding,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {(page - 1) * limit + idx + 1}
-                            </td>
+                         
 
                             <td
                               title={formatDate(row.calldate)}

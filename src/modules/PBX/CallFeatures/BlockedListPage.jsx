@@ -1100,13 +1100,14 @@ const BlockedListPage = () => {
 
         <DialogContent style={{ padding: "20px 24px", background: "#ffffff" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#f5f7fa",
-                borderRadius: 6,
-                padding: 16,
-              }}
-            >
+          <div
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: 16,
+  }}
+>
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >

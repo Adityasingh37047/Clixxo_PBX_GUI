@@ -1004,8 +1004,7 @@ const PrivateGroup = () => {
                             borderRight: "none",
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
-                            borderRight: "none",
+                              : tdStyle.borderBottom
                           }}
                         >
                                                     <EditDocumentIcon

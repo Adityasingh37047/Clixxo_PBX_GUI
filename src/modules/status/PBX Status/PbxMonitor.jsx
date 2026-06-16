@@ -448,23 +448,25 @@ const StatCard = ({ label, value, accent, ready }) => (
   <div
     style={{
       background: "#ffffff",
-      borderRadius: 10,
-      padding: 20,
-      minHeight: 90,
+      borderRadius: 8,
+      padding: "8px 12px",
+      minHeight: 52,
       border: `1px solid ${C.cardBorder}`,
-      boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+      boxShadow: "0 2px 6px rgba(15,23,42,0.04)",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "space-between",
+      justifyContent: "center",
+      gap: 4,
     }}
   >
     <span
       style={{
-        fontSize: 11,
+        fontSize: 10,
         color: C.labelText,
         fontWeight: 600,
-        letterSpacing: "0.05em",
+        letterSpacing: "0.04em",
         textTransform: "uppercase",
+        lineHeight: 1.2,
       }}
     >
       {label}
@@ -472,8 +474,9 @@ const StatCard = ({ label, value, accent, ready }) => (
 
     <span
       style={{
-        fontSize: 28,
+        fontSize: 20,
         fontWeight: 700,
+        lineHeight: 1,
         color: ready ? accent : C.mutedText,
       }}
     >
@@ -767,13 +770,14 @@ const PbxMonitor = () => {
 
         {/* Stats */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4,1fr)",
-            gap: 16,
-            marginBottom: 24,
-          }}
-        >
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 200px)",
+    gap: 16,
+    marginBottom: 12,
+    justifyContent: "start",
+  }}
+>
           <StatCard
             label="Total Extensions"
             value={extensionRows.length}
@@ -810,7 +814,7 @@ const PbxMonitor = () => {
               alignItems: "center",
               justifyContent: "space-between",
               minHeight: 44,
-              padding: "0 8px 0 6px",
+              padding: 0,
               background: C.cardBg,
               borderBottom: `1px solid ${C.cardBorder}`,
               borderTopLeftRadius: SIP_PCM_FORM_HEADER_RADIUS,
