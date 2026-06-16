@@ -972,7 +972,7 @@ const PickupGroup = () => {
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
-                            borderRight: "none",
+                           
                           }}
                         >
                                                     <EditDocumentIcon

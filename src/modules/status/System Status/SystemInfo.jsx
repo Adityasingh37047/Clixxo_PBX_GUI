@@ -575,88 +575,199 @@ const SystemInfo = () => {
           />
         </div>
 
-        {/* LAN cards — 2 columns, alternating rows */}
-        {LAN_INTERFACES.length > 0 && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 12,
-              marginBottom: 14,
-              alignItems: "stretch",
-            }}
-          >
-            {LAN_INTERFACES.map((lan) => (
-              <Card key={lan.name} title={lan.name} style={{ height: "100%" }}>
-                {Object.entries(lan.data || {}).map(([key, val], idx) => (
+        {LAN_INTERFACES.length === 1 ? (
+          <>
+            {/* Single interface: Interface Card | Version Info */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 12,
+                marginBottom: 14,
+                alignItems: "stretch",
+              }}
+            >
+              {LAN_INTERFACES.map((lan) => (
+                <Card
+                  key={lan.name}
+                  title={lan.name}
+                  style={{ height: "100%" }}
+                >
+                  {Object.entries(lan.data || {}).map(([key, val], idx) => (
+                    <InfoTableRow
+                      key={key}
+                      label={key}
+                      value={val}
+                      keyName={key}
+                      even={idx % 2 === 1}
+                    />
+                  ))}
+                </Card>
+              ))}
+              <Card
+                title="Version Info"
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {(VERSION_INFO || []).map((v, idx) => (
                   <InfoTableRow
-                    key={key}
-                    label={key}
-                    value={val}
-                    keyName={key}
+                    key={idx}
+                    label={v.label}
+                    value={v.value}
+                    keyName={v.label}
                     even={idx % 2 === 1}
                   />
                 ))}
+                <div
+                  style={{
+                    flex: 1,
+                    background: "#f8fafc",
+                    borderTop: "0.5px solid #f1f5f9",
+                    minHeight: 8,
+                  }}
+                />
               </Card>
-            ))}
-          </div>
-        )}
+            </div>
 
-        {/* System Details + Version Info — stretch so both cards same height, filler fills white space */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: 12,
-            marginBottom: 16,
-            alignItems: "stretch",
-          }}
-        >
-          <Card
-            title="System Details"
-            style={{ height: "100%", display: "flex", flexDirection: "column" }}
-          >
-            {(SYSTEM_INFO || []).map((info, idx) => (
-              <InfoTableRow
-                key={idx}
-                label={info.label}
-                value={info.value}
-                keyName={info.label}
-                even={idx % 2 === 1}
-              />
-            ))}
+            {/* System Details — left column only (~50% width), right side empty */}
             <div
               style={{
-                flex: 1,
-                background: "#f8fafc",
-                borderTop: "0.5px solid #f1f5f9",
-                minHeight: 8,
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 12,
+                marginBottom: 16,
+                alignItems: "stretch",
               }}
-            />
-          </Card>
-          <Card
-            title="Version Info"
-            style={{ height: "100%", display: "flex", flexDirection: "column" }}
-          >
-            {(VERSION_INFO || []).map((v, idx) => (
-              <InfoTableRow
-                key={idx}
-                label={v.label}
-                value={v.value}
-                keyName={v.label}
-                even={idx % 2 === 1}
-              />
-            ))}
+            >
+              <Card
+                title="System Details"
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {(SYSTEM_INFO || []).map((info, idx) => (
+                  <InfoTableRow
+                    key={idx}
+                    label={info.label}
+                    value={info.value}
+                    keyName={info.label}
+                    even={idx % 2 === 1}
+                  />
+                ))}
+                <div
+                  style={{
+                    flex: 1,
+                    background: "#f8fafc",
+                    borderTop: "0.5px solid #f1f5f9",
+                    minHeight: 8,
+                  }}
+                />
+              </Card>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Multiple interfaces: LAN cards in first row */}
+            {LAN_INTERFACES.length > 1 && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: 12,
+                  marginBottom: 14,
+                  alignItems: "stretch",
+                }}
+              >
+                {LAN_INTERFACES.map((lan) => (
+                  <Card
+                    key={lan.name}
+                    title={lan.name}
+                    style={{ height: "100%" }}
+                  >
+                    {Object.entries(lan.data || {}).map(([key, val], idx) => (
+                      <InfoTableRow
+                        key={key}
+                        label={key}
+                        value={val}
+                        keyName={key}
+                        even={idx % 2 === 1}
+                      />
+                    ))}
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* System Details | Version Info in second row */}
             <div
               style={{
-                flex: 1,
-                background: "#f8fafc",
-                borderTop: "0.5px solid #f1f5f9",
-                minHeight: 8,
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 12,
+                marginBottom: 16,
+                alignItems: "stretch",
               }}
-            />
-          </Card>
-        </div>
+            >
+              <Card
+                title="System Details"
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {(SYSTEM_INFO || []).map((info, idx) => (
+                  <InfoTableRow
+                    key={idx}
+                    label={info.label}
+                    value={info.value}
+                    keyName={info.label}
+                    even={idx % 2 === 1}
+                  />
+                ))}
+                <div
+                  style={{
+                    flex: 1,
+                    background: "#f8fafc",
+                    borderTop: "0.5px solid #f1f5f9",
+                    minHeight: 8,
+                  }}
+                />
+              </Card>
+              <Card
+                title="Version Info"
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {(VERSION_INFO || []).map((v, idx) => (
+                  <InfoTableRow
+                    key={idx}
+                    label={v.label}
+                    value={v.value}
+                    keyName={v.label}
+                    even={idx % 2 === 1}
+                  />
+                ))}
+                <div
+                  style={{
+                    flex: 1,
+                    background: "#f8fafc",
+                    borderTop: "0.5px solid #f1f5f9",
+                    minHeight: 8,
+                  }}
+                />
+              </Card>
+            </div>
+          </>
+        )}
 
         {/* Refresh button — tight below cards, no floating space */}
         <div

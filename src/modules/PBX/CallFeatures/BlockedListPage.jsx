@@ -23,7 +23,44 @@ import {
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
-
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
 // ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -1100,13 +1137,14 @@ const BlockedListPage = () => {
 
         <DialogContent style={{ padding: "20px 24px", background: "#ffffff" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#f5f7fa",
-                borderRadius: 6,
-                padding: 16,
-              }}
-            >
+          <div
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: 16,
+  }}
+>
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >

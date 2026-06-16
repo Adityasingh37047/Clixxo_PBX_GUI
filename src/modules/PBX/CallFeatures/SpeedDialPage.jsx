@@ -891,7 +891,7 @@ const SpeedDialPage = () => {
                             borderBottom: isLastRow
                               ? "none"
                               : tdStyle.borderBottom,
-                            borderRight: "none",
+                           
                           }}
                         >
                                                     <EditDocumentIcon
