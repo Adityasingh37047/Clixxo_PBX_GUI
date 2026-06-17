@@ -150,7 +150,7 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
             <span style={{ color: "#5a7a9a" }}>—</span>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center items-end gap-1.5 sm:gap-2 pr-0.5 sm:pr-1">
           {/* <p className="text-red-500 text-xs hidden sm:block">
             Web SSH Ftp Telnet exist the risk, please close or set the whitelist address
           </p> */}
@@ -165,7 +165,7 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
           </div>
           <button
             onClick={handleLogout}
-            className="clixxo-logout-btn group flex items-center text-white text-xs sm:text-sm px-3 sm:px-4 py-1 border border-white rounded-full font-semibold gap-1 sm:gap-2 outline-none min-w-[60px] sm:min-w-[80px] cursor-pointer"
+            className="clixxo-logout-btn group flex items-center justify-center text-white text-xs sm:text-sm px-2 sm:px-2.5 py-1 border border-white rounded-full font-semibold gap-1 outline-none min-w-[60px] sm:min-w-[72px] cursor-pointer"
             style={{ background: "transparent", transition: "all 0.13s ease" }}
           >
             <span className="transition-colors">Logout</span>

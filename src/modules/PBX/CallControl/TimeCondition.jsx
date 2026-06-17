@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {Alert,
+import {
+  Alert,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -9,7 +10,9 @@ import {Alert,
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  TextField, useMediaQuery } from "@mui/material";
+  TextField,
+  useMediaQuery,
+} from "@mui/material";
 import {
   TC_TITLE,
   TC_TYPES,
@@ -595,8 +598,7 @@ const CheckGroup = ({ items, checked, onChange, cols = 7 }) => {
   );
   const allChecked =
     checked.length === allValues.length && allValues.length > 0;
-  const someChecked =
-    checked.length > 0 && checked.length < allValues.length;
+  const someChecked = checked.length > 0 && checked.length < allValues.length;
 
   return (
     <div
@@ -1020,7 +1022,14 @@ const TimeCondition = () => {
         <PbxBreadcrumb section="Call Control" current={TC_TITLE} />
 
         <div style={sipPcmCardStyle}>
-          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1070,7 +1079,16 @@ const TimeCondition = () => {
             </div>
           </div>
 
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1085,7 +1103,8 @@ const TimeCondition = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
+                  minWidth: 900,
+                  ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1292,12 +1311,6 @@ const TimeCondition = () => {
       </div>
 
       <Dialog
-      sx={{
-        "& .MuiDialog-container": {
-          alignItems: "flex-start",
-          paddingTop: "80px",
-        },
-      }}
         open={showModal}
         onClose={() => {
           if (loading.save) return;
@@ -1310,8 +1323,9 @@ const TimeCondition = () => {
         }}
         PaperProps={{
           sx: {
-            width: form.type === "holiday" ? 850 : 650,
+            width: "max-content",
             maxWidth: "96vw",
+            mx: "auto",
             borderRadius: "8px",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",

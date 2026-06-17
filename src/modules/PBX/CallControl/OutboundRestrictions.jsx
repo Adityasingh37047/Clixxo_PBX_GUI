@@ -338,17 +338,17 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
   >
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
-  style={{
-    position: "absolute",
-    top: -12,
-    left: 0,
-    background: "#f5f7fa", // ya modal ka background color
-    paddingRight: 8,
-    fontSize: 14,
-    fontWeight: 600,
-    color: PBX_MODAL_SECTION_HEADING_COLOR,
-  }}
->
+      style={{
+        position: "absolute",
+        top: -12,
+        left: 0,
+        background: "#f5f7fa", // ya modal ka background color
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
+      }}
+    >
       {title}
     </span>
   </div>
@@ -707,7 +707,7 @@ const yesNoCellStyle = (value) => ({
 
 const OutboundRestrictions = () => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
- const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [destinations, setDestinations] = useState([]);
@@ -759,22 +759,22 @@ const OutboundRestrictions = () => {
       );
     });
   }, [rows, searchQuery]);
- const loadDestinations = async () => {
-  try {
-    const data = await listIvrDestinations();
+  const loadDestinations = async () => {
+    try {
+      const data = await listIvrDestinations();
 
-    const msg = data?.message || {};
+      const msg = data?.message || {};
 
-    const mapped = (msg.Extensions || []).map((item) => ({
-      extension: String(item?.value ?? "").trim(),
-      label: String(item?.label ?? "").trim(),
-    }));
+      const mapped = (msg.Extensions || []).map((item) => ({
+        extension: String(item?.value ?? "").trim(),
+        label: String(item?.label ?? "").trim(),
+      }));
 
-    setAvailableExtensions(mapped);
-  } catch (err) {
-    console.error(err);
-  }
-};
+      setAvailableExtensions(mapped);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
   const pagedRows = filteredRows.slice(
     (page - 1) * itemsPerPage,
@@ -1131,7 +1131,7 @@ const OutboundRestrictions = () => {
                 minWidth: 0,
               }}
             >
-              <div
+              {/* <div
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1185,7 +1185,7 @@ const OutboundRestrictions = () => {
                     ✕
                   </span>
                 )}
-              </div>
+              </div> */}
               {selected.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
@@ -1417,7 +1417,9 @@ const OutboundRestrictions = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <span style={yesNoCellStyle(row.autoCancelRestriction)}>
+                          <span
+                            style={yesNoCellStyle(row.autoCancelRestriction)}
+                          >
                             {row.autoCancelRestriction}
                           </span>
                         </td>
@@ -1519,20 +1521,21 @@ const OutboundRestrictions = () => {
         </div>
       </div>
       <Dialog
-  open={showModal}
-  onClose={loading.save ? null : handleCloseModal}
-  maxWidth={false}
-  PaperProps={{
-    sx: {
-      ...trunkModalPaperSx,
-      mt: 16,
-      alignSelf: "flex-start",
-    },
-  }}
-  disableRestoreFocus
-  disableEnforceFocus
->
-        <DialogTitle      style={{
+        open={showModal}
+        onClose={loading.save ? null : handleCloseModal}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            ...trunkModalPaperSx,
+            mt: 16,
+            alignSelf: "flex-start",
+          },
+        }}
+        disableRestoreFocus
+        disableEnforceFocus
+      >
+        <DialogTitle
+          style={{
             background: "#1e2d42",
             color: "#fff",
             fontWeight: 700,
@@ -1540,16 +1543,16 @@ const OutboundRestrictions = () => {
             textAlign: "center",
             padding: "14px 24px",
           }}
-          >
+        >
           {editId != null
             ? "Edit Outbound Restriction"
             : "Add Outbound Restriction"}
         </DialogTitle>
         <DialogContent
-    style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-    >
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+        >
           <div
-             style={{
+            style={{
               background: "#f5f7fa",
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 6,
@@ -1570,11 +1573,11 @@ const OutboundRestrictions = () => {
                   size="small"
                   fullWidth
                   variant="outlined"
-                   sx={{
-    ...modalTextFieldFullSx,
-    width: "95%",
-    ml: 0.9,
-  }}
+                  sx={{
+                    ...modalTextFieldFullSx,
+                    width: "95%",
+                    ml: 0.9,
+                  }}
                 />
               </FieldRow>
               <FieldRow label="Time Limit *">
@@ -1646,7 +1649,9 @@ const OutboundRestrictions = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: isCompact ? "1fr" : "340px 48px 340px 48px",
+                  gridTemplateColumns: isCompact
+                    ? "1fr"
+                    : "340px 48px 340px 48px",
                   gap: 12,
                 }}
               >
