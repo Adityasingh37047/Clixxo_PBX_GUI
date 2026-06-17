@@ -523,6 +523,10 @@ const getCanonicalDirectionFromValue = (value) => {
     return "outbound";
   }
 
+  if (raw === "forwarded" || raw.includes("forwarded")) {
+    return "forwarded";
+  }
+
   if (
     raw.includes("voicemail") ||
     raw.includes("ivr") ||
@@ -674,6 +678,7 @@ const getDirection = (row) => {
   if (direction === "inbound") return "Inbound";
   if (direction === "outbound") return "Outbound";
   if (direction === "local") return "Local";
+  if (direction === "forwarded") return "Forwarded";
 
   return direction.charAt(0).toUpperCase() + direction.slice(1);
 };
@@ -727,6 +732,9 @@ const DEFAULT_FILTERS = {
   callStatus: "all",
   direction: "all",
   search: "",
+  trunkName: "",
+  callFrom: "",
+  callTo: "",
   startDate: "",
   endDate: "",
 };
@@ -748,6 +756,15 @@ const DIRECTION_OPTIONS = [
   { value: "inbound", label: "Inbound" },
   { value: "outbound", label: "Outbound" },
   { value: "local", label: "Local" },
+  { value: "forwarded", label: "Forwarded" },
+];
+
+const TALK_DURATION_OPERATOR_OPTIONS = [
+  { value: "<", label: "<" },
+  { value: ">", label: ">" },
+  { value: "<=", label: "<=" },
+  { value: ">=", label: ">=" },
+  { value: "=", label: "=" },
 ];
 
 const matchesCallStatus = (row, status) => {
@@ -788,6 +805,52 @@ const matchesSearch = (row, query) => {
     .map((v) => String(v || "").toLowerCase())
     .join(" ");
   return haystack.includes(q);
+};
+
+const matchesTrunkName = (row, trunkName) => {
+  const q = String(trunkName || "")
+    .trim()
+    .toLowerCase();
+  if (!q) return true;
+  return String(row.trunk_name || "")
+    .toLowerCase()
+    .includes(q);
+};
+
+const matchesCallFrom = (row, callFrom) => {
+  const q = String(callFrom || "")
+    .trim()
+    .toLowerCase();
+  if (!q) return true;
+  return String(row.src || "")
+    .toLowerCase()
+    .includes(q);
+};
+
+const matchesCallTo = (row, callTo) => {
+  const q = String(callTo || "")
+    .trim()
+    .toLowerCase();
+  if (!q) return true;
+  return String(row.dst || "")
+    .toLowerCase()
+    .includes(q);
+};
+
+const matchesTalkDuration = (row, operator, seconds) => {
+  const raw = String(seconds ?? "").trim();
+  if (!raw) return true;
+  const target = Number(raw);
+  if (Number.isNaN(target)) return true;
+
+  const actual = Number(row.duration ?? row.billsec ?? 0);
+  if (Number.isNaN(actual)) return false;
+
+  if (operator === "<") return actual < target;
+  if (operator === ">") return actual > target;
+  if (operator === "<=") return actual <= target;
+  if (operator === ">=") return actual >= target;
+  return actual === target;
 };
 
 const parseRowCallDate = (value) => {
@@ -910,18 +973,27 @@ const FilterSelect = ({
   </select>
 );
 
-const FilterSearch = ({ value, onChange }) => (
+const FilterSearch = ({
+  value,
+  onChange,
+  placeholder = "Extension, number, IP, context, destination…",
+}) => (
   <input
     type="text"
     value={value}
     onChange={onChange}
-    placeholder="Extension, number, IP, context, destination…"
+    placeholder={placeholder}
     style={controlBase}
     {...nativeFieldInteraction}
   />
 );
 
-const FilterDate = ({ value, onChange, "aria-label": ariaLabel }) => (
+const FilterDate = ({
+  value,
+  onChange,
+  "aria-label": ariaLabel,
+  style: extraStyle,
+}) => (
   <input
     type="date"
     value={value}
@@ -930,56 +1002,14 @@ const FilterDate = ({ value, onChange, "aria-label": ariaLabel }) => (
     style={{
       ...controlBase,
       cursor: "pointer",
+      ...extraStyle,
     }}
     {...nativeFieldInteraction}
   />
 );
 
-const GhostBtn = ({
-  children,
-  onClick,
-  disabled,
-  style: extraStyle = {},
-  hoverBackground = "#f8fafc",
-}) => {
-  const baseBackground = extraStyle.background || "#ffffff";
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        height: 38,
-        padding: "0 18px",
-        fontSize: 13,
-        fontWeight: 600,
-        borderRadius: 10,
-        border: `1px solid ${C.cardBorder}`,
-        background: "#ffffff",
-        color: C.labelText,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.55 : 1,
-        transition: "background 0.15s ease, border-color 0.15s ease",
-        whiteSpace: "nowrap",
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBackground;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBackground;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
 const CallCount = () => {
   const isCompact = useMediaQuery(CALL_COUNT_COMPACT_BREAKPOINT);
-  const compactFilterFieldStyle = isCompact
-    ? { minWidth: "100%", flex: "1 1 100%", width: "100%" }
-    : undefined;
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -993,9 +1023,11 @@ const CallCount = () => {
   const [isModifyMode, setIsModifyMode] = useState(false);
   const [showModifyModal, setShowModifyModal] = useState(false);
   const [modifyDraft, setModifyDraft] = useState({
+    trunkName: "",
     callFrom: "",
     callTo: "",
-    duration: "",
+    talkDurationOperator: ">",
+    talkDurationSeconds: "",
   });
 
   const [filterDraft, setFilterDraft] = useState({ ...DEFAULT_FILTERS });
@@ -1008,6 +1040,7 @@ const CallCount = () => {
       const data = await fetchCdr(pageToLoad, limit, {
         startdate: filters.startDate || undefined,
         enddate: filters.endDate || undefined,
+        trunk_name: filters.trunkName || undefined,
       });
       if (data && data.success && Array.isArray(data.data)) {
         setRows(data.data);
@@ -1039,7 +1072,10 @@ const CallCount = () => {
   };
 
   const handleNext = () => {
-    if (loading || !rows || rows.length < limit) return;
+    const hasMoreRecords = isModifyMode
+      ? filteredData.length >= limit
+      : rows && rows.length >= limit;
+    if (loading || !hasMoreRecords) return;
     const p = page + 1;
     setPage(p);
     loadCdr(p);
@@ -1059,6 +1095,18 @@ const CallCount = () => {
       if (!matchesCallStatus(row, appliedFilters.callStatus)) return false;
       if (!matchesDirectionFilter(row, appliedFilters.direction)) return false;
       if (!matchesSearch(row, appliedFilters.search)) return false;
+      if (!matchesTrunkName(row, appliedFilters.trunkName)) return false;
+      if (!matchesCallFrom(row, appliedFilters.callFrom)) return false;
+      if (!matchesCallTo(row, appliedFilters.callTo)) return false;
+      if (
+        !matchesTalkDuration(
+          row,
+          modifyDraft.talkDurationOperator,
+          modifyDraft.talkDurationSeconds,
+        )
+      ) {
+        return false;
+      }
       if (
         !matchesDateRange(row, appliedFilters.startDate, appliedFilters.endDate)
       ) {
@@ -1066,17 +1114,26 @@ const CallCount = () => {
       }
       return true;
     });
-  }, [rows, appliedFilters]);
+  }, [
+    rows,
+    appliedFilters,
+    modifyDraft.talkDurationOperator,
+    modifyDraft.talkDurationSeconds,
+  ]);
 
   const hasActiveFilters = useMemo(() => {
     return (
       appliedFilters.callStatus !== "all" ||
       appliedFilters.direction !== "all" ||
       !!appliedFilters.search.trim() ||
+      !!appliedFilters.trunkName.trim() ||
+      !!appliedFilters.callFrom.trim() ||
+      !!appliedFilters.callTo.trim() ||
+      !!String(modifyDraft.talkDurationSeconds || "").trim() ||
       !!appliedFilters.startDate ||
       !!appliedFilters.endDate
     );
-  }, [appliedFilters]);
+  }, [appliedFilters, modifyDraft.talkDurationSeconds]);
 
   const applyDateFilter = (field, value) => {
     const nextStart = field === "startDate" ? value : filterDraft.startDate;
@@ -1111,7 +1168,13 @@ const CallCount = () => {
   const handleModifyReset = () => {
     setShowModifyModal(false);
     setIsModifyMode(false);
-    setModifyDraft({ callFrom: "", callTo: "", duration: "" });
+    setModifyDraft({
+      trunkName: "",
+      callFrom: "",
+      callTo: "",
+      talkDurationOperator: ">",
+      talkDurationSeconds: "",
+    });
     handleResetFilters();
   };
 
@@ -1188,7 +1251,10 @@ const CallCount = () => {
     filteredData.some((r) => r.uniqueid && selectedIds.includes(r.uniqueid)) &&
     !allPageSelected;
 
-  const totalPages = Math.max(1, page + (rows.length >= limit ? 1 : 0));
+  const hasNextPage = isModifyMode
+    ? filteredData.length >= limit
+    : rows.length >= limit;
+  const totalPages = Math.max(1, page + (hasNextPage ? 1 : 0));
 
   return (
     <div style={{ ...pbxPageWrapStyle, padding: isCompact ? 12 : 16 }}>
@@ -1242,174 +1308,6 @@ const CallCount = () => {
           )}
         </div>
 
-        {/* Filter toolbar (kept behind modify modal) */}
-        {showModifyModal && (
-        <div
-          style={{
-            background: "#ffffff",
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: 10,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-            padding: isCompact ? "12px" : "7px 14px",
-            marginBottom: 16,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "flex-end",
-              gap: 12,
-            }}
-          >
-            <FilterField
-              label="Call Status"
-              minWidth={200}
-              style={compactFilterFieldStyle}
-            >
-              <FilterSelect
-                aria-label="Call Status"
-                value={filterDraft.callStatus}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFilterDraft((f) => ({ ...f, callStatus: value }));
-                  setAppliedFilters((f) => ({ ...f, callStatus: value }));
-                  setPage(1);
-                }}
-                options={CALL_STATUS_OPTIONS}
-              />
-            </FilterField>
-
-            <FilterField
-              label="Direction"
-              minWidth={200}
-              style={compactFilterFieldStyle}
-            >
-              <FilterSelect
-                aria-label="Direction"
-                value={filterDraft.direction}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFilterDraft((f) => ({ ...f, direction: value }));
-                  setAppliedFilters((f) => ({ ...f, direction: value }));
-                  setPage(1);
-                }}
-                options={DIRECTION_OPTIONS}
-              />
-            </FilterField>
-
-            <FilterField
-              label="Search"
-              minWidth={230}
-              style={compactFilterFieldStyle}
-            >
-              <FilterSearch
-                value={filterDraft.search}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFilterDraft((f) => ({ ...f, search: value }));
-                  setAppliedFilters((f) => ({ ...f, search: value }));
-                  setPage(1);
-                }}
-              />
-            </FilterField>
-
-            <FilterField
-              label="Start Date"
-              minWidth={170}
-              style={compactFilterFieldStyle}
-            >
-              <FilterDate
-                aria-label="Start Date"
-                value={filterDraft.startDate}
-                onChange={(e) => applyDateFilter("startDate", e.target.value)}
-              />
-            </FilterField>
-
-            <FilterField
-              label="End Date"
-              minWidth={170}
-              style={compactFilterFieldStyle}
-            >
-              <FilterDate
-                aria-label="End Date"
-                value={filterDraft.endDate}
-                onChange={(e) => applyDateFilter("endDate", e.target.value)}
-              />
-            </FilterField>
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-end",
-                marginLeft: isCompact ? 0 : "auto",
-                flex: isCompact ? "1 1 100%" : "0 0 auto",
-                width: isCompact ? "100%" : undefined,
-                justifyContent: "flex-end",
-                paddingBottom: 0,
-              }}
-            >
-              <GhostBtn
-                onClick={handleResetFilters}
-                disabled={loading}
-                style={{
-                  height: 30,
-                  padding: "0 14px",
-                  fontSize: 12,
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
-                hoverBackground="#b6c2d3"
-              >
-                Reset
-              </GhostBtn>
-            </div>
-          </div>
-
-          {hasActiveFilters && (
-            <div
-              style={{
-                marginTop: 14,
-                paddingTop: 7,
-                borderTop: `1px solid ${cardBorderSoft}`,
-                fontSize: 12,
-                color: C.mutedText,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              <span
-                style={{
-                  background: "#eff6ff",
-                  color: C.accent,
-                  fontWeight: 600,
-                  padding: "4px 10px",
-                  borderRadius: 999,
-                  fontSize: 11,
-                }}
-              >
-                Filters active
-              </span>
-              <span>
-                Showing {filteredData.length} of {rows.length} records on this
-                page
-                {(appliedFilters.startDate || appliedFilters.endDate) && (
-                  <>
-                    {" "}
-                    · {appliedFilters.startDate || "…"} to{" "}
-                    {appliedFilters.endDate || "…"}
-                  </>
-                )}
-              </span>
-            </div>
-          )}
-        </div>
-        )}
-
         <div style={sipPcmCardStyle}>
           <div
             style={{
@@ -1445,7 +1343,7 @@ const CallCount = () => {
                   variant="cancel"
                   style={sipPcmCancelBtnStyle}
                 >
-                  Modify
+                  Filter
                 </Btn>
               ) : (
                 <Btn
@@ -1819,19 +1717,16 @@ const CallCount = () => {
 
         <Dialog
           open={showModifyModal}
-          onClose={handleModifyReset}
+          onClose={() => setShowModifyModal(false)}
           maxWidth={false}
-          className="z-50"
           PaperProps={{
             sx: {
-              width: 640,
-              maxWidth: "95vw",
+              width: 760,
+              maxWidth: "96vw",
               mx: "auto",
               p: 0,
-              borderRadius: 2,
+              borderRadius: "8px",
               overflow: "hidden",
-              boxShadow:
-                "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
             },
           }}
         >
@@ -1845,14 +1740,29 @@ const CallCount = () => {
               padding: "16px 24px",
             }}
           >
-            Modify Call Count Filters
+            Filter Call Count
           </DialogTitle>
 
           <DialogContent
             style={{ padding: "24px", backgroundColor: "#ffffff" }}
           >
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <FilterField label="Call Status" minWidth="100%">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
+                gap: 14,
+                width: "100%",
+                background: "#f8fafc",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 8,
+                padding: 20,
+              }}
+            >
+              <FilterField
+                label="Call Status"
+                minWidth={0}
+                style={{ width: "100%" }}
+              >
                 <FilterSelect
                   aria-label="Call Status"
                   value={filterDraft.callStatus}
@@ -1866,7 +1776,11 @@ const CallCount = () => {
                 />
               </FilterField>
 
-              <FilterField label="Direction" minWidth="100%">
+              <FilterField
+                label="Direction"
+                minWidth={0}
+                style={{ width: "100%" }}
+              >
                 <FilterSelect
                   aria-label="Direction"
                   value={filterDraft.direction}
@@ -1880,62 +1794,176 @@ const CallCount = () => {
                 />
               </FilterField>
 
-              <FilterField label="Call From" minWidth="100%">
+              <FilterField
+                label="Call From"
+                minWidth={0}
+                style={{ width: "100%" }}
+              >
                 <FilterSearch
-                  value={modifyDraft.callFrom}
-                  onChange={(e) =>
-                    setModifyDraft((prev) => ({
-                      ...prev,
-                      callFrom: e.target.value,
-                    }))
-                  }
+                  placeholder="Call From"
+                  value={filterDraft.callFrom}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setModifyDraft((prev) => ({ ...prev, callFrom: value }));
+                    setFilterDraft((f) => ({ ...f, callFrom: value }));
+                    setAppliedFilters((f) => ({ ...f, callFrom: value }));
+                    setPage(1);
+                  }}
                 />
               </FilterField>
 
-              <FilterField label="Call To" minWidth="100%">
+              <FilterField
+                label="Call To"
+                minWidth={0}
+                style={{ width: "100%" }}
+              >
                 <FilterSearch
-                  value={modifyDraft.callTo}
-                  onChange={(e) =>
-                    setModifyDraft((prev) => ({ ...prev, callTo: e.target.value }))
-                  }
+                  placeholder="Call To"
+                  value={filterDraft.callTo}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setModifyDraft((prev) => ({ ...prev, callTo: value }));
+                    setFilterDraft((f) => ({ ...f, callTo: value }));
+                    setAppliedFilters((f) => ({ ...f, callTo: value }));
+                    setPage(1);
+                  }}
                 />
               </FilterField>
 
-              <FilterField label="Duration" minWidth="100%">
+              <FilterField
+                label="Trunk Name"
+                minWidth={0}
+                style={{ width: "100%" }}
+              >
                 <FilterSearch
-                  value={modifyDraft.duration}
-                  onChange={(e) =>
-                    setModifyDraft((prev) => ({
-                      ...prev,
-                      duration: e.target.value,
-                    }))
-                  }
+                  placeholder="Trunk Name"
+                  value={filterDraft.trunkName}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setModifyDraft((prev) => ({ ...prev, trunkName: value }));
+                    setFilterDraft((f) => ({ ...f, trunkName: value }));
+                    setAppliedFilters((f) => ({ ...f, trunkName: value }));
+                    setPage(1);
+                  }}
                 />
               </FilterField>
 
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <FilterField label="Time Range Start" minWidth={250}>
-                  <FilterDate
-                    aria-label="Time Range Start"
-                    value={filterDraft.startDate}
-                    onChange={(e) => applyDateFilter("startDate", e.target.value)}
+              <FilterField
+                label="Talk Duration"
+                minWidth={0}
+                style={{ width: "100%" }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "110px 1fr",
+                    gap: 8,
+                  }}
+                >
+                  <FilterSelect
+                    aria-label="Talk Duration Operator"
+                    value={modifyDraft.talkDurationOperator}
+                    onChange={(e) =>
+                      setModifyDraft((prev) => ({
+                        ...prev,
+                        talkDurationOperator: e.target.value,
+                      }))
+                    }
+                    options={TALK_DURATION_OPERATOR_OPTIONS}
                   />
-                </FilterField>
-                <FilterField label="Time Range End" minWidth={250}>
+                  <input
+                    type="number"
+                    min="0"
+                    value={modifyDraft.talkDurationSeconds}
+                    onChange={(e) =>
+                      setModifyDraft((prev) => ({
+                        ...prev,
+                        talkDurationSeconds: e.target.value,
+                      }))
+                    }
+                    placeholder="Seconds"
+                    style={controlBase}
+                    {...nativeFieldInteraction}
+                  />
+                </div>
+              </FilterField>
+
+              <FilterField
+                label="Time Range"
+                minWidth={0}
+                style={{ width: "100%" }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 8,
+                  }}
+                >
                   <FilterDate
-                    aria-label="Time Range End"
+                    aria-label="Start Date"
+                    value={filterDraft.startDate}
+                    onChange={(e) =>
+                      applyDateFilter("startDate", e.target.value)
+                    }
+                    style={{ borderRadius: 4 }}
+                  />
+                  <FilterDate
+                    aria-label="End Date"
                     value={filterDraft.endDate}
                     onChange={(e) => applyDateFilter("endDate", e.target.value)}
+                    style={{ borderRadius: 4 }}
                   />
-                </FilterField>
-              </div>
+                </div>
+              </FilterField>
             </div>
+
+            {hasActiveFilters && (
+              <div
+                style={{
+                  marginTop: 14,
+                  paddingTop: 7,
+                  borderTop: `1px solid ${cardBorderSoft}`,
+                  fontSize: 12,
+                  color: C.mutedText,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontWeight: 600,
+                    padding: "4px 10px",
+                    textAlign: "center",
+                    borderRadius: 999,
+                    fontSize: 11,
+                  }}
+                >
+                  Filters active
+                </span>
+                <span>
+                  Showing {filteredData.length} of {rows.length} records on this
+                  page
+                  {(appliedFilters.startDate || appliedFilters.endDate) && (
+                    <>
+                      {" "}
+                      · {appliedFilters.startDate || "…"} to{" "}
+                      {appliedFilters.endDate || "…"}
+                    </>
+                  )}
+                </span>
+              </div>
+            )}
           </DialogContent>
 
           <DialogActions
             style={{
               background: "#f8fafc",
-              padding: "12px 18px",
+              padding: "12px 24px 16px",
               borderTop: `1px solid ${C.cardBorder}`,
               display: "flex",
               justifyContent: "center",
@@ -1943,11 +1971,18 @@ const CallCount = () => {
             }}
           >
             <Btn
+              onClick={handleModifyReset}
+              variant="cancel"
+              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            >
+              Cancel
+            </Btn>
+            <Btn
               onClick={() => setShowModifyModal(false)}
               variant="primary"
               style={{ minWidth: 100, height: 33, fontSize: 13 }}
             >
-              Done
+              Search
             </Btn>
           </DialogActions>
         </Dialog>

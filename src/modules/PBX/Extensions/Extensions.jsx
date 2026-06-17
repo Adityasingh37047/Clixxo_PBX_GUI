@@ -3893,6 +3893,7 @@ const SipAccountPage = () => {
 
 // ── Small helper components (inline, no extra file needed) ────────────────────
 const MonitorDualListbox = ({ available, selected, onChange }) => {
+  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [leftSel, setLeftSel] = React.useState([]);
   const [rightSel, setRightSel] = React.useState([]);
 
