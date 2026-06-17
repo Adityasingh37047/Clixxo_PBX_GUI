@@ -8,11 +8,7 @@ function getBaseURL() {
     ip === "localhost" || ip === "127.0.0.1" || ip === "0.0.0.0";
 
   if (isLocalhost) {
-<<<<<<< HEAD
-  let testIp='192.168.0.157';
-=======
-  let testIp='192.168.0.99'
->>>>>>> 1df4317d32d5d9267581dbcd1adbd8896c42b9e3
+    let testIp = "192.168.0.99";
     // Local development → backend usually runs on 5000
     return `https://${testIp}:443/api`;
   } else {

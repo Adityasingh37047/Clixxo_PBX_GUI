@@ -6,7 +6,6 @@ import {
 import {
   listFinalNumberFilter,
   createFinalNumberFilter,
-  updateFinalNumberFilter,
   deleteFinalNumberFilter,
   fetchAllNumberFilters,
   listNumberPool,
@@ -421,30 +420,15 @@ const FilteringRule = () => {
         form.originalCallerIdPoolBlacklist,
       ),
     };
-    const isEdit = editIndex !== null && rows[editIndex]?.id;
     try {
       setIsLoading(true);
-      const resp = isEdit
-        ? await updateFinalNumberFilter(rows[editIndex].id, payload)
-        : await createFinalNumberFilter(payload);
-      if (resp?.response === false) {
-        displayToast(resp?.message || "Failed to save filtering rule.", "error");
-        return;
-      }
+      await createFinalNumberFilter(payload);
       await loadRows();
-      displayToast(
-        isEdit
-          ? "Filtering rule updated successfully."
-          : "Filtering rule added successfully.",
-        "success",
-      );
+      displayToast("Filtering rule saved successfully.", "success");
       closeModal();
     } catch (e) {
       console.error("Failed to save filtering rule", e);
-      displayToast(
-        e?.message || "Failed to save filtering rule.",
-        "error",
-      );
+      displayToast("Failed to save filtering rule.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -917,7 +901,7 @@ const FilteringRule = () => {
             padding: "16px 24px",
           }}
         >
-          {editIndex !== null ? "Edit Filtering Rule" : "Add Filtering Rule"}
+          {editIndex !== null ? "Edit" : "Add"} Filtering Rule
         </DialogTitle>
         <DialogContent
           style={{
@@ -1090,10 +1074,8 @@ const FilteringRule = () => {
           >
             {isLoading ? (
               <CircularProgress size={16} style={{ color: "#fff" }} />
-            ) : editIndex !== null ? (
-              "Update"
             ) : (
-              "Add"
+              "Save"
             )}
           </Btn>
           <Btn

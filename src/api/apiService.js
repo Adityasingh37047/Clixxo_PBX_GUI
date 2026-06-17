@@ -2700,19 +2700,6 @@ export const createFinalNumberFilter = async (data) => {
   }
 };
 
-export const updateFinalNumberFilter = async (id, data) => {
-  try {
-    const response = await axiosInstance.post('/finalnumberfilter', {
-      type: 'update',
-      data: { id, ...data }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating final number filter:', error.message);
-    throw error;
-  }
-};
-
 export const deleteFinalNumberFilter = async (id) => {
   try {
     const response = await axiosInstance.post('/finalnumberfilter', {
