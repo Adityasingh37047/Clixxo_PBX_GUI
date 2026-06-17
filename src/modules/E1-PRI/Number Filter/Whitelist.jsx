@@ -255,6 +255,11 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
 };
 
+const headerCheckThStyle = {
+  padding: "1px 14px",
+  lineHeight: 1,
+};
+
 const Whitelist = () => {
   const [callerRows, setCallerRows] = useState([]);
   const [calleeRows, setCalleeRows] = useState([]);
@@ -282,6 +287,14 @@ const Whitelist = () => {
   const displayToast = (message, type = "success") => {
     setToast({ msg: message, type });
     setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  };
+
+  const assertApiSuccess = (response, fallbackMessage) => {
+    if (response && response.success === false) {
+      throw new Error(
+        response.message || response.error || fallbackMessage || "Request failed",
+      );
+    }
   };
 
   const fetchWhitelistData = async () => {
@@ -414,12 +427,14 @@ const Whitelist = () => {
     }
     setIsLoading(true);
     try {
+      let saveResp;
       if (modalType === "caller") {
-        await saveCallerWhitelist({
+        saveResp = await saveCallerWhitelist({
           groupNo: modalData.groupNo,
           noInGroup: modalData.noInGroup,
           callerId: modalData.idValue,
         });
+        assertApiSuccess(saveResp, "Failed to save caller whitelist");
         displayToast(
           isEditMode
             ? "Caller ID updated successfully!"
@@ -427,11 +442,12 @@ const Whitelist = () => {
           "success",
         );
       } else {
-        await saveCalleeWhitelist({
+        saveResp = await saveCalleeWhitelist({
           groupNo: modalData.groupNo,
           noInGroup: modalData.noInGroup,
           calleeId: modalData.idValue,
         });
+        assertApiSuccess(saveResp, "Failed to save callee whitelist");
         displayToast(
           isEditMode
             ? "Callee ID updated successfully!"
@@ -490,6 +506,13 @@ const Whitelist = () => {
     setCalleeChecked((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
     );
+
+  const handleCallerCheckAll = (selectAll) => {
+    setCallerChecked(selectAll ? callerRows.map((_, idx) => idx) : []);
+  };
+  const handleCalleeCheckAll = (selectAll) => {
+    setCalleeChecked(selectAll ? calleeRows.map((_, idx) => idx) : []);
+  };
 
   const handleCallerDelete = async () => {
     if (callerChecked.length === 0) return;
@@ -631,12 +654,17 @@ const Whitelist = () => {
     rows,
     checkedItems,
     onCheck,
+    onCheckAll,
     onDelete,
     onClear,
     onAddNew,
     onEdit,
     idKey,
-  }) => (
+  }) => {
+    const allChecked = rows.length > 0 && checkedItems.length === rows.length;
+    const someChecked = checkedItems.length > 0 && !allChecked;
+
+    return (
     <div style={{ flex: 1, minWidth: 0 }}>
       {/* Card */}
       <div
@@ -753,7 +781,16 @@ const Whitelist = () => {
           >
             <thead>
               <tr>
-                <TH style={{ width: 56, borderLeft: "none" }}>Check</TH>
+                <TH style={{ width: 56, borderLeft: "none", ...headerCheckThStyle }}>
+                  <Checkbox
+                    checked={allChecked}
+                    indeterminate={someChecked}
+                    onChange={() => onCheckAll(!allChecked)}
+                    size="small"
+                    sx={checkboxSx}
+                    disabled={rows.length === 0}
+                  />
+                </TH>
                 <TH>Group No.</TH>
                 <TH>{idKey === "callerId" ? "CallerID" : "CalleeID"}</TH>
                 <TH style={{ width: 80, borderRight: "none" }}>Modify</TH>
@@ -894,7 +931,8 @@ const Whitelist = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div
@@ -969,6 +1007,7 @@ const Whitelist = () => {
                 rows: callerRows,
                 checkedItems: callerChecked,
                 onCheck: handleCallerCheck,
+                onCheckAll: handleCallerCheckAll,
                 onDelete: handleCallerDelete,
                 onClear: handleCallerClear,
                 onAddNew: () => handleAddNew("caller"),
@@ -980,6 +1019,7 @@ const Whitelist = () => {
                 rows: calleeRows,
                 checkedItems: calleeChecked,
                 onCheck: handleCalleeCheck,
+                onCheckAll: handleCalleeCheckAll,
                 onDelete: handleCalleeDelete,
                 onClear: handleCalleeClear,
                 onAddNew: () => handleAddNew("callee"),

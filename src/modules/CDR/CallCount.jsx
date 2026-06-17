@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { CircularProgress, Checkbox, useMediaQuery } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -446,13 +440,13 @@ const callCountTableCheckboxSx = {
 const columns = [
   { key: "calldate", label: "Start", width: "12%" },
 
-  { key: "src", label: "Call From", width: "8%" },          // 10 → 8
+  { key: "src", label: "Call From", width: "8%" }, // 10 → 8
 
-  { key: "src_ip", label: "Call From IP", width: "10%" },   // 11 → 10
+  { key: "src_ip", label: "Call From IP", width: "10%" }, // 11 → 10
 
-  { key: "dst", label: "Call To", width: "8%" },            // 10 → 8
+  { key: "dst", label: "Call To", width: "8%" }, // 10 → 8
 
-  { key: "dst_ip", label: "Call To IP", width: "10%" },     // 11 → 10
+  { key: "dst_ip", label: "Call To IP", width: "10%" }, // 11 → 10
 
   { key: "call_direction", label: "Direction", width: "6%", compact: true }, // 7 → 6
 
@@ -460,7 +454,7 @@ const columns = [
 
   { key: "billsec", label: "Duration", width: "7%", compact: true },
 
-  { key: "dcontext", label: "Context", width: "5%" },       // 6 → 5
+  { key: "dcontext", label: "Context", width: "5%" }, // 6 → 5
 
   { key: "hangup_cause", label: "Hangup Cause", width: "16%" }, // 10 → 16
 ];
@@ -679,11 +673,11 @@ const getDirection = (row) => {
 const directionStyle = (d) => {
   const v = String(d).toLowerCase();
 
-  if (v === "outbound") return { color: "#2563eb" };
-  if (v === "inbound") return { color: "#16A34A" };
-  if (v === "local") return { color: "#64748b" };
+  if (v === "outbound") return { color: "#0f172a" };
+  if (v === "inbound") return { color: "#0f172a" };
+  if (v === "local") return { color: "#0f172a" };
 
-  return { color: "#64748b" };
+  return { color: "#0f172a" };
 };
 
 const statusStyle = (s) => {
@@ -725,6 +719,8 @@ const DEFAULT_FILTERS = {
   callStatus: "all",
   direction: "all",
   search: "",
+  startDate: "",
+  endDate: "",
 };
 
 const CALL_STATUS_OPTIONS = [
@@ -786,6 +782,27 @@ const matchesSearch = (row, query) => {
   return haystack.includes(q);
 };
 
+const parseRowCallDate = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+const matchesDateRange = (row, startDate, endDate) => {
+  const rowDate = parseRowCallDate(row.calldate);
+  if (!rowDate) return !startDate && !endDate;
+
+  if (startDate) {
+    const start = new Date(`${startDate}T00:00:00`);
+    if (rowDate < start) return false;
+  }
+  if (endDate) {
+    const end = new Date(`${endDate}T23:59:59.999`);
+    if (rowDate > end) return false;
+  }
+  return true;
+};
+
 const getRowKey = (row, idx) =>
   [
     row.uniqueid,
@@ -808,7 +825,7 @@ const Pill = ({ text, bg, color }) => (
       padding: "2px 8px",
       borderRadius: 999,
       fontSize: 10,
-      fontWeight: 600,
+      fontWeight: 500,
       whiteSpace: "nowrap",
       display: "inline-block",
     }}
@@ -874,11 +891,6 @@ const FilterSelect = ({
     style={{
       ...controlBase,
       cursor: "pointer",
-      appearance: "none",
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "right 12px center",
-      paddingRight: 32,
     }}
     {...nativeFieldInteraction}
   >
@@ -897,6 +909,20 @@ const FilterSearch = ({ value, onChange }) => (
     onChange={onChange}
     placeholder="Extension, number, IP, context, destination…"
     style={controlBase}
+    {...nativeFieldInteraction}
+  />
+);
+
+const FilterDate = ({ value, onChange, "aria-label": ariaLabel }) => (
+  <input
+    type="date"
+    value={value}
+    onChange={onChange}
+    aria-label={ariaLabel}
+    style={{
+      ...controlBase,
+      cursor: "pointer",
+    }}
     {...nativeFieldInteraction}
   />
 );
@@ -960,11 +986,14 @@ const CallCount = () => {
   const [filterDraft, setFilterDraft] = useState({ ...DEFAULT_FILTERS });
   const [appliedFilters, setAppliedFilters] = useState({ ...DEFAULT_FILTERS });
 
-  const loadCdr = async (pageToLoad = page) => {
+  const loadCdr = async (pageToLoad = page, filters = appliedFilters) => {
     try {
       setLoading(true);
       setError("");
-      const data = await fetchCdr(pageToLoad, limit);
+      const data = await fetchCdr(pageToLoad, limit, {
+        startdate: filters.startDate || undefined,
+        enddate: filters.endDate || undefined,
+      });
       if (data && data.success && Array.isArray(data.data)) {
         setRows(data.data);
         setLastUpdated(new Date());
@@ -1015,6 +1044,11 @@ const CallCount = () => {
       if (!matchesCallStatus(row, appliedFilters.callStatus)) return false;
       if (!matchesDirectionFilter(row, appliedFilters.direction)) return false;
       if (!matchesSearch(row, appliedFilters.search)) return false;
+      if (
+        !matchesDateRange(row, appliedFilters.startDate, appliedFilters.endDate)
+      ) {
+        return false;
+      }
       return true;
     });
   }, [rows, appliedFilters]);
@@ -1023,17 +1057,36 @@ const CallCount = () => {
     return (
       appliedFilters.callStatus !== "all" ||
       appliedFilters.direction !== "all" ||
-      !!appliedFilters.search.trim()
+      !!appliedFilters.search.trim() ||
+      !!appliedFilters.startDate ||
+      !!appliedFilters.endDate
     );
   }, [appliedFilters]);
 
-  const handleResetFilters = useCallback(() => {
+  const applyDateFilter = (field, value) => {
+    const nextStart = field === "startDate" ? value : filterDraft.startDate;
+    const nextEnd = field === "endDate" ? value : filterDraft.endDate;
+    if (nextStart && nextEnd && nextStart > nextEnd) {
+      setError("Start date cannot be after end date.");
+      return;
+    }
+    setError("");
+    const nextFilters = { ...filterDraft, [field]: value };
+    setFilterDraft(nextFilters);
+    setAppliedFilters(nextFilters);
+    setPage(1);
+    loadCdr(1, nextFilters);
+  };
+
+  const handleResetFilters = () => {
     const resetFilters = { ...DEFAULT_FILTERS };
     setFilterDraft(resetFilters);
     setAppliedFilters(resetFilters);
     setSelectedIds([]);
     setPage(1);
-  }, []);
+    setError("");
+    loadCdr(1, resetFilters);
+  };
 
   const handleToggleAll = () => {
     const pageIds = filteredData.map((r) => r.uniqueid).filter(Boolean);
@@ -1233,14 +1286,38 @@ const CallCount = () => {
               />
             </FilterField>
 
+            <FilterField
+              label="Start Date"
+              minWidth={170}
+              style={compactFilterFieldStyle}
+            >
+              <FilterDate
+                aria-label="Start Date"
+                value={filterDraft.startDate}
+                onChange={(e) => applyDateFilter("startDate", e.target.value)}
+              />
+            </FilterField>
+
+            <FilterField
+              label="End Date"
+              minWidth={170}
+              style={compactFilterFieldStyle}
+            >
+              <FilterDate
+                aria-label="End Date"
+                value={filterDraft.endDate}
+                onChange={(e) => applyDateFilter("endDate", e.target.value)}
+              />
+            </FilterField>
+
             <div
               style={{
                 display: "flex",
                 alignItems: "flex-end",
-                gap: 10,
+                marginLeft: isCompact ? 0 : "auto",
                 flex: isCompact ? "1 1 100%" : "0 0 auto",
                 width: isCompact ? "100%" : undefined,
-                justifyContent: isCompact ? "flex-end" : undefined,
+                justifyContent: "flex-end",
                 paddingBottom: 0,
               }}
             >
@@ -1292,6 +1369,13 @@ const CallCount = () => {
               <span>
                 Showing {filteredData.length} of {rows.length} records on this
                 page
+                {(appliedFilters.startDate || appliedFilters.endDate) && (
+                  <>
+                    {" "}
+                    · {appliedFilters.startDate || "…"} to{" "}
+                    {appliedFilters.endDate || "…"}
+                  </>
+                )}
               </span>
             </div>
           )}
@@ -1411,7 +1495,7 @@ const CallCount = () => {
                           sx={callCountTableCheckboxSx}
                         />
                       </TH>
-                      
+
                       {columns.map((col, colIdx) => (
                         <TH
                           key={col.key}
@@ -1503,8 +1587,6 @@ const CallCount = () => {
                                 sx={callCountTableCheckboxSx}
                               />
                             </td>
-
-                         
 
                             <td
                               title={formatDate(row.calldate)}

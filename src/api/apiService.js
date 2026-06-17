@@ -1969,8 +1969,9 @@ export const saveCallerWhitelist = async (data) => {
     const apiData = {
       type: "whitelist",
       group: String(data.groupNo),
-      number: data.callerId,
-      subtype: "callerid"
+      number: String(data.callerId ?? "").trim(),
+      subtype: "callerid",
+      no_of_groups: String(data.noInGroup ?? "0"),
     };
     const response = await axiosInstance.post('/save-number-filter-settings', apiData);
     return response.data;
@@ -1985,8 +1986,9 @@ export const saveCalleeWhitelist = async (data) => {
     const apiData = {
       type: "whitelist",
       group: String(data.groupNo),
-      number: data.calleeId,
-      subtype: "calleeid"
+      number: String(data.calleeId ?? "").trim(),
+      subtype: "calleeid",
+      no_of_groups: String(data.noInGroup ?? "0"),
     };
     const response = await axiosInstance.post('/save-number-filter-settings', apiData);
     return response.data;
@@ -2078,9 +2080,9 @@ export const deleteNumberFilter = async (type, number, subtype, group) => {
   try {
     const response = await axiosInstance.post('/delete-number-filter-settings', {
       type: type,
-      number: number,
+      number: String(number ?? "").trim(),
       subtype: subtype,
-      group: group
+      group: String(group),
     });
     return response.data;
   } catch (error) {
@@ -2108,8 +2110,9 @@ export const saveCallerBlacklist = async (data) => {
     const apiData = {
       type: "blacklist",
       group: String(data.groupNo),
-      number: data.callerId,
-      subtype: "callerid"
+      number: String(data.callerId ?? "").trim(),
+      subtype: "callerid",
+      no_of_groups: String(data.noInGroup ?? "0"),
     };
     const response = await axiosInstance.post('/save-number-filter-settings', apiData);
     return response.data;
@@ -2124,8 +2127,9 @@ export const saveCalleeBlacklist = async (data) => {
     const apiData = {
       type: "blacklist",
       group: String(data.groupNo),
-      number: data.calleeId,
-      subtype: "calleeid"
+      number: String(data.calleeId ?? "").trim(),
+      subtype: "calleeid",
+      no_of_groups: String(data.noInGroup ?? "0"),
     };
     const response = await axiosInstance.post('/save-number-filter-settings', apiData);
     return response.data;
@@ -3217,9 +3221,12 @@ export const restoreBackup = async (file) => {
 // ==============================
 // CDR API
 // ==============================
-export const fetchCdr = async (page = 1, limit = 50) => {
+export const fetchCdr = async (page = 1, limit = 50, filters = {}) => {
   try {
-    const response = await axiosInstance.post('/cdr', { page, limit });
+    const payload = { page, limit };
+    if (filters.startdate) payload.startdate = filters.startdate;
+    if (filters.enddate) payload.enddate = filters.enddate;
+    const response = await axiosInstance.post('/cdr', payload);
     return response.data;
   } catch (error) {
     console.error('Error fetching CDR data:', error.message);

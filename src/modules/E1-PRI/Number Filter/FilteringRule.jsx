@@ -23,7 +23,8 @@ import {
   CircularProgress,
   Checkbox,
 } from "@mui/material";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
+// Modify column disabled — uncomment when enabling modify column:
+// import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
@@ -258,6 +259,11 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
 };
 
+const headerCheckThStyle = {
+  padding: "1px 14px",
+  lineHeight: 1,
+};
+
 const MIN_ROWS = 14;
 const initialForm = {
   id: 0,
@@ -440,6 +446,14 @@ const FilteringRule = () => {
         i === idx ? { ...row, checked: !row.checked } : row,
       ),
     );
+  };
+
+  const allRowsChecked = rows.length > 0 && rows.every((r) => r.checked);
+  const someRowsChecked = rows.some((r) => r.checked) && !allRowsChecked;
+
+  const handleCheckAll = () => {
+    const selectAll = !allRowsChecked;
+    setRows((prev) => prev.map((row) => ({ ...row, checked: selectAll })));
   };
 
   const handleDelete = async () => {
@@ -720,17 +734,21 @@ const FilteringRule = () => {
                         key={col.key}
                         style={{
                           ...(col.key === "check"
-                            ? { borderLeft: "none" }
+                            ? { borderLeft: "none", ...headerCheckThStyle }
                             : {}),
+                          ...(col.key === "originalCallerIdPoolBlacklist"
+                            ? { borderRight: "none" }
+                            : {}),
+                          /* Modify column disabled:
                           ...(col.key === "modify"
                             ? { borderRight: "none" }
                             : {}),
+                          */
                           width:
                             col.key === "check"
                               ? 60
-                              : col.key === "modify"
-                                ? 80
-                                : col.key === "description"
+                              /* : col.key === "modify" ? 80 */
+                              : col.key === "description"
                                   ? 180
                                   : [
                                         "callerIdPoolWhitelist",
@@ -751,7 +769,18 @@ const FilteringRule = () => {
                                       : 100,
                         }}
                       >
-                        {col.label}
+                        {col.key === "check" ? (
+                          <Checkbox
+                            checked={allRowsChecked}
+                            indeterminate={someRowsChecked}
+                            onChange={handleCheckAll}
+                            size="small"
+                            sx={checkboxSx}
+                            disabled={rows.length === 0}
+                          />
+                        ) : (
+                          col.label
+                        )}
                       </TH>
                     ))}
                   </tr>
@@ -794,9 +823,14 @@ const FilteringRule = () => {
                               ...(col.key === "check"
                                 ? { borderLeft: "none" }
                                 : {}),
+                              ...(col.key === "originalCallerIdPoolBlacklist"
+                                ? { borderRight: "none" }
+                                : {}),
+                              /* Modify column disabled:
                               ...(col.key === "modify"
                                 ? { borderRight: "none" }
                                 : {}),
+                              */
                               ...lastRowCellStyle,
                             }}
                           >
@@ -807,6 +841,12 @@ const FilteringRule = () => {
                                 size="small"
                                 sx={checkboxSx}
                               />
+                            ) : col.key === "id" ? (
+                              realIdx + 1
+                            ) : (
+                              row[col.key]
+                            )}
+                            {/* Modify column disabled — uncomment block below + constants modify column:
                             ) : col.key === "modify" ? (
                               <div
                                 style={{
@@ -832,11 +872,7 @@ const FilteringRule = () => {
                                   }
                                 />
                               </div>
-                            ) : col.key === "id" ? (
-                              realIdx + 1
-                            ) : (
-                              row[col.key]
-                            )}
+                            */}
                           </td>
                         ))}
                       </tr>

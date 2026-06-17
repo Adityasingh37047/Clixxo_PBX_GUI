@@ -18,7 +18,6 @@ import {
   saveCallerBlacklist,
   saveCalleeBlacklist,
   fetchAllNumberFilters,
-  fetchNumberFilters,
   deleteNumberFilter,
   deleteAllNumberFilters,
 } from "../../../api/apiService";
@@ -255,6 +254,11 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
 };
 
+const headerCheckThStyle = {
+  padding: "1px 14px",
+  lineHeight: 1,
+};
+
 const Blacklist = () => {
   const [callerRows, setCallerRows] = useState([]);
   const [calleeRows, setCalleeRows] = useState([]);
@@ -284,15 +288,31 @@ const Blacklist = () => {
     setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
+  const isCallerFilterItem = (item) =>
+    item.type === "callerid" ||
+    (item.type === "blacklist" && item.subtype === "callerid");
+
+  const isCalleeFilterItem = (item) =>
+    item.type === "calleeid" ||
+    (item.type === "blacklist" && item.subtype === "calleeid");
+
+  const assertApiSuccess = (response, fallbackMessage) => {
+    if (response && response.success === false) {
+      throw new Error(
+        response.message || response.error || fallbackMessage || "Request failed",
+      );
+    }
+  };
+
   const fetchBlacklistData = async () => {
     setIsInitialLoading(true);
     try {
       const response = await fetchAllNumberFilters("blacklist");
       if (response.success && response.data) {
         const callerData = response.data
-          .filter((item) => item.type === "callerid")
+          .filter(isCallerFilterItem)
           .map((item) => ({
-            groupNo: item.group,
+            groupNo: String(item.group),
             noInGroup: item.no_of_groups,
             callerId: item.number,
           }))
@@ -302,9 +322,9 @@ const Blacklist = () => {
             return parseInt(a.noInGroup) - parseInt(b.noInGroup);
           });
         const calleeData = response.data
-          .filter((item) => item.type === "calleeid")
+          .filter(isCalleeFilterItem)
           .map((item) => ({
-            groupNo: item.group,
+            groupNo: String(item.group),
             noInGroup: item.no_of_groups,
             calleeId: item.number,
           }))
@@ -329,7 +349,7 @@ const Blacklist = () => {
 
   const getNextAvailableNoInGroup = (existingRows, groupNo) => {
     const entriesInGroup = existingRows.filter(
-      (row) => row.groupNo === groupNo,
+      (row) => String(row.groupNo) === String(groupNo),
     );
     if (entriesInGroup.length === 0) return "0";
     const existingNos = entriesInGroup
@@ -362,11 +382,11 @@ const Blacklist = () => {
   const handleEdit = (type, row) => {
     setModalType(type);
     setModalData({
-      groupNo: row.groupNo,
+      groupNo: String(row.groupNo),
       noInGroup: row.noInGroup ?? "0",
       idValue: type === "caller" ? row.callerId : row.calleeId,
     });
-    setOriginalGroupNo(row.groupNo);
+    setOriginalGroupNo(String(row.groupNo));
     setOriginalIdValue(type === "caller" ? row.callerId : row.calleeId);
     setIsEditMode(true);
     setShowModal(true);
@@ -407,19 +427,35 @@ const Blacklist = () => {
       );
       return;
     }
-    if (isEditMode && String(modalData.groupNo) === String(originalGroupNo)) {
+    const groupUnchanged =
+      String(modalData.groupNo) === String(originalGroupNo);
+    const idUnchanged = trimmedId === String(originalIdValue ?? "").trim();
+    if (isEditMode && groupUnchanged && idUnchanged) {
       setShowModal(false);
       displayToast("No changes to save.", "info");
       return;
     }
     setIsLoading(true);
     try {
+      if (isEditMode && (!groupUnchanged || !idUnchanged)) {
+        const subtype = modalType === "caller" ? "callerid" : "calleeid";
+        const deleteResp = await deleteNumberFilter(
+          "blacklist",
+          originalIdValue,
+          subtype,
+          originalGroupNo,
+        );
+        assertApiSuccess(deleteResp, "Failed to remove old blacklist entry");
+      }
+
+      let saveResp;
       if (modalType === "caller") {
-        await saveCallerBlacklist({
+        saveResp = await saveCallerBlacklist({
           groupNo: modalData.groupNo,
           noInGroup: modalData.noInGroup,
-          callerId: modalData.idValue,
+          callerId: trimmedId,
         });
+        assertApiSuccess(saveResp, "Failed to save caller blacklist");
         displayToast(
           isEditMode
             ? "Caller ID updated successfully!"
@@ -427,44 +463,18 @@ const Blacklist = () => {
           "success",
         );
       } else {
-        await saveCalleeBlacklist({
+        saveResp = await saveCalleeBlacklist({
           groupNo: modalData.groupNo,
           noInGroup: modalData.noInGroup,
-          calleeId: modalData.idValue,
+          calleeId: trimmedId,
         });
+        assertApiSuccess(saveResp, "Failed to save callee blacklist");
         displayToast(
           isEditMode
             ? "Callee ID updated successfully!"
             : "Callee ID saved successfully!",
           "success",
         );
-      }
-      if (isEditMode) {
-        const subtype = modalType === "caller" ? "callerid" : "calleeid";
-        try {
-          const verifyResp = await fetchNumberFilters(
-            "blacklist",
-            modalData.idValue,
-          );
-          const existsInTarget =
-            Array.isArray(verifyResp?.data) &&
-            verifyResp.data.some(
-              (item) =>
-                String(item.group) === String(modalData.groupNo) &&
-                item.type === subtype &&
-                item.number === modalData.idValue,
-            );
-          if (existsInTarget) {
-            await deleteNumberFilter(
-              "blacklist",
-              originalIdValue,
-              subtype,
-              originalGroupNo,
-            );
-          }
-        } catch (e) {
-          console.warn("Verification or delete failed after update:", e);
-        }
       }
       setShowModal(false);
       setIsEditMode(false);
@@ -490,6 +500,13 @@ const Blacklist = () => {
     setCalleeChecked((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
     );
+
+  const handleCallerCheckAll = (selectAll) => {
+    setCallerChecked(selectAll ? callerRows.map((_, idx) => idx) : []);
+  };
+  const handleCalleeCheckAll = (selectAll) => {
+    setCalleeChecked(selectAll ? calleeRows.map((_, idx) => idx) : []);
+  };
 
   const handleCallerDelete = async () => {
     if (callerChecked.length === 0) return;
@@ -631,12 +648,16 @@ const Blacklist = () => {
     rows,
     checkedItems,
     onCheck,
+    onCheckAll,
     onDelete,
     onClear,
     onAddNew,
     onEdit,
     idKey,
   }) => {
+    const allChecked = rows.length > 0 && checkedItems.length === rows.length;
+    const someChecked = checkedItems.length > 0 && !allChecked;
+
     return (
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Card */}
@@ -754,7 +775,16 @@ const Blacklist = () => {
             >
               <thead>
                 <tr>
-                  <TH style={{ width: 56, borderLeft: "none" }}>Check</TH>
+                  <TH style={{ width: 56, borderLeft: "none", ...headerCheckThStyle }}>
+                    <Checkbox
+                      checked={allChecked}
+                      indeterminate={someChecked}
+                      onChange={() => onCheckAll(!allChecked)}
+                      size="small"
+                      sx={checkboxSx}
+                      disabled={rows.length === 0}
+                    />
+                  </TH>
                   <TH>Group No.</TH>
                   <TH>{idKey === "callerId" ? "CallerID" : "CalleeID"}</TH>
                   <TH style={{ width: 80, borderRight: "none" }}>Modify</TH>
@@ -974,6 +1004,7 @@ const Blacklist = () => {
                 rows: callerRows,
                 checkedItems: callerChecked,
                 onCheck: handleCallerCheck,
+                onCheckAll: handleCallerCheckAll,
                 onDelete: handleCallerDelete,
                 onClear: handleCallerClear,
                 onAddNew: () => handleAddNew("caller"),
@@ -985,6 +1016,7 @@ const Blacklist = () => {
                 rows: calleeRows,
                 checkedItems: calleeChecked,
                 onCheck: handleCalleeCheck,
+                onCheckAll: handleCalleeCheckAll,
                 onDelete: handleCalleeDelete,
                 onClear: handleCalleeClear,
                 onAddNew: () => handleAddNew("callee"),
@@ -1071,7 +1103,7 @@ const Blacklist = () => {
                 MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
               >
                 {[...Array(200).keys()].map((i) => (
-                  <MenuItem key={i} value={i} sx={{ fontSize: 13 }}>
+                  <MenuItem key={i} value={String(i)} sx={{ fontSize: 13 }}>
                     {i}
                   </MenuItem>
                 ))}

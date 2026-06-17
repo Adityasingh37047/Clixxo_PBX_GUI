@@ -11,7 +11,8 @@ export const FILTERING_RULE_COLUMNS = [
   { key: 'calleeIdPoolBlacklist', label: 'CalleeID Pool in Blacklist' },
   { key: 'originalCallerIdPoolWhitelist', label: 'Original CallerID Pool in Whitelist' },
   { key: 'originalCallerIdPoolBlacklist', label: 'Original CallerID Pool in Blacklist' },
-  { key: 'modify', label: 'Modify' },
+  // Modify column disabled — uncomment next line to show edit icon column:
+  // { key: 'modify', label: 'Modify' },
 ];
 
 export const FILTERING_RULE_DROPDOWN_OPTIONS = [

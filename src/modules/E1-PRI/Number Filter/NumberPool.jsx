@@ -292,6 +292,11 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
 };
 
+const headerCheckThStyle = {
+  padding: "1px 14px",
+  lineHeight: 1,
+};
+
 const MIN_ROWS = 14;
 
 const NumberPool = () => {
@@ -462,6 +467,14 @@ const NumberPool = () => {
         i === idx ? { ...row, checked: !row.checked } : row,
       ),
     );
+  };
+
+  const allRowsChecked = rows.length > 0 && rows.every((r) => r.checked);
+  const someRowsChecked = rows.some((r) => r.checked) && !allRowsChecked;
+
+  const handleCheckAll = () => {
+    const selectAll = !allRowsChecked;
+    setRows((prev) => prev.map((row) => ({ ...row, checked: selectAll })));
   };
 
   const handleDelete = async () => {
@@ -747,7 +760,16 @@ const NumberPool = () => {
               >
                 <thead>
                   <tr>
-                    <TH style={{ width: 60, borderLeft: "none" }}>Check</TH>
+                    <TH style={{ width: 60, borderLeft: "none", ...headerCheckThStyle }}>
+                      <Checkbox
+                        checked={allRowsChecked}
+                        indeterminate={someRowsChecked}
+                        onChange={handleCheckAll}
+                        size="small"
+                        sx={checkboxSx}
+                        disabled={rows.length === 0}
+                      />
+                    </TH>
                     <TH>Group No.</TH>
                     <TH>Number Range</TH>
                     <TH style={{ width: 80, borderRight: "none" }}>Modify</TH>
