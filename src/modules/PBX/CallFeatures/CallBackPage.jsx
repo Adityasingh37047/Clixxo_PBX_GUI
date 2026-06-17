@@ -1090,11 +1090,19 @@ const CallBackPage = () => {
 
       {/* ── Add/Edit Modal ── */}
       <Dialog
-        open={showModal}
-        onClose={loading.save ? null : handleCloseModal}
-        maxWidth={false}
-        PaperProps={{ sx: { width: 560, maxWidth: "95vw", borderRadius: 2 } }}
-      >
+  open={showModal}
+  onClose={loading.save ? null : handleCloseModal}
+  maxWidth={false}
+  PaperProps={{
+    sx: {
+      width: 560,
+      maxWidth: "95vw",
+      borderRadius: 2,
+      mt:16,       // top se fixed gap
+      alignSelf: "flex-start",
+    },
+  }}
+>
         <DialogTitle
           style={{
             background: "#1e2d42",
@@ -1352,7 +1360,7 @@ const CallBackPage = () => {
                   style={{
                     marginTop: 16,
                     paddingTop: 16,
-                    borderTop: `1px dashed ${C.cardBorder}`,
+                   
                   }}
                 >
                   <div
@@ -1360,7 +1368,7 @@ const CallBackPage = () => {
                       display: "flex",
                       alignItems: "center",
                       marginBottom: 8,
-                      paddingLeft: 112,
+                      paddingLeft: 0,
                     }}
                   >
                     <div
@@ -1368,7 +1376,7 @@ const CallBackPage = () => {
                         flex: 1,
                         fontSize: 12,
                         fontWeight: 600,
-                        color: C.mutedText,
+                        color: C.labelText,
                       }}
                     >
                       Trunk
@@ -1378,7 +1386,7 @@ const CallBackPage = () => {
                         width: 80,
                         fontSize: 12,
                         fontWeight: 600,
-                        color: C.mutedText,
+                        color: C.labelText,
                         textAlign: "center",
                       }}
                     >
@@ -1395,7 +1403,7 @@ const CallBackPage = () => {
                         marginBottom: 8,
                       }}
                     >
-                      <div style={{ width: 100 }}></div>
+                      
                       <div style={{ flex: 1 }}>
                         <FormControl size="small" fullWidth>
                           <MuiSelect
@@ -1403,6 +1411,7 @@ const CallBackPage = () => {
                             displayEmpty
                             sx={{
                               fontSize: 13,
+                              
                               backgroundColor: "#fff",
                               height: 32,
                               "& .MuiSelect-select": {
