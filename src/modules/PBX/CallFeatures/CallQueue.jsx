@@ -432,7 +432,7 @@ const FieldRow = ({ label, children }) => (
         width: LABEL_W,
         flexShrink: 0,
         position: "relative",
-        left: "-16px",
+        left: "-8px",
         color: C.accent,
       }}
     >
@@ -891,7 +891,7 @@ const CallQueue = () => {
             fontSize: "16px",
             color: "#ffffff",
             backgroundColor: "#1e2d42",
-            borderBottom: `1px solid ${C.cardBorder}`,
+           
             px: 3,
             py: 2,
             textAlign: "center",
@@ -1107,7 +1107,7 @@ const CallQueue = () => {
                           flexShrink: 0,
                           color: C.accent,
                           position: "relative",
-                          left: "-16px", // same as other labels
+                          left: "-8px", // same as other labels
                         }}
                       >
                         Timeout Action
@@ -1221,7 +1221,7 @@ const CallQueue = () => {
                           flexShrink: 0,
                           color: C.accent,
                           position: "relative",
-                          left: "-16px", // same value as Timeout Action
+                          left: "-8px", // same value as Timeout Action
                         }}
                       >
                         Overflow Action

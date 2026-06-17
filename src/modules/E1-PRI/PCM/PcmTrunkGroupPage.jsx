@@ -1449,10 +1449,12 @@ const PcmTrunkGroupPage = () => {
                 <span
                   style={{
                     fontSize: 13,
-                    color: "#1e293b",
+                   color: C.labelText,
                     fontWeight: 600,
                     whiteSpace: "nowrap",
                     width: 160,
+                    
+                    marginTop: 2,
                   }}
                 >
                   PCM Trunks:
@@ -1569,7 +1571,6 @@ const PcmTrunkGroupPage = () => {
                   gap: 8,
                   marginTop: 8,
                   padding: "8px 0 0 0",
-                  borderTop: `1px dashed ${C.cardBorder}`,
                 }}
               >
                 {isLoadingSpans ? (

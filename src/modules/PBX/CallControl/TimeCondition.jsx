@@ -1292,6 +1292,12 @@ const TimeCondition = () => {
       </div>
 
       <Dialog
+      sx={{
+        "& .MuiDialog-container": {
+          alignItems: "flex-start",
+          paddingTop: "80px",
+        },
+      }}
         open={showModal}
         onClose={() => {
           if (loading.save) return;
@@ -1304,9 +1310,8 @@ const TimeCondition = () => {
         }}
         PaperProps={{
           sx: {
-            width: "max-content",
+            width: form.type === "holiday" ? 850 : 650,
             maxWidth: "96vw",
-            mx: "auto",
             borderRadius: "8px",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
