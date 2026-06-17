@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
-import { CircularProgress, Checkbox, useMediaQuery } from "@mui/material";
+import {
+  CircularProgress,
+  Checkbox,
+  useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
@@ -982,6 +990,13 @@ const CallCount = () => {
   const [limit] = useState(50);
   const [selectedIds, setSelectedIds] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [isModifyMode, setIsModifyMode] = useState(false);
+  const [showModifyModal, setShowModifyModal] = useState(false);
+  const [modifyDraft, setModifyDraft] = useState({
+    callFrom: "",
+    callTo: "",
+    duration: "",
+  });
 
   const [filterDraft, setFilterDraft] = useState({ ...DEFAULT_FILTERS });
   const [appliedFilters, setAppliedFilters] = useState({ ...DEFAULT_FILTERS });
@@ -1086,6 +1101,18 @@ const CallCount = () => {
     setPage(1);
     setError("");
     loadCdr(1, resetFilters);
+  };
+
+  const handleModifyOpen = () => {
+    setIsModifyMode(true);
+    setShowModifyModal(true);
+  };
+
+  const handleModifyReset = () => {
+    setShowModifyModal(false);
+    setIsModifyMode(false);
+    setModifyDraft({ callFrom: "", callTo: "", duration: "" });
+    handleResetFilters();
   };
 
   const handleToggleAll = () => {
@@ -1215,7 +1242,8 @@ const CallCount = () => {
           )}
         </div>
 
-        {/* Filter toolbar — SaaS / telecom admin panel */}
+        {/* Filter toolbar (kept behind modify modal) */}
+        {showModifyModal && (
         <div
           style={{
             background: "#ffffff",
@@ -1380,6 +1408,7 @@ const CallCount = () => {
             </div>
           )}
         </div>
+        )}
 
         <div style={sipPcmCardStyle}>
           <div
@@ -1409,6 +1438,25 @@ const CallCount = () => {
                   : {}),
               }}
             >
+              {!isModifyMode ? (
+                <Btn
+                  onClick={handleModifyOpen}
+                  disabled={loading}
+                  variant="cancel"
+                  style={sipPcmCancelBtnStyle}
+                >
+                  Modify
+                </Btn>
+              ) : (
+                <Btn
+                  onClick={handleModifyReset}
+                  disabled={loading}
+                  variant="cancel"
+                  style={sipPcmCancelBtnStyle}
+                >
+                  Reset
+                </Btn>
+              )}
               <Btn
                 onClick={() => loadCdr(page)}
                 disabled={loading}
@@ -1768,6 +1816,141 @@ const CallCount = () => {
             </>
           )}
         </div>
+
+        <Dialog
+          open={showModifyModal}
+          onClose={handleModifyReset}
+          maxWidth={false}
+          className="z-50"
+          PaperProps={{
+            sx: {
+              width: 640,
+              maxWidth: "95vw",
+              mx: "auto",
+              p: 0,
+              borderRadius: 2,
+              overflow: "hidden",
+              boxShadow:
+                "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            },
+          }}
+        >
+          <DialogTitle
+            style={{
+              background: "#1e2d42",
+              color: "#ffffff",
+              fontWeight: 600,
+              fontSize: 16,
+              textAlign: "center",
+              padding: "16px 24px",
+            }}
+          >
+            Modify Call Count Filters
+          </DialogTitle>
+
+          <DialogContent
+            style={{ padding: "24px", backgroundColor: "#ffffff" }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <FilterField label="Call Status" minWidth="100%">
+                <FilterSelect
+                  aria-label="Call Status"
+                  value={filterDraft.callStatus}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFilterDraft((f) => ({ ...f, callStatus: value }));
+                    setAppliedFilters((f) => ({ ...f, callStatus: value }));
+                    setPage(1);
+                  }}
+                  options={CALL_STATUS_OPTIONS}
+                />
+              </FilterField>
+
+              <FilterField label="Direction" minWidth="100%">
+                <FilterSelect
+                  aria-label="Direction"
+                  value={filterDraft.direction}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFilterDraft((f) => ({ ...f, direction: value }));
+                    setAppliedFilters((f) => ({ ...f, direction: value }));
+                    setPage(1);
+                  }}
+                  options={DIRECTION_OPTIONS}
+                />
+              </FilterField>
+
+              <FilterField label="Call From" minWidth="100%">
+                <FilterSearch
+                  value={modifyDraft.callFrom}
+                  onChange={(e) =>
+                    setModifyDraft((prev) => ({
+                      ...prev,
+                      callFrom: e.target.value,
+                    }))
+                  }
+                />
+              </FilterField>
+
+              <FilterField label="Call To" minWidth="100%">
+                <FilterSearch
+                  value={modifyDraft.callTo}
+                  onChange={(e) =>
+                    setModifyDraft((prev) => ({ ...prev, callTo: e.target.value }))
+                  }
+                />
+              </FilterField>
+
+              <FilterField label="Duration" minWidth="100%">
+                <FilterSearch
+                  value={modifyDraft.duration}
+                  onChange={(e) =>
+                    setModifyDraft((prev) => ({
+                      ...prev,
+                      duration: e.target.value,
+                    }))
+                  }
+                />
+              </FilterField>
+
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <FilterField label="Time Range Start" minWidth={250}>
+                  <FilterDate
+                    aria-label="Time Range Start"
+                    value={filterDraft.startDate}
+                    onChange={(e) => applyDateFilter("startDate", e.target.value)}
+                  />
+                </FilterField>
+                <FilterField label="Time Range End" minWidth={250}>
+                  <FilterDate
+                    aria-label="Time Range End"
+                    value={filterDraft.endDate}
+                    onChange={(e) => applyDateFilter("endDate", e.target.value)}
+                  />
+                </FilterField>
+              </div>
+            </div>
+          </DialogContent>
+
+          <DialogActions
+            style={{
+              background: "#f8fafc",
+              padding: "12px 18px",
+              borderTop: `1px solid ${C.cardBorder}`,
+              display: "flex",
+              justifyContent: "center",
+              gap: 12,
+            }}
+          >
+            <Btn
+              onClick={() => setShowModifyModal(false)}
+              variant="primary"
+              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            >
+              Done
+            </Btn>
+          </DialogActions>
+        </Dialog>
 
         <div
           style={{
