@@ -1941,7 +1941,8 @@ const IVRPage = () => {
   sx={{
     "& .MuiDialog-container": {
       alignItems: "flex-start",
-      pt: 8,
+    
+      pt: 5,
     },
   }}
   PaperProps={{

@@ -812,9 +812,15 @@ const VoicePromptsPage = () => {
         <PbxBreadcrumb section="Voice Prompts" current="Voice Prompts" />
 
         <div style={sipPcmFormCardStyle}>
-          <div
-            style={{ ...sipPcmFormHeaderStyle, padding: "0 8px 0 6px", ...(isCompact ? { flexDirection: "column", alignItems: "stretch" } : {}) }}
-          >
+         <div
+  style={{
+    ...sipPcmFormHeaderStyle,
+    padding: "0",
+    ...(isCompact
+      ? { flexDirection: "column", alignItems: "stretch" }
+      : {}),
+  }}
+>
             <Tabs
               value={activeTab}
               onChange={(_, id) => {

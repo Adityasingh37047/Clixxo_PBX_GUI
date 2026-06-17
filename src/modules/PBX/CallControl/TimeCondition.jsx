@@ -1323,14 +1323,12 @@ const TimeCondition = () => {
         }}
         PaperProps={{
           sx: {
-            width: "max-content",
-            maxWidth: "96vw",
-            mx: "auto",
+
+            width: "fit-content",
+            minWidth: 650,
+            maxWidth: "90vw",
+
             borderRadius: "8px",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#ffffff",
-            backgroundImage: "none",
           },
         }}
         disableRestoreFocus
@@ -1353,21 +1351,20 @@ const TimeCondition = () => {
         </DialogTitle>
 
         <DialogContent sx={{ p: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-              marginTop: 22,
-              width: "max-content",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-            }}
-          >
+         <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    background: "#f8fafc",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 8,
+    padding: 20,
+    marginTop: 22,
+    width: "100%",
+    boxSizing: "border-box",
+  }}
+>
             {/* Name */}
             <FieldRow label="Name" required>
               <TextField
