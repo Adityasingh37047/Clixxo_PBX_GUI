@@ -8,43 +8,103 @@ export const FEATURE_CODE_TOOLTIPS = {
   check_voicemail:
     "The feature code that is used to check the voicemail. Press it and enter your password following the prompt. The default code is *97.",
 
-    blind_transfer:
-    "Dial this feature code an extension number to blind the transfer call. The defalt feature code is *1.",
+  blind_transfer:
+    "Dial this feature code and an extension number to blind transfer the call. The default feature code is *1.",
 
-    attended_transfer:
+  attended_transfer:
     "Dial this feature code and an extension number to transfer the call. Hang up after contacting the destination. Press # to cancel. The default feature code is *4.",
 
-    group_intercept:
+  group_intercept:
     "By pressing this feature code, an extension can answer an incoming call to another extension within the same intercept group. The default feature code is *8.",
 
-    intercom:
+  intercom:
     "By dialing this feature code plus an extension number, users can start an intercom call to this extension. The default feature code is *88.",
 
-    agent_login_logout: `By dialing this feature code plus a queue number, the extension can follow the prompt to log in and out of the queue dynamically. The default feature code is *22.
+  agent_login_logout: `By dialing this feature code plus a queue number, the extension can follow the prompt to log in and out of the queue dynamically. The default feature code is *22.
 
-    Dial *22 followed by the queue number on the extension. The system will prompt for the queue password (the password configured for that queue).
-    
-    If the extension is currently logged in, dialing *22 + queue number will log it out. If the extension is logged out, dialing *22 + queue number will log it in.
-    
-    For example, if 6700 is a queue number and Extension A is not a member of the queue, dialing *226700 will join the queue. Dialing *226700 again will leave the queue.`,
-    
-    agent_free_busy:
-    `When the status of the agent in th queue is "on break", it is set to "available, and when the status is "available", it is set to "on break".`,
-    agent_free_busy_ivr:
-    `When the status of the agent in th queue is "on break", it is set to "available, and when the status is "available", it is set to "on break".`,
-    attended_transfer_timeout:
-    `When negotiating a transfer, when the destination is not specified. The call will be transferred back after the set time. The default value is 15 seconds.`,
-    extension_intercept:
-    `By dialing this feature code plus an extension number, users can answer incoming calls to this extension. The default feature code is**.`,
-    agent_status_id:
+Dial *22 followed by the queue number on the extension. The system will prompt for the queue password (the password configured for that queue).
+
+If the extension is currently logged in, dialing *22 + queue number will log it out. If the extension is logged out, dialing *22 + queue number will log it in.
+
+For example, if 6700 is a queue number and Extension A is not a member of the queue, dialing *226700 will join the queue. Dialing *226700 again will leave the queue.`,
+
+  agent_free_busy:
+    `When the status of the agent in the queue is "on break", it is set to "available", and when the status is "available", it is set to "on break".`,
+
+  agent_free_busy_ivr:
+    `When the status of the agent in the queue is "on break", it is set to "available", and when the status is "available", it is set to "on break".`,
+
+  attended_transfer_timeout:
+    `When negotiating a transfer, if the destination is not specified, the call will be transferred back after the configured time. The default value is 15 seconds.`,
+
+  extension_intercept:
+    `By dialing this feature code plus an extension number, users can answer incoming calls to this extension. The default feature code is **.`,
+
+  agent_status_id:
     `By dialing this feature code plus a queue number, the extension can add or remove a designated extension from the queue. The default feature code is *23.
 
 Dial *23 followed by the queue number on the extension. The system will prompt for the extension number and the queue password (the password configured for that queue).
 
 If the designated extension is not a member of the queue, it will be added. If it is already a member, it will be removed.
 
-For example, if 6700 is a queue number and Extension A is calling, dialing *236700 allows Extension A to add Extension B to the queue or remove Extension B from the queue.`
-    
+For example, if 6700 is a queue number and Extension A is calling, dialing *236700 allows Extension A to add Extension B to the queue or remove Extension B from the queue.`,
+
+  self_extension_check_code:
+    `By dialing this feature code, an extension can check its own extension number. This feature is useful for identifying the current extension without accessing the PBX management interface.
+
+The default feature code is *22.`,
+
+multiparty_conference_code:
+`Multiparty Conference:
+
+1. Extension A calls Extension B and establishes a conversation.
+
+2. To invite Extension B into a conference, Extension A presses *0. A dial tone is played, allowing Extension A to dial Extension C.
+
+3. After establishing a conversation with Extension C, Extension A presses *0 again to invite Extension C into the conference. A three-way conference is then established.
+
+4. If Extension A and Extension C do not establish a conversation, only Extension A joins the conference.
+
+5. To invite additional participants, Extension A presses *0 again. A dial tone is played, allowing Extension A to dial another extension (for example, Extension D). Repeat the process from Step 3 to add more members.
+
+6. Press *# to return to the conference and disconnect the other participants.
+
+The default feature code is *0.`, 
+
+multiparty_conference_return_code:
+`Multiparty Conference Return:
+
+By dialing this feature code, a user can return to an active multiparty conference after temporarily leaving the conference to invite another participant.
+
+This feature allows the conference initiator to switch back to the conference and continue the conversation with all connected participants.
+
+The default feature code is *#.`,
+cc_route:
+`When extension is busy, dial the feature code to realize the callback function. The default feature code is *7.`,
+
+monitor_listen:
+`Dial this feature code plus an extension number to monitor the extension. If this feature will work or not is realted to the setting of monitor authority.
+The default feature code is *90.
+Note: to monitor an extension, you need to configure the Monitor settings for this extension first.`,
+
+monitor_barge_in:
+`Dial this feature code plus an extension number to enter the call of this extension for moniotring. If this feature will work or not is realted to the setting of monitor authority. The default feature code is *92.
+Note: to monitor an extension, yyou need to configure the Monitor Settings for this extension first.`,
+
+monitor_whisper:
+`Dial this feature code plus an extension number to whisper to the extension. The default feature code is *91.`,
+
+monitor_force_hangup:
+`Dial this feature code plus an extension number to force hang up the call. The default feature code is *6.`,
+
+monitor_listen_local:
+`Dial this feature code plus an extension number to listen to the local call of this extension. The default feature code is *93.`,
+
+monitor_listen_remote:
+`Dial this feature code plus an extension number to listen to the remote call of this extension. The default feature code is *94.`,
+
+monitor_force_hangup_on_monitor:
+`Dial this feature code plus an extension number to force hang up the call on monitor. The default feature code is *64.`, 
 };
 
 
@@ -166,64 +226,6 @@ export const FEATURE_CODE_SECTIONS = [
     fields: [[{ key: "cc_route", label: "CC Route", type: "text", span: 1 }]],
   },
   {
-    title: "Voicemail",
-    fields: [
-      [
-        { key: "check_voicemail", label: "Check Voicemail", type: "text" },
-        {
-          key: "voicemail_main_menu",
-          label: "Voicemail Main Menu",
-          type: "text",
-        },
-      ],
-      [
-        {
-          key: "voicemail_for_extension",
-          label: "Voicemail For Extension",
-          type: "text",
-          span: 1,
-        },
-      ],
-    ],
-  },
-  {
-    title: "Call Parking",
-    fields: [
-      [
-        { key: "call_parking", label: "Call Parking", type: "text" },
-        {
-          key: "park_extension_start",
-          label: "Park Extension Start",
-          type: "number",
-        },
-      ],
-      [
-        {
-          key: "directed_call_parking",
-          label: "Directed Call Parking",
-          type: "text",
-        },
-        {
-          key: "park_extension_end",
-          label: "Park Extension End",
-          type: "number",
-        },
-      ],
-      [
-        { key: "park_extension", label: "Park Extension", type: "number" },
-        { key: "park_timeout", label: "Park TimeOut (s)", type: "number" },
-      ],
-      [
-        {
-          key: "timeout_destinations",
-          label: "Timeout Destinations",
-          type: "select",
-          colRight: true,
-        },
-      ],
-    ],
-  },
-  {
     title: "Call Monitor",
     fields: [
       [
@@ -267,16 +269,6 @@ export const FEATURE_CODE_INITIAL_FORM = {
   multiparty_conference_code: "*0",
   multiparty_conference_return_code: "",
   cc_route: "*7",
-  check_voicemail: "*97",
-  voicemail_main_menu: "*98",
-  voicemail_for_extension: "*99",
-  call_parking: "*5",
-  directed_call_parking: "*50",
-  park_extension: "5900",
-  park_extension_start: "5901",
-  park_extension_end: "5999",
-  park_timeout: "90",
-  timeout_destinations: "hangup",
   monitor_listen: "*90",
   monitor_barge_in: "*92",
   monitor_whisper: "*91",
@@ -303,16 +295,6 @@ export const FORM_TO_API = {
   multiparty_conference_code: "multiparty_conference_code",
   multiparty_conference_return_code: "multiparty_conference_return_code",
   cc_route: "cc_route",
-  check_voicemail: "check_voicemail_code",
-  voicemail_main_menu: "voicemail_main_menu_code",
-  voicemail_for_extension: "voicemail_for_extension_code",
-  call_parking: "call_parking_code",
-  directed_call_parking: "directed_call_parking_code",
-  park_extension: "park_extension",
-  park_extension_start: "park_extension_start",
-  park_extension_end: "park_extension_end",
-  park_timeout: "park_timeout_s",
-  timeout_destinations: "park_timeout_destination",
   monitor_listen: "monitor_listen_code",
   monitor_barge_in: "monitor_barge_code",
   monitor_whisper: "monitor_whisper_code",
@@ -329,8 +311,4 @@ export const API_TO_FORM = Object.fromEntries(
 export const NUMERIC_KEYS = new Set([
   "digits_timeout",
   "attended_transfer_timeout",
-  "park_extension",
-  "park_extension_start",
-  "park_extension_end",
-  "park_timeout",
 ]);
