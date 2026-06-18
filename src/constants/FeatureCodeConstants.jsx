@@ -1,3 +1,53 @@
+export const FEATURE_CODE_TOOLTIPS = {
+  digits_timeout:
+    "The maximum time waiting for the next feature code digit. The default value is 5000ms.",
+
+  one_touch_record:
+    "The feature code that is used to start call recording. The default feature code is *2.",
+
+  check_voicemail:
+    "The feature code that is used to check the voicemail. Press it and enter your password following the prompt. The default code is *97.",
+
+    blind_transfer:
+    "Dial this feature code an extension number to blind the transfer call. The defalt feature code is *1.",
+
+    attended_transfer:
+    "Dial this feature code and an extension number to transfer the call. Hang up after contacting the destination. Press # to cancel. The default feature code is *4.",
+
+    group_intercept:
+    "By pressing this feature code, an extension can answer an incoming call to another extension within the same intercept group. The default feature code is *8.",
+
+    intercom:
+    "By dialing this feature code plus an extension number, users can start an intercom call to this extension. The default feature code is *88.",
+
+    agent_login_logout: `By dialing this feature code plus a queue number, the extension can follow the prompt to log in and out of the queue dynamically. The default feature code is *22.
+
+    Dial *22 followed by the queue number on the extension. The system will prompt for the queue password (the password configured for that queue).
+    
+    If the extension is currently logged in, dialing *22 + queue number will log it out. If the extension is logged out, dialing *22 + queue number will log it in.
+    
+    For example, if 6700 is a queue number and Extension A is not a member of the queue, dialing *226700 will join the queue. Dialing *226700 again will leave the queue.`,
+    
+    agent_free_busy:
+    `When the status of the agent in th queue is "on break", it is set to "available, and when the status is "available", it is set to "on break".`,
+    agent_free_busy_ivr:
+    `When the status of the agent in th queue is "on break", it is set to "available, and when the status is "available", it is set to "on break".`,
+    attended_transfer_timeout:
+    `When negotiating a transfer, when the destination is not specified. The call will be transferred back after the set time. The default value is 15 seconds.`,
+    extension_intercept:
+    `By dialing this feature code plus an extension number, users can answer incoming calls to this extension. The default feature code is**.`,
+    agent_status_id:
+    `By dialing this feature code plus a queue number, the extension can add or remove a designated extension from the queue. The default feature code is *23.
+
+Dial *23 followed by the queue number on the extension. The system will prompt for the extension number and the queue password (the password configured for that queue).
+
+If the designated extension is not a member of the queue, it will be added. If it is already a member, it will be removed.
+
+For example, if 6700 is a queue number and Extension A is calling, dialing *236700 allows Extension A to add Extension B to the queue or remove Extension B from the queue.`
+    
+};
+
+
 export const FEATURE_CODE_SECTIONS = [
   {
     title: "Feature Code Digits Timeout",

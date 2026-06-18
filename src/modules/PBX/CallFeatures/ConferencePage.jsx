@@ -1905,6 +1905,8 @@ const ConferencePage = () => {
                           fontSize: 11,
                           color: C.errorRed,
                           marginTop: 8,
+                          fontWeight: 400,
+                          textAlign: "center",
                         }}
                       >
                         Note: Selecting an extension group will include all

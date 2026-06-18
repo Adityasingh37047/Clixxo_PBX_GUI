@@ -1,4 +1,5 @@
 // router.jsx
+import Storage from "./modules/System/System Settings/Storage";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import { ROUTE_PATHS } from "./constants/routeConstatns";
@@ -141,6 +142,7 @@ import FxsPSTNCallInCallerID from "./modules/FXS/Num Manipulate/FxsPSTNCallInCal
 import FxsPSTNCallInCalleeID from "./modules/FXS/Num Manipulate/FxsPSTNCallInCalleeID";
 import ActiveCallQueue from "./modules/status/PBX Status/ActiveCallQueue";
 import TimeCondition from "./modules/PBX/CallControl/TimeCondition";
+import RecordSettings from "./modules/PBX/RecordSettings/RecordSettings";
 import LicenseLimits from "./modules/Maitenance/System Tools/LicenseLimits";
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
@@ -338,6 +340,7 @@ export const router = createBrowserRouter([
       { path: "/call-features/speed-dial", element: <SpeedDialPage /> },
       { path: "/call-features/disa", element: <DisaPage /> },
       { path: "/call-control/time-condition", element: <TimeCondition /> },
+      { path: "/record-settings/record-settings", element: <RecordSettings /> },
       {
         path: "/pcm/status",
         element: <PcmStatusPage />,
@@ -437,6 +440,10 @@ export const router = createBrowserRouter([
       {
         path: "/system-tools/network",
         element: <Network />,
+      },
+      {
+        path: "/system-tools/storage",
+        element: <Storage />,
       },
       {
         path: "/system-tools/routing-interface",

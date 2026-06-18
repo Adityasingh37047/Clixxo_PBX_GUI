@@ -225,7 +225,18 @@ export const SIDEBAR_SECTIONS = [
           },
         ],
       },
-
+      {
+        id: "recordSettings",
+        title: "Record Settings",
+        icon: RecordVoiceOverIcon, 
+        items: [
+          {
+            id: "recordSettingsPage",
+            title: "Record Settings",
+            path: "/record-settings/record-settings",
+          },
+        ],
+      },
       {
         id: "voicePrompts",
         title: "Voice Prompts",
@@ -238,6 +249,7 @@ export const SIDEBAR_SECTIONS = [
           },
         ],
       },
+     
       {
         id: "FeatureCode",
         title: "Feature Codes",
@@ -596,6 +608,11 @@ export const SIDEBAR_SECTIONS = [
         icon: NetworkCheckIcon,
         items: [
           { id: "sysNetwork", title: "Network", path: "/system-tools/network" },
+          {
+            id: "sysStorage",
+            title: "Storage",
+            path: "/system-tools/storage",
+          },
           {
             id: "sysRoutingInterface",
             title: "Routing Interface",
