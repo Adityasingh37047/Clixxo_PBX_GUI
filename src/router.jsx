@@ -105,6 +105,7 @@ import SpeedDialPage from "./modules/PBX/CallFeatures/SpeedDialPage";
 import DisaPage from "./modules/PBX/CallFeatures/DisaPage";
 import VoicePromptsPage from "./modules/PBX/VoicePrompts/VoicePromptsPage";
 import PbxMonitor from "./modules/status/PBX Status/PbxMonitor";
+import ViewVoicemailPage from "./modules/status/PBX Status/ViewVoicemailPage";
 import PortFxsPage from "./modules/FXS/Port/PortFxsPage";
 import PortFxsAdvancedPage from "./modules/FXS/Port/PortFxsAdvancedPage";
 import PortGroupPage from "./modules/FXS/Port/PortGroupPage";
@@ -129,6 +130,7 @@ import FxsToneGeneratorPage from "./modules/FXS/Advanced/ToneGeneratorPage";
 import CallQueue from "./modules/PBX/CallFeatures/CallQueue";
 import OutboundRestrictions from "./modules/PBX/CallControl/OutboundRestrictions";
 import FeatureCodePage from "./modules/PBX/Features Codes/FeatureCodePage";
+import VoicemailPage from "./modules/PBX/Voicemail/VoicemailPage";
 import UserManage from "./modules/UserManage/User Permission/UserManage";
 // FXS → modules/FXS/Route pages
 import FxsRouteRoutingParameterPage from "./modules/FXS/Route/RouteRoutingParameterPage";
@@ -241,6 +243,10 @@ export const router = createBrowserRouter([
       {
         path: "/feature-code/feature-code",
         element: <FeatureCodePage />,
+      },
+      {
+        path: "/voicemail/voicemail",
+        element: <VoicemailPage />,
       },
       {
         path: "/route/routing-parameters",
@@ -573,6 +579,10 @@ export const router = createBrowserRouter([
       {
         path: "/pbx-status/active-call-queue",
         element: <ActiveCallQueue />,
+      },
+      {
+        path: "/pbx-status/view-voicemail",
+        element: <ViewVoicemailPage />,
       },
 
       { path: ROUTE_PATHS.PORT_FXS, element: <PortFxsPage /> },

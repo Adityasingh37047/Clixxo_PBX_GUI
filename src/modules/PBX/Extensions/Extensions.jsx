@@ -850,13 +850,19 @@ const SipAccountPage = () => {
         mobile_number: item.mobile_number || item.mobile || "",
         voicemail_enabled: boolToYesNo(item.voicemail_enabled),
         voicemail_password: item.voicemail_password || "",
-        voicemail_file:
-          item.voicemail_file === "Audio File Attachment"
-            ? "audio_file_attachment"
-            : item.voicemail_file === "Download Link"
-              ? "download_link"
-              : item.voicemail_file || "audio_file_attachment",
-        voicemail_keep_local: item.voicemail_keep_local || "no",
+        voicemail_file: (() => {
+          const v = item.voicemail_file;
+          if (
+            v === "audio" ||
+            v === "Audio File Attachment" ||
+            v === "audio_file_attachment"
+          )
+            return "audio_file_attachment";
+          if (v === "link" || v === "Download Link" || v === "download_link")
+            return "download_link";
+          return "audio_file_attachment";
+        })(),
+        voicemail_keep_local: boolToYesNo(item.voicemail_keep_local ?? true),
         cf_always_enabled: yesNoToToggle(
           item.cf_always_enabled ?? item.call_forward_always_enabled,
         ),
@@ -1025,11 +1031,7 @@ const SipAccountPage = () => {
     const toggleToBool = (value) =>
       value === "enabled" || value === "yes" || value === true;
     const voicemailFileForApi =
-      uiData.voicemail_file === "audio_file_attachment"
-        ? "Audio File Attachment"
-        : uiData.voicemail_file === "download_link"
-          ? "Download Link"
-          : uiData.voicemail_file || "Audio File Attachment";
+      uiData.voicemail_file === "download_link" ? "link" : "audio";
 
     return {
       extension: uiData.extension,
@@ -1352,6 +1354,10 @@ const SipAccountPage = () => {
     setLoading((prev) => ({ ...prev, save: true }));
     try {
       const apiData = transformUiToApi(form);
+      if (!apiData.name || !String(apiData.name).trim()) {
+        apiData.name = apiData.extension;
+        apiData.display_name = apiData.extension;
+      }
       if (
         editIndex === null &&
         (!apiData.user_password || !String(apiData.user_password).trim())
@@ -2778,7 +2784,7 @@ const SipAccountPage = () => {
                     </FieldRow>
                     <FieldRow label="Voicemail Password:">
                       <TextField
-                        type="password"
+                        type="text"
                         value={form.voicemail_password || ""}
                         onChange={(e) =>
                           handleChange("voicemail_password", e.target.value)

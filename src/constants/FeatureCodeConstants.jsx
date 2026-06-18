@@ -116,6 +116,64 @@ export const FEATURE_CODE_SECTIONS = [
     fields: [[{ key: "cc_route", label: "CC Route", type: "text", span: 1 }]],
   },
   {
+    title: "Voicemail",
+    fields: [
+      [
+        { key: "check_voicemail", label: "Check Voicemail", type: "text" },
+        {
+          key: "voicemail_main_menu",
+          label: "Voicemail Main Menu",
+          type: "text",
+        },
+      ],
+      [
+        {
+          key: "voicemail_for_extension",
+          label: "Voicemail For Extension",
+          type: "text",
+          span: 1,
+        },
+      ],
+    ],
+  },
+  {
+    title: "Call Parking",
+    fields: [
+      [
+        { key: "call_parking", label: "Call Parking", type: "text" },
+        {
+          key: "park_extension_start",
+          label: "Park Extension Start",
+          type: "number",
+        },
+      ],
+      [
+        {
+          key: "directed_call_parking",
+          label: "Directed Call Parking",
+          type: "text",
+        },
+        {
+          key: "park_extension_end",
+          label: "Park Extension End",
+          type: "number",
+        },
+      ],
+      [
+        { key: "park_extension", label: "Park Extension", type: "number" },
+        { key: "park_timeout", label: "Park TimeOut (s)", type: "number" },
+      ],
+      [
+        {
+          key: "timeout_destinations",
+          label: "Timeout Destinations",
+          type: "select",
+          colRight: true,
+        },
+      ],
+    ],
+  },
+  {
     title: "Call Monitor",
     fields: [
       [
@@ -159,6 +217,16 @@ export const FEATURE_CODE_INITIAL_FORM = {
   multiparty_conference_code: "*0",
   multiparty_conference_return_code: "",
   cc_route: "*7",
+  check_voicemail: "*97",
+  voicemail_main_menu: "*98",
+  voicemail_for_extension: "*99",
+  call_parking: "*5",
+  directed_call_parking: "*50",
+  park_extension: "5900",
+  park_extension_start: "5901",
+  park_extension_end: "5999",
+  park_timeout: "90",
+  timeout_destinations: "hangup",
   monitor_listen: "*90",
   monitor_barge_in: "*92",
   monitor_whisper: "*91",
@@ -185,6 +253,16 @@ export const FORM_TO_API = {
   multiparty_conference_code: "multiparty_conference_code",
   multiparty_conference_return_code: "multiparty_conference_return_code",
   cc_route: "cc_route",
+  check_voicemail: "check_voicemail_code",
+  voicemail_main_menu: "voicemail_main_menu_code",
+  voicemail_for_extension: "voicemail_for_extension_code",
+  call_parking: "call_parking_code",
+  directed_call_parking: "directed_call_parking_code",
+  park_extension: "park_extension",
+  park_extension_start: "park_extension_start",
+  park_extension_end: "park_extension_end",
+  park_timeout: "park_timeout_s",
+  timeout_destinations: "park_timeout_destination",
   monitor_listen: "monitor_listen_code",
   monitor_barge_in: "monitor_barge_code",
   monitor_whisper: "monitor_whisper_code",
@@ -201,4 +279,8 @@ export const API_TO_FORM = Object.fromEntries(
 export const NUMERIC_KEYS = new Set([
   "digits_timeout",
   "attended_transfer_timeout",
+  "park_extension",
+  "park_extension_start",
+  "park_extension_end",
+  "park_timeout",
 ]);

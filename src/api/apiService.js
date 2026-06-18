@@ -1444,6 +1444,49 @@ export const fetchCallQueueExtensions = async () => {
   }
 };
 
+// Voicemail Settings API
+export const getVoicemailSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/voicemail-settings', { type: 'get' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching voicemail settings:', error.message);
+    throw error;
+  }
+};
+
+export const updateVoicemailSettings = async (data) => {
+  try {
+    const response = await axiosInstance.post('/voicemail-settings', { type: 'update', data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating voicemail settings:', error.message);
+    throw error;
+  }
+};
+
+// Voicemail List / Play / Delete API
+export const listVoicemails = async ({ extension, folder, page = 1, limit = 50 } = {}) => {
+  const body = { page, limit };
+  if (extension && String(extension).trim()) body.extension = String(extension).trim();
+  if (folder) body.folder = folder;
+  const response = await axiosInstance.post('/voicemail-list', body);
+  return response.data;
+};
+
+export const playVoicemail = async (id) => {
+  const response = await axiosInstance.get('/voicemail-play', {
+    params: { id },
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
+export const deleteVoicemail = async (id) => {
+  const response = await axiosInstance.post('/voicemail-delete', { id });
+  return response.data;
+};
+
 // Feature Code API
 export const getFeatureCodes = async () => {
   try {
