@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
-import { getFeatureCodes, updateFeatureCodes } from "../../../api/apiService";
+import {Alert, CircularProgress, useMediaQuery } from "@mui/material";
+import { getFeatureCodes, updateFeatureCodes, listIvrDestinations } from "../../../api/apiService";
 import {
   FEATURE_CODE_SECTIONS,
   FEATURE_CODE_INITIAL_FORM,
@@ -157,6 +157,30 @@ const featureCodeFieldCellStyle = {
   gap: 12,
 };
 
+const TIMEOUT_DESTINATION_STATIC_OPTIONS = [
+  { value: "hangup", label: "Hangup" },
+  { value: "original_extension", label: "Original extension" },
+];
+
+const normalizeExtensionOptions = (list) => {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => {
+      if (item == null) return null;
+      if (typeof item === "string" || typeof item === "number")
+        return { value: String(item), label: String(item) };
+      const value = String(
+        item.value ?? item.id ?? item.extension ?? "",
+      ).trim();
+      const label = String(
+        item.label ?? item.display_name ?? item.name ?? value,
+      ).trim();
+      if (!value) return null;
+      return { value, label: label || value };
+    })
+    .filter(Boolean);
+};
+
 const apiToForm = (apiData) => {
   const form = { ...FEATURE_CODE_INITIAL_FORM };
   Object.entries(apiData).forEach(([apiKey, val]) => {
@@ -181,17 +205,32 @@ const formToApi = (form) => {
   return data;
 };
 
-const FeatureCodeFieldCell = ({ field, value, onChange }) => (
+const FeatureCodeFieldCell = ({ field, value, onChange, selectOptions }) => (
   <div style={featureCodeFieldCellStyle}>
     <label style={FEATURE_CODE_GRID_LABEL_STYLE}>{field.label}</label>
     <div style={{ flex: 1, minWidth: 0 }}>
-      <input
-        type={field.type === "number" ? "number" : "text"}
-        value={value ?? ""}
-        onChange={(e) => onChange(field.key, e.target.value)}
-        style={FEATURE_CODE_GRID_INPUT_STYLE}
-        {...FEATURE_CODE_INPUT_INTERACTION}
-      />
+      {field.type === "select" ? (
+        <select
+          value={value ?? ""}
+          onChange={(e) => onChange(field.key, e.target.value)}
+          style={{ ...FEATURE_CODE_GRID_INPUT_STYLE, cursor: "pointer" }}
+          {...FEATURE_CODE_INPUT_INTERACTION}
+        >
+          {selectOptions?.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input
+          type={field.type === "number" ? "number" : "text"}
+          value={value ?? ""}
+          onChange={(e) => onChange(field.key, e.target.value)}
+          style={FEATURE_CODE_GRID_INPUT_STYLE}
+          {...FEATURE_CODE_INPUT_INTERACTION}
+        />
+      )}
     </div>
   </div>
 );
@@ -202,7 +241,25 @@ const FeatureCodePage = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [extensionOptions, setExtensionOptions] = useState([]);
   const hasLoaded = useRef(false);
+
+  const timeoutDestinationOptions = [
+    ...TIMEOUT_DESTINATION_STATIC_OPTIONS,
+    ...extensionOptions,
+  ];
+
+  const loadDestinations = async () => {
+    try {
+      const destRes = await listIvrDestinations();
+      const destMessage = destRes?.message ?? destRes?.data ?? destRes;
+      const extensionsRaw =
+        destMessage?.Extensions ?? destMessage?.extensions ?? [];
+      setExtensionOptions(normalizeExtensionOptions(extensionsRaw));
+    } catch (_) {
+      setExtensionOptions([]);
+    }
+  };
 
   const showMsg = (type, text) => {
     setMessage({ type, text });
@@ -229,6 +286,7 @@ const FeatureCodePage = () => {
     if (!hasLoaded.current) {
       hasLoaded.current = true;
       loadData();
+      loadDestinations();
     }
   }, []);
 
@@ -254,10 +312,10 @@ const FeatureCodePage = () => {
     }
   };
 
-  const gridColumns = isCompact ? "1fr" : "1fr 1fr";
-
   return (
-    <div className={`${FEATURE_CODE_PAGE_WRAP} ${isCompact ? "p-[8px]" : ""}`.trim()}>
+    <div
+      className={`${FEATURE_CODE_PAGE_WRAP} ${isCompact ? "p-[8px]" : ""}`.trim()}
+    >
       <div className={FEATURE_CODE_PAGE_INNER}>
         {message.text && (
           <div className="fixed right-[20px] top-[20px] z-[9999] min-w-[300px] max-w-[420px]">
@@ -291,41 +349,43 @@ const FeatureCodePage = () => {
                     />
                     <div>
                       {section.fields.map((row, rowIdx) => {
+                        const gridStyle = {
+                          display: "grid",
+                          gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
+                        };
                         if (row.length === 1) {
                           const field = row[0];
                           const isRight = !!field.colRight;
                           return (
-                            <div
-                              key={rowIdx}
-                              style={{
-                                display: "grid",
-                                gridTemplateColumns: gridColumns,
-                              }}
-                            >
+                            <div key={rowIdx} style={gridStyle}>
                               {isRight && <div />}
                               <FeatureCodeFieldCell
                                 field={field}
                                 value={form[field.key]}
                                 onChange={handleChange}
+                                selectOptions={
+                                  field.type === "select"
+                                    ? timeoutDestinationOptions
+                                    : undefined
+                                }
                               />
                               {!isRight && <div />}
                             </div>
                           );
                         }
                         return (
-                          <div
-                            key={rowIdx}
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: gridColumns,
-                            }}
-                          >
+                          <div key={rowIdx} style={gridStyle}>
                             {row.map((field) => (
                               <FeatureCodeFieldCell
                                 key={field.key}
                                 field={field}
                                 value={form[field.key]}
                                 onChange={handleChange}
+                                selectOptions={
+                                  field.type === "select"
+                                    ? timeoutDestinationOptions
+                                    : undefined
+                                }
                               />
                             ))}
                           </div>

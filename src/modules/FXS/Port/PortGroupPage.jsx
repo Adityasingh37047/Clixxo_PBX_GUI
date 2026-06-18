@@ -1074,7 +1074,8 @@ const PortGroupPage = () => {
   const renderPortsSection = () => (
           <div
             style={{
-              background: "#ffffff",
+              background: "#f8fafc",
+
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 16,
@@ -1086,7 +1087,7 @@ const PortGroupPage = () => {
                 fontWeight: 700,
                 color: C.labelText,
                 marginBottom: 14,
-                borderBottom: `1px solid ${C.cardBorder}`,
+                
                 paddingBottom: 6,
                 display: "flex",
                 justifyContent: "space-between",

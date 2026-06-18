@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Alert,
+import {Alert,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -10,9 +9,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  TextField,
-  useMediaQuery,
-} from "@mui/material";
+  TextField, useMediaQuery } from "@mui/material";
 import {
   TC_TITLE,
   TC_TYPES,
@@ -448,7 +445,8 @@ const CheckGroup = ({ items, checked, onChange, cols = 7 }) => {
   );
   const allChecked =
     checked.length === allValues.length && allValues.length > 0;
-  const someChecked = checked.length > 0 && checked.length < allValues.length;
+  const someChecked =
+    checked.length > 0 && checked.length < allValues.length;
 
   return (
     <div
@@ -910,16 +908,7 @@ const TimeCondition = () => {
             </div>
           </div>
 
-          <div
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              flex: 1,
-              ...(isCompact
-                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
-                : {}),
-            }}
-          >
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -934,8 +923,7 @@ const TimeCondition = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900,
-                  ...(isCompact ? { minWidth: 720 } : {}),
+                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1142,6 +1130,12 @@ const TimeCondition = () => {
       </div>
 
       <Dialog
+      sx={{
+        "& .MuiDialog-container": {
+          alignItems: "flex-start",
+          paddingTop: "80px",
+        },
+      }}
         open={showModal}
         onClose={() => {
           if (loading.save) return;
@@ -1173,21 +1167,20 @@ const TimeCondition = () => {
         </DialogTitle>
 
         <DialogContent sx={{ p: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-              marginTop: 22,
-              width: "max-content",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-            }}
-          >
+         <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    background: "#f8fafc",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 8,
+    padding: 20,
+    marginTop: 22,
+    width: "100%",
+    boxSizing: "border-box",
+  }}
+>
             {/* Name */}
             <FieldRow label="Name" required>
               <TextField
