@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import {Dialog,
+import {
+  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -7,8 +8,11 @@ import {Dialog,
   CircularProgress,
   Checkbox,
   FormControlLabel,
-  Alert, useMediaQuery } from "@mui/material";
-
+  Alert,
+  useMediaQuery,
+} from "@mui/material";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   fetchSipAccounts,
   fetchExtensionGroups,
@@ -16,12 +20,8 @@ import {
   updateExtensionGroup,
   deleteExtensionGroup,
 } from "../../../api/apiService";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color palette (matches PBX / CDR) ────────────────────────────────────────
 
 const C = {
   pageBg: "#f8fafc",
@@ -30,148 +30,73 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-  strongText: "#0f172a",
   accent: "#3E5475",
-  amber: "#dc2626",
   errorRed: "#dc2626",
-  successGreen: "#16a34a",
 };
-const CARD_RADIUS = 10;
-// ── Shared: Action Button ────────────────────────────────────────────────────
+
+const CARD_R = 10;
+
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
+const BTN_DIALOG_PRIMARY =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DIALOG_CANCEL =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_EMPTY_ADD = `${BTN_CANCEL} px-[24px] py-[8px] text-[12px] rounded-[6px]`;
+
+const btnVariantCls = {
+  default: BTN_OUTLINE,
+  primary: BTN_PRIMARY,
+  accent: BTN_PRIMARY,
+  cancel: BTN_CANCEL,
+  outline: BTN_OUTLINE,
+  danger: `${BTN_BASE} bg-[#dc2626] text-white border-[0.5px] border-[#dc2626] hover:bg-[#b91c1c]`,
+};
+
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
-  style: extraStyle,
+  className = "",
   title,
   type,
-  hoverBehavior = "background",
-}) => {
-  const variants = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-   cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-  };
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
+  >
+    {children}
+  </button>
+);
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = extraStyle?.background || s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-
-// ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-   background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
     }}
   >
     {children}
   </th>
 );
+
 const tdStyle = {
   padding: "7px 14px",
   fontSize: 13,
@@ -183,6 +108,13 @@ const tdStyle = {
   lineHeight: 1.2,
   boxSizing: "border-box",
 };
+
+const ExtensionTd = ({ children, isLast, style: extra }) => (
+  <td style={{ ...tdStyle, ...(isLast ? { borderBottom: "none" } : {}), ...extra }}>
+    {children}
+  </td>
+);
+
 const checkboxSx = {
   padding: "1px",
   color: "#3E5475",
@@ -190,7 +122,8 @@ const checkboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-// ── Local page UI (inlined from pbxSharedUi) ──
+const TH_STICKY = { position: "sticky", top: 0, zIndex: 10 };
+
 const PBX_LIST_TRUNCATE_THRESHOLD = 10;
 const PBX_LIST_DISPLAY_LIMIT = 6;
 
@@ -207,112 +140,50 @@ const formatPbxItemListDisplay = (
   if (!items?.length) return "";
   const labels = items.map(mapItem).filter((v) => v !== "" && v != null);
   if (!labels.length) return "";
-  if (labels.length <= threshold) {
-    return labels.join(separator);
-  }
+  if (labels.length <= threshold) return labels.join(separator);
   return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
 };
 
-const pbxModalCancelBtnStyle = {
-  minWidth: 100,
-  height: 33,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+const DIALOG_TITLE =
+  "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:600] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:16px_24px] ![border-top-left-radius:8px] ![border-top-right-radius:8px]";
+
+const modalShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
 };
 
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
+const modalFieldLabelStyle = {
+  display: "block",
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  marginBottom: 6,
 };
 
-const pbxPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
+const modalExtPanelStyle = {
+  background: "#fff",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 6,
+  overflow: "hidden",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      ...style,
-    }}
-  >
-    <span>PBX</span>
-    <span>&gt;</span>
-    <span>{section}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
-
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const modalExtPanelHeaderStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "8px 12px",
+  background: "#f8fafc",
+  borderBottom: `1px solid ${C.cardBorder}`,
+};
 
 const sipPcmCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: CARD_R,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
   boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
@@ -328,8 +199,8 @@ const sipPcmToolbarStyle = {
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: CARD_R,
+  borderTopRightRadius: CARD_R,
 };
 
 const sipPcmPaginationStyle = {
@@ -339,8 +210,8 @@ const sipPcmPaginationStyle = {
   padding: "7px 14px",
   background: "#ffffff",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomLeftRadius: CARD_R,
+  borderBottomRightRadius: CARD_R,
   overflow: "hidden",
 };
 
@@ -354,21 +225,6 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const sipPcmPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 10,
-};
-
 const sipPcmPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
@@ -379,25 +235,56 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
+const PbxBreadcrumb = ({ section, current }) => (
+  <div className="flex items-center flex-wrap gap-[4px] text-[12px] leading-normal text-[#94a3b8] font-normal mb-4">
+    <span>PBX</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span className="text-[#1e293b] font-semibold">{current}</span>
+  </div>
+);
+
+const TableListLoading = () => (
+  <div className="flex justify-center items-center p-12">
+    <CircularProgress size={28} sx={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div className="flex flex-col items-center justify-center min-h-[240px] p-6 text-center">
+    <div
+      className={`text-[#3E5475] text-[13px] font-semibold${showButton && onAddNew ? " mb-4" : ""}`}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn variant="cancel" onClick={onAddNew} className={BTN_EMPTY_ADD}>
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
 const SipPcmPagination = ({
   page,
   totalPages,
   recordCount,
   onPageChange,
   recordLabel = "record",
-  style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
+  <div style={sipPcmPaginationStyle}>
+    <span className="text-[11px] text-[#94a3b8]">
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
     </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <Btn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        variant="outline"
-      >
+    <div className="flex gap-[8px] items-center">
+      <Btn onClick={() => onPageChange(page - 1)} disabled={page <= 1} variant="outline">
         ← Prev
       </Btn>
       <span style={sipPcmPageBadgeStyle}>
@@ -413,8 +300,6 @@ const SipPcmPagination = ({
     </div>
   </div>
 );
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 const ExtensionGroupsPage = () => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
@@ -436,7 +321,6 @@ const ExtensionGroupsPage = () => {
   const [limit] = useState(20);
   const [selectedIds, setSelectedIds] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
 
   const hasInitialLoadRef = useRef(false);
 
@@ -640,10 +524,10 @@ const ExtensionGroupsPage = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error Banner */}
-        {/* ── Error / Success Floating Banner ── */}
+    <div
+      className={`bg-[#f8fafc] min-h-[calc(100vh-80px)] box-border ${isCompact ? "p-[8px]" : "p-[16px]"}`}
+    >
+      <div className="w-full max-w-full mx-auto">
         {message.text && (
           <Alert
             severity={message.type}
@@ -664,8 +548,15 @@ const ExtensionGroupsPage = () => {
         <PbxBreadcrumb section="Extensions" current="Extension Group" />
 
         <div style={sipPcmCardStyle}>
-          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
+            <div className="flex items-center gap-[8px]">
               {selectedIds.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
                   {selectedIds.length} selected
@@ -673,104 +564,13 @@ const ExtensionGroupsPage = () => {
               )}
             </div>
 
-            {/* Right Toolbar Actions */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              {/* Search Box */}
-              {/* <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "#ffffff",
-                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: "5px 10px",
-                  transition: "border-color 0.15s ease",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
-                  }}
-                >
-                  🔍
-                </span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1);
-                  }}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder="Search group name or ext..."
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: 11,
-                    color: C.valueText,
-                    outline: "none",
-                    width: 200,
-                  }}
-                />
-                {searchQuery && (
-                  <span
-                    onClick={() => setSearchQuery("")}
-                    style={{
-                      fontSize: 11,
-                      color: C.mutedText,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                )}
-              </div> */}
-
-              {/* Action Buttons */}
-              {/* <Btn
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={loading.fetch || page <= 1}
-                variant="outline"
-              >
-                ← Prev
-              </Btn>
-              <Btn
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={loading.fetch || page >= totalPages}
-                variant="outline"
-              >
-                Next →
-              </Btn> */}
-              {/* <Btn
-                onClick={loadGroups}
-                disabled={loading.fetch}
-                variant="default"
-              >
-                {loading.fetch ? (
-                  <CircularProgress size={11} style={{ color: "#fff" }} />
-                ) : (
-                  "Refresh"
-                )}
-              </Btn> */}
+            <div className="flex items-center gap-[8px] flex-wrap">
               <Btn
                 onClick={handleDelete}
                 disabled={
-                  loading.delete ||
-                  loading.fetch ||
-                  selectedIds.length === 0
+                  loading.delete || loading.fetch || selectedIds.length === 0
                 }
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -779,15 +579,20 @@ const ExtensionGroupsPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.fetch}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: isCompact ? "auto" : "hidden",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact ? { WebkitOverflowScrolling: "touch" } : {}),
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : dataEmpty ? (
@@ -811,148 +616,109 @@ const ExtensionGroupsPage = () => {
               >
                 <thead>
                   <tr>
-                    <TH style={{  width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,}}>
+                        ...TH_STICKY,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                     sx={checkboxSx}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>
-                      ID
+                    <TH style={{ width: 36, ...TH_STICKY }}>ID</TH>
+                    <TH style={TH_STICKY}>Group Name</TH>
+                    <TH style={TH_STICKY}>Extensions</TH>
+                    <TH style={{ width: 70, borderRight: "none", ...TH_STICKY }}>
+                      Modify
                     </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Group Name
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Extensions
-                    </TH>
-                    <TH  style={{
-                       width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedGroups.map((row, idx) => {
-                      const isSelected = selectedIds.includes(row.id);
-                      const isLastRow = idx === pagedGroups.length - 1;
-                      const lastRowCellStyle = isLastRow
-                        ? { borderBottom: "none" }
-                        : {};
-                      const rowBg = isSelected
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
-                      const realIndex = (page - 1) * limit + idx + 1;
+                    const isSelected = selectedIds.includes(row.id);
+                    const isLastRow = idx === pagedGroups.length - 1;
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const realIndex = (page - 1) * limit + idx + 1;
 
-                      return (
-                        <tr
-                          key={row.id}
-                          style={{
-                            background: rowBg,
-                          }}
+                    return (
+                      <tr key={row.id} style={{ background: rowBg }}>
+                        <ExtensionTd
+                          isLast={isLastRow}
+                          style={{ width: 36, borderLeft: "none" }}
                         >
-                          <td
-                            style={{
-                              ...tdStyle,
-                              width: 36,
-                              borderLeft: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(row.id)}
-                              sx={checkboxSx}
-                            />
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              width: 36,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {realIndex}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.name}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.extensions?.length > 0 ? (
-                              <span
-                                title={
-                                  row.extensions.length > PBX_LIST_TRUNCATE_THRESHOLD
-                                    ? row.extensions.join(", ")
-                                    : undefined
-                                }
-                              >
-                                {formatPbxItemListDisplay(row.extensions)}
-                              </span>
-                            ) : (
-                              <span style={{ color: C.mutedText }}></span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              borderRight: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "center",
-                              }}
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleToggleRow(row.id)}
+                            sx={checkboxSx}
+                          />
+                        </ExtensionTd>
+                        <ExtensionTd isLast={isLastRow} style={{ width: 36 }}>
+                          {realIndex}
+                        </ExtensionTd>
+                        <ExtensionTd isLast={isLastRow}>{row.name}</ExtensionTd>
+                        <ExtensionTd
+                          isLast={isLastRow}
+                          style={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                        >
+                          {row.extensions?.length > 0 ? (
+                            <span
+                              title={
+                                row.extensions.length >
+                                PBX_LIST_TRUNCATE_THRESHOLD
+                                  ? row.extensions.join(", ")
+                                  : undefined
+                              }
                             >
-                                                            <EditDocumentIcon
-                                titleAccess="Edit"
-                                onClick={() => handleOpenEditModal(row)}
-                                style={{
-                                  cursor: "pointer",
-                                  color: "#2563eb",
-                                  fontSize: 22,
-                                  opacity: 0.7,
-                                  transition: "opacity 0.15s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.opacity = "1";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.opacity = "0.7";
-                                }}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                              {formatPbxItemListDisplay(row.extensions)}
+                            </span>
+                          ) : (
+                            <span style={{ color: C.mutedText }} />
+                          )}
+                        </ExtensionTd>
+                        <ExtensionTd
+                          isLast={isLastRow}
+                          style={{ borderRight: "none" }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
+                              style={{
+                                cursor: "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: 0.7,
+                                transition: "opacity 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.opacity = "0.7";
+                              }}
+                            />
+                          </div>
+                        </ExtensionTd>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -971,7 +737,6 @@ const ExtensionGroupsPage = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
@@ -986,50 +751,16 @@ const ExtensionGroupsPage = () => {
           },
         }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#ffffff",
-            fontWeight: 600,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "16px 24px",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-          }}
-        >
+        <DialogTitle className={DIALOG_TITLE}>
           {editGroupId != null
             ? "Edit Extension Group"
             : "Add New Extension Group"}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "24px", backgroundColor: "#ffffff" }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
-            {/* Group Name Field */}
+        <DialogContent className="!bg-white ![padding:24px]">
+          <div style={modalShellStyle}>
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  marginBottom: 6,
-                }}
-              >
-                Group Name
-              </label>
+              <label style={modalFieldLabelStyle}>Group Name</label>
               <TextField
                 fullWidth
                 value={groupName}
@@ -1042,42 +773,16 @@ const ExtensionGroupsPage = () => {
               />
             </div>
 
-            {/* Extensions Selection */}
-            <div
-              style={{
-                background: "#fff",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "8px 12px",
-                  background: "#f8fafc",
-                  borderBottom: `1px solid ${C.cardBorder}`,
-                }}
-              >
-                <span
-                  style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}
-                >
+            <div style={modalExtPanelStyle}>
+              <div style={modalExtPanelHeaderStyle}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}>
                   Select Extensions
                 </span>
               </div>
 
               <div style={{ maxHeight: 220, overflowY: "auto", padding: 12 }}>
                 {loading.extensions ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      padding: 30,
-                    }}
-                  >
+                  <div className="flex justify-center items-center py-[30px]">
                     <CircularProgress size={20} />
                   </div>
                 ) : availableExtensions.length === 0 ? (
@@ -1103,7 +808,7 @@ const ExtensionGroupsPage = () => {
                             checked={selectedExtensions.includes(extension)}
                             onChange={() => toggleExtension(extension)}
                             size="small"
-                            sx={checkboxSx} 
+                            sx={checkboxSx}
                           />
                         }
                         label={
@@ -1119,48 +824,32 @@ const ExtensionGroupsPage = () => {
               </div>
             </div>
 
-            <div
-              style={{ fontSize: 11, color: C.mutedText, textAlign: "right" }}
-            >
+            <div style={{ fontSize: 11, color: C.mutedText, textAlign: "right" }}>
               {selectedExtensions.length} extension(s) selected
             </div>
           </div>
         </DialogContent>
 
         <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
+          className="!flex !justify-center !gap-[16px] !bg-[#f8fafc] !border-t !border-[#9CA3AF] ![padding:16px_24px] ![border-bottom-left-radius:8px] ![border-bottom-right-radius:8px]"
         >
-        <Btn
-  onClick={handleSaveGroup}
-  disabled={loading.save}
-   variant="primary"
- style={{ minWidth: 100, height: 33, fontSize: 13 }}
->
-  {loading.save ? (
-    <CircularProgress
-    
-    />
-  ) : null}
-
-  {loading.save ? "Saving..." : "Save Group"}
-</Btn>
-       <Btn
-  onClick={handleCloseModal}
-  disabled={loading.save}
-variant="cancel"
-  style={pbxModalCancelBtnStyle}
->
-  Cancel
-</Btn>
+          <Btn
+            onClick={handleSaveGroup}
+            disabled={loading.save}
+            variant="primary"
+            className={BTN_DIALOG_PRIMARY}
+          >
+            {loading.save ? <CircularProgress size={11} sx={{ color: "#fff" }} /> : null}
+            {loading.save ? "Saving..." : "Save Group"}
+          </Btn>
+          <Btn
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            variant="cancel"
+            className={BTN_DIALOG_CANCEL}
+          >
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

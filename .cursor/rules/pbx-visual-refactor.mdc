@@ -1,0 +1,74 @@
+---
+description: Visual-lock refactor rules for PBX pages (Tailwind, MUI, tables, modals)
+globs: src/modules/PBX/**/*.jsx,src/modules/CDR/**/*.jsx
+alwaysApply: false
+---
+
+# PBX visual-lock refactor — do not repeat these mistakes
+
+When refactoring PBX/CDR pages for shorter code or Tailwind, the UI must stay **pixel-identical**. These errors broke Extensions and CallCount:
+
+## Before changing styles
+
+1. Diff against `git show HEAD:<file>` for spacing, typography, and layout — do not guess.
+2. Never swap Tailwind scale tokens for “close enough” values:
+   - Bad: `gap-2`, `p-4`, `text-xs`, `mb-2`, `gap-3`
+   - Good: `gap-[8px]`, `p-[16px]`, `text-[12px]`, `mb-[8px]`, `gap-[12px]`
+3. CSS grid shorthand `gap: "8px 32px"` means row-gap 8px, column-gap 32px → `gap-x-[32px] gap-y-[8px]`.
+
+## MUI + Tailwind conflicts
+
+- `DialogTitle` renders as Typography h6 (20px / 500). Plain `text-base` / `font-semibold` loses to MUI. Use `!` overrides matching original inline/sx values (16px, 600, padding, line-height, letter-spacing).
+- `DialogContent` after `DialogTitle`: MUI sets `padding-top: 0`. Restore full padding with `![padding:24px]` (or exact original).
+- `DialogActions`: override default flex-end / 8px padding with `!flex !justify-center` and exact `![padding:…]`.
+- Prefer keeping MUI `sx` props unchanged unless Tailwind parity is verified.
+
+## Tables — use inline styles
+
+Tailwind on `<th>` / `<td>` repeatedly caused wrong row height and column alignment:
+
+- Do **not** put cell padding on a shared base class if any column overrides padding (`p-0` often loses to `py-[9px] px-[14px]` in CSS order).
+- Do **not** add `box-border` on table cells unless the original had it — it changes width + padding math (`width: 36` with `padding: 7px 14px`).
+- Keep original `tdStyle` / `th` inline objects for table body/header when visual lock is required.
+- Dynamic row background stays inline: `style={{ background: rowBg }}`.
+
+## Modal sections (Basic / Features / Advanced)
+
+- Shared layout helpers (`SectionCard`, `FieldRow`, `PbxModalSectionHeading`, toggle rows, follow-me panels) must match original **inline** spacing:
+  - Section wrapper: `gap: 10`, `paddingBottom: 8`
+  - FieldRow: `gap: 12`
+  - Section heading margin: `0 0 24px 0` / `16px 0 24px 0`
+  - Toggle rows: `gap: 10`, `paddingBottom: 6`
+- When Tailwind gaps look wrong in modals, restore JS style objects from git HEAD — do not iterate with approximate utilities.
+
+## Page-specific naming (always — no permission needed)
+
+When refactoring any page, **never copy constant/component names from another page**. Name everything for the **current page**.
+
+Apply this automatically on every future PBX/CDR refactor — do not ask the user first.
+
+| Page | Prefix / examples |
+|------|-------------------|
+| CC Route | `CC_ROUTE_*`, `CcRoutePagination`, `ccRouteModalPaperSx` |
+| Inbound Routes | `INBOUND_ROUTE_*`, `InboundRoutePagination`, … |
+| Outbound Routes | `OUTBOUND_ROUTE_*`, … |
+| SIP Register | `SIP_REGISTER_*`, … |
+| Extension Groups | `EXT_GROUP_*`, … |
+
+**Bad (copied from another page):** `SIP_PCM_TOOLBAR`, `SipPcmPagination`, `trunkModalActionsCls`, `trunkModalPaperSx` on a CC Route or Inbound Routes page.
+
+**Good:** derive prefix from the page file or breadcrumb title, e.g. `CCRoutePage.jsx` → `CC_ROUTE_CARD`, `CcRoutePagination`, `ccRouteModalActionsCls`.
+
+Local helpers inside the same file (`Btn`, `TH`, `FieldRow`) may stay generic. **Page-scoped** Tailwind class constants, pagination components, modal `sx`/class names, and badge/toolbar constants must use that page’s prefix.
+
+## Validation checklist
+
+1. Compare refactored file to git HEAD for every user-reported area (breadcrumb, toolbar, table, modal header, Features tab).
+2. Build must pass.
+3. If any spacing/height/font looks off, revert that block to original inline/sx — do not “tweak” Tailwind guesses.
+
+## Allowed vs forbidden
+
+**Allowed:** dedupe constants, shared components, `MODAL_INPUT_PROPS`, inline style objects in JS, Tailwind on low-risk shell (with exact `[px]` values).
+
+**Forbidden:** redesign, `box-border` on tables without proof, base classes that fight per-column overrides, estimated spacing, changing DOM structure without identical output.

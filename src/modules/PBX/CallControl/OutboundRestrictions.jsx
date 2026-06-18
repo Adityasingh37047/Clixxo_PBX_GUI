@@ -42,7 +42,6 @@ const updateOutboundRestriction = (id, data) =>
 const deleteOutboundRestriction = (id) =>
   orPost({ type: "delete", id: Number(id) });
 
-// ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -50,11 +49,28 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-  strongText: "#0f172a",
   accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
+};
+
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
+const BTN_DIALOG_PRIMARY =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DIALOG_CANCEL =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
+
+const btnVariantCls = {
+  default: BTN_OUTLINE,
+  primary: BTN_PRIMARY,
+  accent: BTN_PRIMARY,
+  cancel: BTN_CANCEL,
+  dialogPrimary: BTN_DIALOG_PRIMARY,
+  dialogCancel: BTN_DIALOG_CANCEL,
+  danger: `${BTN_BASE} bg-[#dc2626] text-white border-[0.5px] border-[#dc2626] hover:bg-[#b91c1c]`,
+  outline: BTN_OUTLINE,
 };
 
 const Btn = ({
@@ -62,112 +78,22 @@ const Btn = ({
   onClick,
   disabled,
   variant = "default",
-  style: extraStyle,
-  title,
+  className = "",
+  style,
   type,
-  hoverBehavior = "background",
-}) => {
-  const variants = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-  };
-
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = extraStyle?.background || s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
-      }}
-    >
-      {children}
-    </button>
-  );
-};
+  title,
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    style={style}
+    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
+  >
+    {children}
+  </button>
+);
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -207,60 +133,21 @@ const checkboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const pbxModalCancelBtnStyle = {
-  minWidth: 100,
-  height: 33,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pbxPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const PbxBreadcrumb = ({ section, current, style }) => (
+const PbxBreadcrumb = ({ section, current, className = "" }) => (
   <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      ...style,
-    }}
+    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span className="font-semibold text-[#1e293b]">{current}</span>
   </div>
 );
 
 const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
+  <div className="flex items-center justify-center p-[48px]">
+    <CircularProgress size={28} sx={{ color: C.accent }} />
   </div>
 );
 
@@ -270,24 +157,10 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
+  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
+      className="text-[13px] font-semibold text-[#3E5475]"
+      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
     </div>
@@ -354,7 +227,7 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
-const pbxDualListLabelStyle = {
+const outboundRestrictionDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
   color: "#3E5475",
@@ -362,7 +235,7 @@ const pbxDualListLabelStyle = {
   marginBottom: 8,
 };
 
-const pbxDualListSelectStyle = {
+const outboundRestrictionDualListSelectStyle = {
   width: "340px",
   height: 160,
   border: `1px solid ${C.cardBorder}`,
@@ -375,39 +248,20 @@ const pbxDualListSelectStyle = {
   overflowY: "auto",
 };
 
-const pbxDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
+const OUTBOUND_RESTRICTION_DUAL_LIST_BTN =
+  "box-border m-0 block h-[36px] w-full cursor-pointer border border-[#6b7280] bg-[#d9dde3] p-0 text-center text-[14px] leading-none text-[#111827] hover:bg-[#c5cbd3]";
 
-const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
+const OutboundRestrictionDualListBtn = ({
+  onClick,
+  title,
+  children,
+  reorder = false,
+}) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={{
-      ...pbxDualListBtnStyle,
-      fontWeight: reorder ? 400 : 600,
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
+    className={`${OUTBOUND_RESTRICTION_DUAL_LIST_BTN} ${reorder ? "font-normal" : "font-semibold"}`}
   >
     {children}
   </button>
@@ -492,7 +346,7 @@ const modalSelectSx = {
   },
 };
 
-const trunkModalPaperSx = {
+const outboundRestrictionModalPaperSx = {
   width: 900,
   maxWidth: "95vw",
   mx: "auto",
@@ -503,102 +357,44 @@ const trunkModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const trunkModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-};
+const OUTBOUND_RESTRICTION_DIALOG_TITLE =
+  "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:700] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:14px_24px] ![border-top-left-radius:8px] ![border-top-right-radius:8px]";
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const outboundRestrictionModalActionsCls =
+  "!flex !justify-center !gap-[16px] ![padding:16px_24px] bg-[#f8fafc] border-t border-[#9CA3AF] rounded-b-[8px]";
 
-const sipPcmCardStyle = {
-  background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
-};
+const OUTBOUND_RESTRICTION_MENU_ITEM_SX = { fontSize: 13 };
 
-const sipPcmToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
-};
+const OUTBOUND_RESTRICTION_CARD =
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+const OUTBOUND_RESTRICTION_TOOLBAR =
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+const OUTBOUND_RESTRICTION_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
+const OUTBOUND_RESTRICTION_TOOLBAR_LEFT =
+  "ml-auto flex min-w-0 flex-wrap items-center gap-[8px]";
+const OUTBOUND_RESTRICTION_TOOLBAR_ACTIONS =
+  "flex flex-wrap items-center gap-[8px]";
+const OUTBOUND_RESTRICTION_SELECTED_BADGE =
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+const OUTBOUND_RESTRICTION_PAGE_BADGE =
+  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+const OUTBOUND_RESTRICTION_PAGINATION =
+  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
 
-const sipPcmPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const sipPcmSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const sipPcmCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const sipPcmPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 10,
-};
-
-const sipPcmPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 6,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const SipPcmPagination = ({
+const OutboundRestrictionPagination = ({
   page,
   totalPages,
   recordCount,
   onPageChange,
   recordLabel = "record",
-  style,
+  className = "",
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
+  <div className={`${OUTBOUND_RESTRICTION_PAGINATION} ${className}`.trim()}>
+    <span className="text-[11px] text-[#94a3b8]">
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
     </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+    <div className="flex items-center gap-[8px]">
       <Btn
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
@@ -606,7 +402,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span className={OUTBOUND_RESTRICTION_PAGE_BADGE}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -732,7 +528,6 @@ const OutboundRestrictions = () => {
   const [chosenSelected, setChosenSelected] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
 
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
@@ -1091,8 +886,10 @@ const OutboundRestrictions = () => {
     !isInitialLoad && rows.length > 0 && filteredRows.length === 0;
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div
+      className={`box-border min-h-[calc(100vh-80px)] bg-[#f8fafc] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
+    >
+      <div className="mx-auto w-full max-w-full">
         {message.text && (
           <Alert
             severity={message.type}
@@ -1112,101 +909,24 @@ const OutboundRestrictions = () => {
 
         <PbxBreadcrumb section="Call Control" current="Outbound Restrictions" />
 
-        <div style={sipPcmCardStyle}>
+        <div className={OUTBOUND_RESTRICTION_CARD}>
           <div
-            style={{
-              ...sipPcmToolbarStyle,
-              ...(isCompact
-                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
-                : {}),
-            }}
+            className={`${OUTBOUND_RESTRICTION_TOOLBAR} ${isCompact ? OUTBOUND_RESTRICTION_TOOLBAR_COMPACT : ""}`.trim()}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-                marginLeft: "auto",
-                minWidth: 0,
-              }}
-            >
-              {/* <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "#ffffff",
-                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: "5px 10px",
-                  transition: "border-color 0.15s ease",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
-                  }}
-                >
-                  🔍
-                </span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1);
-                  }}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder="Search restrictions..."
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: 11,
-                    color: C.valueText,
-                    outline: "none",
-                    width: isCompact ? 120 : 160,
-                  }}
-                />
-                {searchQuery && (
-                  <span
-                    onClick={() => {
-                      setSearchQuery("");
-                      setPage(1);
-                    }}
-                    style={{
-                      fontSize: 11,
-                      color: C.mutedText,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                )}
-              </div> */}
+            <div className={OUTBOUND_RESTRICTION_TOOLBAR_LEFT}>
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span className={OUTBOUND_RESTRICTION_SELECTED_BADGE}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
+            <div className={OUTBOUND_RESTRICTION_TOOLBAR_ACTIONS}>
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -1218,7 +938,6 @@ const OutboundRestrictions = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.save}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1509,7 +1228,7 @@ const OutboundRestrictions = () => {
           </div>
 
           {!isInitialLoad && filteredRows.length > 0 && (
-            <SipPcmPagination
+            <OutboundRestrictionPagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -1526,7 +1245,7 @@ const OutboundRestrictions = () => {
         maxWidth={false}
         PaperProps={{
           sx: {
-            ...trunkModalPaperSx,
+            ...outboundRestrictionModalPaperSx,
             mt: 16,
             alignSelf: "flex-start",
           },
@@ -1534,16 +1253,7 @@ const OutboundRestrictions = () => {
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
+        <DialogTitle className={OUTBOUND_RESTRICTION_DIALOG_TITLE}>
           {editId != null
             ? "Edit Outbound Restriction"
             : "Add Outbound Restriction"}
@@ -1617,7 +1327,7 @@ const OutboundRestrictions = () => {
                     sx={modalSelectSx}
                   >
                     {ENABLE_OPTIONS.map((o) => (
-                      <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                      <MenuItem key={o} value={o} sx={OUTBOUND_RESTRICTION_MENU_ITEM_SX}>
                         {o}
                       </MenuItem>
                     ))}
@@ -1636,7 +1346,7 @@ const OutboundRestrictions = () => {
                     }}
                   >
                     {ENABLE_OPTIONS.map((o) => (
-                      <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                      <MenuItem key={o} value={o} sx={OUTBOUND_RESTRICTION_MENU_ITEM_SX}>
                         {o}
                       </MenuItem>
                     ))}
@@ -1656,7 +1366,7 @@ const OutboundRestrictions = () => {
                 }}
               >
                 <div>
-                  <div style={pbxDualListLabelStyle}>Available</div>
+                  <div style={outboundRestrictionDualListLabelStyle}>Available</div>
                   <select
                     multiple
                     size={6}
@@ -1666,7 +1376,7 @@ const OutboundRestrictions = () => {
                         Array.from(e.target.selectedOptions, (o) => o.value),
                       )
                     }
-                    style={pbxDualListSelectStyle}
+                    style={outboundRestrictionDualListSelectStyle}
                   >
                     {availableList.length === 0 ? (
                       <option disabled value="">
@@ -1690,22 +1400,22 @@ const OutboundRestrictions = () => {
                       paddingTop: 28,
                     }}
                   >
-                    <PbxDualListBtn onClick={addSelectedExtensions}>
+                    <OutboundRestrictionDualListBtn onClick={addSelectedExtensions}>
                       &gt;
-                    </PbxDualListBtn>
-                    <PbxDualListBtn onClick={addAllExtensions}>
+                    </OutboundRestrictionDualListBtn>
+                    <OutboundRestrictionDualListBtn onClick={addAllExtensions}>
                       &gt;&gt;
-                    </PbxDualListBtn>
-                    <PbxDualListBtn onClick={removeSelectedExtensions}>
+                    </OutboundRestrictionDualListBtn>
+                    <OutboundRestrictionDualListBtn onClick={removeSelectedExtensions}>
                       &lt;
-                    </PbxDualListBtn>
-                    <PbxDualListBtn onClick={removeAllExtensions}>
+                    </OutboundRestrictionDualListBtn>
+                    <OutboundRestrictionDualListBtn onClick={removeAllExtensions}>
                       &lt;&lt;
-                    </PbxDualListBtn>
+                    </OutboundRestrictionDualListBtn>
                   </div>
                 )}
                 <div>
-                  <div style={pbxDualListLabelStyle}>Selected</div>
+                  <div style={outboundRestrictionDualListLabelStyle}>Selected</div>
                   <select
                     multiple
                     size={6}
@@ -1715,7 +1425,7 @@ const OutboundRestrictions = () => {
                         Array.from(e.target.selectedOptions, (o) => o.value),
                       )
                     }
-                    style={pbxDualListSelectStyle}
+                    style={outboundRestrictionDualListSelectStyle}
                   >
                     {memberExtensions.length === 0 ? (
                       <option disabled value="">
@@ -1739,57 +1449,45 @@ const OutboundRestrictions = () => {
                       paddingTop: 28,
                     }}
                   >
-                    <PbxDualListBtn
+                    <OutboundRestrictionDualListBtn
                       reorder
                       title="Move to bottom"
                       onClick={moveExtToBottom}
                     >
                       vv
-                    </PbxDualListBtn>
-                    <PbxDualListBtn reorder title="Move up" onClick={moveExtUp}>
+                    </OutboundRestrictionDualListBtn>
+                    <OutboundRestrictionDualListBtn reorder title="Move up" onClick={moveExtUp}>
                       ^
-                    </PbxDualListBtn>
-                    <PbxDualListBtn
+                    </OutboundRestrictionDualListBtn>
+                    <OutboundRestrictionDualListBtn
                       reorder
                       title="Move down"
                       onClick={moveExtDown}
                     >
                       v
-                    </PbxDualListBtn>
-                    <PbxDualListBtn
+                    </OutboundRestrictionDualListBtn>
+                    <OutboundRestrictionDualListBtn
                       reorder
                       title="Move to top"
                       onClick={moveExtToTop}
                     >
                       ^^
-                    </PbxDualListBtn>
+                    </OutboundRestrictionDualListBtn>
                   </div>
                 )}
               </div>
             </SectionCard>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions className={outboundRestrictionModalActionsCls}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-            variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            variant="dialogPrimary"
           >
             {loading.save ? (
               <>
-                <CircularProgress size={14} style={{ color: "#fff" }} />{" "}
+                <CircularProgress size={14} sx={{ color: "#fff" }} />{" "}
                 Saving...
               </>
             ) : (
@@ -1799,8 +1497,7 @@ const OutboundRestrictions = () => {
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
-            variant="cancel"
-            style={pbxModalCancelBtnStyle}
+            variant="dialogCancel"
           >
             Cancel
           </Btn>

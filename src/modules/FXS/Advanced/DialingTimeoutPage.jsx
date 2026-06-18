@@ -13,113 +13,57 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material";
-// ── Local page UI (inlined from fxsSharedUi) ──
 
+// ── Local page UI (inlined from fxsSharedUi) ──
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
   cardBorder: "#9CA3AF",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const DIALING_TIMEOUT_PAGE_WRAP =
+  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
+const DIALING_TIMEOUT_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
+const DIALING_TIMEOUT_CARD =
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+const DIALING_TIMEOUT_TOOLBAR =
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+const DIALING_TIMEOUT_PAGINATION =
+  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_DIALOG_PRIMARY =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[34px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DIALOG_CANCEL =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[34px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
+
+const btnVariantCls = {
+  cancel: BTN_CANCEL,
+  dialogPrimary: BTN_DIALOG_PRIMARY,
+  dialogCancel: BTN_DIALOG_CANCEL,
+};
 
 const Btn = ({
   children,
   onClick,
   disabled,
-  variant = "default",
-  style: extraStyle,
+  variant = "dialogPrimary",
+  className = "",
+  style,
   type,
-  form,
-  component,
-  title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
-
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    style={style}
+    className={`${btnVariantCls[variant] || BTN_DIALOG_PRIMARY} ${className}`.trim()}
+  >
+    {children}
+  </button>
+);
 
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -145,38 +89,6 @@ const muiTextFieldSx = {
     },
   },
 };
-
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -224,186 +136,34 @@ const routeThExtra = {
   letterSpacing: "0.04em",
 };
 
-const numManipulateCardStyle = {
-  background: "#ffffff",
-  borderRadius: CARD_RADIUS,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-};
-
-const numManipulateToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-};
-
-const numManipulatePaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: CARD_RADIUS,
-  borderBottomRightRadius: CARD_RADIUS,
-  overflow: "hidden",
-};
-
-
-const advancedPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  boxSizing: "border-box",
-};
-
-const advancedPageInnerStyle = {
-  width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
-};
-
-const advancedTableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  overflow: "hidden",
-  marginBottom: 24,
-};
-
-const advancedBlueBarStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
-};
-
-const advancedFormPanelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
-};
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const AdvancedBreadcrumb = ({ current }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-    }}
-  >
+const DialingTimeoutBreadcrumb = ({ current }) => (
+  <div className="mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8]">
     <span>FXS</span>
     <span>&gt;</span>
     <span>Advanced</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span className="font-semibold text-[#1e293b]">{current}</span>
   </div>
 );
 
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
-  <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
+const DialingTimeoutPageShell = ({ children }) => (
+  <div className={DIALING_TIMEOUT_PAGE_WRAP}>
+    <div className={DIALING_TIMEOUT_PAGE_INNER}>{children}</div>
   </div>
 );
-
-const wavFileNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: 0,
-  lineHeight: 1.45,
-  whiteSpace: "normal",
-  overflowWrap: "break-word",
-  textAlign: "center",
-  width: "100%",
-};
 
 const FieldRow = ({
   label,
   children,
-  required,
-  align = "center",
   labelWidth = 170,
 }) => (
   <div
     style={{
       display: "flex",
-      alignItems: align,
+      alignItems: "center",
       justifyContent: "center",
       gap: 12,
-      minHeight: align === "flex-start" ? undefined : 32,
+      minHeight: 32,
     }}
   >
     <label
@@ -414,53 +174,15 @@ const FieldRow = ({
         width: labelWidth,
         flexShrink: 0,
         textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
       }}
     >
       {label}
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
     </label>
     <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
 );
 
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
-
-
-const advancedModalPaperSx = {
+const dialingTimeoutModalPaperSx = {
   width: 500,
   maxWidth: "95vw",
   borderRadius: "8px",
@@ -469,7 +191,7 @@ const advancedModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const advancedModalTitleStyle = {
+const DIALING_TIMEOUT_MODAL_TITLE_STYLE = {
   background: "#1e2d42",
   color: "#ffffff",
   fontWeight: 600,
@@ -478,13 +200,13 @@ const advancedModalTitleStyle = {
   textAlign: "center",
 };
 
-const addHostModalContentStyle = {
- padding: "20px 24px",
+const DIALING_TIMEOUT_MODAL_CONTENT_STYLE = {
+  padding: "20px 24px",
   paddingBottom: "16px",
   backgroundColor: "#ffffff",
 };
 
-const addHostFormPanelStyle = {
+const DIALING_TIMEOUT_MODAL_FORM_PANEL_STYLE = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
@@ -494,7 +216,7 @@ const addHostFormPanelStyle = {
   padding: 20,
 };
 
-const addHostModalFooterStyle = {
+const DIALING_TIMEOUT_MODAL_FOOTER_STYLE = {
   display: "flex",
   justifyContent: "center",
   gap: 12,
@@ -609,7 +331,7 @@ const DialingTimeoutPage = () => {
   };
 
   return (
-    <AdvancedPageShell>
+    <DialingTimeoutPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -627,9 +349,9 @@ const DialingTimeoutPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="Dialing Timeout" />
-      <div style={numManipulateCardStyle}>
-        <div style={{ overflowX: "auto", width: "100%" }}>
+      <DialingTimeoutBreadcrumb current="Dialing Timeout" />
+      <div className={DIALING_TIMEOUT_CARD}>
+        <div className="w-full overflow-x-auto">
           <table
             style={{
               width: "100%",
@@ -707,15 +429,15 @@ const DialingTimeoutPage = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: advancedModalPaperSx }}
+        PaperProps={{ sx: dialingTimeoutModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle style={advancedModalTitleStyle}>
+        <DialogTitle style={DIALING_TIMEOUT_MODAL_TITLE_STYLE}>
           Dialing Timeout
         </DialogTitle>
-        <DialogContent style={addHostModalContentStyle}>
-          <div style={addHostFormPanelStyle}>
+        <DialogContent style={DIALING_TIMEOUT_MODAL_CONTENT_STYLE}>
+          <div style={DIALING_TIMEOUT_MODAL_FORM_PANEL_STYLE}>
             <FieldRow
               label="Description:"
               labelWidth={DIALING_TIMEOUT_FIELD_LABEL_WIDTH}
@@ -765,24 +487,16 @@ const DialingTimeoutPage = () => {
             </FieldRow>
           </div>
         </DialogContent>
-        <DialogActions style={addHostModalFooterStyle}>
-          <Btn
-            variant="primary"
-            onClick={handleSave}
-            style={{ minWidth: 100, height: 34, fontSize: 13 }}
-          >
+        <DialogActions style={DIALING_TIMEOUT_MODAL_FOOTER_STYLE}>
+          <Btn variant="dialogPrimary" onClick={handleSave}>
             Save
           </Btn>
-          <Btn
-            variant="cancel"
-            onClick={handleCloseModal}
-            style={{ minWidth: 100, height: 34 }}
-          >
+          <Btn variant="dialogCancel" onClick={handleCloseModal}>
             Close
           </Btn>
         </DialogActions>
       </Dialog>
-    </AdvancedPageShell>
+    </DialingTimeoutPageShell>
   );
 };
 

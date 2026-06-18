@@ -50,7 +50,6 @@ import {
 } from "../../../api/apiService";
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -58,11 +57,28 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-  strongText: "#0f172a",
   accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
+};
+
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
+const BTN_DIALOG_PRIMARY =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DIALOG_CANCEL =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_EMPTY_ADD = `${BTN_CANCEL} px-[24px] py-[8px] text-[12px] rounded-[6px]`;
+
+const btnVariantCls = {
+  default: BTN_OUTLINE,
+  primary: BTN_PRIMARY,
+  cancel: BTN_CANCEL,
+  dialogPrimary: BTN_DIALOG_PRIMARY,
+  dialogCancel: BTN_DIALOG_CANCEL,
+  danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
+  outline: `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`,
 };
 
 const Btn = ({
@@ -70,88 +86,22 @@ const Btn = ({
   onClick,
   disabled,
   variant = "default",
-  style: extraStyle,
+  className = "",
+  style,
   type,
-  form,
-  component,
   title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    style={style}
+    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
+  >
+    {children}
+  </button>
+);
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -264,50 +214,21 @@ const nativeFieldInteraction = {
   },
 };
 
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pbxPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const PbxBreadcrumb = ({ section, current, style }) => (
+const PbxBreadcrumb = ({ section, current, className = "" }) => (
   <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      ...style,
-    }}
+    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span className="font-semibold text-[#1e293b]">{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
+  <div className="flex items-center justify-center p-[48px]">
+    <CircularProgress size={28} sx={{ color: C.accent }} />
   </div>
 );
 
@@ -317,33 +238,15 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
+  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
+      className="text-[13px] font-semibold text-[#3E5475]"
+      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
     </div>
     {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
+      <Btn variant="cancel" onClick={onAddNew} className={BTN_EMPTY_ADD}>
         {buttonLabel}
       </Btn>
     ) : null}
@@ -449,16 +352,8 @@ const trunkModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const trunkModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-};
+const DIALOG_TITLE =
+  "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:600] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:16px_24px] ![border-top-left-radius:8px] ![border-top-right-radius:8px]";
 
 const trunkModalFormPanelStyle = {
   display: "flex",
@@ -473,31 +368,11 @@ const trunkModalFormPanelStyle = {
   boxSizing: "border-box",
 };
 
-const trunkModalActionsStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 16,
-  padding: "16px 24px",
-  background: C.pageBg,
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-};
+const trunkModalActionsCls =
+  "!flex !justify-center !gap-[16px] ![padding:16px_24px] bg-[#f8fafc] border-t border-[#9CA3AF] rounded-b-[8px]";
 
-const trunkModalPrimaryBtnStyle = {
-  minWidth: 100,
-  height: 33,
-  fontSize: 13,
-};
-
-const trunkModalCancelBtnStyle = {
-  minWidth: 100,
-  height: 33,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
+const MODAL_INPUT_13 = { style: { fontSize: 13 } };
+const MODAL_INPUT_14 = { style: { fontSize: 14 } };
 
 const trunkAdaptTextFieldSx = {
   ...muiTextFieldSx,
@@ -545,13 +420,6 @@ const trunkDodCompactInputStyle = {
   cursor: "text",
 };
 
-const trunkDodToolbarBtnStyle = {
-  height: 30,
-  fontSize: 12,
-  padding: "6px 14px",
-  borderRadius: 10,
-};
-
 const pbxDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
@@ -573,111 +441,29 @@ const pbxDualListSelectStyle = {
   overflowY: "auto",
 };
 
-const pbxDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
 const PbxDualListBtn = ({ onClick, title, children }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={pbxDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
+    className="box-border m-0 block h-[36px] w-full cursor-pointer border border-[#6b7280] bg-[#d9dde3] p-0 text-center text-[14px] font-semibold leading-none text-[#111827] hover:bg-[#c5cbd3]"
   >
     {children}
   </button>
 );
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
-
-const sipPcmCardStyle = {
-  background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
-};
-
-const sipPcmToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
-};
-
-const sipPcmPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const sipPcmSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const sipPcmCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const sipPcmPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 10,
-};
-
-const sipPcmPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 6,
-  border: `1px solid ${C.cardBorder}`,
-};
+const SIP_PCM_CARD =
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+const SIP_PCM_TOOLBAR =
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+const SIP_PCM_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
+const SIP_PCM_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
+const SIP_PCM_SELECTED_BADGE =
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+const SIP_PCM_PAGE_BADGE =
+  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+const SIP_PCM_PAGINATION =
+  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
 
 const SipPcmPagination = ({
   page,
@@ -685,14 +471,14 @@ const SipPcmPagination = ({
   recordCount,
   onPageChange,
   recordLabel = "record",
-  style,
+  className = "",
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
+  <div className={`${SIP_PCM_PAGINATION} ${className}`.trim()}>
+    <span className="text-[11px] text-[#94a3b8]">
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
     </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+    <div className="flex items-center gap-[8px]">
       <Btn
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
@@ -700,7 +486,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span className={SIP_PCM_PAGE_BADGE}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -2439,8 +2225,10 @@ const SipRegisterPage = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div
+      className={`box-border min-h-[calc(100vh-80px)] bg-[#f8fafc] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
+    >
+      <div className="mx-auto w-full max-w-full">
         {message.text && (
           <Alert
             severity={message.type}
@@ -2460,35 +2248,22 @@ const SipRegisterPage = () => {
 
         <PbxBreadcrumb section="Trunks" current="SIP Register" />
 
-        <div style={sipPcmCardStyle}>
+        <div className={SIP_PCM_CARD}>
           <div
-            style={{
-              ...sipPcmToolbarStyle,
-              ...(isCompact
-                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
-                : {}),
-            }}
+            className={`${SIP_PCM_TOOLBAR} ${isCompact ? SIP_PCM_TOOLBAR_COMPACT : ""}`.trim()}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="flex items-center gap-[8px]">
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span className={SIP_PCM_SELECTED_BADGE}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
+            <div className={SIP_PCM_TOOLBAR_ACTIONS}>
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete}
-                style={sipPcmCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -2496,7 +2271,6 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.delete || trunks.length === 0}
-                style={sipPcmCancelBtnStyle}
               >
                 Clear All
               </Btn>
@@ -2504,7 +2278,6 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selectedIds.length === 0}
-                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -2519,7 +2292,6 @@ const SipRegisterPage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch}
-                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -2892,7 +2664,7 @@ const SipRegisterPage = () => {
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle style={trunkModalTitleStyle}>
+        <DialogTitle className={DIALOG_TITLE}>
           {editIndex !== null ? "Edit SIP Register" : "Add SIP Register"}
         </DialogTitle>
 
@@ -2999,7 +2771,7 @@ const SipRegisterPage = () => {
                           error={!!validationErrors.trunk_id}
                           placeholder="Trunk Name"
                           disabled={editIndex !== null}
-                          inputProps={{ style: { fontSize: 13 } }}
+                          inputProps={MODAL_INPUT_13}
                         />
                         {validationErrors.trunk_id && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -3122,7 +2894,7 @@ const SipRegisterPage = () => {
                               }
                               error={!!validationErrors.username}
                               placeholder="Username"
-                              inputProps={{ style: { fontSize: 14 } }}
+                              inputProps={MODAL_INPUT_14}
                             />
                             {validationErrors.username && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -3144,7 +2916,7 @@ const SipRegisterPage = () => {
                               onChange={(e) =>
                                 handleChange("auth_username", e.target.value)
                               }
-                              inputProps={{ style: { fontSize: 14 } }}
+                              inputProps={MODAL_INPUT_14}
                               placeholder="Auth Username"
                             />
                           </div>
@@ -3168,7 +2940,7 @@ const SipRegisterPage = () => {
                               }
                               error={!!validationErrors.ui_reg_fail_retry}
                               placeholder="30"
-                              inputProps={{ style: { fontSize: 14 } }}
+                              inputProps={MODAL_INPUT_14}
                             />
                             {validationErrors.ui_reg_fail_retry && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -3295,7 +3067,7 @@ const SipRegisterPage = () => {
                           }
                           error={!!validationErrors.provider}
                           placeholder="host:port or domain"
-                          inputProps={{ style: { fontSize: 13 } }}
+                          inputProps={MODAL_INPUT_13}
                         />
                         {validationErrors.provider && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -3344,7 +3116,7 @@ const SipRegisterPage = () => {
                                 e.target.value,
                               )
                             }
-                            inputProps={{ style: { fontSize: 13 } }}
+                            inputProps={MODAL_INPUT_13}
                           />
                         </div>
                       </div>
@@ -3365,7 +3137,7 @@ const SipRegisterPage = () => {
                               e.target.value,
                             )
                           }
-                          inputProps={{ style: { fontSize: 13 } }}
+                          inputProps={MODAL_INPUT_13}
                         />
                       </div>
                     </div>
@@ -3386,7 +3158,7 @@ const SipRegisterPage = () => {
                                 handleChange("password", e.target.value)
                               }
                               error={!!validationErrors.password}
-                              inputProps={{ style: { fontSize: 14 } }}
+                              inputProps={MODAL_INPUT_14}
                               InputProps={{
                                 endAdornment: (
                                   <InputAdornment position="end">
@@ -3427,7 +3199,7 @@ const SipRegisterPage = () => {
                                 handleChange("expire_in_sec", e.target.value)
                               }
                               error={!!validationErrors.expire_in_sec}
-                              inputProps={{ style: { fontSize: 14 } }}
+                              inputProps={MODAL_INPUT_14}
                             />
                             {validationErrors.expire_in_sec && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -3512,7 +3284,7 @@ const SipRegisterPage = () => {
                                   handleChange("ui_proxy_ip", e.target.value)
                                 }
                                 error={!!validationErrors.ui_proxy_ip}
-                                inputProps={{ style: { fontSize: 14 } }}
+                                inputProps={MODAL_INPUT_14}
                               />
                               {validationErrors.ui_proxy_ip && (
                                 <div className="text-red-500 text-xs mt-0.5">
@@ -3597,7 +3369,7 @@ const SipRegisterPage = () => {
                           }
                           error={!!validationErrors.sip_header}
                           placeholder="+91...@sip.domain"
-                          inputProps={{ style: { fontSize: 14 } }}
+                          inputProps={MODAL_INPUT_14}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -3628,7 +3400,7 @@ const SipRegisterPage = () => {
                             handleChange("server_domain", e.target.value)
                           }
                           error={!!validationErrors.server_domain}
-                          inputProps={{ style: { fontSize: 14 } }}
+                          inputProps={MODAL_INPUT_14}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -3659,7 +3431,7 @@ const SipRegisterPage = () => {
                             handleChange("client_domain", e.target.value)
                           }
                           error={!!validationErrors.client_domain}
-                          inputProps={{ style: { fontSize: 14 } }}
+                          inputProps={MODAL_INPUT_14}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -3689,7 +3461,7 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("Outbound Proxy", e.target.value)
                           }
-                          inputProps={{ style: { fontSize: 14 } }}
+                          inputProps={MODAL_INPUT_14}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -3715,7 +3487,7 @@ const SipRegisterPage = () => {
                             handleChange("identity_ip", e.target.value)
                           }
                           error={!!validationErrors.identity_ip}
-                          inputProps={{ style: { fontSize: 14 } }}
+                          inputProps={MODAL_INPUT_14}
                         />
                         {validationErrors.identity_ip && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -3751,7 +3523,7 @@ const SipRegisterPage = () => {
                             fullWidth
                             value={form[key] || ""}
                             onChange={(e) => handleChange(key, e.target.value)}
-                            inputProps={{ style: { fontSize: 14 } }}
+                            inputProps={MODAL_INPUT_14}
                           />
                         </div>
                       </div>
@@ -3928,7 +3700,7 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_limit_max_calls", e.target.value)
                           }
-                          inputProps={{ style: { fontSize: 14 } }}
+                          inputProps={MODAL_INPUT_14}
                         />
                       </div>
                     </div>
@@ -4015,7 +3787,7 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_call_timeout", e.target.value)
                           }
-                          inputProps={{ style: { fontSize: 14 } }}
+                          inputProps={MODAL_INPUT_14}
                         />
                       </div>
                     </div>
@@ -4053,7 +3825,7 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_max_call_duration", e.target.value)
                           }
-                          inputProps={{ style: { fontSize: 14 } }}
+                          inputProps={MODAL_INPUT_14}
                         />
                       </div>
                     </div>
@@ -4145,7 +3917,7 @@ const SipRegisterPage = () => {
                                         ),
                                       )
                                     }
-                                    inputProps={{ style: { fontSize: 13 } }}
+                                    inputProps={MODAL_INPUT_13}
                                   />
                                 </td>
                                 <td className="p-1">
@@ -4165,7 +3937,7 @@ const SipRegisterPage = () => {
                                         ),
                                       )
                                     }
-                                    inputProps={{ style: { fontSize: 13 } }}
+                                    inputProps={MODAL_INPUT_13}
                                   />
                                 </td>
                                 <td className="p-1 w-[180px]">
@@ -4213,7 +3985,6 @@ const SipRegisterPage = () => {
                       key={lbl}
                       type="button"
                       variant="cancel"
-                      style={trunkDodToolbarBtnStyle}
                       onClick={() => {
                         if (lbl === "ADD") handleOpenDodAddModal();
                         else if (lbl === "DELETE") {
@@ -4378,7 +4149,6 @@ const SipRegisterPage = () => {
                         type="button"
                         variant="primary"
                         onClick={handleConfirmDodAdd}
-                        style={trunkDodToolbarBtnStyle}
                       >
                         ENSURE
                       </Btn>
@@ -4389,7 +4159,6 @@ const SipRegisterPage = () => {
                           setShowDodAddModal(false);
                           resetDodAddForm();
                         }}
-                        style={trunkDodToolbarBtnStyle}
                       >
                         CANCEL
                       </Btn>
@@ -4470,7 +4239,7 @@ const SipRegisterPage = () => {
                                     )
                                   }
                                   sx={muiTextFieldSx}
-                                  inputProps={{ style: { fontSize: 13 } }}
+                                  inputProps={MODAL_INPUT_13}
                                 />
                               </td>
                               <td className="p-1">
@@ -4488,7 +4257,7 @@ const SipRegisterPage = () => {
                                     )
                                   }
                                   sx={muiTextFieldSx}
-                                  inputProps={{ style: { fontSize: 13 } }}
+                                  inputProps={MODAL_INPUT_13}
                                 />
                               </td>
                               <td className="p-1">
@@ -4519,7 +4288,7 @@ const SipRegisterPage = () => {
                                     );
                                   }}
                                   sx={muiTextFieldSx}
-                                  inputProps={{ style: { fontSize: 13 } }}
+                                  inputProps={MODAL_INPUT_13}
                                 />
                               </td>
                             </tr>
@@ -4632,12 +4401,11 @@ const SipRegisterPage = () => {
           </div>
         </DialogContent>
 
-        <DialogActions style={trunkModalActionsStyle}>
+        <DialogActions className={trunkModalActionsCls}>
           <Btn
-            variant="primary"
+            variant="dialogPrimary"
             onClick={handleSave}
             disabled={loading.save}
-            style={trunkModalPrimaryBtnStyle}
           >
             {loading.save ? (
               <>
@@ -4649,10 +4417,9 @@ const SipRegisterPage = () => {
             )}
           </Btn>
           <Btn
-            variant="cancel"
+            variant="dialogCancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={trunkModalCancelBtnStyle}
           >
             Close
           </Btn>

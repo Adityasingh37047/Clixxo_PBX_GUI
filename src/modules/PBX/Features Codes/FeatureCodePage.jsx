@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {Alert, CircularProgress, useMediaQuery } from "@mui/material";
+import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
 import { getFeatureCodes, updateFeatureCodes } from "../../../api/apiService";
 import {
   FEATURE_CODE_SECTIONS,
@@ -11,216 +11,120 @@ import {
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#9CA3AF",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
   accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
 };
 
-const CARD_RADIUS = 10;
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
+const FEATURE_CODE_FIELD_HEIGHT = 32;
+const FEATURE_CODE_GRID_LABEL_WIDTH = 220;
 
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-  component,
-  title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </Component>
-  );
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = `0 0 0 1px ${OUTLINED_FOCUS}`;
 };
 
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
+const FEATURE_CODE_INPUT_INTERACTION = {
+  onFocus: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    if (document.activeElement === e.target) setFieldFocus(e.target);
+    else setFieldHover(e.target);
+  },
+  onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
+    if (document.activeElement === e.target) setFieldFocus(e.target);
+    else setFieldDefault(e.target);
+  },
 };
 
-const pbxPageInnerStyle = {
+const FEATURE_CODE_GRID_LABEL_STYLE = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+  width: FEATURE_CODE_GRID_LABEL_WIDTH,
+  marginRight: 10,
+  lineHeight: 1.4,
+  flexShrink: 0,
+  whiteSpace: "nowrap",
+};
+
+const FEATURE_CODE_GRID_INPUT_STYLE = {
+  borderRadius: 6,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  fontSize: 12,
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
+  backgroundColor: "#ffffff",
+  outline: "none",
+  color: "#3E5475",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  boxSizing: "border-box",
+  boxShadow: "none",
+  height: FEATURE_CODE_FIELD_HEIGHT,
+  minHeight: FEATURE_CODE_FIELD_HEIGHT,
+  padding: "0 12px",
+  lineHeight: `${FEATURE_CODE_FIELD_HEIGHT - 2}px`,
+  textAlign: "left",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const BTN_FORM_PRIMARY =
+  "inline-flex items-center justify-center box-border m-0 min-w-[110px] h-[34px] gap-[6px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+
+const FEATURE_CODE_PAGE_WRAP =
+  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
+const FEATURE_CODE_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
+const FEATURE_CODE_FORM_CARD =
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+const FEATURE_CODE_FORM_HEADER =
+  "flex w-full min-h-[44px] items-center border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] text-[13px] font-bold text-[#3E5475] rounded-t-[10px]";
+const FEATURE_CODE_FORM_FOOTER =
+  "flex w-full flex-wrap items-center justify-center gap-[12px] border-t border-[#9CA3AF] box-border px-[20px] py-[10px]";
+
+const PbxBreadcrumb = ({ section, current, className = "" }) => (
   <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      ...style,
-    }}
+    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span className="font-semibold text-[#1e293b]">{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
+  <div className="flex items-center justify-center p-[48px]">
+    <CircularProgress size={28} sx={{ color: C.accent }} />
   </div>
 );
 
-const sipPcmFormPageWrapStyle = {
-  ...pbxPageWrapStyle,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-};
-
-const sipPcmFormPageInnerStyle = {
-  ...pbxPageInnerStyle,
-  maxWidth: 1000,
-};
-
-const sipPcmFormCardStyle = {
-  background: "#ffffff",
-  borderRadius: 10,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
-};
-
-const sipPcmFormHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  padding: "7px 14px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const sipPcmAuthFormFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  padding: "10px 20px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const sipPcmAuthFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const SipPcmSectionHeading = ({ title, isFirst = false }) => (
+const FeatureCodeSectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
       margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
@@ -246,119 +150,11 @@ const SipPcmSectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
-const sipPcmFormLabelStyle = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "left",
-  width: 320,
-  marginRight: 10,
-  lineHeight: 1.4,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-};
-
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
-
-const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
-};
-
-const nativeFieldInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled) return;
-    setFieldFocus(e.target);
-  },
-  onBlur: (e) => {
-    setFieldDefault(e.target);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled) return;
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldHover(e.target);
-    }
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldDefault(e.target);
-    }
-  },
-};
-
-const SIP_PCM_AUTH_FIELD_WIDTH = 200;
-const SIP_PCM_FORM_FIELD_HEIGHT = 32;
-
-const sipPcmAuthInputStyle = {
-  borderRadius: 6,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 12,
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  backgroundColor: "#ffffff",
-  outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  boxSizing: "border-box",
-  boxShadow: "none",
-  height: SIP_PCM_FORM_FIELD_HEIGHT,
-  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-  padding: "0 12px",
-  lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
-  textAlign: "left",
-};
-
-const sipPcmAuthInputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
-
-const LABEL_W = 220;
-
-const GRID_LABEL_STYLE = {
-  ...sipPcmFormLabelStyle,
-  width: LABEL_W,
-};
-
-const GRID_INPUT_STYLE = {
-  ...sipPcmAuthInputStyle,
-  width: "100%",
-  maxWidth: "100%",
+const featureCodeFieldCellStyle = {
+  display: "flex",
+  alignItems: "center",
+  padding: "8px 16px",
+  gap: 12,
 };
 
 const apiToForm = (apiData) => {
@@ -384,6 +180,21 @@ const formToApi = (form) => {
   });
   return data;
 };
+
+const FeatureCodeFieldCell = ({ field, value, onChange }) => (
+  <div style={featureCodeFieldCellStyle}>
+    <label style={FEATURE_CODE_GRID_LABEL_STYLE}>{field.label}</label>
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <input
+        type={field.type === "number" ? "number" : "text"}
+        value={value ?? ""}
+        onChange={(e) => onChange(field.key, e.target.value)}
+        style={FEATURE_CODE_GRID_INPUT_STYLE}
+        {...FEATURE_CODE_INPUT_INTERACTION}
+      />
+    </div>
+  </div>
+);
 
 const FeatureCodePage = () => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
@@ -443,20 +254,13 @@ const FeatureCodePage = () => {
     }
   };
 
+  const gridColumns = isCompact ? "1fr" : "1fr 1fr";
+
   return (
-    <div style={{ ...sipPcmFormPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={sipPcmFormPageInnerStyle}>
+    <div className={`${FEATURE_CODE_PAGE_WRAP} ${isCompact ? "p-[8px]" : ""}`.trim()}>
+      <div className={FEATURE_CODE_PAGE_INNER}>
         {message.text && (
-          <div
-            style={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 420,
-            }}
-          >
+          <div className="fixed right-[20px] top-[20px] z-[9999] min-w-[300px] max-w-[420px]">
             <Alert
               severity={message.type}
               onClose={() => setMessage({ type: "", text: "" })}
@@ -469,19 +273,19 @@ const FeatureCodePage = () => {
 
         <PbxBreadcrumb section="Features Codes" current="Feature Code" />
 
-        <div style={sipPcmFormCardStyle}>
-          <div style={sipPcmFormHeaderStyle}>
+        <div className={FEATURE_CODE_FORM_CARD}>
+          <div className={FEATURE_CODE_FORM_HEADER}>
             <span>Feature Code</span>
           </div>
 
-          <div style={{ padding: "12px 20px 0", boxSizing: "border-box" }}>
+          <div className="box-border p-[12px_20px_0]">
             {loading ? (
               <TableListLoading />
             ) : (
               <div style={{ paddingBottom: 16 }}>
                 {FEATURE_CODE_SECTIONS.map((section, sectionIdx) => (
                   <div key={section.title}>
-                    <SipPcmSectionHeading
+                    <FeatureCodeSectionHeading
                       title={section.title}
                       isFirst={sectionIdx === 0}
                     />
@@ -495,37 +299,15 @@ const FeatureCodePage = () => {
                               key={rowIdx}
                               style={{
                                 display: "grid",
-                                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                                gridTemplateColumns: gridColumns,
                               }}
                             >
                               {isRight && <div />}
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  padding: "8px 16px",
-                                  gap: 12,
-                                }}
-                              >
-                                <label style={GRID_LABEL_STYLE}>
-                                  {field.label}
-                                </label>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <input
-                                    type={
-                                      field.type === "number"
-                                        ? "number"
-                                        : "text"
-                                    }
-                                    value={form[field.key] ?? ""}
-                                    onChange={(e) =>
-                                      handleChange(field.key, e.target.value)
-                                    }
-                                    style={GRID_INPUT_STYLE}
-                                    {...sipPcmAuthInputInteraction}
-                                  />
-                                </div>
-                              </div>
+                              <FeatureCodeFieldCell
+                                field={field}
+                                value={form[field.key]}
+                                onChange={handleChange}
+                              />
                               {!isRight && <div />}
                             </div>
                           );
@@ -535,38 +317,16 @@ const FeatureCodePage = () => {
                             key={rowIdx}
                             style={{
                               display: "grid",
-                              gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                              gridTemplateColumns: gridColumns,
                             }}
                           >
                             {row.map((field) => (
-                              <div
+                              <FeatureCodeFieldCell
                                 key={field.key}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  padding: "8px 16px",
-                                  gap: 12,
-                                }}
-                              >
-                                <label style={GRID_LABEL_STYLE}>
-                                  {field.label}
-                                </label>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <input
-                                    type={
-                                      field.type === "number"
-                                        ? "number"
-                                        : "text"
-                                    }
-                                    value={form[field.key] ?? ""}
-                                    onChange={(e) =>
-                                      handleChange(field.key, e.target.value)
-                                    }
-                                    style={GRID_INPUT_STYLE}
-                                    {...sipPcmAuthInputInteraction}
-                                  />
-                                </div>
-                              </div>
+                                field={field}
+                                value={form[field.key]}
+                                onChange={handleChange}
+                              />
                             ))}
                           </div>
                         );
@@ -579,12 +339,12 @@ const FeatureCodePage = () => {
           </div>
 
           {!loading && (
-            <div style={sipPcmAuthFormFooterStyle}>
-              <Btn
-                variant="primary"
+            <div className={FEATURE_CODE_FORM_FOOTER}>
+              <button
+                type="button"
                 onClick={handleSave}
                 disabled={saving}
-                style={sipPcmAuthFormBtnStyle}
+                className={BTN_FORM_PRIMARY}
               >
                 {saving ? (
                   <>
@@ -594,7 +354,7 @@ const FeatureCodePage = () => {
                 ) : (
                   "Save"
                 )}
-              </Btn>
+              </button>
             </div>
           )}
         </div>

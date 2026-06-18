@@ -17,7 +17,6 @@ import {
   FormControl,
   Alert,
 } from "@mui/material";
-// ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
   pageBg: "#f8fafc",
@@ -26,104 +25,51 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-  strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
+const BTN_FORM_PRIMARY =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[34px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_FORM_CANCEL =
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[34px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
+
+const btnVariantCls = {
+  default: BTN_OUTLINE,
+  primary: BTN_PRIMARY,
+  cancel: BTN_CANCEL,
+  outline: BTN_OUTLINE,
+  formPrimary: BTN_FORM_PRIMARY,
+  formCancel: BTN_FORM_CANCEL,
+  danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
+};
 
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
-  style: extraStyle,
+  className = "",
+  style,
   type,
-  form,
-  component,
   title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
-
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    style={style}
+    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
+  >
+    {children}
+  </button>
+);
 
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -181,7 +127,6 @@ const muiSelectSx = {
   },
 };
 
-
 const TH = ({ children, style: extra }) => (
   <th
     style={{
@@ -216,170 +161,32 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const routeTdStyle = {
-  ...tdStyle,
-  fontSize: 12,
-  padding: "7px 8px",
-};
+const COLOR_RING_PAGE_WRAP =
+  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
+const COLOR_RING_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
+const COLOR_RING_CARD =
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+const COLOR_RING_TOOLBAR =
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+const COLOR_RING_TOOLBAR_LEFT = "flex items-center gap-[8px]";
+const COLOR_RING_TOOLBAR_ACTIONS =
+  "flex flex-wrap items-center gap-[8px]";
+const COLOR_RING_SELECTED_BADGE =
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+const COLOR_RING_PAGE_BADGE =
+  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+const COLOR_RING_PAGINATION =
+  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
 
-const routeThExtra = {
-  fontSize: 10.5,
-  padding: "9px 8px",
-  letterSpacing: "0.04em",
-};
-
-const numManipulateCardStyle = {
-  background: "#ffffff",
-  borderRadius: CARD_RADIUS,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-};
-
-const numManipulateToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-};
-
-const numManipulatePaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: CARD_RADIUS,
-  borderBottomRightRadius: CARD_RADIUS,
-  overflow: "hidden",
-};
-
-
-const advancedPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  boxSizing: "border-box",
-};
-
-const advancedPageInnerStyle = {
-  width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
-};
-
-const advancedTableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  overflow: "hidden",
-  marginBottom: 24,
-};
-
-const advancedBlueBarStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
-};
-
-const advancedFormPanelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
-};
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const AdvancedBreadcrumb = ({ current }) => (
+const FxsAdvancedBreadcrumb = ({ current, className = "" }) => (
   <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-    }}
+    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
   >
     <span>FXS</span>
     <span>&gt;</span>
     <span>Advanced</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
-  <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
+    <span className="font-semibold text-[#1e293b]">{current}</span>
   </div>
 );
 
@@ -428,43 +235,7 @@ const FieldRow = ({
   </div>
 );
 
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
-
-
-const advancedModalPaperSx = {
+const colorRingModalPaperSx = {
   width: 500,
   maxWidth: "95vw",
   borderRadius: "8px",
@@ -473,7 +244,7 @@ const advancedModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const advancedModalTitleStyle = {
+const colorRingModalTitleStyle = {
   background: "#1e2d42",
   color: "#ffffff",
   fontWeight: 600,
@@ -482,13 +253,13 @@ const advancedModalTitleStyle = {
   textAlign: "center",
 };
 
-const addHostModalContentStyle = {
+const colorRingModalContentStyle = {
   padding: "20px 24px",
   paddingBottom: "16px",
   backgroundColor: "#ffffff",
 };
 
-const addHostFormPanelStyle = {
+const colorRingModalFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
@@ -498,7 +269,7 @@ const addHostFormPanelStyle = {
   padding: 20,
 };
 
-const addHostModalFooterStyle = {
+const colorRingModalFooterStyle = {
   display: "flex",
   justifyContent: "center",
   gap: 12,
@@ -511,14 +282,39 @@ const DATA_COLUMNS = COLOR_RING_TABLE_COLUMNS.filter(
   (c) => c.key !== "check" && c.key !== "modify",
 );
 
-const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
-const PCM_TRUNK_GROUP_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
-const PCM_TRUNK_GROUP_CHECKBOX_SX = {
+const COLOR_RING_TH_GAP = { padding: "8px 14px" };
+const COLOR_RING_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
+const COLOR_RING_CHECKBOX_SX = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
+
+const ColorRingPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPrev,
+  onNext,
+}) => (
+  <div className={COLOR_RING_PAGINATION}>
+    <span className="text-[11px] text-[#94a3b8]">
+      Showing {recordCount} record{recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div className="flex items-center gap-[8px]">
+      <Btn onClick={onPrev} disabled={page <= 1} variant="outline">
+        ← Prev
+      </Btn>
+      <span className={COLOR_RING_PAGE_BADGE}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn onClick={onNext} disabled={page >= totalPages} variant="outline">
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
 
 const ColorRingPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -738,58 +534,41 @@ const ColorRingPage = () => {
     pagedRules.length > 0 && pagedSelectedCount === pagedRules.length;
 
   return (
-    <AdvancedPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-            fontWeight: 500,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
-      <AdvancedBreadcrumb current="Color Ring" />
+    <div className={COLOR_RING_PAGE_WRAP}>
+      <div className={COLOR_RING_PAGE_INNER}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+              fontWeight: 500,
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
+        <FxsAdvancedBreadcrumb current="Color Ring" />
 
-      <div style={numManipulateCardStyle}>
-          <div style={numManipulateToolbarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div className={COLOR_RING_CARD}>
+          <div className={COLOR_RING_TOOLBAR}>
+            <div className={COLOR_RING_TOOLBAR_LEFT}>
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span className={COLOR_RING_SELECTED_BADGE}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
+            <div className={COLOR_RING_TOOLBAR_ACTIONS}>
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={rules.length === 0}
-                style={{ height: 30 }}
               >
                 Inverse
               </Btn>
@@ -797,7 +576,6 @@ const ColorRingPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0}
-                style={{ height: 30 }}
               >
                 Delete
               </Btn>
@@ -805,20 +583,10 @@ const ColorRingPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={rules.length === 0}
-                style={{ height: 30 }}
               >
                 Clear All
               </Btn>
-              <Btn
-                variant="primary"
-                onClick={() => handleOpenModal()}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
-              >
+              <Btn variant="primary" onClick={() => handleOpenModal()}>
                 + Add New
               </Btn>
             </div>
@@ -826,25 +594,8 @@ const ColorRingPage = () => {
 
           <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {rules.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
-                  }}
-                >
+              <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
+                <div className="mb-[16px] text-[13px] font-semibold text-[#3E5475]">
                   No available color ring!
                 </div>
                 <Btn
@@ -857,285 +608,252 @@ const ColorRingPage = () => {
               </div>
             ) : (
               <table
-              style={{
-                width: "100%",
-                borderCollapse: "separate",
-                borderSpacing: 0,
-              }}
-            >
-              <thead>
-                <tr>
-                  <TH
-                    style={{
-                      width: 40,
-                      padding: 0,
-                      borderLeft: "none",
-                      ...PCM_TRUNK_GROUP_TH_GAP,
-                    }}
-                  >
-                    <Checkbox
-                      size="small"
-                      checked={allPagedChecked}
-                      indeterminate={pagedSelectedCount > 0 && !allPagedChecked}
-                      onChange={(e) => {
-                        if (e.target.checked) handleCheckAll();
-                        else setSelected([]);
-                      }}
-                      sx={PCM_TRUNK_GROUP_CHECKBOX_SX}
-                    />
-                  </TH>
-                  {DATA_COLUMNS.map((col) => (
-                    <TH key={col.key} style={PCM_TRUNK_GROUP_TH_GAP}>
-                      {col.label}
-                    </TH>
-                  ))}
-                  <TH
-                    style={{
-                      width: 70,
-                      borderRight: "none",
-                      ...PCM_TRUNK_GROUP_TH_GAP,
-                    }}
-                  >
-                    Modify
-                  </TH>
-                </tr>
-              </thead>
-              <tbody>
-                {pagedRules.map((item, idx) => {
-                  const realIdx = (page - 1) * itemsPerPage + idx;
-                  const isSelected = selected.includes(realIdx);
-                  const isLastRow = idx === pagedRules.length - 1;
-                  const rowBg = isSelected
-                    ? "#f0f9ff"
-                    : idx % 2 === 1
-                      ? "#f8fafc"
-                      : "#ffffff";
-                  const lastRowCellStyle = isLastRow
-                    ? { borderBottom: "none" }
-                    : {};
-
-                  return (
-                    <tr
-                      key={realIdx}
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH
                       style={{
-                        background: rowBg,
-                        transition: "background 0.15s ease",
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        ...COLOR_RING_TH_GAP,
                       }}
                     >
-                      <td
+                      <Checkbox
+                        size="small"
+                        checked={allPagedChecked}
+                        indeterminate={
+                          pagedSelectedCount > 0 && !allPagedChecked
+                        }
+                        onChange={(e) => {
+                          if (e.target.checked) handleCheckAll();
+                          else setSelected([]);
+                        }}
+                        sx={COLOR_RING_CHECKBOX_SX}
+                      />
+                    </TH>
+                    {DATA_COLUMNS.map((col) => (
+                      <TH key={col.key} style={COLOR_RING_TH_GAP}>
+                        {col.label}
+                      </TH>
+                    ))}
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        ...COLOR_RING_TH_GAP,
+                      }}
+                    >
+                      Modify
+                    </TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedRules.map((item, idx) => {
+                    const realIdx = (page - 1) * itemsPerPage + idx;
+                    const isSelected = selected.includes(realIdx);
+                    const isLastRow = idx === pagedRules.length - 1;
+                    const rowBg = isSelected
+                      ? "#f0f9ff"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+
+                    return (
+                      <tr
+                        key={realIdx}
                         style={{
-                          ...tdStyle,
-                          ...PCM_TRUNK_GROUP_TD_GAP,
                           background: rowBg,
-                          borderLeft: "none",
-                          width: 36,
-                          ...lastRowCellStyle,
+                          transition: "background 0.15s ease",
                         }}
                       >
-                        <Checkbox
-                          size="small"
-                          checked={isSelected}
-                          onChange={() => handleSelectRow(idx)}
-                          sx={PCM_TRUNK_GROUP_CHECKBOX_SX}
-                        />
-                      </td>
-                      {DATA_COLUMNS.map((col) => (
                         <td
-                          key={col.key}
                           style={{
                             ...tdStyle,
-                            ...PCM_TRUNK_GROUP_TD_GAP,
+                            ...COLOR_RING_TD_GAP,
                             background: rowBg,
+                            borderLeft: "none",
+                            width: 36,
                             ...lastRowCellStyle,
                           }}
                         >
-                          {item[col.key]}
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(idx)}
+                            sx={COLOR_RING_CHECKBOX_SX}
+                          />
                         </td>
-                      ))}
-                      <td
-                        style={{
-                          ...tdStyle,
-                          ...PCM_TRUNK_GROUP_TD_GAP,
-                          background: rowBg,
-                          borderRight: "none",
-                          ...lastRowCellStyle,
-                        }}
-                      >
-                        <div
+                        {DATA_COLUMNS.map((col) => (
+                          <td
+                            key={col.key}
+                            style={{
+                              ...tdStyle,
+                              ...COLOR_RING_TD_GAP,
+                              background: rowBg,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {item[col.key]}
+                          </td>
+                        ))}
+                        <td
                           style={{
-                            display: "flex",
-                            justifyContent: "center",
+                            ...tdStyle,
+                            ...COLOR_RING_TD_GAP,
+                            background: rowBg,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
-                          <EditDocumentIcon
-                            titleAccess="Edit"
+                          <div
                             style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
+                              display: "flex",
+                              justifyContent: "center",
                             }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
-                            onClick={() => handleOpenModal(item, realIdx)}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              style={{
+                                cursor: "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: 0.7,
+                                transition: "opacity 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.opacity = "0.7";
+                              }}
+                              onClick={() => handleOpenModal(item, realIdx)}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             )}
           </div>
 
           {rules.length > 0 && (
-            <div style={numManipulatePaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRules.length} record
-                {pagedRules.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Btn
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
+            <ColorRingPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRules.length}
+              onPrev={() => handlePageChange(page - 1)}
+              onNext={() => handlePageChange(page + 1)}
+            />
+          )}
+        </div>
+
+        <Dialog
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          maxWidth={false}
+          PaperProps={{ sx: colorRingModalPaperSx }}
+          disableRestoreFocus
+          disableEnforceFocus
+        >
+          <DialogTitle style={colorRingModalTitleStyle}>
+            Color Ring-Upload
+          </DialogTitle>
+          <DialogContent style={colorRingModalContentStyle}>
+            <div style={colorRingModalFormPanelStyle}>
+              <FieldRow label="Index">
+                <FormControl size="small" fullWidth>
+                  <MuiSelect
+                    value={formData.index}
+                    onChange={(e) =>
+                      handleInputChange({
+                        target: { name: "index", value: e.target.value },
+                      })
+                    }
+                    sx={muiSelectSx}
+                  >
+                    {COLOR_RING_INDEX_OPTIONS.map((opt) => (
+                      <MenuItem
+                        key={opt.value}
+                        value={opt.value}
+                        sx={{ fontSize: 13 }}
+                      >
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </MuiSelect>
+                </FormControl>
+              </FieldRow>
+              <FieldRow label="Description">
+                <TextField
+                  name="description"
+                  value={formData.description || ""}
+                  onChange={handleInputChange}
+                  size="small"
+                  fullWidth
+                  variant="outlined"
+                  sx={muiTextFieldSx}
+                  inputProps={{
+                    maxLength: 23,
+                    style: { fontSize: 13, padding: "6px 8px" },
+                  }}
+                />
+              </FieldRow>
+              <FieldRow label="Color Ring" align="flex-start">
+                <div
                   style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `1px solid ${C.cardBorder}`,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    width: "100%",
                   }}
                 >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
-              </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".wav"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                  />
+                  <Btn
+                    variant="cancel"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Choose file
+                  </Btn>
+                  <span style={{ fontSize: 13, color: C.mutedText }}>
+                    {fileName}
+                  </span>
+                </div>
+              </FieldRow>
+              <p style={{ ...wavFileNoteStyle, color: "#dc2626" }}>
+                Note: The file should be a wav file with 8000Hz sampling rate,
+                16-bit mono, A-law formatted, and less than 200KB in size.
+              </p>
             </div>
-          )}
+          </DialogContent>
+          <DialogActions style={colorRingModalFooterStyle}>
+            <Btn variant="formPrimary" onClick={handleUpload}>
+              Upload
+            </Btn>
+            <Btn variant="formCancel" onClick={handleReturn}>
+              Return
+            </Btn>
+          </DialogActions>
+        </Dialog>
       </div>
-
-      <Dialog
-        open={isModalOpen}
-        onClose={handleCloseModal}
-        maxWidth={false}
-        PaperProps={{ sx: advancedModalPaperSx }}
-        disableRestoreFocus
-        disableEnforceFocus
-      >
-        <DialogTitle style={advancedModalTitleStyle}>
-          Color Ring-Upload
-        </DialogTitle>
-        <DialogContent style={addHostModalContentStyle}>
-          <div style={addHostFormPanelStyle}>
-            <FieldRow label="Index">
-              <FormControl size="small" fullWidth>
-                <MuiSelect
-                  value={formData.index}
-                  onChange={(e) =>
-                    handleInputChange({
-                      target: { name: "index", value: e.target.value },
-                    })
-                  }
-                  sx={muiSelectSx}
-                >
-                  {COLOR_RING_INDEX_OPTIONS.map((opt) => (
-                    <MenuItem
-                      key={opt.value}
-                      value={opt.value}
-                      sx={{ fontSize: 13 }}
-                    >
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </MuiSelect>
-              </FormControl>
-            </FieldRow>
-            <FieldRow label="Description">
-              <TextField
-                name="description"
-                value={formData.description || ""}
-                onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                sx={muiTextFieldSx}
-                inputProps={{
-                  maxLength: 23,
-                  style: { fontSize: 13, padding: "6px 8px" },
-                }}
-              />
-            </FieldRow>
-            <FieldRow label="Color Ring" align="flex-start">
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  width: "100%",
-                }}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".wav"
-                  onChange={handleFileChange}
-                  style={{ display: "none" }}
-                />
-                <Btn
-                  variant="cancel"
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{ height: 30, fontSize: 12 }}
-                >
-                  Choose file
-                </Btn>
-                <span style={{ fontSize: 13, color: C.mutedText }}>
-                  {fileName}
-                </span>
-              </div>
-            </FieldRow>
-            <p style={{ ...wavFileNoteStyle, color: "#dc2626" }}>
-              Note: The file should be a wav file with 8000Hz sampling rate, 16-bit mono, A-law formatted, and less than 200KB in size.
-            </p>
-          </div>
-        </DialogContent>
-        <DialogActions style={addHostModalFooterStyle}>
-          <Btn
-            variant="primary"
-            onClick={handleUpload}
-            style={{ minWidth: 100, height: 34, fontSize: 13 }}
-          >
-            Upload
-          </Btn>
-          <Btn
-            variant="cancel"
-            onClick={handleReturn}
-            style={{ minWidth: 100, height: 34 }}
-          >
-            Return
-          </Btn>
-        </DialogActions>
-      </Dialog>
-    </AdvancedPageShell>
+    </div>
   );
 };
 
