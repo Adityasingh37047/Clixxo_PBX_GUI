@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
+import { Alert, Checkbox, CircularProgress, useMediaQuery } from "@mui/material";
 import { getVoicemailSettings, updateVoicemailSettings } from "../../../api/apiService";
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
@@ -126,6 +126,39 @@ const GridRow = ({ children }) => (
       {children}
     </div>
   </div>
+);
+
+const checkboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const CheckboxRow = ({ checked, onChange, label }) => (
+  <GridRow>
+    <div style={{ width: LABEL_W, marginRight: 10, flexShrink: 0 }} />
+    <label
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+        cursor: "pointer",
+        flex: 1,
+        minWidth: 0,
+      }}
+    >
+      <Checkbox
+        size="small"
+        checked={!!checked}
+        onChange={(e) => onChange(e.target.checked)}
+        sx={checkboxSx}
+      />
+      <span style={{ fontSize: 13, fontWeight: 500, color: C.labelText }}>
+        {label}
+      </span>
+    </label>
+  </GridRow>
 );
 
 const INITIAL_FORM = {
@@ -278,17 +311,11 @@ const VoicemailPage = () => {
                   </div>
                 </GridRow>
 
-                <GridRow>
-                  <input
-                    type="checkbox"
-                    checked={form.press5_enabled}
-                    onChange={(e) => set("press5_enabled", e.target.checked)}
-                    style={{ width: 14, height: 14, accentColor: C.accent, cursor: "pointer", flexShrink: 0 }}
-                  />
-                  <label onClick={() => set("press5_enabled", !form.press5_enabled)} style={{ fontSize: 13, fontWeight: 500, color: C.labelText, cursor: "pointer" }}>
-                    press 5 to leave a message
-                  </label>
-                </GridRow>
+                <CheckboxRow
+                  checked={form.press5_enabled}
+                  onChange={(val) => set("press5_enabled", val)}
+                  label="press 5 to leave a message"
+                />
 
                 {/* ── Greeting Options ── */}
                 <SectionHeading title="Greeting Options" />
@@ -314,41 +341,23 @@ const VoicemailPage = () => {
                 {/* ── PlayBack Options ── */}
                 <SectionHeading title="PlayBack Options" />
 
-                <GridRow>
-                  <input
-                    type="checkbox"
-                    checked={form.announce_callerid}
-                    onChange={(e) => set("announce_callerid", e.target.checked)}
-                    style={{ width: 14, height: 14, accentColor: C.accent, cursor: "pointer", flexShrink: 0 }}
-                  />
-                  <label onClick={() => set("announce_callerid", !form.announce_callerid)} style={{ fontSize: 13, fontWeight: 500, color: C.labelText, cursor: "pointer" }}>
-                    Announce Message Caller ID
-                  </label>
-                </GridRow>
+                <CheckboxRow
+                  checked={form.announce_callerid}
+                  onChange={(val) => set("announce_callerid", val)}
+                  label="Announce Message Caller ID"
+                />
 
-                <GridRow>
-                  <input
-                    type="checkbox"
-                    checked={form.announce_duration}
-                    onChange={(e) => set("announce_duration", e.target.checked)}
-                    style={{ width: 14, height: 14, accentColor: C.accent, cursor: "pointer", flexShrink: 0 }}
-                  />
-                  <label onClick={() => set("announce_duration", !form.announce_duration)} style={{ fontSize: 13, fontWeight: 500, color: C.labelText, cursor: "pointer" }}>
-                    Announce Message Duration
-                  </label>
-                </GridRow>
+                <CheckboxRow
+                  checked={form.announce_duration}
+                  onChange={(val) => set("announce_duration", val)}
+                  label="Announce Message Duration"
+                />
 
-                <GridRow>
-                  <input
-                    type="checkbox"
-                    checked={form.announce_arrival_time}
-                    onChange={(e) => set("announce_arrival_time", e.target.checked)}
-                    style={{ width: 14, height: 14, accentColor: C.accent, cursor: "pointer", flexShrink: 0 }}
-                  />
-                  <label onClick={() => set("announce_arrival_time", !form.announce_arrival_time)} style={{ fontSize: 13, fontWeight: 500, color: C.labelText, cursor: "pointer" }}>
-                    Announce Message Arrival Time
-                  </label>
-                </GridRow>
+                <CheckboxRow
+                  checked={form.announce_arrival_time}
+                  onChange={(val) => set("announce_arrival_time", val)}
+                  label="Announce Message Arrival Time"
+                />
 
               </div>
             )}
