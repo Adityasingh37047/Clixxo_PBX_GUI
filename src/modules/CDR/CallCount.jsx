@@ -8,477 +8,112 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
+const DEFAULT_FILTERS = {
+  callStatus: "all",
+  direction: "all",
+  search: "",
+  trunkName: "",
+  callFrom: "",
+  callTo: "",
+  startDate: "",
+  endDate: "",
 };
 
-// ── Local page UI (inlined from cdrSharedUi) ────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-  component,
-  title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </Component>
-  );
+const DEFAULT_MODIFY_DRAFT = {
+  trunkName: "",
+  callFrom: "",
+  callTo: "",
+  talkDurationOperator: ">",
+  talkDurationSeconds: "",
 };
 
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const PageBreadcrumb = ({ segments, style }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      ...style,
-    }}
-  >
-    {segments.map((label, index) => (
-      <React.Fragment key={`${label}-${index}`}>
-        {index > 0 ? <span>&gt;</span> : null}
-        <span
-          style={
-            index === segments.length - 1
-              ? { color: "#1e293b", fontWeight: 600 }
-              : undefined
-          }
-        >
-          {label}
-        </span>
-      </React.Fragment>
-    ))}
-  </div>
-);
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pbxPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
-
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
-
-const sipPcmCardStyle = {
-  background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
-};
-
-const sipPcmToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
-};
-
-const sipPcmSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const sipPcmCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const sipPcmPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const sipPcmPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 6,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const SipPcmPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPageChange,
-  recordLabel = "record",
-  style,
-  compact = false,
-}) => (
-  <div
-    style={{
-      ...sipPcmPaginationStyle,
-      ...(compact
-        ? {
-            flexDirection: "column",
-            alignItems: "stretch",
-            gap: 10,
-          }
-        : {}),
-      ...style,
-    }}
-  >
-    <span
-      style={{
-        fontSize: 11,
-        color: C.mutedText,
-        textAlign: compact ? "center" : "left",
-      }}
-    >
-      Showing {recordCount} {recordLabel}
-      {recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div
-      style={{
-        display: "flex",
-        gap: 8,
-        alignItems: "center",
-        ...(compact ? { justifyContent: "center", flexWrap: "wrap" } : {}),
-      }}
-    >
-      <Btn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        variant="outline"
-      >
-        ← Prev
-      </Btn>
-      <span style={sipPcmPageBadgeStyle}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= totalPages}
-        variant="outline"
-      >
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
-
-/** Separator line left of vertical scrollbar only — see index.css `.trunk-table-scroll` */
-const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
-const CALL_COUNT_TABLE_MIN_WIDTH = 1070;
-const CALL_COUNT_COMPACT_BREAKPOINT = "(max-width: 768px)";
-
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
-
-const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
-};
-
-const nativeFieldInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled) return;
-    setFieldFocus(e.target);
-  },
-  onBlur: (e) => {
-    setFieldDefault(e.target);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled) return;
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldHover(e.target);
-    }
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldDefault(e.target);
-    }
-  },
-};
-
-// Wider columns for long data; tighter left/right gap on short-value columns
-const callCountCellPadding = "7px 6px";
-const callCountHeaderPadding = "9px 6px";
-const callCountCompactCellPadding = "7px 3px";
-const callCountCompactHeaderPadding = "9px 3px";
-
-const callCountTableTdStyle = {
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  boxSizing: "border-box",
-};
-
-const callCountTableThStyle = {
-  letterSpacing: "0.08em",
-  boxSizing: "border-box",
-};
-
-const callCountTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-// ── Column definitions ────────────────────────────────────────────────────────
-const columns = [
-  { key: "calldate", label: "Start", width: "12%" },
-
-  { key: "src", label: "Call From", width: "8%" }, // 10 → 8
-
-  { key: "src_ip", label: "Call From IP", width: "10%" }, // 11 → 10
-
-  { key: "dst", label: "Call To", width: "8%" }, // 10 → 8
-
-  { key: "dst_ip", label: "Call To IP", width: "10%" }, // 11 → 10
-
-  { key: "call_direction", label: "Direction", width: "6%", compact: true }, // 7 → 6
-
-  { key: "disposition", label: "Call Status", width: "8%", compact: true },
-
-  { key: "billsec", label: "Duration", width: "7%", compact: true },
-
-  { key: "dcontext", label: "Context", width: "5%" }, // 6 → 5
-
-  { key: "hangup_cause", label: "Hangup Cause", width: "16%" }, // 10 → 16
+const CALL_STATUS_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "answered", label: "Answered" },
+  { value: "noanswer", label: "No Answer" },
+  { value: "voicemail", label: "Voicemail" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "failed", label: "Failed" },
+  { value: "ivr", label: "IVR" },
+  { value: "call queue", label: "Call Queue" },
+  { value: "conference", label: "Conference" },
 ];
 
-const getCallCountCellPadding = (key) => {
-  const col = columns.find((c) => c.key === key);
-  return col?.compact ? callCountCompactCellPadding : callCountCellPadding;
-};
+const DIRECTION_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "inbound", label: "Inbound" },
+  { value: "outbound", label: "Outbound" },
+  { value: "local", label: "Local" },
+  { value: "forwarded", label: "Forwarded" },
+];
 
-const getCallCountHeaderPadding = (key) => {
-  const col = columns.find((c) => c.key === key);
-  return col?.compact ? callCountCompactHeaderPadding : callCountHeaderPadding;
-};
+const TALK_DURATION_OPERATOR_OPTIONS = [
+  { value: "<", label: "<" },
+  { value: ">", label: ">" },
+  { value: "<=", label: "<=" },
+  { value: ">=", label: ">=" },
+  { value: "=", label: "=" },
+];
 
-const cardBorderSoft = "#f1f5f9";
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const TABLE_COLUMNS = [
+  { key: "calldate", label: "Start", width: "12%" },
+  { key: "src", label: "Call From", width: "8%", field: "src", titled: true },
+  {
+    key: "src_ip",
+    label: "Call From IP",
+    width: "10%",
+    field: "src_ip",
+    titled: true,
+  },
+  { key: "dst", label: "Call To", width: "8%", field: "dst", titled: true },
+  {
+    key: "dst_ip",
+    label: "Call To IP",
+    width: "10%",
+    field: "dst_ip",
+    titled: true,
+  },
+  {
+    key: "call_direction",
+    label: "Direction",
+    width: "6%",
+    compact: true,
+    type: "direction",
+  },
+  {
+    key: "disposition",
+    label: "Call Status",
+    width: "8%",
+    compact: true,
+    type: "disposition",
+  },
+  {
+    key: "billsec",
+    label: "Duration",
+    width: "7%",
+    compact: true,
+    type: "duration",
+  },
+  {
+    key: "dcontext",
+    label: "Context",
+    width: "5%",
+    field: "dcontext",
+    titled: true,
+  },
+  {
+    key: "hangup_cause",
+    label: "Hangup Cause",
+    width: "16%",
+    field: "hangup_cause",
+    titled: true,
+    last: true,
+  },
+];
+
 const normalizeValue = (value) =>
   String(value || "")
     .toLowerCase()
@@ -540,13 +175,14 @@ const getCanonicalDirectionFromValue = (value) => {
   return raw;
 };
 
-const getCanonicalDirections = (row) => {
-  const directions = [row.call_direction, row.direction, row.dcontext]
-    .map(getCanonicalDirectionFromValue)
-    .filter(Boolean);
-
-  return Array.from(new Set(directions));
-};
+const getCanonicalDirections = (row) =>
+  Array.from(
+    new Set(
+      [row.call_direction, row.direction, row.dcontext]
+        .map(getCanonicalDirectionFromValue)
+        .filter(Boolean),
+    ),
+  );
 
 const getCanonicalDirection = (row) => getCanonicalDirections(row)[0] || "";
 
@@ -575,7 +211,6 @@ const getCanonicalStatusesFromValue = (value) => {
     raw === "no-answer" ||
     raw === "no_answer" ||
     compact === "noanswer" ||
-    raw === "no answer" ||
     raw === "busy" ||
     includesAny(raw, ["miss", "unanswered"])
   ) {
@@ -605,9 +240,7 @@ const getCanonicalStatusesFromValue = (value) => {
     statuses.push("failed");
   }
 
-  if (!statuses.length) {
-    statuses.push(raw);
-  }
+  if (!statuses.length) statuses.push(raw);
 
   return statuses;
 };
@@ -679,32 +312,7 @@ const getDirection = (row) => {
   if (direction === "outbound") return "Outbound";
   if (direction === "local") return "Local";
   if (direction === "forwarded") return "Forwarded";
-
   return direction.charAt(0).toUpperCase() + direction.slice(1);
-};
-
-const directionStyle = (d) => {
-  const v = String(d).toLowerCase();
-
-  if (v === "outbound") return { color: "#0f172a" };
-  if (v === "inbound") return { color: "#0f172a" };
-  if (v === "local") return { color: "#0f172a" };
-
-  return { color: "#0f172a" };
-};
-
-const statusStyle = (s) => {
-  const v = String(s || "").toLowerCase();
-
-  if (v === "answered") return { color: "#16A34A" };
-  if (v === "failed") return { color: "#DC2626" };
-  if (v === "busy") return { color: "#92400e" };
-
-  if (v === "no answer" || v === "cancelled") {
-    return { color: "#c2410c" };
-  }
-
-  return { color: "#64748b" };
 };
 
 const formatDuration = (secs) => {
@@ -728,45 +336,6 @@ const formatDate = (value) => {
   }
 };
 
-const DEFAULT_FILTERS = {
-  callStatus: "all",
-  direction: "all",
-  search: "",
-  trunkName: "",
-  callFrom: "",
-  callTo: "",
-  startDate: "",
-  endDate: "",
-};
-
-const CALL_STATUS_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "answered", label: "Answered" },
-  { value: "noanswer", label: "No Answer" },
-  { value: "voicemail", label: "Voicemail" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "failed", label: "Failed" },
-  { value: "ivr", label: "IVR" },
-  { value: "call queue", label: "Call Queue" },
-  { value: "conference", label: "Conference" },
-];
-
-const DIRECTION_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "inbound", label: "Inbound" },
-  { value: "outbound", label: "Outbound" },
-  { value: "local", label: "Local" },
-  { value: "forwarded", label: "Forwarded" },
-];
-
-const TALK_DURATION_OPERATOR_OPTIONS = [
-  { value: "<", label: "<" },
-  { value: ">", label: ">" },
-  { value: "<=", label: "<=" },
-  { value: ">=", label: ">=" },
-  { value: "=", label: "=" },
-];
-
 const matchesCallStatus = (row, status) => {
   const selectedStatus = normalizeValue(status);
   if (!selectedStatus || selectedStatus === "all") return true;
@@ -784,7 +353,6 @@ const matchesCallStatus = (row, status) => {
 const matchesDirectionFilter = (row, direction) => {
   const selectedDirection = normalizeValue(direction);
   if (!selectedDirection || selectedDirection === "all") return true;
-
   return getCanonicalDirection(row) === selectedDirection;
 };
 
@@ -807,32 +375,12 @@ const matchesSearch = (row, query) => {
   return haystack.includes(q);
 };
 
-const matchesTrunkName = (row, trunkName) => {
-  const q = String(trunkName || "")
+const matchesFieldIncludes = (row, field, query) => {
+  const q = String(query || "")
     .trim()
     .toLowerCase();
   if (!q) return true;
-  return String(row.trunk_name || "")
-    .toLowerCase()
-    .includes(q);
-};
-
-const matchesCallFrom = (row, callFrom) => {
-  const q = String(callFrom || "")
-    .trim()
-    .toLowerCase();
-  if (!q) return true;
-  return String(row.src || "")
-    .toLowerCase()
-    .includes(q);
-};
-
-const matchesCallTo = (row, callTo) => {
-  const q = String(callTo || "")
-    .trim()
-    .toLowerCase();
-  if (!q) return true;
-  return String(row.dst || "")
+  return String(row[field] || "")
     .toLowerCase()
     .includes(q);
 };
@@ -874,6 +422,31 @@ const matchesDateRange = (row, startDate, endDate) => {
   return true;
 };
 
+const rowMatchesFilters = (row, filters, talkDuration) =>
+  matchesCallStatus(row, filters.callStatus) &&
+  matchesDirectionFilter(row, filters.direction) &&
+  matchesSearch(row, filters.search) &&
+  matchesFieldIncludes(row, "trunk_name", filters.trunkName) &&
+  matchesFieldIncludes(row, "src", filters.callFrom) &&
+  matchesFieldIncludes(row, "dst", filters.callTo) &&
+  matchesTalkDuration(
+    row,
+    talkDuration.talkDurationOperator,
+    talkDuration.talkDurationSeconds,
+  ) &&
+  matchesDateRange(row, filters.startDate, filters.endDate);
+
+const hasAnyActiveFilter = (filters, talkDurationSeconds) =>
+  filters.callStatus !== "all" ||
+  filters.direction !== "all" ||
+  !!filters.search.trim() ||
+  !!filters.trunkName.trim() ||
+  !!filters.callFrom.trim() ||
+  !!filters.callTo.trim() ||
+  !!String(talkDurationSeconds || "").trim() ||
+  !!filters.startDate ||
+  !!filters.endDate;
+
 const getRowKey = (row, idx) =>
   [
     row.uniqueid,
@@ -887,63 +460,178 @@ const getRowKey = (row, idx) =>
     .map((value) => normalizeValue(value))
     .join("|");
 
-// ── Pill badge ────────────────────────────────────────────────────────────────
-const Pill = ({ text, bg, color }) => (
-  <span
-    style={{
-      background: bg,
-      color,
-      padding: "2px 8px",
-      borderRadius: 999,
-      fontSize: 10,
-      fontWeight: 500,
-      whiteSpace: "nowrap",
-      display: "inline-block",
-    }}
-  >
-    {text}
-  </span>
-);
-
-const controlBase = {
-  height: 38,
-  fontSize: 13,
-  color: C.valueText,
-  background: "#ffffff",
-  border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 10,
-  padding: "0 12px",
-  outline: "none",
-  fontFamily: "Inter, sans-serif",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  width: "100%",
-  boxSizing: "border-box",
-  boxShadow: "none",
+const CALL_COUNT_COMPACT_BREAKPOINT = "(max-width: 768px)";
+const CHK = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const FilterLabel = ({ children }) => (
-  <span
-    style={{
-      fontSize: 11,
-      fontWeight: 600,
-      color: C.labelText,
-      letterSpacing: "0.04em",
-      textTransform: "uppercase",
-      marginBottom: 6,
-      display: "block",
-    }}
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-1.5 h-[30px] px-3.5 py-1.5 rounded-[10px] text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_TOOLBAR = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_CANCEL = BTN_TOOLBAR;
+const BTN_PRIMARY = `${BTN_BASE} min-w-[100px] h-[33px] text-[13px] text-white border-[#5A6F8F] bg-gradient-to-b from-[#5A6F8F] via-[#3E5475] to-[#2C3E57] hover:from-[#3E5475] hover:via-[#5A6F8F] hover:to-[#5A6F8F]`;
+const BTN_DIALOG_CANCEL =
+  "inline-flex items-center justify-center gap-1.5 min-w-[100px] h-[33px] px-3.5 py-1.5 rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DIALOG_PRIMARY =
+  "inline-flex items-center justify-center gap-1.5 min-w-[100px] h-[33px] px-7 py-1.5 rounded-[10px] text-[13px] font-semibold whitespace-nowrap normal-case transition-all duration-150 cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+
+const DIALOG_TITLE_FILTER =
+  "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:600] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:16px_24px]";
+const TH_BASE =
+  "bg-[#F8FAFC] text-[#3E5475] font-bold text-[11px] text-center border-b border-r border-[#9CA3AF] whitespace-nowrap uppercase sticky top-0 z-10 box-border";
+const TD_BASE =
+  "text-[13px] text-[#0f172a] text-center border-b border-r border-[#9CA3AF] whitespace-nowrap overflow-hidden text-ellipsis box-border";
+const INPUT_BASE =
+  "w-full h-[38px] text-[13px] text-[#0f172a] bg-white border border-[rgba(0,0,0,0.23)] rounded-[10px] px-3 outline-none font-[Inter,sans-serif] transition-[border-color,box-shadow] duration-200 box-border shadow-none hover:border-[rgba(0,0,0,0.87)] focus:border-[#1976d2] focus:shadow-[0_0_0_1px_#1976d2]";
+
+const statusCls = (s) => {
+  const v = String(s || "").toLowerCase();
+  if (v === "answered") return "text-[#16A34A]";
+  if (v === "failed") return "text-[#DC2626]";
+  if (v === "busy") return "text-[#92400e]";
+  if (v === "no answer" || v === "cancelled") return "text-[#c2410c]";
+  return "text-[#64748b]";
+};
+
+const btnVariantCls = {
+  toolbar: BTN_TOOLBAR,
+  outline: BTN_OUTLINE,
+  cancel: BTN_CANCEL,
+  primary: BTN_PRIMARY,
+  "dialog-cancel": BTN_DIALOG_CANCEL,
+  "dialog-primary": BTN_DIALOG_PRIMARY,
+};
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "outline",
+  className = "",
+  type,
+}) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    className={`${btnVariantCls[variant] || BTN_OUTLINE} ${className}`.trim()}
   >
+    {children}
+  </button>
+);
+
+const TH = ({ children, className = "", style }) => (
+  <th className={`${TH_BASE} ${className}`.trim()} style={style}>
+    {children}
+  </th>
+);
+
+const PageBreadcrumb = ({ segments, flat }) => (
+  <div
+    className={`flex items-center flex-wrap gap-[4px] text-[12px] leading-normal text-[#94a3b8] font-normal${flat ? " mb-0" : " mb-4"}`}
+  >
+    {segments.map((label, i) => (
+      <React.Fragment key={`${label}-${i}`}>
+        {i > 0 ? <span>&gt;</span> : null}
+        <span
+          className={
+            i === segments.length - 1
+              ? "text-[#1e293b] font-semibold"
+              : undefined
+          }
+        >
+          {label}
+        </span>
+      </React.Fragment>
+    ))}
+  </div>
+);
+
+const TableListLoading = () => (
+  <div className="flex justify-center items-center p-12">
+    <CircularProgress size={28} sx={{ color: "#3E5475" }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div className="flex flex-col items-center justify-center min-h-[240px] p-6 text-center">
+    <div
+      className={`text-[#3e5475] text-[13px] font-semibold${showButton && onAddNew ? " mb-4" : ""}`}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn variant="cancel" onClick={onAddNew}>
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const SipPcmPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+  recordLabel = "record",
+  compact = false,
+}) => (
+  <div
+    className={`flex items-center justify-between py-[7px] px-3.5 bg-white border-t border-[#9CA3AF] rounded-b-[10px] overflow-hidden${compact ? " flex-col items-stretch gap-[10px]" : ""}`}
+  >
+    <span
+      className={`text-[11px] text-[#94a3b8]${compact ? " text-center" : " text-left"}`}
+    >
+      Showing {recordCount} {recordLabel}
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div
+      className={`flex gap-2 items-center${compact ? " justify-center flex-wrap" : ""}`}
+    >
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span className="text-[11px] font-semibold text-[#3E5475] bg-[#e0f2fe] py-[5px] px-3.5 rounded-md border border-[#9CA3AF]">
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
+
+const Dash = () => <span className="text-[#94a3b8]">—</span>;
+
+const FilterLabel = ({ children }) => (
+  <span className="block text-[11px] font-semibold text-[#3E5475] tracking-[0.04em] uppercase mb-[6px]">
     {children}
   </span>
 );
 
-const FilterField = ({
-  label,
-  children,
-  minWidth = 140,
-  style: extraStyle,
-}) => (
-  <div style={{ minWidth, flex: "0 0 auto", ...extraStyle }}>
+const FilterField = ({ label, children, full }) => (
+  <div
+    className={
+      full ? "min-w-0 w-full flex-[0_0_auto]" : "min-w-[140px] flex-[0_0_auto]"
+    }
+  >
     {label && <FilterLabel>{label}</FilterLabel>}
     {children}
   </div>
@@ -959,11 +647,7 @@ const FilterSelect = ({
     value={value}
     onChange={onChange}
     aria-label={ariaLabel}
-    style={{
-      ...controlBase,
-      cursor: "pointer",
-    }}
-    {...nativeFieldInteraction}
+    className={`${INPUT_BASE} cursor-pointer`}
   >
     {options.map((opt) => (
       <option key={opt.value} value={opt.value}>
@@ -983,30 +667,261 @@ const FilterSearch = ({
     value={value}
     onChange={onChange}
     placeholder={placeholder}
-    style={controlBase}
-    {...nativeFieldInteraction}
+    className={INPUT_BASE}
   />
 );
 
-const FilterDate = ({
-  value,
-  onChange,
-  "aria-label": ariaLabel,
-  style: extraStyle,
-}) => (
+const FilterDate = ({ value, onChange, "aria-label": ariaLabel, small }) => (
   <input
     type="date"
     value={value}
     onChange={onChange}
     aria-label={ariaLabel}
-    style={{
-      ...controlBase,
-      cursor: "pointer",
-      ...extraStyle,
-    }}
-    {...nativeFieldInteraction}
+    className={`${INPUT_BASE} cursor-pointer${small ? " rounded-[4px]" : ""}`}
   />
 );
+
+const ToolbarActionBtn = ({ onClick, disabled, children }) => (
+  <Btn onClick={onClick} disabled={disabled} variant="toolbar">
+    {children}
+  </Btn>
+);
+
+const ModalFilterField = ({ label, children }) => (
+  <FilterField label={label} full>
+    {children}
+  </FilterField>
+);
+
+const FiltersActiveSummary = ({
+  filteredCount,
+  totalCount,
+  startDate,
+  endDate,
+}) => (
+  <div className="mt-[14px] pt-[7px] border-t border-[#f1f5f9] text-[12px] text-[#94a3b8] flex items-center gap-2 flex-wrap">
+    <span className="bg-[#eff6ff] text-[#3E5475] font-semibold py-[4px] px-[10px] text-center rounded-full text-[11px]">
+      Filters active
+    </span>
+    <span>
+      Showing {filteredCount} of {totalCount} records on this page
+      {(startDate || endDate) && (
+        <>
+          {" "}
+          · {startDate || "…"} to {endDate || "…"}
+        </>
+      )}
+    </span>
+  </div>
+);
+
+const renderColumnCell = (col, row, helpers) => {
+  const { formatDate, formatDuration, getDirection, statusCls: sc } = helpers;
+  if (col.type === "direction") {
+    const dir = getDirection(row);
+    return dir || <Dash />;
+  }
+  if (col.type === "disposition") {
+    if (!row.disposition) return <Dash />;
+    return (
+      <span
+        className={`inline-block py-0.5 px-2 rounded-full text-[10px] font-medium whitespace-nowrap ${sc(row.disposition)}`}
+      >
+        {row.disposition}
+      </span>
+    );
+  }
+  if (col.type === "duration") return formatDuration(row.billsec);
+  if (col.key === "calldate") return formatDate(row.calldate);
+  const value = row[col.field || col.key];
+  return value || <Dash />;
+};
+
+const getColumnTitle = (col, row, helpers) => {
+  if (col.key === "calldate") return helpers.formatDate(row.calldate);
+  if (col.titled) return row[col.field || col.key] || "";
+  return undefined;
+};
+
+const getCellPadCls = (col) =>
+  col.compact ? "py-[7px] px-[3px]" : "py-[7px] px-1.5";
+const getHeaderPadCls = (col) =>
+  col.compact ? "py-[9px] px-[3px]" : "py-[9px] px-1.5";
+
+const CallCountTableRow = ({
+  row,
+  idx,
+  totalRows,
+  isSelected,
+  onToggle,
+  columns,
+  helpers,
+}) => {
+  const rowBg = isSelected ? "#f0f9ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+  const isLastRow = idx === totalRows - 1;
+  const lastBorder = isLastRow ? " border-b-0" : "";
+  return (
+    <tr
+      style={{ background: rowBg, transition: "background 0.15s ease" }}
+      onMouseEnter={(e) => {
+        if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) e.currentTarget.style.background = rowBg;
+      }}
+    >
+      <td
+        className={`${TD_BASE} py-1 px-0 w-[36px] border-l-0${lastBorder}`}
+        style={{ background: rowBg }}
+      >
+        <Checkbox
+          size="small"
+          disabled={!row.uniqueid}
+          checked={!!row.uniqueid && isSelected}
+          onChange={onToggle}
+          sx={CHK}
+        />
+      </td>
+      {columns.map((col) => (
+        <td
+          key={col.key}
+          title={getColumnTitle(col, row, helpers)}
+          className={`${TD_BASE} ${getCellPadCls(col)}${col.last ? " border-r-0" : ""}${lastBorder}`}
+          style={{ background: rowBg }}
+        >
+          {renderColumnCell(col, row, helpers)}
+        </td>
+      ))}
+    </tr>
+  );
+};
+
+const CallCountTable = ({
+  columns,
+  filteredData,
+  appliedFilters,
+  hasActiveFilters,
+  allPageSelected,
+  somePageSelected,
+  selectedIds,
+  onToggleAll,
+  onToggleRow,
+  helpers,
+}) => (
+  <div className="trunk-table-scroll overflow-x-auto overflow-y-auto flex-1 [-webkit-overflow-scrolling:touch]">
+    <table className="w-full min-w-[1070px] border-separate border-spacing-0 table-auto">
+      <colgroup>
+        <col style={{ width: "2.5%" }} />
+        <col style={{ width: "2.5%" }} />
+        {columns.map((col) => (
+          <col key={col.key} style={{ width: col.width }} />
+        ))}
+      </colgroup>
+      <thead>
+        <tr>
+          <TH
+            className="tracking-[0.14em] p-0 border-l-0"
+            style={{ width: 36 }}
+          >
+            <Checkbox
+              size="small"
+              checked={allPageSelected}
+              indeterminate={somePageSelected}
+              onChange={onToggleAll}
+              sx={CHK}
+            />
+          </TH>
+          {columns.map((col) => (
+            <TH
+              key={col.key}
+              style={{ width: col.width }}
+              className={`tracking-[0.08em] ${getHeaderPadCls(col)}${col.last ? " border-r-0" : ""}`}
+            >
+              {col.label}
+            </TH>
+          ))}
+        </tr>
+      </thead>
+      <tbody
+        key={`${appliedFilters.callStatus}-${appliedFilters.direction}-${appliedFilters.search}`}
+      >
+        {filteredData.length === 0 ? (
+          <tr>
+            <td
+              colSpan={columns.length + 2}
+              className="text-center py-10 px-4 text-[#94a3b8] text-sm border-b-0"
+            >
+              {hasActiveFilters
+                ? "No records match the current filters on this page."
+                : "No records found."}
+            </td>
+          </tr>
+        ) : (
+          filteredData.map((row, idx) => (
+            <CallCountTableRow
+              key={helpers.getRowKey(row, idx)}
+              row={row}
+              idx={idx}
+              totalRows={filteredData.length}
+              isSelected={!!row.uniqueid && selectedIds.includes(row.uniqueid)}
+              onToggle={() => onToggleRow(row.uniqueid)}
+              columns={columns}
+              helpers={helpers}
+            />
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+);
+
+const TABLE_HELPERS = {
+  formatDate,
+  formatDuration,
+  getDirection,
+  getRowKey,
+  statusCls,
+};
+
+const MODAL_FILTER_FIELDS = [
+  {
+    type: "select",
+    label: "Call Status",
+    field: "callStatus",
+    options: CALL_STATUS_OPTIONS,
+    syncModify: false,
+  },
+  {
+    type: "select",
+    label: "Direction",
+    field: "direction",
+    options: DIRECTION_OPTIONS,
+    syncModify: false,
+  },
+  {
+    type: "search",
+    label: "Call From",
+    field: "callFrom",
+    placeholder: "Call From",
+    syncModify: true,
+  },
+  {
+    type: "search",
+    label: "Call To",
+    field: "callTo",
+    placeholder: "Call To",
+    syncModify: true,
+  },
+  {
+    type: "search",
+    label: "Trunk Name",
+    field: "trunkName",
+    placeholder: "Trunk Name",
+    syncModify: true,
+  },
+  { type: "talkDuration", label: "Talk Duration" },
+  { type: "dateRange", label: "Time Range" },
+];
 
 const CallCount = () => {
   const isCompact = useMediaQuery(CALL_COUNT_COMPACT_BREAKPOINT);
@@ -1022,14 +937,7 @@ const CallCount = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isModifyMode, setIsModifyMode] = useState(false);
   const [showModifyModal, setShowModifyModal] = useState(false);
-  const [modifyDraft, setModifyDraft] = useState({
-    trunkName: "",
-    callFrom: "",
-    callTo: "",
-    talkDurationOperator: ">",
-    talkDurationSeconds: "",
-  });
-
+  const [modifyDraft, setModifyDraft] = useState({ ...DEFAULT_MODIFY_DRAFT });
   const [filterDraft, setFilterDraft] = useState({ ...DEFAULT_FILTERS });
   const [appliedFilters, setAppliedFilters] = useState({ ...DEFAULT_FILTERS });
 
@@ -1042,7 +950,7 @@ const CallCount = () => {
         enddate: filters.endDate || undefined,
         trunk_name: filters.trunkName || undefined,
       });
-      if (data && data.success && Array.isArray(data.data)) {
+      if (data?.success && Array.isArray(data.data)) {
         setRows(data.data);
         setLastUpdated(new Date());
       } else {
@@ -1064,76 +972,51 @@ const CallCount = () => {
     }
   }, []);
 
-  const handlePrev = () => {
-    if (page <= 1) return;
-    const p = page - 1;
-    setPage(p);
-    loadCdr(p);
+  const filteredData = useMemo(
+    () =>
+      rows.filter((row) => rowMatchesFilters(row, appliedFilters, modifyDraft)),
+    [
+      rows,
+      appliedFilters,
+      modifyDraft.talkDurationOperator,
+      modifyDraft.talkDurationSeconds,
+    ],
+  );
+
+  const hasActiveFilters = useMemo(
+    () => hasAnyActiveFilter(appliedFilters, modifyDraft.talkDurationSeconds),
+    [appliedFilters, modifyDraft.talkDurationSeconds],
+  );
+
+  const pageIds = useMemo(
+    () => filteredData.map((r) => r.uniqueid).filter(Boolean),
+    [filteredData],
+  );
+
+  const allPageSelected =
+    filteredData.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+
+  const somePageSelected =
+    pageIds.some((id) => selectedIds.includes(id)) && !allPageSelected;
+
+  const hasNextPage = isModifyMode
+    ? filteredData.length >= limit
+    : rows.length >= limit;
+
+  const totalPages = Math.max(1, page + (hasNextPage ? 1 : 0));
+
+  const updateSelectFilter = (field, value) => {
+    setFilterDraft((f) => ({ ...f, [field]: value }));
+    setAppliedFilters((f) => ({ ...f, [field]: value }));
+    setPage(1);
   };
 
-  const handleNext = () => {
-    const hasMoreRecords = isModifyMode
-      ? filteredData.length >= limit
-      : rows && rows.length >= limit;
-    if (loading || !hasMoreRecords) return;
-    const p = page + 1;
-    setPage(p);
-    loadCdr(p);
+  const updateSearchFilter = (field, value) => {
+    setModifyDraft((prev) => ({ ...prev, [field]: value }));
+    setFilterDraft((f) => ({ ...f, [field]: value }));
+    setAppliedFilters((f) => ({ ...f, [field]: value }));
+    setPage(1);
   };
-
-  const handleToggleRow = (uniqueid) => {
-    if (!uniqueid) return;
-    setSelectedIds((prev) =>
-      prev.includes(uniqueid)
-        ? prev.filter((id) => id !== uniqueid)
-        : [...prev, uniqueid],
-    );
-  };
-
-  const filteredData = useMemo(() => {
-    return rows.filter((row) => {
-      if (!matchesCallStatus(row, appliedFilters.callStatus)) return false;
-      if (!matchesDirectionFilter(row, appliedFilters.direction)) return false;
-      if (!matchesSearch(row, appliedFilters.search)) return false;
-      if (!matchesTrunkName(row, appliedFilters.trunkName)) return false;
-      if (!matchesCallFrom(row, appliedFilters.callFrom)) return false;
-      if (!matchesCallTo(row, appliedFilters.callTo)) return false;
-      if (
-        !matchesTalkDuration(
-          row,
-          modifyDraft.talkDurationOperator,
-          modifyDraft.talkDurationSeconds,
-        )
-      ) {
-        return false;
-      }
-      if (
-        !matchesDateRange(row, appliedFilters.startDate, appliedFilters.endDate)
-      ) {
-        return false;
-      }
-      return true;
-    });
-  }, [
-    rows,
-    appliedFilters,
-    modifyDraft.talkDurationOperator,
-    modifyDraft.talkDurationSeconds,
-  ]);
-
-  const hasActiveFilters = useMemo(() => {
-    return (
-      appliedFilters.callStatus !== "all" ||
-      appliedFilters.direction !== "all" ||
-      !!appliedFilters.search.trim() ||
-      !!appliedFilters.trunkName.trim() ||
-      !!appliedFilters.callFrom.trim() ||
-      !!appliedFilters.callTo.trim() ||
-      !!String(modifyDraft.talkDurationSeconds || "").trim() ||
-      !!appliedFilters.startDate ||
-      !!appliedFilters.endDate
-    );
-  }, [appliedFilters, modifyDraft.talkDurationSeconds]);
 
   const applyDateFilter = (field, value) => {
     const nextStart = field === "startDate" ? value : filterDraft.startDate;
@@ -1168,18 +1051,37 @@ const CallCount = () => {
   const handleModifyReset = () => {
     setShowModifyModal(false);
     setIsModifyMode(false);
-    setModifyDraft({
-      trunkName: "",
-      callFrom: "",
-      callTo: "",
-      talkDurationOperator: ">",
-      talkDurationSeconds: "",
-    });
+    setModifyDraft({ ...DEFAULT_MODIFY_DRAFT });
     handleResetFilters();
   };
 
+  const handlePrev = () => {
+    if (page <= 1) return;
+    const p = page - 1;
+    setPage(p);
+    loadCdr(p);
+  };
+
+  const handleNext = () => {
+    const hasMoreRecords = isModifyMode
+      ? filteredData.length >= limit
+      : rows.length >= limit;
+    if (loading || !hasMoreRecords) return;
+    const p = page + 1;
+    setPage(p);
+    loadCdr(p);
+  };
+
+  const handleToggleRow = (uniqueid) => {
+    if (!uniqueid) return;
+    setSelectedIds((prev) =>
+      prev.includes(uniqueid)
+        ? prev.filter((id) => id !== uniqueid)
+        : [...prev, uniqueid],
+    );
+  };
+
   const handleToggleAll = () => {
-    const pageIds = filteredData.map((r) => r.uniqueid).filter(Boolean);
     if (!pageIds.length) return;
     const allSelected = pageIds.every((id) => selectedIds.includes(id));
     setSelectedIds((prev) =>
@@ -1199,6 +1101,7 @@ const CallCount = () => {
         ? "Are you sure you want to delete this record?"
         : `Are you sure you want to delete ${selectedIds.length} records?`;
     if (!window.confirm(msg)) return;
+
     try {
       setLoading(true);
       for (const id of selectedIds) {
@@ -1240,150 +1143,165 @@ const CallCount = () => {
     }
   };
 
-  const allPageSelected =
-    filteredData.length > 0 &&
-    filteredData
-      .map((r) => r.uniqueid)
-      .filter(Boolean)
-      .every((id) => selectedIds.includes(id));
+  const renderModalField = (field) => {
+    if (field.type === "select") {
+      return (
+        <ModalFilterField key={field.field} label={field.label}>
+          <FilterSelect
+            aria-label={field.label}
+            value={filterDraft[field.field]}
+            onChange={(e) => updateSelectFilter(field.field, e.target.value)}
+            options={field.options}
+          />
+        </ModalFilterField>
+      );
+    }
 
-  const somePageSelected =
-    filteredData.some((r) => r.uniqueid && selectedIds.includes(r.uniqueid)) &&
-    !allPageSelected;
+    if (field.type === "search") {
+      return (
+        <ModalFilterField key={field.field} label={field.label}>
+          <FilterSearch
+            placeholder={field.placeholder}
+            value={filterDraft[field.field]}
+            onChange={(e) => updateSearchFilter(field.field, e.target.value)}
+          />
+        </ModalFilterField>
+      );
+    }
 
-  const hasNextPage = isModifyMode
-    ? filteredData.length >= limit
-    : rows.length >= limit;
-  const totalPages = Math.max(1, page + (hasNextPage ? 1 : 0));
+    if (field.type === "talkDuration") {
+      return (
+        <ModalFilterField key={field.type} label={field.label}>
+          <div className="grid grid-cols-[110px_1fr] gap-2">
+            <FilterSelect
+              aria-label="Talk Duration Operator"
+              value={modifyDraft.talkDurationOperator}
+              onChange={(e) =>
+                setModifyDraft((prev) => ({
+                  ...prev,
+                  talkDurationOperator: e.target.value,
+                }))
+              }
+              options={TALK_DURATION_OPERATOR_OPTIONS}
+            />
+            <input
+              type="number"
+              min="0"
+              value={modifyDraft.talkDurationSeconds}
+              onChange={(e) =>
+                setModifyDraft((prev) => ({
+                  ...prev,
+                  talkDurationSeconds: e.target.value,
+                }))
+              }
+              placeholder="Seconds"
+              className={INPUT_BASE}
+            />
+          </div>
+        </ModalFilterField>
+      );
+    }
+
+    if (field.type === "dateRange") {
+      return (
+        <ModalFilterField key={field.type} label={field.label}>
+          <div className="grid grid-cols-2 gap-2">
+            <FilterDate
+              aria-label="Start Date"
+              value={filterDraft.startDate}
+              onChange={(e) => applyDateFilter("startDate", e.target.value)}
+              small
+            />
+            <FilterDate
+              aria-label="End Date"
+              value={filterDraft.endDate}
+              onChange={(e) => applyDateFilter("endDate", e.target.value)}
+              small
+            />
+          </div>
+        </ModalFilterField>
+      );
+    }
+
+    return null;
+  };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, padding: isCompact ? 12 : 16 }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error banner */}
+    <div
+      className={`min-h-[calc(100vh-80px)] bg-[#f8fafc] box-border ${isCompact ? "p-3" : "p-4"}`}
+    >
+      <div className="w-full max-w-full mx-auto">
         {error && (
-          <div
-            style={{
-              background: "#fef2f2",
-              borderLeft: `3px solid ${C.amber}`,
-              color: "#DC2626",
-              padding: "10px 14px",
-              borderRadius: 8,
-              marginBottom: 16,
-              fontSize: 13,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
+          <div className="flex items-center justify-between bg-red-50 border-l-[3px] border-l-red-600 text-red-600 py-2.5 px-3.5 rounded-lg mb-4 text-[13px]">
             <span>{error}</span>
             <span
+              className="cursor-pointer text-base text-red-600"
               onClick={() => setError("")}
-              style={{ cursor: "pointer", fontSize: 16, color: "#DC2626" }}
             >
               ✕
             </span>
           </div>
         )}
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-            marginBottom: 16,
-          }}
-        >
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <PageBreadcrumb
             segments={["CDR", "Call Detail Records", "Call Count"]}
-            style={{ marginBottom: 0 }}
+            flat
           />
           {lastUpdated && (
-            <span
-              style={{ fontSize: 12, color: C.mutedText, whiteSpace: "nowrap" }}
-            >
+            <span className="text-[12px] text-[#94a3b8] whitespace-nowrap">
               Last updated: {lastUpdated.toLocaleTimeString()}
             </span>
           )}
         </div>
 
-        <div style={sipPcmCardStyle}>
+        <div className="bg-white rounded-[10px] overflow-hidden border-[1.5px] border-[#9CA3AF] shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
           <div
-            style={{
-              ...sipPcmToolbarStyle,
-              ...(isCompact
-                ? { flexDirection: "column", alignItems: "stretch" }
-                : {}),
-            }}
+            className={`flex items-center justify-between flex-wrap gap-3 min-h-[44px] py-[7px] px-3.5 border-b border-[#9CA3AF] bg-white rounded-t-[10px]${isCompact ? " flex-col items-stretch" : ""}`}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="flex items-center gap-2.5">
               {selectedIds.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span className="bg-[#eff6ff] text-[#3E5475] text-[11px] font-bold py-[5px] px-3 rounded-full border border-[#3E5475]">
                   {selectedIds.length} selected
                 </span>
               )}
             </div>
 
             <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                flexWrap: "wrap",
-                ...(isCompact
-                  ? { width: "100%", justifyContent: "flex-end" }
-                  : {}),
-              }}
+              className={`flex items-center gap-2.5 flex-wrap${isCompact ? " w-full justify-end" : ""}`}
             >
               {!isModifyMode ? (
-                <Btn
-                  onClick={handleModifyOpen}
-                  disabled={loading}
-                  variant="cancel"
-                  style={sipPcmCancelBtnStyle}
-                >
+                <ToolbarActionBtn onClick={handleModifyOpen} disabled={loading}>
                   Filter
-                </Btn>
+                </ToolbarActionBtn>
               ) : (
-                <Btn
+                <ToolbarActionBtn
                   onClick={handleModifyReset}
                   disabled={loading}
-                  variant="cancel"
-                  style={sipPcmCancelBtnStyle}
                 >
                   Reset
-                </Btn>
+                </ToolbarActionBtn>
               )}
-              <Btn
+              <ToolbarActionBtn
                 onClick={() => loadCdr(page)}
                 disabled={loading}
-                variant="cancel"
-                style={sipPcmCancelBtnStyle}
               >
                 {loading ? (
                   <CircularProgress size={16} sx={{ color: "#374151" }} />
                 ) : (
                   "Refresh"
                 )}
-              </Btn>
-              <Btn
+              </ToolbarActionBtn>
+              <ToolbarActionBtn
                 onClick={handleDelete}
                 disabled={loading || selectedIds.length === 0}
-                variant="cancel"
-                style={sipPcmCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
-              </Btn>
-              <Btn
-                onClick={handleDownload}
-                disabled={loading}
-                variant="cancel"
-                style={sipPcmCancelBtnStyle}
-              >
+              </ToolbarActionBtn>
+              <ToolbarActionBtn onClick={handleDownload} disabled={loading}>
                 ⬇ Download CDR
-              </Btn>
+              </ToolbarActionBtn>
             </div>
           </div>
 
@@ -1396,307 +1314,18 @@ const CallCount = () => {
             />
           ) : (
             <>
-              <div
-                className={TRUNK_TABLE_SCROLL_CLASS}
-                style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  flex: 1,
-                  WebkitOverflowScrolling: "touch",
-                }}
-              >
-                <table
-                  style={{
-                    width: "100%",
-                    minWidth: CALL_COUNT_TABLE_MIN_WIDTH,
-                    borderCollapse: "separate",
-                    borderSpacing: 0,
-                    tableLayout: "auto",
-                  }}
-                >
-                  <colgroup>
-                    <col style={{ width: "2.5%" }} />
-                    <col style={{ width: "2.5%" }} />
-                    {columns.map((col) => (
-                      <col key={col.key} style={{ width: col.width }} />
-                    ))}
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <TH
-                        style={{
-                          width: 36,
-                          padding: 0,
-                          borderLeft: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        <Checkbox
-                          size="small"
-                          checked={allPageSelected}
-                          indeterminate={somePageSelected}
-                          onChange={handleToggleAll}
-                          sx={callCountTableCheckboxSx}
-                        />
-                      </TH>
-
-                      {columns.map((col, colIdx) => (
-                        <TH
-                          key={col.key}
-                          style={{
-                            ...callCountTableThStyle,
-                            width: col.width,
-                            padding: getCallCountHeaderPadding(col.key),
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 10,
-                            ...(colIdx === columns.length - 1
-                              ? { borderRight: "none" }
-                              : {}),
-                          }}
-                        >
-                          {col.label}
-                        </TH>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody
-                    key={`${appliedFilters.callStatus}-${appliedFilters.direction}-${appliedFilters.search}`}
-                  >
-                    {filteredData.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={columns.length + 2}
-                          style={{
-                            textAlign: "center",
-                            padding: "40px 16px",
-                            color: C.mutedText,
-                            fontSize: 14,
-                            borderBottom: "none",
-                          }}
-                        >
-                          {hasActiveFilters
-                            ? "No records match the current filters on this page."
-                            : "No records found."}
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredData.map((row, idx) => {
-                        const isLastRow = idx === filteredData.length - 1;
-                        const lastRowCellStyle = isLastRow
-                          ? { borderBottom: "none" }
-                          : {};
-                        const isSelected =
-                          row.uniqueid && selectedIds.includes(row.uniqueid);
-                        const rowBg = isSelected
-                          ? "#f0f9ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
-
-                        return (
-                          <tr
-                            key={getRowKey(row, idx)}
-                            style={{
-                              background: rowBg,
-                              transition: "background 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = "#f1f5f9";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = rowBg;
-                            }}
-                          >
-                            <td
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: "4px 0",
-                                background: rowBg,
-                                width: 36,
-                                borderLeft: "none",
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              <Checkbox
-                                size="small"
-                                disabled={!row.uniqueid}
-                                checked={
-                                  !!row.uniqueid &&
-                                  selectedIds.includes(row.uniqueid)
-                                }
-                                onChange={() => handleToggleRow(row.uniqueid)}
-                                sx={callCountTableCheckboxSx}
-                              />
-                            </td>
-
-                            <td
-                              title={formatDate(row.calldate)}
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: getCallCountCellPadding("calldate"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {formatDate(row.calldate)}
-                            </td>
-
-                            <td
-                              title={row.src || ""}
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: getCallCountCellPadding("src"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {row.src || (
-                                <span style={{ color: C.mutedText }}>—</span>
-                              )}
-                            </td>
-
-                            <td
-                              title={row.src_ip || ""}
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: getCallCountCellPadding("src_ip"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {row.src_ip || (
-                                <span style={{ color: C.mutedText }}>—</span>
-                              )}
-                            </td>
-
-                            <td
-                              title={row.dst || ""}
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: getCallCountCellPadding("dst"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {row.dst || (
-                                <span style={{ color: C.mutedText }}>—</span>
-                              )}
-                            </td>
-
-                            <td
-                              title={row.dst_ip || ""}
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: getCallCountCellPadding("dst_ip"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {row.dst_ip || (
-                                <span style={{ color: C.mutedText }}>—</span>
-                              )}
-                            </td>
-
-                            <td
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding:
-                                  getCallCountCellPadding("call_direction"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {(() => {
-                                const dir = getDirection(row);
-                                if (!dir)
-                                  return (
-                                    <span style={{ color: C.mutedText }}>
-                                      —
-                                    </span>
-                                  );
-                                const s = directionStyle(dir);
-                                return (
-                                  <Pill text={dir} bg={s.bg} color={s.color} />
-                                );
-                              })()}
-                            </td>
-
-                            <td
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: getCallCountCellPadding("disposition"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {row.disposition ? (
-                                (() => {
-                                  const s = statusStyle(row.disposition);
-                                  return (
-                                    <Pill
-                                      text={row.disposition}
-                                      bg={s.bg}
-                                      color={s.color}
-                                    />
-                                  );
-                                })()
-                              ) : (
-                                <span style={{ color: C.mutedText }}>—</span>
-                              )}
-                            </td>
-
-                            <td
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: getCallCountCellPadding("billsec"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {formatDuration(row.billsec)}
-                            </td>
-
-                            <td
-                              title={row.dcontext || ""}
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: getCallCountCellPadding("dcontext"),
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {row.dcontext || (
-                                <span style={{ color: C.mutedText }}>—</span>
-                              )}
-                            </td>
-
-                            <td
-                              title={row.hangup_cause || ""}
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding:
-                                  getCallCountCellPadding("hangup_cause"),
-                                background: rowBg,
-                                borderRight: "none",
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {row.hangup_cause || (
-                                <span style={{ color: C.mutedText }}>—</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <CallCountTable
+                columns={TABLE_COLUMNS}
+                filteredData={filteredData}
+                appliedFilters={appliedFilters}
+                hasActiveFilters={hasActiveFilters}
+                allPageSelected={allPageSelected}
+                somePageSelected={somePageSelected}
+                selectedIds={selectedIds}
+                onToggleAll={handleToggleAll}
+                onToggleRow={handleToggleRow}
+                helpers={TABLE_HELPERS}
+              />
 
               {filteredData.length > 0 && (
                 <SipPcmPagination
@@ -1730,257 +1359,34 @@ const CallCount = () => {
             },
           }}
         >
-          <DialogTitle
-            style={{
-              background: "#1e2d42",
-              color: "#ffffff",
-              fontWeight: 600,
-              fontSize: 16,
-              textAlign: "center",
-              padding: "16px 24px",
-            }}
-          >
+          <DialogTitle className={DIALOG_TITLE_FILTER}>
             Filter Call Count
           </DialogTitle>
 
-          <DialogContent
-            style={{ padding: "24px", backgroundColor: "#ffffff" }}
-          >
+          <DialogContent className="!m-0 !bg-white ![padding:24px]">
             <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
-                gap: 14,
-                width: "100%",
-                background: "#f8fafc",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 8,
-                padding: 20,
-              }}
+              className={`grid gap-[14px] w-full bg-[#f8fafc] border border-[#9CA3AF] rounded-[8px] ![padding:20px] ${isCompact ? "grid-cols-1" : "grid-cols-2"}`}
             >
-              <FilterField
-                label="Call Status"
-                minWidth={0}
-                style={{ width: "100%" }}
-              >
-                <FilterSelect
-                  aria-label="Call Status"
-                  value={filterDraft.callStatus}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFilterDraft((f) => ({ ...f, callStatus: value }));
-                    setAppliedFilters((f) => ({ ...f, callStatus: value }));
-                    setPage(1);
-                  }}
-                  options={CALL_STATUS_OPTIONS}
-                />
-              </FilterField>
-
-              <FilterField
-                label="Direction"
-                minWidth={0}
-                style={{ width: "100%" }}
-              >
-                <FilterSelect
-                  aria-label="Direction"
-                  value={filterDraft.direction}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFilterDraft((f) => ({ ...f, direction: value }));
-                    setAppliedFilters((f) => ({ ...f, direction: value }));
-                    setPage(1);
-                  }}
-                  options={DIRECTION_OPTIONS}
-                />
-              </FilterField>
-
-              <FilterField
-                label="Call From"
-                minWidth={0}
-                style={{ width: "100%" }}
-              >
-                <FilterSearch
-                  placeholder="Call From"
-                  value={filterDraft.callFrom}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setModifyDraft((prev) => ({ ...prev, callFrom: value }));
-                    setFilterDraft((f) => ({ ...f, callFrom: value }));
-                    setAppliedFilters((f) => ({ ...f, callFrom: value }));
-                    setPage(1);
-                  }}
-                />
-              </FilterField>
-
-              <FilterField
-                label="Call To"
-                minWidth={0}
-                style={{ width: "100%" }}
-              >
-                <FilterSearch
-                  placeholder="Call To"
-                  value={filterDraft.callTo}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setModifyDraft((prev) => ({ ...prev, callTo: value }));
-                    setFilterDraft((f) => ({ ...f, callTo: value }));
-                    setAppliedFilters((f) => ({ ...f, callTo: value }));
-                    setPage(1);
-                  }}
-                />
-              </FilterField>
-
-              <FilterField
-                label="Trunk Name"
-                minWidth={0}
-                style={{ width: "100%" }}
-              >
-                <FilterSearch
-                  placeholder="Trunk Name"
-                  value={filterDraft.trunkName}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setModifyDraft((prev) => ({ ...prev, trunkName: value }));
-                    setFilterDraft((f) => ({ ...f, trunkName: value }));
-                    setAppliedFilters((f) => ({ ...f, trunkName: value }));
-                    setPage(1);
-                  }}
-                />
-              </FilterField>
-
-              <FilterField
-                label="Talk Duration"
-                minWidth={0}
-                style={{ width: "100%" }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "110px 1fr",
-                    gap: 8,
-                  }}
-                >
-                  <FilterSelect
-                    aria-label="Talk Duration Operator"
-                    value={modifyDraft.talkDurationOperator}
-                    onChange={(e) =>
-                      setModifyDraft((prev) => ({
-                        ...prev,
-                        talkDurationOperator: e.target.value,
-                      }))
-                    }
-                    options={TALK_DURATION_OPERATOR_OPTIONS}
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    value={modifyDraft.talkDurationSeconds}
-                    onChange={(e) =>
-                      setModifyDraft((prev) => ({
-                        ...prev,
-                        talkDurationSeconds: e.target.value,
-                      }))
-                    }
-                    placeholder="Seconds"
-                    style={controlBase}
-                    {...nativeFieldInteraction}
-                  />
-                </div>
-              </FilterField>
-
-              <FilterField
-                label="Time Range"
-                minWidth={0}
-                style={{ width: "100%" }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 8,
-                  }}
-                >
-                  <FilterDate
-                    aria-label="Start Date"
-                    value={filterDraft.startDate}
-                    onChange={(e) =>
-                      applyDateFilter("startDate", e.target.value)
-                    }
-                    style={{ borderRadius: 4 }}
-                  />
-                  <FilterDate
-                    aria-label="End Date"
-                    value={filterDraft.endDate}
-                    onChange={(e) => applyDateFilter("endDate", e.target.value)}
-                    style={{ borderRadius: 4 }}
-                  />
-                </div>
-              </FilterField>
+              {MODAL_FILTER_FIELDS.map(renderModalField)}
             </div>
 
             {hasActiveFilters && (
-              <div
-                style={{
-                  marginTop: 14,
-                  paddingTop: 7,
-                  borderTop: `1px solid ${cardBorderSoft}`,
-                  fontSize: 12,
-                  color: C.mutedText,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  flexWrap: "wrap",
-                }}
-              >
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontWeight: 600,
-                    padding: "4px 10px",
-                    textAlign: "center",
-                    borderRadius: 999,
-                    fontSize: 11,
-                  }}
-                >
-                  Filters active
-                </span>
-                <span>
-                  Showing {filteredData.length} of {rows.length} records on this
-                  page
-                  {(appliedFilters.startDate || appliedFilters.endDate) && (
-                    <>
-                      {" "}
-                      · {appliedFilters.startDate || "…"} to{" "}
-                      {appliedFilters.endDate || "…"}
-                    </>
-                  )}
-                </span>
-              </div>
+              <FiltersActiveSummary
+                filteredCount={filteredData.length}
+                totalCount={rows.length}
+                startDate={appliedFilters.startDate}
+                endDate={appliedFilters.endDate}
+              />
             )}
           </DialogContent>
 
-          <DialogActions
-            style={{
-              background: "#f8fafc",
-              padding: "12px 24px 16px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              display: "flex",
-              justifyContent: "center",
-              gap: 12,
-            }}
-          >
-            <Btn
-              onClick={handleModifyReset}
-              variant="cancel"
-              style={{ minWidth: 100, height: 33, fontSize: 13 }}
-            >
+          <DialogActions className="!flex !items-center !justify-center !gap-3 !m-0 bg-[#f8fafc] ![padding:12px_24px_16px] !border-t !border-[#9CA3AF]">
+            <Btn onClick={handleModifyReset} variant="dialog-cancel">
               Cancel
             </Btn>
             <Btn
               onClick={() => setShowModifyModal(false)}
-              variant="primary"
-              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+              variant="dialog-primary"
             >
               Search
             </Btn>
@@ -1988,17 +1394,7 @@ const CallCount = () => {
         </Dialog>
 
         <div
-          style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            marginTop: isCompact ? 14 : 20,
-            padding: isCompact ? "0 4px" : 0,
-            fontSize: isCompact ? 12 : 13,
-            fontWeight: 700,
-            color: "#DC2626",
-            textAlign: "center",
-          }}
+          className={`w-full flex justify-center text-center font-bold text-[#DC2626] ${isCompact ? "mt-[14px] px-1 text-xs" : "mt-5 text-[13px]"}`}
         >
           <span>Only latest 500 records shown</span>
         </div>
