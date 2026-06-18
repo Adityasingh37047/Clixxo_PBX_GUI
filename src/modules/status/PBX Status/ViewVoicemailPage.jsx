@@ -452,9 +452,9 @@ const ViewVoicemailPage = () => {
             flexWrap: "wrap",
           }}
         >
-          <span>PBX</span>
-          <span>&gt;</span>
           <span>Status</span>
+          <span>&gt;</span>
+          <span>PBX Status</span>
           <span>&gt;</span>
           <span style={{ color: "#1e293b", fontWeight: 600 }}>
             View Voicemail
@@ -774,7 +774,11 @@ const ViewVoicemailPage = () => {
                               {row.is_new ? <NewBadge /> : <ReadBadge />}
                             </div>
                           </TD>
-                          <TD bg={rowBg} title={row.callerid} style={lastRowCellStyle}>
+                          <TD
+                            bg={rowBg}
+                            title={row.callerid}
+                            style={lastRowCellStyle}
+                          >
                             {parseCallerId(row.callerid)}
                           </TD>
                           <TD bg={rowBg} style={lastRowCellStyle}>
