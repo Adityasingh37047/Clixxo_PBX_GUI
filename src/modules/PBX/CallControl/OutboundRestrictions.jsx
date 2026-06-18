@@ -749,7 +749,7 @@ const OutboundRestrictions = () => {
     const q = searchQuery.toLowerCase();
     return rows.filter((row) => {
       const extStr = (row.memberExtensions || []).join(" ").toLowerCase();
-      return (
+  return (
         (row.name || "").toLowerCase().includes(q) ||
         (row.timeLimit || "").toLowerCase().includes(q) ||
         (row.callsLimit || "").toLowerCase().includes(q) ||

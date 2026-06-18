@@ -5,8 +5,12 @@ import Tooltip from "@mui/material/Tooltip";
 
 
 import React, { useState, useEffect, useRef } from "react";
-import {Alert, CircularProgress, useMediaQuery } from "@mui/material";
-import { getFeatureCodes, updateFeatureCodes } from "../../../api/apiService";
+import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
+import {
+  getFeatureCodes,
+  updateFeatureCodes,
+  listIvrDestinations,
+} from "../../../api/apiService";
 import {
   FEATURE_CODE_SECTIONS,
   FEATURE_CODE_INITIAL_FORM,
@@ -367,6 +371,30 @@ const GRID_INPUT_STYLE = {
   maxWidth: "100%",
 };
 
+const TIMEOUT_DESTINATION_STATIC_OPTIONS = [
+  { value: "hangup", label: "Hangup" },
+  { value: "original_extension", label: "Original extension" },
+];
+
+const normalizeExtensionOptions = (list) => {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => {
+      if (item == null) return null;
+      if (typeof item === "string" || typeof item === "number")
+        return { value: String(item), label: String(item) };
+      const value = String(
+        item.value ?? item.id ?? item.extension ?? "",
+      ).trim();
+      const label = String(
+        item.label ?? item.display_name ?? item.name ?? value,
+      ).trim();
+      if (!value) return null;
+      return { value, label: label || value };
+    })
+    .filter(Boolean);
+};
+
 const apiToForm = (apiData) => {
   const form = { ...FEATURE_CODE_INITIAL_FORM };
   Object.entries(apiData).forEach(([apiKey, val]) => {
@@ -397,7 +425,25 @@ const FeatureCodePage = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [extensionOptions, setExtensionOptions] = useState([]);
   const hasLoaded = useRef(false);
+
+  const timeoutDestinationOptions = [
+    ...TIMEOUT_DESTINATION_STATIC_OPTIONS,
+    ...extensionOptions,
+  ];
+
+  const loadDestinations = async () => {
+    try {
+      const destRes = await listIvrDestinations();
+      const destMessage = destRes?.message ?? destRes?.data ?? destRes;
+      const extensionsRaw =
+        destMessage?.Extensions ?? destMessage?.extensions ?? [];
+      setExtensionOptions(normalizeExtensionOptions(extensionsRaw));
+    } catch (_) {
+      setExtensionOptions([]);
+    }
+  };
 
   const showMsg = (type, text) => {
     setMessage({ type, text });
@@ -424,6 +470,7 @@ const FeatureCodePage = () => {
     if (!hasLoaded.current) {
       hasLoaded.current = true;
       loadData();
+      loadDestinations();
     }
   }, []);
 
@@ -449,8 +496,43 @@ const FeatureCodePage = () => {
     }
   };
 
+  const renderFieldControl = (field) => {
+    if (field.type === "select") {
+      const options =
+        field.key === "timeout_destinations" ? timeoutDestinationOptions : [];
+      return (
+        <select
+          value={form[field.key] ?? ""}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          style={GRID_INPUT_STYLE}
+          {...sipPcmAuthInputInteraction}
+        >
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      );
+    }
+    return (
+      <input
+        type={field.type === "number" ? "number" : "text"}
+        value={form[field.key] ?? ""}
+        onChange={(e) => handleChange(field.key, e.target.value)}
+        style={GRID_INPUT_STYLE}
+        {...sipPcmAuthInputInteraction}
+      />
+    );
+  };
+
   return (
-    <div style={{ ...sipPcmFormPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+    <div
+      style={{
+        ...sipPcmFormPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
       <div style={sipPcmFormPageInnerStyle}>
         {message.text && (
           <div
@@ -501,7 +583,10 @@ const FeatureCodePage = () => {
                               key={rowIdx}
                               style={{
                                 display: "grid",
-                                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                                gridTemplateColumns: "1fr 1fr",
+                                ...(isCompact
+                                  ? { gridTemplateColumns: "1fr" }
+                                  : {}),
                               }}
                             >
                               {isRight && <div />}
@@ -546,19 +631,7 @@ const FeatureCodePage = () => {
   </label>
 </Tooltip>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <input
-                                    type={
-                                      field.type === "number"
-                                        ? "number"
-                                        : "text"
-                                    }
-                                    value={form[field.key] ?? ""}
-                                    onChange={(e) =>
-                                      handleChange(field.key, e.target.value)
-                                    }
-                                    style={GRID_INPUT_STYLE}
-                                    {...sipPcmAuthInputInteraction}
-                                  />
+                                  {renderFieldControl(field)}
                                 </div>
                               </div>
                               {!isRight && <div />}
@@ -570,7 +643,10 @@ const FeatureCodePage = () => {
                             key={rowIdx}
                             style={{
                               display: "grid",
-                              gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                              gridTemplateColumns: "1fr 1fr",
+                              ...(isCompact
+                                ? { gridTemplateColumns: "1fr" }
+                                : {}),
                             }}
                           >
                             {row.map((field) => (
@@ -616,19 +692,7 @@ const FeatureCodePage = () => {
   </label>
 </Tooltip>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <input
-                                    type={
-                                      field.type === "number"
-                                        ? "number"
-                                        : "text"
-                                    }
-                                    value={form[field.key] ?? ""}
-                                    onChange={(e) =>
-                                      handleChange(field.key, e.target.value)
-                                    }
-                                    style={GRID_INPUT_STYLE}
-                                    {...sipPcmAuthInputInteraction}
-                                  />
+                                  {renderFieldControl(field)}
                                 </div>
                               </div>
                             ))}
