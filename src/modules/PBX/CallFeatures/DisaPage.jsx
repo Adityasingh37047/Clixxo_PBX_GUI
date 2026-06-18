@@ -1249,13 +1249,31 @@ const DisaPage = () => {
 
       {/* ── Add/Edit Modal ── */}
       <Dialog
-        open={showModal}
-        onClose={loading.save || loading.get ? null : handleCloseModal}
-        maxWidth={false}
-        PaperProps={{
-          sx: { width: 1000, maxWidth: "98vw", mx: "auto", p: 0, borderRadius: 2 },
-        }}
-      >
+  open={showModal}
+  onClose={loading.save || loading.get ? null : handleCloseModal}
+  maxWidth={false}
+  sx={{
+    "& .MuiDialog-container": {
+      alignItems: "flex-start",
+    },
+    "& .MuiDialog-paper": {
+      mt: "140px",
+      mb: "20px",
+    },
+  }}
+  PaperProps={{
+    sx: {
+      width: 1000,
+      maxWidth: "98vw",
+      mx: "auto",
+      p: 0,
+      borderRadius: 2,
+      overflow: "hidden",
+      boxShadow:
+        "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+    },
+  }}
+>
         <DialogTitle
           style={{
             background: "rgb(30, 45, 62)",

@@ -558,7 +558,7 @@ const PortFxsAdvancedPage = () => {
             flexDirection: "column",
             gap: 12,
             padding: "16px 12px",
-            border: `1px dashed ${C.cardBorder}`,
+            border: `1px solid ${C.cardBorder}`,
             borderRadius: 6,
             marginTop: 8,
             backgroundColor: "#f8fafc",
@@ -1016,9 +1016,18 @@ const PortFxsAdvancedPage = () => {
         </div>
 
         <Dialog
-          open={isModalOpen}
-          onClose={handleCloseModal}
-          maxWidth={false}
+  open={isModalOpen}
+  onClose={handleCloseModal}
+  maxWidth={false}
+  sx={{
+    "& .MuiDialog-container": {
+      alignItems: "flex-start",
+    },
+    "& .MuiPaper-root": {
+      marginTop: "50px",
+      marginBottom: "20px",
+    },
+  }}
           PaperProps={{
             sx: {
               width: 720,
@@ -1048,13 +1057,14 @@ const PortFxsAdvancedPage = () => {
             {PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE}
           </DialogTitle>
           <DialogContent
-            style={{
-              padding: "24px",
-              backgroundColor: "#ffffff",
-              maxHeight: "75vh",
-              overflowY: "auto",
-            }}
-          >
+  style={{
+    padding: "24px",
+    backgroundColor: "#ffffff",
+    maxHeight: "75vh",
+    overflowY: "auto",
+    overflowX: "hidden",
+  }}
+>
             <div style={advancedFormPanelStyle}>{renderModalForm()}</div>
           </DialogContent>
           <DialogActions

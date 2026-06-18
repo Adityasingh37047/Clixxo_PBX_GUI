@@ -971,23 +971,32 @@ const RouteIpPstnPage = () => {
       </div>
 
       <Dialog
-        open={isModalOpen}
-        onClose={handleCloseModal}
-        maxWidth={false}
-        PaperProps={{
-          sx: {
-            width: 600,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
-        }}
-        disableRestoreFocus
-        disableEnforceFocus
-      >
+  open={isModalOpen}
+  onClose={handleCloseModal}
+  maxWidth={false}
+  sx={{
+    "& .MuiDialog-container": {
+      alignItems: "flex-start",
+    },
+    "& .MuiDialog-paper": {
+      mt: "170px",
+      mb: "20px",
+    },
+  }}
+  PaperProps={{
+    sx: {
+      width: 600,
+      maxWidth: "95vw",
+      p: 0,
+      borderRadius: "8px",
+      overflow: "hidden",
+      boxShadow:
+        "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+    },
+  }}
+  disableRestoreFocus
+  disableEnforceFocus
+>
         <DialogTitle
           style={{
             background: "#1e2d42",
