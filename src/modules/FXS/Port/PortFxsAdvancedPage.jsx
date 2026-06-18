@@ -1016,18 +1016,9 @@ const PortFxsAdvancedPage = () => {
         </div>
 
         <Dialog
-  open={isModalOpen}
-  onClose={handleCloseModal}
-  maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-    },
-    "& .MuiPaper-root": {
-      marginTop: "50px",
-      marginBottom: "20px",
-    },
-  }}
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          maxWidth={false}
           PaperProps={{
             sx: {
               width: 720,

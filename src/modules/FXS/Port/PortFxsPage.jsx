@@ -713,22 +713,13 @@ const PortFxsPage = () => {
         {renderListCard()}
 
         <Dialog
-  open={showBatchModify}
-  onClose={() => setShowBatchModify(false)}
-  maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-    },
-    "& .MuiDialog-paper": {
-      mt: "50px",
-      mb: "20px",
-    },
-  }}
-  PaperProps={{ sx: fxsDialogPaperSx }}
-  disableRestoreFocus
-  disableEnforceFocus
->
+          open={showBatchModify}
+          onClose={() => setShowBatchModify(false)}
+          maxWidth={false}
+          PaperProps={{ sx: fxsDialogPaperSx }}
+          disableRestoreFocus
+          disableEnforceFocus
+        >
           <DialogTitle style={fxsDialogTitleStyle}>
             {PORT_FXS_BATCH_MODIFY_TITLE}
           </DialogTitle>
@@ -773,27 +764,18 @@ const PortFxsPage = () => {
         </Dialog>
 
         <Dialog
-  open={showSingleModify && !!selectedPort}
-  onClose={() => {
-    setShowSingleModify(false);
-    setSelectedPort(null);
-    setModifyPortData(null);
-    setModifySaving(false);
-  }}
-  maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-    },
-    "& .MuiDialog-paper": {
-      mt: "50px",
-      mb: "20px",
-    },
-  }}
-  PaperProps={{ sx: fxsDialogPaperSx }}
-  disableRestoreFocus
-  disableEnforceFocus
->
+          open={showSingleModify && !!selectedPort}
+          onClose={() => {
+            setShowSingleModify(false);
+            setSelectedPort(null);
+            setModifyPortData(null);
+            setModifySaving(false);
+          }}
+          maxWidth={false}
+          PaperProps={{ sx: fxsDialogPaperSx }}
+          disableRestoreFocus
+          disableEnforceFocus
+        >
           <DialogTitle style={fxsDialogTitleStyle}>FXS-Modify</DialogTitle>
           <DialogContent
             style={{
