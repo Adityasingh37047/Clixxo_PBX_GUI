@@ -683,16 +683,6 @@ const getDirection = (row) => {
   return direction.charAt(0).toUpperCase() + direction.slice(1);
 };
 
-const directionStyle = (d) => {
-  const v = String(d).toLowerCase();
-
-  if (v === "outbound") return { color: "#0f172a" };
-  if (v === "inbound") return { color: "#0f172a" };
-  if (v === "local") return { color: "#0f172a" };
-
-  return { color: "#0f172a" };
-};
-
 const statusStyle = (s) => {
   const v = String(s || "").toLowerCase();
 
@@ -1611,19 +1601,9 @@ const CallCount = () => {
                                 ...lastRowCellStyle,
                               }}
                             >
-                              {(() => {
-                                const dir = getDirection(row);
-                                if (!dir)
-                                  return (
-                                    <span style={{ color: C.mutedText }}>
-                                      —
-                                    </span>
-                                  );
-                                const s = directionStyle(dir);
-                                return (
-                                  <Pill text={dir} bg={s.bg} color={s.color} />
-                                );
-                              })()}
+                              {getDirection(row) || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
                             </td>
 
                             <td
