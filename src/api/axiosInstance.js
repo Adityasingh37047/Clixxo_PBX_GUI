@@ -9,7 +9,9 @@ function getBaseURL() {
 
   if (isLocalhost) {
 
-    let testIp = "192.168.0.99";
+
+    let testIp = "192.168.0.98";
+
 
 
     // Local development → backend usually runs on 5000
