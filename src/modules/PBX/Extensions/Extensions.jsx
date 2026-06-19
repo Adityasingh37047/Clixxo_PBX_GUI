@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import {
   SIP_ACCOUNT_FIELDS,
   SIP_ACCOUNT_TABLE_COLUMNS,
@@ -453,6 +453,142 @@ const SipPcmPagination = ({
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
 const OUTLINED_FOCUS = "#1976d2";
+const PBX_TOOLBAR_SEARCH_HEIGHT = 30;
+const PBX_TOOLBAR_SEARCH_WIDTH = 168;
+const PBX_TOOLBAR_SEARCH_FOCUS_RING = `0 0 0 1px ${OUTLINED_FOCUS}`;
+const PBX_TOOLBAR_SEARCH_INPUT_FONT = {
+  fontSize: 12,
+  fontFamily: "Inter, sans-serif",
+  letterSpacing: "normal",
+};
+
+const PbxToolbarSearchBar = ({
+  value,
+  onChange,
+  placeholder = "Search...",
+  width = PBX_TOOLBAR_SEARCH_WIDTH,
+  fitPlaceholder = false,
+}) => {
+  const wrapRef = useRef(null);
+  const inputRef = useRef(null);
+  const measureRef = useRef(null);
+  const [fitWidth, setFitWidth] = useState(null);
+
+  useLayoutEffect(() => {
+    if (!fitPlaceholder || !measureRef.current) return;
+    measureRef.current.textContent = value || placeholder;
+    setFitWidth(measureRef.current.offsetWidth);
+  }, [fitPlaceholder, placeholder, value]);
+
+  const setDefault = () => {
+    const el = wrapRef.current;
+    if (!el) return;
+    el.style.borderColor = OUTLINED_BORDER;
+    el.style.boxShadow = "none";
+  };
+
+  const setHover = () => {
+    const el = wrapRef.current;
+    if (!el || document.activeElement === inputRef.current) return;
+    el.style.borderColor = OUTLINED_HOVER;
+    el.style.boxShadow = "none";
+  };
+
+  const setFocus = () => {
+    const el = wrapRef.current;
+    if (!el) return;
+    el.style.borderColor = OUTLINED_FOCUS;
+    el.style.boxShadow = PBX_TOOLBAR_SEARCH_FOCUS_RING;
+  };
+
+  const handleMouseLeave = () => {
+    if (document.activeElement === inputRef.current) setFocus();
+    else setDefault();
+  };
+
+  const inputWidth = fitPlaceholder && fitWidth != null ? fitWidth : null;
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        height: PBX_TOOLBAR_SEARCH_HEIGHT,
+        boxSizing: "border-box",
+        background: "#ffffff",
+        border: `1px solid ${OUTLINED_BORDER}`,
+        borderRadius: 10,
+        padding: fitPlaceholder ? "0 8px" : "0 10px",
+        transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+        width: fitPlaceholder ? "fit-content" : width,
+        minWidth: fitPlaceholder ? "auto" : width,
+        flexShrink: 0,
+        position: "relative",
+      }}
+      onMouseEnter={setHover}
+      onMouseLeave={handleMouseLeave}
+    >
+      {fitPlaceholder ? (
+        <span
+          ref={measureRef}
+          aria-hidden
+          style={{
+            position: "absolute",
+            visibility: "hidden",
+            whiteSpace: "pre",
+            pointerEvents: "none",
+            ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
+          }}
+        />
+      ) : null}
+      <span style={{ fontSize: 12, color: C.mutedText, flexShrink: 0 }}>🔍</span>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={onChange}
+        onFocus={setFocus}
+        onBlur={setDefault}
+        placeholder={placeholder}
+        style={{
+          border: "none",
+          background: "transparent",
+          outline: "none",
+          width: inputWidth ?? "100%",
+          minWidth: inputWidth ?? 0,
+          maxWidth: inputWidth ?? undefined,
+          padding: 0,
+          margin: 0,
+          ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
+          color: C.valueText,
+        }}
+      />
+      {value ? (
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={() => onChange({ target: { value: "" } })}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onChange({ target: { value: "" } });
+            }
+          }}
+          style={{
+            fontSize: 11,
+            color: C.mutedText,
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          ✕
+        </span>
+      ) : null}
+    </div>
+  );
+};
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
@@ -722,7 +858,6 @@ const SipAccountPage = () => {
   const [importLoading, setImportLoading] = useState(false);
   const importFileRef = React.useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
   const [bulkForm, setBulkForm] = useState({
     startExtension: "",
     createNumber: "",
@@ -1663,63 +1798,15 @@ const SipAccountPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* Search */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background: C.cardBg,
-                  border: `1px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 10,
-                  padding: "5px 12px",
-                  transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-                  boxShadow: searchFocused
-                    ? "0 0 0 3px rgba(62,84,117,0.10)"
-                    : "none",
+              <PbxToolbarSearchBar
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
                 }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
-                  }}
-                >
-                  🔍
-                </span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1);
-                  }}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder="Search extension, context, status..."
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: 12,
-                    color: C.valueText,
-                    outline: "none",
-                    width: 240,
-                    minWidth: 180,
-                  }}
-                />
-                {searchQuery && (
-                  <span
-                    onClick={() => setSearchQuery("")}
-                    style={{
-                      fontSize: 11,
-                      color: C.mutedText,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                )}
-              </div>
+                placeholder="Search extension, context, status..."
+                fitPlaceholder
+              />
 
               <Btn
                 onClick={handleDelete}
