@@ -1,3 +1,126 @@
+export const EXTENSION_FIELD_TOOLTIPS = {
+  extension:
+    "The extension number that will be associated with this particular user or phone.",
+
+  password:
+    "The password can be generated randomly while registering a SIP account. It also can be modified by users.The Password length must longer than 8,and must contain  Uppercase Letters,Lowercase Letters,Digit and Special characters three of them. Special characters only accepts ~!@#$%^&*()_+ only,and the username can not be contain to password.",
+
+  transport:
+    "Select the SIP signaling transport protocol used by this extension for registration and call setup. Options are UDP, TCP, UDP over IPv6 (udp-ipv6), and TCP over IPv6 (tcp-ipv6).",
+
+  context:
+    "Select the SIP dial-plan context (SIP1 through SIP10) that this extension belongs to. Contexts group extensions for routing and isolation within the PBX.",
+
+  allow_codecs:
+    "Select the audio and video codecs this extension may use during calls. Choose one or more from ulaw, alaw, gsm, g726, g722, g729, h264, vp8, and vp9.",
+
+  max_registrations:
+    "Maximum amount of registrations of this SIP extension, with the default value of 3.",
+
+  name: "The callerID number for this extension to call outbound, i.e. the DisplayName field.",
+
+  email: "Enter the email address to send voicemail to.",
+
+  user_password:
+    "The password for this extension user to log into the system. Username is Name, while the default password is 'pass' plus the extension number.",
+
+  mobile_number:
+    "Fill in the mobile phone number of this extension user.",
+
+  voicemail_enabled:
+    "When Enabled, calls will be routed to voicemail after the Call Timeout(see Advanced TAB) regardless of Call Forward setting",
+
+  voicemail_file:
+    "Set the way to send the voicemail. Two options are available:<br>\nDownload Link: Send the voice message via link;<br>\nAudio File Attachment: Send the voice message via email attachment (default).",
+
+  select_voice:
+    "Once this feature is disabled, the call to this extension will play selected voice  if failed. By default.",
+
+  voicemail_keep_local:
+    "Set whether to save the voicemail at IPPBX after it is sent with a specified email. By default, the setting is Yes.",
+
+  voicemail_password:
+    "The password to enter the extension voicemail which is a randomly generated value by default and can be modified by users.",
+
+  cf_always:
+    "Always redirect calls to the designated destination within the period set by the following time condition select box. The default setting is Disabled.",
+
+  cf_busy:
+    "Redirect calls to the designated destination if the extension is busy within the period set by the following time condition select box. The default setting is Disabled.",
+
+  cf_no_answer:
+    "Redirect calls to the designated destination if not answered within the period set by the following time condition select box. The default setting is Disabled.",
+
+  cf_not_registered:
+    "Redirect calls to the designated destination if the extension is not registered within the period set by the following time condition select box. The default setting is Disabled.",
+
+  follow_me:
+    "Set a destination number for this extension so that all incoming calls within the period set in the following time condition selectbox will be routed to the destination number and the user won't miss a call. The default setting is Disabled.",
+
+  dnd:
+    "When DND is enabled for an extension, it will reject all incoming calls. The default setting is Disable.",
+
+  enable_mobility_extension:
+    "If you enable this setting, then when the User's Mobile Number dials into the system, the phone will have the same user permission as the desktop extension. So the mobile number will be able to connect with the other extension, dial out with the trunk, and play voicemail.",
+
+  ring_simultaneously:
+    "When the extension has an incoming call, it ring on the mobile number simultaneously and 'Follow Me' function will be invalid.",
+
+  prefix:
+    "It is the same with the User's Mobile Number. A prefix matching the outbound route also needs to be filled in.",
+
+  mobility_timeout:
+    "Set how long in seconds the mobile number rings when Ring Simultaneously is enabled. The call stops ringing the mobile after this timeout. Default is 30 seconds.",
+
+  secretary_service:
+    "After enabling this feature, the user can designate a number (secretary number) to help handle all incoming calls. When a user other than the secretary calls an extension, the call will be first transferred to the secretary number. The secretary confirms and then transfers the call to the extension. This function is disabled by default and cannot be used together with the Call Forwarding function.",
+
+  monitor_allow:
+    "Control whether this extension can be monitored by others. Disable prevents all monitoring; Enable All allows any authorized monitor; Extensions restricts monitoring to selected extensions only.",
+
+  monitor_mode:
+    "When Allow Being Monitored is enabled, set which monitor actions are permitted on this extension's calls. None disables monitoring modes; All allows all modes; Listen monitors silently; Whisper allows speaking to the extension only; Barge-in allows joining the call.",
+
+  enable_srtp:
+    "When this feature is enabled, the RTP stream is encrypted, having the same certification with TLS. The default setting is No.",
+
+  sip_bypass_media:
+    "Set whether to send the media stream point to point or in transparent proxy mode.<br>\nProxy Media: The media stream will pass IPPBX;<br>\nBypass Media: The media stream will be transport point to point.<br>\nDo not enable recording when set &quot;Bypass Media&quot; to avoid problems.",
+
+  call_timeout:
+    "Sets the maximum ringing duration in seconds for every call of this extension. The default value is 30s. If you wish to customize, enter the value in the text box directly. Phone will stop ringing after the time defined. The default value is 30s.",
+
+  outbound_restriction:
+    "When this feature is set to Enable, this extension cannot call out except for emergency numbers. The default settings is Disable.",
+
+  extension_trunk:
+    "When this feature is enabled, the remote SIP trunk devices can use this extension and its password to register to this IPPBX and call in without any configuration. You can find this extension in the outbound trunk list and select it as a trunk to call out. The default setting is Disable.",
+
+  dynamic_lock_pin:
+    "Select the PIN source for the dynamic lock feature. Default uses the system PIN; User Password uses this extension's user login password as the lock PIN.",
+
+  call_prohibition:
+    "Once this function is enabled, extensions except emergency numbers cannot call extensions.",
+
+  max_call_duration:
+    "Select the maximum call duration in seconds for every call of this extension. If you wish to customize, enter the value in the text box directly. This option is valid only for outbound calls. The default value is 6000(s).0 means no limit.",
+
+  max_call_permission:
+    "Set the call permission of an extension: No Call, Internal Call, Local Call, Long-Distance Call, International Call.<br>\nNo Call: Block any calls from the extension;<br>\nInternal Call: Only internal calls are allowed;<br>\nLocal Call: Allow the calls without 0 as the start number;<br>\nLong-Distance Call: Allow the calls with only one 0 at the beginning;<br>\nInternational Call (default): Allow the calls with two 0 at the beginning.",
+
+  used_call_permission:
+    "Shows the call permission level currently in effect for this extension. This read-only value reflects the dynamically applied permission and cannot exceed the configured Max Call Permission.",
+
+  diversion:
+    "Set yes，it will be taken diversion field in the invite message. default is yes.",
+
+  rx_volume:
+    "Set the volume in the direction from the SIP phone to the SIP port. The value range is -4~4 and the default value is 0.",
+
+  tx_volume:
+    "Set the volume in the direction from the SIP port to the SIP phone. The value range is -4~4 and the default value is 0.",
+};
+
 export const SIP_ACCOUNT_FIELDS = [
   // BASIC -> General
   { name: "extension", label: "Extension", type: "text", defaultValue: "" },

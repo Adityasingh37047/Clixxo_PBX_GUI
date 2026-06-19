@@ -4,6 +4,7 @@ import {
   SIP_ACCOUNT_TABLE_COLUMNS,
   SIP_ACCOUNT_INITIAL_FORM,
   CODEC_OPTIONS,
+  EXTENSION_FIELD_TOOLTIPS,
 } from "../../../constants/SipAccountConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -29,6 +30,7 @@ import {
   Radio,
   Tabs,
   Tab,
+  Tooltip,
   useMediaQuery,
 } from "@mui/material";
 import {
@@ -2381,6 +2383,7 @@ const SipAccountPage = () => {
                     {formMode === "single" ? (
                       <FieldRow
                         label="Extension:"
+                        tooltipKey="extension"
                         error={validationErrors.extension}
                       >
                         <TextField
@@ -2459,7 +2462,7 @@ const SipAccountPage = () => {
                             sx={modalTextFieldSx}
                           />
                         </FieldRow>
-                        <FieldRow label="Reg Password:">
+                        <FieldRow label="Reg Password:" tooltipKey="password">
                           <div
                             style={{
                               display: "flex",
@@ -2540,7 +2543,7 @@ const SipAccountPage = () => {
                       </>
                     )}
 
-                    <FieldRow label="Context:">
+                    <FieldRow label="Context:" tooltipKey="context">
                       <FormControl
                         fullWidth
                         size="small"
@@ -2573,7 +2576,7 @@ const SipAccountPage = () => {
                     </FieldRow>
 
                     {formMode === "single" && (
-                      <FieldRow label="Password:">
+                      <FieldRow label="Password:" tooltipKey="password">
                         <TextField
                           type={showPassword ? "text" : "password"}
                           value={form.password || ""}
@@ -2619,7 +2622,7 @@ const SipAccountPage = () => {
                       </FieldRow>
                     )}
 
-                    <FieldRow label="Max Registrations:">
+                    <FieldRow label="Max Registrations:" tooltipKey="max_registrations">
                       <TextField
                         type="number"
                         value={form.max_registrations || ""}
@@ -2641,7 +2644,7 @@ const SipAccountPage = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Transport:">
+                    <FieldRow label="Transport:" tooltipKey="transport">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.transport || "udp"}
@@ -2659,7 +2662,7 @@ const SipAccountPage = () => {
                     </FieldRow>
 
                     <div style={{ gridColumn: "1 / -1" }}>
-                      <FieldRow label="Allow Codecs:" wide>
+                      <FieldRow label="Allow Codecs:" wide tooltipKey="allow_codecs">
                         <FormGroup
                           row
                           sx={{
@@ -2715,7 +2718,7 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="Name:">
+                    <FieldRow label="Name:" tooltipKey="name">
                       <TextField
                         type="text"
                         value={form.user_name || ""}
@@ -2736,7 +2739,7 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="User Password:">
+                    <FieldRow label="User Password:" tooltipKey="user_password">
                       <TextField
                         type="password"
                         value={form.user_password || ""}
@@ -2757,7 +2760,7 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Email:">
+                    <FieldRow label="Email:" tooltipKey="email">
                       <TextField
                         type="email"
                         value={form.email || ""}
@@ -2776,7 +2779,7 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Mobile Number:">
+                    <FieldRow label="Mobile Number:" tooltipKey="mobile_number">
                       <TextField
                         type="text"
                         value={form.mobile_number || ""}
@@ -2823,7 +2826,7 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="Voicemail Enabled:">
+                    <FieldRow label="Voicemail Enabled:" tooltipKey="voicemail_enabled">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.voicemail_enabled || "no"}
@@ -2837,7 +2840,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Voicemail Keep Local:">
+                    <FieldRow label="Voicemail Keep Local:" tooltipKey="voicemail_keep_local">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.voicemail_keep_local || "yes"}
@@ -2851,7 +2854,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Voicemail File:">
+                    <FieldRow label="Voicemail File:" tooltipKey="voicemail_file">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.voicemail_file || "audio_file_attachment"}
@@ -2869,7 +2872,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Voicemail Password:">
+                    <FieldRow label="Voicemail Password:" tooltipKey="voicemail_password">
                       <TextField
                         type="text"
                         value={form.voicemail_password || ""}
@@ -2890,7 +2893,7 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Select Voice:">
+                    <FieldRow label="Select Voice:" tooltipKey="select_voice">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.voicemail_voice || "system_default"}
@@ -2915,10 +2918,18 @@ const SipAccountPage = () => {
                 {/* Call Forwarding */}
                 <SectionCard title="Call Forwarding">
                   {[
-                    { key: "always", label: "Always" },
-                    { key: "busy", label: "On Busy" },
-                    { key: "no_answer", label: "No Answer" },
-                    { key: "not_registered", label: "Not Registered" },
+                    { key: "always", label: "Always", tooltipKey: "cf_always" },
+                    { key: "busy", label: "On Busy", tooltipKey: "cf_busy" },
+                    {
+                      key: "no_answer",
+                      label: "No Answer",
+                      tooltipKey: "cf_no_answer",
+                    },
+                    {
+                      key: "not_registered",
+                      label: "Not Registered",
+                      tooltipKey: "cf_not_registered",
+                    },
                   ].map((rule) => {
                     const cfRuleEnabled =
                       (form[`cf_${rule.key}_enabled`] || "disabled") ===
@@ -2936,16 +2947,12 @@ const SipAccountPage = () => {
                           paddingBottom: 6,
                         }}
                       >
-                        <span
-                          style={{
-                            minWidth: 100,
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: C.labelText,
-                          }}
+                        <ExtensionTooltipLabel
+                          tooltipKey={rule.tooltipKey}
+                          style={{ minWidth: 100 }}
                         >
                           {rule.label}
-                        </span>
+                        </ExtensionTooltipLabel>
                         <RadioGroup
                           row
                           value={form[`cf_${rule.key}_enabled`] || "disabled"}
@@ -3051,16 +3058,12 @@ const SipAccountPage = () => {
                       paddingBottom: 6,
                     }}
                   >
-                    <span
-                      style={{
-                        minWidth: 140,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
+                    <ExtensionTooltipLabel
+                      tooltipKey="follow_me"
+                      style={{ minWidth: 140 }}
                     >
                       Follow Me
-                    </span>
+                    </ExtensionTooltipLabel>
                     <RadioGroup
                       row
                       value={form.follow_me_enabled || "disabled"}
@@ -3292,16 +3295,12 @@ const SipAccountPage = () => {
                       paddingBottom: 6,
                     }}
                   >
-                    <span
-                      style={{
-                        minWidth: 140,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
+                    <ExtensionTooltipLabel
+                      tooltipKey="dnd"
+                      style={{ minWidth: 140 }}
                     >
                       Do Not Disturb
-                    </span>
+                    </ExtensionTooltipLabel>
                     <RadioGroup
                       row
                       value={form.dnd_enabled || "disabled"}
@@ -3444,6 +3443,7 @@ const SipAccountPage = () => {
                     <FieldRow
                       label="Enable Mobility Extension:"
                       labelWidth={200}
+                      tooltipKey="enable_mobility_extension"
                     >
                       <FormControl fullWidth size="small">
                         <MuiSelect
@@ -3461,7 +3461,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Prefix">
+                    <FieldRow label="Prefix" tooltipKey="prefix">
                       <TextField
                         type="text"
                         value={form.mobility_prefix || ""}
@@ -3487,7 +3487,11 @@ const SipAccountPage = () => {
                         )}
                       />
                     </FieldRow>
-                    <FieldRow label="Ring Simultaneously:" labelWidth={200}>
+                    <FieldRow
+                      label="Ring Simultaneously:"
+                      labelWidth={200}
+                      tooltipKey="ring_simultaneously"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.ring_simultaneously || "no"}
@@ -3501,7 +3505,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Timeout">
+                    <FieldRow label="Timeout" tooltipKey="mobility_timeout">
                       <FormControl
                         fullWidth
                         size="small"
@@ -3542,16 +3546,12 @@ const SipAccountPage = () => {
                       paddingBottom: 6,
                     }}
                   >
-                    <span
-                      style={{
-                        minWidth: 140,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
+                    <ExtensionTooltipLabel
+                      tooltipKey="secretary_service"
+                      style={{ minWidth: 140 }}
                     >
                       Secretary Service
-                    </span>
+                    </ExtensionTooltipLabel>
                     <RadioGroup
                       row
                       value={form.secretary_service || "disabled"}
@@ -3615,7 +3615,7 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="Allow Being Monitored:">
+                    <FieldRow label="Allow Being Monitored:" tooltipKey="monitor_allow">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.monitor_allow || "disable"}
@@ -3630,7 +3630,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Monitor Mode:">
+                    <FieldRow label="Monitor Mode:" tooltipKey="monitor_mode">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.monitor_mode || "none"}
@@ -3684,7 +3684,7 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="Enable SRTP:">
+                    <FieldRow label="Enable SRTP:" tooltipKey="enable_srtp">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.enable_srtp || "no"}
@@ -3698,7 +3698,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="SIP Bypass Media:">
+                    <FieldRow label="SIP Bypass Media:" tooltipKey="sip_bypass_media">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.sip_bypass_media || "proxy_media"}
@@ -3725,7 +3725,7 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="Call Timeout (s):">
+                    <FieldRow label="Call Timeout (s):" tooltipKey="call_timeout">
                       <TextField
                         type="number"
                         value={form.call_timeout ?? 30}
@@ -3746,7 +3746,7 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Max Call Duration (s):">
+                    <FieldRow label="Max Call Duration (s):" tooltipKey="max_call_duration">
                       <TextField
                         type="number"
                         value={form.max_call_duration ?? 6000}
@@ -3767,7 +3767,7 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Outbound Restriction:">
+                    <FieldRow label="Outbound Restriction:" tooltipKey="outbound_restriction">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.outbound_restriction || "disable"}
@@ -3781,7 +3781,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Max Call Permission:">
+                    <FieldRow label="Max Call Permission:" tooltipKey="max_call_permission">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={
@@ -3809,7 +3809,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Extension Trunk:">
+                    <FieldRow label="Extension Trunk:" tooltipKey="extension_trunk">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.extension_trunk || "disable"}
@@ -3823,7 +3823,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Used Call Permission:">
+                    <FieldRow label="Used Call Permission:" tooltipKey="used_call_permission">
                       <div
                         style={{
                           fontSize: 13,
@@ -3842,7 +3842,7 @@ const SipAccountPage = () => {
                         }[form.call_permission] || "International Call"}
                       </div>
                     </FieldRow>
-                    <FieldRow label="Dynamic Lock Pin:">
+                    <FieldRow label="Dynamic Lock Pin:" tooltipKey="dynamic_lock_pin">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.dynamic_lock_pin || "default"}
@@ -3860,7 +3860,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Diversion:">
+                    <FieldRow label="Diversion:" tooltipKey="diversion">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.diversion || "yes"}
@@ -3874,7 +3874,7 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Call Prohibition:">
+                    <FieldRow label="Call Prohibition:" tooltipKey="call_prohibition">
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.call_prohibition || "disable"}
@@ -3901,7 +3901,7 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="RX Volume:">
+                    <FieldRow label="RX Volume:" tooltipKey="rx_volume">
                       <TextField
                         type="number"
                         value={form.rx_volume ?? 0}
@@ -3922,7 +3922,7 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="TX Volume:">
+                    <FieldRow label="TX Volume:" tooltipKey="tx_volume">
                       <TextField
                         type="number"
                         value={form.tx_volume ?? 0}
@@ -4083,40 +4083,128 @@ const MonitorDualListbox = ({ available, selected, onChange }) => {
   );
 };
 
-const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: wide ? "flex-start" : "center",
-      gap: 12,
-      width: "100%",
-    }}
-  >
-    <label
+const EXTENSION_FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 650,
+        padding: "12px 16px",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const formatExtensionTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const ExtensionTooltipLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = tooltipKey ? EXTENSION_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
       style={{
         fontSize: 13,
-        color: C.labelText,
         fontWeight: 600,
-        whiteSpace: "nowrap",
-        textAlign: "left",
-        width: labelWidth,
-        flexShrink: 0,
-        paddingTop: wide ? 4 : 0,
-      }}
-    >
-      {label}
-    </label>
-    <div
-      style={{
-        flex: 1,
-        minWidth: 0,
-        width: "100%",
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
       }}
     >
       {children}
+    </span>
+  );
+
+  if (!tooltip) return labelNode;
+
+  return (
+    <Tooltip
+      title={formatExtensionTooltipTitle(tooltip)}
+      {...EXTENSION_FIELD_TOOLTIP_PROPS}
+    >
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+const FieldRow = ({
+  label,
+  children,
+  wide = false,
+  labelWidth = 130,
+  tooltipKey,
+}) => {
+  const tooltip = tooltipKey ? EXTENSION_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelStyle = {
+    fontSize: 13,
+    color: C.labelText,
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+    textAlign: "left",
+    width: labelWidth,
+    flexShrink: 0,
+    paddingTop: wide ? 4 : 0,
+    cursor: tooltip ? "help" : undefined,
+  };
+
+  const labelNode = <label style={labelStyle}>{label}</label>;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: wide ? "flex-start" : "center",
+        gap: 12,
+        width: "100%",
+      }}
+    >
+      {tooltip ? (
+        <Tooltip
+          title={formatExtensionTooltipTitle(tooltip)}
+          {...EXTENSION_FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          width: "100%",
+        }}
+      >
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ErrMsg = ({ children }) => (
   <div style={{ color: "#dc2626", fontSize: 11, marginTop: 2 }}>{children}</div>
