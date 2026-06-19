@@ -15,7 +15,12 @@ const C = {
   accent: "#3E5475",
   sectionBlue: "#1976d2",
 };
-
+const fieldInteraction = {
+  onFocus: (e) => { e.target.style.borderColor = OUTLINED_FOCUS; e.target.style.boxShadow = `0 0 0 1px ${OUTLINED_FOCUS}`; },
+  onBlur: (e) => { e.target.style.borderColor = OUTLINED_BORDER; e.target.style.boxShadow = "none"; },
+  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "rgba(0,0,0,0.87)"; },
+  onMouseLeave: (e) => { if (document.activeElement !== e.target) { e.target.style.borderColor = OUTLINED_BORDER; e.target.style.boxShadow = "none"; } },
+};
 const CARD_RADIUS = 10;
 
 const Btn = ({
@@ -106,7 +111,7 @@ const sipPcmFormPageWrapStyle = {
 
 const sipPcmFormPageInnerStyle = {
   width: "100%",
-  maxWidth: 890,
+  maxWidth: 1000,
   margin: "0 auto",
 };
 
@@ -260,7 +265,7 @@ const pbxDualListLabelStyle = {
 };
 
 const pbxDualListSelectStyle = {
-  width: "340px",
+  width: "100%",
   height: 160,
   border: `1px solid ${C.cardBorder}`,
   background: "#fff",
@@ -508,7 +513,9 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: isCompact ? "1fr" : "340px 48px 340px 48px",
+        gridTemplateColumns: isCompact
+        ? "1fr"
+        : "1fr 48px 1fr 48px",
         gap: 12,
       }}
     >
@@ -798,12 +805,14 @@ console.log("Conferences:", availableConferences);
     value={form[field.key]}
     onChange={(e) => handleChange(field.key, e.target.value)}
     style={GRID_INPUT_STYLE}
+    {...fieldInteraction}
   />
 ) : (
   <select
     value={form[field.key]}
     onChange={(e) => handleChange(field.key, e.target.value)}
     style={GRID_INPUT_STYLE}
+    {...fieldInteraction}
   >
     {field.options.map((opt) => (
       <option key={opt.value} value={opt.value}>
