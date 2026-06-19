@@ -29,6 +29,7 @@ const C = {
   primary: "#2563eb",
   gridHeaderBg: "#F8FAFC",
 };
+
 // ── Local field UI (inlined from systemSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -137,77 +138,41 @@ const advancedFormBtnStyle = {
 const SYSTEM_SETTINGS_NATIVE_FIELD_CLASS = "system-settings-native-field";
 
 
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    variant === "primary"
-      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
-      : variant === "cancel"
-        ? "#b6c2d3"
-        : "#e2e8f0";
-  const baseBg = s.background;
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
+const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
+const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
+const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
+const BTN_DANGER = `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`;
 
-  return (
-    <button
-      type={type}
-      form={form}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
+const btnVariantCls = {
+  default: BTN_DEFAULT,
+  primary: BTN_PRIMARY,
+  cancel: BTN_CANCEL,
+  outline: BTN_OUTLINE,
+  error: BTN_ERROR,
+  delete: BTN_DELETE,
+  edit: BTN_EDIT,
+  danger: BTN_DANGER,
 };
+
+const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title, form }) => (
+  <button
+    type={type}
+    form={form}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    style={style}
+    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
+  >
+    {children}
+  </button>
+);
 
 const SectionHeading = ({ title, isFirst = false }) => (
   <div

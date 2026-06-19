@@ -41,90 +41,33 @@ const C = {
   amber: "#dc2626",
 };
 
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const baseBg = s.background;
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
+
+const btnVariantCls = {
+  default: BTN_DEFAULT,
+  primary: BTN_PRIMARY,
+  cancel: BTN_CANCEL,
+  outline: BTN_OUTLINE,
+  danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
 };
+
+const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title }) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    style={style}
+    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
+  >
+    {children}
+  </button>
+);
 
 const CARD_RADIUS = 20;
 
@@ -136,31 +79,17 @@ const OUTLINED_FOCUS = "#1976d2";
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
     backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+    "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
+    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
+    "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
+    "&.Mui-focused:hover fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
   },
 };
 
 const muiSelectSx = {
   fontSize: 13,
   backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
+  "& .MuiOutlinedInput-root": { minHeight: 36, backgroundColor: "#fff" },
   "& .MuiSelect-select": {
     display: "flex",
     alignItems: "center",
@@ -172,9 +101,7 @@ const muiSelectSx = {
     borderColor: OUTLINED_BORDER,
     transition: "border-color 0.2s ease",
   },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
+  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: OUTLINED_HOVER },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_FOCUS,
     borderWidth: 2,
@@ -236,6 +163,106 @@ const tdStyle = {
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
+
+const E1_PAGE = "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px]";
+const E1_INNER = "w-full max-w-full mx-auto";
+const E1_CARD =
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+const E1_TOOLBAR =
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[20px]";
+const E1_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
+const E1_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
+const E1_SELECTED_BADGE =
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+const E1_PAGINATION =
+  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[20px]";
+const E1_PAGE_BADGE =
+  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+const E1_TOAST_SX = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const modalInputProps = {
+  style: { fontSize: 13, height: 32, padding: "0 8px", boxSizing: "border-box" },
+};
+
+const e1DialogTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const e1DialogContentStyle = { padding: "24px", backgroundColor: "#ffffff" };
+
+const e1DialogFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: "1px solid #9CA3AF",
+  borderRadius: 8,
+  padding: 20,
+};
+
+const e1DialogFieldRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+};
+
+const e1DialogFieldLabelStyle = {
+  fontSize: 13,
+  color: "#3E5475",
+  fontWeight: 600,
+  whiteSpace: "nowrap",
+  width: 170,
+  lineHeight: 1.2,
+  textAlign: "left",
+};
+
+const e1DialogFieldControlStyle = { width: "min(100%, 320px)" };
+
+const e1DialogActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: "1px solid #9CA3AF",
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const e1DialogPaperSx = {
+  width: 600,
+  maxWidth: "95vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const E1Breadcrumb = ({ section, current }) => (
+  <div className="mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8]">
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>{section}</span>
+    <span>&gt;</span>
+    <span className="font-semibold text-[#1e293b]">{current}</span>
+  </div>
+);
 
 const checkboxSx = {
   padding: "1px",
@@ -793,14 +820,8 @@ const PSTNCallInCallerID = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+    <div className={E1_PAGE}>
+      <div className={E1_INNER}>
         {toast.msg && (
           <Alert
             severity={toast.type}
@@ -817,26 +838,7 @@ const PSTNCallInCallerID = () => {
             {toast.msg}
           </Alert>
         )}
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>Num Manipulate</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            PSTN Call In CallerID
-          </span>
-        </div>
+        <E1Breadcrumb section="Num Manipulate" current="PSTN Call In CallerID" />
 
         {/* Main Card */}
         <div
@@ -849,46 +851,15 @@ const PSTNCallInCallerID = () => {
           }}
         >
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className={E1_TOOLBAR}>
+            <div className={E1_TOOLBAR_LEFT}>
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span className={E1_SELECTED_BADGE}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
+            <div className={E1_TOOLBAR_ACTIONS}>
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
@@ -1236,17 +1207,7 @@ const PSTNCallInCallerID = () => {
                     >
                       ← Prev
                     </Btn>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: C.accent,
-                        background: "#e0f2fe",
-                        padding: "5px 14px",
-                        borderRadius: 6,
-                        border: `1px solid ${C.cardBorder}`,
-                      }}
-                    >
+                    <span className={E1_PAGE_BADGE}>
                       Page {page} of {totalPages}
                     </span>
                     <Btn
@@ -1400,7 +1361,7 @@ const PSTNCallInCallerID = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 33, fontSize: 13, padding: "6px 28px", textTransform: "none" }}
           >
             {loading.save
               ? "Saving..."

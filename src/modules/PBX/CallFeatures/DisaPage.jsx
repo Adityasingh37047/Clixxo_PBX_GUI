@@ -52,16 +52,17 @@ const C = {
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[36px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
 const BTN_DIALOG_CANCEL =
   "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
 
 const btnVariantCls = {
-  default: BTN_OUTLINE,
+  default: BTN_DEFAULT,
   primary: BTN_PRIMARY,
   accent: BTN_PRIMARY,
   cancel: BTN_CANCEL,
@@ -108,7 +109,8 @@ const disaDualListSelectStyle = {
 
 const DISA_DUAL_LIST_BTN =
   "box-border m-0 block h-[36px] w-full cursor-pointer border border-[#6b7280] bg-[#d9dde3] p-0 text-center text-[14px] font-semibold leading-none text-[#111827] hover:bg-[#c5cbd3]";
-const DISA_DUAL_LIST_BTN_REORDER = `${DISA_DUAL_LIST_BTN} font-normal`;
+const DISA_DUAL_LIST_BTN_REORDER =
+  "box-border m-0 block h-[36px] w-full cursor-pointer border border-[#6b7280] bg-[#d9dde3] p-0 text-center text-[14px] font-normal leading-none text-[#111827] hover:bg-[#c5cbd3]";
 
 const DisaDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
@@ -1050,40 +1052,25 @@ const DisaPage = () => {
 
       {/* ── Add/Edit Modal ── */}
       <Dialog
-  open={showModal}
-  onClose={loading.save || loading.get ? null : handleCloseModal}
-  maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-    },
-    "& .MuiDialog-paper": {
-      mt: "140px",
-      mb: "20px",
-    },
-  }}
-  PaperProps={{
-    sx: {
-      width: 1000,
-      maxWidth: "98vw",
-      mx: "auto",
-      p: 0,
-      borderRadius: 2,
-      overflow: "hidden",
-      boxShadow:
-        "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-    },
-  }}
->
+        open={showModal}
+        onClose={loading.save || loading.get ? null : handleCloseModal}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            width: 900,
+            maxWidth: "96vw",
+            borderRadius: 2,
+          },
+        }}
+      >
         <DialogTitle
           style={{
-            background: "rgb(30, 45, 62)",
+            background: "#1e2d42",
             color: "#fff",
             fontWeight: 700,
             fontSize: 16,
             textAlign: "center",
             padding: "14px 24px",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
           }}
         >
           {editId != null ? "Edit DISA" : "Add DISA"}
@@ -1473,7 +1460,7 @@ const DisaPage = () => {
                       display: "flex",
                       flexDirection: "column",
                       gap: 4,
-                      paddingTop: 24,
+                      paddingTop: 28,
                     }}
                   >
                     <DisaDualListBtn onClick={addSelectedToChosen}>
@@ -1496,7 +1483,7 @@ const DisaPage = () => {
                         fontWeight: 600,
                         color: "#3e5475",
                         textAlign: "center",
-                        marginBottom: 6,
+                        marginBottom: 8,
                       }}
                     >
                       Selected Routes
@@ -1529,7 +1516,7 @@ const DisaPage = () => {
                       display: "flex",
                       flexDirection: "column",
                       gap: 4,
-                      paddingTop: 24,
+                      paddingTop: 28,
                     }}
                   >
                     <DisaDualListBtn
@@ -1539,25 +1526,13 @@ const DisaPage = () => {
                     >
                       vv
                     </DisaDualListBtn>
-                    <DisaDualListBtn
-                      reorder
-                      title="Move up"
-                      onClick={moveChosenUp}
-                    >
+                    <DisaDualListBtn reorder title="Move up" onClick={moveChosenUp}>
                       ^
                     </DisaDualListBtn>
-                    <DisaDualListBtn
-                      reorder
-                      title="Move down"
-                      onClick={moveChosenDown}
-                    >
+                    <DisaDualListBtn reorder title="Move down" onClick={moveChosenDown}>
                       v
                     </DisaDualListBtn>
-                    <DisaDualListBtn
-                      reorder
-                      title="Move to top"
-                      onClick={moveChosenTop}
-                    >
+                    <DisaDualListBtn reorder title="Move to top" onClick={moveChosenTop}>
                       ^^
                     </DisaDualListBtn>
                   </div>
@@ -1568,29 +1543,35 @@ const DisaPage = () => {
         </DialogContent>
         <DialogActions
           style={{
+            padding: "16px 24px",
+            background: C.pageBg,
+            borderTop: `1px solid ${C.cardBorder}`,
             justifyContent: "center",
             gap: 12,
-            padding: 16,
-            background: "#f5f7fa",
-            borderTop: "1px solid #d1d5db",
           }}
         >
           <Btn
             variant="dialogPrimary"
             onClick={handleSave}
             disabled={loading.save || loading.get}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {loading.save && <CircularProgress size={20} color="inherit" />}
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update DISA"
-                : "Create DISA"}
+            {loading.save ? (
+              <>
+                <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
+                Saving...
+              </>
+            ) : editId != null ? (
+              "Update DISA"
+            ) : (
+              "Create DISA"
+            )}
           </Btn>
           <Btn
             variant="dialogCancel"
             onClick={handleCloseModal}
             disabled={loading.save || loading.get}
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>

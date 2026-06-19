@@ -23,6 +23,15 @@ const C = {
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
+
+const SYS_TOAST_SX = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
 // ── Local field UI (inlined from maitenanceSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -129,89 +138,41 @@ const systemToolsEditableFieldInputStyle = {
 };
 const inputStyle = systemToolsEditableFieldInputStyle;
 
-
 // ── Button Component (same as AccountManage) ─────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  startIcon,
-  component,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
+const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
+const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
+const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
 
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = s.background;
-
-  const Component = component || "button";
-
-  return (
-    <Component
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 36,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
-      {children}
-    </Component>
-  );
+const btnVariantCls = {
+  default: BTN_DEFAULT,
+  primary: BTN_PRIMARY,
+  cancel: BTN_CANCEL,
+  outline: BTN_OUTLINE,
+  error: BTN_ERROR,
+  delete: BTN_DELETE,
+  edit: BTN_EDIT,
+  danger: BTN_ERROR,
 };
+
+const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title, startIcon }) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    style={style}
+    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
+  >
+    {startIcon && <span className="inline-flex items-center">{startIcon}</span>}
+    {children}
+  </button>
+);
 
 const tableContainerStyle = {
   width: "100%",
@@ -300,14 +261,7 @@ const SIPAccountGenerator = () => {
         <Alert
           severity={toast.type}
           onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
+          sx={SYS_TOAST_SX}
         >
           {toast.msg}
         </Alert>

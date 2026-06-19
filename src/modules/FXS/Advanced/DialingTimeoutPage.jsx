@@ -122,19 +122,13 @@ const tdStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };
 
-const routeTdStyle = {
-  ...tdStyle,
-  fontSize: 12,
-  padding: "7px 8px",
-};
+const routeTdStyle = tdStyle;
 
-const routeThExtra = {
-  fontSize: 10.5,
-  padding: "9px 8px",
-  letterSpacing: "0.04em",
-};
+const routeThExtra = {};
 
 const DialingTimeoutBreadcrumb = ({ current }) => (
   <div className="mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8]">

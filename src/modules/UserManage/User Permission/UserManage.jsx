@@ -31,6 +31,15 @@ const C = {
   successGreen: "#16a34a",
   errorRed: "#dc2626",
 };
+
+const SYS_TOAST_SX = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
 // ── Local field UI (inlined from systemSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -117,107 +126,38 @@ const userPermissionFieldInputStyle = {
 const inputStyle = userPermissionFieldInputStyle;
 
 // ── Button Component ──────────────────────────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    edit: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #bbf7d0",
-    },
-    delete: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fecaca",
-    },
-    outline: {
-      background: "transparent",
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
-    },
-    accent: {
-      background: C.accent,
-      color: C.cardBg,
-      border: `0.5px solid ${C.accent}`,
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "edit":
-        return "#bbf7d0";
-      case "delete":
-        return "#fecaca";
-      case "accent":
-        return "#0369a1"; // darker than C.accent
-      case "danger":
-        return "#b91c1c"; // darker than C.errorRed
-      case "outline":
-        return "rgba(2, 132, 199, 0.10)";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "5px 14px",
-        borderRadius: 6,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 5,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.backgroundColor = hoverBg;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.backgroundColor = s.background;
-        }
-      }}
-    >
-      {children}
-    </button>
-  );
+const BTN_BASE =
+  "inline-flex items-center justify-center gap-[5px] h-[30px] px-[14px] py-[5px] rounded-[6px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
+const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-transparent text-[#3E5475] border-[0.5px] border-[#9CA3AF] hover:bg-[rgba(2,132,199,0.10)]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
+const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
+const BTN_ACCENT = `${BTN_BASE} bg-[#3E5475] text-white border-[0.5px] border-[#3E5475] hover:bg-[#0369a1]`;
+const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[0.5px] border-[#dc2626] hover:bg-[#b91c1c]`;
+
+const btnVariantCls = {
+  default: BTN_DEFAULT,
+  edit: BTN_EDIT,
+  delete: BTN_DELETE,
+  outline: BTN_OUTLINE,
+  accent: BTN_ACCENT,
+  danger: BTN_ERROR,
+  cancel: BTN_CANCEL,
 };
+
+const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title }) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    style={style}
+    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
+  >
+    {children}
+  </button>
+);
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -720,14 +660,7 @@ export default function UserManage() {
           <Alert
             severity={toast.type}
             onClose={() => setToast({ msg: "", type: "success" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={SYS_TOAST_SX}
           >
             {toast.msg}
           </Alert>
@@ -1312,14 +1245,7 @@ export default function UserManage() {
               <Alert
                 severity="error"
                 onClose={clearFormError}
-                sx={{
-                  position: "fixed",
-                  top: 20,
-                  right: 20,
-                  zIndex: 9999,
-                  minWidth: 300,
-                  boxShadow: 3,
-                }}
+                sx={SYS_TOAST_SX}
               >
                 {formError}
               </Alert>

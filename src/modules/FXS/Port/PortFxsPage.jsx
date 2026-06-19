@@ -156,6 +156,8 @@ const tdStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };
 
 const numManipulateCardStyle = {
@@ -208,17 +210,9 @@ const routeTableMinWidthForZoom = (widePx) => {
   return zoomPct >= 130 ? widePx : "100%";
 };
 
-const routeTdStyle = {
-  ...tdStyle,
-  fontSize: 12,
-  padding: "7px 8px",
-};
+const routeTdStyle = tdStyle;
 
-const routeThExtra = {
-  fontSize: 10.5,
-  padding: "9px 8px",
-  letterSpacing: "0.04em",
-};
+const routeThExtra = {};
 
 const FWD_TYPE_TO_UI = {
   no_reply: "No Reply",

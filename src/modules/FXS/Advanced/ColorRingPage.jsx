@@ -159,6 +159,8 @@ const tdStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };
 
 const COLOR_RING_PAGE_WRAP =

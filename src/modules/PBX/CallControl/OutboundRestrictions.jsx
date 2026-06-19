@@ -54,16 +54,17 @@ const C = {
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[28px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
 const BTN_DIALOG_CANCEL =
   "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
 
 const btnVariantCls = {
-  default: BTN_OUTLINE,
+  default: BTN_DEFAULT,
   primary: BTN_PRIMARY,
   accent: BTN_PRIMARY,
   cancel: BTN_CANCEL,
@@ -369,7 +370,8 @@ const OUTBOUND_RESTRICTION_CARD =
   "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const OUTBOUND_RESTRICTION_TOOLBAR =
   "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
-const OUTBOUND_RESTRICTION_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
+const OUTBOUND_RESTRICTION_TOOLBAR_COMPACT =
+  "flex-col items-stretch gap-[10px]";
 const OUTBOUND_RESTRICTION_TOOLBAR_LEFT =
   "ml-auto flex min-w-0 flex-wrap items-center gap-[8px]";
 const OUTBOUND_RESTRICTION_TOOLBAR_ACTIONS =
@@ -528,6 +530,7 @@ const OutboundRestrictions = () => {
   const [chosenSelected, setChosenSelected] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
@@ -544,7 +547,7 @@ const OutboundRestrictions = () => {
     const q = searchQuery.toLowerCase();
     return rows.filter((row) => {
       const extStr = (row.memberExtensions || []).join(" ").toLowerCase();
-  return (
+      return (
         (row.name || "").toLowerCase().includes(q) ||
         (row.timeLimit || "").toLowerCase().includes(q) ||
         (row.callsLimit || "").toLowerCase().includes(q) ||
@@ -914,6 +917,61 @@ const OutboundRestrictions = () => {
             className={`${OUTBOUND_RESTRICTION_TOOLBAR} ${isCompact ? OUTBOUND_RESTRICTION_TOOLBAR_COMPACT : ""}`.trim()}
           >
             <div className={OUTBOUND_RESTRICTION_TOOLBAR_LEFT}>
+              {/* <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#ffffff",
+                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
+                  borderRadius: 6,
+                  padding: "5px 10px",
+                  transition: "border-color 0.15s ease",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: searchFocused ? C.accent : C.mutedText,
+                  }}
+                >
+                  🔍
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  placeholder="Search restrictions..."
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    fontSize: 11,
+                    color: C.valueText,
+                    outline: "none",
+                    width: isCompact ? 120 : 160,
+                  }}
+                />
+                {searchQuery && (
+                  <span
+                    onClick={() => {
+                      setSearchQuery("");
+                      setPage(1);
+                    }}
+                    style={{
+                      fontSize: 11,
+                      color: C.mutedText,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✕
+                  </span>
+                )}
+              </div> */}
               {selected.length > 0 && (
                 <span className={OUTBOUND_RESTRICTION_SELECTED_BADGE}>
                   {selected.length} selected
@@ -1327,7 +1385,11 @@ const OutboundRestrictions = () => {
                     sx={modalSelectSx}
                   >
                     {ENABLE_OPTIONS.map((o) => (
-                      <MenuItem key={o} value={o} sx={OUTBOUND_RESTRICTION_MENU_ITEM_SX}>
+                      <MenuItem
+                        key={o}
+                        value={o}
+                        sx={OUTBOUND_RESTRICTION_MENU_ITEM_SX}
+                      >
                         {o}
                       </MenuItem>
                     ))}
@@ -1346,7 +1408,11 @@ const OutboundRestrictions = () => {
                     }}
                   >
                     {ENABLE_OPTIONS.map((o) => (
-                      <MenuItem key={o} value={o} sx={OUTBOUND_RESTRICTION_MENU_ITEM_SX}>
+                      <MenuItem
+                        key={o}
+                        value={o}
+                        sx={OUTBOUND_RESTRICTION_MENU_ITEM_SX}
+                      >
                         {o}
                       </MenuItem>
                     ))}
@@ -1366,7 +1432,9 @@ const OutboundRestrictions = () => {
                 }}
               >
                 <div>
-                  <div style={outboundRestrictionDualListLabelStyle}>Available</div>
+                  <div style={outboundRestrictionDualListLabelStyle}>
+                    Available
+                  </div>
                   <select
                     multiple
                     size={6}
@@ -1400,22 +1468,30 @@ const OutboundRestrictions = () => {
                       paddingTop: 28,
                     }}
                   >
-                    <OutboundRestrictionDualListBtn onClick={addSelectedExtensions}>
+                    <OutboundRestrictionDualListBtn
+                      onClick={addSelectedExtensions}
+                    >
                       &gt;
                     </OutboundRestrictionDualListBtn>
                     <OutboundRestrictionDualListBtn onClick={addAllExtensions}>
                       &gt;&gt;
                     </OutboundRestrictionDualListBtn>
-                    <OutboundRestrictionDualListBtn onClick={removeSelectedExtensions}>
+                    <OutboundRestrictionDualListBtn
+                      onClick={removeSelectedExtensions}
+                    >
                       &lt;
                     </OutboundRestrictionDualListBtn>
-                    <OutboundRestrictionDualListBtn onClick={removeAllExtensions}>
+                    <OutboundRestrictionDualListBtn
+                      onClick={removeAllExtensions}
+                    >
                       &lt;&lt;
                     </OutboundRestrictionDualListBtn>
                   </div>
                 )}
                 <div>
-                  <div style={outboundRestrictionDualListLabelStyle}>Selected</div>
+                  <div style={outboundRestrictionDualListLabelStyle}>
+                    Selected
+                  </div>
                   <select
                     multiple
                     size={6}
@@ -1456,7 +1532,11 @@ const OutboundRestrictions = () => {
                     >
                       vv
                     </OutboundRestrictionDualListBtn>
-                    <OutboundRestrictionDualListBtn reorder title="Move up" onClick={moveExtUp}>
+                    <OutboundRestrictionDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveExtUp}
+                    >
                       ^
                     </OutboundRestrictionDualListBtn>
                     <OutboundRestrictionDualListBtn
@@ -1487,8 +1567,7 @@ const OutboundRestrictions = () => {
           >
             {loading.save ? (
               <>
-                <CircularProgress size={14} sx={{ color: "#fff" }} />{" "}
-                Saving...
+                <CircularProgress size={14} sx={{ color: "#fff" }} /> Saving...
               </>
             ) : (
               "Save"
