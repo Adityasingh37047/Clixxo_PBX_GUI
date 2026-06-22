@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Alert, Checkbox, CircularProgress, useMediaQuery } from "@mui/material";
 import { getVoicemailSettings, updateVoicemailSettings } from "../../../api/apiService";
+import Tooltip from "@mui/material/Tooltip";    
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
@@ -66,6 +68,28 @@ const PbxBreadcrumb = ({ section, current }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#000",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+
 
 const TableListLoading = () => (
   <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: 48 }}>
@@ -135,29 +159,42 @@ const checkboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const CheckboxRow = ({ checked, onChange, label }) => (
+const CheckboxRow = ({
+  checked,
+  onChange,
+  label,
+  tooltip,
+}) => (
   <GridRow>
     <div style={{ width: LABEL_W, marginRight: 10, flexShrink: 0 }} />
-    <label
+    <Tooltip title={tooltip || ""} {...tooltipProps}>
+  <label
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      cursor: "pointer",
+      flex: 1,
+      minWidth: 0,
+    }}
+  >
+    <Checkbox
+      size="small"
+      checked={!!checked}
+      onChange={(e) => onChange(e.target.checked)}
+      sx={checkboxSx}
+    />
+    <span
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 4,
-        cursor: "pointer",
-        flex: 1,
-        minWidth: 0,
+        fontSize: 13,
+        fontWeight: 500,
+        color: C.labelText,
       }}
     >
-      <Checkbox
-        size="small"
-        checked={!!checked}
-        onChange={(e) => onChange(e.target.checked)}
-        sx={checkboxSx}
-      />
-      <span style={{ fontSize: 13, fontWeight: 500, color: C.labelText }}>
-        {label}
-      </span>
-    </label>
+      {label}
+    </span>
+  </label>
+</Tooltip>
   </GridRow>
 );
 
@@ -275,7 +312,14 @@ const VoicemailPage = () => {
                 <SectionHeading title="Message Options" isFirst />
 
                 <GridRow>
-                  <label style={labelStyle}>Max Messages per extension</label>
+                <Tooltip
+  title="This option sets the maximum number of messages per extension. The default is 100."
+  {...tooltipProps}
+>
+  <label style={{ ...labelStyle, cursor: "help" }}>
+    Max Messages per extension
+  </label>
+</Tooltip>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <select value={form.max_messages} onChange={(e) => set("max_messages", e.target.value)} style={inputStyle} {...fieldInteraction}>
                       <option value="10">10</option>
@@ -287,7 +331,12 @@ const VoicemailPage = () => {
                 </GridRow>
 
                 <GridRow>
-                  <label style={labelStyle}>Max Message Time (s)</label>
+                <Tooltip
+  title="This option sets the maximum lengthof a single voicemail message (in seconds)."
+  {...tooltipProps}
+>
+  <label style={{ ...labelStyle, cursor: "help" }}>Max Message Time (s)</label>
+</Tooltip>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <select value={form.max_message_time} onChange={(e) => set("max_message_time", e.target.value)} style={inputStyle} {...fieldInteraction}>
                       <option value="60">60</option>
@@ -299,7 +348,12 @@ const VoicemailPage = () => {
                 </GridRow>
 
                 <GridRow>
-                  <label style={labelStyle}>Min Message Time (s)</label>
+                <Tooltip
+  title="This option sets the minimum length of a single voicemail message (in seconds). Messages below this threshold will be automatically deleted."
+  {...tooltipProps}
+>
+  <label style={{ ...labelStyle, cursor: "help" }}>Min Message Time (s)</label>
+</Tooltip>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <select value={form.min_message_time} onChange={(e) => set("min_message_time", e.target.value)} style={inputStyle} {...fieldInteraction}>
                       <option value="1">1</option>
@@ -315,13 +369,21 @@ const VoicemailPage = () => {
                   checked={form.press5_enabled}
                   onChange={(val) => set("press5_enabled", val)}
                   label="press 5 to leave a message"
+                  tooltip="If this option is ticke, you will hear the prompt: The phone you dial is unavailable now. Please press 5 to leave your message: if it is unticket, you will hear the prompt: The phone you dial is unavailable noew. By default it is ticked."
                 />
 
                 {/* ── Greeting Options ── */}
                 <SectionHeading title="Greeting Options" />
 
                 <GridRow>
-                  <label style={labelStyle}>Busy Prompt</label>
+                <Tooltip
+  title="Select the greeting that will be played when the extension is busy. The default setting is Default."
+  {...tooltipProps}
+>
+  <label style={{ ...labelStyle, cursor: "help" }}>
+    Busy Prompt
+  </label>
+</Tooltip>  
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <select value={form.busy_prompt} onChange={(e) => set("busy_prompt", e.target.value)} style={inputStyle} {...fieldInteraction}>
                       <option value="default">Default</option>
@@ -330,7 +392,14 @@ const VoicemailPage = () => {
                 </GridRow>
 
                 <GridRow>
-                  <label style={labelStyle}>No answer Prompt</label>
+                <Tooltip
+  title="Select the greeting that will be played when the extension is unavailable. The default setting is Default."
+  {...tooltipProps}
+>
+  <label style={{ ...labelStyle, cursor: "help" }}>
+    No answer Prompt
+  </label>
+</Tooltip>  
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <select value={form.noanswer_prompt} onChange={(e) => set("noanswer_prompt", e.target.value)} style={inputStyle} {...fieldInteraction}>
                       <option value="default">Default</option>
@@ -345,18 +414,21 @@ const VoicemailPage = () => {
                   checked={form.announce_callerid}
                   onChange={(val) => set("announce_callerid", val)}
                   label="Announce Message Caller ID"
+                  tooltip="If this option is ticked, the extension number of the caller who left the message will be announced before the content of this message. By default it is unticket."
                 />
 
                 <CheckboxRow
                   checked={form.announce_duration}
                   onChange={(val) => set("announce_duration", val)}
                   label="Announce Message Duration"
+                  tooltip="If this option is ticked, you will hear the duration of the message when the message is played back."
                 />
 
                 <CheckboxRow
                   checked={form.announce_arrival_time}
                   onChange={(val) => set("announce_arrival_time", val)}
                   label="Announce Message Arrival Time"
+                  tooltip="If this option is ticked, you will hear the arrival time of the message when the message is played back."
                 />
 
               </div>

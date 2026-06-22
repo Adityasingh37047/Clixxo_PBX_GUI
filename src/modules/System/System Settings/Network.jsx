@@ -2068,7 +2068,7 @@ const Network = () => {
   placement="top"
   slotProps={{
     tooltip: {
-      sx: {
+        sx: {
         bgcolor: "#fff",
         color: "#334155",
         border: "1px solid #d1d5db",
@@ -2132,7 +2132,6 @@ const Network = () => {
               </form>
             )}
           </div>
-
           {!loading && (
             <div style={advancedFormInlineFooterStyle}>
               <Btn
