@@ -11,6 +11,7 @@ import {
   SIP_REGISTER_HEADER_ID_OPTIONS,
   SIP_REGISTER_CONTACT_OPTIONS,
   SIP_REGISTER_DTMF_OPTIONS,
+  SIP_REGISTER_TOOLTIPS,
 } from "../../../constants/SipRegisterConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import AddIcon from "@mui/icons-material/Add";
@@ -28,6 +29,7 @@ import {
   MenuItem,
   FormControl,
   Alert,
+  Tooltip,
   CircularProgress,
   IconButton,
   InputAdornment,
@@ -245,6 +247,102 @@ const setFieldFocus = (el) => {
   el.style.borderWidth = "1px";
   el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
 };
+
+// ── ToolTips ──────────────────────────────────────────────────────
+const EXTENSION_GROUP_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 650,
+        padding: "12px 16px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatGroupTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const TRUNK_FIELD_LABEL_CLASS =
+  "text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0";
+
+const GroupFieldLabel = ({
+  tooltipKey,
+  children,
+  style = {},
+  className,
+}) => {
+  const tooltip = SIP_REGISTER_TOOLTIPS[tooltipKey] || "";
+  const LabelTag = className ? "label" : "span";
+
+  const label = (
+    <LabelTag
+      className={className}
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </LabelTag>
+  );
+
+  if (!tooltip) return label;
+
+  return (
+    <Tooltip
+      title={formatGroupTooltipTitle(tooltip)}
+      {...EXTENSION_GROUP_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const TrunkFieldLabel = ({
+  tooltipKey,
+  children,
+  className,
+  required,
+  style,
+}) => (
+  <GroupFieldLabel
+    tooltipKey={tooltipKey}
+    className={className || TRUNK_FIELD_LABEL_CLASS}
+    style={style}
+  >
+    {children}
+    {required ? <span className="text-red-500"> *</span> : null}
+  </GroupFieldLabel>
+);
 
 const nativeFieldInteraction = {
   onFocus: (e) => {
@@ -571,6 +669,8 @@ const trunkModalCancelBtnStyle = {
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
+
+const trunkAdaptRowGridColumns = "1fr 1fr 1fr 32px";
 
 const trunkAdaptTextFieldSx = {
   ...muiTextFieldSx,
@@ -3117,9 +3217,9 @@ const SipRegisterPage = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
                   <div className="space-y-0.5">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                        Trunk Type <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="trunk_type">
+                        Trunk Type
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <RadioGroup
                           row
@@ -3137,9 +3237,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                        Trunk Name <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="trunk_name" required>
+                        Trunk Name
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -3161,9 +3261,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                        Select Country <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="select_country" required>
+                        Select Country
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl
                           fullWidth
@@ -3192,9 +3292,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="transport">
                         Transport
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3214,9 +3314,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="enable_srtp">
                         Enable SRTP
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
@@ -3235,9 +3335,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                        Register <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="register" required>
+                        Register
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3330,9 +3430,9 @@ const SipRegisterPage = () => {
                       </>
                     )}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="outbound_cid_source">
                         Outbound CallerId Source
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3360,9 +3460,9 @@ const SipRegisterPage = () => {
                   </div>
                   <div className="space-y-0.5">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="record">
                         Record
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3382,9 +3482,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                        Enabled <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="enabled" required>
+                        Enabled
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3404,9 +3504,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                        Eth Port <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="eth_port" required>
+                        Eth Port
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3432,9 +3532,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                        Trunk IP/Domain <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="trunk_ip_domain" required>
+                        Trunk IP/Domain
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -3456,9 +3556,9 @@ const SipRegisterPage = () => {
                     </div>
                     <div className="w-full">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        <TrunkFieldLabel tooltipKey="show_outbound_cid_name">
                           Show Outbound CallerID Name
-                        </label>
+                        </TrunkFieldLabel>
                         <div className="flex-1 min-w-0 flex items-center justify-start">
                           <FormControlLabel
                             control={
@@ -3481,9 +3581,9 @@ const SipRegisterPage = () => {
                       </div>
                       {form.ui_show_outbound_cid_name && (
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <TrunkFieldLabel tooltipKey="outbound_cid_name">
                             Outbound CallerId Name
-                          </label>
+                          </TrunkFieldLabel>
                           <div className="flex-1 min-w-0">
                             <TextField
                               size="small"
@@ -3503,9 +3603,9 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="outbound_cid_number">
                         Outbound CallerId Number
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -3997,20 +4097,20 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="VoIP Settings" isFirst />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     {[
-                      ["Get CalledID Type", "ui_get_called_id_type"],
-                      ["OPTIONS Interval (s)", "ui_options_interval"],
-                      ["TX Volume", "ui_tx_volume"],
-                      ["RX Volume", "ui_rx_volume"],
-                      ["From User", "from_user"],
-                      ["From Domain", "Domain name"],
-                    ].map(([lbl, key]) => (
+                      ["Get CalledID Type", "ui_get_called_id_type", "get_called_id_type"],
+                      ["OPTIONS Interval (s)", "ui_options_interval", "options_interval"],
+                      ["TX Volume", "ui_tx_volume", "tx_volume"],
+                      ["RX Volume", "ui_rx_volume", "rx_volume"],
+                      ["From User", "from_user", "from_user"],
+                      ["From Domain", "Domain name", "from_domain"],
+                    ].map(([lbl, key, tooltipKey]) => (
                       <div
                         key={key}
                         className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1"
                       >
-                        <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        <TrunkFieldLabel tooltipKey={tooltipKey}>
                           {lbl}
-                        </label>
+                        </TrunkFieldLabel>
                         <div className="flex-1 min-w-0">
                           <TextField
                             size="small"
@@ -4023,9 +4123,9 @@ const SipRegisterPage = () => {
                       </div>
                     ))}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="send_privacy_id">
                         Send Privacy ID
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4045,9 +4145,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="sip_force_contact">
                         Sip Force Contact
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4080,9 +4180,9 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="Outbound parameters" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="p_preferred_identity">
                         P-Preferred-Identity
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4106,9 +4206,9 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="remote_party_id">
                         Remote-Party-ID
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4129,9 +4229,9 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="p_asserted_identity">
                         P-Asserted-Identity
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4155,9 +4255,9 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="contact">
                         Contact
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4183,9 +4283,9 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="Other Settings" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="limit_max_calls">
                         Limit Max Calls
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -4199,9 +4299,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="enable_early_session">
                         Enable Early Session
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4224,9 +4324,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="enable_early_media">
                         Enable Early Media
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4249,9 +4349,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="user_phone">
                         User Phone
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
@@ -4270,9 +4370,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="call_timeout">
                         Call Timeout(s)
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -4286,9 +4386,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="dtmf_transmit">
                         DTMF Transmit Mode
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -4308,9 +4408,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="max_call_duration">
                         Max Call Duration (s)
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -4327,9 +4427,9 @@ const SipRegisterPage = () => {
 
                   <div className="w-full">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="dnis">
                         DNIS
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
@@ -4349,128 +4449,131 @@ const SipRegisterPage = () => {
                     </div>
                     {form.ui_dnis && (
                       <div className="mt-2 bg-white border border-gray-200 rounded-md p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div
-                          className="font-semibold"
-                          style={{
-                            fontSize: 13,
-                            color: TRUNK_SECTION_HEADING_COLOR,
-                          }}
-                        >
-                          DNIS Settings
+                        <div className="flex items-center justify-between mb-2">
+                          <div
+                            className="font-semibold"
+                            style={{
+                              fontSize: 13,
+                              color: TRUNK_SECTION_HEADING_COLOR,
+                            }}
+                          >
+                            DNIS Settings
+                          </div>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              setDnisRows((r) => [
+                                ...r,
+                                {
+                                  dnisNumber: "",
+                                  dnisName: "",
+                                  replaceCid: "No",
+                                },
+                              ])
+                            }
+                            sx={{ border: "1px solid #ccc", borderRadius: 1 }}
+                            aria-label="add dnis row"
+                          >
+                            <AddIcon fontSize="small" />
+                          </IconButton>
                         </div>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setDnisRows((r) => [
-                              ...r,
-                              {
-                                dnisNumber: "",
-                                dnisName: "",
-                                replaceCid: "No",
-                              },
-                            ])
-                          }
-                          sx={{ border: "1px solid #ccc", borderRadius: 1 }}
-                          aria-label="add dnis row"
-                        >
-                          <AddIcon fontSize="small" />
-                        </IconButton>
-                      </div>
 
-                      <div className="overflow-x-auto border border-gray-200 rounded">
-                        <table className="w-full min-w-[520px] text-sm">
-                          <thead>
-                            <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
-                              <th className="p-2 text-left font-medium">
-                                DNIS Number
-                              </th>
-                              <th className="p-2 text-left font-medium">
-                                DNIS Name
-                              </th>
-                              <th className="p-2 text-left font-medium">
-                                Replace CID
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {dnisRows.map((row, i) => (
-                              <tr key={i} className="border-b border-gray-100">
-                                <td className="p-1">
-                                  <TextField
-                                    size="small"
-                                    fullWidth
-                                    value={row.dnisNumber}
-                                    onChange={(e) =>
-                                      setDnisRows((prev) =>
-                                        prev.map((x, j) =>
-                                          j === i
-                                            ? {
-                                                ...x,
-                                                dnisNumber: e.target.value,
-                                              }
-                                            : x,
-                                        ),
-                                      )
-                                    }
-                                    inputProps={{ style: { fontSize: 13 } }}
-                                  />
-                                </td>
-                                <td className="p-1">
-                                  <TextField
-                                    size="small"
-                                    fullWidth
-                                    value={row.dnisName}
-                                    onChange={(e) =>
-                                      setDnisRows((prev) =>
-                                        prev.map((x, j) =>
-                                          j === i
-                                            ? {
-                                                ...x,
-                                                dnisName: e.target.value,
-                                              }
-                                            : x,
-                                        ),
-                                      )
-                                    }
-                                    inputProps={{ style: { fontSize: 13 } }}
-                                  />
-                                </td>
-                                <td className="p-1 w-[180px]">
-                                  <FormControl fullWidth size="small">
-                                    <MuiSelect
-                                      value={row.replaceCid || "No"}
+                        <div className="overflow-x-auto border border-gray-200 rounded">
+                          <table className="w-full min-w-[520px] text-sm">
+                            <thead>
+                              <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                                <th className="p-2 text-left font-medium">
+                                  DNIS Number
+                                </th>
+                                <th className="p-2 text-left font-medium">
+                                  DNIS Name
+                                </th>
+                                <th className="p-2 text-left font-medium">
+                                  Replace CID
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {dnisRows.map((row, i) => (
+                                <tr
+                                  key={i}
+                                  className="border-b border-gray-100"
+                                >
+                                  <td className="p-1">
+                                    <TextField
+                                      size="small"
+                                      fullWidth
+                                      value={row.dnisNumber}
                                       onChange={(e) =>
                                         setDnisRows((prev) =>
                                           prev.map((x, j) =>
                                             j === i
                                               ? {
                                                   ...x,
-                                                  replaceCid: e.target.value,
+                                                  dnisNumber: e.target.value,
                                                 }
                                               : x,
                                           ),
                                         )
                                       }
-                                      sx={{ fontSize: 14 }}
-                                    >
-                                      {SIP_REGISTER_YES_NO.map((c) => (
-                                        <MenuItem key={c} value={c}>
-                                          {c}
-                                        </MenuItem>
-                                      ))}
-                                    </MuiSelect>
-                                  </FormControl>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                      inputProps={{ style: { fontSize: 13 } }}
+                                    />
+                                  </td>
+                                  <td className="p-1">
+                                    <TextField
+                                      size="small"
+                                      fullWidth
+                                      value={row.dnisName}
+                                      onChange={(e) =>
+                                        setDnisRows((prev) =>
+                                          prev.map((x, j) =>
+                                            j === i
+                                              ? {
+                                                  ...x,
+                                                  dnisName: e.target.value,
+                                                }
+                                              : x,
+                                          ),
+                                        )
+                                      }
+                                      inputProps={{ style: { fontSize: 13 } }}
+                                    />
+                                  </td>
+                                  <td className="p-1 w-[180px]">
+                                    <FormControl fullWidth size="small">
+                                      <MuiSelect
+                                        value={row.replaceCid || "No"}
+                                        onChange={(e) =>
+                                          setDnisRows((prev) =>
+                                            prev.map((x, j) =>
+                                              j === i
+                                                ? {
+                                                    ...x,
+                                                    replaceCid: e.target.value,
+                                                  }
+                                                : x,
+                                            ),
+                                          )
+                                        }
+                                        sx={{ fontSize: 14 }}
+                                      >
+                                        {SIP_REGISTER_YES_NO.map((c) => (
+                                          <MenuItem key={c} value={c}>
+                                            {c}
+                                          </MenuItem>
+                                        ))}
+                                      </MuiSelect>
+                                    </FormControl>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
               </div>
             )}
 
@@ -4510,12 +4613,14 @@ const SipRegisterPage = () => {
                   <div className="mt-2 bg-white border border-gray-200 rounded-md p-3 sm:p-4 shadow-sm">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-4 w-full">
                       <div className="flex items-center gap-8 min-w-0">
-                        <label
+                        <TrunkFieldLabel
+                          tooltipKey="dod_name"
+                          required
                           className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
                           style={{ width: 110 }}
                         >
-                          DOD Name <span className="text-red-500">*</span>
-                        </label>
+                          DOD Name
+                        </TrunkFieldLabel>
                         <input
                           className="flex-1 min-w-0"
                           style={trunkDodCompactInputStyle}
@@ -4525,12 +4630,14 @@ const SipRegisterPage = () => {
                         />
                       </div>
                       <div className="flex items-center gap-8 min-w-0">
-                        <label
+                        <TrunkFieldLabel
+                          tooltipKey="dod_number"
+                          required
                           className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
                           style={{ width: 110 }}
                         >
-                          DOD Number <span className="text-red-500">*</span>
-                        </label>
+                          DOD Number
+                        </TrunkFieldLabel>
                         <input
                           className="flex-1 min-w-0"
                           style={trunkDodCompactInputStyle}
@@ -4806,16 +4913,16 @@ const SipRegisterPage = () => {
                 <div
                   className="grid gap-2 items-center text-[12px] font-semibold border-b border-gray-200 pb-2 mb-3"
                   style={{
-                    gridTemplateColumns: "1fr 1fr 1fr 32px",
+                    gridTemplateColumns: trunkAdaptRowGridColumns,
                   }}
                 >
-                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>
+                  <GroupFieldLabel tooltipKey="match_mode">
                     Match Mode
-                  </span>
-                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>Strip</span>
-                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>
+                  </GroupFieldLabel>
+                  <GroupFieldLabel tooltipKey="strip">Strip</GroupFieldLabel>
+                  <GroupFieldLabel tooltipKey="prepend">
                     Prepend
-                  </span>
+                  </GroupFieldLabel>
                   <IconButton
                     size="small"
                     onClick={() =>
@@ -4836,10 +4943,7 @@ const SipRegisterPage = () => {
                       key={i}
                       className="grid gap-2 items-center"
                       style={{
-                        gridTemplateColumns:
-                          adaptRows.length > 1
-                            ? "1fr 1fr 1fr 32px"
-                            : "1fr 1fr 1fr",
+                        gridTemplateColumns: trunkAdaptRowGridColumns,
                       }}
                     >
                       <TextField
@@ -4881,7 +4985,7 @@ const SipRegisterPage = () => {
                         }
                         sx={trunkAdaptTextFieldSx}
                       />
-                      {adaptRows.length > 1 && (
+                      {adaptRows.length > 1 ? (
                         <IconButton
                           size="small"
                           onClick={() =>
@@ -4892,6 +4996,8 @@ const SipRegisterPage = () => {
                         >
                           <CloseIcon fontSize="small" />
                         </IconButton>
+                      ) : (
+                        <span aria-hidden="true" />
                       )}
                     </div>
                   ))}

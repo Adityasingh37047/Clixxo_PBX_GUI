@@ -16,7 +16,7 @@ const C = {
   accent: "#29a8e0",
   successGreen: "#16a34a",
   warningAmber: "#d97706",
-  pageBg: "#eef2f7",
+  pageBg: "#f8fafc",
 };
 
 // ── Local page UI (inlined from statusSharedUi) ───────────────────────────────

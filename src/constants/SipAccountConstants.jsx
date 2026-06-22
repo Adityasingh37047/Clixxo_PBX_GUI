@@ -24,8 +24,7 @@ export const EXTENSION_FIELD_TOOLTIPS = {
   user_password:
     "The password for this extension user to log into the system. Username is Name, while the default password is 'pass' plus the extension number.",
 
-  mobile_number:
-    "Fill in the mobile phone number of this extension user.",
+  mobile_number: "Fill in the mobile phone number of this extension user.",
 
   voicemail_enabled:
     "When Enabled, calls will be routed to voicemail after the Call Timeout(see Advanced TAB) regardless of Call Forward setting",
@@ -57,8 +56,7 @@ export const EXTENSION_FIELD_TOOLTIPS = {
   follow_me:
     "Set a destination number for this extension so that all incoming calls within the period set in the following time condition selectbox will be routed to the destination number and the user won't miss a call. The default setting is Disabled.",
 
-  dnd:
-    "When DND is enabled for an extension, it will reject all incoming calls. The default setting is Disable.",
+  dnd: "When DND is enabled for an extension, it will reject all incoming calls. The default setting is Disable.",
 
   enable_mobility_extension:
     "If you enable this setting, then when the User's Mobile Number dials into the system, the phone will have the same user permission as the desktop extension. So the mobile number will be able to connect with the other extension, dial out with the trunk, and play voicemail.",

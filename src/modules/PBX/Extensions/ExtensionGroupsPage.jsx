@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import {Dialog,
+import {
+  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -7,7 +8,10 @@ import {Dialog,
   CircularProgress,
   Checkbox,
   FormControlLabel,
-  Alert, useMediaQuery } from "@mui/material";
+  Alert,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 
 import {
   fetchSipAccounts,
@@ -18,6 +22,7 @@ import {
 } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import { EXTENSION_GROUP_FIELD_TOOLTIPS } from "../../../constants/ExtensionGroupConstants";
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
@@ -65,7 +70,7 @@ const Btn = ({
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-   cancel: {
+    cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
@@ -150,23 +155,86 @@ const Btn = ({
   );
 };
 
+// ── ToolTips ──────────────────────────────────────────────────────
+const EXTENSION_GROUP_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 650,
+        padding: "12px 16px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatGroupTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const GroupFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = EXTENSION_GROUP_FIELD_TOOLTIPS[tooltipKey] || "";
+
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+
+  if (!tooltip) return label;
+
+  return (
+    <Tooltip
+      title={formatGroupTooltipTitle(tooltip)}
+      {...EXTENSION_GROUP_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
 
 // ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-   background: "#F8FAFC",
-color: C.labelText,
-fontWeight: 700,
-fontSize: 11,
-padding: "9px 14px",
-textAlign: "center",
-borderBottom: `1px solid ${C.cardBorder}`,
-borderRight: `1px solid ${C.cardBorder}`,
-whiteSpace: "nowrap",
-textTransform: "uppercase",
-letterSpacing: "0.14em",
-...extra,
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      ...extra,
     }}
   >
     {children}
@@ -664,7 +732,14 @@ const ExtensionGroupsPage = () => {
         <PbxBreadcrumb section="Extensions" current="Extension Group" />
 
         <div style={sipPcmCardStyle}>
-          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selectedIds.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
@@ -765,9 +840,7 @@ const ExtensionGroupsPage = () => {
               <Btn
                 onClick={handleDelete}
                 disabled={
-                  loading.delete ||
-                  loading.fetch ||
-                  selectedIds.length === 0
+                  loading.delete || loading.fetch || selectedIds.length === 0
                 }
                 variant="cancel"
                 style={sipPcmCancelBtnStyle}
@@ -787,7 +860,16 @@ const ExtensionGroupsPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: "hidden",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : dataEmpty ? (
@@ -811,21 +893,32 @@ const ExtensionGroupsPage = () => {
               >
                 <thead>
                   <tr>
-                    <TH style={{  width: 40,
+                    <TH
+                      style={{
+                        width: 40,
                         padding: 0,
                         borderLeft: "none",
                         position: "sticky",
                         top: 0,
-                        zIndex: 10,}}>
+                        zIndex: 10,
+                      }}
+                    >
                       <Checkbox
                         size="small"
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                     sx={checkboxSx}
+                        sx={checkboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36, position: "sticky", top: 0, zIndex: 10 }}>
+                    <TH
+                      style={{
+                        width: 36,
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
                       ID
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
@@ -834,125 +927,130 @@ const ExtensionGroupsPage = () => {
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Extensions
                     </TH>
-                    <TH  style={{
-                       width: 70,
+                    <TH
+                      style={{
+                        width: 70,
                         borderRight: "none",
                         position: "sticky",
                         top: 0,
                         zIndex: 10,
-                      }}>Modify</TH>
+                      }}
+                    >
+                      Modify
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
                   {pagedGroups.map((row, idx) => {
-                      const isSelected = selectedIds.includes(row.id);
-                      const isLastRow = idx === pagedGroups.length - 1;
-                      const lastRowCellStyle = isLastRow
-                        ? { borderBottom: "none" }
-                        : {};
-                      const rowBg = isSelected
-                        ? "#e0f2fe"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
-                      const realIndex = (page - 1) * limit + idx + 1;
+                    const isSelected = selectedIds.includes(row.id);
+                    const isLastRow = idx === pagedGroups.length - 1;
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+                    const rowBg = isSelected
+                      ? "#e0f2fe"
+                      : idx % 2 === 1
+                        ? "#f8fafc"
+                        : "#ffffff";
+                    const realIndex = (page - 1) * limit + idx + 1;
 
-                      return (
-                        <tr
-                          key={row.id}
+                    return (
+                      <tr
+                        key={row.id}
+                        style={{
+                          background: rowBg,
+                        }}
+                      >
+                        <td
                           style={{
-                            background: rowBg,
+                            ...tdStyle,
+                            width: 36,
+                            borderLeft: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
-                          <td
-                            style={{
-                              ...tdStyle,
-                              width: 36,
-                              borderLeft: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(row.id)}
-                              sx={checkboxSx}
-                            />
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              width: 36,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {realIndex}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.name}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {row.extensions?.length > 0 ? (
-                              <span
-                                title={
-                                  row.extensions.length > PBX_LIST_TRUNCATE_THRESHOLD
-                                    ? row.extensions.join(", ")
-                                    : undefined
-                                }
-                              >
-                                {formatPbxItemListDisplay(row.extensions)}
-                              </span>
-                            ) : (
-                              <span style={{ color: C.mutedText }}></span>
-                            )}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              borderRight: "none",
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "center",
-                              }}
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleToggleRow(row.id)}
+                            sx={checkboxSx}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            width: 36,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {realIndex}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.name}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.extensions?.length > 0 ? (
+                            <span
+                              title={
+                                row.extensions.length >
+                                PBX_LIST_TRUNCATE_THRESHOLD
+                                  ? row.extensions.join(", ")
+                                  : undefined
+                              }
                             >
-                                                            <EditDocumentIcon
-                                titleAccess="Edit"
-                                onClick={() => handleOpenEditModal(row)}
-                                style={{
-                                  cursor: "pointer",
-                                  color: "#2563eb",
-                                  fontSize: 22,
-                                  opacity: 0.7,
-                                  transition: "opacity 0.15s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.opacity = "1";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.opacity = "0.7";
-                                }}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                              {formatPbxItemListDisplay(row.extensions)}
+                            </span>
+                          ) : (
+                            <span style={{ color: C.mutedText }}></span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            ...tdStyle,
+                            borderRight: "none",
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
+                              style={{
+                                cursor: "pointer",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: 0.7,
+                                transition: "opacity 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.opacity = "0.7";
+                              }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -1003,9 +1101,7 @@ const ExtensionGroupsPage = () => {
             : "Add New Extension Group"}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "24px", backgroundColor: "#ffffff" }}
-        >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
             style={{
               display: "flex",
@@ -1019,17 +1115,11 @@ const ExtensionGroupsPage = () => {
           >
             {/* Group Name Field */}
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  marginBottom: 6,
-                }}
-              >
-                Group Name
-              </label>
+              <div style={{ marginBottom: 6 }}>
+                <GroupFieldLabel tooltipKey="group_name">
+                  Group Name
+                </GroupFieldLabel>
+              </div>
               <TextField
                 fullWidth
                 value={groupName}
@@ -1043,32 +1133,21 @@ const ExtensionGroupsPage = () => {
             </div>
 
             {/* Extensions Selection */}
-            <div
-              style={{
-                background: "#fff",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                overflow: "hidden",
-              }}
-            >
+            <div>
+              <div style={{ marginBottom: 6 }}>
+                <GroupFieldLabel tooltipKey="selected_extensions">
+                  Select Extensions
+                </GroupFieldLabel>
+              </div>
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "8px 12px",
-                  background: "#f8fafc",
-                  borderBottom: `1px solid ${C.cardBorder}`,
+                  background: "#fff",
+                  border: `1px solid ${C.cardBorder}`,
+                  borderRadius: 6,
+                  overflow: "hidden",
                 }}
               >
-                <span
-                  style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}
-                >
-                  Select Extensions
-                </span>
-              </div>
-
-              <div style={{ maxHeight: 220, overflowY: "auto", padding: 12 }}>
+                <div style={{ maxHeight: 220, overflowY: "auto", padding: 12 }}>
                 {loading.extensions ? (
                   <div
                     style={{
@@ -1103,7 +1182,7 @@ const ExtensionGroupsPage = () => {
                             checked={selectedExtensions.includes(extension)}
                             onChange={() => toggleExtension(extension)}
                             size="small"
-                            sx={checkboxSx} 
+                            sx={checkboxSx}
                           />
                         }
                         label={
@@ -1117,6 +1196,7 @@ const ExtensionGroupsPage = () => {
                   </div>
                 )}
               </div>
+            </div>
             </div>
 
             <div
@@ -1139,28 +1219,24 @@ const ExtensionGroupsPage = () => {
             borderBottomRightRadius: 8,
           }}
         >
-        <Btn
-  onClick={handleSaveGroup}
-  disabled={loading.save}
-   variant="primary"
- style={{ minWidth: 100, height: 33, fontSize: 13 }}
->
-  {loading.save ? (
-    <CircularProgress
-    
-    />
-  ) : null}
+          <Btn
+            onClick={handleSaveGroup}
+            disabled={loading.save}
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
+            {loading.save ? <CircularProgress /> : null}
 
-  {loading.save ? "Saving..." : "Save Group"}
-</Btn>
-       <Btn
-  onClick={handleCloseModal}
-  disabled={loading.save}
-variant="cancel"
-  style={pbxModalCancelBtnStyle}
->
-  Cancel
-</Btn>
+            {loading.save ? "Saving..." : "Save Group"}
+          </Btn>
+          <Btn
+            onClick={handleCloseModal}
+            disabled={loading.save}
+            variant="cancel"
+            style={pbxModalCancelBtnStyle}
+          >
+            Cancel
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>

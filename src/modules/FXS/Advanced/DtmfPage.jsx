@@ -39,10 +39,6 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -279,7 +275,23 @@ const advancedFormInlineFooterStyle = {
   boxSizing: "border-box",
 };
 
-const advancedFormBtnStyle = {
+const dtmfFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  marginTop: 24,
+  padding: "10px 20px",
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: 10,
+  boxSizing: "border-box",
+  background: C.cardBg,
+  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+};
+
+const dtmfFooterBtnStyle = {
   minWidth: 110,
   height: 34,
   fontSize: 13,
@@ -885,26 +897,20 @@ const DtmfPage = () => {
         </AdvancedFormCard>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 12,
-          marginTop: 16,
-          width: "100%",
-        }}
-      >
+      <div style={dtmfFooterStyle}>
         <Btn
           variant="primary"
+          type="button"
           onClick={handleSave}
-          style={advancedFormBtnStyle}
+          style={dtmfFooterBtnStyle}
         >
           Save
         </Btn>
         <Btn
           variant="cancel"
+          type="button"
           onClick={handleReset}
-          style={advancedFormBtnStyle}
+          style={dtmfFooterBtnStyle}
         >
           Reset
         </Btn>

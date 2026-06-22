@@ -492,6 +492,9 @@ const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
 const OUTLINED_FOCUS = "#1976d2";
 const PBX_TOOLBAR_SEARCH_HEIGHT = 30;
 const PBX_TOOLBAR_SEARCH_WIDTH = 168;
+const PBX_SEARCH_ICON_SLOT = 18;
+const PBX_SEARCH_BAR_PADDING_FIT = 16;
+const PBX_SEARCH_BAR_PADDING_DEFAULT = 20;
 const PBX_TOOLBAR_SEARCH_FOCUS_RING = `0 0 0 1px ${OUTLINED_FOCUS}`;
 const PBX_TOOLBAR_SEARCH_INPUT_FONT = {
   fontSize: 12,
@@ -509,13 +512,22 @@ const PbxToolbarSearchBar = ({
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const measureRef = useRef(null);
-  const [fitWidth, setFitWidth] = useState(null);
+  const [placeholderWidth, setPlaceholderWidth] = useState(null);
 
   useLayoutEffect(() => {
     if (!fitPlaceholder || !measureRef.current) return;
-    measureRef.current.textContent = value || placeholder;
-    setFitWidth(measureRef.current.offsetWidth);
-  }, [fitPlaceholder, placeholder, value]);
+    measureRef.current.textContent = placeholder;
+    setPlaceholderWidth(measureRef.current.offsetWidth);
+  }, [fitPlaceholder, placeholder]);
+
+  const resolvedWidth =
+    fitPlaceholder && placeholderWidth != null
+      ? placeholderWidth + PBX_SEARCH_BAR_PADDING_FIT + PBX_SEARCH_ICON_SLOT
+      : width;
+
+  const horizontalPadding = fitPlaceholder
+    ? PBX_SEARCH_BAR_PADDING_FIT / 2
+    : PBX_SEARCH_BAR_PADDING_DEFAULT / 2;
 
   const setDefault = () => {
     const el = wrapRef.current;
@@ -543,8 +555,6 @@ const PbxToolbarSearchBar = ({
     else setDefault();
   };
 
-  const inputWidth = fitPlaceholder && fitWidth != null ? fitWidth : null;
-
   return (
     <div
       ref={wrapRef}
@@ -557,10 +567,11 @@ const PbxToolbarSearchBar = ({
         background: "#ffffff",
         border: `1px solid ${OUTLINED_BORDER}`,
         borderRadius: 10,
-        padding: fitPlaceholder ? "0 8px" : "0 10px",
+        padding: `0 ${horizontalPadding}px`,
         transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-        width: fitPlaceholder ? "fit-content" : width,
-        minWidth: fitPlaceholder ? "auto" : width,
+        width: resolvedWidth,
+        minWidth: resolvedWidth,
+        maxWidth: resolvedWidth,
         flexShrink: 0,
         position: "relative",
       }}
@@ -595,36 +606,45 @@ const PbxToolbarSearchBar = ({
           border: "none",
           background: "transparent",
           outline: "none",
-          width: inputWidth ?? "100%",
-          minWidth: inputWidth ?? 0,
-          maxWidth: inputWidth ?? undefined,
+          flex: 1,
+          minWidth: 0,
+          width: 0,
           padding: 0,
+          paddingRight: value ? 14 : 0,
           margin: 0,
           ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
           color: C.valueText,
         }}
       />
-      {value ? (
-        <span
-          role="button"
-          tabIndex={0}
-          onClick={() => onChange({ target: { value: "" } })}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onChange({ target: { value: "" } });
-            }
-          }}
-          style={{
-            fontSize: 11,
-            color: C.mutedText,
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
-        >
-          ✕
-        </span>
-      ) : null}
+      <span
+        role="button"
+        tabIndex={value ? 0 : -1}
+        aria-hidden={!value}
+        onClick={() => {
+          if (!value) return;
+          onChange({ target: { value: "" } });
+        }}
+        onKeyDown={(e) => {
+          if (!value) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onChange({ target: { value: "" } });
+          }
+        }}
+        style={{
+          position: "absolute",
+          right: horizontalPadding,
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: 11,
+          color: C.mutedText,
+          cursor: value ? "pointer" : "default",
+          visibility: value ? "visible" : "hidden",
+          lineHeight: 1,
+        }}
+      >
+        ✕
+      </span>
     </div>
   );
 };
