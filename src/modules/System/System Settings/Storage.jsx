@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   TextField,
   Select,
@@ -188,9 +190,9 @@ const Btn = ({
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: "16px 0 24px -100px", // sabke liye same
       position: "relative",
-      width: "100%",
+      width: "calc(100% + 35px)",
     }}
   >
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
@@ -211,8 +213,14 @@ const SectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
+
+
+
+
+
 const FormFieldRow = ({
   label,
+  tooltip,
   required = false,
   labelWidth = 320,
   children,
@@ -225,38 +233,71 @@ const FormFieldRow = ({
       gap: 12,
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        textAlign: "left",
-        width: labelWidth,
-        flexShrink: 0,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: C.amber }}> *</span>}
-    </label>
+  <Tooltip
+  title={tooltip || ""}
+  arrow
+  placement="top"
+  disableHoverListener={!tooltip}
+  slotProps={{
+    tooltip: {
+      sx: {
+        bgcolor: "#ffffff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        maxWidth: 260,
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#ffffff",
+      },
+    },
+  }}
+>
+  <label
+    style={{
+      fontSize: 13,
+      color: C.labelText,
+      fontWeight: 600,
+      whiteSpace: "nowrap",
+      textAlign: "left",
+      width: labelWidth,
+      flexShrink: 0,
+      cursor: tooltip ? "help" : "default",
+    }}
+  >
+    {label}
+    {required && <span style={{ color: C.amber }}> *</span>}
+  </label>
+</Tooltip>
+
     <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
 );
-
 const AUTO_CLEANUP_SECTIONS = [
   {
     title: "CDR Auto Cleanup",
     fields: [
-      { name: "maxCdr", label: "Max Number of CDR", type: "text", defaultValue: "200000" },
+      {
+        name: "maxCdr",
+        label: "Max Number of CDR",
+        tooltip: "Set the maximum number of CDR that should be retained. The default is '100000'. The oldest CDR will be deleted when the threshold is reached.",
+        type: "text",
+        defaultValue: "200000",
+      },
       {
         name: "cdrPreservationDuration",
         label: "CDR Preservation Duration",
+        tooltip: `Set the maximum numbers of days that CDr should be retained. The default is "0".`,
         type: "text",
         defaultValue: "0",
       },
       {
         name: "maxConferenceSessions",
         label: "Max Number of Conference Sessions",
+        tooltip:`Set the maximum number of conference sessions that should be retained. The default is '5000'. The oldest conference session will be deleted when the threshold is reached.`,
         type: "text",
         defaultValue: "5000",
       },
@@ -268,18 +309,21 @@ const AUTO_CLEANUP_SECTIONS = [
       {
         name: "maxVoicemailFiles",
         label: "Max Number of Files",
+        tooltip:`Set the maximum number of voice mail files that should be retained. The default is '300'. The oldest voice mail file will be deleted when the threshold is reached.`,
         type: "text",
         defaultValue: "300",
       },
       {
         name: "voicemailPreservationDuration",
         label: "Preservation Duration",
+        tooltip: `Set the maximum numbers of days that voice mail files should be retained. "0" for no limitation.`,
         type: "text",
         defaultValue: "0",
       },
       {
         name: "voicemailFilesPreservationDuration",
         label: "Files Preservation Duration",
+        tooltip: `Set the maximum numbers of minutes that voicemail and touch recording files should be retained respectively for each extension. "0" for no limitation.`,
         type: "text",
         defaultValue: "0",
       },
@@ -291,12 +335,14 @@ const AUTO_CLEANUP_SECTIONS = [
       {
         name: "maxDeviceUsage",
         label: "Max Usage of Device(%)",
+        tooltip: `Set the maximum storage percentage the device is allowed to store. The default is "80" (30~90). The oldest recordings will be deleted when the threshold is reached.`,
         type: "text",
         defaultValue: "80",
       },
       {
         name: "recPreservationDuration",
         label: "Rec Preservation Duration",
+        tooltip: `Set the maximum numbers of days that recordings should be retained. The default is "0".`,
         type: "text",
         defaultValue: "0",
       },
@@ -308,16 +354,21 @@ const AUTO_CLEANUP_SECTIONS = [
       {
         name: "maxLogSize",
         label: "Max Size of Total Logs",
+        tooltip: `Limit the max size of each log. The default size is 50 MB, 0 for no limitation. The older logs will be deleted when the threshold is reached.`,
         type: "text",
         defaultValue: "50",
       },
       {
         name: "logsPreservationDuration",
         label: "Logs Preservation Duration",
+        tooltip: `Set the maximum numbers of days that logs should be retained. The default is "7". "0" for no limitation.`,
         type: "text",
         defaultValue: "7",
       },
-      { name: "maxLogs", label: "Max Number of Logs", type: "text", defaultValue: "3" },
+      { name: "maxLogs", label: "Max Number of Logs", 
+        tooltip: `The maximum number of log files saved per day. The default value is 3 and the minimum value is 1.`,
+        type: "text", defaultValue: "3" },
+        
     ],
   },
 ];
@@ -326,6 +377,7 @@ const BACKUP_FIELDS = [
   {
     name: "autoUploadFtp",
     label: "Auto Upload FTP",
+    tooltip: `After configuring the FTP server, the recording file will be uploaded automatically. The default value is "No".`,
     type: "select",
     options: ["Yes", "No"],
     defaultValue: "Yes",
@@ -333,31 +385,37 @@ const BACKUP_FIELDS = [
   {
     name: "ftpAddress",
     label: "FTP Address",
+    tooltip: `FTP server address, format is: (ftp://name:password@IP:port/) of (ftp://IP), if the port number is not filled int, it is the default port 21 and this value must be set, otherwise can not be save.`,
     type: "text",
     defaultValue: "192.168.0.57",
   },
   {
     name: "username",
     label: "Username",
+    tooltip: `User name used on the FTP server.`,
     type: "text",
     defaultValue: "ftp-clixxo",
   },
   {
     name: "password",
     label: "Password",
+    tooltip: `Password used on the FTP server.`,
     type: "password",
     defaultValue: "password",
   },
   {
     name: "uploadTime",
     label: "Upload Time",
+    tooltip: `Real-time: upload at a fixed time point every day. If this value is enabled, you should set startup time. Uplaod the file at 00:00 by default.`,
     type: "radio",
     options: ["Real Time", "Timing"],
     defaultValue: "Real Time",
   },
+  
   {
     name: "deleteSourceFile",
     label: "Delete Source File",
+    tooltip: `After uploading, the original recording file will be deleted. The default value is "No".`,
     type: "select",
     options: ["Yes", "No"],
     defaultValue: "No",
@@ -447,9 +505,33 @@ const Storage = () => {
 
   const renderField = (field, form, onChange) => {
     const value = form[field.name] ?? "";
-
+  
+    if (field.name === "startHour" || field.name === "startMinute") {
+      return (
+        <FormFieldRow
+          key={field.name}
+          label={field.name === "startMinute" ? "" : field.label}
+          required
+          labelWidth={field.name === "startMinute" ? 0 : 320}
+        >
+          <div style={{ width: 60 }}>
+            {renderSelect(
+              value,
+              (v) => onChange(field.name, v),
+              field.options
+            )}
+          </div>
+        </FormFieldRow>
+      );
+    }
+  
     return (
-      <FormFieldRow key={field.name} label={field.label} required>
+      <FormFieldRow
+        key={field.name}
+        label={field.label}
+        tooltip={field.tooltip}
+        required
+      >
         {field.type === "select"
           ? renderSelect(value, (v) => onChange(field.name, v), field.options)
           : field.type === "radio"
@@ -596,10 +678,63 @@ const Storage = () => {
               >
                 <SectionHeading title="Record Backup" isFirst />
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {BACKUP_FIELDS.map((field) =>
-                    renderField(field, backupsForm, handleBackupsChange),
-                  )}
-                </div>
+  {BACKUP_FIELDS.map((field) => (
+    <React.Fragment key={field.name}>
+      {renderField(field, backupsForm, handleBackupsChange)}
+
+      {field.name === "uploadTime" &&
+        backupsForm.uploadTime === "Timing" && (
+          <FormFieldRow label="Start Time" required>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <Select
+                size="small"
+                value={backupsForm.startHour || "00"}
+                onChange={(e) =>
+                  handleBackupsChange("startHour", e.target.value)
+                }
+                sx={{ width: 56 }}
+              >
+                {Array.from({ length: 24 }, (_, i) => (
+                  <MenuItem
+                    key={i}
+                    value={String(i).padStart(2, "0")}
+                  >
+                    {String(i).padStart(2, "0")}
+                  </MenuItem>
+                ))}
+              </Select>
+
+              <span style={{ fontWeight: 600 }}>:</span>
+
+              <Select
+                size="small"
+                value={backupsForm.startMinute || "00"}
+                onChange={(e) =>
+                  handleBackupsChange("startMinute", e.target.value)
+                }
+                sx={{ width: 56 }}
+              >
+                {Array.from({ length: 60 }, (_, i) => (
+                  <MenuItem
+                    key={i}
+                    value={String(i).padStart(2, "0")}
+                  >
+                    {String(i).padStart(2, "0")}
+                  </MenuItem>
+                ))}
+              </Select>
+            </div>
+          </FormFieldRow>
+        )}
+    </React.Fragment>
+  ))}
+</div>
                 <div
                   style={{
                     display: "flex",
